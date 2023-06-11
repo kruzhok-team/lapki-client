@@ -16,34 +16,55 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
 
       elements,
 
-      // elements: [
-      //   { data: { id: 'a' } },
-      //   { data: { id: 'b' } },
-      //   { data: { id: 'ab', source: 'a', target: 'b' } }
-      // ],
-
       style: [
         {
           selector: 'node',
           style: {
-            'background-color': '#666',
             label: 'data(id)'
+          }
+        },
+
+        {
+          selector: 'node:parent',
+          style: {
+            label: ''
           }
         },
 
         {
           selector: 'edge',
           style: {
-            width: 3,
-            'line-color': '#ccc',
-            'target-arrow-color': '#ccc',
-            'target-arrow-shape': 'triangle',
-            'curve-style': 'bezier'
+            'curve-style': 'bezier',
+            'target-arrow-shape': 'triangle'
+          }
+        },
+
+        {
+          selector: '.cdnd-grabbed-node',
+          style: {
+            'background-color': 'red'
+          }
+        },
+
+        {
+          selector: '.cdnd-drop-sibling',
+          style: {
+            'background-color': 'red'
+          }
+        },
+
+        {
+          selector: '.cdnd-drop-target',
+          style: {
+            'border-color': 'red',
+            'border-style': 'dashed'
           }
         }
       ],
 
       zoom: 0.5,
+      maxZoom: 1.5,
+      minZoom: 0.5,
 
       layout: { name: 'grid' }
     });

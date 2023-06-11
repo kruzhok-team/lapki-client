@@ -1,0 +1,12 @@
+{
+  "elements": {
+    "nodes": [
+      { "data": { "id": "a" } },
+      { "data": { "id": "b" } },
+      { "data": { "id": "c" } },
+      { "data": { "id": "d", "parent": "p" } },
+      { "data": { "id": "p" } }
+    ],
+    "edges": [{ "data": { "id": "ab", "source": "a", "target": "b" } }]
+  }
+}

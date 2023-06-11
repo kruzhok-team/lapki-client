@@ -23,6 +23,7 @@
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
     "@monaco-editor/react": "^4.5.1",
+    "cytoscape": "^3.25.0",
     "monaco-editor": "^0.39.0"
   },
   "devDependencies": {

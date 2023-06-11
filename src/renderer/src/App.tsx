@@ -1,29 +1,34 @@
-import React from 'react';
-import Editor, { loader } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
+import React, { useState } from 'react';
 
-import { Versions } from './components/Versions';
-
-loader.config({ monaco });
-loader.init();
+import { CodeEditor, DiagramEditor, Versions } from './components';
 
 export const App: React.FC = () => {
-  const handleClick = async () => {
+  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);
+
+  const handleOpenFile = async () => {
     const fileContent = await window.electron.ipcRenderer.invoke('dialog:openFile');
 
-    console.log(fileContent);
+    if (fileContent && typeof fileContent === 'string') {
+      setFileContent(fileContent);
+    }
+  };
+
+  const handleOpenCodeEditor = () => {
+    if (!fileContent) {
+      return alert('Open JSON File First');
+    }
+
+    setIsCodeEditorOpen(true);
   };
 
   return (
-    <>
-      <Editor
-        height="90vh"
-        defaultLanguage="typescript"
-        defaultValue="const a = 12;"
-        theme="vs-dark"
-      />
-      <button onClick={handleClick}>Click to choose file</button>
+    <div>
+      <button onClick={handleOpenFile}>Open File</button>
+      <button onClick={handleOpenCodeEditor}>Open In Code Editor</button>
+      {isCodeEditorOpen && fileContent && <CodeEditor value={fileContent} />}
+      {fileContent && <DiagramEditor fileContent={fileContent} />}
       <Versions />
-    </>
+    </div>
   );
 };

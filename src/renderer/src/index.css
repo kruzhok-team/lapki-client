@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .popper-handle {
-  @apply w-5 h-5 bg-neutral-50 z-50 text-neutral-800 grid place-items-center leading-[0px] font-bold cursor-pointer select-none;
+  @apply z-50 grid h-5 w-5 cursor-pointer select-none place-items-center bg-neutral-50 font-bold leading-[0px] text-neutral-800 hover:bg-red-600 hover:text-neutral-50;
 }

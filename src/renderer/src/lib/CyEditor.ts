@@ -19,11 +19,11 @@ export class CyEditor {
       elements,
       style,
 
-      zoom: 1,
+      zoom: 0.5,
       maxZoom: 1.5,
       minZoom: 0.5,
 
-      layout: { name: 'grid' }
+      layout: { name: 'grid' },
     });
 
     this.cy.dragAddNodes();
@@ -43,7 +43,7 @@ export class CyEditor {
       snapThreshold: 1, // the target node must be less than or equal to this many pixels away from the cursor/finger
       snapFrequency: 15, // the number of times per second (Hz) that snap checks done (lower is less expensive)
       noEdgeEventsInDraw: true, // set events:no to edges during draws, prevents mouseouts on compounds
-      disableBrowserGestures: true // during an edge drawing gesture, disable browser gestures such as two-finger trackpad swipe and pinch-to-zoom
+      disableBrowserGestures: true, // during an edge drawing gesture, disable browser gestures such as two-finger trackpad swipe and pinch-to-zoom
     });
 
     // e.enableDrawMode();
@@ -79,8 +79,15 @@ export class CyEditor {
           popper: {
             strategy: 'absolute',
             placement: position as any,
-            modifiers: []
-          }
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 5],
+                },
+              },
+            ],
+          },
         });
 
         node.on('drag', () => {

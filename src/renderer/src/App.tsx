@@ -24,25 +24,27 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="p-4 relative">
-      <header className="flex items-center gap-2 mb-2 p-2 sticky top-0 bg-neutral-800 z-20 rounded">
+    <div className="h-screen bg-neutral-800">
+      <header className="flex h-14 items-center gap-2 border-b border-neutral-500 bg-neutral-700 p-2">
         <button
-          className="text-neutral-800 bg-neutral-50 rounded py-2 px-4"
+          className="rounded-sm bg-neutral-50 px-2 py-1 text-neutral-800"
           onClick={handleOpenFile}
         >
           Open File
         </button>
         <button
-          className="text-neutral-800 bg-neutral-50 rounded py-2 px-4"
+          className="rounded-sm bg-neutral-50 px-2 py-1 text-neutral-800"
           onClick={handleToggleCodeEditor}
         >
           Toggle Code Editor
         </button>
       </header>
 
-      {elements?.elements && <DiagramEditor elements={elements.elements} />}
+      <main className="h-[calc(100vh-3.5rem)]">
+        {elements?.elements && <DiagramEditor elements={elements.elements} />}
 
-      {isCodeEditorOpen && fileContent && <CodeEditor value={fileContent} />}
+        {isCodeEditorOpen && fileContent && <CodeEditor value={fileContent} />}
+      </main>
     </div>
   );
 };

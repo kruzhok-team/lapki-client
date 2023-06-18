@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ElementDefinition } from 'cytoscape';
 
-import Rect from '../assets/rect.svg';
 import { CyEditor } from '@renderer/lib/CyEditor';
 
 interface DiagramEditorProps {
@@ -27,14 +26,24 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   };
 
   return (
-    <div className="w-full h-[90vh] border border-neutral-800 rounded flex items-stretch">
-      <aside className="px-4 py-2 border-r border-black w-48">
-        <img src={Rect} draggable onDragStart={handleDragStart} />
-        <button onClick={() => console.log((cyEditor?.cy.json() as any)?.elements)}>
+    <div className="flex h-full w-full">
+      <aside className="w-64 border-r border-neutral-500 bg-neutral-900 p-4">
+        <button
+          className="mb-4 rounded-sm bg-neutral-50 px-2 py-1 text-neutral-800"
+          onClick={() => console.log((cyEditor?.cy.json() as any)?.elements)}
+        >
           Elements
         </button>
+
+        <div
+          className="grid h-[50px] w-[100px] place-items-center bg-[#2D2E34] text-neutral-50"
+          draggable
+          onDragStart={handleDragStart}
+        >
+          State
+        </div>
       </aside>
-      <div className="flex-1 z-50 overflow-hidden bg-neutral-900" ref={cyContainerRef} />
+      <div className="z-50 flex-1 overflow-hidden bg-neutral-800" ref={cyContainerRef} />
     </div>
   );
 };

@@ -1,8 +1,6 @@
 import { Core, ElementDefinition } from 'cytoscape';
 import { v4 as uuidv4 } from 'uuid';
 
-import Rect from '../assets/rect.svg';
-
 export class DragAddNodes {
   cy!: Core;
 

@@ -5,25 +5,34 @@ export const style: Stylesheet[] = [
     selector: 'node[type]',
     style: {
       shape: 'data(type)' as any,
-      // label: 'data(type)',
       height: 'data(height)',
       width: 'data(width)',
       'text-valign': 'center',
-      'text-halign': 'center'
+      'text-halign': 'center',
+      'background-color': '#2D2E34',
+      color: '#FFF',
+      'border-width': 1,
+      'background-opacity': 0.5,
+      'border-opacity': 0
     }
   },
   {
     selector: 'node[name]',
     style: {
-      content: 'data(name)'
+      label: 'data(name)'
     }
   },
   {
-    selector: 'node[image]',
+    selector: 'node:selected',
     style: {
-      'background-opacity': 0,
-      'background-fit': 'cover',
-      'background-image': (e) => e.data('image') || { value: '' }
+      'border-color': '#FFF',
+      'border-opacity': 1
+    }
+  },
+  {
+    selector: 'node:active',
+    style: {
+      'overlay-opacity': 0
     }
   },
 

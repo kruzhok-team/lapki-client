@@ -1,10 +1,12 @@
-import cytoscape, { Core, ElementDefinition } from 'cytoscape';
+import cytoscape, { Core, ElementDefinition, NodeSingular } from 'cytoscape';
 
+import popper from 'cytoscape-popper';
 import edgehandles from 'cytoscape-edgehandles';
 import dragAddNodes from './dragAddNodes';
 
 import { style } from './cyStyles';
 
+cytoscape.use(popper);
 cytoscape.use(edgehandles);
 cytoscape.use(dragAddNodes);
 
@@ -26,7 +28,7 @@ export class CyEditor {
 
     this.cy.dragAddNodes();
 
-    const e = this.cy.edgehandles({
+    const eh = this.cy.edgehandles({
       canConnect: function (sourceNode, targetNode) {
         // whether an edge can be created between source and target
         return !sourceNode.same(targetNode); // e.g. disallow loops
@@ -44,6 +46,68 @@ export class CyEditor {
       disableBrowserGestures: true // during an edge drawing gesture, disable browser gestures such as two-finger trackpad swipe and pinch-to-zoom
     });
 
-    e.enableDrawMode();
+    // e.enableDrawMode();
+
+    type PopperDiv = HTMLDivElement | null;
+
+    let poppers: [any, any, any, any] = [null, null, null, null];
+    let popperDivs: [PopperDiv, PopperDiv, PopperDiv, PopperDiv] = [null, null, null, null];
+
+    this.cy.on('select', 'node', (e) => {
+      const node = e.target as NodeSingular;
+
+      for (let i = 0; i < 4; i++) {
+        let position = 'top';
+        if (i === 1) position = 'left';
+        if (i === 2) position = 'right';
+        if (i === 3) position = 'bottom';
+
+        poppers[i] = node.popper({
+          content: () => {
+            const popperDiv = document.createElement('div');
+
+            popperDiv.classList.add('popper-handle');
+            popperDiv.innerText = '+';
+            popperDiv.addEventListener('mousedown', () => eh.start(node as any as string));
+
+            document.body.appendChild(popperDiv);
+
+            popperDivs[i] = popperDiv;
+
+            return popperDiv;
+          },
+          popper: {
+            strategy: 'absolute',
+            placement: position as any,
+            modifiers: []
+          }
+        });
+
+        node.on('drag', () => {
+          const div = popperDivs[i];
+          if (div) {
+            div.style.opacity = '0';
+          }
+          poppers[i].update();
+        });
+
+        node.on('dragfree', () => {
+          const div = popperDivs[i];
+          if (div) {
+            div.style.opacity = '1';
+          }
+        });
+      }
+    });
+
+    this.cy.on('unselect', 'node', () => {
+      poppers.forEach((p) => p?.destroy());
+
+      popperDivs.forEach((c) => c && document.body.removeChild(c));
+    });
+
+    // ? Не знаю почему так не работает
+    // this.cy.on('mouseup', () => eh.stop());
+    window.addEventListener('mouseup', () => eh.stop());
   }
 }

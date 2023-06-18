@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.popper-handle {
+  @apply w-5 h-5 bg-neutral-50 z-50 text-neutral-800 grid place-items-center leading-[0px] font-bold cursor-pointer select-none;
+}

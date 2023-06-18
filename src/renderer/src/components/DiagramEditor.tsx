@@ -30,8 +30,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     <div className="w-full h-[90vh] border border-neutral-800 rounded flex items-stretch">
       <aside className="px-4 py-2 border-r border-black w-48">
         <img src={Rect} draggable onDragStart={handleDragStart} />
+        <button onClick={() => console.log((cyEditor?.cy.json() as any)?.elements)}>
+          Elements
+        </button>
       </aside>
-      <div className="flex-1 z-50 overflow-hidden" ref={cyContainerRef} />
+      <div className="flex-1 z-50 overflow-hidden bg-neutral-900" ref={cyContainerRef} />
     </div>
   );
 };

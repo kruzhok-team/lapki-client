@@ -1,11 +1,10 @@
 {
   "elements": {
     "nodes": [
-      { "data": { "id": "a" } },
-      { "data": { "id": "b" } },
-      { "data": { "id": "c" } },
-      { "data": { "id": "d", "parent": "p" } },
-      { "data": { "id": "p" } }
+      { "data": { "id": "a", "name": "state1", "type": "rectangle", "height": 50, "width": 100 } },
+      { "data": { "id": "b", "name": "state2", "type": "rectangle", "height": 50, "width": 100 } },
+      { "data": { "id": "c", "name": "state3", "type": "rectangle", "height": 50, "width": 100 } },
+      { "data": { "id": "p", "name": "state4", "type": "rectangle", "height": 50, "width": 100 } }
     ],
     "edges": [{ "data": { "id": "ab", "source": "a", "target": "b" } }]
   }

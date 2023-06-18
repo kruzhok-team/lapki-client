@@ -34,11 +34,10 @@ export class DragAddNodes {
           group: 'nodes',
           data: {
             id: uuidv4(),
-            image: Rect,
-            bg: '#1890FF',
-            width: 88,
-            height: 56,
-            type: 'round-rectangle'
+            width: 100,
+            height: 50,
+            type: 'rectangle',
+            name: 'state'
           },
           position: rect
         };

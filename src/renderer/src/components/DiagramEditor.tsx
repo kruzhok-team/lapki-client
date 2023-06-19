@@ -41,13 +41,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
           Elements
         </button>
 
-        {/* <div
+        <div
           className="grid h-[50px] w-[100px] place-items-center bg-[#2D2E34] text-neutral-50"
           draggable
-          onDragStart={handleDragStart}
+          // onDragStart={handleDragStart}
         >
           State
-        </div> */}
+        </div>
       </aside>
       <div
         className="z-50 flex-1 overflow-hidden bg-neutral-800"

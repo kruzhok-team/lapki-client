@@ -1,8 +1,10 @@
 import Konva from 'konva';
 import { getBoxToBoxArrow } from 'curved-arrows';
+import { v4 as uuidv4 } from 'uuid';
 
 export class KonvaEditor {
   stage!: Konva.Stage;
+  layer!: Konva.Layer;
 
   constructor(container: HTMLDivElement, width: number, height: number, elements: any) {
     const nodes = elements.nodes;
@@ -14,64 +16,22 @@ export class KonvaEditor {
       height,
     });
 
-    const layer = new Konva.Layer();
+    this.layer = new Konva.Layer();
 
     nodes.forEach(({ x, y, width, height, id }) => {
-      const group = new Konva.Group({
-        draggable: true,
-        id,
-        x,
-        y,
-        width,
-        height,
-      });
-
-      const box = new Konva.Rect({
-        width,
-        height,
-        fill: '#2D2E34',
-        stroke: 'black',
-        strokeWidth: 0,
-      });
-
-      const text = new Konva.Text({
-        x: width / 2,
-        y: height / 2,
-        text: id,
-        fontSize: 20,
-        fontFamily: 'Arial',
-        fill: '#FFF',
-      });
-
-      text.offsetX(text.width() / 2);
-      text.offsetY(text.height() / 2);
-
-      group.on('mouseover', () => {
-        box.setAttr('strokeWidth', 2);
-
-        document.body.style.cursor = 'pointer';
-      });
-      group.on('mouseout', () => {
-        box.setAttr('strokeWidth', 0);
-
-        document.body.style.cursor = 'default';
-      });
-
-      group.add(box);
-      group.add(text);
-      layer.add(group);
+      this.drawState(id, x, y, width, height);
     });
 
     edges.forEach(({ source, target, id }) => {
-      const rect = new Konva.Shape({
+      const edge = new Konva.Shape({
         stroke: '#FFF',
         strokeWidth: 2,
         source,
         target,
         id,
-        sceneFunc: function (ctx, shape) {
-          const p1 = layer.findOne(`#${shape.attrs.source}`);
-          const p2 = layer.findOne(`#${shape.attrs.target}`);
+        sceneFunc: (ctx, shape) => {
+          const p1 = this.layer.findOne(`#${shape.attrs.source}`);
+          const p2 = this.layer.findOne(`#${shape.attrs.target}`);
 
           const [sx, sy, c1x, c1y, c2x, c2y, ex, ey, ae] = getBoxToBoxArrow(
             p1.x(),
@@ -91,29 +51,76 @@ export class KonvaEditor {
 
           ctx.moveTo(sx, sy);
           ctx.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey);
-          // ctx.lineTo(ex - 10, ey - 10);
-          // ctx.lineTo(ex + 10, ey + 10);
 
           ctx.fillStrokeShape(shape);
         },
       });
-      layer.add(rect);
 
-      const bezierLinePath = new Konva.Line({
-        dash: [10, 10, 0, 10],
-        strokeWidth: 3,
-        stroke: 'black',
-        lineCap: 'round',
-        id: 'bezierLinePath',
-        opacity: 0.3,
-        points: [0, 0],
-        source,
-        target,
-      });
-
-      layer.add(bezierLinePath);
+      this.layer.add(edge);
     });
 
-    this.stage.add(layer);
+    this.stage.add(this.layer);
+
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    container.addEventListener('drop', (e) => {
+      e.preventDefault();
+
+      this.stage.setPointersPositions(e);
+      const pos = this.stage.getPointerPosition();
+
+      if (!pos) return;
+
+      this.drawState(uuidv4(), pos.x, pos.y, 100, 50);
+    });
   }
+
+  drawState = (id: string, x: number, y: number, width: number, height: number) => {
+    const group = new Konva.Group({
+      draggable: true,
+      id,
+      x,
+      y,
+      width,
+      height,
+    });
+
+    const box = new Konva.Rect({
+      width,
+      height,
+      fill: '#2D2E34',
+      stroke: 'black',
+      strokeWidth: 0,
+    });
+
+    const text = new Konva.Text({
+      x: width / 2,
+      y: height / 2,
+      text: id,
+      fontSize: 20,
+      fontFamily: 'Arial',
+      fill: '#FFF',
+    });
+
+    text.offsetX(text.width() / 2);
+    text.offsetY(text.height() / 2);
+
+    group.on('mouseover', () => {
+      box.setAttr('strokeWidth', 2);
+
+      document.body.style.cursor = 'pointer';
+    });
+    group.on('mouseout', () => {
+      box.setAttr('strokeWidth', 0);
+
+      document.body.style.cursor = 'default';
+    });
+
+    group.add(box);
+    group.add(text);
+
+    this.layer.add(group);
+  };
 }

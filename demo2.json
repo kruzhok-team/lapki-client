@@ -14,24 +14,24 @@
         "type": "rectangle",
         "height": 50,
         "width": 100,
-        "x": 100,
-        "y": 120
+        "x": 200,
+        "y": 200
       },
       {
         "id": "state3",
         "type": "rectangle",
         "height": 50,
         "width": 100,
-        "x": 150,
-        "y": 180
+        "x": 300,
+        "y": 500
       },
       {
         "id": "state4",
         "type": "rectangle",
         "height": 50,
         "width": 100,
-        "x": 200,
-        "y": 240
+        "x": 500,
+        "y": 400
       }
     ],
     "edges": [{ "id": "ab", "source": "state1", "target": "state2" }]

@@ -23,6 +23,7 @@
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
     "@monaco-editor/react": "^4.5.1",
+    "curved-arrows": "^0.1.0",
     "cytoscape": "^3.25.0",
     "cytoscape-edgehandles": "^4.0.1",
     "cytoscape-popper": "^2.0.0",

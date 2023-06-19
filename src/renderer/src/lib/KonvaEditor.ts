@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import { getBoxToBoxArrow } from 'curved-arrows';
 
 export class KonvaEditor {
   stage!: Konva.Stage;
@@ -45,10 +46,6 @@ export class KonvaEditor {
       text.offsetX(text.width() / 2);
       text.offsetY(text.height() / 2);
 
-      group.on('dragmove', (e) => {
-        this.reDrawEdges(e.target);
-      });
-
       group.on('mouseover', () => {
         box.setAttr('strokeWidth', 2);
 
@@ -66,61 +63,57 @@ export class KonvaEditor {
     });
 
     edges.forEach(({ source, target, id }) => {
-      const sourceNode = nodes.find(({ id }) => id === source);
-      const targetNode = nodes.find(({ id }) => id === target);
-
-      const sourceX = sourceNode.x + sourceNode.width / 2;
-      const sourceY = sourceNode.y + sourceNode.height / 2;
-      const targetX = targetNode.x + targetNode.width / 2;
-      const targetY = targetNode.y + targetNode.height / 2;
-
-      const arrow = new Konva.Arrow({
-        points: [sourceX, sourceY, targetX, targetY],
-        stroke: '#000',
-        fill: '#000',
-        strokeWidth: 1,
-        pointerWidth: 6,
+      const rect = new Konva.Shape({
+        stroke: '#FFF',
+        strokeWidth: 2,
         source,
         target,
         id,
+        sceneFunc: function (ctx, shape) {
+          const p1 = layer.findOne(`#${shape.attrs.source}`);
+          const p2 = layer.findOne(`#${shape.attrs.target}`);
+
+          const [sx, sy, c1x, c1y, c2x, c2y, ex, ey, ae] = getBoxToBoxArrow(
+            p1.x(),
+            p1.y(),
+            p1.width(),
+            p1.height(),
+            p2.x(),
+            p2.y(),
+            p2.width(),
+            p2.height(),
+            {
+              padEnd: 0,
+            }
+          );
+
+          ctx.beginPath();
+
+          ctx.moveTo(sx, sy);
+          ctx.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey);
+          // ctx.lineTo(ex - 10, ey - 10);
+          // ctx.lineTo(ex + 10, ey + 10);
+
+          ctx.fillStrokeShape(shape);
+        },
+      });
+      layer.add(rect);
+
+      const bezierLinePath = new Konva.Line({
+        dash: [10, 10, 0, 10],
+        strokeWidth: 3,
+        stroke: 'black',
+        lineCap: 'round',
+        id: 'bezierLinePath',
+        opacity: 0.3,
+        points: [0, 0],
+        source,
+        target,
       });
 
-      layer.add(arrow);
+      layer.add(bezierLinePath);
     });
 
     this.stage.add(layer);
-  }
-
-  reDrawEdges(node) {
-    let variant = '';
-
-    const targetX = node.attrs.x + node.attrs.width / 2;
-    const targetY = node.attrs.y + node.attrs.height / 2;
-
-    const edge = this.stage.findOne(({ attrs }) => {
-      if (attrs.source === node.attrs.id) {
-        variant = 'source';
-        return true;
-      }
-
-      if (attrs.target === node.attrs.id) {
-        variant = 'target';
-        return true;
-      }
-
-      return false;
-    });
-
-    if (!edge) return;
-
-    const prevPoints = (edge as any).points() as any[];
-
-    if (variant === 'source') {
-      (edge as any).points([targetX, targetY, prevPoints[2], prevPoints[3]]);
-    }
-
-    if (variant === 'target') {
-      (edge as any).points([prevPoints[0], prevPoints[1], targetX, targetY]);
-    }
   }
 }

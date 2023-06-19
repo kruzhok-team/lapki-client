@@ -1,11 +1,39 @@
 {
   "elements": {
     "nodes": [
-      { "data": { "id": "a", "name": "state1", "type": "rectangle", "height": 50, "width": 100 } },
-      { "data": { "id": "b", "name": "state2", "type": "rectangle", "height": 50, "width": 100 } },
-      { "data": { "id": "c", "name": "state3", "type": "rectangle", "height": 50, "width": 100 } },
-      { "data": { "id": "p", "name": "state4", "type": "rectangle", "height": 50, "width": 100 } }
+      {
+        "id": "state1",
+        "type": "rectangle",
+        "height": 50,
+        "width": 100,
+        "x": 50,
+        "y": 50
+      },
+      {
+        "id": "state2",
+        "type": "rectangle",
+        "height": 50,
+        "width": 100,
+        "x": 100,
+        "y": 120
+      },
+      {
+        "id": "state3",
+        "type": "rectangle",
+        "height": 50,
+        "width": 100,
+        "x": 150,
+        "y": 180
+      },
+      {
+        "id": "state4",
+        "type": "rectangle",
+        "height": 50,
+        "width": 100,
+        "x": 200,
+        "y": 240
+      }
     ],
-    "edges": [{ "data": { "id": "ab", "source": "a", "target": "b" } }]
+    "edges": [{ "id": "ab", "source": "state1", "target": "state2" }]
   }
 }

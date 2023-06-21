@@ -29,10 +29,10 @@
     "cytoscape-popper": "^2.0.0",
     "konva": "^9.2.0",
     "monaco-editor": "^0.39.0",
+    "nanoid": "^4.0.2",
     "react-konva": "^18.2.9",
     "react-merge-refs": "^2.0.2",
-    "react-use-measure": "^2.1.1",
-    "uuid": "^9.0.0"
+    "react-use-measure": "^2.1.1"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",

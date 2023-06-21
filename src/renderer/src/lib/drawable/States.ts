@@ -1,3 +1,5 @@
+import { nanoid } from 'nanoid';
+
 import { State } from './State';
 
 import { Elements } from '../../types';
@@ -5,6 +7,7 @@ import { CanvasEditor } from '../CanvasEditor';
 import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
 import { StateHandlers } from './StateHandlers';
+import { Vector2D } from '../types';
 
 export class States extends EventEmitter {
   app!: CanvasEditor;
@@ -23,15 +26,20 @@ export class States extends EventEmitter {
     super();
 
     this.app = app;
+    this.stateHandlers = new StateHandlers(app, this.handleStartNewTransition);
+    this.initItems(items);
+    this.initEvents();
+  }
 
+  private initItems(items: Elements['states']) {
     for (const id in items) {
       const state = new State({ id, ...items[id] });
 
       this.items.set(id, state);
     }
+  }
 
-    this.stateHandlers = new StateHandlers(app, this.handleStartNewTransition);
-
+  private initEvents() {
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mousemove', this.handleMouseMove);
@@ -125,5 +133,11 @@ export class States extends EventEmitter {
 
   isStateUnderMouse(state: State) {
     return isPointInRectangle(state.bounds, { x: this.app.mouse.x, y: this.app.mouse.y });
+  }
+
+  createState({ x, y }: Vector2D) {
+    const id = nanoid(6);
+
+    this.items.set(id, new State({ id, bounds: { x, y, width: 100, height: 50 } }));
   }
 }

@@ -42,5 +42,24 @@ export class CanvasEditor {
 
       this.isDirty = false;
     });
+
+    this.initDragEvents();
+  }
+
+  private initDragEvents() {
+    this.canvas.element.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    this.canvas.element.addEventListener('drop', (e) => {
+      e.preventDefault();
+
+      const rect = this.canvas.element.getBoundingClientRect();
+      const x = e.clientX - rect.left - 50;
+      const y = e.clientY - rect.top - 25;
+
+      this.states.createState({ x, y });
+
+      this.isDirty = true;
+    });
   }
 }

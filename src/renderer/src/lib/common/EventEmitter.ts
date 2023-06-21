@@ -34,19 +34,6 @@ export class EventEmitter<T extends {} = {}> {
         for (const handler of handlers.values()) {
           handler(event);
         }
-        /* Тут события вызываются в обратном порядке как при всплытии в DOM это нужно для того чтобы можно было это всплытие отключить */
-        // const values = [...handlers.values()];
-        // let stop = false;
-
-        // for (let i = values.length - 1; i >= 0; i--) {
-        //   const stopPropagation = () => {
-        //     stop = true;
-        //   };
-
-        //   values[i]({ nativeEvent: event, stopPropagation });
-
-        //   if (stop) break;
-        // }
       }
     }
   }

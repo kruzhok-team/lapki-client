@@ -1,22 +1,27 @@
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 import { Elements } from '@renderer/types';
 import { CanvasEditor } from '../CanvasEditor';
 import { Transition } from './Transition';
 import { State } from './State';
+import { GhostTransition } from './GhostTransition';
 
 export class Transitions {
   app!: CanvasEditor;
 
   items: Map<string, Transition> = new Map();
 
-  ghost = new Transition();
-  isGhost = false;
-  ghostTarget: { x: number; y: number } | null = null;
+  ghost = new GhostTransition();
+  showGhost = false;
 
   constructor(app: CanvasEditor, items: Elements['transitions']) {
     this.app = app;
 
+    this.initItems(items);
+    this.initEvents();
+  }
+
+  private initItems(items: Elements['transitions']) {
     for (const id in items) {
       const sourceId = items[id].source;
       const targetId = items[id].target;
@@ -28,7 +33,9 @@ export class Transitions {
 
       this.items.set(id, transition);
     }
+  }
 
+  private initEvents() {
     this.app.mouse.on('mousemove', this.handleMouseMove);
     this.app.mouse.on('mouseup', this.handleMouseUp);
 
@@ -41,30 +48,32 @@ export class Transitions {
       state.draw(ctx, canvas);
     });
 
-    if (this.isGhost && this.ghostTarget) {
-      this.ghost.draw(ctx, canvas, this.ghostTarget);
+    if (this.showGhost) {
+      this.ghost.draw(ctx, canvas);
     }
   }
 
   handleStartNewTransition = () => {
-    this.ghost.source = this.app.states.stateHandlers.currentState;
-    this.isGhost = true;
+    this.ghost.setSource(this.app.states.stateHandlers.currentState as State);
+    this.showGhost = true;
   };
 
   handleMouseMove = () => {
-    if (!this.isGhost) return;
+    if (!this.showGhost) return;
 
-    this.ghostTarget = { x: this.app.mouse.x, y: this.app.mouse.y };
+    this.ghost.setTarget({ x: this.app.mouse.x, y: this.app.mouse.y });
 
     this.app.isDirty = true;
   };
 
   handleMouseUpOnState = () => {
+    if (!this.showGhost) return;
+
     const target = this.app.states.mouseUpState as State;
 
     const transition = new Transition({ source: this.ghost.source as State, target });
 
-    this.items.set(uuidv4(), transition);
+    this.items.set(nanoid(), transition);
   };
 
   handleMouseUp = () => {
@@ -72,8 +81,7 @@ export class Transitions {
   };
 
   removeGhost() {
-    this.isGhost = false;
-    this.ghost.source = null;
-    this.ghostTarget = null;
+    this.showGhost = false;
+    this.ghost.clear();
   }
 }

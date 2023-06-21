@@ -18,8 +18,6 @@ export class CanvasEditor {
 
   isDirty = true;
 
-  mouseDownEvents: string[] = [];
-
   constructor(container: HTMLDivElement, elements: Elements) {
     this.root = container;
     this.canvas = new Canvas('rgb(38, 38, 38)');

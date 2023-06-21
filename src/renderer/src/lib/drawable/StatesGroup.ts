@@ -20,10 +20,6 @@ export class StatesGroup {
       this.items.set(id, state);
     }
 
-    // app.mouse.on('mousedown', () => {
-    //   app.mouseDownEvents.push('StatesGroup');
-    // });
-
     this.app.mouse.on('mouseup', this.handleMouseUp);
   }
 
@@ -45,5 +41,8 @@ export class StatesGroup {
 
   handleMouseUp = () => {
     this.grabbedStateId = null;
+    this.selectedStateId = null;
+
+    this.app.isDirty = true;
   };
 }

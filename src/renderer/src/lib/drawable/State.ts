@@ -18,7 +18,6 @@ export interface StateArgs {
 export class State {
   id!: string;
   grabOffset = { x: 0, y: 0 };
-  mouseover = false;
 
   statesGroup!: StatesGroup;
   app!: CanvasEditor;
@@ -90,22 +89,18 @@ export class State {
   };
 
   handleMouseMove = () => {
-    if (this.isMouseOver) {
-      this.mouseover = true;
-    } else {
-      this.mouseover = false;
-    }
+    if (!this.isGrabbed) return;
 
-    if (this.isGrabbed) {
-      this.bounds.x = this.app.mouse.x - this.grabOffset.x;
-      this.bounds.y = this.app.mouse.y - this.grabOffset.y;
+    this.bounds.x = this.app.mouse.x - this.grabOffset.x;
+    this.bounds.y = this.app.mouse.y - this.grabOffset.y;
 
-      this.app.isDirty = true;
-    }
+    this.app.isDirty = true;
   };
 
-  handleMouseUp = () => {
-    if (!this.isMouseOver) return;
+  handleMouseUp = (e: { nativeEvent: MouseEvent; stopPropagation: () => void }) => {
+    if (!this.app.mouse.left || !this.isMouseOver) return;
+
+    e.stopPropagation();
 
     this.statesGroup.setSelectedId(this.id);
   };

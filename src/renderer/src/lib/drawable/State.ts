@@ -37,16 +37,12 @@ export class State {
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#FFF';
       ctx.stroke();
-
-      ctx.rect(this.bounds.x + this.bounds.width / 2 - 10, this.bounds.y - 22, 20, 20);
-      ctx.fillStyle = 'red';
-      ctx.fill();
     }
 
     // Draw text
     ctx.fillStyle = '#FFF';
     ctx.font = '20px Arial';
-    ctx.fillText(this.id, this.bounds.x, this.bounds.y);
+    ctx.fillText(this.id, this.bounds.x + 15, this.bounds.y + 25);
 
     ctx.closePath();
   }

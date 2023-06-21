@@ -4,6 +4,7 @@ import { Elements } from '../../types';
 import { CanvasEditor } from '../CanvasEditor';
 import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
+import { StateHandlers } from './StateHandlers';
 
 export class States extends EventEmitter {
   app!: CanvasEditor;
@@ -13,6 +14,7 @@ export class States extends EventEmitter {
   mouseDownState: State | null = null;
   mouseUpState: State | null = null;
   selectedState: State | null = null;
+  stateHandlers!: StateHandlers;
 
   dragging = false;
   grabOffset = { x: 0, y: 0 };
@@ -28,6 +30,8 @@ export class States extends EventEmitter {
       this.items.set(id, state);
     }
 
+    this.stateHandlers = new StateHandlers(app, this.handleStartNewTransition);
+
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mousemove', this.handleMouseMove);
@@ -37,6 +41,8 @@ export class States extends EventEmitter {
     this.items.forEach((state) => {
       state.draw(ctx, canvas, { isSelected: this.selectedState?.id === state.id });
     });
+
+    this.stateHandlers.draw(ctx, canvas);
   }
 
   setMouseDownState(state: State) {
@@ -55,9 +61,17 @@ export class States extends EventEmitter {
     this.selectedState = state;
 
     if (state) {
+      this.stateHandlers.setCurrentState(state);
+
       this.emit('select', { selectedState: state });
+    } else {
+      this.stateHandlers.remove();
     }
   }
+
+  handleStartNewTransition = () => {
+    this.emit('startNewTransition', {});
+  };
 
   handleMouseDown = () => {
     if (!this.app.mouse.left) return;

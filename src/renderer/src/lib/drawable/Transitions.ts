@@ -14,8 +14,6 @@ export class Transitions {
   isGhost = false;
   ghostTarget: { x: number; y: number } | null = null;
 
-  canConnect = false;
-
   constructor(app: CanvasEditor, items: Elements['transitions']) {
     this.app = app;
 
@@ -34,7 +32,7 @@ export class Transitions {
     this.app.mouse.on('mousemove', this.handleMouseMove);
     this.app.mouse.on('mouseup', this.handleMouseUp);
 
-    this.app.states.on('mouseDownOnState', this.handleMouseDownOnState);
+    this.app.states.on('startNewTransition', this.handleStartNewTransition);
     this.app.states.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
@@ -48,17 +46,13 @@ export class Transitions {
     }
   }
 
-  handleMouseDownOnState = () => {
-    if (!this.canConnect) return;
-
-    this.app.states.dragging = false;
-
-    this.ghost.source = this.app.states.mouseDownState;
+  handleStartNewTransition = () => {
+    this.ghost.source = this.app.states.stateHandlers.currentState;
     this.isGhost = true;
   };
 
   handleMouseMove = () => {
-    if (!this.canConnect || !this.isGhost) return;
+    if (!this.isGhost) return;
 
     this.ghostTarget = { x: this.app.mouse.x, y: this.app.mouse.y };
 
@@ -66,8 +60,6 @@ export class Transitions {
   };
 
   handleMouseUpOnState = () => {
-    if (!this.canConnect) return;
-
     const target = this.app.states.mouseUpState as State;
 
     const transition = new Transition({ source: this.ghost.source as State, target });
@@ -76,11 +68,7 @@ export class Transitions {
   };
 
   handleMouseUp = () => {
-    if (!this.canConnect) return;
-
     this.removeGhost();
-
-    this.app.isDirty = true;
   };
 
   removeGhost() {

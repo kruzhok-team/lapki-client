@@ -1,4 +1,4 @@
-export const isPointInRectanle = (
+export const isPointInRectangle = (
   rectangle: {
     x: number;
     y: number;
@@ -65,10 +65,10 @@ export const isRectanglesIntersection = (
   ] as { x: number; y: number }[];
 
   if (
-    isPointInRectanle(a, bPoints[0]) ||
-    isPointInRectanle(a, bPoints[1]) ||
-    isPointInRectanle(a, bPoints[2]) ||
-    isPointInRectanle(a, bPoints[3])
+    isPointInRectangle(a, bPoints[0]) ||
+    isPointInRectangle(a, bPoints[1]) ||
+    isPointInRectangle(a, bPoints[2]) ||
+    isPointInRectangle(a, bPoints[3])
   ) {
     return true;
   }
@@ -83,10 +83,10 @@ export const isRectanglesIntersection = (
   ] as { x: number; y: number }[];
 
   if (
-    isPointInRectanle(b, aPoints[0]) ||
-    isPointInRectanle(b, aPoints[1]) ||
-    isPointInRectanle(b, aPoints[2]) ||
-    isPointInRectanle(b, aPoints[3])
+    isPointInRectangle(b, aPoints[0]) ||
+    isPointInRectangle(b, aPoints[1]) ||
+    isPointInRectangle(b, aPoints[2]) ||
+    isPointInRectangle(b, aPoints[3])
   ) {
     return true;
   }

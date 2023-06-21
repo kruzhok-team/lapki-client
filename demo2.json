@@ -1,5 +1,5 @@
 {
-  "state": {
+  "states": {
     "on": {
       "events": {
         "onEnter": [
@@ -13,6 +13,12 @@
             "args": [1]
           }
         ]
+      },
+      "bounds": {
+        "height": 50,
+        "width": 100,
+        "x": 50,
+        "y": 50
       }
     },
     "off": {
@@ -28,6 +34,12 @@
             "args": [1]
           }
         ]
+      },
+      "bounds": {
+        "height": 50,
+        "width": 100,
+        "x": 200,
+        "y": 200
       }
     }
   },

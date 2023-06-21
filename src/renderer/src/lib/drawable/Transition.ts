@@ -14,8 +14,8 @@ export class Transition {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    const p1 = this.app.statesGroup.items.get(this.source);
-    const p2 = this.app.statesGroup.items.get(this.target);
+    const p1 = this.app.statesGroup.items.get(this.source)?.bounds;
+    const p2 = this.app.statesGroup.items.get(this.target)?.bounds;
 
     if (!p1 || !p2) return;
 

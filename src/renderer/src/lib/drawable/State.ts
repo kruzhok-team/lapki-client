@@ -1,96 +1,41 @@
 import { CanvasEditor } from '../CanvasEditor';
-import { isPointInRectanle } from '../util';
+import { isPointInRectangle } from '../utils';
 import { StatesGroup } from './StatesGroup';
 
 export interface StateArgs {
   app: CanvasEditor;
   statesGroup: StatesGroup;
   id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export class State {
   id!: string;
-  grabbed = false;
   grabOffset = { x: 0, y: 0 };
   mouseover = false;
 
   statesGroup!: StatesGroup;
   app!: CanvasEditor;
-  x!: number;
-  y!: number;
-  width!: number;
-  height!: number;
+
+  bounds!: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 
   constructor(args: StateArgs) {
     Object.assign(this, args);
 
-    this.app.mouse.on('mousedown', () => {
-      if (this.app.mouse.left) {
-        if (
-          isPointInRectanle(
-            { x: this.x, y: this.y, width: this.width, height: this.height },
-            { x: this.app.mouse.x, y: this.app.mouse.y }
-          )
-        ) {
-          this.grabbed = true;
-          this.grabOffset = { x: this.app.mouse.x - this.x, y: this.app.mouse.y - this.y };
-        }
-      }
-    });
-
-    this.app.mouse.on('mousedown', () => {
-      if (this.app.mouse.left) {
-        if (
-          isPointInRectanle(
-            { x: this.x, y: this.y, width: this.width, height: this.height },
-            { x: this.app.mouse.x, y: this.app.mouse.y }
-          )
-        ) {
-          this.grabbed = true;
-          this.grabOffset = { x: this.app.mouse.x - this.x, y: this.app.mouse.y - this.y };
-        }
-      }
-    });
-
-    this.app.mouse.on('mousemove', () => {
-      if (
-        isPointInRectanle(
-          { x: this.x, y: this.y, width: this.width, height: this.height },
-          { x: this.app.mouse.x, y: this.app.mouse.y }
-        )
-      ) {
-        this.mouseover = true;
-      } else {
-        this.mouseover = false;
-      }
-
-      if (this.grabbed) {
-        this.x = this.app.mouse.x - this.grabOffset.x;
-        this.y = this.app.mouse.y - this.grabOffset.y;
-
-        this.app.isDirty = true;
-      }
-    });
-
-    this.app.mouse.on('mouseup', () => {
-      if (
-        isPointInRectanle(
-          { x: this.x, y: this.y, width: this.width, height: this.height },
-          { x: this.app.mouse.x, y: this.app.mouse.y }
-        )
-      ) {
-        this.statesGroup.setSelectedId(this.id);
-        this.app.isDirty = true;
-      }
-
-      if (this.grabbed) {
-        this.grabbed = false;
-      }
-    });
+    this.app.mouse.on('mousedown', this.handleMouseDown);
+    this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('mouseup', this.handleMouseUp);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -98,10 +43,10 @@ export class State {
 
     ctx.fillStyle = 'rgb(45, 46, 52)';
 
-    ctx.rect(this.x, this.y, this.width, this.height);
+    ctx.rect(this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height);
     ctx.fill();
 
-    if (this.statesGroup.selectedStateId === this.id) {
+    if (this.isSelected) {
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#FFF';
       ctx.stroke();
@@ -109,10 +54,59 @@ export class State {
 
     ctx.fillStyle = '#FFF';
     ctx.font = '20px Arial';
-    ctx.fillText(this.id, this.x, this.y);
+    ctx.fillText(this.id, this.bounds.x, this.bounds.y);
 
     ctx.closePath();
-
-    return true;
   }
+
+  get isSelected() {
+    return this.statesGroup.selectedStateId === this.id;
+  }
+
+  get isMouseOver() {
+    return isPointInRectangle(
+      {
+        x: this.bounds.x,
+        y: this.bounds.y,
+        width: this.bounds.width,
+        height: this.bounds.height,
+      },
+      { x: this.app.mouse.x, y: this.app.mouse.y }
+    );
+  }
+
+  get isGrabbed() {
+    return this.statesGroup.grabbedStateId === this.id;
+  }
+
+  handleMouseDown = () => {
+    if (!this.app.mouse.left || !this.isMouseOver) return;
+
+    this.statesGroup.setGrabbedId(this.id);
+    this.grabOffset = {
+      x: this.app.mouse.x - this.bounds.x,
+      y: this.app.mouse.y - this.bounds.y,
+    };
+  };
+
+  handleMouseMove = () => {
+    if (this.isMouseOver) {
+      this.mouseover = true;
+    } else {
+      this.mouseover = false;
+    }
+
+    if (this.isGrabbed) {
+      this.bounds.x = this.app.mouse.x - this.grabOffset.x;
+      this.bounds.y = this.app.mouse.y - this.grabOffset.y;
+
+      this.app.isDirty = true;
+    }
+  };
+
+  handleMouseUp = () => {
+    if (!this.isMouseOver) return;
+
+    this.statesGroup.setSelectedId(this.id);
+  };
 }

@@ -10,10 +10,12 @@ export type Condition = {
 };
 
 export type State = {
-  height: number;
-  width: number;
-  x: number;
-  y: number;
+  bounds: {
+    height: number;
+    width: number;
+    x: number;
+    y: number;
+  };
   events: { [id: string]: Event };
 };
 

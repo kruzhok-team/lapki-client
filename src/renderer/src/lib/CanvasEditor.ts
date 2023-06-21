@@ -2,8 +2,8 @@ import { Elements } from '@renderer/types';
 import { Canvas } from './basic/Canvas';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
-import { Transition } from './drawable/Transition';
-import { StatesGroup } from './drawable/StatesGroup';
+import { States } from './drawable/States';
+import { Transitions } from './drawable/Transitions';
 
 export class CanvasEditor {
   root!: HTMLElement;
@@ -11,10 +11,8 @@ export class CanvasEditor {
   mouse!: Mouse;
   render!: Render;
 
-  statesGroup!: StatesGroup;
-  transitions: Map<string, Transition> = new Map();
-
-  selectedStateId: null | string = null;
+  states!: States;
+  transitions!: Transitions;
 
   isDirty = true;
 
@@ -27,15 +25,10 @@ export class CanvasEditor {
     this.root.append(this.canvas.element);
     this.canvas.resize();
 
-    this.statesGroup = new StatesGroup(this, elements.states);
+    this.states = new States(this, elements.states);
+    this.transitions = new Transitions(this, elements.transitions);
 
-    for (const id in elements.transitions) {
-      const transition = new Transition({ app: this, ...elements.transitions[id] });
-
-      this.transitions.set(id, transition);
-    }
-
-    this.render.subscribe((data) => {
+    this.render.subscribe(() => {
       if (!this.isDirty) return;
 
       this.mouse.tick();
@@ -43,14 +36,8 @@ export class CanvasEditor {
       this.canvas.clear();
 
       this.canvas.draw((ctx, canvas) => {
-        this.statesGroup.draw(ctx, canvas);
-
-        this.transitions.forEach((transition) => {
-          transition.draw(ctx, canvas);
-        });
-
-        // this.container.group.draw(ctx, canvas);
-        // this.selector.draw(ctx, canvas);
+        this.states.draw(ctx, canvas);
+        this.transitions.draw(ctx, canvas);
       });
 
       this.isDirty = false;

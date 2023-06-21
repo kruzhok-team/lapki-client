@@ -20,6 +20,7 @@ export type State = {
 };
 
 export type Transition = {
+  // id: string;
   source: string;
   target: string;
   condition: Condition;

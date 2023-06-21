@@ -36,16 +36,16 @@
 
   "transitions": [
     {
-      "source": "On",
-      "target": "Off",
+      "source": "on",
+      "target": "off",
       "condition": {
         "component": "timer",
         "method": "timeOut"
       }
     },
     {
-      "source": "On",
-      "target": "Off",
+      "source": "on",
+      "target": "off",
       "condition": {
         "component": "timer",
         "method": "timeOut"

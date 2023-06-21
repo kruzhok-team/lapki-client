@@ -1,5 +1,5 @@
 {
-  "state": {
+  "states": {
     "on": {
       "events": {
         "onEnter": [
@@ -8,7 +8,11 @@
             "method": "turnOn"
           }
         ]
-      }
+      },
+      "height": 50,
+      "width": 100,
+      "x": 50,
+      "y": 50
     },
 
     "off": {
@@ -19,7 +23,11 @@
             "method": "turnOff"
           }
         ]
-      }
+      },
+      "height": 50,
+      "width": 100,
+      "x": 200,
+      "y": 200
     }
   },
 
@@ -27,16 +35,16 @@
 
   "transitions": [
     {
-      "source": "On",
-      "target": "Off",
+      "source": "on",
+      "target": "off",
       "condition": {
         "component": "btn",
         "method": "isJustPressed"
       }
     },
     {
-      "source": "On",
-      "target": "Off",
+      "source": "on",
+      "target": "off",
       "condition": {
         "component": "btn",
         "method": "isJustPressed"

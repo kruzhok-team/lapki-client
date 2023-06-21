@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
-import { CodeEditor, DiagramEditor } from './components';
+import { CodeEditor, DiagramEditor, DiagramEditor2 } from './components';
+import { Elements } from './types';
 
 export const App: React.FC = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);
-  const elements = fileContent ? JSON.parse(fileContent) : null;
+  const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
 
   const handleOpenFile = async () => {
     const fileContent = await window.electron.ipcRenderer.invoke('dialog:openFile');
@@ -41,7 +42,7 @@ export const App: React.FC = () => {
       </header>
 
       <main className="h-[calc(100vh-3.5rem)]">
-        {elements?.elements && <DiagramEditor elements={elements.elements} />}
+        {elements && <DiagramEditor2 elements={elements} />}
 
         {isCodeEditorOpen && fileContent && <CodeEditor value={fileContent} />}
       </main>

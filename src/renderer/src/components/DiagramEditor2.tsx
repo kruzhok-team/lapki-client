@@ -1,23 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-import useMeasure from 'react-use-measure';
-import { mergeRefs } from 'react-merge-refs';
-import { KonvaEditor } from '@renderer/lib/KonvaEditor';
 import { Elements } from '@renderer/types';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 interface DiagramEditorProps {
   elements: Elements;
 }
 
-export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
+export const DiagramEditor2: React.FC<DiagramEditorProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [ref, bounds] = useMeasure();
-
-  const [editor, setEditor] = useState<KonvaEditor | null>(null);
+  const [editor, setEditor] = useState<CanvasEditor | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    setEditor(new KonvaEditor(containerRef.current, bounds.width, bounds.height, elements));
+    const editor = new CanvasEditor(containerRef.current, elements);
+
+    setEditor(editor);
+
+    return () => {
+      editor?.canvas.element.remove();
+    };
   }, [containerRef.current]);
 
   // const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
@@ -45,10 +47,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
           State
         </div>
       </aside>
-      <div
-        className="z-50 flex-1 overflow-hidden bg-neutral-800"
-        ref={mergeRefs([ref, containerRef])}
-      />
+      <div className="z-50 flex-1 overflow-hidden bg-neutral-800" ref={containerRef} />
     </div>
   );
 };

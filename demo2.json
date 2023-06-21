@@ -3,7 +3,6 @@
     "nodes": [
       {
         "id": "state1",
-        "type": "rectangle",
         "height": 50,
         "width": 100,
         "x": 50,
@@ -11,7 +10,6 @@
       },
       {
         "id": "state2",
-        "type": "rectangle",
         "height": 50,
         "width": 100,
         "x": 200,
@@ -19,7 +17,6 @@
       },
       {
         "id": "state3",
-        "type": "rectangle",
         "height": 50,
         "width": 100,
         "x": 300,
@@ -27,7 +24,6 @@
       },
       {
         "id": "state4",
-        "type": "rectangle",
         "height": 50,
         "width": 100,
         "x": 500,

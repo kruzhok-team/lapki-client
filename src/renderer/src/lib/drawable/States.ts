@@ -8,6 +8,7 @@ import { EventEmitter } from '../common/EventEmitter';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Vector2D } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
+import { stateStyle } from '../styles';
 
 export class States extends EventEmitter {
   container!: Container;
@@ -27,6 +28,7 @@ export class States extends EventEmitter {
 
     this.container = container;
     this.edgeHandlers = new EdgeHandlers(container.app, this.handleStartNewTransition);
+
     this.initItems(items);
     this.initEvents();
   }
@@ -53,28 +55,23 @@ export class States extends EventEmitter {
     this.edgeHandlers.draw(ctx, canvas);
   }
 
-  setMouseDownState(state: State) {
-    this.mouseDownState = state;
-
-    this.emit('mouseDownOnState', { mouseDownState: state });
-  }
-
   setMouseUpState(state: State) {
     this.mouseUpState = state;
 
     this.emit('mouseUpOnState', { mouseUpState: state });
   }
 
-  setSelectedState(state: State | null) {
+  selectState(state: State) {
     this.selectedState = state;
 
-    if (state) {
-      this.edgeHandlers.setCurrentState(state);
+    this.edgeHandlers.setCurrentState(state);
 
-      this.emit('select', { selectedState: state });
-    } else {
-      this.edgeHandlers.remove();
-    }
+    this.emit('select', { selectedState: state });
+  }
+
+  deselect() {
+    this.selectedState = null;
+    this.edgeHandlers.remove();
   }
 
   handleStartNewTransition = () => {
@@ -84,17 +81,16 @@ export class States extends EventEmitter {
   handleMouseDown = () => {
     if (!this.container.app.mouse.left) return;
 
-    for (const state of this.items.values()) {
-      if (!this.isStateUnderMouse(state)) continue;
+    const stateUnderMouse = this.getStateUnderMouse();
 
-      this.dragging = true;
-      this.grabOffset = {
-        x: this.container.app.mouse.x - state.bounds.x,
-        y: this.container.app.mouse.y - state.bounds.y,
-      };
+    if (!stateUnderMouse) return;
 
-      this.setMouseDownState(state);
-    }
+    this.mouseDownState = stateUnderMouse;
+    this.grabOffset = {
+      x: this.container.app.mouse.x - stateUnderMouse.bounds.x,
+      y: this.container.app.mouse.y - stateUnderMouse.bounds.y,
+    };
+    this.dragging = true;
   };
 
   handleMouseMove = () => {
@@ -111,36 +107,38 @@ export class States extends EventEmitter {
   };
 
   handleMouseUp = () => {
-    let select: State | null = null;
+    const stateUnderMouse = this.getStateUnderMouse();
 
-    for (const state of this.items.values()) {
-      if (!this.isStateUnderMouse(state)) continue;
-
-      this.setMouseUpState(state);
-
-      if (this.mouseDownState?.id === state.id) {
-        select = state;
-      }
+    if (this.mouseDownState && stateUnderMouse && this.mouseDownState?.id === stateUnderMouse?.id) {
+      this.selectState(stateUnderMouse);
+    } else {
+      this.deselect();
     }
 
     this.dragging = false;
-    this.setSelectedState(select);
 
     document.body.style.cursor = 'default';
 
     this.container.app.isDirty = true;
   };
 
-  isStateUnderMouse(state: State) {
-    return isPointInRectangle(state.bounds, {
-      x: this.container.app.mouse.x,
-      y: this.container.app.mouse.y,
-    });
+  getStateUnderMouse() {
+    for (const state of this.items.values()) {
+      if (
+        isPointInRectangle(state.bounds, {
+          x: this.container.app.mouse.x,
+          y: this.container.app.mouse.y,
+        })
+      ) {
+        return state;
+      }
+    }
+
+    return null;
   }
 
-  createState(position: Vector2D) {
-    const width = 200;
-    const height = 100;
+  createNewState(position: Vector2D) {
+    const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
 

@@ -3,6 +3,7 @@ import { getBoxToBoxArrow } from 'curved-arrows';
 import { State } from './State';
 import { Vector2D } from '@renderer/types/graphics';
 import { rotatePoint } from '../utils';
+import { transitionStyle } from '../styles';
 
 interface TransitionArgs {
   source: State;
@@ -53,14 +54,15 @@ export class Transition {
       this.target.bounds.width,
       this.target.bounds.height,
       {
-        padEnd: 5,
+        padEnd: transitionStyle.padEnd,
       }
     );
 
     ctx.beginPath();
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#FFF';
+    ctx.lineWidth = transitionStyle.width;
+    ctx.strokeStyle = transitionStyle.bgColor;
+    ctx.fillStyle = transitionStyle.bgColor;
 
     ctx.moveTo(sx, sy);
     ctx.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey);
@@ -68,21 +70,27 @@ export class Transition {
     ctx.closePath();
 
     ctx.beginPath();
-    ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
+    ctx.arc(sx, sy, transitionStyle.startSize, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
 
     const origin = { x: ex, y: ey };
     if (ae === 0) {
-      origin.x += 11;
+      origin.x += transitionStyle.endSize;
     } else if (ae === 90) {
-      origin.y += 11;
+      origin.y += transitionStyle.endSize;
     } else if (ae === 180) {
-      origin.x -= 11;
+      origin.x -= transitionStyle.endSize;
     } else if (ae === 270) {
-      origin.y -= 11;
+      origin.y -= transitionStyle.endSize;
     }
 
-    this.drawTriangle(ctx, origin, 11, 11, (ae * Math.PI) / 180);
+    this.drawTriangle(
+      ctx,
+      origin,
+      transitionStyle.endSize,
+      transitionStyle.endSize,
+      (ae * Math.PI) / 180
+    );
   }
 }

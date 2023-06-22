@@ -42,7 +42,7 @@ export class Container {
         y: e.clientY - rect.top - this.offset.y,
       };
 
-      this.states.createState(position);
+      this.states.createNewState(position);
 
       this.app.isDirty = true;
     });
@@ -88,7 +88,7 @@ export class Container {
     this.app.isDirty = true;
   };
 
-  cleanEvents() {
+  cleanUp() {
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('keyup', this.handleKeyUp);
   }

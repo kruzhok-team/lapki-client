@@ -41,7 +41,7 @@ export class CanvasEditor {
   }
 
   cleanUp() {
-    this.canvas.element.remove();
-    this.container.cleanEvents();
+    this.canvas.cleanUp();
+    this.container.cleanUp();
   }
 }

@@ -1,5 +1,6 @@
 import { State as StateType } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
+import { stateStyle } from '../styles';
 
 export class State {
   container!: Container;
@@ -38,10 +39,11 @@ export class State {
   private drawBody(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.bounds;
 
+    ctx.fillStyle = stateStyle.bodyBg;
+
     ctx.beginPath();
 
-    ctx.fillStyle = 'rgb(64, 64, 64)';
-    ctx.roundRect(x, y, width, height, 6);
+    ctx.roundRect(x, y, width, height, stateStyle.bodyBorderRadius);
     ctx.fill();
 
     ctx.closePath();
@@ -50,16 +52,22 @@ export class State {
   private drawTitle(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.bounds;
 
-    ctx.textBaseline = 'alphabetic';
-    ctx.font = '20px/0 Arial';
+    ctx.font = stateStyle.titleFont;
+    ctx.textBaseline = stateStyle.titleBaseLine;
 
     ctx.beginPath();
 
-    ctx.fillStyle = 'rgb(82, 82, 82)';
-    ctx.roundRect(x, y, width, 40, [6, 6, 0, 0]);
+    ctx.fillStyle = stateStyle.titleBg;
+
+    ctx.roundRect(x, y, width, 40, [
+      stateStyle.bodyBorderRadius,
+      stateStyle.bodyBorderRadius,
+      0,
+      0,
+    ]);
     ctx.fill();
 
-    ctx.fillStyle = '#FFF';
+    ctx.fillStyle = stateStyle.titleColor;
     ctx.fillText(this.id, x + 15, y + 25);
 
     ctx.closePath();
@@ -68,8 +76,8 @@ export class State {
   private drawEvents(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.bounds;
 
-    ctx.fillStyle = '#FFF';
-    ctx.textBaseline = 'hanging';
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.beginPath();
 
@@ -88,12 +96,12 @@ export class State {
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.bounds;
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#FFF';
+    ctx.lineWidth = stateStyle.selectedBorderWidth;
+    ctx.strokeStyle = stateStyle.selectedBorderColor;
 
     ctx.beginPath();
 
-    ctx.roundRect(x, y, width, height, 6);
+    ctx.roundRect(x, y, width, height, stateStyle.bodyBorderRadius);
     ctx.stroke();
 
     ctx.closePath();

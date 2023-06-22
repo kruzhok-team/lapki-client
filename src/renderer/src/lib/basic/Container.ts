@@ -1,162 +1,95 @@
-import Observer from '../common/Observer.js';
-import Curve from '../drawable/Curve.js';
-import Drawable from '../drawable/Drawable.js';
-import Frame from '../drawable/Frame.js';
-import Group from '../drawable/Group.js';
-import Point from '../drawable/Point.js';
-import { ContainerMember, DrawableType } from '../types.js';
+import { Elements } from '@renderer/types/diagram';
+import { States } from '../drawable/States';
+import { Transitions } from '../drawable/Transitions';
+import { CanvasEditor } from '../CanvasEditor';
 
-export type ContainerSerialise = {
-  project: 'Figmo';
-  address: 'https://github.com/Aleksey-Danchin/Figmo';
-  offsetX: number;
-  offsetY: number;
-  items: ContainerMember[];
-};
+export class Container {
+  app!: CanvasEditor;
 
-class Container extends Observer {
-  $offsetX = 0;
-  $offsetY = 0;
+  states!: States;
+  transitions!: Transitions;
 
-  $group = new Group();
-  changed = false;
+  spacePressed = false;
 
-  items = new Set<Drawable>();
+  offset = { x: 0, y: 0 };
 
-  add(...items: Drawable[]) {
-    const size = this.items.size;
+  isPan = false;
 
-    for (const item of items) {
-      if (item instanceof Drawable) {
-        this.items.add(item);
+  constructor(app: CanvasEditor, elements: Elements) {
+    this.app = app;
+
+    this.states = new States(this, elements.states);
+    this.transitions = new Transitions(this, elements.transitions);
+
+    this.initEvents();
+  }
+
+  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    this.states.draw(ctx, canvas);
+    this.transitions.draw(ctx, canvas);
+  }
+
+  private initEvents() {
+    this.app.canvas.element.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    this.app.canvas.element.addEventListener('drop', (e) => {
+      e.preventDefault();
+
+      const rect = this.app.canvas.element.getBoundingClientRect();
+      const position = {
+        x: e.clientX - rect.left - this.offset.x,
+        y: e.clientY - rect.top - this.offset.y,
+      };
+
+      this.states.createState(position);
+
+      this.app.isDirty = true;
+    });
+
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('keyup', this.handleKeyUp);
+
+    this.app.canvas.element.addEventListener('mousemove', this.handleMouseMove);
+  }
+
+  handleKeyDown = (e: KeyboardEvent) => {
+    if (e.code === 'Space') {
+      this.spacePressed = true;
+
+      if (this.app.mouse.left) {
+        this.app.canvas.element.style.cursor = 'grabbing';
+      } else {
+        this.app.canvas.element.style.cursor = 'grab';
       }
     }
+  };
 
-    if (size !== this.items.size) {
-      this.changed = true;
-      this.dispatch();
-    }
-  }
+  handleKeyUp = (e: KeyboardEvent) => {
+    if (e.code === 'Space') {
+      this.spacePressed = false;
 
-  remove(...items: Drawable[]) {
-    const size = this.items.size;
-
-    for (const item of items) {
-      this.items.delete(item);
+      this.app.canvas.element.style.cursor = 'default';
     }
 
-    if (size !== this.items.size) {
-      this.changed = true;
-      this.dispatch();
+    if (this.isPan) {
+      this.isPan = false;
     }
-  }
+  };
 
-  convert(data: ContainerSerialise) {
-    this.offsetX = data.offsetX;
-    this.offsetY = data.offsetY;
+  handleMouseMove = () => {
+    if (!this.spacePressed || !this.app.mouse.left) return;
 
-    this.add(...Container.convert(data));
-  }
+    this.isPan = true;
 
-  toJSON() {
-    return Container.serialize(this);
-  }
+    this.offset.x += this.app.mouse.dx;
+    this.offset.y += this.app.mouse.dy;
 
-  get group() {
-    if (this.changed) {
-      this.changed = false;
+    this.app.isDirty = true;
+  };
 
-      this.$group = new Group({
-        offsetX: this.$offsetX,
-        offsetY: this.$offsetY,
-        items: Array.from(this.items),
-      });
-    }
-
-    return this.$group;
-  }
-
-  get offsetX() {
-    return this.$offsetX;
-  }
-
-  set offsetX(offsetX: number) {
-    this.$offsetX = offsetX;
-    this.changed = true;
-  }
-
-  get offsetY() {
-    return this.$offsetY;
-  }
-
-  set offsetY(offsetY: number) {
-    this.$offsetY = offsetY;
-    this.changed = true;
-  }
-
-  static convert(data: ContainerSerialise) {
-    return data.items.map((item) => {
-      if (item.type === DrawableType.Curve) {
-        const curve = new Curve();
-
-        for (const { x, y } of item.points) {
-          const point = new Point(x, y);
-          curve.add(point);
-        }
-
-        return curve;
-      }
-
-      if (item.type === DrawableType.Frame) {
-        const frame = new Frame({
-          x: item.x,
-          y: item.y,
-          width: item.width,
-          height: item.height,
-        });
-
-        return frame;
-      }
-    }) as Drawable[];
-  }
-
-  static serialize(container: Container, stringify = true) {
-    const data = {
-      project: 'Figmo',
-      address: 'https://github.com/Aleksey-Danchin/Figmo',
-      offsetX: container.offsetX,
-      offsetY: container.offsetY,
-      items: Array.from(container.items).map<ContainerMember>((item) => {
-        if (item instanceof Curve) {
-          return {
-            type: DrawableType.Curve,
-            points: Array.from(item.points).map(({ x, y }) => ({
-              x,
-              y,
-            })),
-          };
-        }
-
-        if (item instanceof Frame) {
-          return {
-            type: DrawableType.Frame,
-            x: item.x,
-            y: item.y,
-            width: item.width,
-            height: item.height,
-          };
-        }
-
-        throw Error('Undefined type');
-      }),
-    } as ContainerSerialise;
-
-    if (stringify) {
-      return JSON.stringify(data);
-    }
-
-    return data;
+  cleanEvents() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('keyup', this.handleKeyUp);
   }
 }
-
-export default Container;

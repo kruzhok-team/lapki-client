@@ -1,7 +1,7 @@
 import { getBoxToBoxArrow } from 'curved-arrows';
 
 import { State } from './State';
-import { Vector2D } from '../types';
+import { Vector2D } from '@renderer/types/graphics';
 import { rotatePoint } from '../utils';
 
 interface TransitionArgs {

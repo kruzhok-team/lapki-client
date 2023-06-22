@@ -1,4 +1,4 @@
-import { Vector2D } from '../types';
+import { Vector2D } from '@renderer/types/graphics';
 import { State } from './State';
 
 export class GhostTransition {

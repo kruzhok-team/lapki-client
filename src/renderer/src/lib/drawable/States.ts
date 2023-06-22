@@ -2,47 +2,47 @@ import { nanoid } from 'nanoid';
 
 import { State } from './State';
 
-import { Elements } from '../../types';
-import { CanvasEditor } from '../CanvasEditor';
+import { Elements } from '@renderer/types/diagram';
 import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
-import { StateHandlers } from './StateHandlers';
-import { Vector2D } from '../types';
+import { EdgeHandlers } from './EdgeHandlers';
+import { Vector2D } from '@renderer/types/graphics';
+import { Container } from '../basic/Container';
 
 export class States extends EventEmitter {
-  app!: CanvasEditor;
+  container!: Container;
 
   items: Map<string, State> = new Map();
 
   mouseDownState: State | null = null;
   mouseUpState: State | null = null;
   selectedState: State | null = null;
-  stateHandlers!: StateHandlers;
+  edgeHandlers!: EdgeHandlers;
 
   dragging = false;
   grabOffset = { x: 0, y: 0 };
 
-  constructor(app: CanvasEditor, items: Elements['states']) {
+  constructor(container: Container, items: Elements['states']) {
     super();
 
-    this.app = app;
-    this.stateHandlers = new StateHandlers(app, this.handleStartNewTransition);
+    this.container = container;
+    this.edgeHandlers = new EdgeHandlers(container.app, this.handleStartNewTransition);
     this.initItems(items);
     this.initEvents();
   }
 
   private initItems(items: Elements['states']) {
     for (const id in items) {
-      const state = new State({ id, ...items[id] });
+      const state = new State(this.container, id, items[id]);
 
       this.items.set(id, state);
     }
   }
 
   private initEvents() {
-    this.app.mouse.on('mouseup', this.handleMouseUp);
-    this.app.mouse.on('mousedown', this.handleMouseDown);
-    this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.container.app.mouse.on('mouseup', this.handleMouseUp);
+    this.container.app.mouse.on('mousedown', this.handleMouseDown);
+    this.container.app.mouse.on('mousemove', this.handleMouseMove);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -50,7 +50,7 @@ export class States extends EventEmitter {
       state.draw(ctx, canvas, { isSelected: this.selectedState?.id === state.id });
     });
 
-    this.stateHandlers.draw(ctx, canvas);
+    this.edgeHandlers.draw(ctx, canvas);
   }
 
   setMouseDownState(state: State) {
@@ -69,11 +69,11 @@ export class States extends EventEmitter {
     this.selectedState = state;
 
     if (state) {
-      this.stateHandlers.setCurrentState(state);
+      this.edgeHandlers.setCurrentState(state);
 
       this.emit('select', { selectedState: state });
     } else {
-      this.stateHandlers.remove();
+      this.edgeHandlers.remove();
     }
   }
 
@@ -82,15 +82,15 @@ export class States extends EventEmitter {
   };
 
   handleMouseDown = () => {
-    if (!this.app.mouse.left) return;
+    if (!this.container.app.mouse.left) return;
 
     for (const state of this.items.values()) {
       if (!this.isStateUnderMouse(state)) continue;
 
       this.dragging = true;
       this.grabOffset = {
-        x: this.app.mouse.x - state.bounds.x,
-        y: this.app.mouse.y - state.bounds.y,
+        x: this.container.app.mouse.x - state.bounds.x,
+        y: this.container.app.mouse.y - state.bounds.y,
       };
 
       this.setMouseDownState(state);
@@ -98,16 +98,16 @@ export class States extends EventEmitter {
   };
 
   handleMouseMove = () => {
-    if (!this.mouseDownState || !this.dragging) return;
+    if (!this.mouseDownState || !this.dragging || this.container.isPan) return;
 
     this.mouseDownState.move(
-      this.app.mouse.x - this.grabOffset.x,
-      this.app.mouse.y - this.grabOffset.y
+      this.container.app.mouse.x - this.grabOffset.x - this.container.offset.x,
+      this.container.app.mouse.y - this.grabOffset.y - this.container.offset.y
     );
 
     document.body.style.cursor = 'grabbing';
 
-    this.app.isDirty = true;
+    this.container.app.isDirty = true;
   };
 
   handleMouseUp = () => {
@@ -128,16 +128,30 @@ export class States extends EventEmitter {
 
     document.body.style.cursor = 'default';
 
-    this.app.isDirty = true;
+    this.container.app.isDirty = true;
   };
 
   isStateUnderMouse(state: State) {
-    return isPointInRectangle(state.bounds, { x: this.app.mouse.x, y: this.app.mouse.y });
+    return isPointInRectangle(state.bounds, {
+      x: this.container.app.mouse.x,
+      y: this.container.app.mouse.y,
+    });
   }
 
-  createState({ x, y }: Vector2D) {
+  createState(position: Vector2D) {
+    const width = 200;
+    const height = 100;
+    const x = position.x - width / 2;
+    const y = position.y - height / 2;
+
     const id = nanoid(6);
 
-    this.items.set(id, new State({ id, bounds: { x, y, width: 100, height: 50 } }));
+    this.items.set(
+      id,
+      new State(this.container, id, {
+        bounds: { x, y, width, height },
+        events: {},
+      })
+    );
   }
 }

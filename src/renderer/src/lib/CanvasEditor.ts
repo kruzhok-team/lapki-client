@@ -1,9 +1,8 @@
-import { Elements } from '@renderer/types';
+import { Elements } from '@renderer/types/diagram';
 import { Canvas } from './basic/Canvas';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
-import { States } from './drawable/States';
-import { Transitions } from './drawable/Transitions';
+import { Container } from './basic/Container';
 
 export class CanvasEditor {
   root!: HTMLElement;
@@ -11,8 +10,7 @@ export class CanvasEditor {
   mouse!: Mouse;
   render!: Render;
 
-  states!: States;
-  transitions!: Transitions;
+  container!: Container;
 
   isDirty = true;
 
@@ -25,8 +23,7 @@ export class CanvasEditor {
     this.root.append(this.canvas.element);
     this.canvas.resize();
 
-    this.states = new States(this, elements.states);
-    this.transitions = new Transitions(this, elements.transitions);
+    this.container = new Container(this, elements);
 
     this.render.subscribe(() => {
       if (!this.isDirty) return;
@@ -36,30 +33,15 @@ export class CanvasEditor {
       this.canvas.clear();
 
       this.canvas.draw((ctx, canvas) => {
-        this.states.draw(ctx, canvas);
-        this.transitions.draw(ctx, canvas);
+        this.container.draw(ctx, canvas);
       });
 
       this.isDirty = false;
     });
-
-    this.initDragEvents();
   }
 
-  private initDragEvents() {
-    this.canvas.element.addEventListener('dragover', (e) => {
-      e.preventDefault();
-    });
-    this.canvas.element.addEventListener('drop', (e) => {
-      e.preventDefault();
-
-      const rect = this.canvas.element.getBoundingClientRect();
-      const x = e.clientX - rect.left - 50;
-      const y = e.clientY - rect.top - 25;
-
-      this.states.createState({ x, y });
-
-      this.isDirty = true;
-    });
+  cleanUp() {
+    this.canvas.element.remove();
+    this.container.cleanEvents();
   }
 }

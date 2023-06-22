@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-
 import { CodeEditor, DiagramEditor } from './components';
-import { Elements } from './types';
+import { Elements } from './types/diagram';
 
 export const App: React.FC = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);

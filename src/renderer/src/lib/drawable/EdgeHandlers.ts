@@ -1,9 +1,9 @@
 import { CanvasEditor } from '../CanvasEditor';
-import { Vector2D } from '../types';
+import { Vector2D } from '@renderer/types/graphics';
 import { isPointInRectangle } from '../utils';
 import { State } from './State';
 
-export class StateHandlers {
+export class EdgeHandlers {
   app!: CanvasEditor;
   currentState: State | null = null;
 
@@ -61,7 +61,7 @@ export class StateHandlers {
     ctx.beginPath();
 
     for (const { x, y } of this.position) {
-      ctx.rect(x, y, this.size, this.size);
+      ctx.roundRect(x, y, this.size, this.size, 4);
     }
 
     ctx.fillStyle = '#FFF';

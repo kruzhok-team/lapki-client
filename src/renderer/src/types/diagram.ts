@@ -1,3 +1,5 @@
+import { Rectangle } from './graphics';
+
 export type Event = {
   component: string;
   method: string;
@@ -10,12 +12,7 @@ export type Condition = {
 };
 
 export type State = {
-  bounds: {
-    height: number;
-    width: number;
-    x: number;
-    y: number;
-  };
+  bounds: Rectangle;
   events: { [id: string]: Event };
 };
 

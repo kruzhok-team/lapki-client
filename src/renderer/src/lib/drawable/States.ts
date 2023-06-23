@@ -21,7 +21,7 @@ export class States extends EventEmitter {
   edgeHandlers!: EdgeHandlers;
 
   dragging = false;
-  grabOffset = { x: 0, y: 0 };
+  private grabOffset = { x: 0, y: 0 };
 
   constructor(container: Container, items: Elements['states']) {
     super();

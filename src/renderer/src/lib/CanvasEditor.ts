@@ -3,11 +3,13 @@ import { Canvas } from './basic/Canvas';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
 import { Container } from './basic/Container';
+import { Keyboard } from './basic/Keyboard';
 
 export class CanvasEditor {
   root!: HTMLElement;
   canvas!: Canvas;
   mouse!: Mouse;
+  keyboard!: Keyboard;
   render!: Render;
 
   container!: Container;
@@ -18,6 +20,7 @@ export class CanvasEditor {
     this.root = container;
     this.canvas = new Canvas('rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);
+    this.keyboard = new Keyboard();
     this.render = new Render();
 
     this.root.append(this.canvas.element);
@@ -42,6 +45,6 @@ export class CanvasEditor {
 
   cleanUp() {
     this.canvas.cleanUp();
-    this.container.cleanUp();
+    this.keyboard.cleanUp();
   }
 }

@@ -20,7 +20,7 @@ export const stateStyle = {
 export const transitionStyle = {
   width: 2,
   bgColor: '#FFF',
+  startSize: 5,
   padEnd: 5,
   endSize: 11,
-  startSize: 11,
 };

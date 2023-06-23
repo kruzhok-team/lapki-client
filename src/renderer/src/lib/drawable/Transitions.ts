@@ -23,13 +23,12 @@ export class Transitions {
 
   private initItems(items: Elements['transitions']) {
     for (const id in items) {
-      const sourceId = items[id].source;
-      const targetId = items[id].target;
+      const { source, target, condition } = items[id];
 
-      const source = this.container.states.items.get(sourceId) as State;
-      const target = this.container.states.items.get(targetId) as State;
+      const sourceState = this.container.states.items.get(source) as State;
+      const targetState = this.container.states.items.get(target) as State;
 
-      const transition = new Transition({ source, target });
+      const transition = new Transition(sourceState, targetState, condition);
 
       this.items.set(id, transition);
     }
@@ -71,7 +70,7 @@ export class Transitions {
 
     const target = this.container.states.mouseUpState as State;
 
-    const transition = new Transition({ source: this.ghost.source as State, target });
+    const transition = new Transition(this.ghost.source as State, target, null);
 
     this.items.set(nanoid(), transition);
   };

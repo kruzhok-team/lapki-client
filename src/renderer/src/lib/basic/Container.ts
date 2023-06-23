@@ -36,6 +36,7 @@ export class Container {
     this.app.keyboard.on('spacedown', this.handleKeyDown);
     this.app.keyboard.on('keyup', this.handleKeyUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
+    this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
   }
 
@@ -66,6 +67,12 @@ export class Container {
     };
 
     this.app.canvas.element.style.cursor = 'grabbing';
+  };
+
+  handleMouseUp = () => {
+    if (!this.app.keyboard.spacePressed) return;
+
+    this.app.canvas.element.style.cursor = 'grab';
   };
 
   handleKeyDown = (e: KeyboardEvent) => {

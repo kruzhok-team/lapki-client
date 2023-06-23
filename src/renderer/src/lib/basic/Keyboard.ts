@@ -18,6 +18,8 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
   handleKeyDown = (e: KeyboardEvent) => {
     if (e.code === 'Space' && !this.spacePressed) {
       this.spacePressed = true;
+
+      this.emit('spacedown', e);
     }
 
     this.emit('keydown', e);

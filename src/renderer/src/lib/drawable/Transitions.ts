@@ -23,12 +23,12 @@ export class Transitions {
 
   private initItems(items: Elements['transitions']) {
     for (const id in items) {
-      const { source, target, condition } = items[id];
+      const { source, target, condition, color } = items[id];
 
       const sourceState = this.container.states.items.get(source) as State;
       const targetState = this.container.states.items.get(target) as State;
 
-      const transition = new Transition(this.container, sourceState, targetState, condition);
+      const transition = new Transition(this.container, sourceState, targetState, condition, color);
 
       this.items.set(id, transition);
     }
@@ -71,14 +71,20 @@ export class Transitions {
     const target = e.mouseUpState;
 
     // TODO Доделать парвильный condition
-    const transition = new Transition(this.container, this.ghost.source as State, target, {
-      component: 'a',
-      method: 'a',
-      position: {
-        x: 100,
-        y: 100,
+    const transition = new Transition(
+      this.container,
+      this.ghost.source as State,
+      target,
+      {
+        component: 'a',
+        method: 'a',
+        position: {
+          x: 100,
+          y: 100,
+        },
       },
-    });
+      '#ccc'
+    );
 
     this.items.set(nanoid(), transition);
   };

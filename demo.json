@@ -41,6 +41,7 @@
     {
       "source": "on",
       "target": "off",
+      "color": "#F29727",
       "condition": {
         "position": {
           "x": 361,
@@ -53,6 +54,7 @@
     {
       "source": "off",
       "target": "on",
+      "color": "#F24C3D",
       "condition": {
         "position": {
           "x": 525,

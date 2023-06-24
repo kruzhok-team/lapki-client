@@ -22,6 +22,7 @@ export type Transition = {
   source: string;
   target: string;
   condition: Condition;
+  color: string;
 };
 
 export type Component = {

@@ -1,4 +1,4 @@
-import { Rectangle, Point } from '@renderer/types/graphics';
+import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/types/graphics';
 
 export const isPointInRectangle = (rectangle: Rectangle, point: Point) => {
   return (
@@ -7,6 +7,10 @@ export const isPointInRectangle = (rectangle: Rectangle, point: Point) => {
     rectangle.y <= point.y &&
     point.y <= rectangle.y + rectangle.height
   );
+};
+
+export const degrees_to_radians = (degrees: number) => {
+  return degrees * (Math.PI / 180);
 };
 
 export const rotatePoint = (point: Point, origin: Point, angle: number) => {
@@ -28,76 +32,90 @@ export const rotatePoint = (point: Point, origin: Point, angle: number) => {
   return point;
 };
 
-export const getDistanceBetweenPoints = (p1: Point, p2: Point) => {
+const getDistanceBetweenPoints = (p1: Point, p2: Point) => {
   return (p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2;
 };
 
-export const getRectangleCenter = (rect: Rectangle): Point => {
+const getRectangleCenter = (rect: Rectangle): Point => {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 };
 
-export const getDistanceBetweenRectangles = (rect1: Rectangle, rect2: Rectangle) => {
+const getDistanceBetweenRectangles = (rect1: Rectangle, rect2: Rectangle) => {
   const c1 = getRectangleCenter(rect1);
   const c2 = getRectangleCenter(rect2);
 
   return getDistanceBetweenPoints(c1, c2);
 };
 
-interface TransitionLines {
-  start: Point;
-  mid: Point | null;
-  end: Point;
-  ae: number;
-}
+const getSectors = (
+  rect1Left: number,
+  rect1Right: number,
+  rect1Top: number,
+  rect1Bottom: number,
+  rect2XCenter: number,
+  rect2YCenter: number,
+  rectPadding
+) => {
+  let sectorH: HSector = 'center';
+  let sectorV: VSector = 'center';
 
-export const getTransitionLines = (state1: Rectangle, state2: Rectangle, condition: Rectangle) => {
-  // const d1 = getDistanceBetweenRectangles(state1, condition);
-  // const d2 = getDistanceBetweenRectangles(state2, condition);
-
-  // let minDState: Rectangle;
-  // let maxDState: Rectangle;
-
-  // if (d1 <= d2) {
-  //   minDState = state1;
-  //   maxDState = state2;
-  // } else {
-  //   minDState = state2;
-  //   maxDState = state1;
-  // }
-
-  const conditionXCenter = condition.x + condition.width / 2;
-  const conditionYCenter = condition.y + condition.height / 2;
-
-  // const condTopPoint = { x: condition.x + condition.width / 2, y: condition.y };
-  // const condBottomPoint = {
-  //   x: condition.x + condition.width / 2,
-  //   y: condition.y + condition.height,
-  // };
-  // const condLeftPoint = { x: condition.x, y: condition.y + condition.height / 2 };
-  // const condRightPoint = {
-  //   x: condition.x + condition.width,
-  //   y: condition.y + condition.height / 2,
-  // };
-
-  const padding = 10;
-  type XSector = 'center' | 'left' | 'right';
-  type YSector = 'center' | 'top' | 'bottom';
-  let s1SectorX: XSector = 'center';
-  let s1SectorY: YSector = 'center';
-
-  if (conditionXCenter > state1.x + state1.width - padding) {
-    s1SectorX = 'left';
-  } else if (conditionXCenter < state1.x + padding) {
-    s1SectorX = 'right';
+  if (rect2XCenter > rect1Right - rectPadding) {
+    sectorH = 'left';
+  } else if (rect2XCenter < rect1Left + rectPadding) {
+    sectorH = 'right';
   }
 
-  if (conditionYCenter > state1.y + state1.height - padding) {
-    s1SectorY = 'top';
-  } else if (conditionYCenter < state1.y + padding) {
-    s1SectorY = 'bottom';
+  if (rect2YCenter > rect1Bottom - rectPadding) {
+    sectorV = 'top';
+  } else if (rect2YCenter < rect1Top + rectPadding) {
+    sectorV = 'bottom';
   }
 
-  const result: TransitionLines = {
+  return { sectorH, sectorV };
+};
+
+const getArrowAngle = (rect: Rectangle, point: Point) => {
+  if (point.y === rect.y) {
+    return 90;
+  } else if (point.y === rect.y + rect.height) {
+    return 270;
+  } else if (point.x === rect.x) {
+    return 0;
+  } else {
+    return 180;
+  }
+};
+
+const getLine = (
+  rect1: Rectangle,
+  rect2: Rectangle,
+  rectPadding: number,
+  startLinePadding: number,
+  endLinePadding: number
+) => {
+  const rect2Left = rect2.x;
+  const rect2Right = rect2.x + rect2.width;
+  const rect2Top = rect2.y;
+  const rect2Bottom = rect2.y + rect2.height;
+  const rect2XCenter = rect2.x + rect2.width / 2;
+  const rect2YCenter = rect2.y + rect2.height / 2;
+
+  const rect1Left = rect1.x;
+  const rect1Right = rect1.x + rect1.width;
+  const rect1Top = rect1.y;
+  const rect1Bottom = rect1.y + rect1.height;
+
+  const { sectorV, sectorH } = getSectors(
+    rect1Left,
+    rect1Right,
+    rect1Top,
+    rect1Bottom,
+    rect2XCenter,
+    rect2YCenter,
+    rectPadding
+  );
+
+  const result: TransitionLine = {
     start: {
       x: 0,
       y: 0,
@@ -107,74 +125,81 @@ export const getTransitionLines = (state1: Rectangle, state2: Rectangle, conditi
       x: 0,
       y: 0,
     },
-    ae: 0,
+    se: 0,
   };
 
-  if (s1SectorY === 'center') {
-    result.start.x = s1SectorX === 'left' ? state1.x + state1.width : state1.x;
-    result.start.y = conditionYCenter;
-    result.end.x = s1SectorX === 'left' ? condition.x : condition.x + condition.width;
+  // get straight lines
+  if (sectorV === 'center') {
+    result.start.x = sectorH === 'left' ? rect1Right : rect1Left;
+    result.start.y = rect2YCenter;
+    result.end.x = sectorH === 'left' ? rect2Left : rect2Right;
     result.end.y = result.start.y;
 
-    result.ae = s1SectorX === 'left' ? 180 : 0;
+    result.se = getArrowAngle(rect1, result.start);
 
     return result;
   }
 
-  if (s1SectorX === 'center') {
-    result.start.x = conditionXCenter;
-    result.start.y = s1SectorY === 'top' ? state1.y + state1.height : state1.y;
+  if (sectorH === 'center') {
+    result.start.x = rect2XCenter;
+    result.start.y = sectorV === 'top' ? rect1Bottom : rect1Top;
     result.end.x = result.start.x;
-    result.end.y = s1SectorY === 'top' ? condition.y : condition.y + condition.height;
+    result.end.y = sectorV === 'top' ? rect2Top : rect2Bottom;
 
-    result.ae = s1SectorY === 'top' ? 180 : 0;
+    result.se = getArrowAngle(rect1, result.start);
 
     return result;
   }
 
-  if (s1SectorY === 'top') {
-    result.start.y = state1.y + state1.height - padding;
-    result.end.x = conditionXCenter;
-    result.end.y = condition.y;
+  // get curve lines
+  if (sectorV === 'top') {
+    result.start.y = rect1Bottom - rectPadding;
+    result.end.x = rect2XCenter;
+    result.end.y = rect2Top;
 
-    if (s1SectorX === 'left') {
-      result.start.x = state1.x + state1.width;
+    if (sectorH === 'left') {
+      result.start.x = rect1Right;
 
-      if (result.end.x < state1.x + state1.width + padding) {
-        result.end.x = state1.x + state1.width + padding;
+      // line in rect restriction
+      if (result.end.x < rect1Right + rectPadding) {
+        result.end.x = rect1Right + rectPadding;
       }
     } else {
-      result.start.x = state1.x;
+      result.start.x = rect1Left;
 
-      if (result.end.x > state1.x - padding) {
-        result.end.x = state1.x - padding;
+      // line in rect restriction
+      if (result.end.x > rect1Left - rectPadding) {
+        result.end.x = rect1Left - rectPadding;
       }
     }
 
-    if (result.start.y + padding > condition.y) {
-      result.start.y = condition.y - padding;
+    // line in rect restriction
+    if (result.start.y + rectPadding > rect2Top) {
+      result.start.y = rect2Top - rectPadding;
     }
   } else {
-    result.start.y = state1.y + padding;
-    result.end.x = conditionXCenter;
-    result.end.y = condition.y + condition.height;
+    result.start.y = rect1Top + rectPadding;
+    result.end.x = rect2XCenter;
+    result.end.y = rect2Bottom;
 
-    if (s1SectorX === 'left') {
-      result.start.x = state1.x + state1.width;
+    if (sectorH === 'left') {
+      result.start.x = rect1Right;
     } else {
-      result.start.x = state1.x;
+      result.start.x = rect1Left;
     }
 
-    if (result.start.y - padding < condition.y + condition.height) {
-      result.start.y = condition.y + condition.height + padding;
+    // line in rect restriction
+    if (result.start.y - rectPadding < rect2Bottom) {
+      result.start.y = rect2Bottom + rectPadding;
     }
   }
 
-  if (s1SectorX === 'left' && result.end.x < state1.x + state1.width + padding) {
-    result.end.x = state1.x + state1.width + padding;
+  // line in rect restriction
+  if (sectorH === 'left' && result.end.x < rect1Right + rectPadding) {
+    result.end.x = rect1Right + rectPadding;
   }
-  if (s1SectorX === 'right' && result.end.x > state1.x - padding) {
-    result.end.x = state1.x - padding;
+  if (sectorH === 'right' && result.end.x > rect1Left - rectPadding) {
+    result.end.x = rect1Left - rectPadding;
   }
 
   result.mid = {
@@ -182,5 +207,33 @@ export const getTransitionLines = (state1: Rectangle, state2: Rectangle, conditi
     y: result.start.y,
   };
 
+  result.se = getArrowAngle(rect1, result.start);
+
   return result;
+};
+
+export const getTransitionLines = (
+  state1: Rectangle,
+  state2: Rectangle,
+  condition: Rectangle,
+  rectPadding: number = 0,
+  startLinePadding: number = 0,
+  endLinePadding: number = 0
+) => {
+  // const d1 = getDistanceBetweenRectangles(state1, condition);
+  // const d2 = getDistanceBetweenRectangles(state2, condition);
+  // let minDState: Rectangle;
+  // let maxDState: Rectangle;
+  // if (d1 <= d2) {
+  //   minDState = state1;
+  //   maxDState = state2;
+  // } else {
+  //   minDState = state2;
+  //   maxDState = state1;
+  // }
+
+  const sourceLine = getLine(state1, condition, rectPadding, startLinePadding, endLinePadding);
+  const targetLine = getLine(state2, condition, rectPadding, startLinePadding, endLinePadding);
+
+  return { sourceLine, targetLine };
 };

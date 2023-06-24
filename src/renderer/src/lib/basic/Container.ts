@@ -101,6 +101,6 @@ export class Container {
   };
 
   get graphData() {
-    return [...this.states.items.values()];
+    return [...this.states.items.values(), ...this.transitions.items.values()];
   }
 }

@@ -12,8 +12,8 @@
       "bounds": {
         "height": 100,
         "width": 200,
-        "x": 190,
-        "y": 200
+        "x": 96,
+        "y": 264
       }
     },
 
@@ -29,8 +29,8 @@
       "bounds": {
         "height": 100,
         "width": 200,
-        "x": 780,
-        "y": 130
+        "x": 765,
+        "y": 134
       }
     }
   },
@@ -43,8 +43,20 @@
       "target": "off",
       "condition": {
         "position": {
-          "x": 400,
-          "y": 150
+          "x": 361,
+          "y": 127
+        },
+        "component": "btn",
+        "method": "isJustPressed"
+      }
+    },
+    {
+      "source": "off",
+      "target": "on",
+      "condition": {
+        "position": {
+          "x": 525,
+          "y": 285
         },
         "component": "btn",
         "method": "isJustPressed"

@@ -28,7 +28,7 @@ export class Transitions {
       const sourceState = this.container.states.items.get(source) as State;
       const targetState = this.container.states.items.get(target) as State;
 
-      const transition = new Transition(sourceState, targetState, condition);
+      const transition = new Transition(this.container, sourceState, targetState, condition);
 
       this.items.set(id, transition);
     }
@@ -39,7 +39,7 @@ export class Transitions {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
 
     this.container.states.on('startNewTransition', this.handleStartNewTransition);
-    this.container.states.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.container.states.on('mouseUpOnState', this.handleMouseUpOnState as any);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -65,12 +65,20 @@ export class Transitions {
     this.container.app.isDirty = true;
   };
 
-  handleMouseUpOnState = () => {
+  handleMouseUpOnState = (e: { mouseUpState: State }) => {
     if (!this.showGhost) return;
 
-    const target = this.container.states.mouseUpState as State;
+    const target = e.mouseUpState;
 
-    const transition = new Transition(this.ghost.source as State, target, null);
+    // TODO Доделать парвильный condition
+    const transition = new Transition(this.container, this.ghost.source as State, target, {
+      component: 'a',
+      method: 'a',
+      position: {
+        x: 100,
+        y: 100,
+      },
+    });
 
     this.items.set(nanoid(), transition);
   };

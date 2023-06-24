@@ -1,27 +1,17 @@
 import { State as StateType } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
+import { Draggable } from './Draggable';
 
-export class State {
-  container!: Container;
-
+export class State extends Draggable {
   id!: string;
   data!: StateType;
 
   constructor(container: Container, id: string, data: StateType) {
-    this.container = container;
+    super(container, data.bounds);
 
     this.id = id;
     this.data = data;
-  }
-
-  get bounds() {
-    return {
-      x: this.data.bounds.x + this.container.offset.x,
-      y: this.data.bounds.y + this.container.offset.y,
-      width: this.data.bounds.width,
-      height: this.data.bounds.height,
-    };
   }
 
   draw(
@@ -105,10 +95,5 @@ export class State {
     ctx.stroke();
 
     ctx.closePath();
-  }
-
-  move(x: number, y: number) {
-    this.data.bounds.x = x;
-    this.data.bounds.y = y;
   }
 }

@@ -23,14 +23,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   return (
     <div className="flex h-full w-full">
       <aside className="w-64 border-r border-neutral-500 bg-neutral-900 p-4">
-        {/* <button
+        <button
           className="mb-4 rounded-sm bg-neutral-50 px-2 py-1 text-neutral-800"
-          onClick={() =>
-            console.log(editor?.states.items.entries(), editor?.transitions.items.entries())
-          }
+          onClick={() => console.log(editor?.container.graphData)}
         >
           Elements
-        </button> */}
+        </button>
 
         <div
           className="grid h-[50px] w-[100px] place-items-center bg-neutral-700 text-neutral-50"

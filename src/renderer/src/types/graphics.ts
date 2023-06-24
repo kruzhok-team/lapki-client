@@ -1,3 +1,3 @@
-export type Vector2D = { x: number; y: number };
+export type Point = { x: number; y: number };
 
-export type Rectangle = { x: number; y: number; width: number; height: number };
+export type Rectangle = Point & { width: number; height: number };

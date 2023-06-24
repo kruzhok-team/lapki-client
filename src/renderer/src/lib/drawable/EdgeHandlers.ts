@@ -1,5 +1,5 @@
 import { CanvasEditor } from '../CanvasEditor';
-import { Vector2D } from '@renderer/types/graphics';
+import { Point } from '@renderer/types/graphics';
 import { isPointInRectangle } from '../utils';
 import { State } from './State';
 
@@ -18,7 +18,7 @@ export class EdgeHandlers {
     this.app.mouse.addEventListener('mousedown', this.handleMouseDown);
   }
 
-  get position(): Vector2D[] | null {
+  get position(): Point[] | null {
     if (!this.currentState) return null;
 
     const offset = 4;

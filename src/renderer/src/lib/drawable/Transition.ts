@@ -1,25 +1,32 @@
 import { getBoxToBoxArrow } from 'curved-arrows';
 
 import { State } from './State';
-import { Vector2D } from '@renderer/types/graphics';
-import { Condition } from '@renderer/types/diagram';
-import { rotatePoint } from '../utils';
+import { Point } from '@renderer/types/graphics';
+import { Condition as ConditionType } from '@renderer/types/diagram';
+import { getTransitionLines, rotatePoint } from '../utils';
 import { stateStyle, transitionStyle } from '../styles';
+import { Condition } from './Condition';
+import { Container } from '../basic/Container';
 
 export class Transition {
+  container!: Container;
+
   source!: State;
   target!: State;
-  condition!: Condition | null;
+  condition!: Condition;
 
-  constructor(source: State, target: State, condition: Condition | null) {
+  constructor(container: Container, source: State, target: State, condition: ConditionType) {
+    this.container = container;
+
     this.source = source;
     this.target = target;
-    this.condition = condition;
+
+    this.condition = new Condition(this.container, condition);
   }
 
   private drawTriangle(
     ctx: CanvasRenderingContext2D,
-    origin: Vector2D,
+    origin: Point,
     width: number,
     height: number,
     angle: number
@@ -122,51 +129,82 @@ export class Transition {
     );
   }
 
-  private drawCondition(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ) {
-    ctx.fillStyle = 'rgb(23, 23, 23)';
-    // Draw condition
-    ctx.beginPath();
-
-    ctx.roundRect(x, y, width, height, 8);
-    ctx.fill();
-    // ctx.strokeStyle = 'rgb(23, 23, 23)';
-    // ctx.stroke();
-
-    ctx.closePath();
-
-    ctx.fillStyle = transitionStyle.bgColor;
-
-    ctx.beginPath();
-
-    ctx.fillText(this.condition?.component ?? '', x + 15, y + 15);
-    ctx.fillText(this.condition?.method ?? '', x + 15, y + 30 + 15);
-
-    ctx.closePath();
-  }
-
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    const sourceCX = this.source.bounds.x + this.source.bounds.width / 2;
-    const sourceCY = this.source.bounds.y + this.source.bounds.height / 2;
-    const targetCX = this.target.bounds.x + this.target.bounds.width / 2;
-    const targetCY = this.target.bounds.y + this.target.bounds.height / 2;
+    this.condition.draw(ctx, canvas);
 
-    const conditionWidth = 150;
-    const conditionHeight = 75;
-    const conditionX = (sourceCX + targetCX) / 2 - conditionWidth / 2;
-    const conditionY = (sourceCY + targetCY) / 2 - conditionHeight / 2;
+    const newLineSource = getTransitionLines(
+      this.source.bounds,
+      this.target.bounds,
+      this.condition.bounds
+    );
+
+    const newLineTarget = getTransitionLines(
+      this.target.bounds,
+      this.source.bounds,
+      this.condition.bounds
+    );
 
     ctx.lineWidth = transitionStyle.width;
     ctx.strokeStyle = transitionStyle.bgColor;
     ctx.fillStyle = transitionStyle.bgColor;
 
-    this.drawSourceArrow(ctx, conditionX, conditionY, conditionWidth, conditionHeight);
-    this.drawTargetArrow(ctx, conditionX, conditionY, conditionWidth, conditionHeight);
-    this.drawCondition(ctx, conditionX, conditionY, conditionWidth, conditionHeight);
+    // this.drawSourceArrow(ctx, conditionX, conditionY, conditionWidth, conditionHeight);
+    // this.drawTargetArrow(ctx, conditionX, conditionY, conditionWidth, conditionHeight);
+    // this.drawCondition(ctx, conditionX, conditionY, conditionWidth, conditionHeight);
+
+    if (newLineSource) {
+      ctx.strokeStyle = 'red';
+      ctx.fillStyle = 'red';
+      // Draw Start
+      ctx.beginPath();
+      ctx.arc(
+        newLineSource.start.x,
+        newLineSource.start.y,
+        transitionStyle.startSize,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+      ctx.closePath();
+
+      ctx.beginPath();
+
+      ctx.beginPath();
+
+      if (newLineSource.mid === null) {
+        ctx.moveTo(newLineSource.start.x, newLineSource.start.y);
+        ctx.lineTo(newLineSource.end.x, newLineSource.end.y);
+      } else {
+        const { start, mid, end } = newLineSource;
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(mid.x, mid.y);
+        ctx.lineTo(end.x, end.y);
+      }
+
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    if (newLineTarget) {
+      ctx.strokeStyle = 'lime';
+      ctx.fillStyle = 'lime';
+
+      ctx.beginPath();
+
+      if (newLineTarget.mid === null) {
+        ctx.moveTo(newLineTarget.start.x, newLineTarget.start.y);
+        ctx.lineTo(newLineTarget.end.x, newLineTarget.end.y);
+      } else {
+        const { start, mid, end } = newLineTarget;
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(mid.x, mid.y);
+        ctx.lineTo(end.x, end.y);
+      }
+
+      ctx.stroke();
+      ctx.closePath();
+
+      this.drawTriangle(ctx, newLineTarget.start, 10, 10, newLineTarget.ae);
+    }
   }
 }

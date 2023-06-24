@@ -1,4 +1,4 @@
-import { Rectangle } from './graphics';
+import { Point, Rectangle } from './graphics';
 
 export type Event = {
   component: string;
@@ -9,6 +9,7 @@ export type Event = {
 export type Condition = {
   component: string;
   method: string;
+  position: Point;
 };
 
 export type State = {

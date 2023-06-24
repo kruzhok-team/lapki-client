@@ -99,4 +99,8 @@ export class Container {
 
     this.app.isDirty = true;
   };
+
+  get graphData() {
+    return [...this.states.items.values()];
+  }
 }

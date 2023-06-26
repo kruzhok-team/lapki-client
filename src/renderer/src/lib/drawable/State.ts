@@ -27,7 +27,7 @@ export class State extends Draggable {
   }
 
   private drawBody(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.bounds;
+    const { x, y, width, height } = this.drawBounds;
 
     ctx.fillStyle = stateStyle.bodyBg;
 
@@ -40,16 +40,21 @@ export class State extends Draggable {
   }
 
   private drawTitle(ctx: CanvasRenderingContext2D) {
-    const { x, y, width } = this.bounds;
+    const { x, y, width } = this.drawBounds;
 
-    ctx.font = stateStyle.titleFont;
+    const paddingY = 10 / this.container.scale;
+    const paddingX = 15 / this.container.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const titleHeight = fontSize + paddingY * 2;
+
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.textBaseline = stateStyle.titleBaseLine;
 
     ctx.beginPath();
 
     ctx.fillStyle = stateStyle.titleBg;
 
-    ctx.roundRect(x, y, width, 40, [
+    ctx.roundRect(x, y, width, titleHeight, [
       stateStyle.bodyBorderRadius,
       stateStyle.bodyBorderRadius,
       0,
@@ -58,33 +63,42 @@ export class State extends Draggable {
     ctx.fill();
 
     ctx.fillStyle = stateStyle.titleColor;
-    ctx.fillText(this.id, x + 15, y + 25);
+    ctx.fillText(this.id, x + paddingX, y + paddingY);
 
     ctx.closePath();
   }
 
   private drawEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.bounds;
+    const { x, y } = this.drawBounds;
 
+    const paddingY = 10 / this.container.scale;
+    const px = 15 / this.container.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const titleHeight = fontSize + paddingY * 2;
+
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.beginPath();
 
     Object.entries(this.data.events).forEach(([eventName, events], i) => {
-      const resultY = y + 40 + 10 + i * 40;
+      const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
+      const eventNameWidth = ctx.measureText(eventName).width;
+      const componentWidth = ctx.measureText(events[0].component).width;
+      const gap = 5 / this.container.scale;
 
-      ctx.fillText(eventName, x + 15, resultY);
+      ctx.fillText(eventName, x + px, resultY);
 
-      ctx.fillText(events[0].component, x + 90, resultY);
-      ctx.fillText(events[0].method, x + 130, resultY);
+      ctx.fillText(events[0].component, x + px + eventNameWidth + gap, resultY);
+      ctx.fillText(events[0].method, x + px + eventNameWidth + componentWidth + gap * 2, resultY);
     });
 
     ctx.closePath();
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.bounds;
+    const { x, y, width, height } = this.drawBounds;
 
     ctx.lineWidth = stateStyle.selectedBorderWidth;
     ctx.strokeStyle = stateStyle.selectedBorderColor;

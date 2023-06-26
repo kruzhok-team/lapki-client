@@ -5,8 +5,10 @@ export const stateStyle = {
   bodyBg: 'rgb(64, 64, 64)',
   bodyBorderRadius: 6,
 
-  titleFont: '20px/0 Arial',
-  titleBaseLine: 'alphabetic' as CanvasTextBaseline,
+  titleFontFamily: 'Arial',
+  titleLineHeight: 0,
+  titleFontSize: 20,
+  titleBaseLine: 'hanging' as CanvasTextBaseline,
   titleColor: '#FFF',
   titleBg: 'rgb(82, 82, 82)',
 

@@ -1,5 +1,5 @@
 import { Container } from '../basic/Container';
-import { transitionStyle } from '../styles';
+import { stateStyle, transitionStyle } from '../styles';
 import { Condition as ConditionType } from '@renderer/types/diagram';
 import { Draggable } from './Draggable';
 
@@ -21,24 +21,26 @@ export class Condition extends Draggable {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    const { x, y, width, height } = this.bounds;
+    const { x, y, width, height } = this.drawBounds;
+
+    const p = 15 / this.container.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();
-
     ctx.roundRect(x, y, width, height, 8);
     ctx.fill();
-
     ctx.closePath();
 
     ctx.fillStyle = transitionStyle.bgColor;
 
     ctx.beginPath();
-
-    ctx.fillText(this.data.component, x + 15, y + 15);
-    ctx.fillText(this.data.method, x + 15, y + 30 + 15);
-
+    ctx.fillText(this.data.component, x + p, y + p);
+    ctx.fillText(this.data.method, x + p, y + fontSize + p);
     ctx.closePath();
   }
 }

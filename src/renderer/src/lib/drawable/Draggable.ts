@@ -5,7 +5,7 @@ import { isPointInRectangle } from '../utils';
 export class Draggable {
   container!: Container;
 
-  innerBounds!: Rectangle;
+  bounds!: Rectangle;
 
   dragging = false;
   private grabOffset = { x: 0, y: 0 };
@@ -15,19 +15,19 @@ export class Draggable {
 
   constructor(container: Container, bounds: Rectangle) {
     this.container = container;
-    this.innerBounds = bounds;
+    this.bounds = bounds;
 
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
   }
 
-  get bounds(): Rectangle {
+  get drawBounds(): Rectangle {
     return {
-      x: this.innerBounds.x + this.container.offset.x,
-      y: this.innerBounds.y + this.container.offset.y,
-      width: this.innerBounds.width,
-      height: this.innerBounds.height,
+      x: (this.bounds.x + this.container.offset.x) / this.container.scale,
+      y: (this.bounds.y + this.container.offset.y) / this.container.scale,
+      width: this.bounds.width / this.container.scale,
+      height: this.bounds.height / this.container.scale,
     };
   }
 
@@ -39,8 +39,8 @@ export class Draggable {
     if (!isUnderMouse) return;
 
     this.grabOffset = {
-      x: this.container.app.mouse.x - this.innerBounds.x,
-      y: this.container.app.mouse.y - this.innerBounds.y,
+      x: this.container.app.mouse.x - this.drawBounds.x,
+      y: this.container.app.mouse.y - this.drawBounds.y,
     };
     this.dragging = true;
 
@@ -52,8 +52,12 @@ export class Draggable {
   handleMouseMove = () => {
     if (!this.dragging || this.container.isPan) return;
 
-    this.innerBounds.x = this.container.app.mouse.x - this.grabOffset.x - this.container.offset.x;
-    this.innerBounds.y = this.container.app.mouse.y - this.grabOffset.y - this.container.offset.y;
+    this.bounds.x =
+      (this.container.app.mouse.x - this.grabOffset.x) * this.container.scale -
+      this.container.offset.x;
+    this.bounds.y =
+      (this.container.app.mouse.y - this.grabOffset.y) * this.container.scale -
+      this.container.offset.y;
 
     document.body.style.cursor = 'grabbing';
 
@@ -77,7 +81,7 @@ export class Draggable {
   };
 
   isUnderMouse() {
-    return isPointInRectangle(this.innerBounds, {
+    return isPointInRectangle(this.drawBounds, {
       x: this.container.app.mouse.x,
       y: this.container.app.mouse.y,
     });

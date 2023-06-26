@@ -2,6 +2,7 @@ import { EventEmitter } from '../common/EventEmitter';
 
 export class Keyboard extends EventEmitter<KeyboardEvent> {
   spacePressed = false;
+  ctrlPressed = false;
 
   constructor() {
     super();
@@ -22,14 +23,24 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
       this.emit('spacedown', e);
     }
 
-    this.emit('keydown', e);
+    if (e.code === 'ControlLeft' && !this.ctrlPressed) {
+      this.ctrlPressed = true;
+
+      this.emit('ctrldown', e);
+    }
   };
 
   handleKeyUp = (e: KeyboardEvent) => {
     if (e.code === 'Space') {
       this.spacePressed = false;
+
+      this.emit('spaceup', e);
     }
 
-    this.emit('keyup', e);
+    if (e.code === 'ControlLeft') {
+      this.ctrlPressed = false;
+
+      this.emit('ctrlup', e);
+    }
   };
 }

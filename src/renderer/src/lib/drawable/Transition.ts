@@ -52,15 +52,21 @@ export class Transition {
   private drawStart(ctx: CanvasRenderingContext2D, position: Point) {
     ctx.beginPath();
 
-    ctx.arc(position.x, position.y, transitionStyle.startSize, 0, 2 * Math.PI);
+    ctx.arc(
+      position.x,
+      position.y,
+      transitionStyle.startSize / this.container.scale,
+      0,
+      2 * Math.PI
+    );
     ctx.fill();
 
     ctx.closePath();
   }
 
   private drawEnd(ctx: CanvasRenderingContext2D, position: Point, angle: number) {
-    const width = 10;
-    const height = 10;
+    const width = 10 / this.container.scale;
+    const height = 10 / this.container.scale;
 
     const p1 = rotatePoint({ x: position.x - width, y: position.y - height / 2 }, position, angle);
     const p2 = rotatePoint({ x: position.x - width, y: position.y + height / 2 }, position, angle);
@@ -81,9 +87,9 @@ export class Transition {
     this.condition.draw(ctx, canvas);
 
     const { sourceLine, targetLine } = getTransitionLines(
-      this.source.bounds,
-      this.target.bounds,
-      this.condition.bounds,
+      this.source.drawBounds,
+      this.target.drawBounds,
+      this.condition.drawBounds,
       10,
       3,
       3

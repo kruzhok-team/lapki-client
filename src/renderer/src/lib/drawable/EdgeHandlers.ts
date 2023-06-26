@@ -22,10 +22,10 @@ export class EdgeHandlers {
     if (!this.currentState) return null;
 
     const offset = 4;
-    const stateX = this.currentState.bounds.x;
-    const stateY = this.currentState.bounds.y;
-    const stateWidth = this.currentState.bounds.width;
-    const stateHeight = this.currentState.bounds.height;
+    const stateX = this.currentState.drawBounds.x;
+    const stateY = this.currentState.drawBounds.y;
+    const stateWidth = this.currentState.drawBounds.width;
+    const stateHeight = this.currentState.drawBounds.height;
 
     return [
       {

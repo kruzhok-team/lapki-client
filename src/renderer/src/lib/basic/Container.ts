@@ -2,6 +2,7 @@ import { Elements } from '@renderer/types/diagram';
 import { States } from '../drawable/States';
 import { Transitions } from '../drawable/Transitions';
 import { CanvasEditor } from '../CanvasEditor';
+import { clamp } from '../utils';
 
 export class Container {
   app!: CanvasEditor;
@@ -10,8 +11,10 @@ export class Container {
   transitions!: Transitions;
 
   offset = { x: 0, y: 0 };
+  scale = 1;
 
   isPan = false;
+  isScale = false;
 
   private grabOffset = { x: 0, y: 0 };
 
@@ -33,11 +36,15 @@ export class Container {
     this.app.canvas.element.addEventListener('dragover', this.handleDragOver);
     this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
-    this.app.keyboard.on('spacedown', this.handleKeyDown);
-    this.app.keyboard.on('keyup', this.handleKeyUp);
+    this.app.keyboard.on('spacedown', this.handleSpaceDown);
+    this.app.keyboard.on('spaceup', this.handleSpaceUp);
+    this.app.keyboard.on('ctrldown', this.handleCtrlDown);
+    this.app.keyboard.on('ctrlup', this.handleCtrlUp);
+
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('wheel', this.handleMouseWheel);
   }
 
   handleDragOver = (e: DragEvent) => {
@@ -59,43 +66,61 @@ export class Container {
   };
 
   handleMouseDown = () => {
-    if (!this.app.keyboard.spacePressed || !this.app.mouse.left) return;
+    if (!this.isPan || !this.app.mouse.left) return;
 
     this.grabOffset = {
-      x: this.app.mouse.x - this.offset.x,
-      y: this.app.mouse.y - this.offset.y,
+      x: this.app.mouse.x * this.scale - this.offset.x,
+      y: this.app.mouse.y * this.scale - this.offset.y,
     };
 
     this.app.canvas.element.style.cursor = 'grabbing';
   };
 
   handleMouseUp = () => {
-    if (!this.app.keyboard.spacePressed) return;
+    if (!this.isPan) return;
 
     this.app.canvas.element.style.cursor = 'grab';
   };
 
-  handleKeyDown = (e: KeyboardEvent) => {
-    if (e.code !== 'Space') return;
+  handleMouseMove = () => {
+    if (!this.isPan || !this.app.mouse.left) return;
 
+    this.offset.x = this.app.mouse.x * this.scale - this.grabOffset.x;
+    this.offset.y = this.app.mouse.y * this.scale - this.grabOffset.y;
+
+    this.app.isDirty = true;
+  };
+
+  handleSpaceDown = () => {
     this.isPan = true;
 
     this.app.canvas.element.style.cursor = 'grab';
   };
 
-  handleKeyUp = (e: KeyboardEvent) => {
-    if (e.code !== 'Space') return;
-
+  handleSpaceUp = () => {
     this.isPan = false;
 
     this.app.canvas.element.style.cursor = 'default';
   };
 
-  handleMouseMove = () => {
-    if (!this.app.keyboard.spacePressed || !this.app.mouse.left) return;
+  handleCtrlDown = () => {
+    this.isScale = true;
+  };
 
-    this.offset.x = this.app.mouse.x - this.grabOffset.x;
-    this.offset.y = this.app.mouse.y - this.grabOffset.y;
+  handleCtrlUp = () => {
+    this.isScale = false;
+  };
+
+  handleMouseWheel = (e: WheelEvent) => {
+    if (!this.isScale) return;
+
+    e.preventDefault();
+
+    const newScale = clamp(this.scale + e.deltaY * 0.001, 0.5, 2);
+    this.offset.x = this.offset.x - (this.app.mouse.x * this.scale - this.app.mouse.x * newScale);
+    this.offset.y = this.offset.y - (this.app.mouse.y * this.scale - this.app.mouse.y * newScale);
+
+    this.scale = newScale;
 
     this.app.isDirty = true;
   };

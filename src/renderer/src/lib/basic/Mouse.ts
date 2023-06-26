@@ -4,7 +4,7 @@ enum Button {
   left = 0,
 }
 
-export class Mouse extends EventEmitter<MouseEvent> {
+export class Mouse extends EventEmitter<any> {
   element!: HTMLElement;
 
   under: boolean = false;
@@ -34,6 +34,7 @@ export class Mouse extends EventEmitter<MouseEvent> {
     this.element.addEventListener('mouseenter', this.mousemoveHandler);
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
+    this.element.addEventListener('wheel', this.mouseWheelHandler);
   }
 
   mousemoveHandler = (e: MouseEvent) => {
@@ -68,6 +69,10 @@ export class Mouse extends EventEmitter<MouseEvent> {
     }
 
     this.emit('mouseup', e);
+  };
+
+  mouseWheelHandler = (e: WheelEvent) => {
+    this.emit('wheel', e);
   };
 
   tick() {

@@ -4,6 +4,7 @@ import { Transitions } from '../drawable/Transitions';
 import { CanvasEditor } from '../CanvasEditor';
 import { clamp } from '../utils';
 
+// Это класс для реализации панорамирования, зума, отрисовки всего, DragAndDrop и сериализации диаграммы
 export class Container {
   app!: CanvasEditor;
 
@@ -33,7 +34,7 @@ export class Container {
   }
 
   private initEvents() {
-    this.app.canvas.element.addEventListener('dragover', this.handleDragOver);
+    this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
     this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
@@ -47,17 +48,13 @@ export class Container {
     this.app.mouse.on('wheel', this.handleMouseWheel);
   }
 
-  handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-  };
-
   handleDrop = (e: DragEvent) => {
     e.preventDefault();
 
     const rect = this.app.canvas.element.getBoundingClientRect();
     const position = {
-      x: e.clientX - rect.left - this.offset.x,
-      y: e.clientY - rect.top - this.offset.y,
+      x: (e.clientX - rect.left) * this.scale - this.offset.x,
+      y: (e.clientY - rect.top) * this.scale - this.offset.y,
     };
 
     this.states.createNewState(position);
@@ -85,6 +82,7 @@ export class Container {
   handleMouseMove = () => {
     if (!this.isPan || !this.app.mouse.left) return;
 
+    // TODO Много раз такие опереции повторяются, нужно переделать на функции
     this.offset.x = this.app.mouse.x * this.scale - this.grabOffset.x;
     this.offset.y = this.app.mouse.y * this.scale - this.grabOffset.y;
 

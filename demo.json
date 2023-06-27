@@ -1,0 +1,73 @@
+{
+  "states": {
+    "on": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod",
+            "method": "turnOn"
+          }
+        ]
+      },
+      "bounds": {
+        "height": 100,
+        "width": 200,
+        "x": 50,
+        "y": 50
+      }
+    },
+
+    "off": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod",
+            "method": "turnOff"
+          }
+        ]
+      },
+      "bounds": {
+        "height": 100,
+        "width": 200,
+        "x": 200,
+        "y": 200
+      }
+    }
+  },
+
+  "initialState": "on",
+
+  "transitions": [
+    {
+      "source": "on",
+      "target": "off",
+      "condition": {
+        "component": "btn",
+        "method": "isJustPressed"
+      }
+    },
+    {
+      "source": "on",
+      "target": "off",
+      "condition": {
+        "component": "btn",
+        "method": "isJustPressed"
+      }
+    }
+  ],
+
+  "components": {
+    "btn": {
+      "type": "Button",
+      "parameters": {
+        "pin": 10
+      }
+    },
+    "diod": {
+      "type": "Led",
+      "parameters": {
+        "pin": 13
+      }
+    }
+  }
+}

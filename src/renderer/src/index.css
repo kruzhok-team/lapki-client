@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.popper-handle {
+  @apply z-50 grid h-5 w-5 cursor-pointer select-none place-items-center bg-neutral-50 font-bold leading-[0px] text-neutral-800 hover:bg-red-600 hover:text-neutral-50;
+}
+
+@font-face {
+  font-family: "Fira Sans";
+  src: url("./fonts/FiraSans-Regular.ttf");
+};

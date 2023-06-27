@@ -4,6 +4,9 @@ export class Canvas {
 
   background!: string;
 
+  // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
+  onResize: (() => void) | undefined;
+
   constructor(background: string) {
     this.background = background;
 
@@ -33,6 +36,8 @@ export class Canvas {
     this.element.height = this.element.parentElement.offsetHeight;
 
     this.clear();
+
+    this.onResize?.();
   };
 
   draw(callback: (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void) {

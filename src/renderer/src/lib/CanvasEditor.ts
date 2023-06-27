@@ -28,6 +28,10 @@ export class CanvasEditor {
 
     this.container = new Container(this, elements);
 
+    this.canvas.onResize = () => {
+      this.isDirty = true;
+    };
+
     this.render.subscribe(() => {
       if (!this.isDirty) return;
 

@@ -1,37 +1,80 @@
 import { getBoxToBoxArrow } from 'curved-arrows';
 
 import { State } from './State';
-import { Vector2D } from '@renderer/types/graphics';
-import { rotatePoint } from '../utils';
-
-interface TransitionArgs {
-  source: State;
-  target: State;
-}
+import { Point, TransitionLine } from '@renderer/types/graphics';
+import { Condition as ConditionType } from '@renderer/types/diagram';
+import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
+import { stateStyle, transitionStyle } from '../styles';
+import { Condition } from './Condition';
+import { Container } from '../basic/Container';
 
 export class Transition {
-  source!: State | null;
-  target!: State | null;
+  container!: Container;
 
-  constructor(args: TransitionArgs) {
-    this.source = args.source;
-    this.target = args.target;
+  source!: State;
+  target!: State;
+  condition!: Condition;
+  color!: string;
+
+  constructor(
+    container: Container,
+    source: State,
+    target: State,
+    condition: ConditionType,
+    color: string
+  ) {
+    this.container = container;
+
+    this.source = source;
+    this.target = target;
+
+    this.condition = new Condition(this.container, condition);
+
+    this.color = color;
   }
 
-  private drawTriangle(
-    ctx: CanvasRenderingContext2D,
-    origin: Vector2D,
-    width: number,
-    height: number,
-    angle: number
-  ) {
-    const p1 = rotatePoint({ x: origin.x - width, y: origin.y - height / 2 }, origin, angle);
-    const p2 = rotatePoint({ x: origin.x - width, y: origin.y + height / 2 }, origin, angle);
+  private drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {
+    const { start, mid, end } = line;
+
+    ctx.beginPath();
+
+    ctx.moveTo(start.x, start.y);
+    if (mid) {
+      ctx.lineTo(mid.x, mid.y);
+    }
+    ctx.lineTo(end.x, end.y);
+
+    ctx.stroke();
+
+    ctx.closePath();
+  }
+
+  private drawStart(ctx: CanvasRenderingContext2D, position: Point) {
+    ctx.beginPath();
+
+    ctx.arc(
+      position.x,
+      position.y,
+      transitionStyle.startSize / this.container.scale,
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
+
+    ctx.closePath();
+  }
+
+  private drawEnd(ctx: CanvasRenderingContext2D, position: Point, angle: number) {
+    const width = 10 / this.container.scale;
+    const height = 10 / this.container.scale;
+
+    const p1 = rotatePoint({ x: position.x - width, y: position.y - height / 2 }, position, angle);
+    const p2 = rotatePoint({ x: position.x - width, y: position.y + height / 2 }, position, angle);
 
     ctx.beginPath();
 
     ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(origin.x, origin.y);
+    ctx.lineTo(position.x, position.y);
     ctx.lineTo(p2.x, p2.y);
     ctx.lineTo(p1.x, p1.y);
 
@@ -41,48 +84,24 @@ export class Transition {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    if (!this.source || !this.target) return;
+    this.condition.draw(ctx, canvas);
 
-    const [sx, sy, c1x, c1y, c2x, c2y, ex, ey, ae] = getBoxToBoxArrow(
-      this.source.bounds.x,
-      this.source.bounds.y,
-      this.source.bounds.width,
-      this.source.bounds.height,
-      this.target.bounds.x,
-      this.target.bounds.y,
-      this.target.bounds.width,
-      this.target.bounds.height,
-      {
-        padEnd: 5,
-      }
+    const { sourceLine, targetLine } = getTransitionLines(
+      this.source.drawBounds,
+      this.target.drawBounds,
+      this.condition.drawBounds,
+      10,
+      3,
+      3
     );
 
-    ctx.beginPath();
+    ctx.lineWidth = transitionStyle.width;
+    ctx.strokeStyle = this.color;
+    ctx.fillStyle = this.color;
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#FFF';
-
-    ctx.moveTo(sx, sy);
-    ctx.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey);
-    ctx.stroke();
-    ctx.closePath();
-
-    ctx.beginPath();
-    ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
-
-    const origin = { x: ex, y: ey };
-    if (ae === 0) {
-      origin.x += 11;
-    } else if (ae === 90) {
-      origin.y += 11;
-    } else if (ae === 180) {
-      origin.x -= 11;
-    } else if (ae === 270) {
-      origin.y -= 11;
-    }
-
-    this.drawTriangle(ctx, origin, 11, 11, (ae * Math.PI) / 180);
+    this.drawLine(ctx, sourceLine);
+    this.drawLine(ctx, targetLine);
+    this.drawStart(ctx, sourceLine.start);
+    this.drawEnd(ctx, targetLine.start, degrees_to_radians(targetLine.se));
   }
 }

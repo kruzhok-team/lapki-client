@@ -43,7 +43,6 @@ export const App: React.FC = () => {
 
     setIsCodeEditorOpen((p) => !p);
   };
-  /*<div className="bg-[#4391BF] w-[calc(25vw/2)] h-[5vh]"></div>*/
   return (
 
     <div className="flex flex-row">
@@ -77,11 +76,10 @@ export const App: React.FC = () => {
       <div className={`hidden ${checkActive(3, "!block")}`}>
         {isCodeEditorOpen && fileContent && <CodeEditor value={fileContent} />}
       </div>
-      <section className={`h-screen ${isCodeEditorOpen ? `w-[58vw]` : `w-screen`}`}>
-        <main className={`flex items-center justify-center h-screen ${isCodeEditorOpen ? `w-[58vw]` : `w-auto`}`}>
+      
+      <main className={`flex items-center justify-center h-screen ${isCodeEditorOpen ? `w-[58vw]` : activeIndex!=3 ? `w-[58vw]` : `w-[74vw]`}`}>
         {elements ? (<DiagramEditor elements={elements} />) : (<div className="font-Fira text-[calc(5vh/2)]">Откройте файл или перенесите его сюда...</div>)}
-        </main>
-      </section>
+      </main>
       <Documentations />
     </div>
   );

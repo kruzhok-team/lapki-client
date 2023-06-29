@@ -1,9 +1,9 @@
-import { Vector2D } from '@renderer/types/graphics';
+import { Point } from '@renderer/types/graphics';
 import { State } from './State';
 
 export class GhostTransition {
   source!: State | null;
-  target!: Vector2D | null;
+  target!: Point | null;
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     if (!this.source || !this.target) return;
@@ -27,7 +27,7 @@ export class GhostTransition {
     this.source = state;
   }
 
-  setTarget(target: Vector2D) {
+  setTarget(target: Point) {
     this.target = target;
   }
 

@@ -4,10 +4,13 @@ export class Canvas {
 
   background!: string;
 
+  // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
+  onResize: (() => void) | undefined;
+
   constructor(background: string) {
     this.background = background;
 
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener('resize', this.resize);
   }
 
   clear() {
@@ -21,17 +24,21 @@ export class Canvas {
     context.rect(0, 0, width, height);
     context.fillStyle = background;
     context.fill();
+    context.closePath();
   }
 
-  resize() {
+  resize = () => {
     if (!this.element.parentElement) {
       return;
     }
 
     this.element.width = this.element.parentElement.offsetWidth;
     this.element.height = this.element.parentElement.offsetHeight;
+
     this.clear();
-  }
+
+    this.onResize?.();
+  };
 
   draw(callback: (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void) {
     callback(this.context, this.element);
@@ -43,5 +50,10 @@ export class Canvas {
 
   get height() {
     return this.element.height;
+  }
+
+  cleanUp() {
+    window.removeEventListener('resize', this.resize);
+    this.element.remove();
   }
 }

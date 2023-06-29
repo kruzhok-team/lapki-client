@@ -12,8 +12,8 @@
       "bounds": {
         "height": 100,
         "width": 200,
-        "x": 50,
-        "y": 50
+        "x": 96,
+        "y": 264
       }
     },
 
@@ -29,8 +29,8 @@
       "bounds": {
         "height": 100,
         "width": 200,
-        "x": 200,
-        "y": 200
+        "x": 765,
+        "y": 134
       }
     }
   },
@@ -41,15 +41,25 @@
     {
       "source": "on",
       "target": "off",
+      "color": "#F29727",
       "condition": {
+        "position": {
+          "x": 361,
+          "y": 127
+        },
         "component": "btn",
         "method": "isJustPressed"
       }
     },
     {
-      "source": "on",
-      "target": "off",
+      "source": "off",
+      "target": "on",
+      "color": "#F24C3D",
       "condition": {
+        "position": {
+          "x": 525,
+          "y": 285
+        },
         "component": "btn",
         "method": "isJustPressed"
       }

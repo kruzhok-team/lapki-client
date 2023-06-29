@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Elements } from '@renderer/types/diagram';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
@@ -8,35 +8,26 @@ interface DiagramEditorProps {
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [editor, setEditor] = useState<CanvasEditor | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
-
     const editor = new CanvasEditor(containerRef.current, elements);
-
-    setEditor(editor);
 
     return () => editor.cleanUp();
   }, [containerRef.current]);
 
   return (
-    <div className="flex h-full w-full">
-      <aside className="calc(25vw/2) border-r border-neutral-500 bg-neutral-900 p-4">
-        {/* <button
-          className="mb-4 rounded-sm bg-neutral-50 px-2 py-1 text-neutral-800"
-          onClick={() =>
-            console.log(editor?.states.items.entries(), editor?.transitions.items.entries())
-          }
-        >
-          Elements
-        </button> */}
+    <div className="flex flex-col h-full w-full">
+      <div className="flex bg-[#4391BF] font-Fira text-[calc(4.5vh/2)] bg-opacity-50 w-[calc(22vw/2)] h-[5vh] text-center">
+        <p>
 
-        <div className="grid h-[50px] w-[100px] place-items-center bg-neutral-700 text-neutral-50" draggable>
-          State
-        </div>
-      </aside>
-      <div className="z-50 flex-1 overflow-hidden bg-neutral-800" ref={containerRef} />
+        </p>
+        <button className={`ml-[0.5vw]`}>
+          Справка
+        </button>
+      </div>
+
+      <div className="z-50 h-[95vh] overflow-hidden bg-neutral-800" ref={containerRef} />
     </div>
   );
 };

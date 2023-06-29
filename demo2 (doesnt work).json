@@ -1,0 +1,88 @@
+{
+  "states": {
+    "on": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod",
+            "method": "turnOn"
+          },
+          {
+            "component": "timer",
+            "method": "start",
+            "args": [1]
+          }
+        ]
+      },
+      "bounds": {
+        "height": 50,
+        "width": 100,
+        "x": 50,
+        "y": 50
+      }
+    },
+    "off": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod",
+            "method": "turnOff"
+          },
+          {
+            "component": "timer",
+            "method": "start",
+            "args": [1]
+          }
+        ]
+      },
+      "bounds": {
+        "height": 50,
+        "width": 100,
+        "x": 200,
+        "y": 200
+      }
+    },
+    "oops": {
+      "events": {},
+      "bounds": {
+        "height": 50,
+        "width": 100,
+        "x": 350,
+        "y": 300
+      }
+    }
+  },
+
+  "initialState": "on",
+
+  "transitions": [
+    {
+      "source": "on",
+      "target": "off",
+      "condition": {
+        "component": "timer",
+        "method": "timeOut"
+      }
+    },
+    {
+      "source": "on",
+      "target": "off",
+      "condition": {
+        "component": "timer",
+        "method": "timeOut"
+      }
+    }
+  ],
+
+  "components": {
+    "diod": {
+      "type": "Led",
+      "parameters": {
+        "pin": 13
+      }
+    },
+    "timer": {
+      "type": "Timer"
+    }
+  }
+}

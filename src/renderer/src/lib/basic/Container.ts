@@ -2,18 +2,22 @@ import { Elements } from '@renderer/types/diagram';
 import { States } from '../drawable/States';
 import { Transitions } from '../drawable/Transitions';
 import { CanvasEditor } from '../CanvasEditor';
+import { clamp } from '../utils';
 
+// Это класс для реализации панорамирования, зума, отрисовки всего, DragAndDrop и сериализации диаграммы
 export class Container {
   app!: CanvasEditor;
 
   states!: States;
   transitions!: Transitions;
 
-  spacePressed = false;
-
   offset = { x: 0, y: 0 };
+  scale = 1;
 
   isPan = false;
+  isScale = false;
+
+  private grabOffset = { x: 0, y: 0 };
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -30,66 +34,96 @@ export class Container {
   }
 
   private initEvents() {
-    this.app.canvas.element.addEventListener('dragover', (e) => {
-      e.preventDefault();
-    });
-    this.app.canvas.element.addEventListener('drop', (e) => {
-      e.preventDefault();
+    this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
+    this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
-      const rect = this.app.canvas.element.getBoundingClientRect();
-      const position = {
-        x: e.clientX - rect.left - this.offset.x,
-        y: e.clientY - rect.top - this.offset.y,
-      };
+    this.app.keyboard.on('spacedown', this.handleSpaceDown);
+    this.app.keyboard.on('spaceup', this.handleSpaceUp);
+    this.app.keyboard.on('ctrldown', this.handleCtrlDown);
+    this.app.keyboard.on('ctrlup', this.handleCtrlUp);
 
-      this.states.createState(position);
-
-      this.app.isDirty = true;
-    });
-
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
-
-    this.app.canvas.element.addEventListener('mousemove', this.handleMouseMove);
+    this.app.mouse.on('mousedown', this.handleMouseDown);
+    this.app.mouse.on('mouseup', this.handleMouseUp);
+    this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('wheel', this.handleMouseWheel);
   }
 
-  handleKeyDown = (e: KeyboardEvent) => {
-    if (e.code === 'Space') {
-      this.spacePressed = true;
+  handleDrop = (e: DragEvent) => {
+    e.preventDefault();
 
-      if (this.app.mouse.left) {
-        this.app.canvas.element.style.cursor = 'grabbing';
-      } else {
-        this.app.canvas.element.style.cursor = 'grab';
-      }
-    }
-  };
+    const rect = this.app.canvas.element.getBoundingClientRect();
+    const position = {
+      x: (e.clientX - rect.left) * this.scale - this.offset.x,
+      y: (e.clientY - rect.top) * this.scale - this.offset.y,
+    };
 
-  handleKeyUp = (e: KeyboardEvent) => {
-    if (e.code === 'Space') {
-      this.spacePressed = false;
-
-      this.app.canvas.element.style.cursor = 'default';
-    }
-
-    if (this.isPan) {
-      this.isPan = false;
-    }
-  };
-
-  handleMouseMove = () => {
-    if (!this.spacePressed || !this.app.mouse.left) return;
-
-    this.isPan = true;
-
-    this.offset.x += this.app.mouse.dx;
-    this.offset.y += this.app.mouse.dy;
+    this.states.createNewState(position);
 
     this.app.isDirty = true;
   };
 
-  cleanEvents() {
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
+  handleMouseDown = () => {
+    if (!this.isPan || !this.app.mouse.left) return;
+
+    this.grabOffset = {
+      x: this.app.mouse.x * this.scale - this.offset.x,
+      y: this.app.mouse.y * this.scale - this.offset.y,
+    };
+
+    this.app.canvas.element.style.cursor = 'grabbing';
+  };
+
+  handleMouseUp = () => {
+    if (!this.isPan) return;
+
+    this.app.canvas.element.style.cursor = 'grab';
+  };
+
+  handleMouseMove = () => {
+    if (!this.isPan || !this.app.mouse.left) return;
+
+    // TODO Много раз такие опереции повторяются, нужно переделать на функции
+    this.offset.x = this.app.mouse.x * this.scale - this.grabOffset.x;
+    this.offset.y = this.app.mouse.y * this.scale - this.grabOffset.y;
+
+    this.app.isDirty = true;
+  };
+
+  handleSpaceDown = () => {
+    this.isPan = true;
+
+    this.app.canvas.element.style.cursor = 'grab';
+  };
+
+  handleSpaceUp = () => {
+    this.isPan = false;
+
+    this.app.canvas.element.style.cursor = 'default';
+  };
+
+  handleCtrlDown = () => {
+    this.isScale = true;
+  };
+
+  handleCtrlUp = () => {
+    this.isScale = false;
+  };
+
+  handleMouseWheel = (e: WheelEvent) => {
+    if (!this.isScale) return;
+
+    e.preventDefault();
+
+    const newScale = clamp(this.scale + e.deltaY * 0.001, 0.5, 2);
+    this.offset.x = this.offset.x - (this.app.mouse.x * this.scale - this.app.mouse.x * newScale);
+    this.offset.y = this.offset.y - (this.app.mouse.y * this.scale - this.app.mouse.y * newScale);
+
+    this.scale = newScale;
+
+    this.app.isDirty = true;
+  };
+
+  get graphData() {
+    return [...this.states.items.values(), ...this.transitions.items.values()];
   }
 }

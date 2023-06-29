@@ -15,6 +15,7 @@ export type Condition = {
 export type State = {
   bounds: Rectangle;
   events: { [id: string]: Event };
+  states?: { [id: string]: State };
 };
 
 export type Transition = {

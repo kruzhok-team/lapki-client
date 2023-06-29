@@ -1,8 +1,15 @@
 import { Rectangle } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
+import { EventEmitter } from '../common/EventEmitter';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 
-export class Draggable {
+// interface MyMouseEvent<T> {
+//   target: T;
+//   event: any;
+// }
+
+export class Draggable extends EventEmitter {
   container!: Container;
 
   bounds!: Rectangle;
@@ -10,10 +17,15 @@ export class Draggable {
   dragging = false;
   private grabOffset = { x: 0, y: 0 };
 
-  onMouseDown: ((node: this) => void) | undefined = undefined;
-  onMouseUp: ((node: this) => void) | undefined = undefined;
+  private isMouseDown = false;
+
+  // onMouseDown?: (event: MyMouseEvent<this>) => void;
+  // onMouseUp?: (event: MyMouseEvent<this>) => void;
+  // onClick?: (event: MyMouseEvent<this>) => void;
 
   constructor(container: Container, bounds: Rectangle) {
+    super();
+
     this.container = container;
     this.bounds = bounds;
 
@@ -31,59 +43,64 @@ export class Draggable {
     };
   }
 
-  handleMouseDown = () => {
-    if (!this.container.app.mouse.left) return;
+  handleMouseDown = (e: MyMouseEvent) => {
+    if (!e.left) return;
 
-    const isUnderMouse = this.isUnderMouse();
+    const isUnderMouse = this.isUnderMouse(e);
 
     if (!isUnderMouse) return;
 
+    // для того что-бы не хватать несколько элементов
+    e.stopPropagation();
+
     this.grabOffset = {
-      x: this.container.app.mouse.x - this.drawBounds.x,
-      y: this.container.app.mouse.y - this.drawBounds.y,
+      x: e.x - this.drawBounds.x,
+      y: e.y - this.drawBounds.y,
     };
     this.dragging = true;
 
-    if (this.onMouseDown) {
-      this.onMouseDown(this);
-    }
+    this.isMouseDown = true;
+
+    this.emit('mousedown', { event: e, target: this });
+
+    // this.onMouseDown?.({ event, target: this });
   };
 
-  handleMouseMove = () => {
+  handleMouseMove = (e: MyMouseEvent) => {
     if (!this.dragging || this.container.isPan) return;
 
-    this.bounds.x =
-      (this.container.app.mouse.x - this.grabOffset.x) * this.container.scale -
-      this.container.offset.x;
-    this.bounds.y =
-      (this.container.app.mouse.y - this.grabOffset.y) * this.container.scale -
-      this.container.offset.y;
+    this.bounds.x = (e.x - this.grabOffset.x) * this.container.scale - this.container.offset.x;
+    this.bounds.y = (e.y - this.grabOffset.y) * this.container.scale - this.container.offset.y;
 
     document.body.style.cursor = 'grabbing';
 
     this.container.app.isDirty = true;
   };
 
-  handleMouseUp = () => {
-    const isUnderMouse = this.isUnderMouse();
+  handleMouseUp = (e: MyMouseEvent) => {
+    const isUnderMouse = this.isUnderMouse(e);
 
-    if (isUnderMouse) {
-      if (this.onMouseUp) {
-        this.onMouseUp(this);
-      }
-    }
-
-    if (!this.dragging) return;
+    if (!isUnderMouse) return;
 
     this.dragging = false;
 
     document.body.style.cursor = 'default';
+
+    this.emit('mousedown', { event: e, target: this });
+    // this.onMouseUp?.({ event, target: this });
+
+    if (this.isMouseDown) {
+      this.isMouseDown = false;
+
+      this.emit('click', { event: e, target: this });
+
+      // this.onClick?.({ event, target: this });
+    }
   };
 
-  isUnderMouse() {
-    return isPointInRectangle(this.drawBounds, {
-      x: this.container.app.mouse.x,
-      y: this.container.app.mouse.y,
-    });
+  isUnderMouse({ x, y }: MyMouseEvent) {
+    console.log(this.drawBounds, { x, y });
+
+    return isPointInRectangle(this.drawBounds, { x, y });
   }
 }

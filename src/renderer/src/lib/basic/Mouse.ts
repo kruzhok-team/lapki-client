@@ -1,58 +1,56 @@
-import { EventEmitter } from '../common/EventEmitter';
+import { MouseEventEmitter } from '../common/MouseEventEmitter';
 
 enum Button {
   left = 0,
 }
 
-export class Mouse extends EventEmitter<any> {
+export class Mouse extends MouseEventEmitter {
   element!: HTMLElement;
-
-  under: boolean = false;
-  punder: boolean = false;
-
-  x: number = 0;
-  y: number = 0;
-
-  private px: number = 0;
-  private py: number = 0;
-
-  dx: number = 0;
-  dy: number = 0;
 
   left: boolean = false;
   pleft: boolean = false;
 
-  mousedownStack: string[] = [];
+  private leftOffset = 0;
+  private topOffset = 0;
 
   constructor(element: HTMLElement) {
     super();
 
     this.element = element;
 
-    this.element.addEventListener('mousemove', this.mousemoveHandler);
-    this.element.addEventListener('mouseleave', this.mouseleaveHandler);
-    this.element.addEventListener('mouseenter', this.mousemoveHandler);
+    this.setOffset();
+
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
+    this.element.addEventListener('mousemove', this.mousemoveHandler);
     this.element.addEventListener('wheel', this.mouseWheelHandler);
   }
 
-  mousemoveHandler = (e: MouseEvent) => {
+  setOffset() {
+    const bounds = this.element.getBoundingClientRect();
+    this.leftOffset = bounds.left;
+    this.topOffset = bounds.top;
+  }
+
+  getPosition(e: MouseEvent) {
     const { clientX, clientY } = e;
-    const { left, top } = this.element.getBoundingClientRect();
 
-    const x = clientX - left;
-    const y = clientY - top;
+    return {
+      x: clientX - this.leftOffset,
+      y: clientY - this.topOffset,
+    };
+  }
 
-    Object.assign(this, { x, y, px: this.x, py: this.y, under: true });
+  mousemoveHandler = (e: MouseEvent) => {
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      left: this.left,
+      nativeEvent: e,
+    };
 
-    this.emit('mousemove', e);
-  };
-
-  mouseleaveHandler = (e: MouseEvent) => {
-    this.under = false;
-
-    this.emit('mouseleave', e);
+    this.emit('mousemove', event);
   };
 
   mousedownHandler = (e: MouseEvent) => {
@@ -60,7 +58,15 @@ export class Mouse extends EventEmitter<any> {
       this.left = true;
     }
 
-    this.emit('mousedown', e);
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      left: this.left,
+      nativeEvent: e,
+    };
+
+    this.emit('mousedown', event);
   };
 
   mouseupHandler = (e: MouseEvent) => {
@@ -68,21 +74,30 @@ export class Mouse extends EventEmitter<any> {
       this.left = false;
     }
 
-    this.emit('mouseup', e);
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      left: this.left,
+      nativeEvent: e,
+    };
+
+    this.emit('mouseup', event);
   };
 
   mouseWheelHandler = (e: WheelEvent) => {
-    this.emit('wheel', e);
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      left: this.left,
+      nativeEvent: e,
+    };
+
+    this.emit('wheel', event);
   };
 
   tick() {
-    Object.assign(this, {
-      dx: this.x - this.px,
-      dy: this.y - this.py,
-      px: this.x,
-      py: this.y,
-      pleft: this.left,
-      punder: this.under,
-    });
+    this.pleft = this.left;
   }
 }

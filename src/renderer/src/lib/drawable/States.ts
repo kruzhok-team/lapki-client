@@ -4,7 +4,6 @@ import { State } from './State';
 
 import { Elements } from '@renderer/types/diagram';
 import { EventEmitter } from '../common/EventEmitter';
-import { EdgeHandlers } from './EdgeHandlers';
 import { Point } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
@@ -14,17 +13,12 @@ export class States extends EventEmitter {
 
   items: Map<string, State> = new Map();
 
-  mouseDownState: State | null = null;
-  selectedState: State | null = null;
-  edgeHandlers!: EdgeHandlers;
-
   constructor(container: Container, items: Elements['states']) {
     super();
 
     this.container = container;
-    this.edgeHandlers = new EdgeHandlers(container.app, this.handleStartNewTransition);
 
-    this.container.app.mouse.on('mouseup', this.deselect);
+    this.container.app.mouse.on('mouseup', this.handleMouseUp);
 
     this.initItems(items);
   }
@@ -33,8 +27,12 @@ export class States extends EventEmitter {
     for (const id in items) {
       const state = new State(this.container, id, items[id]);
 
-      state.onMouseDown = this.handleStateMouseDown;
-      state.onMouseUp = this.handleStateMouseUp;
+      state.on('mouseup', this.handleMouseUpOnState as any);
+      state.on('click', this.handleStateClick as any);
+
+      // state.onClick = this.handleStateClick;
+      // state.onMouseUp = this.handleMouseUpOnState;
+      state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
       this.items.set(id, state);
     }
@@ -42,41 +40,32 @@ export class States extends EventEmitter {
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.items.forEach((state) => {
-      state.draw(ctx, canvas, { isSelected: this.selectedState?.id === state.id });
+      state.draw(ctx, canvas);
     });
-
-    this.edgeHandlers.draw(ctx, canvas);
   }
 
-  selectState(state: State) {
-    this.selectedState = state;
-
-    this.edgeHandlers.setCurrentState(state);
-
-    this.container.app.isDirty = true;
-  }
-
-  deselect = () => {
-    this.selectedState = null;
-    this.edgeHandlers.remove();
+  handleMouseUp = () => {
+    this.items.forEach((state) => state.setIsSelected(false));
 
     this.container.app.isDirty = true;
   };
 
-  handleStartNewTransition = () => {
-    this.emit('startNewTransition', {});
+  handleStartNewTransition = (state: State) => {
+    this.emit('startNewTransition', state);
   };
 
-  handleStateMouseDown = (state: State) => {
-    this.mouseDownState = state;
+  handleMouseUpOnState = ({ target }: { target: State; event: any }) => {
+    this.emit('mouseUpOnState', target);
   };
 
-  handleStateMouseUp = (state: State) => {
-    this.emit('mouseUpOnState', { mouseUpState: state });
+  handleStateClick = ({ target, event }: { target: State; event: any }) => {
+    event.stopPropagation();
 
-    if (!this.mouseDownState || this.mouseDownState.id !== state.id) return;
+    this.items.forEach((state) => state.setIsSelected(false));
 
-    this.selectState(state);
+    target.setIsSelected(true);
+
+    this.container.app.isDirty = true;
   };
 
   createNewState(position: Point) {
@@ -91,8 +80,11 @@ export class States extends EventEmitter {
       events: {},
     });
 
-    state.onMouseDown = this.handleStateMouseDown;
-    state.onMouseUp = this.handleStateMouseUp;
+    // state.onMouseUp = this.handleMouseUpOnState;
+    // state.onClick = this.handleStateClick;
+    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('click', this.handleStateClick as any);
+    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(id, state);
   }

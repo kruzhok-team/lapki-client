@@ -2,30 +2,27 @@ import { CanvasEditor } from '../CanvasEditor';
 import { Point } from '@renderer/types/graphics';
 import { isPointInRectangle } from '../utils';
 import { State } from './State';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 export class EdgeHandlers {
   app!: CanvasEditor;
-  currentState: State | null = null;
+  state!: State;
 
-  onStartNewTransition!: () => void;
+  onStartNewTransition?: (state: State) => void;
 
-  size = 20;
-
-  constructor(app: CanvasEditor, onStartNewTransition: () => void) {
+  constructor(app: CanvasEditor, state: State) {
     this.app = app;
-    this.onStartNewTransition = onStartNewTransition;
+    this.state = state;
 
-    this.app.mouse.addEventListener('mousedown', this.handleMouseDown);
+    this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 
-  get position(): Point[] | null {
-    if (!this.currentState) return null;
-
+  get position(): Point[] {
     const offset = 4;
-    const stateX = this.currentState.drawBounds.x;
-    const stateY = this.currentState.drawBounds.y;
-    const stateWidth = this.currentState.drawBounds.width;
-    const stateHeight = this.currentState.drawBounds.height;
+    const stateX = this.state.drawBounds.x;
+    const stateY = this.state.drawBounds.y;
+    const stateWidth = this.state.drawBounds.width;
+    const stateHeight = this.state.drawBounds.height;
 
     return [
       {
@@ -47,17 +44,15 @@ export class EdgeHandlers {
     ];
   }
 
-  setCurrentState(state: State) {
-    this.currentState = state;
+  get size() {
+    return 20 / this.app.container.scale;
   }
 
-  remove() {
-    this.currentState = null;
+  setCurrentState(state: State) {
+    this.state = state;
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    if (!this.currentState || !this.position) return;
-
     ctx.beginPath();
 
     for (const { x, y } of this.position) {
@@ -70,24 +65,17 @@ export class EdgeHandlers {
     ctx.closePath();
   }
 
-  handleMouseDown = () => {
-    if (!this.currentState || !this.position || !this.isMouseOver()) {
-      return;
-    }
+  handleMouseDown = (e: MyMouseEvent) => {
+    if (!this.state.isSelected || !this.isMouseOver(e)) return;
 
-    this.onStartNewTransition();
+    e.stopPropagation();
+
+    this.onStartNewTransition?.(this.state);
   };
 
-  isMouseOver() {
-    if (!this.position) return false;
-
+  isMouseOver(e: MyMouseEvent) {
     for (const { x, y } of this.position) {
-      if (
-        isPointInRectangle(
-          { x, y, width: this.size, height: this.size },
-          { x: this.app.mouse.x, y: this.app.mouse.y }
-        )
-      ) {
+      if (isPointInRectangle({ x, y, width: this.size, height: this.size }, { x: e.x, y: e.y })) {
         return true;
       }
     }

@@ -17,14 +17,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   }, [containerRef.current]);
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="flex bg-[#4391BF] font-Fira text-[calc(4.5vh/2)] bg-opacity-50 w-[calc(22vw/2)] h-[5vh] text-center">
-        <p>
-
-        </p>
-        <button className={`ml-[0.5vw]`}>
-          Справка
-        </button>
+    <div className="flex h-full w-full flex-col">
+      <div className="flex h-[5vh] w-[calc(22vw/2)] bg-[#4391BF] bg-opacity-50 text-center font-Fira text-[calc(4.5vh/2)]">
+        <p></p>
+        <button className={`ml-[0.5vw]`}>Справка</button>
       </div>
 
       <div className="z-50 h-[95vh] overflow-hidden bg-neutral-800" ref={containerRef} />

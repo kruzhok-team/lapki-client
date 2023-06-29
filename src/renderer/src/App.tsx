@@ -24,12 +24,12 @@ export const App: React.FC = () => {
   /*Переключение блоков в меню между собой*/
   const [activeIndex, setActiveIndex] = useState(1);
   const handleClick = (index) => setActiveIndex(index);
-  const checkActive = (index, className) => activeIndex === index ? className : "";
+  const checkActive = (index, className) => (activeIndex === index ? className : '');
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
     const fileContent = await window.electron.ipcRenderer.invoke('dialog:openFile');
-  
+
     if (fileContent && typeof fileContent === 'string') {
       setFileContent(fileContent);
     }
@@ -43,42 +43,90 @@ export const App: React.FC = () => {
 
     setIsCodeEditorOpen((p) => !p);
   };
-  return (
 
+  return (
     <div className="flex flex-row">
-      <section className="flex flex-col items-center h-screen bg-white w-[4vw]"> 
-        <button className={`w-[4vw] h-[4.5vw] ${checkActive(1, "!bg-opacity-50 !bg-[#4391BF]")}`} onClick={() => (handleClick(1))}>
-          <img src={menu} alt="" className="w-[2.5vw] h-[2.5vw] m-auto"></img>
+      <section className="flex h-screen w-[4vw] flex-col items-center bg-white">
+        <button
+          className={`h-[4.5vw] w-[4vw] ${checkActive(1, '!bg-[#4391BF] !bg-opacity-50')}`}
+          onClick={() => handleClick(1)}
+        >
+          <img src={menu} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
         </button>
-        <hr className="bg-[#4391BF] w-[4vw] border-none h-[1px]"/>
-        <button className={`w-[4vw] h-[4.5vw] ${checkActive(2, "!bg-opacity-50 !bg-[#4391BF]")}`} onClick={() => (handleClick(2), handleOpenFile())}>
-          <img src={activeIndex==2 ? components1 : components} alt="" className="w-[2.5vw] h-[2.5vw] m-auto"></img>
+        <hr className="h-[1px] w-[4vw] border-none bg-[#4391BF]" />
+        <button
+          className={`h-[4.5vw] w-[4vw] ${checkActive(2, '!bg-[#4391BF] !bg-opacity-50')}`}
+          onClick={() => (handleClick(2), handleOpenFile())}
+        >
+          <img
+            src={activeIndex == 2 ? components1 : components}
+            alt=""
+            className="m-auto h-[2.5vw] w-[2.5vw]"
+          ></img>
         </button>
-        <button className={`w-[4vw] h-[4.5vw] ${checkActive(3, "!bg-opacity-50 !bg-[#4391BF]")}`} onClick={() => (handleClick(3), handleToggleCodeEditor())}>
-          <img src={activeIndex==3 ? programming : programming1} alt="" className="w-[2.5vw] h-[2.5vw] m-auto"></img>
+        <button
+          className={`h-[4.5vw] w-[4vw] ${checkActive(3, '!bg-[#4391BF] !bg-opacity-50')}`}
+          onClick={() => (handleClick(3), handleToggleCodeEditor())}
+        >
+          <img
+            src={activeIndex == 3 ? programming : programming1}
+            alt=""
+            className="m-auto h-[2.5vw] w-[2.5vw]"
+          ></img>
         </button>
-        <button className={`w-[4vw] h-[4.5vw] ${checkActive(4, "!bg-opacity-50 !bg-[#4391BF]")}`} onClick={() => (handleClick(4))}>
-          <img src={activeIndex==4 ? drive1 : drive} alt="" className="w-[2.5vw] h-[2.5vw] m-auto"></img>
+        <button
+          className={`h-[4.5vw] w-[4vw] ${checkActive(4, '!bg-[#4391BF] !bg-opacity-50')}`}
+          onClick={() => handleClick(4)}
+        >
+          <img
+            src={activeIndex == 4 ? drive1 : drive}
+            alt=""
+            className="m-auto h-[2.5vw] w-[2.5vw]"
+          ></img>
         </button>
-        <button className={`w-[4vw] h-[4.5vw] ${checkActive(5, "!bg-opacity-50 !bg-[#4391BF]")}`} onClick={() => (handleClick(5))}>
-          <img src={activeIndex==5 ? chip1 : chip} alt="" className="w-[2.5vw] h-[2.5vw] m-auto"></img>
+        <button
+          className={`h-[4.5vw] w-[4vw] ${checkActive(5, '!bg-[#4391BF] !bg-opacity-50')}`}
+          onClick={() => handleClick(5)}
+        >
+          <img
+            src={activeIndex == 5 ? chip1 : chip}
+            alt=""
+            className="m-auto h-[2.5vw] w-[2.5vw]"
+          ></img>
         </button>
-        <button className={`w-[4vw] h-[4.5vw] mt-auto ${checkActive(6, "!bg-opacity-50 !bg-[#4391BF]")}`} onClick={() => (handleClick(6))}>
-          <img src={activeIndex==6 ? gear1 : gear} alt="" className="w-[2.5vw] h-[2.5vw] m-auto"></img>
+        <button
+          className={`mt-auto h-[4.5vw] w-[4vw] ${checkActive(6, '!bg-[#4391BF] !bg-opacity-50')}`}
+          onClick={() => handleClick(6)}
+        >
+          <img
+            src={activeIndex == 6 ? gear1 : gear}
+            alt=""
+            className="m-auto h-[2.5vw] w-[2.5vw]"
+          ></img>
         </button>
       </section>
-      <div className={`hidden ${checkActive(1, "!block")}`}>
+      <div className={`hidden ${checkActive(1, '!block')}`}>
         <Menu />
       </div>
-      <div className={`hidden ${checkActive(2, "!block")}`}>
+      <div className={`hidden ${checkActive(2, '!block')}`}>
         <Explorer />
       </div>
-      <div className={`hidden ${checkActive(3, "!block")}`}>
+      <div className={`hidden ${checkActive(3, '!block')}`}>
         {isCodeEditorOpen && fileContent && <CodeEditor value={fileContent} />}
       </div>
-      
-      <main className={`flex items-center justify-center h-screen ${isCodeEditorOpen ? `w-[58vw]` : activeIndex!=3 ? `w-[58vw]` : `w-[74vw]`}`}>
-        {elements ? (<DiagramEditor elements={elements} />) : (<div className="font-Fira text-[calc(5vh/2)]">Откройте файл или перенесите его сюда...</div>)}
+
+      <main
+        className={`flex h-screen items-center justify-center ${
+          isCodeEditorOpen ? `w-[58vw]` : activeIndex != 3 ? `w-[58vw]` : `w-[74vw]`
+        }`}
+      >
+        {elements ? (
+          <DiagramEditor elements={elements} />
+        ) : (
+          <div className="font-Fira text-[calc(5vh/2)]">
+            Откройте файл или перенесите его сюда...
+          </div>
+        )}
       </main>
       <Documentations />
     </div>

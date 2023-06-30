@@ -18,8 +18,6 @@ export class Mouse extends MouseEventEmitter {
 
     this.element = element;
 
-    this.setOffset();
-
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
     this.element.addEventListener('mousemove', this.mousemoveHandler);

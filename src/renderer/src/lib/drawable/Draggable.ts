@@ -4,11 +4,6 @@ import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 
-// interface MyMouseEvent<T> {
-//   target: T;
-//   event: any;
-// }
-
 export class Draggable extends EventEmitter {
   container!: Container;
 
@@ -18,10 +13,6 @@ export class Draggable extends EventEmitter {
   private grabOffset = { x: 0, y: 0 };
 
   private isMouseDown = false;
-
-  // onMouseDown?: (event: MyMouseEvent<this>) => void;
-  // onMouseUp?: (event: MyMouseEvent<this>) => void;
-  // onClick?: (event: MyMouseEvent<this>) => void;
 
   constructor(container: Container, bounds: Rectangle) {
     super();
@@ -62,8 +53,6 @@ export class Draggable extends EventEmitter {
     this.isMouseDown = true;
 
     this.emit('mousedown', { event: e, target: this });
-
-    // this.onMouseDown?.({ event, target: this });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -82,25 +71,22 @@ export class Draggable extends EventEmitter {
 
     if (!isUnderMouse) return;
 
+    e.stopPropagation();
+
     this.dragging = false;
 
     document.body.style.cursor = 'default';
 
-    this.emit('mousedown', { event: e, target: this });
-    // this.onMouseUp?.({ event, target: this });
+    this.emit('mouseup', { event: e, target: this });
 
     if (this.isMouseDown) {
       this.isMouseDown = false;
 
       this.emit('click', { event: e, target: this });
-
-      // this.onClick?.({ event, target: this });
     }
   };
 
   isUnderMouse({ x, y }: MyMouseEvent) {
-    console.log(this.drawBounds, { x, y });
-
     return isPointInRectangle(this.drawBounds, { x, y });
   }
 }

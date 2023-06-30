@@ -23,10 +23,15 @@ export class Container {
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
 
-    this.states = new States(this, elements.states);
-    this.transitions = new Transitions(this, elements.transitions);
+    this.states = new States(this);
+    this.transitions = new Transitions(this);
 
+    // Порядок важен, система дерьмо
     this.initEvents();
+    this.states.initEvents();
+    this.transitions.initEvents();
+    this.states.initItems(elements.states);
+    this.transitions.initItems(elements.transitions);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

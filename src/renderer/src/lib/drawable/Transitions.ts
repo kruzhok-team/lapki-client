@@ -15,14 +15,11 @@ export class Transitions {
   ghost = new GhostTransition();
   showGhost = false;
 
-  constructor(container: Container, items: Elements['transitions']) {
+  constructor(container: Container) {
     this.container = container;
-
-    this.initItems(items);
-    this.initEvents();
   }
 
-  private initItems(items: Elements['transitions']) {
+  initItems(items: Elements['transitions']) {
     for (const id in items) {
       const { source, target, condition, color } = items[id];
 
@@ -35,7 +32,7 @@ export class Transitions {
     }
   }
 
-  private initEvents() {
+  initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
@@ -66,14 +63,14 @@ export class Transitions {
     this.container.app.isDirty = true;
   };
 
-  handleMouseUpOnState = (state: State) => {
+  handleMouseUpOnState = ({ target }: { target: State }) => {
     if (!this.showGhost) return;
 
     // TODO Доделать парвильный condition
     const transition = new Transition(
       this.container,
       this.ghost.source as State,
-      state,
+      target,
       {
         component: 'a',
         method: 'a',
@@ -89,6 +86,8 @@ export class Transitions {
 
     this.showGhost = false;
     this.ghost.clear();
+
+    this.container.app.isDirty = true;
   };
 
   handleMouseUp = () => {

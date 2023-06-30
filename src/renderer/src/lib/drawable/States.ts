@@ -13,25 +13,23 @@ export class States extends EventEmitter {
 
   items: Map<string, State> = new Map();
 
-  constructor(container: Container, items: Elements['states']) {
+  constructor(container: Container) {
     super();
 
     this.container = container;
-
-    this.container.app.mouse.on('mouseup', this.handleMouseUp);
-
-    this.initItems(items);
   }
 
-  private initItems(items: Elements['states']) {
+  initEvents() {
+    this.container.app.mouse.on('mouseup', this.handleMouseUp);
+  }
+
+  initItems(items: Elements['states']) {
     for (const id in items) {
       const state = new State(this.container, id, items[id]);
 
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
 
-      // state.onClick = this.handleStateClick;
-      // state.onMouseUp = this.handleMouseUpOnState;
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
       this.items.set(id, state);
@@ -54,8 +52,8 @@ export class States extends EventEmitter {
     this.emit('startNewTransition', state);
   };
 
-  handleMouseUpOnState = ({ target }: { target: State; event: any }) => {
-    this.emit('mouseUpOnState', target);
+  handleMouseUpOnState = (e: { target: State; event: any }) => {
+    this.emit('mouseUpOnState', e);
   };
 
   handleStateClick = ({ target, event }: { target: State; event: any }) => {
@@ -80,8 +78,6 @@ export class States extends EventEmitter {
       events: {},
     });
 
-    // state.onMouseUp = this.handleMouseUpOnState;
-    // state.onClick = this.handleStateClick;
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;

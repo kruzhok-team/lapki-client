@@ -19,10 +19,15 @@ export class EdgeHandlers {
 
   get position(): Point[] {
     const offset = 4;
-    const stateX = this.state.drawBounds.x;
-    const stateY = this.state.drawBounds.y;
-    const stateWidth = this.state.drawBounds.width;
-    const stateHeight = this.state.drawBounds.height;
+    let {
+      x: stateX,
+      y: stateY,
+      width: stateWidth,
+      height: stateHeight,
+      childrenHeight,
+    } = this.state.drawBounds;
+
+    stateHeight += childrenHeight ?? 0;
 
     return [
       {
@@ -56,7 +61,7 @@ export class EdgeHandlers {
     ctx.beginPath();
 
     for (const { x, y } of this.position) {
-      ctx.roundRect(x, y, this.size, this.size, 4);
+      ctx.roundRect(x, y, this.size, this.size, 4 / this.app.container.scale);
     }
 
     ctx.fillStyle = '#FFF';

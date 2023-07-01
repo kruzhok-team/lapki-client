@@ -10,6 +10,9 @@ export class Mouse extends MouseEventEmitter {
   left: boolean = false;
   pleft: boolean = false;
 
+  px = 0;
+  py = 0;
+
   private leftOffset = 0;
   private topOffset = 0;
 
@@ -44,11 +47,16 @@ export class Mouse extends MouseEventEmitter {
     const event = {
       x,
       y,
+      dx: x - this.px,
+      dy: y - this.py,
       left: this.left,
       nativeEvent: e,
     };
 
     this.emit('mousemove', event);
+
+    this.px = x;
+    this.py = y;
   };
 
   mousedownHandler = (e: MouseEvent) => {
@@ -60,6 +68,8 @@ export class Mouse extends MouseEventEmitter {
     const event = {
       x,
       y,
+      dx: x - this.px,
+      dy: y - this.py,
       left: this.left,
       nativeEvent: e,
     };
@@ -76,6 +86,8 @@ export class Mouse extends MouseEventEmitter {
     const event = {
       x,
       y,
+      dx: x - this.px,
+      dy: y - this.py,
       left: this.left,
       nativeEvent: e,
     };
@@ -88,6 +100,8 @@ export class Mouse extends MouseEventEmitter {
     const event = {
       x,
       y,
+      dx: x - this.px,
+      dy: y - this.py,
       left: this.left,
       nativeEvent: e,
     };

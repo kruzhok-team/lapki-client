@@ -1,6 +1,8 @@
 export interface MyMouseEvent {
   x: number;
   y: number;
+  dx: number;
+  dy: number;
   left: boolean;
   stopPropagation: () => void;
   nativeEvent: MouseEvent;

@@ -25,7 +25,10 @@ export class States extends EventEmitter {
 
   initItems(items: Elements['states']) {
     for (const id in items) {
-      const state = new State(this.container, id, items[id]);
+      const parent = this.items.get(items[id].parent ?? '');
+      const state = new State(this.container, id, items[id], parent);
+
+      parent?.children.set(id, state);
 
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
@@ -42,8 +45,12 @@ export class States extends EventEmitter {
     });
   }
 
-  handleMouseUp = () => {
+  private removeSelection() {
     this.items.forEach((state) => state.setIsSelected(false));
+  }
+
+  handleMouseUp = () => {
+    this.removeSelection();
 
     this.container.app.isDirty = true;
   };
@@ -59,7 +66,7 @@ export class States extends EventEmitter {
   handleStateClick = ({ target, event }: { target: State; event: any }) => {
     event.stopPropagation();
 
-    this.items.forEach((state) => state.setIsSelected(false));
+    this.removeSelection();
 
     target.setIsSelected(true);
 

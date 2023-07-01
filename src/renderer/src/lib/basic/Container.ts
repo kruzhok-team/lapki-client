@@ -18,8 +18,6 @@ export class Container {
   isPan = false;
   isScale = false;
 
-  private grabOffset = { x: 0, y: 0 };
-
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
 
@@ -71,11 +69,6 @@ export class Container {
   handleMouseDown = (e: MyMouseEvent) => {
     if (!this.isPan || !e.left) return;
 
-    this.grabOffset = {
-      x: e.x * this.scale - this.offset.x,
-      y: e.y * this.scale - this.offset.y,
-    };
-
     this.app.canvas.element.style.cursor = 'grabbing';
   };
 
@@ -89,8 +82,8 @@ export class Container {
     if (!this.isPan || !e.left) return;
 
     // TODO Много раз такие опереции повторяются, нужно переделать на функции
-    this.offset.x = e.x * this.scale - this.grabOffset.x;
-    this.offset.y = e.y * this.scale - this.grabOffset.y;
+    this.offset.x += e.dx * this.scale;
+    this.offset.y += e.dy * this.scale;
 
     this.app.isDirty = true;
   };
@@ -122,8 +115,8 @@ export class Container {
     e.nativeEvent.preventDefault();
 
     const newScale = clamp(this.scale + e.nativeEvent.deltaY * 0.001, 0.5, 2);
-    this.offset.x = this.offset.x - (e.x * this.scale - e.x * newScale);
-    this.offset.y = this.offset.y - (e.y * this.scale - e.y * newScale);
+    this.offset.x -= e.x * this.scale - e.x * newScale;
+    this.offset.y -= e.y * this.scale - e.y * newScale;
 
     this.scale = newScale;
 

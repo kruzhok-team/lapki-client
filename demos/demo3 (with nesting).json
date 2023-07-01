@@ -9,20 +9,7 @@
           }
         ]
       },
-      "states": {
-        "child state": {
-          "events": {},
-          "bounds": {
-            "height": 100,
-            "width": 200,
-            "x": 100,
-            "y": 100
-          }
-        }
-      },
       "bounds": {
-        "height": 300,
-        "width": 400,
         "x": 96,
         "y": 264
       }
@@ -38,10 +25,35 @@
         ]
       },
       "bounds": {
-        "height": 100,
-        "width": 200,
         "x": 765,
         "y": 134
+      }
+    },
+
+    "child state": {
+      "parent": "on",
+      "events": {},
+      "bounds": {
+        "x": 0,
+        "y": 50
+      }
+    },
+
+    "child2 state": {
+      "parent": "child state",
+      "events": {},
+      "bounds": {
+        "x": 0,
+        "y": 0
+      }
+    },
+
+    "child3 state": {
+      "parent": "on",
+      "events": {},
+      "bounds": {
+        "x": 300,
+        "y": 0
       }
     }
   },

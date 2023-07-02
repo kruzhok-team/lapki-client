@@ -1,8 +1,10 @@
-import { Elements, State as StateType } from '@renderer/types/diagram';
+import { State as StateType } from '@renderer/types/diagram';
+import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
+import { preloadImages } from '../utils';
 
 export class State extends Draggable {
   id!: string;
@@ -12,11 +14,21 @@ export class State extends Draggable {
 
   edgeHandlers!: EdgeHandlers;
 
+  initialIcon?: HTMLImageElement;
+
   constructor(container: Container, id: string, data: StateType, parent?: State) {
     super(container, { ...data.bounds, width: 200, height: 100 }, parent);
 
     this.id = id;
     this.data = data;
+
+    if (this.data.initial) {
+      preloadImages([InitialIcon]).then(([icon]) => {
+        this.initialIcon = icon;
+
+        this.container.app.isDirty = true;
+      });
+    }
 
     this.edgeHandlers = new EdgeHandlers(container.app, this);
   }
@@ -25,6 +37,10 @@ export class State extends Draggable {
     this.drawBody(ctx);
     this.drawTitle(ctx);
     this.drawEvents(ctx);
+
+    if (this.data.initial) {
+      this.drawInitialMark(ctx);
+    }
 
     if (this.children) {
       this.drawChildren(ctx, canvas);
@@ -143,6 +159,24 @@ export class State extends Draggable {
       stateStyle.bodyBorderRadius,
     ]);
     ctx.stroke();
+
+    ctx.closePath();
+  }
+
+  private drawInitialMark(ctx: CanvasRenderingContext2D) {
+    if (!this.initialIcon) return;
+
+    const { x, y, width, height } = this.drawBounds;
+
+    ctx.beginPath();
+
+    ctx.drawImage(
+      this.initialIcon,
+      x - 30 / this.container.scale,
+      y,
+      25 / this.container.scale,
+      25 / this.container.scale
+    );
 
     ctx.closePath();
   }

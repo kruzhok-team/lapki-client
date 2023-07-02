@@ -1,24 +1,32 @@
 import { CanvasEditor } from '../CanvasEditor';
 import { Point } from '@renderer/types/graphics';
-import { isPointInRectangle } from '../utils';
+import { isPointInRectangle, preloadImages } from '../utils';
 import { State } from './State';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import Icon from '@renderer/assets/icons/new transition.svg';
 
+// ? Возиожно эти штуки нужно переделать на обычные dom div
 export class EdgeHandlers {
   app!: CanvasEditor;
   state!: State;
 
   onStartNewTransition?: (state: State) => void;
 
+  icon!: HTMLImageElement;
+
   constructor(app: CanvasEditor, state: State) {
     this.app = app;
     this.state = state;
+
+    preloadImages([Icon]).then(([icon]) => {
+      this.icon = icon;
+    });
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 
   get position(): Point[] {
-    const offset = 4;
+    const offset = 4 / this.app.container.scale;
     let {
       x: stateX,
       y: stateY,
@@ -61,7 +69,7 @@ export class EdgeHandlers {
     ctx.beginPath();
 
     for (const { x, y } of this.position) {
-      ctx.roundRect(x, y, this.size, this.size, 4 / this.app.container.scale);
+      ctx.drawImage(this.icon, x, y, this.size, this.size);
     }
 
     ctx.fillStyle = '#FFF';

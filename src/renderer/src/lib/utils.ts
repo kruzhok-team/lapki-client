@@ -241,3 +241,18 @@ export const getTransitionLines = (
 export const clamp = (value: number, min: number, max: number) => {
   return Math.min(Math.max(min, value), max);
 };
+
+export const preloadImages = (urls: string[]) => {
+  const promises = urls.map((url): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(`Image failed to load: ${url}`);
+
+      image.src = url;
+    });
+  });
+
+  return Promise.all(promises);
+};

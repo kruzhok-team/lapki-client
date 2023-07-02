@@ -2,7 +2,7 @@ export const stateStyle = {
   width: 200,
   height: 100,
 
-  bodyBg: 'rgb(64, 64, 64)',
+  bodyBg: '#404040',
   bodyBorderRadius: 6,
 
   titleFontFamily: 'Arial',
@@ -10,7 +10,7 @@ export const stateStyle = {
   titleFontSize: 20,
   titleBaseLine: 'hanging' as CanvasTextBaseline,
   titleColor: '#FFF',
-  titleBg: 'rgb(82, 82, 82)',
+  titleBg: '#525252',
 
   eventColor: '#FFF',
   eventBaseLine: 'hanging' as CanvasTextBaseline,

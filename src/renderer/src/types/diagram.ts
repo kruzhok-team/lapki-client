@@ -13,6 +13,7 @@ export type Condition = {
 };
 
 export type State = {
+  parent?: string;
   bounds: Rectangle;
   events: { [id: string]: Event };
 };

@@ -1,89 +1,190 @@
 import { Rectangle } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
+import { EventEmitter } from '../common/EventEmitter';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 
-export class Draggable {
+// Сначала это задумывался как класс для разруливания квадратиков которые можно перемещать
+// потом он вырос в кашу из-за добавления вложенных стейтов
+// TODO Это явно нужно передать
+export class Draggable extends EventEmitter {
   container!: Container;
 
   bounds!: Rectangle;
 
+  parent?: Draggable;
+  children: Map<string, Draggable> = new Map();
+
   dragging = false;
-  private grabOffset = { x: 0, y: 0 };
 
-  onMouseDown: ((node: this) => void) | undefined = undefined;
-  onMouseUp: ((node: this) => void) | undefined = undefined;
+  private isMouseDown = false;
 
-  constructor(container: Container, bounds: Rectangle) {
+  childrenPadding = 15;
+
+  constructor(container: Container, bounds: Rectangle, parent?: Draggable) {
+    super();
+
     this.container = container;
     this.bounds = bounds;
+    this.parent = parent;
 
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
   }
 
-  get drawBounds(): Rectangle {
+  // Позиция рассчитанная с возможным родителем
+  private get compoundPosition() {
+    let x = this.bounds.x;
+    let y = this.bounds.y;
+
+    if (this.parent) {
+      const { x: px, y: py } = this.parent.compoundPosition;
+
+      x += px + this.childrenPadding;
+      y += py + this.parent.bounds.height + this.childrenPadding;
+    }
+
+    return { x, y };
+  }
+
+  get computedPosition() {
+    const { x, y } = this.compoundPosition;
+
     return {
-      x: (this.bounds.x + this.container.offset.x) / this.container.scale,
-      y: (this.bounds.y + this.container.offset.y) / this.container.scale,
-      width: this.bounds.width / this.container.scale,
-      height: this.bounds.height / this.container.scale,
+      x: (x + this.container.offset.x) / this.container.scale,
+      y: (y + this.container.offset.y) / this.container.scale,
     };
   }
 
-  handleMouseDown = () => {
-    if (!this.container.app.mouse.left) return;
+  get computedWidth() {
+    let width = this.bounds.width / this.container.scale;
 
-    const isUnderMouse = this.isUnderMouse();
+    if (this.children.size > 0) {
+      let rightChildren = this.children.values().next().value as Draggable;
+
+      this.children.forEach((children) => {
+        const x = children.computedPosition.x;
+        const width = children.computedWidth;
+
+        if (x + width > rightChildren.computedPosition.x + rightChildren.computedWidth) {
+          rightChildren = children;
+        }
+      });
+
+      const x = this.computedPosition.x;
+      const cx = rightChildren.computedPosition.x;
+
+      width =
+        cx +
+        rightChildren.computedDimensions.width -
+        x +
+        this.childrenPadding / this.container.scale;
+    }
+
+    return width;
+  }
+
+  get computedHeight() {
+    return this.bounds.height / this.container.scale;
+  }
+
+  get childrenContainerHeight() {
+    if (this.children.size < 1) return 0;
+
+    let bottomChildren = this.children.values().next().value as Draggable;
+    let result = 0;
+
+    this.children.forEach((children) => {
+      const y = children.computedPosition.y;
+      const height = children.computedHeight;
+      const childrenContainerHeight = children.childrenContainerHeight;
+
+      const bY = bottomChildren.computedPosition.y;
+      const bHeight = bottomChildren.computedHeight;
+      const bChildrenContainerHeight = bottomChildren.childrenContainerHeight;
+
+      if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
+        bottomChildren = children;
+      }
+    });
+
+    const y = this.computedPosition.y;
+    const cy = bottomChildren.computedPosition.y;
+    const childrenContainerHeight = bottomChildren.childrenContainerHeight;
+
+    result = cy + childrenContainerHeight + this.childrenPadding / this.container.scale - y;
+
+    return result;
+  }
+
+  get computedDimensions() {
+    let width = this.computedWidth;
+    let height = this.computedHeight;
+    let childrenHeight = this.childrenContainerHeight;
+
+    return { width, height, childrenHeight };
+  }
+
+  get drawBounds() {
+    return {
+      ...this.computedPosition,
+      ...this.computedDimensions,
+    };
+  }
+
+  handleMouseDown = (e: MyMouseEvent) => {
+    if (!e.left) return;
+
+    const isUnderMouse = this.isUnderMouse(e);
 
     if (!isUnderMouse) return;
 
-    this.grabOffset = {
-      x: this.container.app.mouse.x - this.drawBounds.x,
-      y: this.container.app.mouse.y - this.drawBounds.y,
-    };
+    // для того что-бы не хватать несколько элементов
+    e.stopPropagation();
+
     this.dragging = true;
 
-    if (this.onMouseDown) {
-      this.onMouseDown(this);
-    }
+    this.isMouseDown = true;
+
+    this.emit('mousedown', { event: e, target: this });
   };
 
-  handleMouseMove = () => {
+  handleMouseMove = (e: MyMouseEvent) => {
     if (!this.dragging || this.container.isPan) return;
 
-    this.bounds.x =
-      (this.container.app.mouse.x - this.grabOffset.x) * this.container.scale -
-      this.container.offset.x;
-    this.bounds.y =
-      (this.container.app.mouse.y - this.grabOffset.y) * this.container.scale -
-      this.container.offset.y;
+    this.bounds.x += e.dx * this.container.scale;
+    this.bounds.y += e.dy * this.container.scale;
+
+    if (this.parent) {
+      this.bounds.x = Math.max(0, this.bounds.x);
+      this.bounds.y = Math.max(0, this.bounds.y);
+    }
 
     document.body.style.cursor = 'grabbing';
 
     this.container.app.isDirty = true;
   };
 
-  handleMouseUp = () => {
-    const isUnderMouse = this.isUnderMouse();
-
-    if (isUnderMouse) {
-      if (this.onMouseUp) {
-        this.onMouseUp(this);
-      }
-    }
-
-    if (!this.dragging) return;
-
+  handleMouseUp = (e: MyMouseEvent) => {
     this.dragging = false;
 
     document.body.style.cursor = 'default';
+
+    const isUnderMouse = this.isUnderMouse(e);
+
+    if (!isUnderMouse) return;
+
+    this.emit('mouseup', { event: e, target: this });
+
+    if (this.isMouseDown) {
+      this.isMouseDown = false;
+
+      this.emit('click', { event: e, target: this });
+    }
   };
 
-  isUnderMouse() {
-    return isPointInRectangle(this.drawBounds, {
-      x: this.container.app.mouse.x,
-      y: this.container.app.mouse.y,
-    });
+  isUnderMouse({ x, y }: MyMouseEvent) {
+    return isPointInRectangle(this.drawBounds, { x, y });
   }
 }

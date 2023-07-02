@@ -25,10 +25,12 @@ export class CanvasEditor {
 
     this.root.append(this.canvas.element);
     this.canvas.resize();
+    this.mouse.setOffset();
 
     this.container = new Container(this, elements);
 
     this.canvas.onResize = () => {
+      this.mouse.setOffset();
       this.isDirty = true;
     };
 

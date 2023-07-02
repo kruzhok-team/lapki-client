@@ -5,6 +5,7 @@ import { Transition } from './Transition';
 import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 export class Transitions {
   container!: Container;
@@ -14,14 +15,11 @@ export class Transitions {
   ghost = new GhostTransition();
   showGhost = false;
 
-  constructor(container: Container, items: Elements['transitions']) {
+  constructor(container: Container) {
     this.container = container;
-
-    this.initItems(items);
-    this.initEvents();
   }
 
-  private initItems(items: Elements['transitions']) {
+  initItems(items: Elements['transitions']) {
     for (const id in items) {
       const { source, target, condition, color } = items[id];
 
@@ -34,11 +32,11 @@ export class Transitions {
     }
   }
 
-  private initEvents() {
-    this.container.app.mouse.on('mousemove', this.handleMouseMove);
+  initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
+    this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.container.states.on('startNewTransition', this.handleStartNewTransition);
+    this.container.states.on('startNewTransition', this.handleStartNewTransition as any);
     this.container.states.on('mouseUpOnState', this.handleMouseUpOnState as any);
   }
 
@@ -52,23 +50,21 @@ export class Transitions {
     }
   }
 
-  handleStartNewTransition = () => {
-    this.ghost.setSource(this.container.states.edgeHandlers.currentState as State);
+  handleStartNewTransition = (state: State) => {
+    this.ghost.setSource(state);
     this.showGhost = true;
   };
 
-  handleMouseMove = () => {
+  handleMouseMove = (e: MyMouseEvent) => {
     if (!this.showGhost) return;
 
-    this.ghost.setTarget({ x: this.container.app.mouse.x, y: this.container.app.mouse.y });
+    this.ghost.setTarget({ x: e.x, y: e.y });
 
     this.container.app.isDirty = true;
   };
 
-  handleMouseUpOnState = (e: { mouseUpState: State }) => {
+  handleMouseUpOnState = ({ target }: { target: State }) => {
     if (!this.showGhost) return;
-
-    const target = e.mouseUpState;
 
     // TODO Доделать парвильный condition
     const transition = new Transition(
@@ -87,14 +83,17 @@ export class Transitions {
     );
 
     this.items.set(nanoid(), transition);
+
+    this.showGhost = false;
+    this.ghost.clear();
+
+    this.container.app.isDirty = true;
   };
 
   handleMouseUp = () => {
-    this.removeGhost();
-  };
-
-  removeGhost() {
     this.showGhost = false;
     this.ghost.clear();
-  }
+
+    this.container.app.isDirty = true;
+  };
 }

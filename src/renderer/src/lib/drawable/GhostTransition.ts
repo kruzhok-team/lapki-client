@@ -13,8 +13,10 @@ export class GhostTransition {
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#FFF';
 
-    const cx = this.source.bounds.x + this.source.bounds.width / 2;
-    const cy = this.source.bounds.y + this.source.bounds.height / 2;
+    const sourceBounds = this.source.drawBounds;
+
+    const cx = sourceBounds.x + sourceBounds.width / 2;
+    const cy = sourceBounds.y + sourceBounds.height / 2;
 
     ctx.moveTo(cx, cy);
     ctx.lineTo(this.target.x, this.target.y);

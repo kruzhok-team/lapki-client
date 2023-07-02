@@ -3,6 +3,7 @@ import { States } from '../drawable/States';
 import { Transitions } from '../drawable/Transitions';
 import { CanvasEditor } from '../CanvasEditor';
 import { clamp } from '../utils';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 // Это класс для реализации панорамирования, зума, отрисовки всего, DragAndDrop и сериализации диаграммы
 export class Container {
@@ -17,15 +18,18 @@ export class Container {
   isPan = false;
   isScale = false;
 
-  private grabOffset = { x: 0, y: 0 };
-
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
 
-    this.states = new States(this, elements.states);
-    this.transitions = new Transitions(this, elements.transitions);
+    this.states = new States(this);
+    this.transitions = new Transitions(this);
 
+    // Порядок важен, система дерьмо
     this.initEvents();
+    this.states.initEvents();
+    this.transitions.initEvents();
+    this.states.initItems(elements.states);
+    this.transitions.initItems(elements.transitions);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -45,7 +49,7 @@ export class Container {
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
-    this.app.mouse.on('wheel', this.handleMouseWheel);
+    this.app.mouse.on('wheel', this.handleMouseWheel as any);
   }
 
   handleDrop = (e: DragEvent) => {
@@ -62,13 +66,8 @@ export class Container {
     this.app.isDirty = true;
   };
 
-  handleMouseDown = () => {
-    if (!this.isPan || !this.app.mouse.left) return;
-
-    this.grabOffset = {
-      x: this.app.mouse.x * this.scale - this.offset.x,
-      y: this.app.mouse.y * this.scale - this.offset.y,
-    };
+  handleMouseDown = (e: MyMouseEvent) => {
+    if (!this.isPan || !e.left) return;
 
     this.app.canvas.element.style.cursor = 'grabbing';
   };
@@ -79,12 +78,12 @@ export class Container {
     this.app.canvas.element.style.cursor = 'grab';
   };
 
-  handleMouseMove = () => {
-    if (!this.isPan || !this.app.mouse.left) return;
+  handleMouseMove = (e: MyMouseEvent) => {
+    if (!this.isPan || !e.left) return;
 
     // TODO Много раз такие опереции повторяются, нужно переделать на функции
-    this.offset.x = this.app.mouse.x * this.scale - this.grabOffset.x;
-    this.offset.y = this.app.mouse.y * this.scale - this.grabOffset.y;
+    this.offset.x += e.dx * this.scale;
+    this.offset.y += e.dy * this.scale;
 
     this.app.isDirty = true;
   };
@@ -109,14 +108,15 @@ export class Container {
     this.isScale = false;
   };
 
-  handleMouseWheel = (e: WheelEvent) => {
+  // Классый костыль?
+  handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
     if (!this.isScale) return;
 
-    e.preventDefault();
+    e.nativeEvent.preventDefault();
 
-    const newScale = clamp(this.scale + e.deltaY * 0.001, 0.5, 2);
-    this.offset.x = this.offset.x - (this.app.mouse.x * this.scale - this.app.mouse.x * newScale);
-    this.offset.y = this.offset.y - (this.app.mouse.y * this.scale - this.app.mouse.y * newScale);
+    const newScale = clamp(this.scale + e.nativeEvent.deltaY * 0.001, 0.5, 2);
+    this.offset.x -= e.x * this.scale - e.x * newScale;
+    this.offset.y -= e.y * this.scale - e.y * newScale;
 
     this.scale = newScale;
 

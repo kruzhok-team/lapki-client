@@ -1,29 +1,39 @@
-import { State as StateType } from '@renderer/types/diagram';
+import { Elements, State as StateType } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
 import { Draggable } from './Draggable';
+import { EdgeHandlers } from './EdgeHandlers';
 
 export class State extends Draggable {
   id!: string;
   data!: StateType;
 
-  constructor(container: Container, id: string, data: StateType) {
-    super(container, data.bounds);
+  isSelected = false;
+
+  edgeHandlers!: EdgeHandlers;
+
+  constructor(container: Container, id: string, data: StateType, parent?: State) {
+    super(container, { ...data.bounds, width: 200, height: 100 }, parent);
 
     this.id = id;
     this.data = data;
+
+    this.edgeHandlers = new EdgeHandlers(container.app, this);
   }
 
-  draw(
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
-    options?: { isSelected: boolean }
-  ) {
+  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
     this.drawEvents(ctx);
 
-    if (options?.isSelected) this.drawSelection(ctx);
+    if (this.children) {
+      this.drawChildren(ctx, canvas);
+    }
+
+    if (this.isSelected) {
+      this.drawSelection(ctx);
+      this.edgeHandlers.draw(ctx, canvas);
+    }
   }
 
   private drawBody(ctx: CanvasRenderingContext2D) {
@@ -33,7 +43,12 @@ export class State extends Draggable {
 
     ctx.beginPath();
 
-    ctx.roundRect(x, y, width, height, stateStyle.bodyBorderRadius);
+    ctx.roundRect(x, y, width, height, [
+      stateStyle.bodyBorderRadius,
+      stateStyle.bodyBorderRadius,
+      this.children.size !== 0 ? 0 : stateStyle.bodyBorderRadius,
+      this.children.size !== 0 ? 0 : stateStyle.bodyBorderRadius,
+    ]);
     ctx.fill();
 
     ctx.closePath();
@@ -98,16 +113,41 @@ export class State extends Draggable {
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.drawBounds;
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.lineWidth = stateStyle.selectedBorderWidth;
     ctx.strokeStyle = stateStyle.selectedBorderColor;
 
     ctx.beginPath();
 
-    ctx.roundRect(x, y, width, height, stateStyle.bodyBorderRadius);
+    ctx.roundRect(x, y, width, height + childrenHeight, stateStyle.bodyBorderRadius);
     ctx.stroke();
 
     ctx.closePath();
+  }
+
+  private drawChildren(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    if (this.children.size === 0) return;
+
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+
+    ctx.strokeStyle = stateStyle.bodyBg;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+      0,
+      0,
+      stateStyle.bodyBorderRadius,
+      stateStyle.bodyBorderRadius,
+    ]);
+    ctx.stroke();
+
+    ctx.closePath();
+  }
+
+  setIsSelected(value: boolean) {
+    this.isSelected = value;
   }
 }

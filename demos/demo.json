@@ -1,6 +1,7 @@
 {
   "states": {
     "on": {
+      "initial": true,
       "events": {
         "onEnter": [
           {

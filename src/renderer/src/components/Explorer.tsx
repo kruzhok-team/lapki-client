@@ -4,9 +4,9 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 export function Explorer() {
   const [editor] = useState<CanvasEditor | null>(null);
   return (
-    <section className="flex w-[16vw] flex-col items-center bg-[#4391BF] bg-opacity-50 font-Fira">
+    <section className="flex w-[16vw] flex-col items-center bg-[#4391BF] bg-opacity-50 font-Fira text-[1rem]">
       <div className=" h-[50vh] w-[16vw] bg-[#FFFFFF] bg-opacity-50 text-center">
-        <p className="my-[1vw] text-[calc(4.5vh/2)]">Проводник</p>
+        <p className="my-[1vw]">Проводник</p>
         <hr className="mx-[2vw] h-[1px] w-[12vw] border-none bg-[#4391BF]" />
         <aside className="h-[50vh] border-r p-4">
           <button
@@ -23,7 +23,7 @@ export function Explorer() {
           </div>
         </aside>
       </div>
-      <div className="h-[50vh] w-[16vw] bg-[#FFFFFF] bg-opacity-50"></div>
+      <div className="h-[50vh] w-[16vw] border-t-[0.15rem] border-dashed border-[#4391BF] bg-[#FFFFFF] bg-opacity-50"></div>
     </section>
   );
 }

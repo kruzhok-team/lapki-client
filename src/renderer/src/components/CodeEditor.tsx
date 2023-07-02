@@ -8,5 +8,5 @@ loader.init();
 interface CodeEditorProps extends EditorProps {}
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
-  return <Editor height="100vh" width="16vw" defaultLanguage="JSON" theme="vs-dark" {...props} />;
+  return <Editor height="95vh" width="74vw" defaultLanguage="JSON" theme="vs-dark" {...props} />;
 };

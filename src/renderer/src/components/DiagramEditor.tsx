@@ -16,14 +16,5 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     return () => editor.cleanUp();
   }, [containerRef.current]);
 
-  return (
-    <div className="flex h-full w-full flex-col">
-      <div className="flex h-[5vh] w-[calc(22vw/2)] bg-[#4391BF] bg-opacity-50 text-center font-Fira text-[calc(4.5vh/2)]">
-        <p></p>
-        <button className={`ml-[0.5vw]`}>Справка</button>
-      </div>
-
-      <div className="z-50 h-[95vh] overflow-hidden bg-neutral-800" ref={containerRef} />
-    </div>
-  );
+  return <div className="h-[95vh] w-[92vw] overflow-hidden bg-neutral-800" ref={containerRef} />;
 };

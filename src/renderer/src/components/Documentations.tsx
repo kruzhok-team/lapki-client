@@ -7,7 +7,7 @@ export function Documentations() {
   const handleClick = (index) => setActiveIndex(index);
   const checkActive = (index, className) => (activeIndex === index ? className : '');
   return (
-    <section className="mt-auto flex h-[100vh] w-[22vw] select-none flex-col font-Fira text-[calc(4.5vh/2)]">
+    <section className="mt-auto flex h-[100vh] w-[22vw] select-none flex-col font-Fira text-[1rem]">
       <div className="flex h-[5vh] flex-row bg-[#4391BF]">
         <button
           className={`w-[50vw] bg-[#FFFFFF] ${checkActive(1, 'bg-[#4391BF] bg-opacity-50')}`}
@@ -62,18 +62,6 @@ export function Documentations() {
               Материал тоже на английском, так что сорян, с кем не бывает, но зато есть шанс
               прокачать свои навыки, хи-хи-хи.
             </p>
-
-            <a>u</a>
-            <p></p>
-
-            <a>u</a>
-            <p></p>
-
-            <a>u</a>
-            <p></p>
-
-            <a>u</a>
-            <p></p>
           </div>
         </div>
       </div>

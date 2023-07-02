@@ -24,6 +24,7 @@
     "@electron-toolkit/utils": "^1.0.2",
     "@monaco-editor/react": "^4.5.1",
     "curved-arrows": "^0.1.0",
+    "fstb": "^1.0.0",
     "monaco-editor": "^0.39.0",
     "nanoid": "^4.0.2",
     "tailwind-scrollbar": "^3.0.4"

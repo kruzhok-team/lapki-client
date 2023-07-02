@@ -1,0 +1,23 @@
+.ReactModal__Overlay {
+  @apply bg-opacity-0 transition-opacity;
+}
+
+.ReactModal__Overlay--after-open {
+  @apply bg-opacity-80;
+}
+
+.ReactModal__Overlay--before-close {
+  @apply bg-opacity-0;
+}
+
+.ReactModal__Content {
+  @apply scale-90 transition-transform ease-in-out;
+}
+
+.ReactModal__Content--after-open {
+  @apply scale-100;
+}
+
+.ReactModal__Content--before-close {
+  @apply scale-90;
+}

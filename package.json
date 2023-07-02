@@ -25,7 +25,11 @@
     "@monaco-editor/react": "^4.5.1",
     "curved-arrows": "^0.1.0",
     "monaco-editor": "^0.39.0",
-    "nanoid": "^4.0.2"
+    "nanoid": "^4.0.2",
+    "react-hook-form": "^7.45.1",
+    "react-modal": "^3.16.1",
+    "tailwind-merge": "^1.13.2",
+    "vite-plugin-svgr": "^3.2.0"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -33,6 +37,7 @@
     "@types/node": "^18.16.16",
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4",
+    "@types/react-modal": "^3.16.0",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vitejs/plugin-react": "^4.0.0",

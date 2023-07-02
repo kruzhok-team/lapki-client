@@ -4,6 +4,7 @@ import { Transitions } from '../drawable/Transitions';
 import { CanvasEditor } from '../CanvasEditor';
 import { clamp } from '../utils';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Point } from '@renderer/types/graphics';
 
 // Это класс для реализации панорамирования, зума, отрисовки всего, DragAndDrop и сериализации диаграммы
 export class Container {
@@ -17,6 +18,8 @@ export class Container {
 
   isPan = false;
   isScale = false;
+
+  dropCallback?: (position: Point) => void;
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -61,9 +64,15 @@ export class Container {
       y: (e.clientY - rect.top) * this.scale - this.offset.y,
     };
 
-    this.states.createNewState(position);
+    this.dropCallback?.(position);
 
-    this.app.isDirty = true;
+    // this.states.createNewState(position);
+
+    // this.app.isDirty = true;
+  };
+
+  onStateDrop = (callback: (position: Point) => void) => {
+    this.dropCallback = callback;
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
@@ -108,7 +117,6 @@ export class Container {
     this.isScale = false;
   };
 
-  // Классый костыль?
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
     if (!this.isScale) return;
 

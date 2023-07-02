@@ -73,14 +73,12 @@ export class States extends EventEmitter {
     this.container.app.isDirty = true;
   };
 
-  createNewState(position: Point) {
+  createNewState(name: string, position: Point) {
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
 
-    const id = nanoid(6);
-
-    const state = new State(this.container, id, {
+    const state = new State(this.container, name, {
       bounds: { x, y, width, height },
       events: {},
     });
@@ -89,6 +87,8 @@ export class States extends EventEmitter {
     state.on('click', this.handleStateClick as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
-    this.items.set(id, state);
+    this.items.set(name, state);
+
+    this.container.app.isDirty = true;
   }
 }

@@ -65,10 +65,6 @@ export class Container {
     };
 
     this.dropCallback?.(position);
-
-    // this.states.createNewState(position);
-
-    // this.app.isDirty = true;
   };
 
   onStateDrop = (callback: (position: Point) => void) => {

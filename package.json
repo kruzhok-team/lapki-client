@@ -1,5 +1,5 @@
 {
-  "name": "practice",
+  "name": "clien",
   "version": "1.0.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
@@ -24,11 +24,13 @@
     "@electron-toolkit/utils": "^1.0.2",
     "@monaco-editor/react": "^4.5.1",
     "curved-arrows": "^0.1.0",
+    "fstb": "^1.0.0",
     "monaco-editor": "^0.39.0",
     "nanoid": "^4.0.2",
     "react-hook-form": "^7.45.1",
     "react-modal": "^3.16.1",
     "tailwind-merge": "^1.13.2",
+    "tailwind-scrollbar": "^3.0.4",
     "vite-plugin-svgr": "^3.2.0"
   },
   "devDependencies": {

@@ -2,7 +2,11 @@
 export default {
   content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,jsx,tsx}'],
   theme: {
-    extend: {}
+    extend: {
+      fontFamily: {
+        Fira: ['Fira Sans', 'sans-serif'],
+      },
+    },
   },
-  plugins: []
+  plugins: [require('tailwind-scrollbar')({ nocompatible: true })],
 };

@@ -7,7 +7,7 @@ import icon from '../../resources/icon.png?asset';
 async function handleFileOpen() {
   return new Promise(async (resolve, reject) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      properties: ['openFile']
+      properties: ['openFile'],
     });
 
     if (!canceled && filePaths[0]) {
@@ -25,16 +25,20 @@ async function handleFileOpen() {
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
     show: false,
+    //Запрет на изменение размеров окна
+    //resizable: false,
+    minHeight: 768,
+    minWidth: 1366,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
-    }
+      sandbox: false,
+    },
   });
+  //Максимальный размер окна
+  mainWindow.maximize();
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();

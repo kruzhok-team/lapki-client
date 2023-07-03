@@ -5,7 +5,7 @@ export const stateStyle = {
   bodyBg: '#404040',
   bodyBorderRadius: 6,
 
-  titleFontFamily: 'Arial',
+  titleFontFamily: 'font-Fira',
   titleLineHeight: 0,
   titleFontSize: 20,
   titleBaseLine: 'hanging' as CanvasTextBaseline,

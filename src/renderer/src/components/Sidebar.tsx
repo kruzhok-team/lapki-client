@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor, Explorer, Documentations, Menu, Tabs } from '../components';
+import { CodeEditor, Explorer, Menu } from '../components';
 
-import menu from '../img/menu.png';
-import components1 from '../img/components1.png';
-import programming from '../img/programming.png';
-import drive1 from '../img/flash-drive1.png';
-import chip1 from '../img/chip1.png';
-import gear1 from '../img/gear1.png';
+import menu from '../assets/img/menu.png';
+import components from '../assets/img/components1.png';
+import programming from '../assets/img/programming1.png';
+import drive from '../assets/img/flash-drive.png';
+import chip from '../assets/img/chip.png';
+import gear from '../assets/img/gear.png';
 
 interface SidebarProps {
   onRequestOpenFile: () => void;
@@ -20,19 +20,19 @@ const items = [
     imgSrc: menu,
   },
   {
-    imgSrc: components1,
+    imgSrc: components,
   },
   {
     imgSrc: programming,
   },
   {
-    imgSrc: drive1,
+    imgSrc: drive,
   },
   {
-    imgSrc: chip1,
+    imgSrc: chip,
   },
   {
-    imgSrc: gear1,
+    imgSrc: gear,
   },
 ];
 
@@ -59,10 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ fileContent, onRequestOpenFile
       <div className="flex flex-col gap-2 p-2">
         {items.map(({ imgSrc }, index) => (
           <button
-            className={twMerge(
-              'w-[2rem] last:justify-self-end',
-              isActive(index) && 'bg-[#4391BF] bg-opacity-50'
-            )}
+            className={twMerge('w-[2rem]', isActive(index) && '')}
             onClick={handleClick(index)}
           >
             <img src={imgSrc} alt="" />
@@ -70,9 +67,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ fileContent, onRequestOpenFile
         ))}
       </div>
 
-      <div className={twMerge('w-72', activeTab === null && 'hidden')}>
+      <div className={twMerge('w-56', activeTab === null && 'hidden')}>
         {tabs.map((Element, i) => (
-          <div className={twMerge('hidden', isActive(i) && 'block')}>{Element}</div>
+          <div className={twMerge('hidden h-full', isActive(i) && 'block')}>{Element}</div>
         ))}
       </div>
     </aside>

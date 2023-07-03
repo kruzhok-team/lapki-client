@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor, Explorer, Documentations, Menu, Tabs } from './components';
+import { DiagramEditor, Documentations, Tabs } from './components';
 import { Elements } from './types/diagram';
+import { Sidebar } from './components/Sidebar';
 
 /*Первые иконки*/
-import arrow from './img/arrow.png';
-import forward from './img/forward.png';
+import arrow from './assets/img/arrow.png';
 /*Вторичные иконки*/
-
-import arrow1 from './img/arrow1.png';
-import { Sidebar } from './components/Sidebar';
+import arrow1 from './assets/img/arrow1.png';
 
 export const App: React.FC = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);

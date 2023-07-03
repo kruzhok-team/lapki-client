@@ -25,7 +25,7 @@ export const Menu: React.FC<MenuProps> = ({ onRequestOpenFile }) => {
   ];
 
   return (
-    <section className="flex w-full flex-col items-stretch bg-[#4391BF] bg-opacity-50">
+    <section className="flex h-full w-full flex-col items-stretch bg-[#4391BF] bg-opacity-50">
       <p className="text-center font-Fira text-base">Меню</p>
 
       {items.map(({ text, onClick }) => (

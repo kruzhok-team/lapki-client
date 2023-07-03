@@ -9,7 +9,6 @@ async function handleFileOpen() {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       properties: ['openFile'],
     });
-
     if (!canceled && filePaths[0]) {
       fs.readFile(filePaths[0], 'utf-8', (err, data) => {
         if (err) {

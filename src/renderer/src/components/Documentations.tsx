@@ -1,6 +1,6 @@
 import { useState } from 'react';
 /*Загрузка документации*/
-import { Docs } from '../file/Doc';
+import { Docs } from '.././assets/file/Doc';
 
 export function Documentations() {
   const [activeIndex, setActiveIndex] = useState(1);
@@ -58,10 +58,7 @@ export function Documentations() {
               2. PRACTICAL UML STATEHARTS in C/C++
             </a>
             <hr className="h-[1px] w-[20vw] border-none bg-[#4391BF]" />
-            <p>
-              Материал тоже на английском, так что сорян, с кем не бывает, но зато есть шанс
-              прокачать свои навыки, хи-хи-хи.
-            </p>
+            <p>Материал тоже на английском, но зато есть шанс прокачать свои навыки, хи-хи-хи.</p>
           </div>
         </div>
       </div>

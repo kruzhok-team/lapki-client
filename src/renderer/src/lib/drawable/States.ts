@@ -23,10 +23,16 @@ export class States extends EventEmitter {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
 
-  initItems(items: Elements['states']) {
+  initItems(items: Elements['states'], initialState: string) {
     for (const id in items) {
       const parent = this.items.get(items[id].parent ?? '');
-      const state = new State(this.container, id, items[id], parent);
+      const state = new State({
+        container: this.container,
+        id: id,
+        data: items[id],
+        parent,
+        initial: id === initialState,
+      });
 
       parent?.children.set(id, state);
 
@@ -78,9 +84,13 @@ export class States extends EventEmitter {
     const x = position.x - width / 2;
     const y = position.y - height / 2;
 
-    const state = new State(this.container, name, {
-      bounds: { x, y, width, height },
-      events: {},
+    const state = new State({
+      container: this.container,
+      id: name,
+      data: {
+        bounds: { x, y, width, height },
+        events: {},
+      },
     });
 
     state.on('mouseup', this.handleMouseUpOnState as any);

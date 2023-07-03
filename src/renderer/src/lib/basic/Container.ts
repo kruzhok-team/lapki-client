@@ -31,7 +31,7 @@ export class Container {
     this.initEvents();
     this.states.initEvents();
     this.transitions.initEvents();
-    this.states.initItems(elements.states);
+    this.states.initItems(elements.states, elements.initialState);
     this.transitions.initItems(elements.transitions);
   }
 

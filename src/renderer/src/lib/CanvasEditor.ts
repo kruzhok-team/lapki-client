@@ -24,6 +24,7 @@ export class CanvasEditor {
     this.render = new Render();
 
     this.root.append(this.canvas.element);
+    container.addEventListener('resize', this.canvas.resize);
     this.canvas.resize();
     this.mouse.setOffset();
 

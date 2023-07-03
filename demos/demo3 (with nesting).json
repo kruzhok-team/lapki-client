@@ -1,7 +1,6 @@
 {
   "states": {
     "on": {
-      "initial": true,
       "events": {
         "onEnter": [
           {
@@ -33,7 +32,6 @@
 
     "child state": {
       "parent": "on",
-      "initial": true,
       "events": {},
       "bounds": {
         "x": 0,
@@ -43,7 +41,6 @@
 
     "child2 state": {
       "parent": "child state",
-      "initial": true,
       "events": {},
       "bounds": {
         "x": 0,

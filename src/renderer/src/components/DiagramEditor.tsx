@@ -39,7 +39,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
 
   return (
     <>
-      <div className="h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
+      <div className="relative h-full flex-1 overflow-hidden bg-neutral-800" ref={containerRef} />
       <CreateStateModal isOpen={isOpen} onClose={close} onSubmit={handleCreateState} />
     </>
   );

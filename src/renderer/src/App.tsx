@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor, Explorer, Documentations, Menu, Tabs } from './components';
+import { DiagramEditor, Documentations, Tabs } from './components';
 import { Elements } from './types/diagram';
 
 /*Первые иконки*/
@@ -17,10 +17,7 @@ export const App: React.FC = () => {
   const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
 
-  /*Переключение блоков в меню между собой*/
-  const [activeIndexDoc, setActiveIndexDoc] = useState(0);
-  const handleClickDoc = (index) => setActiveIndexDoc(index);
-  const checkActiveDoc = (index, className) => (activeIndexDoc === index ? className : '');
+  const [isDocOpen, setIsDocOpen] = useState(false);
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
@@ -30,7 +27,6 @@ export const App: React.FC = () => {
     }
   };
 
-  /*Вывод сообщения перед открытием редактора кода*/
   const handleToggleCodeEditor = () => {
     if (!fileContent) {
       return alert('Сначала откройте файл JSON');
@@ -40,45 +36,41 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex">
       <Sidebar fileContent={fileContent} onRequestOpenFile={handleOpenFile} />
 
-      <div className="flex w-full flex-col">
-        {/* Tabs */}
-        <div className="flex min-h-[2rem] items-center">
-          {elements && <Tabs />}
-          {/* <button className="w-[4vw]">
-            <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
-          </button> */}
-        </div>
-
-        <main className="min-h-[calc(100vh-2rem)] w-full">
-          {elements ? (
-            <DiagramEditor elements={elements} />
-          ) : (
-            <div className="pt-25 w-full">
-              <p className="text-center font-Fira text-base">
-                Откройте файл или перенесите его сюда...
-              </p>
+      <div className="flex-1">
+        {elements ? (
+          <>
+            <div className="flex h-[2rem] items-center justify-between border-b border-[#4391BF]">
+              <Tabs />
+              <button className="w-[4vw]">
+                <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
+              </button>
             </div>
-          )}
-        </main>
-      </div>
 
-      <section className="flex w-[3rem] items-center bg-transparent">
-        <button
-          className={`h-[4.5vw] w-[4vw]`}
-          onClick={activeIndexDoc === 7 ? () => handleClickDoc(0) : () => handleClickDoc(7)}
-        >
-          <img
-            src={activeIndexDoc == 7 ? arrow1 : arrow}
-            alt=""
-            className="m-auto h-[2.5vw] w-[2.5vw]"
-          ></img>
-        </button>
-      </section>
-      <div className={`hidden transition-all ${checkActiveDoc(7, '!block')}`}>
-        <Documentations />
+            <div className="relative flex h-[calc(100vh-2rem)] w-full">
+              <DiagramEditor elements={elements} />
+
+              <div className="absolute bottom-0 right-0 top-0 flex">
+                <button
+                  className="grid h-full w-10 place-items-center"
+                  onClick={() => setIsDocOpen((p) => !p)}
+                >
+                  <img src={isDocOpen ? arrow1 : arrow} alt="" />
+                </button>
+
+                <div className={twMerge('h-full w-96 transition-all', !isDocOpen && 'hidden')}>
+                  <Documentations />
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="pt-24 text-center font-Fira text-base">
+            Откройте файл или перенесите его сюда...
+          </p>
+        )}
       </div>
     </div>
   );

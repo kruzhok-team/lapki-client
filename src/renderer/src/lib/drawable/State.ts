@@ -6,6 +6,14 @@ import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { preloadImages } from '../utils';
 
+interface StateProps {
+  container: Container;
+  id: string;
+  data: Omit<StateType, 'parent'>;
+  parent?: State;
+  initial?: boolean;
+}
+
 export class State extends Draggable {
   id!: string;
   data!: StateType;
@@ -16,13 +24,13 @@ export class State extends Draggable {
 
   initialIcon?: HTMLImageElement;
 
-  constructor(container: Container, id: string, data: StateType, parent?: State) {
+  constructor({ container, id, data, parent, initial = false }: StateProps) {
     super(container, { ...data.bounds, width: 200, height: 100 }, parent);
 
     this.id = id;
     this.data = data;
 
-    if (this.data.initial) {
+    if (initial) {
       preloadImages([InitialIcon]).then(([icon]) => {
         this.initialIcon = icon;
 
@@ -38,7 +46,7 @@ export class State extends Draggable {
     this.drawTitle(ctx);
     this.drawEvents(ctx);
 
-    if (this.data.initial) {
+    if (this.initialIcon) {
       this.drawInitialMark(ctx);
     }
 

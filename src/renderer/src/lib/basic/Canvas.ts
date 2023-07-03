@@ -11,6 +11,8 @@ export class Canvas {
     this.background = background;
 
     window.addEventListener('resize', this.resize);
+
+    this.element.style.position = 'absolute';
   }
 
   clear() {

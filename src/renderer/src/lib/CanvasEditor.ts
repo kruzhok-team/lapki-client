@@ -18,13 +18,12 @@ export class CanvasEditor {
 
   constructor(container: HTMLDivElement, elements: Elements) {
     this.root = container;
-    this.canvas = new Canvas('rgb(38, 38, 38)');
+    this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);
     this.keyboard = new Keyboard();
     this.render = new Render();
 
     this.root.append(this.canvas.element);
-    container.addEventListener('resize', this.canvas.resize);
     this.canvas.resize();
     this.mouse.setOffset();
 

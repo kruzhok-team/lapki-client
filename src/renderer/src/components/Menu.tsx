@@ -1,16 +1,41 @@
-export function Menu() {
+import React from 'react';
+
+interface MenuProps {
+  onRequestOpenFile: () => void;
+}
+
+export const Menu: React.FC<MenuProps> = ({ onRequestOpenFile }) => {
+  const items = [
+    {
+      text: 'Открыть файл',
+      onClick: onRequestOpenFile,
+    },
+    {
+      text: 'Сохранить файл',
+    },
+    {
+      text: 'Сохранить файл как...',
+    },
+    {
+      text: 'Примеры',
+    },
+    {
+      text: 'Закрыть программу',
+    },
+  ];
+
   return (
-    <section className="flex w-[16vw] flex-col items-center bg-[#4391BF] bg-opacity-50">
-      <div className="h-[100vh] w-[16vw] bg-[#FFFFFF] bg-opacity-50 text-center font-Fira text-[1rem]">
-        <p className="my-[1.25vw] h-[2vw] w-[16vw]">Меню</p>
-        <button className="h-[4.5vw] w-[16vw] bg-[#4391BF] bg-opacity-50">Открыть файл</button>
-        <button className="h-[4.5vw] w-[16vw] bg-[#4391BF]">Сохранить файл</button>
-        <button className="h-[4.5vw] w-[16vw] bg-[#4391BF] bg-opacity-50">
-          Сохранить файл как...
+    <section className="flex w-full flex-col items-stretch bg-[#4391BF] bg-opacity-50">
+      <p className="text-center font-Fira text-base">Меню</p>
+
+      {items.map(({ text, onClick }) => (
+        <button
+          className="bg-[#4391BF] bg-opacity-50 p-4 text-center font-Fira text-base"
+          onClick={onClick}
+        >
+          {text}
         </button>
-        <button className="h-[4.5vw] w-[16vw] bg-[#4391BF]">Примеры</button>
-        <button className="h-[4.5vw] w-[16vw] bg-[#4391BF] bg-opacity-50">Закрыть программу</button>
-      </div>
+      ))}
     </section>
   );
-}
+};

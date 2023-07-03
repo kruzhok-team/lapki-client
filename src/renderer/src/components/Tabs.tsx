@@ -1,8 +1,9 @@
 export function Tabs() {
   return (
-    <div className="flex h-[5vh] w-[calc(22vw/2)] items-center bg-[#4391BF] bg-opacity-50 font-Fira text-[1rem]">
-      <span className="ml-[0.5vw]">Справка</span>
-      <button className={`ml-[0.5vw]`}></button>
+    <div className="flex">
+      <div className="bg-[#4391BF] bg-opacity-50 px-6 py-2 font-Fira text-base">Справка</div>
+      <div className="bg-[#4391BF] bg-opacity-50 px-6 py-2 font-Fira text-base">Справка</div>
+      <div className="bg-[#4391BF] bg-opacity-50 px-6 py-2 font-Fira text-base">Справка</div>
     </div>
   );
 }

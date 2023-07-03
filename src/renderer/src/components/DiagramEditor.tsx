@@ -38,9 +38,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   };
 
   return (
-    <div className="flex h-full w-full">
-      <div className="flex-1 overflow-hidden bg-neutral-800" ref={containerRef} />
+    <>
+      <div className="h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
       <CreateStateModal isOpen={isOpen} onClose={close} onSubmit={handleCreateState} />
-    </div>
+    </>
   );
 };

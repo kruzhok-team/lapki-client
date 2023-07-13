@@ -8,6 +8,7 @@ import { Point } from '@renderer/types/graphics';
 
 // Это класс для реализации панорамирования, зума, отрисовки всего, DragAndDrop и сериализации диаграммы
 export class Container {
+  [x: string]: any;
   app!: CanvasEditor;
 
   states!: States;
@@ -20,10 +21,16 @@ export class Container {
   isScale = false;
 
   dropCallback?: (position: Point) => void;
+  toJSON() {
+    return {
+      states: { ...Object.fromEntries(this.states.items) },
+      initialState: 'on',
+      transitions: [...this.transitions.items.values()],
+    };
+  }
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
-
     this.states = new States(this);
     this.transitions = new Transitions(this);
 
@@ -31,7 +38,7 @@ export class Container {
     this.initEvents();
     this.states.initEvents();
     this.transitions.initEvents();
-    this.states.initItems(elements.states);
+    this.states.initItems(elements.states, elements.initialState);
     this.transitions.initItems(elements.transitions);
   }
 
@@ -65,10 +72,6 @@ export class Container {
     };
 
     this.dropCallback?.(position);
-
-    // this.states.createNewState(position);
-
-    // this.app.isDirty = true;
   };
 
   onStateDrop = (callback: (position: Point) => void) => {
@@ -90,7 +93,7 @@ export class Container {
   handleMouseMove = (e: MyMouseEvent) => {
     if (!this.isPan || !e.left) return;
 
-    // TODO Много раз такие опереции повторяются, нужно переделать на функции
+    // TODO Много раз такие операции повторяются, нужно переделать на функции
     this.offset.x += e.dx * this.scale;
     this.offset.y += e.dy * this.scale;
 
@@ -119,7 +122,6 @@ export class Container {
 
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
     if (!this.isScale) return;
-
     e.nativeEvent.preventDefault();
 
     const newScale = clamp(this.scale + e.nativeEvent.deltaY * 0.001, 0.5, 2);

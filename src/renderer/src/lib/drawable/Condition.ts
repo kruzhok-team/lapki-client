@@ -20,9 +20,8 @@ export class Condition extends Draggable {
     this.data = data;
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
-
     const p = 15 / this.container.scale;
     const fontSize = stateStyle.titleFontSize / this.container.scale;
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
@@ -42,5 +41,12 @@ export class Condition extends Draggable {
     ctx.fillText(this.data.component, x + p, y + p);
     ctx.fillText(this.data.method, x + p, y + fontSize + p);
     ctx.closePath();
+  }
+
+  toJSON() {
+    return {
+      x: this.drawBounds.x,
+      y: this.drawBounds.y,
+    };
   }
 }

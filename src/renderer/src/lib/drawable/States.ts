@@ -1,5 +1,3 @@
-import { nanoid } from 'nanoid';
-
 import { State } from './State';
 
 import { Elements } from '@renderer/types/diagram';
@@ -12,24 +10,25 @@ export class States extends EventEmitter {
   container!: Container;
 
   items: Map<string, State> = new Map();
-
   constructor(container: Container) {
     super();
-
     this.container = container;
   }
-
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
-
-  initItems(items: Elements['states']) {
+  initItems(items: Elements['states'], initialState: string) {
     for (const id in items) {
       const parent = this.items.get(items[id].parent ?? '');
-      const state = new State(this.container, id, items[id], parent);
+      const state = new State({
+        container: this.container,
+        id: id,
+        data: items[id],
+        parent,
+        initial: id === initialState,
+      });
 
       parent?.children.set(id, state);
-
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
 
@@ -78,9 +77,13 @@ export class States extends EventEmitter {
     const x = position.x - width / 2;
     const y = position.y - height / 2;
 
-    const state = new State(this.container, name, {
-      bounds: { x, y, width, height },
-      events: {},
+    const state = new State({
+      container: this.container,
+      id: name,
+      data: {
+        bounds: { x, y, width, height },
+        events: {},
+      },
     });
 
     state.on('mouseup', this.handleMouseUpOnState as any);

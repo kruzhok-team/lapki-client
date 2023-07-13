@@ -7,13 +7,16 @@ import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 
+type CreateStateCallback = (source: State, target: State) => void;
+
 export class Transitions {
   container!: Container;
 
   items: Map<string, Transition> = new Map();
 
   ghost = new GhostTransition();
-  showGhost = false;
+
+  createCallback?: CreateStateCallback;
 
   constructor(container: Container) {
     this.container = container;
@@ -45,18 +48,21 @@ export class Transitions {
       state.draw(ctx, canvas);
     });
 
-    if (this.showGhost) {
+    if (this.ghost.source) {
       this.ghost.draw(ctx, canvas);
     }
   }
 
+  onTransitionCreate = (callback: CreateStateCallback) => {
+    this.createCallback = callback;
+  };
+
   handleStartNewTransition = (state: State) => {
     this.ghost.setSource(state);
-    this.showGhost = true;
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.showGhost) return;
+    if (!this.ghost.source) return;
 
     this.ghost.setTarget({ x: e.x, y: e.y });
 
@@ -64,36 +70,48 @@ export class Transitions {
   };
 
   handleMouseUpOnState = ({ target }: { target: State }) => {
-    if (!this.showGhost) return;
+    if (!this.ghost.source) return;
 
-    // TODO Доделать парвильный condition
-    const transition = new Transition(
-      this.container,
-      this.ghost.source as State,
-      target,
-      {
-        component: 'a',
-        method: 'a',
-        position: {
-          x: 100,
-          y: 100,
-        },
-      },
-      '#ccc'
-    );
+    this.createCallback?.(this.ghost.source, target);
 
-    this.items.set(nanoid(), transition);
-
-    this.showGhost = false;
     this.ghost.clear();
 
     this.container.app.isDirty = true;
   };
 
   handleMouseUp = () => {
-    this.showGhost = false;
+    if (!this.ghost.source) return;
+
     this.ghost.clear();
 
     this.container.app.isDirty = true;
   };
+
+  createNewTransition(
+    source: State,
+    target: State,
+    component: string,
+    method: string,
+    color: string
+  ) {
+    // TODO Доделать парвильный condition
+    const transition = new Transition(
+      this.container,
+      source,
+      target,
+      {
+        component,
+        method,
+        position: {
+          x: 100,
+          y: 100,
+        },
+      },
+      color
+    );
+
+    this.items.set(nanoid(), transition);
+
+    this.container.app.isDirty = true;
+  }
 }

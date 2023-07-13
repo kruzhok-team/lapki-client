@@ -64,8 +64,10 @@ export class EdgeHandlers {
   setCurrentState(state: State) {
     this.state = state;
   }
-
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  toJSON() {
+    return this.state;
+  }
+  draw(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
 
     for (const { x, y } of this.position) {

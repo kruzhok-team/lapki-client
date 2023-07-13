@@ -14,7 +14,7 @@ export class Render extends Observer<Subscriber> {
     requestAnimationFrame((timestamp) => this.tick(timestamp));
   }
 
-  tick(timestamp: number) {
+  tick(_timestamp: number) {
     requestAnimationFrame((timestamp) => this.tick(timestamp));
 
     // Object.assign(this, {

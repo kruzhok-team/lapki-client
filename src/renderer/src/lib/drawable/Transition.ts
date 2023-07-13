@@ -1,10 +1,8 @@
-import { getBoxToBoxArrow } from 'curved-arrows';
-
 import { State } from './State';
 import { Point, TransitionLine } from '@renderer/types/graphics';
 import { Condition as ConditionType } from '@renderer/types/diagram';
 import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
-import { stateStyle, transitionStyle } from '../styles';
+import { transitionStyle } from '../styles';
 import { Condition } from './Condition';
 import { Container } from '../basic/Container';
 
@@ -31,6 +29,15 @@ export class Transition {
     this.condition = new Condition(this.container, condition);
 
     this.color = color;
+  }
+
+  toJSON() {
+    return {
+      source: this.source.id,
+      target: this.target.id,
+      color: this.color,
+      condition: this.condition,
+    };
   }
 
   private drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {
@@ -83,8 +90,8 @@ export class Transition {
     ctx.closePath();
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.condition.draw(ctx, canvas);
+  draw(ctx: CanvasRenderingContext2D) {
+    this.condition.draw(ctx);
 
     const { sourceLine, targetLine } = getTransitionLines(
       this.source.drawBounds,

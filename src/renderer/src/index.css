@@ -8,5 +8,5 @@
 
 @font-face {
   font-family: "Fira Sans";
-  src: url("./fonts/FiraSans-Regular.ttf");
+  src: url("./assets/fonts/FiraSans-Regular.ttf") format('ttf');
 };

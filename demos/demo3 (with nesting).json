@@ -1,7 +1,6 @@
 {
   "states": {
     "on": {
-      "initial": true,
       "events": {
         "onEnter": [
           {
@@ -26,14 +25,13 @@
         ]
       },
       "bounds": {
-        "x": 765,
-        "y": 134
+        "x": 225,
+        "y": 50
       }
     },
 
     "child state": {
       "parent": "on",
-      "initial": true,
       "events": {},
       "bounds": {
         "x": 0,
@@ -43,7 +41,6 @@
 
     "child2 state": {
       "parent": "child state",
-      "initial": true,
       "events": {},
       "bounds": {
         "x": 0,
@@ -70,8 +67,8 @@
       "color": "#F29727",
       "condition": {
         "position": {
-          "x": 361,
-          "y": 127
+          "x": 450,
+          "y": 175
         },
         "component": "btn",
         "method": "isJustPressed"
@@ -83,27 +80,12 @@
       "color": "#F24C3D",
       "condition": {
         "position": {
-          "x": 525,
-          "y": 285
+          "x": 100,
+          "y": 175
         },
         "component": "btn",
         "method": "isJustPressed"
       }
     }
-  ],
-
-  "components": {
-    "btn": {
-      "type": "Button",
-      "parameters": {
-        "pin": 10
-      }
-    },
-    "diod": {
-      "type": "Led",
-      "parameters": {
-        "pin": 13
-      }
-    }
-  }
+  ]
 }

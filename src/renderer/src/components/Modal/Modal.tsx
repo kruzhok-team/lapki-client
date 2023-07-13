@@ -10,9 +10,10 @@ ReactModal.setAppElement('#root');
 interface ModalProps extends Props {
   title: string;
   children: React.ReactNode;
+  onSubmit: React.FormEventHandler;
 }
 
-export const Modal: React.FC<ModalProps> = ({ children, title, ...props }) => {
+export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...props }) => {
   return (
     <ReactModal
       {...props}
@@ -30,7 +31,25 @@ export const Modal: React.FC<ModalProps> = ({ children, title, ...props }) => {
         </button>
       </div>
 
-      {children}
+      <form onSubmit={onSubmit}>
+        <div className="mb-4">{children}</div>
+
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
+            onClick={props.onRequestClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+          >
+            Save
+          </button>
+        </div>
+      </form>
     </ReactModal>
   );
 };

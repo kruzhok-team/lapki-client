@@ -1,16 +1,29 @@
+import { CanvasEditor } from '../CanvasEditor';
+
 export class Canvas {
+  app!: CanvasEditor;
+
   element = document.createElement('canvas');
   context = this.element.getContext('2d') as CanvasRenderingContext2D;
+
+  resizeObserver!: ResizeObserver;
 
   background!: string;
 
   // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
   onResize: (() => void) | undefined;
+  toDataURL: any;
 
-  constructor(background: string) {
+  constructor(app: CanvasEditor, background: string) {
+    this.app = app;
     this.background = background;
 
     window.addEventListener('resize', this.resize);
+
+    this.resizeObserver = new ResizeObserver(this.resize);
+    this.resizeObserver.observe(app.root);
+
+    this.element.style.position = 'absolute';
   }
 
   clear() {
@@ -54,6 +67,7 @@ export class Canvas {
 
   cleanUp() {
     window.removeEventListener('resize', this.resize);
+    this.resizeObserver.unobserve(this.app.root);
     this.element.remove();
   }
 }

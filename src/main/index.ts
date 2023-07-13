@@ -1,8 +1,8 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
-import { join } from 'path';
+import path, { join } from 'path';
 import fs from 'fs';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import icon from '../../resources/icon.png?asset';
+//import icon from '../../resources/icon.png?asset';
 
 async function handleFileOpen() {
   return new Promise(async (resolve, reject) => {
@@ -10,16 +10,33 @@ async function handleFileOpen() {
       properties: ['openFile'],
     });
     if (!canceled && filePaths[0]) {
-      fs.readFile(filePaths[0], 'utf-8', (err, data) => {
+      fs.readFile(filePaths[0], 'utf-8', (err, date) => {
         if (err) {
           return reject(new Error('An error ocurred reading the file :' + err.message));
         }
-
-        resolve(data);
+        var FileDate = [path.basename(filePaths[0]), date];
+        resolve(FileDate);
       });
     }
   });
 }
+
+/*async function handleFileSave() {
+  return new Promise(async (resolve, reject) => {
+    const { canceled, filePaths } = await dialog.showSaveDialog({
+      properties: [''],
+    });
+    if (!canceled && filePaths[0]) {
+      fs.readFile(filePaths[0], 'utf-8', (err, date) => {
+        if (err) {
+          return reject(new Error('An error ocurred reading the file :' + err.message));
+        }
+        var FileDate = [path.basename(filePaths[0]), date];
+        resolve(FileDate);
+      });
+    }
+  });
+}*/
 
 function createWindow(): void {
   // Create the browser window.
@@ -30,7 +47,7 @@ function createWindow(): void {
     minHeight: 768,
     minWidth: 1366,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    //...(process.platform === 'win32' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -65,6 +82,9 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // custom apis
   ipcMain.handle('dialog:openFile', handleFileOpen);
+
+  // custom apis
+  //ipcMain.handle('dialog:saveFile', handleFileSave);
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');

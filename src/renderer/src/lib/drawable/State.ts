@@ -1,30 +1,43 @@
 import { State as StateType } from '@renderer/types/diagram';
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
+import icon from '@renderer/assets/icons/Icons.svg';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { preloadImages } from '../utils';
 
+interface StateProps {
+  container: Container;
+  id: string;
+  data: StateType;
+  parent?: State;
+  initial?: boolean;
+}
+
 export class State extends Draggable {
   id!: string;
   data!: StateType;
-
   isSelected = false;
 
   edgeHandlers!: EdgeHandlers;
 
   initialIcon?: HTMLImageElement;
+  icon?: HTMLImageElement;
 
-  constructor(container: Container, id: string, data: StateType, parent?: State) {
+  constructor({ container, id, data, parent, initial = false }: StateProps) {
     super(container, { ...data.bounds, width: 200, height: 100 }, parent);
-
     this.id = id;
     this.data = data;
-
-    if (this.data.initial) {
+    if (initial) {
       preloadImages([InitialIcon]).then(([icon]) => {
         this.initialIcon = icon;
+
+        this.container.app.isDirty = true;
+      });
+
+      preloadImages([icon]).then(([icon]) => {
+        this.icon = icon;
 
         this.container.app.isDirty = true;
       });
@@ -36,9 +49,12 @@ export class State extends Draggable {
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
-    this.drawEvents(ctx);
+    this.drawTextEvents(ctx);
+    if (this.icon) {
+      this.drawImageEvents(ctx);
+    }
 
-    if (this.data.initial) {
+    if (this.initialIcon) {
       this.drawInitialMark(ctx);
     }
 
@@ -48,7 +64,7 @@ export class State extends Draggable {
 
     if (this.isSelected) {
       this.drawSelection(ctx);
-      this.edgeHandlers.draw(ctx, canvas);
+      this.edgeHandlers.draw(ctx);
     }
   }
 
@@ -99,7 +115,7 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
-  private drawEvents(ctx: CanvasRenderingContext2D) {
+  private drawTextEvents(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
 
     const paddingY = 10 / this.container.scale;
@@ -128,6 +144,36 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
+  private drawImageEvents(ctx: CanvasRenderingContext2D) {
+    const { x, y } = this.drawBounds;
+
+    const paddingY = 10 / this.container.scale;
+    const px = 15 / this.container.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const titleHeight = fontSize + paddingY * 2;
+
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
+
+    ctx.beginPath();
+
+    Object.entries(this.data.events).forEach(([eventName, events], i) => {
+      if (!this.icon) return;
+      const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
+      const eventNameWidth = ctx.measureText(eventName).width;
+      const componentWidth = ctx.measureText(events[0].component).width;
+      const gap = 5 / this.container.scale;
+
+      ctx.fillText(eventName, x + px, resultY);
+      ctx.drawImage(this.icon, x, resultY, 70 / this.container.scale, 40 / this.container.scale);
+      ctx.fillText(events[0].component, x + px + eventNameWidth + gap, resultY);
+      ctx.fillText(events[0].method, x + px + eventNameWidth + componentWidth + gap * 2, resultY);
+    });
+
+    ctx.closePath();
+  }
+
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
@@ -142,7 +188,7 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
-  private drawChildren(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (this.children.size === 0) return;
 
     const { x, y, width, height, childrenHeight } = this.drawBounds;
@@ -166,7 +212,7 @@ export class State extends Draggable {
   private drawInitialMark(ctx: CanvasRenderingContext2D) {
     if (!this.initialIcon) return;
 
-    const { x, y, width, height } = this.drawBounds;
+    const { x, y } = this.drawBounds;
 
     ctx.beginPath();
 
@@ -183,5 +229,11 @@ export class State extends Draggable {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
+  }
+  toJSON() {
+    return {
+      events: this.data.events,
+      bounds: { x: this.drawBounds.x, y: this.drawBounds.y },
+    };
   }
 }

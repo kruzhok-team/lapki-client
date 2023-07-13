@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, Explorer, Menu } from '../components';
+import { Explorer, Menu } from '../components';
 
 import menu from '../assets/img/menu.png';
 import components from '../assets/img/components1.png';
-import programming from '../assets/img/programming1.png';
 import drive from '../assets/img/flash-drive.png';
 import chip from '../assets/img/chip.png';
 import gear from '../assets/img/gear.png';
 
 interface SidebarProps {
   onRequestOpenFile: () => void;
-  fileContent: string | null;
 }
 
 const items = [
@@ -21,9 +19,6 @@ const items = [
   },
   {
     imgSrc: components,
-  },
-  {
-    imgSrc: programming,
   },
   {
     imgSrc: drive,
@@ -36,7 +31,7 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ fileContent, onRequestOpenFile }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile }) => {
   const [activeTab, setActiveTab] = useState<number | null>(null);
 
   const handleClick = (index: number) => () => {
@@ -48,17 +43,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ fileContent, onRequestOpenFile
   };
   const isActive = (index: number) => activeTab === index;
 
-  const tabs = [
-    <Menu onRequestOpenFile={onRequestOpenFile} />,
-    <Explorer />,
-    <CodeEditor value={fileContent ?? ''} />,
-  ];
+  const tabs = [<Menu onRequestOpenFile={onRequestOpenFile} />, <Explorer />];
 
   return (
     <aside className="flex">
-      <div className="flex flex-col gap-2 p-2">
+      <div key="ButtonImg" className="flex flex-col gap-2 p-2">
         {items.map(({ imgSrc }, index) => (
           <button
+            key={index + 'button'}
             className={twMerge('w-[2rem]', isActive(index) && '')}
             onClick={handleClick(index)}
           >
@@ -67,9 +59,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ fileContent, onRequestOpenFile
         ))}
       </div>
 
-      <div className={twMerge('w-56', activeTab === null && 'hidden')}>
+      <div key="DivElements" className={twMerge('w-56', activeTab === null && 'hidden')}>
         {tabs.map((Element, i) => (
-          <div className={twMerge('hidden h-full', isActive(i) && 'block')}>{Element}</div>
+          <div key={i + 'DivElement'} className={twMerge('hidden h-full', isActive(i) && 'block')}>
+            {Element}
+          </div>
         ))}
       </div>
     </aside>

@@ -19,7 +19,7 @@ export class Draggable extends EventEmitter {
 
   private isMouseDown = false;
 
-  childrenPadding = 35;
+  childrenPadding = 15;
 
   constructor(container: Container, bounds: Rectangle, parent?: Draggable) {
     super();

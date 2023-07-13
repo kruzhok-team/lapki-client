@@ -1,81 +1,97 @@
 import React, { useState } from 'react';
 
-import { DiagramEditor, Documentations, Tabs } from './components';
+import { CodeEditor, DiagramEditor, Documentations, Tabs } from './components';
 import { Elements } from './types/diagram';
 import { Sidebar } from './components/Sidebar';
 
 /*Первые иконки*/
 import arrow from './assets/img/arrow.png';
+import forward from './assets/img/forward.png';
 /*Вторичные иконки*/
 import arrow1 from './assets/img/arrow1.png';
+import { twMerge } from 'tailwind-merge';
 
 export const App: React.FC = () => {
+  const [fileName, setFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
-  const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);
-  const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
 
-  /*Переключение блоков в меню между собой*/
-  const [activeIndexDoc, setActiveIndexDoc] = useState(0);
-  const handleClickDoc = (index) => setActiveIndexDoc(index);
-  const checkActiveDoc = (index, className) => (activeIndexDoc === index ? className : '');
+  /*const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);*/
+  const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
+  const [isDocOpen, setIsDocOpen] = useState(false);
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
-    const fileContent = await window.electron.ipcRenderer.invoke('dialog:openFile');
-    if (fileContent && typeof fileContent === 'string') {
-      setFileContent(fileContent);
+    if (elements === null) {
+      const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
+      /*Выгружаю массив данных, а именно имя файла и его содержимое*/
+      /*Выгружаю имя файла*/
+      setFileName(FileDate[0]);
+      /*Выгружаю содержимое файла*/
+      setFileContent(FileDate[1]);
     }
   };
-
-  /*Вывод сообщения перед открытием редактора кода*/
-  const handleToggleCodeEditor = () => {
+  /*const handleToggleCodeEditor = () => {
     if (!fileContent) {
       return alert('Сначала откройте файл JSON');
     }
 
     setIsCodeEditorOpen((p) => !p);
+  };*/
+
+  /** Функция выбора вкладки (машина состояний, код) */
+  const [activeTab, setActiveTab] = useState<number | 0>(0);
+  const isActive = (index: number) => activeTab === index;
+  const handleClick = (index: number) => {
+    if (activeTab === index) {
+      return setActiveTab(activeTab);
+    }
+    setActiveTab(index);
   };
 
+  const ActiveEditor = [
+    <DiagramEditor elements={elements} />,
+    <CodeEditor value={fileContent ?? ''} />,
+  ];
   return (
-    <div className="flex h-screen w-full">
-      <Sidebar fileContent={fileContent} onRequestOpenFile={handleOpenFile} />
+    <div className="user-select flex h-full">
+      <Sidebar onRequestOpenFile={handleOpenFile} />
 
-      <div className="flex w-full flex-col">
-        {/* Tabs */}
-        <div className="flex min-h-[2rem] items-center">
-          {elements && <Tabs />}
-          {/* <button className="w-[4vw]">
-            <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
-          </button> */}
-        </div>
-
-        <main className="min-h-[calc(100vh-2rem)] w-full">
-          {elements ? (
-            <DiagramEditor elements={elements} />
-          ) : (
-            <div className="pt-25 w-full">
-              <p className="text-center font-Fira text-base">
-                Откройте файл или перенесите его сюда...
-              </p>
+      <div className="flex-1">
+        {elements ? (
+          <>
+            <div className="flex h-[2rem] items-center justify-between border-b border-[#4391BF]">
+              <Tabs fileName={fileName} functionTabs={handleClick} isActive={isActive} />
+              <p></p>
+              <button className="w-[4vw]">
+                <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
+              </button>
             </div>
-          )}
-        </main>
+            {ActiveEditor.map((Element, i) => (
+              <div
+                key={i + 'ActiveBlock'}
+                className={twMerge('hidden h-[calc(100vh-2rem)]', isActive(i) && 'block')}
+              >
+                {Element}
+              </div>
+            ))}
+          </>
+        ) : (
+          <p className="pt-24 text-center font-Fira text-base">
+            Откройте файл или перенесите его сюда...
+          </p>
+        )}
       </div>
-
-      <section className="flex w-[3rem] items-center bg-transparent">
+      <div className="bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)]">
         <button
-          className={`h-[4.5vw] w-[4vw]`}
-          onClick={activeIndexDoc === 7 ? () => handleClickDoc(0) : () => handleClickDoc(7)}
+          className="absolute ml-[-32px] h-auto w-8 bg-transparent"
+          onClick={() => setIsDocOpen((p) => !p)}
         >
-          <img
-            src={activeIndexDoc == 7 ? arrow1 : arrow}
-            alt=""
-            className="m-auto h-[2.5vw] w-[2.5vw]"
-          ></img>
+          <img src={isDocOpen ? arrow1 : arrow} alt="" />
         </button>
-      </section>
-      <div className={`hidden transition-all ${checkActiveDoc(7, '!block')}`}>
-        <Documentations />
+
+        <div className={twMerge('w-96 transition-all', !isDocOpen && 'hidden')}>
+          <Documentations />
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,18 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 import path, { join } from 'path';
 import fs from 'fs';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import { optimizer, is } from '@electron-toolkit/utils';
+
 //import icon from '../../resources/icon.png?asset';
 
+let NameFile: string;
 async function handleFileOpen() {
   return new Promise(async (resolve, reject) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
+      filters: [{ name: 'json', extensions: ['json'] }],
       properties: ['openFile'],
     });
+    NameFile = filePaths[0];
     if (!canceled && filePaths[0]) {
       fs.readFile(filePaths[0], 'utf-8', (err, date) => {
         if (err) {
@@ -21,22 +25,40 @@ async function handleFileOpen() {
   });
 }
 
-/*async function handleFileSave() {
-  return new Promise(async (resolve, reject) => {
-    const { canceled, filePaths } = await dialog.showSaveDialog({
-      properties: [''],
+async function handleFileSave(data) {
+  return new Promise(async () => {
+    await fs.writeFile(NameFile, data, function (err) {
+      if (err) throw err;
+      console.log('Сохранено!');
     });
-    if (!canceled && filePaths[0]) {
-      fs.readFile(filePaths[0], 'utf-8', (err, date) => {
-        if (err) {
-          return reject(new Error('An error ocurred reading the file :' + err.message));
-        }
-        var FileDate = [path.basename(filePaths[0]), date];
-        resolve(FileDate);
-      });
-    }
   });
-}*/
+}
+
+async function handleFileSaveAs(data) {
+  return new Promise(async () => {
+    await dialog
+      .showSaveDialog({
+        title: 'Выберите путь к файлу для сохранения',
+        defaultPath: path.join(__dirname, NameFile),
+        buttonLabel: 'Сохранить',
+        filters: [{ name: 'json', extensions: ['json'] }],
+      })
+      .then((file) => {
+        if (!file.canceled) {
+          // Создание и запись в файл
+          if (typeof file.filePath === 'string') {
+            fs.writeFile(file.filePath?.toString(), data, function (err) {
+              if (err) throw err;
+              console.log('Сохранено!');
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -83,11 +105,13 @@ app.whenReady().then(() => {
   // custom apis
   ipcMain.handle('dialog:openFile', handleFileOpen);
 
-  // custom apis
-  //ipcMain.handle('dialog:saveFile', handleFileSave);
+  ipcMain.handle('dialog:saveFile', (_event, data) => {
+    return handleFileSave(data);
+  });
 
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron');
+  ipcMain.handle('dialog:saveAsFile', (_event, data) => {
+    return handleFileSaveAs(data);
+  });
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

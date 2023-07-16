@@ -21,13 +21,6 @@ export class Container {
   isScale = false;
 
   dropCallback?: (position: Point) => void;
-  toJSON() {
-    return {
-      states: { ...Object.fromEntries(this.states.items) },
-      initialState: 'on',
-      transitions: [...this.transitions.items.values()],
-    };
-  }
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -35,6 +28,7 @@ export class Container {
     this.transitions = new Transitions(this);
 
     // Порядок важен, система дерьмо
+
     this.initEvents();
     this.states.initEvents();
     this.transitions.initEvents();
@@ -134,6 +128,10 @@ export class Container {
   };
 
   get graphData() {
-    return [...this.states.items.values(), ...this.transitions.items.values()];
+    return {
+      states: { ...Object.fromEntries(this.states.items) },
+      initialState: 'on',
+      transitions: [...this.transitions.items.values()],
+    };
   }
 }

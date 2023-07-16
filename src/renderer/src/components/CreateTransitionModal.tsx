@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Modal } from './Modal';
-import { TextInput } from './TextInput';
+import { TextInput } from './Modal/TextInput';
 import { ColorInput } from './ColorInput';
 
 interface CreateTransitionModalProps {

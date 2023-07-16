@@ -9,7 +9,6 @@ import { State } from '@renderer/lib/drawable/State';
 interface DiagramEditorProps {
   elements: Elements;
 }
-
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
@@ -21,21 +20,30 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const [isTransitionModalOpen, setIsTransitionModalOpen] = useState(false);
   const openTransitionModal = () => setIsTransitionModalOpen(true);
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
+
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, elements);
     editor?.container?.onStateDrop((position) => {
       setStatePos(position);
       openStateModal();
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
     editor.container.transitions.onTransitionCreate((source, target) => {
       setTransition({ source, target });
       openTransitionModal();
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
-
+    //Таймер для сохранения изменений сделанных в редакторе
+    const SaveEditor = setInterval(() => {
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+    }, 5000);
     setEditor(editor);
 
-    return () => editor.cleanUp();
+    return () => {
+      editor.cleanUp();
+      clearInterval(SaveEditor);
+    };
   }, [containerRef.current]);
 
   const handleCreateState = (data: CreateStateModalFormValues) => {
@@ -54,10 +62,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     }
     closeTransitionModal();
   };
-  setInterval(() => {
-    console.clear();
-    alert(JSON.stringify(editor?.container));
-  }, 5000);
 
   return (
     <>

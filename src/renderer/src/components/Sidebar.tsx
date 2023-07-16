@@ -11,6 +11,7 @@ import gear from '../assets/img/gear.png';
 
 interface SidebarProps {
   onRequestOpenFile: () => void;
+  onRequestNewFile: () => void;
 }
 
 const items = [
@@ -31,7 +32,7 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile, onRequestNewFile }) => {
   const [activeTab, setActiveTab] = useState<number | null>(null);
 
   const handleClick = (index: number) => () => {
@@ -43,7 +44,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile }) => {
   };
   const isActive = (index: number) => activeTab === index;
 
-  const tabs = [<Menu onRequestOpenFile={onRequestOpenFile} />, <Explorer />];
+  const tabs = [
+    <Menu onRequestOpenFile={onRequestOpenFile} onRequestNewFile={onRequestNewFile} />,
+    <Explorer />,
+  ];
 
   return (
     <aside className="flex">

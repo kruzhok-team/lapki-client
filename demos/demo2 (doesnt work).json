@@ -12,7 +12,7 @@
     "child2 state": { "parent": "child state", "events": {}, "bounds": { "x": 0, "y": 0 } },
     "child3 state": { "parent": "on", "events": {}, "bounds": { "x": 300, "y": 0 } }
   },
-  "initialState": "off",
+  "initialState": "on",
   "transitions": [
     {
       "source": "on",

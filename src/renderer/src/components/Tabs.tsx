@@ -1,6 +1,6 @@
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
-import close from '@renderer/assets/img/close.png';
+import close from '@renderer/assets/icons/close.svg';
 
 interface TabsProps {
   functionTabs: (index) => void;
@@ -16,9 +16,6 @@ export const Tabs: React.FC<TabsProps> = ({ fileName, functionTabs, isActive }) 
     {
       Tab: 'CODE: ' + fileName,
     },
-    {
-      Tab: <img src={close} alt="" />,
-    },
   ];
 
   return (
@@ -28,12 +25,13 @@ export const Tabs: React.FC<TabsProps> = ({ fileName, functionTabs, isActive }) 
           <button
             key={'Tab' + index}
             className={twMerge(
-              'px-1 py-1 font-Fira text-base',
+              'flex px-2 py-1 font-Fira text-base',
               isActive(index) && 'bg-[#4391BF] bg-opacity-50'
             )}
             onClick={() => functionTabs(index)}
           >
             {Tab}
+            <img src={close} alt="" />
           </button>
         ))}
       </div>

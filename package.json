@@ -25,6 +25,8 @@
     "@monaco-editor/react": "^4.5.1",
     "@uiw/react-codesandbox": "^1.1.5",
     "curved-arrows": "^0.1.0",
+    "electron-settings": "^4.0.2",
+    "electron-store": "^8.1.0",
     "fstb": "^1.0.0",
     "monaco-editor": "^0.39.0",
     "nanoid": "^4.0.2",

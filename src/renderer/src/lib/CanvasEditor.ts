@@ -22,7 +22,6 @@ export class CanvasEditor {
     this.mouse = new Mouse(this.canvas.element);
     this.keyboard = new Keyboard();
     this.render = new Render();
-
     this.root.append(this.canvas.element);
     this.canvas.resize();
     this.mouse.setOffset();
@@ -36,7 +35,6 @@ export class CanvasEditor {
     this.render.subscribe(() => {
       if (!this.isDirty) return;
       this.mouse.tick();
-
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
         this.container.draw(ctx, canvas);
@@ -44,7 +42,6 @@ export class CanvasEditor {
       this.isDirty = false;
     });
   }
-
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();

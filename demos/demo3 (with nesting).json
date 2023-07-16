@@ -1,91 +1,30 @@
 {
   "states": {
     "on": {
-      "events": {
-        "onEnter": [
-          {
-            "component": "diod",
-            "method": "turnOn"
-          }
-        ]
-      },
-      "bounds": {
-        "x": 96,
-        "y": 264
-      }
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 96, "y": 96 }
     },
-
     "off": {
-      "events": {
-        "onEnter": [
-          {
-            "component": "diod",
-            "method": "turnOff"
-          }
-        ]
-      },
-      "bounds": {
-        "x": 225,
-        "y": 50
-      }
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOff" }] },
+      "bounds": { "x": 419, "y": 419 }
     },
-
-    "child state": {
-      "parent": "on",
+    "NewTable": {
       "events": {},
-      "bounds": {
-        "x": 0,
-        "y": 50
-      }
+      "bounds": { "x": 10, "y": 10 }
     },
-
-    "child2 state": {
-      "parent": "child state",
-      "events": {},
-      "bounds": {
-        "x": 0,
-        "y": 0
-      }
-    },
-
-    "child3 state": {
-      "parent": "on",
-      "events": {},
-      "bounds": {
-        "x": 300,
-        "y": 0
-      }
-    }
+    "child state": { "events": {}, "bounds": { "x": 0, "y": 0 } },
+    "child2 state": { "events": {}, "bounds": { "x": 0, "y": 0 } },
+    "child3 state": { "events": {}, "bounds": { "x": 300, "y": 300 } }
   },
-
   "initialState": "on",
-
   "transitions": [
+    { "source": "on", "target": "off", "color": "#F29727", "condition": { "x": 99, "y": 171 } },
+    { "source": "off", "target": "on", "color": "#F24C3D", "condition": { "x": 474, "y": 172 } },
     {
-      "source": "on",
+      "source": "NewTable",
       "target": "off",
-      "color": "#F29727",
-      "condition": {
-        "position": {
-          "x": 450,
-          "y": 175
-        },
-        "component": "btn",
-        "method": "isJustPressed"
-      }
-    },
-    {
-      "source": "off",
-      "target": "on",
-      "color": "#F24C3D",
-      "condition": {
-        "position": {
-          "x": 100,
-          "y": 175
-        },
-        "component": "btn",
-        "method": "isJustPressed"
-      }
+      "color": "#000000",
+      "condition": { "x": 240, "y": 26 }
     }
   ]
 }

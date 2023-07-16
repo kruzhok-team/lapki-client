@@ -40,13 +40,13 @@ export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...prop
             className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
             onClick={props.onRequestClose}
           >
-            Cancel
+            Закрыть
           </button>
           <button
             type="submit"
             className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
           >
-            Save
+            Сохранить
           </button>
         </div>
       </form>

@@ -24,7 +24,13 @@ export class State extends Draggable {
 
   initialIcon?: HTMLImageElement;
   icon?: HTMLImageElement;
-
+  toJSON() {
+    return {
+      parent: this.data.parent,
+      events: this.data.events,
+      bounds: { x: this.bounds.x, y: this.bounds.y },
+    };
+  }
   constructor({ container, id, data, parent, initial = false }: StateProps) {
     super(container, { ...data.bounds, width: 200, height: 100 }, parent);
     this.id = id;
@@ -35,7 +41,6 @@ export class State extends Draggable {
 
         this.container.app.isDirty = true;
       });
-
       preloadImages([icon]).then(([icon]) => {
         this.icon = icon;
 
@@ -157,7 +162,6 @@ export class State extends Draggable {
     ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.beginPath();
-
     Object.entries(this.data.events).forEach(([eventName, events], i) => {
       if (!this.icon) return;
       const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
@@ -229,11 +233,5 @@ export class State extends Draggable {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
-  }
-  toJSON() {
-    return {
-      events: this.data.events,
-      bounds: { x: this.drawBounds.x, y: this.drawBounds.y },
-    };
   }
 }

@@ -14,11 +14,9 @@ import { twMerge } from 'tailwind-merge';
 export const App: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
-
   /*const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);*/
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
-
   /*Открытие файла*/
   const handleOpenFile = async () => {
     if (elements === null) {
@@ -30,6 +28,13 @@ export const App: React.FC = () => {
       setFileContent(FileDate[1]);
     }
   };
+
+  const handleNewFile = async () => {
+    const FileNew = '{"states": {},"initialState": {},"transitions": []}';
+    setFileName('Новый файл.json');
+    setFileContent(FileNew);
+  };
+
   /*const handleToggleCodeEditor = () => {
     if (!fileContent) {
       return alert('Сначала откройте файл JSON');
@@ -50,11 +55,11 @@ export const App: React.FC = () => {
 
   const ActiveEditor = [
     <DiagramEditor elements={elements} />,
-    <CodeEditor value={fileContent ?? ''} />,
+    <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
   ];
   return (
     <div className="user-select flex h-full">
-      <Sidebar onRequestOpenFile={handleOpenFile} />
+      <Sidebar onRequestOpenFile={handleOpenFile} onRequestNewFile={handleNewFile} />
 
       <div className="flex-1">
         {elements ? (

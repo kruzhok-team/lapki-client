@@ -90,8 +90,8 @@ export class Transition {
     ctx.closePath();
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
-    this.condition.draw(ctx);
+  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    this.condition.draw(ctx, canvas);
 
     const { sourceLine, targetLine } = getTransitionLines(
       this.source.drawBounds,

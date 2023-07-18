@@ -68,11 +68,15 @@ export class States extends EventEmitter {
     this.removeSelection();
 
     target.setIsSelected(true);
-
     this.container.app.isDirty = true;
   };
-
-  createNewState(name: string, position: Point) {
+  createNewState(
+    name: string,
+    eventsName: string,
+    component: string,
+    method: string,
+    position: Point
+  ) {
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
@@ -82,7 +86,7 @@ export class States extends EventEmitter {
       id: name,
       data: {
         bounds: { x, y, width, height },
-        events: {},
+        events: { onEnter: { component, method } },
       },
     });
 

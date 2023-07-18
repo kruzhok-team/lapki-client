@@ -21,6 +21,10 @@ export const Explorer: React.FC = () => {
       <div className="h-[50vh] bg-[#4391BF] bg-opacity-50 text-center">
         <p className="my-[1vw]">Иерархия состояний</p>
         <hr className="mx-[2rem] h-[1px] w-[10rem] border-none bg-[#FFFFFF]" />
+        <div>
+          Не забыть посмотреть варианты древа и возможности редактирования машины состояний
+          отсюда!!!
+        </div>
       </div>
     </section>
   );

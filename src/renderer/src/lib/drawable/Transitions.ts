@@ -100,12 +100,12 @@ export class Transitions {
       source,
       target,
       {
-        component,
-        method,
         position: {
           x: 100,
           y: 100,
         },
+        component,
+        method,
       },
       color
     );

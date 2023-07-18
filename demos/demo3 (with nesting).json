@@ -1,30 +1,52 @@
 {
   "states": {
     "on": {
-      "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
-      "bounds": { "x": 96, "y": 96 }
+      "events": { "onExit": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 37, "y": 290 }
     },
     "off": {
       "events": { "onEnter": [{ "component": "diod", "method": "turnOff" }] },
-      "bounds": { "x": 419, "y": 419 }
+      "bounds": { "x": 179, "y": 166 }
     },
+    "child state": { "parent": "on", "events": {}, "bounds": { "x": 0, "y": 50 } },
+    "child2 state": { "parent": "child state", "events": {}, "bounds": { "x": 0, "y": 0 } },
+    "child3 state": { "parent": "on", "events": {}, "bounds": { "x": 300, "y": 0 } },
     "NewTable": {
-      "events": {},
-      "bounds": { "x": 10, "y": 10 }
-    },
-    "child state": { "events": {}, "bounds": { "x": 0, "y": 0 } },
-    "child2 state": { "events": {}, "bounds": { "x": 0, "y": 0 } },
-    "child3 state": { "events": {}, "bounds": { "x": 300, "y": 300 } }
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 180, "y": 30 }
+    }
   },
   "initialState": "on",
   "transitions": [
-    { "source": "on", "target": "off", "color": "#F29727", "condition": { "x": 99, "y": 171 } },
-    { "source": "off", "target": "on", "color": "#F24C3D", "condition": { "x": 474, "y": 172 } },
+    {
+      "source": "on",
+      "target": "off",
+      "color": "#F29727",
+      "condition": {
+        "position": { "x": 414, "y": 193 },
+        "component": "btn",
+        "method": "isJustPressed"
+      }
+    },
+    {
+      "source": "off",
+      "target": "on",
+      "color": "#F24C3D",
+      "condition": {
+        "position": { "x": 17, "y": 195 },
+        "component": "btn",
+        "method": "isJustPressed"
+      }
+    },
     {
       "source": "NewTable",
       "target": "off",
-      "color": "#000000",
-      "condition": { "x": 240, "y": 26 }
+      "color": "#1100ff",
+      "condition": {
+        "position": { "x": 15, "y": 94 },
+        "component": "NewComponent",
+        "method": "NewMethod"
+      }
     }
   ]
 }

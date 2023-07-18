@@ -47,7 +47,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   }, [containerRef.current]);
 
   const handleCreateState = (data: CreateStateModalFormValues) => {
-    editor?.container.states.createNewState(data.name, statePos);
+    editor?.container.states.createNewState(data.name, data.events, data.component, data.method, statePos);
     closeStateModal();
   };
   const handleCreateTransition = (data: CreateTransitionModalFormValues) => {

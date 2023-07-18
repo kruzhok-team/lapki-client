@@ -1,9 +1,9 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Modal } from './Modal';
+import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
-import { ColorInput } from './ColorInput';
+import { ColorInput } from './Modal/ColorInput';
 
 interface CreateTransitionModalProps {
   isOpen: boolean;
@@ -39,12 +39,7 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
   };
 
   return (
-    <Modal
-      {...props}
-      onRequestClose={onRequestClose}
-      title="Create Transition"
-      onSubmit={handleSubmit}
-    >
+    <Modal {...props} onRequestClose={onRequestClose} title="Изменить " onSubmit={handleSubmit}>
       <TextInput
         label="Component:"
         placeholder="Component"

@@ -19,14 +19,11 @@ export const App: React.FC = () => {
   const [isDocOpen, setIsDocOpen] = useState(false);
   /*Открытие файла*/
   const handleOpenFile = async () => {
-    if (elements === null) {
-      const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
-      /*Выгружаю массив данных, а именно имя файла и его содержимое*/
-      /*Выгружаю имя файла*/
-      setFileName(FileDate[0]);
-      /*Выгружаю содержимое файла*/
-      setFileContent(FileDate[1]);
-    }
+    const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
+    /*Выгружаю имя файла*/
+    setFileName(FileDate[0]);
+    /*Выгружаю содержимое файла*/
+    setFileContent(FileDate[1]);
   };
 
   const handleNewFile = async () => {
@@ -35,15 +32,7 @@ export const App: React.FC = () => {
     setFileContent(FileNew);
   };
 
-  /*const handleToggleCodeEditor = () => {
-    if (!fileContent) {
-      return alert('Сначала откройте файл JSON');
-    }
-
-    setIsCodeEditorOpen((p) => !p);
-  };*/
-
-  /** Функция выбора вкладки (машина состояний, код) */
+  /** Callback функция выбора вкладки (машина состояний, код) */
   const [activeTab, setActiveTab] = useState<number | 0>(0);
   const isActive = (index: number) => activeTab === index;
   const handleClick = (index: number) => {

@@ -1,11 +1,16 @@
 import { State as StateType } from '@renderer/types/diagram';
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
-import icon from '@renderer/assets/icons/Icons.svg';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { preloadImages } from '../utils';
+
+//Иконки событий
+import onEnter from '@renderer/assets/icons/onEnter.svg';
+import onExit from '@renderer/assets/icons/onExit.svg';
+import DiodOn from '@renderer/assets/icons/DiodOn.svg';
+import DiodOff from '@renderer/assets/icons/DiodOff.svg';
 
 interface StateProps {
   container: Container;
@@ -23,7 +28,11 @@ export class State extends Draggable {
   edgeHandlers!: EdgeHandlers;
 
   initialIcon?: HTMLImageElement;
-  icon?: HTMLImageElement;
+  onEnter?: HTMLImageElement;
+  onExit?: HTMLImageElement;
+  DiodOn?: HTMLImageElement;
+  DiodOff?: HTMLImageElement;
+
   toJSON() {
     return {
       parent: this.data.parent,
@@ -32,32 +41,29 @@ export class State extends Draggable {
     };
   }
   constructor({ container, id, data, parent, initial = false }: StateProps) {
-    super(container, { ...data.bounds, width: 200, height: 100 }, parent);
+    super(container, { ...data.bounds, width: 250, height: 100 }, parent);
     this.id = id;
     this.data = data;
     if (initial) {
       preloadImages([InitialIcon]).then(([icon]) => {
         this.initialIcon = icon;
-
-        this.container.app.isDirty = true;
-      });
-      preloadImages([icon]).then(([icon]) => {
-        this.icon = icon;
-
         this.container.app.isDirty = true;
       });
     }
-
+    preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
+      this.onEnter = onEnter;
+      this.onExit = onExit;
+      this.DiodOn = DiodOn;
+      this.DiodOff = DiodOff;
+    });
     this.edgeHandlers = new EdgeHandlers(container.app, this);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
-    this.drawTextEvents(ctx);
-    if (this.icon) {
-      this.drawImageEvents(ctx);
-    }
+    this.drawImageEvents(ctx);
+    //this.drawTextEvents(ctx);
 
     if (this.initialIcon) {
       this.drawInitialMark(ctx);
@@ -120,7 +126,7 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
-  private drawTextEvents(ctx: CanvasRenderingContext2D) {
+  /*private drawTextEvents(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
 
     const paddingY = 10 / this.container.scale;
@@ -147,7 +153,7 @@ export class State extends Draggable {
     });
 
     ctx.closePath();
-  }
+  }*/
 
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
@@ -162,17 +168,50 @@ export class State extends Draggable {
     ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.beginPath();
-    Object.entries(this.data.events).forEach(([eventName, events], i) => {
-      if (!this.icon) return;
-      const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
-      const eventNameWidth = ctx.measureText(eventName).width;
-      const componentWidth = ctx.measureText(events[0].component).width;
-      const gap = 5 / this.container.scale;
 
-      ctx.fillText(eventName, x + px, resultY);
-      ctx.drawImage(this.icon, x, resultY, 70 / this.container.scale, 40 / this.container.scale);
-      ctx.fillText(events[0].component, x + px + eventNameWidth + gap, resultY);
-      ctx.fillText(events[0].method, x + px + eventNameWidth + componentWidth + gap * 2, resultY);
+    Object.entries(this.data.events).forEach(([eventName, events], i) => {
+      if (!this.onEnter || !this.onExit || !this.DiodOn || !this.DiodOff) return;
+      const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
+      //const eventNameWidth = ctx.measureText(eventName).width;
+      //const componentWidth = ctx.measureText(events[0].component).width;
+      //const gap = 5 / this.container.scale;
+
+      //ctx.fillText(eventName, x + px, resultY);
+      if (eventName === 'onEnter') {
+        ctx.drawImage(
+          this.onEnter,
+          x + px,
+          resultY,
+          90 / this.container.scale,
+          40 / this.container.scale
+        );
+      } else {
+        ctx.drawImage(
+          this.onExit,
+          x + px,
+          resultY,
+          90 / this.container.scale,
+          40 / this.container.scale
+        );
+      }
+
+      if (events.method === 'turnOn') {
+        ctx.drawImage(
+          this.DiodOn,
+          x + 8 * px,
+          resultY,
+          90 / this.container.scale,
+          40 / this.container.scale
+        );
+      } else {
+        ctx.drawImage(
+          this.DiodOff,
+          x + 8 * px,
+          resultY,
+          90 / this.container.scale,
+          40 / this.container.scale
+        );
+      }
     });
 
     ctx.closePath();
@@ -183,6 +222,8 @@ export class State extends Draggable {
 
     ctx.lineWidth = stateStyle.selectedBorderWidth;
     ctx.strokeStyle = stateStyle.selectedBorderColor;
+
+    NewModalWindow(this);
 
     ctx.beginPath();
 
@@ -197,8 +238,8 @@ export class State extends Draggable {
 
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
-    ctx.strokeStyle = stateStyle.bodyBg;
     ctx.lineWidth = 2;
+    ctx.strokeStyle = stateStyle.bodyBg;
 
     ctx.beginPath();
 
@@ -234,4 +275,7 @@ export class State extends Draggable {
   setIsSelected(value: boolean) {
     this.isSelected = value;
   }
+}
+function NewModalWindow(data) {
+  console.log(JSON.stringify(data));
 }

@@ -5,7 +5,7 @@ import { State } from './State';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import Icon from '@renderer/assets/icons/new transition.svg';
 
-// ? Возиожно эти штуки нужно переделать на обычные dom div
+// ? Возможно эти штуки нужно переделать на обычные dom div
 export class EdgeHandlers {
   app!: CanvasEditor;
   state!: State;

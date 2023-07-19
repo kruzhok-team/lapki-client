@@ -20,18 +20,18 @@ export const Tabs: React.FC<TabsProps> = ({ fileName, functionTabs, isActive }) 
 
   return (
     <>
-      <div key="DivTabs" className="flex">
+      <div key="DivTabs" className="flex text-ellipsis">
         {TabsItems.map(({ Tab }, index) => (
           <button
             key={'Tab' + index}
             className={twMerge(
-              'flex px-2 py-1 font-Fira text-base',
+              'flex  px-2 py-1 font-Fira text-base',
               isActive(index) && 'bg-[#4391BF] bg-opacity-50'
             )}
             onClick={() => functionTabs(index)}
           >
             {Tab}
-            <img src={close} alt="" />
+            {/*<img src={close} alt="" />*/}
           </button>
         ))}
       </div>

@@ -47,7 +47,7 @@ export const App: React.FC = () => {
     <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
   ];
   return (
-    <div className="user-select flex h-full">
+    <div className="flex h-full select-none">
       <Sidebar onRequestOpenFile={handleOpenFile} onRequestNewFile={handleNewFile} />
 
       <div className="flex-1">

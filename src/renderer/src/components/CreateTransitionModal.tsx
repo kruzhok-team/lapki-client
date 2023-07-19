@@ -39,32 +39,37 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
   };
 
   return (
-    <Modal {...props} onRequestClose={onRequestClose} title="Изменить " onSubmit={handleSubmit}>
+    <Modal
+      {...props}
+      onRequestClose={onRequestClose}
+      title="Редактор соединения"
+      onSubmit={handleSubmit}
+    >
       <TextInput
-        label="Component:"
-        placeholder="Component"
+        label="Компонент:"
+        placeholder="Компонент"
         {...register('component', {
-          required: 'This field is required',
-          minLength: { value: 4, message: 'Minimum 4 characters' },
+          required: 'Это поле обязательно к заполнению!',
+          minLength: { value: 4, message: 'Минимум 4 символа' },
         })}
         error={!!errors.component}
         errorMessage={errors.component?.message ?? ''}
       />
 
       <TextInput
-        label="Method:"
-        placeholder="Method"
+        label="Метод:"
+        placeholder="Метод"
         {...register('method', {
-          required: 'This field is required',
-          minLength: { value: 4, message: 'Minimum 4 characters' },
+          required: 'Это поле обязательно к заполнению!',
+          minLength: { value: 4, message: 'Минимум 4 символа' },
         })}
         error={!!errors.method}
         errorMessage={errors.method?.message ?? ''}
       />
 
       <ColorInput
-        label="Color:"
-        {...register('color', { required: 'This field is required' })}
+        label="Цвет связи:"
+        {...register('color', { required: 'Это поле обязательно к заполнению!' })}
         error={!!errors.color}
         errorMessage={errors.color?.message ?? ''}
       />

@@ -11,24 +11,24 @@ export class Transition {
 
   source!: State;
   target!: State;
-  condition!: Condition;
   color!: string;
+  condition!: Condition;
 
   constructor(
     container: Container,
     source: State,
     target: State,
-    condition: ConditionType,
-    color: string
+    color: string,
+    condition: ConditionType
   ) {
     this.container = container;
 
     this.source = source;
     this.target = target;
 
-    this.condition = new Condition(this.container, condition);
-
     this.color = color;
+
+    this.condition = new Condition(this.container, condition);
   }
 
   toJSON() {

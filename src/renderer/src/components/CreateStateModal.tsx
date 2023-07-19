@@ -3,10 +3,10 @@ import { useForm } from 'react-hook-form';
 
 import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
-import { ColorInput } from './Modal/ColorInput';
 
 interface CreateStateModalProps {
   isOpen: boolean;
+  onOpen: { state } | undefined;
   onClose: () => void;
   onSubmit: (data: CreateStateModalFormValues) => void;
 }
@@ -22,6 +22,7 @@ export interface CreateStateModalFormValues {
 export const CreateStateModal: React.FC<CreateStateModalProps> = ({
   onSubmit,
   onClose,
+  onOpen,
   ...props
 }) => {
   const {
@@ -39,17 +40,16 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
     onClose();
     reset();
   };
-
   return (
     <Modal
       {...props}
       onRequestClose={onRequestClose}
-      title="Изменить состояние"
+      title={JSON.stringify(onOpen?.state.target.id)}
       onSubmit={handleSubmit}
     >
       <TextInput
         label="Имя состояния:"
-        placeholder="Состояние"
+        placeholder="Выберите состояние"
         {...register('name', {
           required: 'Это поле обязательно к заполнению!',
           minLength: { value: 4, message: 'Минимум 4 символа!' },
@@ -60,7 +60,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
 
       <TextInput
         label="Событие:"
-        placeholder="Событие"
+        placeholder="Выберите событие"
         {...register('events', {
           required: 'Это поле обязательно к заполнению!',
           minLength: { value: 4, message: 'Минимум 4 символа!' },
@@ -71,7 +71,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
 
       <TextInput
         label="Компонент:"
-        placeholder="Компонент"
+        placeholder="Выберите компонент"
         {...register('component', {
           required: 'Это поле обязательно к заполнению!',
           minLength: { value: 4, message: 'Минимум 4 символа!' },
@@ -82,20 +82,13 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
 
       <TextInput
         label="Метод:"
-        placeholder="Метод"
+        placeholder="Выберите метод"
         {...register('method', {
           required: 'Это поле обязательно к заполнению!',
           minLength: { value: 4, message: 'Минимум 4 символа!' },
         })}
         error={!!errors.method}
         errorMessage={errors.method?.message ?? ''}
-      />
-
-      <ColorInput
-        label="Цвет связи:"
-        {...register('color', { required: 'Это поле обязательно к заполнению!' })}
-        error={!!errors.color}
-        errorMessage={errors.color?.message ?? ''}
       />
     </Modal>
   );

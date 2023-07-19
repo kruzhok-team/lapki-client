@@ -29,7 +29,7 @@ export class Transitions {
       const sourceState = this.container.states.items.get(source) as State;
       const targetState = this.container.states.items.get(target) as State;
 
-      const transition = new Transition(this.container, sourceState, targetState, condition, color);
+      const transition = new Transition(this.container, sourceState, targetState, color, condition);
 
       this.items.set(id, transition);
     }
@@ -90,25 +90,19 @@ export class Transitions {
   createNewTransition(
     source: State,
     target: State,
+    color: string,
     component: string,
-    method: string,
-    color: string
+    method: string
   ) {
     // TODO Доделать парвильный condition
-    const transition = new Transition(
-      this.container,
-      source,
-      target,
-      {
-        position: {
-          x: 100,
-          y: 100,
-        },
-        component,
-        method,
+    const transition = new Transition(this.container, source, target, color, {
+      position: {
+        x: 100,
+        y: 100,
       },
-      color
-    );
+      component,
+      method,
+    });
 
     this.items.set(nanoid(), transition);
 

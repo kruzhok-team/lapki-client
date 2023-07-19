@@ -6,6 +6,8 @@ import { Point } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
 
+type CreateStateCallback = (state) => void;
+
 export class States extends EventEmitter {
   container!: Container;
 
@@ -14,6 +16,9 @@ export class States extends EventEmitter {
     super();
     this.container = container;
   }
+
+  createCallback?: CreateStateCallback;
+
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
@@ -31,12 +36,17 @@ export class States extends EventEmitter {
       parent?.children.set(id, state);
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
+      state.on('click', this.handleStateDoubleClick as any);
 
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
       this.items.set(id, state);
     }
   }
+
+  onStateCreate = (callback: CreateStateCallback) => {
+    this.createCallback = callback;
+  };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.items.forEach((state) => {
@@ -70,13 +80,39 @@ export class States extends EventEmitter {
     target.setIsSelected(true);
     this.container.app.isDirty = true;
   };
-  createNewState(
-    name: string,
-    eventsName: string,
-    component: string,
-    method: string,
-    position: Point
-  ) {
+
+  handleStateDoubleClick = (state: State) => {
+    this.createCallback?.(state);
+  };
+
+  createState(name: string, events: string, component: string, method: string) {
+    const { width, height } = stateStyle;
+    const x = 100 - width / 2;
+    const y = 100 - height / 2;
+
+    var startEvents = {};
+    startEvents[events] = { component, method };
+
+    const state = new State({
+      container: this.container,
+      id: name,
+      data: {
+        bounds: { x, y, width, height },
+        events: startEvents,
+      },
+    });
+
+    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('click', this.handleStateClick as any);
+    state.on('click', this.handleStateDoubleClick as any);
+    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
+
+    this.items.set(name, state);
+
+    this.container.app.isDirty = true;
+  }
+
+  createNewState(name: string, position: Point) {
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
@@ -86,12 +122,13 @@ export class States extends EventEmitter {
       id: name,
       data: {
         bounds: { x, y, width, height },
-        events: { onEnter: { component, method } },
+        events: {},
       },
     });
 
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);
+    state.on('click', this.handleStateDoubleClick as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);

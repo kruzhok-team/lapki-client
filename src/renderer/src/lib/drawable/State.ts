@@ -32,6 +32,7 @@ export class State extends Draggable {
   onExit?: HTMLImageElement;
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
+  static Layer: any;
 
   toJSON() {
     return {
@@ -41,6 +42,12 @@ export class State extends Draggable {
     };
   }
   constructor({ container, id, data, parent, initial = false }: StateProps) {
+    preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
+      this.onEnter = onEnter;
+      this.onExit = onExit;
+      this.DiodOn = DiodOn;
+      this.DiodOff = DiodOff;
+    });
     super(container, { ...data.bounds, width: 250, height: 100 }, parent);
     this.id = id;
     this.data = data;
@@ -50,12 +57,7 @@ export class State extends Draggable {
         this.container.app.isDirty = true;
       });
     }
-    preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
-      this.onEnter = onEnter;
-      this.onExit = onExit;
-      this.DiodOn = DiodOn;
-      this.DiodOff = DiodOff;
-    });
+
     this.edgeHandlers = new EdgeHandlers(container.app, this);
   }
 

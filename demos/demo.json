@@ -1,6 +1,7 @@
 {
   "states": {
-    "on": {
+    "nanoid custom random": {
+      "name": "asdesa",
       "events": {
         "onEnter": [
           {
@@ -42,27 +43,62 @@
       "source": "on",
       "target": "off",
       "color": "#F29727",
-      "condition": {
+      "trigger": {
         "position": {
           "x": 361,
           "y": 127
         },
         "component": "btn",
         "method": "isJustPressed"
+      },
+      "condition": {
+        "firstOperand": {
+          "type": "digit",
+          "value": "2"
+        },
+        "secondOperand": "1",
+        "operation": "equals"
       }
     },
     {
       "source": "off",
       "target": "on",
       "color": "#F24C3D",
-      "condition": {
+      "trigger": {
         "position": {
           "x": 525,
           "y": 285
         },
         "component": "btn",
         "method": "isJustPressed"
-      }
+      },
+      "condition": {
+        "operands": [
+          {
+            "type": "component",
+            "value": {
+              "component": "diod",
+              "method": "isEnabled"
+            }
+          },
+          "1",
+          "2",
+          "3"
+        ],
+        "operators": ["equals", "less", "and"]
+      },
+      "do": [
+        {
+          "component": "diod",
+          "method": "turnOn"
+        }
+      ],
+      "else": [
+        {
+          "component": "diod",
+          "method": "turnOn"
+        }
+      ]
     }
   ],
 

@@ -31,6 +31,7 @@ export class Draggable extends EventEmitter {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
+    this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
   }
 
   // Позиция рассчитанная с возможным родителем
@@ -182,6 +183,11 @@ export class Draggable extends EventEmitter {
 
       this.emit('click', { event: e, target: this });
     }
+  };
+
+  handleMouseDoubleClick = (e: MyMouseEvent) => {
+    // TODO: возможна коллизия с mouseup и click, нужно тестировать
+    this.emit('dblclick', { event: e, target: this });
   };
 
   isUnderMouse({ x, y }: MyMouseEvent) {

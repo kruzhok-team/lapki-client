@@ -21,6 +21,7 @@ export class Mouse extends MouseEventEmitter {
 
     this.element = element;
 
+    this.element.addEventListener('dblclick', this.doubleClickHandler);
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
     this.element.addEventListener('mousemove', this.mousemoveHandler);
@@ -93,6 +94,23 @@ export class Mouse extends MouseEventEmitter {
     };
 
     this.emit('mouseup', event);
+  };
+
+  doubleClickHandler = (e: MouseEvent) => {
+    if (e.button === Button.left) {
+      this.left = false;
+    }
+
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      dx: x - this.px,
+      dy: y - this.py,
+      left: this.left,
+      nativeEvent: e,
+    };
+    this.emit('dblclick', event);
   };
 
   mouseWheelHandler = (e: WheelEvent) => {

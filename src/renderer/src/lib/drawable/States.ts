@@ -22,6 +22,7 @@ export class States extends EventEmitter {
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
+  
   initItems(items: Elements['states'], initialState: string) {
     for (const id in items) {
       const parent = this.items.get(items[id].parent ?? '');
@@ -34,9 +35,9 @@ export class States extends EventEmitter {
       });
 
       parent?.children.set(id, state);
+      state.on('dblclick', this.handleStateDoubleClick as any);
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
-      state.on('click', this.handleStateDoubleClick as any);
 
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
@@ -81,8 +82,11 @@ export class States extends EventEmitter {
     this.container.app.isDirty = true;
   };
 
-  handleStateDoubleClick = (state: State) => {
-    this.createCallback?.(state);
+  handleStateDoubleClick = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
+    console.log("double click);
+    console.log(e.target);
+    this.createCallback?.(e);
   };
 
   createState(name: string, events: string, component: string, method: string) {
@@ -102,9 +106,9 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('click', this.handleStateClick as any);
-    state.on('click', this.handleStateDoubleClick as any);
+    state.on('mouseup', this.handleMouseUpOnState as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);
@@ -126,9 +130,9 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('click', this.handleStateClick as any);
-    state.on('click', this.handleStateDoubleClick as any);
+    state.on('mouseup', this.handleMouseUpOnState as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);

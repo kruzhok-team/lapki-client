@@ -1,3 +1,7 @@
+/**
+ * Интерфейс, реализующий события, связанные с мышью.
+ * Используется в {@link MouseEventEmitter}.
+ */
 export interface MyMouseEvent {
   x: number;
   y: number;
@@ -8,8 +12,17 @@ export interface MyMouseEvent {
   nativeEvent: MouseEvent;
 }
 
+/**
+ * Обработчик {@link MyMouseEvent|«мышиных» событий}.
+ * Используется в {@link MouseEventEmitter}.
+ */
 type Handler = (e: MyMouseEvent) => any;
 
+/**
+ * Система обработки событий специально для мыши.
+ * Отличается от обычного EventEmitter возможностью отключить
+ * вызов обработчиков событий на любом из шагов (stopPropagation).
+ */
 export class MouseEventEmitter {
   handlers = new Map<string, Set<Function>>();
 

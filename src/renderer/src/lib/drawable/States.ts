@@ -8,6 +8,12 @@ import { stateStyle } from '../styles';
 
 type CreateStateCallback = (state) => void;
 
+/**
+ * Хранилище {@link State|состояний}.
+ * Предоставляет подписку на события, связанные с состояниями,
+ * а также метод для создания новых состояний.
+ * Реализует отрисовку и обработку выделения состояний.
+ */
 export class States extends EventEmitter {
   container!: Container;
 

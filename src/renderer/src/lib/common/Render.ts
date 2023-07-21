@@ -2,6 +2,9 @@ import { Observer } from './Observer';
 
 type Subscriber = (data: Render) => void;
 
+/**
+ * Класс для подписки на событие отрисовки кадра анимации.
+ */
 export class Render extends Observer<Subscriber> {
   timestamp: number = 0;
   ptimestamp: number = 0;
@@ -17,6 +20,7 @@ export class Render extends Observer<Subscriber> {
   tick(_timestamp: number) {
     requestAnimationFrame((timestamp) => this.tick(timestamp));
 
+    // TODO: задействовать элементы этого класса
     // Object.assign(this, {
     //   timestamp,
     //   ptimestamp: this.timestamp,

@@ -11,6 +11,9 @@ import forward from './assets/img/forward.png';
 import arrow1 from './assets/img/arrow1.png';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * React-компонент приложения
+ */
 export const App: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);

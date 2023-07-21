@@ -3,6 +3,11 @@ import { stateStyle, transitionStyle } from '../styles';
 import { Condition as ConditionType } from '@renderer/types/diagram';
 import { Draggable } from './Draggable';
 
+/**
+ * Условие перехода (т.е. подпись ребра машины состояний).
+ * Перемещаемый элемент схемы, выполняет отрисовку и 
+ * обработку событий мыши.
+ */
 export class Condition extends Draggable {
   data!: ConditionType;
 

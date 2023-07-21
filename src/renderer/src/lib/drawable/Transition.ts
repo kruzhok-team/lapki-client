@@ -6,6 +6,11 @@ import { transitionStyle } from '../styles';
 import { Condition } from './Condition';
 import { Container } from '../basic/Container';
 
+/**
+ * Переход между состояниями.
+ * Выполняет отрисовку стрелки между тремя движущимися блоками:
+ * источник, назначение, а также {@link Condition|условие} перехода.
+ */
 export class Transition {
   container!: Container;
 

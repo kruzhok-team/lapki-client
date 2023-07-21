@@ -10,6 +10,12 @@ import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 type CreateStateCallback = (source: State, target: State) => void;
 
+/**
+ * Хранилище {@link Transition|переходов}.
+ * Отрисовывает и хранит переходы, предоставляет метод для 
+ * создания новых переходов, в том числе отрисовывает 
+ * {@link GhostTransition|«призрачный» переход}.
+ */
 export class Transitions {
   container!: Container;
   items: Map<string, Transition> = new Map();

@@ -1,5 +1,10 @@
 import { EventEmitter } from '../common/EventEmitter';
 
+/**
+ * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.
+ * Оборачивает браузерные события, происходящие на холсте, и фильтрует из них
+ * связанные с необходимыми для работы клавишами.
+ */
 export class Keyboard extends EventEmitter<KeyboardEvent> {
   spacePressed = false;
   ctrlPressed = false;

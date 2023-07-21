@@ -6,7 +6,10 @@ import { clamp } from '../utils';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { Point } from '@renderer/types/graphics';
 
-// Это класс для реализации панорамирования, зума, отрисовки всего, DragAndDrop и сериализации диаграммы
+/**
+ * Контейнер с машиной состояний, в котором происходит отрисовка,
+ * управление камерой, обработка событий и сериализация.
+ */
 export class Container {
   [x: string]: any;
   app!: CanvasEditor;
@@ -27,7 +30,7 @@ export class Container {
     this.states = new States(this);
     this.transitions = new Transitions(this);
 
-    // Порядок важен, система дерьмо
+    // Порядок важен, система очень тонкая
 
     this.initEvents();
     this.states.initEvents();

@@ -20,6 +20,11 @@ interface StateProps {
   initial?: boolean;
 }
 
+/**
+ * Нода машины состояний.
+ * Класс выполняет отрисовку, обработку событий (за счёт {@link Draggable}),
+ * управление собственным выделением и отображение «хваталок».
+ */
 export class State extends Draggable {
   id!: string;
   data!: StateType;

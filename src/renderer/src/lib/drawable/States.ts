@@ -22,6 +22,7 @@ export class States extends EventEmitter {
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
+
   initItems(items: Elements['states'], initialState: string) {
     for (const id in items) {
       const parent = this.items.get(items[id].parent ?? '');
@@ -32,12 +33,11 @@ export class States extends EventEmitter {
         parent,
         initial: id === initialState,
       });
+      state.parent?.children.set(id, state);
 
-      parent?.children.set(id, state);
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
-      state.on('click', this.handleStateDoubleClick as any);
-
+      state.on('dblclick', this.handleStateDoubleClick as any);
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
       this.items.set(id, state);
@@ -78,6 +78,8 @@ export class States extends EventEmitter {
     this.removeSelection();
 
     target.setIsSelected(true);
+    //Вывожу данные выделенного блока
+    console.log(JSON.stringify(target));
     this.container.app.isDirty = true;
   };
 
@@ -87,8 +89,8 @@ export class States extends EventEmitter {
 
   createState(name: string, events: string, component: string, method: string) {
     const { width, height } = stateStyle;
-    const x = 100 - width / 2;
-    const y = 100 - height / 2;
+    const x = 200 - width / 2;
+    const y = 200 - height / 2;
 
     var startEvents = {};
     startEvents[events] = { component, method };
@@ -108,8 +110,6 @@ export class States extends EventEmitter {
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);
-
-    this.container.app.isDirty = true;
   }
 
   createNewState(name: string, position: Point) {

@@ -75,11 +75,9 @@ export const App: React.FC = () => {
           </p>
         )}
       </div>
+
       <div className="bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)]">
-        <button
-          className="absolute ml-[-32px] h-auto w-8 bg-transparent"
-          onClick={() => setIsDocOpen((p) => !p)}
-        >
+        <button className="relative h-auto w-8" onClick={() => setIsDocOpen((p) => !p)}>
           <img src={isDocOpen ? arrow1 : arrow} alt="" />
         </button>
 

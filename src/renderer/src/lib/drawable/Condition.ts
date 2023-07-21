@@ -8,7 +8,7 @@ export class Condition extends Draggable {
 
   width = 150;
   height = 75;
-
+  isSelected = false;
   constructor(container: Container, data: ConditionType) {
     super(container, {
       x: data.position.x,
@@ -19,7 +19,10 @@ export class Condition extends Draggable {
 
     this.data = data;
   }
-
+  setIsSelectedCondition(value: boolean) {
+    this.isSelected = value;
+  }
+  
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { x, y, width, height } = this.drawBounds;
     const p = 15 / this.container.scale;
@@ -40,6 +43,24 @@ export class Condition extends Draggable {
     ctx.beginPath();
     ctx.fillText(this.data.component, x + p, y + p);
     ctx.fillText(this.data.method, x + p, y + fontSize + p);
+    ctx.closePath();
+
+    if (this.isSelected) {
+      this.drawSelection(ctx);
+    }
+  }
+
+  private drawSelection(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+    console.log(this.drawBounds);
+    ctx.lineWidth = transitionStyle.width;
+    ctx.strokeStyle = transitionStyle.bgColor;
+
+    ctx.beginPath();
+
+    ctx.roundRect(x, y, width, height + childrenHeight, transitionStyle.startSize);
+    ctx.stroke();
+
     ctx.closePath();
   }
 

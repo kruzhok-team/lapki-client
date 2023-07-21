@@ -7,7 +7,7 @@ export function Documentations() {
   const [activeTab, setActiveTab] = useState<number>(0);
 
   return (
-    <section className="flex h-full select-none flex-col bg-white p-4 font-Fira text-base">
+    <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-white p-4 font-Fira text-base">
       <div className="flex gap-1 py-2">
         <button
           className={twMerge(

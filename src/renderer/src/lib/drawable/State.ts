@@ -81,6 +81,7 @@ export class State extends Draggable {
     }
   }
 
+  //Прорисовка блока состояния
   private drawBody(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
 
@@ -99,6 +100,7 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
+  //Прорисовка заголовка блока состояния
   private drawTitle(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.drawBounds;
 
@@ -157,6 +159,7 @@ export class State extends Draggable {
     ctx.closePath();
   }*/
 
+  //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
 
@@ -174,11 +177,7 @@ export class State extends Draggable {
     Object.entries(this.data.events).forEach(([eventName, events], i) => {
       if (!this.onEnter || !this.onExit || !this.DiodOn || !this.DiodOff) return;
       const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
-      //const eventNameWidth = ctx.measureText(eventName).width;
-      //const componentWidth = ctx.measureText(events[0].component).width;
-      //const gap = 5 / this.container.scale;
 
-      //ctx.fillText(eventName, x + px, resultY);
       if (eventName === 'onEnter') {
         ctx.drawImage(
           this.onEnter,
@@ -219,13 +218,12 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
+  //Обводка блока состояния при нажатии
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.lineWidth = stateStyle.selectedBorderWidth;
     ctx.strokeStyle = stateStyle.selectedBorderColor;
-
-    NewModalWindow(this);
 
     ctx.beginPath();
 
@@ -235,6 +233,7 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
+  //Дополнять внешними border при добавлении дочерних состояний
   private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (this.children.size === 0) return;
 
@@ -277,7 +276,4 @@ export class State extends Draggable {
   setIsSelected(value: boolean) {
     this.isSelected = value;
   }
-}
-function NewModalWindow(data) {
-  console.log(JSON.stringify(data));
 }

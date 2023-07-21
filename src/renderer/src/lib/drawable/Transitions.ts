@@ -6,6 +6,7 @@ import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Condition } from './Condition';
 
 type CreateStateCallback = (source: State, target: State) => void;
 
@@ -30,10 +31,18 @@ export class Transitions {
       const targetState = this.container.states.items.get(target) as State;
 
       const transition = new Transition(this.container, sourceState, targetState, color, condition);
-
+      transition.condition.on('click', this.handleConditionClick as any);
       this.items.set(id, transition);
     }
   }
+
+  handleConditionClick = ({ condition, event }: { condition: Condition; event: any }) => {
+    event.stopPropagation();
+    console.log(event);
+    console.log(condition);
+
+    condition.setIsSelectedCondition(true);
+  };
 
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);

@@ -32,7 +32,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     });
 
     editor.container.states.onStateCreate((state) => {
-      //Здесь в скобках было state
       setState({ state });
       openStateModal();
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));

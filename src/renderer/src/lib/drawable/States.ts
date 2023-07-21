@@ -34,10 +34,11 @@ export class States extends EventEmitter {
         initial: id === initialState,
       });
       state.parent?.children.set(id, state);
-
-      state.on('mouseup', this.handleMouseUpOnState as any);
-      state.on('click', this.handleStateClick as any);
       state.on('dblclick', this.handleStateDoubleClick as any);
+      state.on('mouseup', this.handleMouseUpOnState as any);
+
+      state.on('click', this.handleStateClick as any);
+
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
       this.items.set(id, state);
@@ -83,8 +84,11 @@ export class States extends EventEmitter {
     this.container.app.isDirty = true;
   };
 
-  handleStateDoubleClick = (state: State) => {
-    this.createCallback?.(state);
+  handleStateDoubleClick = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
+
+    this.createCallback?.(e);
+    this.container.app.isDirty = true;
   };
 
   createState(name: string, events: string, component: string, method: string) {
@@ -104,9 +108,9 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('click', this.handleStateClick as any);
-    state.on('click', this.handleStateDoubleClick as any);
+    state.on('mouseup', this.handleMouseUpOnState as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);
@@ -126,9 +130,9 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('click', this.handleStateClick as any);
-    state.on('click', this.handleStateDoubleClick as any);
+    state.on('mouseup', this.handleMouseUpOnState as any);
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);

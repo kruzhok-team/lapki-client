@@ -2,19 +2,17 @@ import { nanoid } from 'nanoid';
 
 import { Elements } from '@renderer/types/diagram';
 import { Transition } from './Transition';
+import { Condition } from './Condition';
 import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Condition } from './Condition';
 
 type CreateStateCallback = (source: State, target: State) => void;
 
 export class Transitions {
   container!: Container;
-
   items: Map<string, Transition> = new Map();
-
   ghost = new GhostTransition();
 
   createCallback?: CreateStateCallback;
@@ -31,18 +29,13 @@ export class Transitions {
       const targetState = this.container.states.items.get(target) as State;
 
       const transition = new Transition(this.container, sourceState, targetState, color, condition);
-      transition.condition.on('click', this.handleConditionClick as any);
+
       this.items.set(id, transition);
+
+      transition.condition.on('click', this.handleConditionClick as any);
+      transition.condition.on('mouseup', this.handleMouseUpOnState as any);
     }
   }
-
-  handleConditionClick = ({ condition, event }: { condition: Condition; event: any }) => {
-    event.stopPropagation();
-    console.log(event);
-    console.log(condition);
-
-    condition.setIsSelectedCondition(true);
-  };
 
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
@@ -69,6 +62,29 @@ export class Transitions {
   handleStartNewTransition = (state: State) => {
     this.ghost.setSource(state);
   };
+  private removeSelection() {
+    this.items.forEach((value) => {
+      value.condition.setIsSelected(false);
+    });
+  }
+
+  handleConditionClick = ({
+    source,
+    target,
+    event,
+  }: {
+    source: State;
+    target: State;
+    event: any;
+  }) => {
+    event.stopPropagation();
+
+    this.removeSelection();
+
+    target.setIsSelected(true);
+    this.createCallback?.(source, target);
+    this.container.app.isDirty = true;
+  };
 
   handleMouseMove = (e: MyMouseEvent) => {
     if (!this.ghost.source) return;
@@ -89,6 +105,7 @@ export class Transitions {
   };
 
   handleMouseUp = () => {
+    this.removeSelection();
     if (!this.ghost.source) return;
 
     this.ghost.clear();

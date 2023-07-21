@@ -195,8 +195,7 @@ export class State extends Draggable {
           40 / this.container.scale
         );
       }
-
-      if (events.method === 'turnOn') {
+      if (events[0].method === 'turnOn') {
         ctx.drawImage(
           this.DiodOn,
           x + 8 * px,

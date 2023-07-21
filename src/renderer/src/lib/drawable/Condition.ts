@@ -19,10 +19,7 @@ export class Condition extends Draggable {
 
     this.data = data;
   }
-  setIsSelectedCondition(value: boolean) {
-    this.isSelected = value;
-  }
-  
+
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { x, y, width, height } = this.drawBounds;
     const p = 15 / this.container.scale;
@@ -52,7 +49,7 @@ export class Condition extends Draggable {
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    console.log(this.drawBounds);
+
     ctx.lineWidth = transitionStyle.width;
     ctx.strokeStyle = transitionStyle.bgColor;
 
@@ -73,5 +70,8 @@ export class Condition extends Draggable {
       component: this.data.component,
       method: this.data.method,
     };
+  }
+  setIsSelected(value: boolean) {
+    this.isSelected = value;
   }
 }

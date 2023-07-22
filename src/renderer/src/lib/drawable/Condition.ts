@@ -9,6 +9,7 @@ export class Condition extends Draggable {
   width = 150;
   height = 75;
   isSelected = false;
+
   constructor(container: Container, data: ConditionType) {
     super(container, {
       x: data.position.x,

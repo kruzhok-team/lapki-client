@@ -32,7 +32,6 @@ export class State extends Draggable {
   onExit?: HTMLImageElement;
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
-  static Layer: any;
 
   toJSON() {
     return {

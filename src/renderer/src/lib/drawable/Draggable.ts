@@ -140,7 +140,7 @@ export class Draggable extends EventEmitter {
     const isUnderMouse = this.isUnderMouse(e);
 
     if (!isUnderMouse) return;
-
+    document.body.style.cursor = 'grabbing';
     // для того что-бы не хватать несколько элементов
     e.stopPropagation();
 
@@ -161,9 +161,7 @@ export class Draggable extends EventEmitter {
       this.bounds.x = Math.max(0, this.bounds.x);
       this.bounds.y = Math.max(0, this.bounds.y);
     }
-
     document.body.style.cursor = 'grabbing';
-
     this.container.app.isDirty = true;
   };
 
@@ -178,6 +176,7 @@ export class Draggable extends EventEmitter {
 
     this.emit('mouseup', { event: e, target: this });
 
+    //Для чего это условие надо фиг его знает, потому что без него нормально работает
     if (this.isMouseDown) {
       this.isMouseDown = false;
 

@@ -2,7 +2,6 @@ import { nanoid } from 'nanoid';
 
 import { Elements } from '@renderer/types/diagram';
 import { Transition } from './Transition';
-import { Condition } from './Condition';
 import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
@@ -12,7 +11,9 @@ type CreateStateCallback = (source: State, target: State) => void;
 
 export class Transitions {
   container!: Container;
+
   items: Map<string, Transition> = new Map();
+  itemsState: Map<string, State> = new Map();
   ghost = new GhostTransition();
 
   createCallback?: CreateStateCallback;
@@ -32,7 +33,11 @@ export class Transitions {
 
       this.items.set(id, transition);
 
+      //Если клик был на блок transition, то он выполняет функции
       transition.condition.on('click', this.handleConditionClick as any);
+      //Если клик был на блок transition, то он выполняет функции
+      transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
+      //Если клик был за пределами блока transition, то он выполняет функции
       transition.condition.on('mouseup', this.handleMouseUpOnState as any);
     }
   }
@@ -62,28 +67,29 @@ export class Transitions {
   handleStartNewTransition = (state: State) => {
     this.ghost.setSource(state);
   };
+
   private removeSelection() {
+    
     this.items.forEach((value) => {
       value.condition.setIsSelected(false);
     });
+this.itemsState.forEach((state) => state.setIsSelected(false));
+    this.container.app.isDirty = true;
   }
 
-  handleConditionClick = ({
-    source,
-    target,
-    event,
-  }: {
-    source: State;
-    target: State;
-    event: any;
-  }) => {
+  handleConditionClick = ({ target, event }: { target: State; event: any }) => {
     event.stopPropagation();
 
     this.removeSelection();
 
     target.setIsSelected(true);
+
+    //Вывожу данные выделенного блока
+    console.log(JSON.stringify(target));
+  };
+
+  handleConditionDoubleClick = ({ source, target }: { source: State; target: State }) => {
     this.createCallback?.(source, target);
-    this.container.app.isDirty = true;
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -95,13 +101,12 @@ export class Transitions {
   };
 
   handleMouseUpOnState = ({ target }: { target: State }) => {
+    this.removeSelection();
     if (!this.ghost.source) return;
 
     this.createCallback?.(this.ghost.source, target);
 
     this.ghost.clear();
-
-    this.container.app.isDirty = true;
   };
 
   handleMouseUp = () => {
@@ -109,8 +114,6 @@ export class Transitions {
     if (!this.ghost.source) return;
 
     this.ghost.clear();
-
-    this.container.app.isDirty = true;
   };
 
   createNewTransition(
@@ -129,6 +132,10 @@ export class Transitions {
       component,
       method,
     });
+
+    transition.condition.on('click', this.handleConditionClick as any);
+    transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
+    transition.condition.on('mouseup', this.handleMouseUpOnState as any);
 
     this.items.set(nanoid(), transition);
 

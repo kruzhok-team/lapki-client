@@ -1,10 +1,10 @@
 import { State } from './State';
-
 import { Elements } from '@renderer/types/diagram';
 import { EventEmitter } from '../common/EventEmitter';
 import { Point } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
+import { Transition } from './Transition';
 
 type CreateStateCallback = (state) => void;
 
@@ -12,6 +12,8 @@ export class States extends EventEmitter {
   container!: Container;
 
   items: Map<string, State> = new Map();
+  itemsTransition: Map<string, Transition> = new Map();
+
   constructor(container: Container) {
     super();
     this.container = container;
@@ -36,7 +38,6 @@ export class States extends EventEmitter {
       state.parent?.children.set(id, state);
       state.on('dblclick', this.handleStateDoubleClick as any);
       state.on('mouseup', this.handleMouseUpOnState as any);
-
       state.on('click', this.handleStateClick as any);
 
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
@@ -57,12 +58,13 @@ export class States extends EventEmitter {
 
   private removeSelection() {
     this.items.forEach((state) => state.setIsSelected(false));
+    this.itemsTransition.forEach((value) => value.condition.setIsSelected(false));
+
+    this.container.app.isDirty = true;
   }
 
   handleMouseUp = () => {
     this.removeSelection();
-
-    this.container.app.isDirty = true;
   };
 
   handleStartNewTransition = (state: State) => {
@@ -81,14 +83,12 @@ export class States extends EventEmitter {
     target.setIsSelected(true);
     //Вывожу данные выделенного блока
     console.log(JSON.stringify(target));
-    this.container.app.isDirty = true;
   };
 
   handleStateDoubleClick = (e: { target: State; event: any }) => {
     e.event.stopPropagation();
 
     this.createCallback?.(e);
-    this.container.app.isDirty = true;
   };
 
   createState(name: string, events: string, component: string, method: string) {
@@ -114,6 +114,8 @@ export class States extends EventEmitter {
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);
+
+    this.container.app.isDirty = true;
   }
 
   createNewState(name: string, position: Point) {

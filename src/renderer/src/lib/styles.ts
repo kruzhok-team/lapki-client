@@ -1,3 +1,6 @@
+/**
+ * Стиль нод редактора машин состояний
+ */
 export const stateStyle = {
   width: 250,
   height: 100,
@@ -18,6 +21,9 @@ export const stateStyle = {
   selectedBorderColor: '#FFF',
 };
 
+/**
+ * Стиль переходов в редакторе машин состояний
+ */
 export const transitionStyle = {
   width: 2,
   bgColor: '#FFF',

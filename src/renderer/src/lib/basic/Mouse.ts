@@ -4,6 +4,11 @@ enum Button {
   left = 0,
 }
 
+/**
+ * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.
+ * Оборачивает браузерные события, происходящие на холсте, и пересчитывает 
+ * координаты мыши относительно холста.
+ */
 export class Mouse extends MouseEventEmitter {
   element!: HTMLElement;
 

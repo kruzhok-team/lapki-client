@@ -5,6 +5,9 @@ import { Render } from './common/Render';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
 
+/**
+ * Редактор машин состояний.
+ */
 export class CanvasEditor {
   root!: HTMLElement;
   canvas!: Canvas;

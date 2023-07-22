@@ -1,6 +1,10 @@
 import { Point } from '@renderer/types/graphics';
 import { State } from './State';
 
+/**
+ * Неоформленный («призрачный») переход. 
+ * Используется для визуализации создаваемого перехода.
+ */
 export class GhostTransition {
   source!: State | null;
   target!: Point | null;

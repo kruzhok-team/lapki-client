@@ -5,7 +5,13 @@ import { State } from './State';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import Icon from '@renderer/assets/icons/new transition.svg';
 
-// ? Возможно эти штуки нужно переделать на обычные dom div
+/**
+ * «Хваталки» для ноды, надстройка над State, отрисовывающая
+ * элементы, позволяющие создать новый переход путём drag-n-drop.
+ *  
+ * @remark
+ * TODO: Возможно эти штуки нужно переделать на обычные dom div?
+ */
 export class EdgeHandlers {
   app!: CanvasEditor;
   state!: State;

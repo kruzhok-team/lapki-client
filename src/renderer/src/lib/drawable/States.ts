@@ -16,7 +16,6 @@ type CreateStateCallback = (state) => void;
  */
 export class States extends EventEmitter {
   container!: Container;
-
   items: Map<string, State> = new Map();
   itemsTransition: Map<string, Transition> = new Map();
 
@@ -41,10 +40,12 @@ export class States extends EventEmitter {
         parent,
         initial: id === initialState,
       });
+
       state.parent?.children.set(id, state);
-      state.on('dblclick', this.handleStateDoubleClick as any);
       state.on('mouseup', this.handleMouseUpOnState as any);
       state.on('click', this.handleStateClick as any);
+      state.on('dblclick', this.handleStateDoubleClick as any);
+      state.on('contextmenu', this.handleContextMenu as any);
 
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
@@ -62,13 +63,6 @@ export class States extends EventEmitter {
     });
   }
 
-  private removeSelection() {
-    this.items.forEach((state) => state.setIsSelected(false));
-    this.itemsTransition.forEach((value) => value.condition.setIsSelected(false));
-
-    this.container.app.isDirty = true;
-  }
-
   handleMouseUp = () => {
     this.removeSelection();
   };
@@ -81,20 +75,37 @@ export class States extends EventEmitter {
     this.emit('mouseUpOnState', e);
   };
 
+  private removeSelection() {
+    this.itemsTransition.forEach((value) => {
+      value.condition.setIsSelected(false, '');
+      value.condition.setIsSelectedMenu(false);
+    });
+    this.items.forEach((state) => {
+      state.setIsSelected(false, '');
+      state.setIsSelected(false, '');
+    });
+
+    this.container.app.isDirty = true;
+  }
+
   handleStateClick = ({ target, event }: { target: State; event: any }) => {
     event.stopPropagation();
-
     this.removeSelection();
 
-    target.setIsSelected(true);
-    //Вывожу данные выделенного блока
-    console.log(JSON.stringify(target));
+    target.setIsSelected(true, JSON.stringify(target));
   };
 
   handleStateDoubleClick = (e: { target: State; event: any }) => {
     e.event.stopPropagation();
 
     this.createCallback?.(e);
+  };
+
+  handleContextMenu = ({ target, event }: { target: State; event: any }) => {
+    event.stopPropagation();
+    this.removeSelection();
+
+    target.setIsSelectedMenu(true);
   };
 
   createState(name: string, events: string, component: string, method: string) {
@@ -114,9 +125,11 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('click', this.handleStateClick as any);
     state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('click', this.handleStateClick as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
+    state.on('contextmenu', this.handleContextMenu as any);
+
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);
@@ -138,9 +151,11 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('click', this.handleStateClick as any);
     state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('click', this.handleStateClick as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
+    state.on('contextmenu', this.handleContextMenu as any);
+
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
     this.items.set(name, state);

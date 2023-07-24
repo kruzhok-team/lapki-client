@@ -8,7 +8,7 @@ import Icon from '@renderer/assets/icons/new transition.svg';
 /**
  * «Хваталки» для ноды, надстройка над State, отрисовывающая
  * элементы, позволяющие создать новый переход путём drag-n-drop.
- *  
+ *
  * @remark
  * TODO: Возможно эти штуки нужно переделать на обычные dom div?
  */

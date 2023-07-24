@@ -1,9 +1,10 @@
 import { Point, Rectangle } from './graphics';
 
 export type Event = {
-  component: string;
-  method: string;
-  args?: string[];
+  [id: string]: {
+    component: string;
+    method: string;
+  };
 };
 
 export type Condition = {
@@ -15,7 +16,7 @@ export type Condition = {
 export type State = {
   parent?: string;
   bounds: Rectangle;
-  events: { [id: string]: Event };
+  events: Event;
 };
 
 export type Transition = {

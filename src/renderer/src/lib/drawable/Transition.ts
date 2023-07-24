@@ -18,7 +18,6 @@ export class Transition {
   target!: State;
   color!: string;
   condition!: Condition;
-  static condition: any;
 
   constructor(
     container: Container,

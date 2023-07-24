@@ -6,7 +6,7 @@ enum Button {
 
 /**
  * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.
- * Оборачивает браузерные события, происходящие на холсте, и пересчитывает 
+ * Оборачивает браузерные события, происходящие на холсте, и пересчитывает
  * координаты мыши относительно холста.
  */
 export class Mouse extends MouseEventEmitter {
@@ -26,6 +26,7 @@ export class Mouse extends MouseEventEmitter {
 
     this.element = element;
 
+    this.element.addEventListener('contextmenu', this.RightClickHandler);
     this.element.addEventListener('dblclick', this.doubleClickHandler);
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
@@ -116,6 +117,23 @@ export class Mouse extends MouseEventEmitter {
       nativeEvent: e,
     };
     this.emit('dblclick', event);
+  };
+
+  RightClickHandler = (e: MouseEvent) => {
+    if (e.button === Button.left) {
+      this.left = false;
+    }
+
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      dx: x - this.px,
+      dy: y - this.py,
+      left: this.left,
+      nativeEvent: e,
+    };
+    this.emit('contextmenu', event);
   };
 
   mouseWheelHandler = (e: WheelEvent) => {

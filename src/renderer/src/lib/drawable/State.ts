@@ -1,16 +1,12 @@
 import { State as StateType } from '@renderer/types/diagram';
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
+import { stateStyle, transitionStyle } from '../styles';
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { preloadImages } from '../utils';
-
-//Иконки событий
-import onEnter from '@renderer/assets/icons/onEnter.svg';
-import onExit from '@renderer/assets/icons/onExit.svg';
-import DiodOn from '@renderer/assets/icons/DiodOn.svg';
-import DiodOff from '@renderer/assets/icons/DiodOff.svg';
+import { Events } from './Events';
+import { ContextMenu } from './ContextMenu';
 
 interface StateProps {
   container: Container;
@@ -28,10 +24,13 @@ interface StateProps {
 export class State extends Draggable {
   id!: string;
   data!: StateType;
+  contextmenu!: ContextMenu;
+  isState;
   isSelected = false;
+  isSelectedMenu = false;
 
+  statusevent!: Events;
   edgeHandlers!: EdgeHandlers;
-
   initialIcon?: HTMLImageElement;
   onEnter?: HTMLImageElement;
   onExit?: HTMLImageElement;
@@ -45,16 +44,12 @@ export class State extends Draggable {
       bounds: { x: this.bounds.x, y: this.bounds.y },
     };
   }
+
   constructor({ container, id, data, parent, initial = false }: StateProps) {
-    preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
-      this.onEnter = onEnter;
-      this.onExit = onExit;
-      this.DiodOn = DiodOn;
-      this.DiodOff = DiodOff;
-    });
-    super(container, { ...data.bounds, width: 250, height: 100 }, parent);
+    super(container, { ...data.bounds, width: 230, height: 100 }, parent);
     this.id = id;
     this.data = data;
+    this.container = container;
     if (initial) {
       preloadImages([InitialIcon]).then(([icon]) => {
         this.initialIcon = icon;
@@ -62,13 +57,17 @@ export class State extends Draggable {
       });
     }
 
+    this.statusevent = new Events(this.container, this, this.data.events);
+
     this.edgeHandlers = new EdgeHandlers(container.app, this);
+
+    this.contextmenu = new ContextMenu(this.container, this);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
-    this.drawImageEvents(ctx);
+    this.statusevent.draw(ctx);
     //this.drawTextEvents(ctx);
 
     if (this.initialIcon) {
@@ -82,6 +81,10 @@ export class State extends Draggable {
     if (this.isSelected) {
       this.drawSelection(ctx);
       this.edgeHandlers.draw(ctx);
+    }
+
+    if (this.isSelectedMenu) {
+      this.contextmenu.draw(ctx);
     }
   }
 
@@ -163,64 +166,6 @@ export class State extends Draggable {
     ctx.closePath();
   }*/
 
-  //Прорисовка событий в блоках состояния
-  private drawImageEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.drawBounds;
-
-    const paddingY = 10 / this.container.scale;
-    const px = 15 / this.container.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
-    const titleHeight = fontSize + paddingY * 2;
-
-    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    ctx.fillStyle = stateStyle.eventColor;
-    ctx.textBaseline = stateStyle.eventBaseLine;
-
-    ctx.beginPath();
-
-    Object.entries(this.data.events).forEach(([eventName, events], i) => {
-      if (!this.onEnter || !this.onExit || !this.DiodOn || !this.DiodOff) return;
-      const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
-
-      if (eventName === 'onEnter') {
-        ctx.drawImage(
-          this.onEnter,
-          x + px,
-          resultY,
-          90 / this.container.scale,
-          40 / this.container.scale
-        );
-      } else {
-        ctx.drawImage(
-          this.onExit,
-          x + px,
-          resultY,
-          90 / this.container.scale,
-          40 / this.container.scale
-        );
-      }
-      if (events[0].method === 'turnOn') {
-        ctx.drawImage(
-          this.DiodOn,
-          x + 8 * px,
-          resultY,
-          90 / this.container.scale,
-          40 / this.container.scale
-        );
-      } else {
-        ctx.drawImage(
-          this.DiodOff,
-          x + 8 * px,
-          resultY,
-          90 / this.container.scale,
-          40 / this.container.scale
-        );
-      }
-    });
-
-    ctx.closePath();
-  }
-
   //Обводка блока состояния при нажатии
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
@@ -229,10 +174,31 @@ export class State extends Draggable {
     ctx.strokeStyle = stateStyle.selectedBorderColor;
 
     ctx.beginPath();
-
     ctx.roundRect(x, y, width, height + childrenHeight, stateStyle.bodyBorderRadius);
     ctx.stroke();
+    ctx.closePath();
 
+    //Начало рисования
+    ctx.beginPath();
+    //Добавляет стиль заднему фону
+    ctx.fillStyle = stateStyle.bodyBg;
+    //создает указательный треугольник
+    ctx.moveTo(x + 100 / this.container.scale, y - 20 / this.container.scale);
+    ctx.lineTo(x + 110 / this.container.scale, y - 2 / this.container.scale);
+    ctx.lineTo(x + 120 / this.container.scale, y - 20 / this.container.scale);
+    //Строит прямоугольник
+    ctx.roundRect(x, y - 120 / this.container.scale, width, height, transitionStyle.startSize);
+    //Добавляет задний фон объекту канвы
+    ctx.fill();
+    //Конец рисования
+    ctx.closePath();
+
+    ctx.beginPath();
+    //Добавляет стиль тексту
+    ctx.fillStyle = transitionStyle.bgColor;
+    ctx.fillText(this.isState, x, y - 80 / this.container.scale);
+    //Добавляет задний фон объекту канвы
+    ctx.fill();
     ctx.closePath();
   }
 
@@ -276,7 +242,12 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
-  setIsSelected(value: boolean) {
+  setIsSelected(value: boolean, target: string) {
     this.isSelected = value;
+    this.isState = target;
+  }
+
+  setIsSelectedMenu(value: boolean) {
+    this.isSelectedMenu = value;
   }
 }

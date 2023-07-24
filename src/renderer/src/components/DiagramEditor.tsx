@@ -11,10 +11,12 @@ interface DiagramEditorProps {
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
+  const [state, setState] = useState<{ state: State }>();
+
   const [isStateModalOpen, setIsStateModalOpen] = useState(false);
   const openStateModal = () => setIsStateModalOpen(true);
   const closeStateModal = () => setIsStateModalOpen(false);
-  const [state, setState] = useState<{ state: State }>();
+
   const [transition, setTransition] = useState<{ source: State; target: State } | null>(null);
   const [isTransitionModalOpen, setIsTransitionModalOpen] = useState(false);
   const openTransitionModal = () => setIsTransitionModalOpen(true);
@@ -25,18 +27,21 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     const editor = new CanvasEditor(containerRef.current, elements);
     let i: number = 0;
 
+    //Добавляем пустую ноду в редактор
     editor?.container?.onStateDrop((position) => {
       i = i + 1;
       editor?.container.states.createNewState('Состояние ' + i, position);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
+    //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateCreate((state) => {
       setState({ state });
       openStateModal();
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
+    //Здесь мы открываем модальное окно редактирования связи
     editor.container.transitions.onTransitionCreate((source, target) => {
       setTransition({ source, target });
       openTransitionModal();

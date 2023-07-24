@@ -3,18 +3,19 @@ import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Events } from './Events';
 
 /**
- * Перемещаемый элемент холста. 
- * Класс реализует перемещение фигуры с помощью мыши и рассчитывает 
+ * Перемещаемый элемент холста.
+ * Класс реализует перемещение фигуры с помощью мыши и рассчитывает
  * размеры элемента с учётом вложенности.
  * Внутри класс подписывается на события мыши и фильтрует относящиеся
- * к своему объекту. 
+ * к своему объекту.
  * При размещении на холсте класс учитывает панораму и зум холста.
- * 
+ *
  * @remark
- * Сначала это задумывался как класс для разруливания квадратиков, 
- * которые можно перемещать, но потом он вырос в кашу из-за добавления 
+ * Сначала это задумывался как класс для разруливания квадратиков,
+ * которые можно перемещать, но потом он вырос в кашу из-за добавления
  * вложенных стейтов.
  *
  * TODO: Это явно нужно передать.
@@ -22,7 +23,7 @@ import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 export class Draggable extends EventEmitter {
   container!: Container;
-
+  statusevents!: Events;
   bounds!: Rectangle;
 
   parent?: Draggable;
@@ -45,6 +46,7 @@ export class Draggable extends EventEmitter {
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
     this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
+    this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
   }
 
   // Позиция рассчитанная с возможным родителем
@@ -189,12 +191,7 @@ export class Draggable extends EventEmitter {
 
     this.emit('mouseup', { event: e, target: this });
 
-    //Для чего это условие надо фиг его знает, потому что без него нормально работает
-    if (this.isMouseDown) {
-      this.isMouseDown = false;
-
-      this.emit('click', { event: e, target: this });
-    }
+    this.emit('click', { event: e, target: this });
   };
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {
@@ -203,6 +200,13 @@ export class Draggable extends EventEmitter {
 
     // TODO: возможна коллизия с mouseup и click, нужно тестировать
     this.emit('dblclick', { event: e, target: this });
+  };
+
+  handleContextMenuClick = (e: MyMouseEvent) => {
+    const isUnderMouse = this.isUnderMouse(e);
+    if (!isUnderMouse) return;
+
+    this.emit('contextmenu', { event: e, target: this });
   };
 
   isUnderMouse({ x, y }: MyMouseEvent) {

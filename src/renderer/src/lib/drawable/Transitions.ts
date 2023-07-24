@@ -11,15 +11,14 @@ type CreateStateCallback = (source: State, target: State) => void;
 
 /**
  * Хранилище {@link Transition|переходов}.
- * Отрисовывает и хранит переходы, предоставляет метод для 
- * создания новых переходов, в том числе отрисовывает 
+ * Отрисовывает и хранит переходы, предоставляет метод для
+ * создания новых переходов, в том числе отрисовывает
  * {@link GhostTransition|«призрачный» переход}.
  */
 export class Transitions {
   container!: Container;
 
   items: Map<string, Transition> = new Map();
-  itemsState: Map<string, State> = new Map();
   ghost = new GhostTransition();
 
   createCallback?: CreateStateCallback;
@@ -45,6 +44,8 @@ export class Transitions {
       transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
       //Если клик был за пределами блока transition, то он выполняет функции
       transition.condition.on('mouseup', this.handleMouseUpOnState as any);
+
+      transition.condition.on('contextmenu', this.handleContextMenu as any);
     }
   }
 
@@ -75,27 +76,34 @@ export class Transitions {
   };
 
   private removeSelection() {
-    
     this.items.forEach((value) => {
-      value.condition.setIsSelected(false);
+      value.condition.setIsSelected(false, '');
+      value.condition.setIsSelectedMenu(false);
     });
-this.itemsState.forEach((state) => state.setIsSelected(false));
+    this.container.states.items.forEach((state) => {
+      state.setIsSelected(false, '');
+      state.setIsSelectedMenu(false);
+    });
+
     this.container.app.isDirty = true;
   }
 
   handleConditionClick = ({ target, event }: { target: State; event: any }) => {
     event.stopPropagation();
-
     this.removeSelection();
 
-    target.setIsSelected(true);
-
-    //Вывожу данные выделенного блока
-    console.log(JSON.stringify(target));
+    target.setIsSelected(true, JSON.stringify(target));
   };
 
   handleConditionDoubleClick = ({ source, target }: { source: State; target: State }) => {
     this.createCallback?.(source, target);
+  };
+
+  handleContextMenu = ({ target, event }: { target: State; event: any }) => {
+    event.stopPropagation();
+    this.removeSelection();
+
+    target.setIsSelectedMenu(true);
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -142,6 +150,7 @@ this.itemsState.forEach((state) => state.setIsSelected(false));
     transition.condition.on('click', this.handleConditionClick as any);
     transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
     transition.condition.on('mouseup', this.handleMouseUpOnState as any);
+    transition.condition.on('contextmenu', this.handleContextMenu as any);
 
     this.items.set(nanoid(), transition);
 

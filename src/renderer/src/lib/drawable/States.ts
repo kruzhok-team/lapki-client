@@ -42,13 +42,7 @@ export class States extends EventEmitter {
       });
 
       state.parent?.children.set(id, state);
-      state.on('mouseup', this.handleMouseUpOnState as any);
-      state.on('click', this.handleStateClick as any);
-      state.on('dblclick', this.handleStateDoubleClick as any);
-      state.on('contextmenu', this.handleContextMenu as any);
-
-      state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-
+      this.watchState(state);
       this.items.set(id, state);
     }
   }
@@ -125,13 +119,8 @@ export class States extends EventEmitter {
       },
     });
 
-    state.on('mouseup', this.handleMouseUpOnState as any);
-    state.on('click', this.handleStateClick as any);
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('contextmenu', this.handleContextMenu as any);
-
-    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-
+    this.watchState(state);
+    
     this.items.set(name, state);
 
     this.container.isDirty = true;
@@ -151,15 +140,18 @@ export class States extends EventEmitter {
       },
     });
 
+    this.watchState(state);
+    this.items.set(name, state);
+
+    this.container.isDirty = true;
+  }
+
+  watchState (state: State) {
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);
     state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('contextmenu', this.handleContextMenu as any);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-
-    this.items.set(name, state);
-
-    this.container.isDirty = true;
   }
 }

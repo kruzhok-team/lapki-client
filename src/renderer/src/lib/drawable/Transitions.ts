@@ -38,14 +38,7 @@ export class Transitions {
 
       this.items.set(id, transition);
 
-      //Если клик был на блок transition, то он выполняет функции
-      transition.condition.on('click', this.handleConditionClick as any);
-      //Если клик был на блок transition, то он выполняет функции
-      transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
-      //Если клик был за пределами блока transition, то он выполняет функции
-      transition.condition.on('mouseup', this.handleMouseUpOnState as any);
-
-      transition.condition.on('contextmenu', this.handleContextMenu as any);
+      this.watchTransition(transition);
     }
   }
 
@@ -147,13 +140,21 @@ export class Transitions {
       method,
     });
 
-    transition.condition.on('click', this.handleConditionClick as any);
-    transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
-    transition.condition.on('mouseup', this.handleMouseUpOnState as any);
-    transition.condition.on('contextmenu', this.handleContextMenu as any);
+    this.watchTransition(transition);
 
     this.items.set(nanoid(), transition);
 
     this.container.isDirty = true;
+  }
+
+  watchTransition(transition: Transition) {
+    //Если клик был на блок transition, то он выполняет функции
+    transition.condition.on('click', this.handleConditionClick as any);
+    //Если клик был на блок transition, то он выполняет функции
+    transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
+    //Если клик был за пределами блока transition, то он выполняет функции
+    transition.condition.on('mouseup', this.handleMouseUpOnState as any);
+
+    transition.condition.on('contextmenu', this.handleContextMenu as any);
   }
 }

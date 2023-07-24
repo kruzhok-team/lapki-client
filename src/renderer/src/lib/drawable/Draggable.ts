@@ -177,7 +177,7 @@ export class Draggable extends EventEmitter {
       this.bounds.y = Math.max(0, this.bounds.y);
     }
     document.body.style.cursor = 'grabbing';
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   };
 
   handleMouseUp = (e: MyMouseEvent) => {

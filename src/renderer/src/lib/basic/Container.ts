@@ -14,6 +14,8 @@ export class Container {
   [x: string]: any;
   app!: CanvasEditor;
 
+  isDirty = true;
+
   states!: States;
   transitions!: Transitions;
 
@@ -94,7 +96,7 @@ export class Container {
     this.offset.x += e.dx * this.scale;
     this.offset.y += e.dy * this.scale;
 
-    this.app.isDirty = true;
+    this.isDirty = true;
   };
 
   handleSpaceDown = () => {
@@ -127,7 +129,7 @@ export class Container {
 
     this.scale = newScale;
 
-    this.app.isDirty = true;
+    this.isDirty = true;
   };
 
   get graphData() {

@@ -85,7 +85,7 @@ export class Transitions {
       state.setIsSelectedMenu(false);
     });
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 
   handleConditionClick = ({ target, event }: { target: State; event: any }) => {
@@ -111,7 +111,7 @@ export class Transitions {
 
     this.ghost.setTarget({ x: e.x, y: e.y });
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   };
 
   handleMouseUpOnState = ({ target }: { target: State }) => {
@@ -154,6 +154,6 @@ export class Transitions {
 
     this.items.set(nanoid(), transition);
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 }

@@ -23,7 +23,7 @@ export class Selection {
   private removeSelection() {
     this.items.forEach((state) => state.setIsSelected(false));
     this.itemsTransition.forEach((value) => value.condition.setIsSelected(false));
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 
   handleMouseUp = () => {

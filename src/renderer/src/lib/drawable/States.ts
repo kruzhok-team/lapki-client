@@ -85,7 +85,7 @@ export class States extends EventEmitter {
       state.setIsSelected(false, '');
     });
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 
   handleStateClick = ({ target, event }: { target: State; event: any }) => {
@@ -134,7 +134,7 @@ export class States extends EventEmitter {
 
     this.items.set(name, state);
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 
   createNewState(name: string, position: Point) {
@@ -160,6 +160,6 @@ export class States extends EventEmitter {
 
     this.items.set(name, state);
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 }

@@ -32,7 +32,7 @@ export class Condition extends Draggable {
     this.contextmenu = new ContextMenu(container, this);
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     const { x, y, width, height } = this.drawBounds;
     const p = 15 / this.container.scale;
     const fontSize = stateStyle.titleFontSize / this.container.scale;

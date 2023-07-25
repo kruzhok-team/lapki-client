@@ -1,10 +1,7 @@
 import { State } from './State';
-import { Elements } from '@renderer/types/diagram';
 import { EventEmitter } from '../common/EventEmitter';
-import { Point } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
-import { Transition } from './Transition';
+import { machine } from 'os';
 
 type CreateStateCallback = (state) => void;
 
@@ -16,8 +13,6 @@ type CreateStateCallback = (state) => void;
  */
 export class States extends EventEmitter {
   container!: Container;
-  items: Map<string, State> = new Map();
-  itemsTransition: Map<string, Transition> = new Map();
 
   constructor(container: Container) {
     super();
@@ -30,29 +25,12 @@ export class States extends EventEmitter {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
 
-  initItems(items: Elements['states'], initialState: string) {
-    for (const id in items) {
-      const parent = this.items.get(items[id].parent ?? '');
-      const state = new State({
-        container: this.container,
-        id: id,
-        data: items[id],
-        parent,
-        initial: id === initialState,
-      });
-
-      state.parent?.children.set(id, state);
-      this.watchState(state);
-      this.items.set(id, state);
-    }
-  }
-
   onStateCreate = (callback: CreateStateCallback) => {
     this.createCallback = callback;
   };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.items.forEach((state) => {
+    this.container.machine.states.forEach((state) => {
       state.draw(ctx, canvas);
     });
   }
@@ -70,15 +48,11 @@ export class States extends EventEmitter {
   };
 
   private removeSelection() {
-    this.itemsTransition.forEach((value) => {
-      value.condition.setIsSelected(false, '');
-      value.condition.setIsSelectedMenu(false);
-    });
-    this.items.forEach((state) => {
+    this.container.machine.states.forEach((state) => {
       state.setIsSelected(false, '');
       state.setIsSelected(false, '');
     });
-
+    console.log("States.removeSelection")
     this.container.isDirty = true;
   }
 
@@ -101,50 +75,6 @@ export class States extends EventEmitter {
 
     target.setIsSelectedMenu(true);
   };
-
-  createState(name: string, events: string, component: string, method: string) {
-    const { width, height } = stateStyle;
-    const x = 200 - width / 2;
-    const y = 200 - height / 2;
-
-    var startEvents = {};
-    startEvents[events] = { component, method };
-
-    const state = new State({
-      container: this.container,
-      id: name,
-      data: {
-        bounds: { x, y, width, height },
-        events: startEvents,
-      },
-    });
-
-    this.watchState(state);
-    
-    this.items.set(name, state);
-
-    this.container.isDirty = true;
-  }
-
-  createNewState(name: string, position: Point) {
-    const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
-
-    const state = new State({
-      container: this.container,
-      id: name,
-      data: {
-        bounds: { x, y, width, height },
-        events: {},
-      },
-    });
-
-    this.watchState(state);
-    this.items.set(name, state);
-
-    this.container.isDirty = true;
-  }
 
   watchState (state: State) {
     state.on('mouseup', this.handleMouseUpOnState as any);

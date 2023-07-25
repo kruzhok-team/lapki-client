@@ -27,7 +27,11 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
     reset,
     handleSubmit: hookHandleSubmit,
     formState: { errors },
-  } = useForm<CreateTransitionModalFormValues>();
+  } = useForm<CreateTransitionModalFormValues>({
+    defaultValues: {
+      color: "#ffffff"
+    },
+  });
 
   const handleSubmit = hookHandleSubmit((data) => {
     onSubmit(data);
@@ -35,7 +39,8 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
 
   const onRequestClose = () => {
     onClose();
-    reset();
+    // TODO: пока кажется лишним затирать текстовые поля
+    reset({ color: "#ffffff"});
   };
 
   return (

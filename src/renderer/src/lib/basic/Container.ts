@@ -5,6 +5,7 @@ import { CanvasEditor } from '../CanvasEditor';
 import { clamp } from '../utils';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { Point } from '@renderer/types/graphics';
+import { StateMachine } from '../data/StateMachine';
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
@@ -15,6 +16,8 @@ export class Container {
   app!: CanvasEditor;
 
   isDirty = true;
+
+  machine!: StateMachine;
 
   states!: States;
   transitions!: Transitions;
@@ -29,6 +32,7 @@ export class Container {
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
+    this.machine = new StateMachine(this);
     this.states = new States(this);
     this.transitions = new Transitions(this);
 
@@ -37,8 +41,8 @@ export class Container {
     this.initEvents();
     this.states.initEvents();
     this.transitions.initEvents();
-    this.states.initItems(elements.states, elements.initialState);
-    this.transitions.initItems(elements.transitions);
+    this.machine.initStates(elements.states, elements.initialState);
+    this.machine.initTransitions(elements.transitions);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -134,9 +138,9 @@ export class Container {
 
   get graphData() {
     return {
-      states: { ...Object.fromEntries(this.states.items) },
-      initialState: 'on',
-      transitions: [...this.transitions.items.values()],
+      states: { ...Object.fromEntries(this.machine.states) },
+      initialState: 'on', // TODO: начальное состояние должно приходить из данных
+      transitions: [...this.machine.transitions.values()],
     };
   }
 }

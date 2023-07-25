@@ -30,7 +30,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     //Добавляем пустую ноду в редактор
     editor?.container?.onStateDrop((position) => {
       i = i + 1;
-      editor?.container.states.createNewState('Состояние ' + i, position);
+      editor?.container.machine.createNewState('Состояние ' + i, position);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
@@ -61,13 +61,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   }, [containerRef.current]);
 
   const handleCreateState = (data: CreateStateModalFormValues) => {
-    editor?.container.states.createState(data.name, data.events, data.component, data.method);
+    editor?.container.machine.createState(data.name, data.events, data.component, data.method);
     closeStateModal();
   };
 
   const handleCreateTransition = (data: CreateTransitionModalFormValues) => {
     if (transition) {
-      editor?.container.transitions.createNewTransition(
+      editor?.container.machine.createNewTransition(
         transition.source,
         transition.target,
         data.color,

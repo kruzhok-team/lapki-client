@@ -81,14 +81,6 @@ export class StateMachine extends EventEmitter {
 
     this.states.set(name, state);
 
-    for (const item of this.states.values()) {
-      if (item.isUnderMouse({ x, y })) {
-        state.parent = item;
-        item?.children.set(state.id, state);
-        break;
-      }
-    }
-
     this.container.states.watchState(state);
     this.container.isDirty = true;
   }
@@ -123,6 +115,19 @@ export class StateMachine extends EventEmitter {
       }
     }
     this.container.states.watchState(state);
+    this.container.isDirty = true;
+  }
+
+  deleteState(name: string) {
+    this.states.forEach((_data, thisName) => {
+      if (thisName === name) {
+        this.states.delete(name);
+      }
+      // TODO: удалять все переходы с этим состоянием
+      // TODO: удалять все дочерние ноды (или отсоединять?)
+      // TODO: удалить эту ноду у родительской (если есть)
+    });
+
     this.container.isDirty = true;
   }
 

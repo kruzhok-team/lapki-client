@@ -66,19 +66,20 @@ export class States extends EventEmitter {
     this.createCallback?.(e);
   };
 
-  handleContextMenu = ({ target, event }: { target: State; event: any }) => {
-    event.stopPropagation();
+  handleContextMenu = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
     this.removeSelection();
-    delete event.target['events'];
-    console.log(event.target);
-    target.setIsSelectedMenu(true);
+
+    this.container.machine.deleteState(e.target.id);
+
+    e.target.setIsSelectedMenu(true);
   };
 
   handleLongPress = (e: { target: State }) => {
     e.target.parent?.children.delete(e.target.id);
     e.target.parent = undefined;
 
-    //Удаление свойства parent у родителя
+    //Удаление свойства parent у дочерней ноды
     delete e.target.data['parent'];
 
     this.container.isDirty = true;

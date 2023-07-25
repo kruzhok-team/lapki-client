@@ -17,8 +17,6 @@ export class CanvasEditor {
 
   container!: Container;
 
-  isDirty = true;
-
   constructor(container: HTMLDivElement, elements: Elements) {
     this.root = container;
     this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
@@ -32,17 +30,17 @@ export class CanvasEditor {
     this.container = new Container(this, elements);
     this.canvas.onResize = () => {
       this.mouse.setOffset();
-      this.isDirty = true;
+      this.container.isDirty = true;
     };
 
     this.render.subscribe(() => {
-      if (!this.isDirty) return;
+      if (!this.container.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
         this.container.draw(ctx, canvas);
       });
-      this.isDirty = false;
+      this.container.isDirty = false;
     });
   }
   cleanUp() {

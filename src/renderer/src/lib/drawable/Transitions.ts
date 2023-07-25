@@ -1,6 +1,3 @@
-import { nanoid } from 'nanoid';
-
-import { Elements } from '@renderer/types/diagram';
 import { Transition } from './Transition';
 import { State } from './State';
 import { GhostTransition } from './GhostTransition';
@@ -18,35 +15,12 @@ type CreateStateCallback = (source: State, target: State) => void;
 export class Transitions {
   container!: Container;
 
-  items: Map<string, Transition> = new Map();
   ghost = new GhostTransition();
 
   createCallback?: CreateStateCallback;
 
   constructor(container: Container) {
     this.container = container;
-  }
-
-  initItems(items: Elements['transitions']) {
-    for (const id in items) {
-      const { source, target, condition, color } = items[id];
-
-      const sourceState = this.container.states.items.get(source) as State;
-      const targetState = this.container.states.items.get(target) as State;
-
-      const transition = new Transition(this.container, sourceState, targetState, color, condition);
-
-      this.items.set(id, transition);
-
-      //Если клик был на блок transition, то он выполняет функции
-      transition.condition.on('click', this.handleConditionClick as any);
-      //Если клик был на блок transition, то он выполняет функции
-      transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
-      //Если клик был за пределами блока transition, то он выполняет функции
-      transition.condition.on('mouseup', this.handleMouseUpOnState as any);
-
-      transition.condition.on('contextmenu', this.handleContextMenu as any);
-    }
   }
 
   initEvents() {
@@ -58,7 +32,7 @@ export class Transitions {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.items.forEach((state) => {
+    this.container.machine.transitions.forEach((state) => {
       state.draw(ctx, canvas);
     });
 
@@ -76,16 +50,18 @@ export class Transitions {
   };
 
   private removeSelection() {
-    this.items.forEach((value) => {
+    this.container.machine.transitions.forEach((value) => {
       value.condition.setIsSelected(false, '');
       value.condition.setIsSelectedMenu(false);
     });
-    this.container.states.items.forEach((state) => {
+    // TODO: дублирование?
+    console.log("Transitions.removeSelection")
+    this.container.machine.states.forEach((state) => {
       state.setIsSelected(false, '');
       state.setIsSelectedMenu(false);
     });
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   }
 
   handleConditionClick = ({ target, event }: { target: State; event: any }) => {
@@ -111,7 +87,7 @@ export class Transitions {
 
     this.ghost.setTarget({ x: e.x, y: e.y });
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   };
 
   handleMouseUpOnState = ({ target }: { target: State }) => {
@@ -130,30 +106,14 @@ export class Transitions {
     this.ghost.clear();
   };
 
-  createNewTransition(
-    source: State,
-    target: State,
-    color: string,
-    component: string,
-    method: string
-  ) {
-    // TODO Доделать парвильный condition
-    const transition = new Transition(this.container, source, target, color, {
-      position: {
-        x: 100,
-        y: 100,
-      },
-      component,
-      method,
-    });
-
+  watchTransition(transition: Transition) {
+    //Если клик был на блок transition, то он выполняет функции
     transition.condition.on('click', this.handleConditionClick as any);
+    //Если клик был на блок transition, то он выполняет функции
     transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
+    //Если клик был за пределами блока transition, то он выполняет функции
     transition.condition.on('mouseup', this.handleMouseUpOnState as any);
+
     transition.condition.on('contextmenu', this.handleContextMenu as any);
-
-    this.items.set(nanoid(), transition);
-
-    this.container.app.isDirty = true;
   }
 }

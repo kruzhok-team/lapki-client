@@ -1,9 +1,6 @@
 import { State } from './State';
-import { Elements } from '@renderer/types/diagram';
 import { EventEmitter } from '../common/EventEmitter';
-import { Point } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
 
 type CreateStateCallback = (state) => void;
 
@@ -15,7 +12,6 @@ type CreateStateCallback = (state) => void;
  */
 export class States extends EventEmitter {
   container!: Container;
-  items: Map<string, State> = new Map();
 
   constructor(container: Container) {
     super();
@@ -28,36 +24,12 @@ export class States extends EventEmitter {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
 
-  initItems(items: Elements['states'], initialState: string) {
-    for (const id in items) {
-      const parent = this.items.get(items[id].parent ?? '');
-      const state = new State({
-        container: this.container,
-        id: id,
-        data: items[id],
-        parent,
-        initial: id === initialState,
-      });
-
-      state.parent?.children.set(id, state);
-      state.on('mouseup', this.handleMouseUpOnState as any);
-      state.on('click', this.handleStateClick as any);
-      state.on('dblclick', this.handleStateDoubleClick as any);
-      state.on('contextmenu', this.handleContextMenu as any);
-      state.on('longpress', this.handleLongPress as any);
-
-      state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-
-      this.items.set(id, state);
-    }
-  }
-
   onStateCreate = (callback: CreateStateCallback) => {
     this.createCallback = callback;
   };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.items.forEach((state) => {
+    this.container.machine.states.forEach((state) => {
       state.draw(ctx, canvas);
     });
   }
@@ -75,16 +47,11 @@ export class States extends EventEmitter {
   };
 
   private removeSelection() {
-    this.container.transitions.items.forEach((value) => {
-      value.condition.setIsSelected(false, '');
-      value.condition.setIsSelectedMenu(false);
-    });
-    this.items.forEach((state) => {
-      state.setIsSelected(false, '');
+    this.container.machine.states.forEach((state) => {
       state.setIsSelected(false, '');
     });
-
-    this.container.app.isDirty = true;
+    console.log('States.removeSelection');
+    this.container.isDirty = true;
   }
 
   handleStateClick = ({ target, event }: { target: State; event: any }) => {
@@ -107,74 +74,21 @@ export class States extends EventEmitter {
     target.setIsSelectedMenu(true);
   };
 
+  watchState(state: State) {
+    state.on('mouseup', this.handleMouseUpOnState as any);
+    state.on('click', this.handleStateClick as any);
+    state.on('dblclick', this.handleStateDoubleClick as any);
+    state.on('contextmenu', this.handleContextMenu as any);
+
+    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
+    this.container.isDirty = true;
+  }
+
   handleLongPress = (e: { target: State }) => {
     e.target.parent?.children.delete(e.target.id);
     e.target.parent = undefined;
+
     // TODO Пересчитать координаты
-
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   };
-
-  createState(name: string, events: string, component: string, method: string) {
-    const { width, height } = stateStyle;
-    const x = 200 - width / 2;
-    const y = 200 - height / 2;
-
-    var startEvents = {};
-    startEvents[events] = { component, method };
-
-    const state = new State({
-      container: this.container,
-      id: name,
-      data: {
-        bounds: { x, y, width, height },
-        events: startEvents,
-      },
-    });
-
-    state.on('mouseup', this.handleMouseUpOnState as any);
-    state.on('click', this.handleStateClick as any);
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('contextmenu', this.handleContextMenu as any);
-
-    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-
-    this.items.set(name, state);
-
-    this.container.app.isDirty = true;
-  }
-
-  createNewState(name: string, position: Point) {
-    const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
-
-    const state = new State({
-      container: this.container,
-      id: name,
-      data: {
-        bounds: { x, y, width, height },
-        events: {},
-      },
-    });
-
-    for (const item of this.items.values()) {
-      if (item.isUnderMouse({ x, y })) {
-        state.parent = item;
-        item?.children.set(state.id, state);
-        break;
-      }
-    }
-
-    state.on('mouseup', this.handleMouseUpOnState as any);
-    state.on('click', this.handleStateClick as any);
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('contextmenu', this.handleContextMenu as any);
-
-    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-
-    this.items.set(name, state);
-
-    this.container.app.isDirty = true;
-  }
 }

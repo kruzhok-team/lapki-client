@@ -53,7 +53,7 @@ export class State extends Draggable {
     if (initial) {
       preloadImages([InitialIcon]).then(([icon]) => {
         this.initialIcon = icon;
-        this.container.app.isDirty = true;
+        this.container.isDirty = true;
       });
     }
 

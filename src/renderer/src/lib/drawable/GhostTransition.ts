@@ -9,7 +9,7 @@ export class GhostTransition {
   source!: State | null;
   target!: Point | null;
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (!this.source || !this.target) return;
 
     ctx.beginPath();

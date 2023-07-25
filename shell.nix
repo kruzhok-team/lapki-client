@@ -9,6 +9,7 @@ pkgs.mkShell {
           nodejs-18_x 
           pkg-config
           git openssh nano
+          typescript
         ]
       ))
     )

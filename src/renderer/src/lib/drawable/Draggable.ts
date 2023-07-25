@@ -198,7 +198,10 @@ export class Draggable extends EventEmitter {
 
     this.emit('mouseup', { event: e, target: this });
 
-    this.emit('click', { event: e, target: this });
+    if (this.isMouseDown) {
+      this.isMouseDown = false;
+      this.emit('click', { event: e, target: this });
+    }
   };
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {

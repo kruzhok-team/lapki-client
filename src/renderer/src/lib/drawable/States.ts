@@ -1,7 +1,6 @@
 import { State } from './State';
 import { EventEmitter } from '../common/EventEmitter';
 import { Container } from '../basic/Container';
-import { machine } from 'os';
 
 type CreateStateCallback = (state) => void;
 
@@ -75,13 +74,23 @@ export class States extends EventEmitter {
 
     target.setIsSelectedMenu(true);
   };
+  
+  handleLongPress = (e: { target: State }) => {
+    e.target.parent?.children.delete(e.target.id);
+    e.target.parent = undefined;
+    // TODO Пересчитать координаты
+
+    this.container.isDirty = true;
+  };
 
   watchState (state: State) {
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);
     state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('contextmenu', this.handleContextMenu as any);
+    state.on('longpress', this.handleLongPress as any);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
+
 }

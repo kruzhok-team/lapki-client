@@ -65,6 +65,12 @@ export class Container {
     this.app.mouse.on('wheel', this.handleMouseWheel as any);
   }
 
+  // handleDragOver = (e: DragEvent) => {
+  //   e.preventDefault();
+
+
+  // };
+
   handleDrop = (e: DragEvent) => {
     e.preventDefault();
 

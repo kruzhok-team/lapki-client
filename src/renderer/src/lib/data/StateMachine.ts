@@ -99,6 +99,14 @@ export class StateMachine extends EventEmitter {
       },
     });
 
+    for (const item of this.states.values()) {
+      if (item.isUnderMouse(state.computedPosition)) {
+        state.parent = item;
+        item?.children.set(state.id, state);
+        break;
+      }
+    }
+    
     this.states.set(name, state);
 
     this.container.states.watchState(state);

@@ -134,22 +134,38 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
+  unlinkState(name: string) {
+    const state = this.states.get(name);
+    if (typeof state === 'undefined') return;
+    if (typeof state!.parent === 'undefined') return;
+
+    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
+    const newBound = {...state!.bounds, ...state!.compoundPosition};
+    
+    state!.parent?.children.delete(name);
+    state!.parent = undefined;
+    delete state!.data['parent'];
+
+    state!.bounds = newBound;
+
+    this.container.isDirty = true;
+  }
+
   deleteState(name: string) {
-    this.states.forEach((_data, thisName) => {
-      if (thisName === name) {
-        this.states.delete(name);
+    const state = this.states.get(name);
+    if (typeof state === 'undefined') return;
+    
+    this.states.delete(name);
 
-        //Проходим массив связей, если же есть связи у удаляемой ноды, то они тоже удаляются
-        this.transitions.forEach((data, id) => {
-          if (data.source.id === name || data.target.id === name) {
-            this.transitions.delete(id);
-          }
-        });
+    //Проходим массив связей, если же есть связи у удаляемой ноды, то они тоже удаляются
+    this.transitions.forEach((data, id) => {
+      if (data.source.id === name || data.target.id === name) {
+        this.transitions.delete(id);
       }
-
-      // TODO: удалять все дочерние ноды (или отсоединять?) при удалении родителя
     });
-
+    
+    // TODO: удалять все дочерние ноды (или отсоединять?) при удалении родителя
+    
     this.container.isDirty = true;
   }
 

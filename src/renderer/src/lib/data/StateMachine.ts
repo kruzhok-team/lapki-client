@@ -99,12 +99,33 @@ export class StateMachine extends EventEmitter {
       },
     });
 
+    // назначаем родительское состояние по месту его создания
+    let possibleParent: State | undefined = undefined; 
     for (const item of this.states.values()) {
       if (item.isUnderMouse(state.computedPosition)) {
-        state.parent = item;
-        item?.children.set(state.id, state);
-        break;
+        if (typeof possibleParent === 'undefined') {
+            possibleParent = item;
+        } else {
+          // учитываем вложенность, нужно поместить состояние
+          // в максимально дочернее
+          let searchPending = true;
+          while (searchPending) {
+            searchPending = false;
+            for (const child of possibleParent.children.values()) {
+              if (!(child instanceof State)) continue;
+              if (child.isUnderMouse(state.computedPosition)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
+          }
+        }
       }
+    }
+    if (typeof possibleParent !== 'undefined') {
+      state.parent = possibleParent;
+      possibleParent?.children.set(state.id, state);
     }
     
     this.states.set(name, state);

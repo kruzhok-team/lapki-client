@@ -1,0 +1,10 @@
+{
+  "states": {
+    "on": {
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 96, "y": 264 }
+    }
+  },
+  "initialState": "on",
+  "transitions": []
+}

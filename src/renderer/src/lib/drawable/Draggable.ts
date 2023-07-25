@@ -1,4 +1,4 @@
-import { Rectangle } from '@renderer/types/graphics';
+import { Point, Rectangle } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
@@ -30,6 +30,9 @@ export class Draggable extends EventEmitter {
   children: Map<string, Draggable> = new Map();
 
   dragging = false;
+
+  private isMouseDown = false;
+  private mouseDownTimerId: NodeJS.Timeout | null = null;
 
   childrenPadding = 15;
 
@@ -159,6 +162,12 @@ export class Draggable extends EventEmitter {
 
     this.dragging = true;
 
+    this.isMouseDown = true;
+
+    this.mouseDownTimerId = setTimeout(() => {
+      this.emit('longpress', { event: e, target: this });
+    }, 2000);
+
     this.emit('mousedown', { event: e, target: this });
 
     this.emit('click', { event: e, target: this });
@@ -187,9 +196,14 @@ export class Draggable extends EventEmitter {
 
     if (!isUnderMouse) return;
 
+    this.mouseDownTimerId && clearTimeout(this.mouseDownTimerId);
+
     this.emit('mouseup', { event: e, target: this });
 
-    this.emit('click', { event: e, target: this });
+    if (this.isMouseDown) {
+      this.isMouseDown = false;
+      this.emit('click', { event: e, target: this });
+    }
   };
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {
@@ -207,7 +221,7 @@ export class Draggable extends EventEmitter {
     this.emit('contextmenu', { event: e, target: this });
   };
 
-  isUnderMouse({ x, y }: MyMouseEvent) {
+  isUnderMouse<T extends Point>({ x, y }: T) {
     return isPointInRectangle(this.drawBounds, { x, y });
   }
 }

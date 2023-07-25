@@ -46,7 +46,7 @@ export const App: React.FC = () => {
   };
 
   const ActiveEditor = [
-    <DiagramEditor elements={elements} />,
+    <DiagramEditor elements={elements!} />,
     <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
   ];
   return (

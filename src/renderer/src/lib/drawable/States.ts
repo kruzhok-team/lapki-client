@@ -44,6 +44,7 @@ export class States extends EventEmitter {
       state.on('click', this.handleStateClick as any);
       state.on('dblclick', this.handleStateDoubleClick as any);
       state.on('contextmenu', this.handleContextMenu as any);
+      state.on('longpress', this.handleLongPress as any);
 
       state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
 
@@ -106,6 +107,14 @@ export class States extends EventEmitter {
     target.setIsSelectedMenu(true);
   };
 
+  handleLongPress = (e: { target: State }) => {
+    e.target.parent?.children.delete(e.target.id);
+    e.target.parent = undefined;
+    // TODO Пересчитать координаты
+
+    this.container.app.isDirty = true;
+  };
+
   createState(name: string, events: string, component: string, method: string) {
     const { width, height } = stateStyle;
     const x = 200 - width / 2;
@@ -148,6 +157,14 @@ export class States extends EventEmitter {
         events: {},
       },
     });
+
+    for (const item of this.items.values()) {
+      if (item.isUnderMouse({ x, y })) {
+        state.parent = item;
+        item?.children.set(state.id, state);
+        break;
+      }
+    }
 
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);

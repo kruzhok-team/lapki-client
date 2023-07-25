@@ -33,10 +33,11 @@ export class Draggable extends EventEmitter {
 
   private isMouseDown = false;
 
-  private mouseDownTimerId: number | undefined = undefined;
+  private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
+  longPressTimeout = 2000;
 
   childrenPadding = 15;
-
+  
   constructor(container: Container, bounds: Rectangle, parent?: Draggable) {
     super();
 
@@ -165,10 +166,12 @@ export class Draggable extends EventEmitter {
 
     this.isMouseDown = true;
 
-    let mouseDownTimerId = setTimeout(() => {
+    clearTimeout(this.mouseDownTimerId);
+    this.mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e, target: this });
-    }, 2000);
-    mouseDownTimerId;
+    }, this.longPressTimeout);
+    // TODO: надо сбрасывать обратно при перемещении курсора!
+
     this.emit('mousedown', { event: e, target: this });
 
     this.emit('click', { event: e, target: this });

@@ -4,7 +4,6 @@ import { EventEmitter } from '../common/EventEmitter';
 import { Point } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
-import { Transition } from './Transition';
 
 type CreateStateCallback = (state) => void;
 
@@ -17,7 +16,6 @@ type CreateStateCallback = (state) => void;
 export class States extends EventEmitter {
   container!: Container;
   items: Map<string, State> = new Map();
-  itemsTransition: Map<string, Transition> = new Map();
 
   constructor(container: Container) {
     super();
@@ -76,7 +74,7 @@ export class States extends EventEmitter {
   };
 
   private removeSelection() {
-    this.itemsTransition.forEach((value) => {
+    this.container.transitions.items.forEach((value) => {
       value.condition.setIsSelected(false, '');
       value.condition.setIsSelectedMenu(false);
     });

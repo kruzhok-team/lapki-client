@@ -169,6 +169,7 @@ export class State extends Draggable {
   //Обводка блока состояния при нажатии
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
+    ctx.canvas.hidden;
 
     ctx.lineWidth = stateStyle.selectedBorderWidth;
     ctx.strokeStyle = stateStyle.selectedBorderColor;

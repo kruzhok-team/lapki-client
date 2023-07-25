@@ -31,8 +31,6 @@ export class Draggable extends EventEmitter {
 
   dragging = false;
 
-  private isMouseDown = false;
-
   childrenPadding = 15;
 
   constructor(container: Container, bounds: Rectangle, parent?: Draggable) {
@@ -161,9 +159,9 @@ export class Draggable extends EventEmitter {
 
     this.dragging = true;
 
-    this.isMouseDown = true;
-
     this.emit('mousedown', { event: e, target: this });
+
+    this.emit('click', { event: e, target: this });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

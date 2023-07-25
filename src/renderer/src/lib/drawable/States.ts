@@ -76,11 +76,16 @@ export class States extends EventEmitter {
   };
 
   handleLongPress = (e: { target: State }) => {
+    if (typeof e.target.parent === 'undefined') return;
+
+    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
+    const newBound = {...e.target.bounds, ...e.target.compoundPosition};
+    
     e.target.parent?.children.delete(e.target.id);
     e.target.parent = undefined;
     delete e.target.data['parent'];
 
-    // TODO Пересчитать координаты
+    e.target.bounds = newBound;
 
     this.container.isDirty = true;
   };

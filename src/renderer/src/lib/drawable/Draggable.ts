@@ -52,7 +52,7 @@ export class Draggable extends EventEmitter {
   }
 
   // Позиция рассчитанная с возможным родителем
-  private get compoundPosition() {
+  get compoundPosition() {
     let x = this.bounds.x;
     let y = this.bounds.y;
 

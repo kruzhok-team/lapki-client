@@ -54,8 +54,7 @@ export class Transitions {
       value.condition.setIsSelected(false, '');
       value.condition.setIsSelectedMenu(false);
     });
-    // TODO: дублирование?
-    console.log("Transitions.removeSelection")
+
     this.container.machine.states.forEach((state) => {
       state.setIsSelected(false, '');
       state.setIsSelectedMenu(false);

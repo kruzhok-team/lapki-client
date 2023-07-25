@@ -9,11 +9,10 @@ interface CodeEditorProps extends EditorProps {}
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
   return (
-    <Editor
-      className="absolute h-full overflow-hidden"
-      language="json"
-      theme="vs-dark"
-      {...props}
+    <Editor 
+      className="absolute h-full overflow-hidden" 
+      theme="vs-dark" 
+      {...props} 
     />
   );
 };

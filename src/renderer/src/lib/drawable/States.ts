@@ -49,9 +49,7 @@ export class States extends EventEmitter {
   private removeSelection() {
     this.container.machine.states.forEach((state) => {
       state.setIsSelected(false, '');
-      state.setIsSelected(false, '');
     });
-    console.log("States.removeSelection")
     this.container.isDirty = true;
   }
 
@@ -71,10 +69,11 @@ export class States extends EventEmitter {
   handleContextMenu = ({ target, event }: { target: State; event: any }) => {
     event.stopPropagation();
     this.removeSelection();
-
+    delete event.target['events'];
+    console.log(event.target);
     target.setIsSelectedMenu(true);
   };
-  
+
   handleLongPress = (e: { target: State }) => {
     e.target.parent?.children.delete(e.target.id);
     e.target.parent = undefined;
@@ -85,7 +84,7 @@ export class States extends EventEmitter {
     this.container.isDirty = true;
   };
 
-  watchState (state: State) {
+  watchState(state: State) {
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);
     state.on('dblclick', this.handleStateDoubleClick as any);
@@ -94,5 +93,4 @@ export class States extends EventEmitter {
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
-
 }

@@ -16,11 +16,11 @@ export class ContextMenu {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.draggable.drawBounds;
+    const { x, y } = this.draggable.drawBounds;
 
     ctx.beginPath();
     ctx.fillStyle = stateStyle.bodyBg;
-    ctx.roundRect(x + 150 / this.container.scale, y + 70 / this.container.scale, width, height, [
+    ctx.roundRect(x + 150 / this.container.scale, y + 70 / this.container.scale, 150, 200, [
       stateStyle.bodyBorderRadius,
       stateStyle.bodyBorderRadius,
       this.draggable.children.size !== 0 ? 0 : stateStyle.bodyBorderRadius,
@@ -30,10 +30,19 @@ export class ContextMenu {
     ctx.closePath();
 
     ctx.beginPath();
-    //Добавляет стиль тексту
     ctx.fillStyle = transitionStyle.bgColor;
     ctx.fillText('Контекстное меню', x + 160 / this.container.scale, y + 80 / this.container.scale);
-    //Добавляет задний фон объекту канвы
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.fillStyle = transitionStyle.bgColor;
+    ctx.roundRect(
+      x + 150 / this.container.scale,
+      y + 120 / this.container.scale,
+      150 / this.container.scale,
+      40 / this.container.scale
+    );
     ctx.fill();
     ctx.closePath();
   }

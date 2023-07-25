@@ -1,5 +1,6 @@
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
+// @ts-ignore
 import close from '@renderer/assets/icons/close.svg';
 
 interface TabsProps {

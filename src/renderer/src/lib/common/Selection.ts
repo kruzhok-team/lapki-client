@@ -21,8 +21,8 @@ export class Selection {
   };
 
   private removeSelection() {
-    this.items.forEach((state) => state.setIsSelected(false));
-    this.itemsTransition.forEach((value) => value.condition.setIsSelected(false));
+    this.items.forEach((state) => state.setIsSelected(false, ''));
+    this.itemsTransition.forEach((value) => value.condition.setIsSelected(false, ''));
     this.container.isDirty = true;
   }
 
@@ -35,7 +35,7 @@ export class Selection {
 
     this.removeSelection();
 
-    target.setIsSelected(true);
+    target.setIsSelected(true, JSON.stringify(target));
     //Вывожу данные выделенного блока
     console.log(JSON.stringify(target));
   };

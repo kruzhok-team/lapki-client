@@ -78,8 +78,10 @@ export class States extends EventEmitter {
   handleLongPress = (e: { target: State }) => {
     e.target.parent?.children.delete(e.target.id);
     e.target.parent = undefined;
-    // TODO Пересчитать координаты
+    delete e.target.data['parent'];
 
+    // TODO Пересчитать координаты
+    
     this.container.isDirty = true;
   };
 

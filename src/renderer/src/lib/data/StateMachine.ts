@@ -99,21 +99,37 @@ export class StateMachine extends EventEmitter {
       },
     });
 
+    // назначаем родительское состояние по месту его создания
+    let possibleParent: State | undefined = undefined;
     for (const item of this.states.values()) {
-      state.parent = item;
-      item?.children.set(state.id, state);
-      break;
+      if (item.isUnderMouse(state.computedPosition)) {
+        if (typeof possibleParent === 'undefined') {
+          possibleParent = item;
+        } else {
+          // учитываем вложенность, нужно поместить состояние
+          // в максимально дочернее
+          let searchPending = true;
+          while (searchPending) {
+            searchPending = false;
+            for (const child of possibleParent.children.values()) {
+              if (!(child instanceof State)) continue;
+              if (child.isUnderMouse(state.computedPosition)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    if (typeof possibleParent !== 'undefined') {
+      state.parent = possibleParent;
+      possibleParent?.children.set(state.id, state);
     }
 
     this.states.set(name, state);
 
-    for (const item of this.states.values()) {
-      if (item.isUnderMouse({ x, y })) {
-        state.parent = item;
-        item?.children.set(state.id, state);
-        break;
-      }
-    }
     this.container.states.watchState(state);
     this.container.isDirty = true;
   }
@@ -122,10 +138,16 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((_data, thisName) => {
       if (thisName === name) {
         this.states.delete(name);
+
+        //Проходим массив связей, если же есть связи у удаляемой ноды, то они тоже удаляются
+        this.transitions.forEach((data, id) => {
+          if (data.source.id === name || data.target.id === name) {
+            this.transitions.delete(id);
+          }
+        });
       }
-      // TODO: удалять все переходы с этим состоянием
-      // TODO: удалять все дочерние ноды (или отсоединять?)
-      // TODO: удалить эту ноду у родительской (если есть)
+
+      // TODO: удалять все дочерние ноды (или отсоединять?) при удалении родителя
     });
 
     this.container.isDirty = true;

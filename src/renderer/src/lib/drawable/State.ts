@@ -68,7 +68,6 @@ export class State extends Draggable {
     this.drawBody(ctx);
     this.drawTitle(ctx);
     this.statusevent.draw(ctx);
-    //this.drawTextEvents(ctx);
 
     if (this.initialIcon) {
       this.drawInitialMark(ctx);
@@ -136,35 +135,6 @@ export class State extends Draggable {
 
     ctx.closePath();
   }
-
-  /*private drawTextEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.drawBounds;
-
-    const paddingY = 10 / this.container.scale;
-    const px = 15 / this.container.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
-    const titleHeight = fontSize + paddingY * 2;
-
-    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    ctx.fillStyle = stateStyle.eventColor;
-    ctx.textBaseline = stateStyle.eventBaseLine;
-
-    ctx.beginPath();
-
-    Object.entries(this.data.events).forEach(([eventName, events], i) => {
-      const resultY = y + titleHeight + paddingY + (i * 40) / this.container.scale;
-      const eventNameWidth = ctx.measureText(eventName).width;
-      const componentWidth = ctx.measureText(events[0].component).width;
-      const gap = 5 / this.container.scale;
-
-      ctx.fillText(eventName, x + px, resultY);
-
-      ctx.fillText(events[0].component, x + px + eventNameWidth + gap, resultY);
-      ctx.fillText(events[0].method, x + px + eventNameWidth + componentWidth + gap * 2, resultY);
-    });
-
-    ctx.closePath();
-  }*/
 
   //Обводка блока состояния при нажатии
   private drawSelection(ctx: CanvasRenderingContext2D) {

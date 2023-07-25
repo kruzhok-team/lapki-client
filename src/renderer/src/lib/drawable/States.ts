@@ -78,9 +78,9 @@ export class States extends EventEmitter {
   handleLongPress = (e: { target: State }) => {
     e.target.parent?.children.delete(e.target.id);
     e.target.parent = undefined;
-
-    //Удаление свойства parent у дочерней ноды
     delete e.target.data['parent'];
+
+    // TODO Пересчитать координаты
 
     this.container.isDirty = true;
   };

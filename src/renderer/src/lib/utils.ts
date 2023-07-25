@@ -40,6 +40,7 @@ const getRectangleCenter = (rect: Rectangle): Point => {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 };
 
+// @ts-ignore
 const getDistanceBetweenRectangles = (rect1: Rectangle, rect2: Rectangle) => {
   const c1 = getRectangleCenter(rect1);
   const c2 = getRectangleCenter(rect2);
@@ -90,8 +91,8 @@ const getLine = (
   rect1: Rectangle,
   rect2: Rectangle,
   rectPadding: number,
-  startLinePadding: number,
-  endLinePadding: number
+  _startLinePadding: number,
+  _endLinePadding: number
 ) => {
   const rect2Left = rect2.x;
   const rect2Right = rect2.x + rect2.width;

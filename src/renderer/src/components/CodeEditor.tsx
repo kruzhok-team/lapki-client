@@ -8,5 +8,11 @@ loader.init();
 interface CodeEditorProps extends EditorProps {}
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
-  return <Editor className="absolute h-full overflow-hidden" theme="vs-dark" {...props} />;
+  return (
+    <Editor 
+      className="absolute h-full overflow-hidden" 
+      theme="vs-dark" 
+      {...props} 
+    />
+  );
 };

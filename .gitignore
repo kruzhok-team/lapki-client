@@ -6,3 +6,4 @@ out
 # custom
 build
 package-lock.json
+*.tsbuildinfo

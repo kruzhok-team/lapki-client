@@ -32,7 +32,8 @@ export class Draggable extends EventEmitter {
   dragging = false;
 
   private isMouseDown = false;
-  private mouseDownTimerId: NodeJS.Timeout | null = null;
+
+  private mouseDownTimerId: number | undefined = undefined;
 
   childrenPadding = 15;
 
@@ -164,10 +165,10 @@ export class Draggable extends EventEmitter {
 
     this.isMouseDown = true;
 
-    this.mouseDownTimerId = setTimeout(() => {
+    let mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e, target: this });
     }, 2000);
-
+    mouseDownTimerId;
     this.emit('mousedown', { event: e, target: this });
 
     this.emit('click', { event: e, target: this });
@@ -183,6 +184,7 @@ export class Draggable extends EventEmitter {
       this.bounds.x = Math.max(0, this.bounds.x);
       this.bounds.y = Math.max(0, this.bounds.y);
     }
+
     document.body.style.cursor = 'grabbing';
     this.container.isDirty = true;
   };
@@ -196,11 +198,14 @@ export class Draggable extends EventEmitter {
 
     if (!isUnderMouse) return;
 
-    this.mouseDownTimerId && clearTimeout(this.mouseDownTimerId);
+    clearTimeout(this.mouseDownTimerId);
 
     this.emit('mouseup', { event: e, target: this });
 
-    this.emit('click', { event: e, target: this });
+    if (this.isMouseDown) {
+      this.isMouseDown = false;
+      this.emit('click', { event: e, target: this });
+    }
   };
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {

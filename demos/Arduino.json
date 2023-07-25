@@ -1,70 +1,290 @@
 {
-  "platform": {
-    "Arduino": {
-      "components": {
-        "Button": {
-          "description": "Hardware Abstraction for Buttons. It provides an easy way of handling buttons.",
-          "img": "",
-          "signals": {
-            "isPressed": {
-              "img": "",
-              "description": "Return true if the button has been pressed"
-            },
-            "clicked": {
-              "img": "",
-              "description": "Return > 0 if the button is clicked, or 0 if not."
-            },
-            "будет еще": {}
-          },
-          "parameters": {
-            "buttonPin": {
-              "img": "",
-              "type": "uint8_t",
-              "description": "buttonPin  sets the pin that this switch is connected to"
-            },
-            "buttonMode": {
-              "img": "",
-              "type": "uint8_t",
-              "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
-            }
-          },
-          "variables": {},
-          "methods": { "что-то еще": "" },
-          "singletone": "False"
-        },
+  "state": {
+    "diod1": {
+      "events": {
+        "componentSignals": [],
+        "userSignals": []
+      }
+    },
+    "diod2": {
+      "events": {
+        "componentSignals": [
+          {
+            "component": "btn1",
+            "method": "isPressed",
+            "args": [],
+            "actions": [
+              {
+                "component": "diod2",
+                "method": "fadeOut",
+                "args": [5]
+              }
+            ]
+          }
+        ],
+        "userSignals": []
+      }
+    },
+    "diod1_on": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod1",
+            "method": "on"
+          }
+        ],
+        "componentSignals": [],
+        "userSignals": []
+      },
+      "parent": "diod1",
+      "bounds": {
+        "x": 96,
+        "y": 264
+      }
+    },
 
-        "LED": {
-          "description": "Hardware Abstraction for LEDs. It provides an easy way of handling LEDs.",
-          "img": "",
-          "signals": {},
-          "parameters": {
-            "ledPin": {
-              "img": "",
-              "type": "uint8_t",
-              "description": "ledPin the pin connected to this LED"
-            },
-            "buttonMode": {
-              "img": "",
-              "type": "uint8_t",
-              "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
-            }
-          },
-          "variables": {},
-          "methods": {
-            "on": {
-              "img": "",
-              "parameters": {},
-              "description": "Set this LED on"
-            },
-            "off": {
-              "img": "",
-              "parameters": {},
-              "description": "Set this LED off"
-            }
-          },
-          "singletone": "False"
-        }
+    "diod1_off": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod1",
+            "method": "off"
+          }
+        ],
+        "componentSignals": [],
+        "userSignals": []
+      },
+      "parent": "diod1",
+      "bounds": {
+        "x": 765,
+        "y": 134
+      }
+    },
+    "diod2_on": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod2",
+            "method": "on"
+          }
+        ],
+        "componentSignals": [],
+        "userSignals": []
+      },
+      "parent": "diod2",
+      "bounds": {
+        "x": 96,
+        "y": 264
+      }
+    },
+
+    "diod2_off": {
+      "events": {
+        "onEnter": [
+          {
+            "component": "diod2",
+            "method": "off"
+          }
+        ],
+        "componentSignals": [],
+        "userSignals": []
+      },
+      "parent": "diod2",
+      "bounds": {
+        "x": 765,
+        "y": 134
       }
     }
+  },
+
+  "initialState": "diod1_on",
+
+  "transitions": [
+    {
+      "source": "diod1_on",
+      "target": "diod1_off",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn1",
+        "method": "clicked"
+      },
+      "conditions": {
+        "type": "or",
+        "values": [
+          {
+            "type": "equals",
+            "values": [
+              {
+                "type": "value",
+                "value": 1
+              },
+              {
+                "type": "value",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "type": "and",
+            "values": [
+              {
+                "type": "notEquals",
+                "values": [
+                  {
+                    "type": "value",
+                    "value": 3
+                  },
+                  {
+                    "type": "value",
+                    "value": 4
+                  }
+                ]
+              },
+              {
+                "type": "component",
+                "component": "btn1",
+                "method": "clicked",
+                "args": []
+              }
+            ]
+          }
+        ]
+      },
+      "do": [
+        {
+          "component": "diod1",
+          "method": "fadeOut",
+          "args": [5]
+        }
+      ]
+    },
+    {
+      "source": "diod1_off",
+      "target": "diod1_on",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn1",
+        "method": "clicked"
+      },
+      "conditions": {},
+      "do": []
+    },
+    {
+      "source": "diod1",
+      "target": "diod2",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn2",
+        "method": "clicked"
+      },
+      "conditions": {},
+      "do": []
+    },
+    {
+      "source": "diod2_on",
+      "target": "diod2_off",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn1",
+        "method": "clicked"
+      },
+      "conditions": {},
+      "do": []
+    },
+    {
+      "source": "diod2_off",
+      "target": "diod2_on",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn1",
+        "method": "clicked"
+      },
+      "conditions": {},
+      "do": []
+    },
+    {
+      "source": "diod1",
+      "target": "diod2",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn2",
+        "method": "clicked"
+      },
+      "conditions": {},
+      "do": []
+    },
+    {
+      "source": "diod2",
+      "target": "diod1",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "btn2",
+        "method": "clicked"
+      },
+      "conditions": {},
+      "do": []
+    }
+  ],
+
+  "components": {
+    "btn1": {
+      "type": "Button",
+      "parameters": {
+        "pin": 10,
+        "mode": "BUTTON_PULLDOWN"
+      }
+    },
+    "btn2": {
+      "type": "Button",
+      "parameters": {
+        "pin": 11,
+        "mode": "BUTTON_PULLDOWN"
+      }
+    },
+    "diod1": {
+      "type": "LED",
+      "parameters": {
+        "pin": 12
+      }
+    },
+    "diod2": {
+      "type": "LED",
+      "parameters": {
+        "pin": 13
+      }
+    }
+  },
+  "compilerSettings": {
+    "filename": "ExampleSketch",
+    "compiler": "arduino-cli",
+    "flags": ["-b", "arduino:avr:uno"]
   }
 }

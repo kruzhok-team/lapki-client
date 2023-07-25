@@ -50,7 +50,6 @@ export class States extends EventEmitter {
     this.container.machine.states.forEach((state) => {
       state.setIsSelected(false, '');
     });
-    console.log('States.removeSelection');
     this.container.isDirty = true;
   }
 
@@ -70,8 +69,19 @@ export class States extends EventEmitter {
   handleContextMenu = ({ target, event }: { target: State; event: any }) => {
     event.stopPropagation();
     this.removeSelection();
-
+    delete event.target['events'];
+    console.log(event.target);
     target.setIsSelectedMenu(true);
+  };
+
+  handleLongPress = (e: { target: State }) => {
+    e.target.parent?.children.delete(e.target.id);
+    e.target.parent = undefined;
+
+    //Удаление свойства parent у родителя
+    delete e.target.data['parent'];
+
+    this.container.isDirty = true;
   };
 
   watchState(state: State) {
@@ -79,16 +89,8 @@ export class States extends EventEmitter {
     state.on('click', this.handleStateClick as any);
     state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('contextmenu', this.handleContextMenu as any);
+    state.on('longpress', this.handleLongPress as any);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
-    this.container.isDirty = true;
   }
-
-  handleLongPress = (e: { target: State }) => {
-    e.target.parent?.children.delete(e.target.id);
-    e.target.parent = undefined;
-
-    // TODO Пересчитать координаты
-    this.container.isDirty = true;
-  };
 }

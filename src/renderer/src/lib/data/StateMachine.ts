@@ -107,6 +107,12 @@ export class StateMachine extends EventEmitter {
       },
     });
 
+    for (const item of this.states.values()) {
+      state.parent = item;
+      item?.children.set(state.id, state);
+      break;
+    }
+
     this.states.set(name, state);
 
     for (const item of this.states.values()) {

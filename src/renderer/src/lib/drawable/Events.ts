@@ -18,22 +18,23 @@ import DiodOff from '@renderer/assets/icons/DiodOff.svg';
 export class Events {
   container!: Container;
   draggable!: Draggable;
-  statusevent!: EventType;
+  events!: EventType;
 
   onEnter!: HTMLImageElement;
   onExit!: HTMLImageElement;
   DiodOn!: HTMLImageElement;
   DiodOff!: HTMLImageElement;
 
-  constructor(container: Container, draggable: Draggable, statusevent: EventType) {
+  constructor(container: Container, draggable: Draggable, events: EventType) {
     this.container = container;
     this.draggable = draggable;
-    this.statusevent = statusevent;
+    this.events = events;
     preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
       this.onEnter = onEnter;
       this.onExit = onExit;
       this.DiodOn = DiodOn;
       this.DiodOff = DiodOff;
+      this.container.isDirty = true;
     });
   }
 
@@ -52,7 +53,7 @@ export class Events {
 
     ctx.beginPath();
 
-    Object.entries(this.statusevent).forEach(([eventName, events], i) => {
+    Object.entries(this.events).forEach(([eventName, events], i) => {
       if (!this.onEnter || !this.onExit || !this.DiodOn || !this.DiodOff) return;
       const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
 
@@ -97,8 +98,8 @@ export class Events {
 
   toJSON() {
     return {
-      component: this.statusevent.component,
-      method: this.statusevent.method,
+      component: this.events.component,
+      method: this.events.method,
     };
   }
 }

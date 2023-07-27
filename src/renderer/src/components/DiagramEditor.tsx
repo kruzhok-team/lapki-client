@@ -4,6 +4,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
 import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
 import { State } from '@renderer/lib/drawable/State';
+import { StateContextMenu } from './StateContextMenu';
 
 interface DiagramEditorProps {
   elements: Elements;
@@ -81,7 +82,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef} />
+      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
+        <StateContextMenu />
+      </div>
 
       <CreateStateModal
         isOpen={isStateModalOpen}

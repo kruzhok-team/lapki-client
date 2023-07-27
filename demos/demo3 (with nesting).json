@@ -28,30 +28,30 @@
       "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
       "bounds": { "x": 188, "y": 21 }
     },
-    "child state": {
+    "childState": {
       "name": "child state1",
-      "parent": "state1",
+      "parent": "diod1",
       "events": {},
       "bounds": { "x": 0, "y": 50 }
     },
-    "child2 state": {
+    "childState2": {
       "name": "child state2",
-      "parent": "child state1",
+      "parent": "childState",
       "events": {},
       "bounds": { "x": 0, "y": 0 }
     },
-    "child3 state": {
+    "childState3": {
       "name": "child state3",
-      "parent": "state1",
+      "parent": "diod1",
       "events": {},
       "bounds": { "x": 291, "y": 0 }
     }
   },
-  "initialState": "state1",
+  "initialState": "diod1",
   "transitions": [
     {
-      "source": "state1",
-      "target": "state2",
+      "source": "diod1",
+      "target": "diod2",
       "color": "#F29727",
       "condition": {
         "position": { "x": 457, "y": 173 },
@@ -60,8 +60,8 @@
       }
     },
     {
-      "source": "state2",
-      "target": "state1",
+      "source": "diod2",
+      "target": "diod1",
       "color": "#F24C3D",
       "condition": {
         "position": { "x": 16, "y": 175 },
@@ -70,8 +70,8 @@
       }
     },
     {
-      "source": "state3",
-      "target": "state2",
+      "source": "diod3",
+      "target": "diod2",
       "color": "#1100ff",
       "condition": {
         "position": { "x": 12, "y": 77 },

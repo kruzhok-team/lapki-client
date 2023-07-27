@@ -6,6 +6,7 @@ import { clamp } from '../utils';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { Point } from '@renderer/types/graphics';
 import { StateMachine } from '../data/StateMachine';
+import { picto } from '../drawable/Picto';
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
@@ -137,6 +138,7 @@ export class Container {
     this.offset.y -= e.y * this.scale - e.y * newScale;
 
     this.scale = newScale;
+    picto.scale = newScale;
 
     this.isDirty = true;
   };

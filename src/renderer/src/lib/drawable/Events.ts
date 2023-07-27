@@ -3,12 +3,8 @@ import { stateStyle } from '../styles';
 import { Event as EventType } from '@renderer/types/diagram';
 import { preloadImages } from '../utils';
 import { Draggable } from './Draggable';
+import { picto } from './Picto';
 
-//Иконки событий
-import onEnter from '@renderer/assets/icons/onEnter.svg';
-import onExit from '@renderer/assets/icons/onExit.svg';
-import DiodOn from '@renderer/assets/icons/DiodOn.svg';
-import DiodOff from '@renderer/assets/icons/DiodOff.svg';
 
 /**
  * Событие состояний.
@@ -20,22 +16,10 @@ export class Events {
   draggable!: Draggable;
   events!: EventType;
 
-  onEnter!: HTMLImageElement;
-  onExit!: HTMLImageElement;
-  DiodOn!: HTMLImageElement;
-  DiodOff!: HTMLImageElement;
-
   constructor(container: Container, draggable: Draggable, events: EventType) {
     this.container = container;
     this.draggable = draggable;
     this.events = events;
-    preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
-      this.onEnter = onEnter;
-      this.onExit = onExit;
-      this.DiodOn = DiodOn;
-      this.DiodOff = DiodOff;
-      this.container.isDirty = true;
-    });
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -54,42 +38,18 @@ export class Events {
     ctx.beginPath();
 
     Object.entries(this.events).forEach(([eventName, events], i) => {
-      if (!this.onEnter || !this.onExit || !this.DiodOn || !this.DiodOff) return;
       const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
 
       if (eventName === 'onEnter') {
-        ctx.drawImage(
-          this.onEnter,
-          x + px,
-          resultY,
-          100 / this.container.scale,
-          40 / this.container.scale
-        );
-      } else {
-        ctx.drawImage(
-          this.onExit,
-          x + px,
-          resultY,
-          100 / this.container.scale,
-          40 / this.container.scale
-        );
+        picto.drawOnEnter(ctx, x + px, resultY);
+      } 
+      if (eventName === 'onExit') {
+        picto.drawOnExit(ctx, x + px, resultY);
       }
       if (events[0].method === 'turnOn') {
-        ctx.drawImage(
-          this.DiodOn,
-          x + 8 * px,
-          resultY,
-          100 / this.container.scale,
-          40 / this.container.scale
-        );
+        picto.drawDiodOn(ctx, x + 8 * px, resultY);
       } else {
-        ctx.drawImage(
-          this.DiodOff,
-          x + 8 * px,
-          resultY,
-          100 / this.container.scale,
-          40 / this.container.scale
-        );
+        picto.drawDiodOff(ctx, x + 8 * px, resultY);
       }
     });
 

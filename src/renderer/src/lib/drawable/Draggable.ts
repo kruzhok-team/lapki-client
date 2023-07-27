@@ -25,7 +25,6 @@ export class Draggable extends EventEmitter {
   container!: Container;
   statusevents!: Events;
   bounds!: Rectangle;
-
   parent?: Draggable;
   children: Map<string, Draggable> = new Map();
 

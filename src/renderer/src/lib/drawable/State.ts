@@ -6,7 +6,6 @@ import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { preloadImages } from '../utils';
 import { Events } from './Events';
-import { ContextMenu } from './ContextMenu';
 
 interface StateProps {
   container: Container;
@@ -24,10 +23,8 @@ interface StateProps {
 export class State extends Draggable {
   id!: string;
   data!: StateType;
-  contextmenu!: ContextMenu;
   isState;
   isSelected = false;
-  isSelectedMenu = false;
 
   statusevent!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -40,14 +37,15 @@ export class State extends Draggable {
   toJSON() {
     return {
       parent: this.data.parent,
+      name: this.data.name,
       events: this.data.events,
       bounds: { x: this.bounds.x, y: this.bounds.y },
     };
   }
 
-  constructor({ container, id, data, parent, initial = false }: StateProps) {
+  constructor({ container, data, parent, initial = false }: StateProps) {
     super(container, { ...data.bounds, width: 230, height: 100 }, parent);
-    this.id = id;
+    this.id = data.name;
     this.data = data;
     this.container = container;
     if (initial) {
@@ -59,7 +57,6 @@ export class State extends Draggable {
 
     this.statusevent = new Events(this.container, this, this.data.events);
     this.edgeHandlers = new EdgeHandlers(container.app, this);
-    this.contextmenu = new ContextMenu(this.container, this);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -78,10 +75,6 @@ export class State extends Draggable {
     if (this.isSelected) {
       this.drawSelection(ctx);
       this.edgeHandlers.draw(ctx);
-    }
-
-    if (this.isSelectedMenu) {
-      this.contextmenu.draw(ctx);
     }
   }
 
@@ -214,9 +207,5 @@ export class State extends Draggable {
   setIsSelected(value: boolean, target: string) {
     this.isSelected = value;
     this.isState = target;
-  }
-
-  setIsSelectedMenu(value: boolean) {
-    this.isSelectedMenu = value;
   }
 }

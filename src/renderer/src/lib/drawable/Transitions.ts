@@ -3,6 +3,7 @@ import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Condition } from './Condition';
 
 type CreateStateCallback = (source: State, target: State) => void;
 
@@ -45,26 +46,25 @@ export class Transitions {
     this.createCallback = callback;
   };
 
-  handleStartNewTransition = (state: State) => {
+  handleStartNewTransition = (state) => {
     this.ghost.setSource(state);
   };
 
-  handleConditionClick = (e: { target: State; event: any }) => {
+  handleConditionClick = (e: { target; event }) => {
     e.event.stopPropagation();
     this.container.machine.removeSelection();
     e.target.setIsSelected(true, JSON.stringify(e.target));
   };
 
-  handleConditionDoubleClick = ({ source, target }: { source: State; target: State }) => {
-    this.createCallback?.(source, target);
+  handleConditionDoubleClick = (e: { source; target }) => {
+    this.createCallback?.(e.source, e.target);
   };
 
-  handleContextMenu = (e: { target: State; event: any }) => {
+  //Удаление связей
+  handleContextMenu = (e: { target; event }) => {
     e.event.stopPropagation();
     this.container.machine.removeSelection();
-    console.log(this.container.machine.transitions.keys());
-    this.container.machine.deleteState(e.target.id);
-    e.target.setIsSelectedMenu(true);
+    this.container.machine.deleteTransition(e.target);
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

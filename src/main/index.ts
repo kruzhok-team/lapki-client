@@ -18,12 +18,12 @@ async function handleFileOpen() {
     });
     NameFile = filePaths[0];
     if (!canceled && filePaths[0]) {
-      fs.readFile(filePaths[0], 'utf-8', (err, date) => {
+      fs.readFile(filePaths[0], 'utf-8', (err, data) => {
         if (err) {
           return reject(new Error('An error ocсurred reading the file :' + err.message));
         }
-        var FileDate = [path.basename(filePaths[0]), date];
-        resolve(FileDate);
+        var FileData = [path.basename(filePaths[0]), data];
+        resolve(FileData);
       });
     }
   });
@@ -97,7 +97,7 @@ function createWindow(): void {
   });
 
   // Вместо создания новых окон мы передаём ссылку в систему.
-  // Позже здесь можно отрабатывать отдельные случаи. 
+  // Позже здесь можно отрабатывать отдельные случаи.
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
     return { action: 'deny' };
@@ -117,9 +117,8 @@ function createWindow(): void {
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
-  
   // IPC из отрисовщика, в основном диалоговые окна
-  
+
   ipcMain.handle('dialog:openFile', handleFileOpen);
 
   ipcMain.handle('dialog:saveFile', (_event, data) => {
@@ -141,17 +140,17 @@ app.whenReady().then(() => {
   createWindow();
 
   app.on('activate', function () {
-    // Восстановление окна для macOS. 
+    // Восстановление окна для macOS.
     // После закрытия окон приложение не завершается и висит в доке.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-// Завершаем приложение, когда окна закрыты. 
+// Завершаем приложение, когда окна закрыты.
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
-  // 
+  //
 });

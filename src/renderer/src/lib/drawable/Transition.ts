@@ -13,11 +13,10 @@ import { Container } from '../basic/Container';
  */
 export class Transition {
   container!: Container;
-
+  condition!: Condition;
   source!: State;
   target!: State;
   color!: string;
-  condition!: Condition;
 
   constructor(
     container: Container,
@@ -27,19 +26,18 @@ export class Transition {
     condition: ConditionType
   ) {
     this.container = container;
-
     this.source = source;
     this.target = target;
 
     this.color = color;
 
-    this.condition = new Condition(this.container, condition);
+    this.condition = new Condition(container, condition);
   }
 
   toJSON() {
     return {
-      source: this.source.id,
-      target: this.target.id,
+      source: this.source.data.name,
+      target: this.target.data.name,
       color: this.color,
       condition: this.condition,
     };

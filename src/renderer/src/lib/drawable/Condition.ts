@@ -1,8 +1,7 @@
-import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
 import { Condition as ConditionType } from '@renderer/types/diagram';
 import { Draggable } from './Draggable';
-import { ContextMenu } from './ContextMenu';
+import { Container } from '../basic/Container';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
@@ -11,14 +10,10 @@ import { ContextMenu } from './ContextMenu';
  */
 export class Condition extends Draggable {
   data!: ConditionType;
-  contextmenu!: ContextMenu;
-
   //Сюда закладываются получаемые данные при клике на связь и выводятся над ней
   isCondition;
   //Проверка нажатия на левую кнопку мыши для выделения связи
   isSelected = false;
-  //Проверка нажатия на правую кнопку мыши для вывода контексного меню
-  isSelectedMenu = false;
 
   constructor(container: Container, data: ConditionType) {
     super(container, {
@@ -27,9 +22,7 @@ export class Condition extends Draggable {
       width: 150,
       height: 70,
     });
-
     this.data = data;
-    this.contextmenu = new ContextMenu(container, this);
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
@@ -57,13 +50,8 @@ export class Condition extends Draggable {
     if (this.isSelected) {
       this.drawSelection(ctx);
     }
-
-    if (this.isSelectedMenu) {
-      this.contextmenu.draw(ctx);
-    }
   }
 
-  //!!!Оказывается для каждого нового объекта рисования требуется указывать их начало и конец и перед ними прописывать стили!!!
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
@@ -117,9 +105,5 @@ export class Condition extends Draggable {
   setIsSelected(value: boolean, target: string) {
     this.isSelected = value;
     this.isCondition = target;
-  }
-
-  setIsSelectedMenu(value: boolean) {
-    this.isSelectedMenu = value;
   }
 }

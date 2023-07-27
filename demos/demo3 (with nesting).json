@@ -1,10 +1,12 @@
 {
   "states": {
-    "on": {
+    "diod1": {
+      "name": "state1",
       "events": { "onExit": [{ "component": "diod", "method": "turnOn" }] },
       "bounds": { "x": 35, "y": 291 }
     },
-    "off": {
+    "diod2": {
+      "name": "state2",
       "events": {
         "onEnter": [
           { "component": "diod", "method": "turnOff" },
@@ -21,19 +23,35 @@
       },
       "bounds": { "x": 187, "y": 141 }
     },
-    "NewTable": {
+    "diod3": {
+      "name": "state3",
       "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
       "bounds": { "x": 188, "y": 21 }
     },
-    "child state": { "parent": "on", "events": {}, "bounds": { "x": 0, "y": 50 } },
-    "child2 state": { "parent": "child state", "events": {}, "bounds": { "x": 0, "y": 0 } },
-    "child3 state": { "parent": "on", "events": {}, "bounds": { "x": 291, "y": 0 } }
+    "child state": {
+      "name": "child state1",
+      "parent": "state1",
+      "events": {},
+      "bounds": { "x": 0, "y": 50 }
+    },
+    "child2 state": {
+      "name": "child state2",
+      "parent": "child state1",
+      "events": {},
+      "bounds": { "x": 0, "y": 0 }
+    },
+    "child3 state": {
+      "name": "child state3",
+      "parent": "state1",
+      "events": {},
+      "bounds": { "x": 291, "y": 0 }
+    }
   },
-  "initialState": "on",
+  "initialState": "state1",
   "transitions": [
     {
-      "source": "on",
-      "target": "off",
+      "source": "state1",
+      "target": "state2",
       "color": "#F29727",
       "condition": {
         "position": { "x": 457, "y": 173 },
@@ -42,8 +60,8 @@
       }
     },
     {
-      "source": "off",
-      "target": "on",
+      "source": "state2",
+      "target": "state1",
       "color": "#F24C3D",
       "condition": {
         "position": { "x": 16, "y": 175 },
@@ -52,10 +70,14 @@
       }
     },
     {
-      "source": "NewTable",
-      "target": "off",
+      "source": "state3",
+      "target": "state2",
       "color": "#1100ff",
-      "condition": { "position": { "x": 12, "y": 77 }, "component": "btn", "method": "NewMethod" }
+      "condition": {
+        "position": { "x": 12, "y": 77 },
+        "component": "btn",
+        "method": "NewMethod"
+      }
     }
   ]
 }

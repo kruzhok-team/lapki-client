@@ -3,7 +3,7 @@ import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-import { nanoid } from 'nanoid';
+import { customRandom, nanoid } from 'nanoid';
 import { Point } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
 
@@ -39,12 +39,12 @@ export class StateMachine extends EventEmitter {
         id: id,
         data: items[id],
         parent,
-        initial: id === initialState,
+        initial: items[id].name === initialState,
       });
 
-      state.parent?.children.set(id, state);
+      state.parent?.children.set(items[id].name, state);
       this.container.states.watchState(state);
-      this.states.set(id, state);
+      this.states.set(items[id].name, state);
     }
   }
 
@@ -68,9 +68,9 @@ export class StateMachine extends EventEmitter {
     var startEvents = {};
     startEvents[events] = { component, method };
 
-    this.states.forEach((_data, id) => {
-      if (id === name) {
-        this.states.keys[id] = name;
+    this.states.forEach((state, _id) => {
+      if (state.data.name === name) {
+        state.data.name = name;
       }
     });
 
@@ -81,11 +81,14 @@ export class StateMachine extends EventEmitter {
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
-
+    const nanoid = customRandom('abcdef', 5, (size) => {
+      return new Uint8Array(size).map(() => 256);
+    });
     const state = new State({
       container: this.container,
-      id: name,
+      id: nanoid(),
       data: {
+        name: name,
         bounds: { x, y, width, height },
         events: {},
       },
@@ -170,6 +173,17 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
+  deleteTransition(condition: string) {
+    //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
+    this.transitions.forEach((data, id) => {
+      if (JSON.stringify(data.condition) === JSON.stringify(condition)) {
+        this.transitions.delete(id);
+      }
+    });
+
+    this.container.isDirty = true;
+  }
+
   createNewTransitionCond(
     source: State,
     target: State,
@@ -214,12 +228,10 @@ export class StateMachine extends EventEmitter {
   removeSelection() {
     this.states.forEach((state) => {
       state.setIsSelected(false, '');
-      state.setIsSelectedMenu(false);
     });
 
     this.transitions.forEach((value) => {
       value.condition.setIsSelected(false, '');
-      value.condition.setIsSelectedMenu(false);
     });
 
     this.container.isDirty = true;

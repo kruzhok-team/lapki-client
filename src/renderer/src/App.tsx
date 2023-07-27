@@ -21,6 +21,7 @@ export const App: React.FC = () => {
   /*const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);*/
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
+
   /*Открытие файла*/
   const handleOpenFile = async () => {
     const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
     setFileContent(FileDate[1]);
   };
 
+  //Создание нового файла
   const handleNewFile = async () => {
     const FileNew = '{"states": {},"initialState": {},"transitions": []}';
     setFileName('Новый файл.json');
@@ -53,7 +55,7 @@ export const App: React.FC = () => {
   ];
 
   return (
-    <div className="h-screen">
+    <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
         <Sidebar onRequestOpenFile={handleOpenFile} onRequestNewFile={handleNewFile} />
 

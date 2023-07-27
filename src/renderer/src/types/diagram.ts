@@ -15,12 +15,13 @@ export type Condition = {
 
 export type State = {
   parent?: string;
+  name: string;
   bounds: Rectangle;
   events: Event;
 };
 
 export type Transition = {
-  // id: string;
+  //id: string;
   source: string;
   target: string;
   condition: Condition;

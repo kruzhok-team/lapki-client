@@ -25,6 +25,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, elements);
+
     let i: number = 0;
 
     //Добавляем пустую ноду в редактор

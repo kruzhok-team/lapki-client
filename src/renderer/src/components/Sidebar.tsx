@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
+import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 
 import { Explorer, Menu } from '../components';
 
@@ -33,43 +34,57 @@ const items = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile, onRequestNewFile }) => {
-  const [activeTab, setActiveTab] = useState<number | null>(null);
+  const panelRef = useRef<ImperativePanelHandle>(null);
 
-  const handleClick = (index: number) => () => {
-    if (activeTab === index) {
-      return setActiveTab(null);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleClick = (i: number) => () => {
+    const panel = panelRef.current;
+
+    if (i === activeTab && panel) {
+      if (panel.getCollapsed()) {
+        panel.expand();
+      } else {
+        panel.collapse();
+      }
+
+      return;
     }
 
-    setActiveTab(index);
+    setActiveTab(i);
   };
-  const isActive = (index: number) => activeTab === index;
 
-  const tabs = [
-    <Menu onRequestOpenFile={onRequestOpenFile} onRequestNewFile={onRequestNewFile} />,
-    <Explorer />,
-  ];
+  const tabs = useMemo(
+    () => [
+      <Menu onRequestOpenFile={onRequestOpenFile} onRequestNewFile={onRequestNewFile} />,
+      <Explorer />,
+    ],
+    []
+  );
 
   return (
-    <aside className="flex">
-      <div key="ButtonImg" className="flex flex-col gap-2 p-2">
-        {items.map(({ imgSrc }, index) => (
-          <button
-            key={index + 'button'}
-            className={twMerge('w-[2rem]', isActive(index) && '')}
-            onClick={handleClick(index)}
-          >
+    <>
+      <div className="flex flex-col gap-2 p-2">
+        {items.map(({ imgSrc }, i) => (
+          <button key={i} className="w-8" onClick={handleClick(i)}>
             <img src={imgSrc} alt="" />
           </button>
         ))}
       </div>
 
-      <div key="DivElements" className={twMerge('w-56', activeTab === null && 'hidden')}>
-        {tabs.map((Element, i) => (
-          <div key={i + 'DivElement'} className={twMerge('hidden h-full', isActive(i) && 'block')}>
-            {Element}
-          </div>
-        ))}
-      </div>
-    </aside>
+      <Panel collapsible={true} minSize={20} defaultSize={20} ref={panelRef}>
+        <div className="h-full w-full">
+          {tabs.map((Element, i) => (
+            <div key={i} className={twMerge('hidden h-full', i === activeTab && 'block')}>
+              {Element}
+            </div>
+          ))}
+        </div>
+      </Panel>
+
+      <PanelResizeHandle className="group">
+        <div className="h-full w-1 bg-[#4391BF] bg-opacity-50 transition-colors group-hover:bg-opacity-100 group-data-[resize-handle-active]:bg-opacity-100" />
+      </PanelResizeHandle>
+    </>
   );
 };

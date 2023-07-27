@@ -24,6 +24,7 @@
     "@electron-toolkit/utils": "^1.0.2",
     "@headlessui/react": "^1.7.15",
     "@monaco-editor/react": "^4.5.1",
+    "@popperjs/core": "^2.11.8",
     "@uiw/react-codesandbox": "^1.1.5",
     "curved-arrows": "^0.1.0",
     "electron-settings": "^4.0.2",
@@ -32,6 +33,7 @@
     "nanoid": "^4.0.2",
     "react-hook-form": "^7.45.1",
     "react-modal": "^3.16.1",
+    "react-popper": "^2.3.0",
     "tailwind-merge": "^1.13.2",
     "tailwind-scrollbar": "^3.0.4",
     "vite-plugin-svgr": "^3.2.0"

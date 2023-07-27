@@ -37,7 +37,7 @@ export class Draggable extends EventEmitter {
   longPressTimeout = 2000;
 
   childrenPadding = 15;
-  
+
   constructor(container: Container, bounds: Rectangle, parent?: Draggable) {
     super();
 
@@ -167,6 +167,7 @@ export class Draggable extends EventEmitter {
     this.isMouseDown = true;
 
     clearTimeout(this.mouseDownTimerId);
+
     this.mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e, target: this });
     }, this.longPressTimeout);

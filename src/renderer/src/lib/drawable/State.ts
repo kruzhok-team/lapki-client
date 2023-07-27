@@ -58,9 +58,7 @@ export class State extends Draggable {
     }
 
     this.statusevent = new Events(this.container, this, this.data.events);
-
     this.edgeHandlers = new EdgeHandlers(container.app, this);
-
     this.contextmenu = new ContextMenu(this.container, this);
   }
 

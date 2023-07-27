@@ -17,12 +17,13 @@ import { stateStyle } from '../styles';
  * Все изменения, вносимые на уровне данных, должны происходить
  * здесь. Сюда закладывается история правок, импорт и экспорт.
  */
+
+// TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 export class StateMachine extends EventEmitter {
   container!: Container;
 
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-
   isDirty = true;
 
   constructor(container: Container) {
@@ -62,26 +63,17 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  createState(name: string, events: string, component: string, method: string) {
-    const { width, height } = stateStyle;
-    const x = 200 - width / 2;
-    const y = 200 - height / 2;
-
+  //В разработке (обновление имя, начального состояния)
+  updateState(name: string, events: string, component: string, method: string) {
     var startEvents = {};
     startEvents[events] = { component, method };
 
-    const state = new State({
-      container: this.container,
-      id: name,
-      data: {
-        bounds: { x, y, width, height },
-        events: startEvents,
-      },
+    this.states.forEach((_data, id) => {
+      if (id === name) {
+        this.states.keys[id] = name;
+      }
     });
 
-    this.states.set(name, state);
-
-    this.container.states.watchState(state);
     this.container.isDirty = true;
   }
 
@@ -140,8 +132,8 @@ export class StateMachine extends EventEmitter {
     if (typeof state!.parent === 'undefined') return;
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
-    const newBound = {...state!.bounds, ...state!.compoundPosition};
-    
+    const newBound = { ...state!.bounds, ...state!.compoundPosition };
+
     state!.parent?.children.delete(name);
     state!.parent = undefined;
     delete state!.data['parent'];
@@ -154,18 +146,27 @@ export class StateMachine extends EventEmitter {
   deleteState(name: string) {
     const state = this.states.get(name);
     if (typeof state === 'undefined') return;
-    
+
+    //Удаление ноды
     this.states.delete(name);
 
-    //Проходим массив связей, если же есть связи у удаляемой ноды, то они тоже удаляются
+    //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
       if (data.source.id === name || data.target.id === name) {
         this.transitions.delete(id);
       }
     });
-    
-    // TODO: удалять все дочерние ноды (или отсоединять?) при удалении родителя
-    
+
+    //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
+    this.states.forEach((state) => {
+      if (state.data.parent === name) {
+        //Удаляем данные о ребенке из родителя
+        delete state!.data['parent'];
+        //Удаляем данные о родителе у ребёнка
+        delete state!['parent'];
+      }
+    });
+
     this.container.isDirty = true;
   }
 
@@ -207,5 +208,20 @@ export class StateMachine extends EventEmitter {
       method,
     };
     this.createNewTransitionCond(source, target, color, condition, id);
+  }
+
+  //Снять выделение с других нод при клике на новую
+  removeSelection() {
+    this.states.forEach((state) => {
+      state.setIsSelected(false, '');
+      state.setIsSelectedMenu(false);
+    });
+
+    this.transitions.forEach((value) => {
+      value.condition.setIsSelected(false, '');
+      value.condition.setIsSelectedMenu(false);
+    });
+
+    this.container.isDirty = true;
   }
 }

@@ -49,36 +49,22 @@ export class Transitions {
     this.ghost.setSource(state);
   };
 
-  private removeSelection() {
-    this.container.machine.transitions.forEach((value) => {
-      value.condition.setIsSelected(false, '');
-      value.condition.setIsSelectedMenu(false);
-    });
-
-    this.container.machine.states.forEach((state) => {
-      state.setIsSelected(false, '');
-      state.setIsSelectedMenu(false);
-    });
-
-    this.container.isDirty = true;
-  }
-
-  handleConditionClick = ({ target, event }: { target: State; event: any }) => {
-    event.stopPropagation();
-    this.removeSelection();
-
-    target.setIsSelected(true, JSON.stringify(target));
+  handleConditionClick = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
+    this.container.machine.removeSelection();
+    e.target.setIsSelected(true, JSON.stringify(e.target));
   };
 
   handleConditionDoubleClick = ({ source, target }: { source: State; target: State }) => {
     this.createCallback?.(source, target);
   };
 
-  handleContextMenu = ({ target, event }: { target: State; event: any }) => {
-    event.stopPropagation();
-    this.removeSelection();
-
-    target.setIsSelectedMenu(true);
+  handleContextMenu = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
+    this.container.machine.removeSelection();
+    console.log(this.container.machine.transitions.keys());
+    this.container.machine.deleteState(e.target.id);
+    e.target.setIsSelectedMenu(true);
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -90,7 +76,7 @@ export class Transitions {
   };
 
   handleMouseUpOnState = ({ target }: { target: State }) => {
-    this.removeSelection();
+    this.container.machine.removeSelection();
     if (!this.ghost.source) return;
 
     this.createCallback?.(this.ghost.source, target);
@@ -99,7 +85,7 @@ export class Transitions {
   };
 
   handleMouseUp = () => {
-    this.removeSelection();
+    this.container.machine.removeSelection();
     if (!this.ghost.source) return;
 
     this.ghost.clear();

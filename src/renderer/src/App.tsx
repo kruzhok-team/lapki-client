@@ -33,6 +33,7 @@ export const App: React.FC = () => {
     const FileNew = '{"states": {},"initialState": {},"transitions": []}';
     setFileName('Новый файл.json');
     setFileContent(FileNew);
+    console.log(FileNew);
   };
 
   /** Callback функция выбора вкладки (машина состояний, код) */

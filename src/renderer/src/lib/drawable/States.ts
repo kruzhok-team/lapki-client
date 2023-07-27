@@ -35,7 +35,7 @@ export class States extends EventEmitter {
   }
 
   handleMouseUp = () => {
-    this.removeSelection();
+    this.container.machine.removeSelection();
   };
 
   handleStartNewTransition = (state: State) => {
@@ -46,18 +46,11 @@ export class States extends EventEmitter {
     this.emit('mouseUpOnState', e);
   };
 
-  private removeSelection() {
-    this.container.machine.states.forEach((state) => {
-      state.setIsSelected(false, '');
-    });
-    this.container.isDirty = true;
-  }
+  handleStateClick = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
 
-  handleStateClick = ({ target, event }: { target: State; event: any }) => {
-    event.stopPropagation();
-    this.removeSelection();
-
-    target.setIsSelected(true, JSON.stringify(target));
+    this.container.machine.removeSelection();
+    e.target.setIsSelected(true, JSON.stringify(e.target));
   };
 
   handleStateDoubleClick = (e: { target: State; event: any }) => {
@@ -68,7 +61,8 @@ export class States extends EventEmitter {
 
   handleContextMenu = (e: { target: State; event: any }) => {
     e.event.stopPropagation();
-    this.removeSelection();
+
+    this.container.machine.removeSelection();
 
     this.container.machine.deleteState(e.target.id);
 

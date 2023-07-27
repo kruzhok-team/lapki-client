@@ -1,4 +1,4 @@
-import { Elements } from '@renderer/types/diagram';
+import { Condition, Elements } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { State } from '../drawable/State';
@@ -51,15 +51,15 @@ export class StateMachine extends EventEmitter {
       const parent = this.states.get(items[id].parent ?? '');
       const state = new State({
         container: this.container,
-        id: id,
+        id,
         data: items[id],
         parent,
-        initial: items[id].name === initialState,
+        initial: id === initialState,
       });
 
-      state.parent?.children.set(items[id].name, state);
+      state.parent?.children.set(id, state);
       this.container.states.watchState(state);
-      this.states.set(items[id].name, state);
+      this.states.set(id, state);
     }
   }
 
@@ -161,23 +161,26 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteState(name: string) {
-    const state = this.states.get(name);
+  deleteState(id: string) {
+    const state = this.states.get(id);
+
+    console.log(id, state, this.states);
+
     if (typeof state === 'undefined') return;
 
     //Удаление ноды
-    this.states.delete(name);
+    this.states.delete(id);
 
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
-      if (data.source.id === name || data.target.id === name) {
+      if (data.source.id === id || data.target.id === id) {
         this.transitions.delete(id);
       }
     });
 
     //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
     this.states.forEach((state) => {
-      if (state.data.parent === name) {
+      if (state.data.parent === id) {
         this.unlinkState(state.id);
       }
     });

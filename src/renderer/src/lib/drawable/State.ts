@@ -43,9 +43,9 @@ export class State extends Draggable {
     };
   }
 
-  constructor({ container, data, parent, initial = false }: StateProps) {
+  constructor({ id, container, data, parent, initial = false }: StateProps) {
     super(container, { ...data.bounds, width: 230, height: 100 }, parent);
-    this.id = data.name;
+    this.id = id;
     this.data = data;
     this.container = container;
     if (initial) {
@@ -122,7 +122,7 @@ export class State extends Draggable {
     ctx.fill();
 
     ctx.fillStyle = stateStyle.titleColor;
-    ctx.fillText(this.id, x + paddingX, y + paddingY);
+    ctx.fillText(this.data.name, x + paddingX, y + paddingY);
 
     ctx.closePath();
   }

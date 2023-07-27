@@ -42,8 +42,7 @@ export class Container {
     this.initEvents();
     this.states.initEvents();
     this.transitions.initEvents();
-    this.machine.initStates(elements.states, elements.initialState);
-    this.machine.initTransitions(elements.transitions);
+    this.machine.loadData(elements);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -144,10 +143,6 @@ export class Container {
   };
 
   get graphData() {
-    return {
-      states: { ...Object.fromEntries(this.machine.states) },
-      initialState: 'on', // TODO: начальное состояние должно приходить из данных
-      transitions: [...this.machine.transitions.values()],
-    };
+    return this.machine.graphData();
   }
 }

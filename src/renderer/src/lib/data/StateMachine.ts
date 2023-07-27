@@ -1,4 +1,4 @@
-import { Condition, Elements } from '@renderer/types/diagram';
+import { Elements } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { State } from '../drawable/State';
@@ -22,16 +22,31 @@ import { stateStyle } from '../styles';
 export class StateMachine extends EventEmitter {
   container!: Container;
 
+  initialState: string = "";
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-  isDirty = true;
 
   constructor(container: Container) {
     super();
     this.container = container;
   }
 
+  loadData(elements: Elements) {
+    this.initStates(elements.states, elements.initialState);
+    this.initTransitions(elements.transitions);
+  }
+
+  graphData() { 
+    return {
+      states: { ...Object.fromEntries(this.states) },
+      initialState: this.initialState,
+      transitions: [...this.transitions.values()],
+    };
+  }
+
   initStates(items: Elements['states'], initialState: string) {
+    this.initialState = initialState;
+
     for (const id in items) {
       const parent = this.states.get(items[id].parent ?? '');
       const state = new State({

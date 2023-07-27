@@ -1,9 +1,9 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Modal } from './Modal';
-import { TextInput } from './TextInput';
-import { ColorInput } from './ColorInput';
+import { Modal } from './Modal/Modal';
+import { TextInput } from './Modal/TextInput';
+import { ColorInput } from './Modal/ColorInput';
 
 interface CreateTransitionModalProps {
   isOpen: boolean;
@@ -27,7 +27,11 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
     reset,
     handleSubmit: hookHandleSubmit,
     formState: { errors },
-  } = useForm<CreateTransitionModalFormValues>();
+  } = useForm<CreateTransitionModalFormValues>({
+    defaultValues: {
+      color: "#ffffff"
+    },
+  });
 
   const handleSubmit = hookHandleSubmit((data) => {
     onSubmit(data);
@@ -35,41 +39,42 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
 
   const onRequestClose = () => {
     onClose();
-    reset();
+    // TODO: пока кажется лишним затирать текстовые поля
+    reset({ color: "#ffffff"});
   };
 
   return (
     <Modal
       {...props}
       onRequestClose={onRequestClose}
-      title="Create Transition"
+      title="Редактор соединения"
       onSubmit={handleSubmit}
     >
       <TextInput
-        label="Component:"
-        placeholder="Component"
+        label="Компонент:"
+        placeholder="Компонент"
         {...register('component', {
-          required: 'This field is required',
-          minLength: { value: 4, message: 'Minimum 4 characters' },
+          required: 'Это поле обязательно к заполнению!',
+          minLength: { value: 4, message: 'Минимум 4 символа' },
         })}
         error={!!errors.component}
         errorMessage={errors.component?.message ?? ''}
       />
 
       <TextInput
-        label="Method:"
-        placeholder="Method"
+        label="Метод:"
+        placeholder="Метод"
         {...register('method', {
-          required: 'This field is required',
-          minLength: { value: 4, message: 'Minimum 4 characters' },
+          required: 'Это поле обязательно к заполнению!',
+          minLength: { value: 4, message: 'Минимум 4 символа' },
         })}
         error={!!errors.method}
         errorMessage={errors.method?.message ?? ''}
       />
 
       <ColorInput
-        label="Color:"
-        {...register('color', { required: 'This field is required' })}
+        label="Цвет связи:"
+        {...register('color', { required: 'Это поле обязательно к заполнению!' })}
         error={!!errors.color}
         errorMessage={errors.color?.message ?? ''}
       />

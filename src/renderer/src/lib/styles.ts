@@ -1,13 +1,15 @@
+/**
+ * Стиль нод редактора машин состояний
+ */
 export const stateStyle = {
-  width: 200,
+  width: 250,
   height: 100,
-
   bodyBg: '#404040',
   bodyBorderRadius: 6,
 
-  titleFontFamily: 'font-Fira',
+  titleFontFamily: 'Fira Sans',
   titleLineHeight: 0,
-  titleFontSize: 20,
+  titleFontSize: 15,
   titleBaseLine: 'hanging' as CanvasTextBaseline,
   titleColor: '#FFF',
   titleBg: '#525252',
@@ -19,6 +21,9 @@ export const stateStyle = {
   selectedBorderColor: '#FFF',
 };
 
+/**
+ * Стиль переходов в редакторе машин состояний
+ */
 export const transitionStyle = {
   width: 2,
   bgColor: '#FFF',

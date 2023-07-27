@@ -1,11 +1,15 @@
 import { Point } from '@renderer/types/graphics';
 import { State } from './State';
 
+/**
+ * Неоформленный («призрачный») переход. 
+ * Используется для визуализации создаваемого перехода.
+ */
 export class GhostTransition {
   source!: State | null;
   target!: Point | null;
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (!this.source || !this.target) return;
 
     ctx.beginPath();

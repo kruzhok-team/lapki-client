@@ -1,13 +1,13 @@
 import { useState } from 'react';
 /*Загрузка документации*/
-import { Docs } from '../file/Docs';
+import { Docs } from '../assets/file/Docs';
 import { twMerge } from 'tailwind-merge';
 
 export function Documentations() {
   const [activeTab, setActiveTab] = useState<number>(0);
 
   return (
-    <section className="flex h-full select-none flex-col bg-white p-4 font-Fira text-base">
+    <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-white p-4 font-Fira text-base">
       <div className="flex gap-1 py-2">
         <button
           className={twMerge(
@@ -58,10 +58,7 @@ export function Documentations() {
             2. PRACTICAL UML STATEHARTS in C/C++
           </a>
           <hr className="h-[1px] border-none bg-[#4391BF]" />
-          <p>
-            Материал тоже на английском, так что сорян, с кем не бывает, но зато есть шанс прокачать
-            свои навыки, хи-хи-хи.
-          </p>
+          <p>Материал тоже на английском, так что сорян, с кем не бывает, хи-хи-хи.</p>
         </div>
       </div>
     </section>

@@ -1,3 +1,6 @@
+/**
+ * Шаблон «Наблюдатель» для реализации событийной логики
+ */
 export class Observer<Subscriber extends Function = () => {}> {
   subscribers: Subscriber[] = [];
 

@@ -1,3 +1,6 @@
+/**
+ * Система обработки событий с подпиской и генерацией сигналов 
+ */
 export class EventEmitter<T extends {} = {}> {
   handlers = new Map<string, Set<Function>>();
 

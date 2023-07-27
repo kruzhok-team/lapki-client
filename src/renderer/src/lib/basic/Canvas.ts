@@ -1,5 +1,12 @@
 import { CanvasEditor } from '../CanvasEditor';
 
+/**
+ * Класс-прослойка для взаимодействия с JS Canvas API.
+ * Отвечает за правильное выставление размеров холста (отслеживает изменение размеров
+ * окна приложения и родительского блока для автоматических расчётов размеров холста). 
+ * Также данный класс предоставляет метод draw, с помощью которого можно рисовать 
+ * на самом холсте.
+ */
 export class Canvas {
   app!: CanvasEditor;
 
@@ -12,6 +19,7 @@ export class Canvas {
 
   // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
   onResize: (() => void) | undefined;
+  toDataURL: any;
 
   constructor(app: CanvasEditor, background: string) {
     this.app = app;

@@ -1,36 +1,48 @@
-import { getBoxToBoxArrow } from 'curved-arrows';
-
 import { State } from './State';
 import { Point, TransitionLine } from '@renderer/types/graphics';
 import { Condition as ConditionType } from '@renderer/types/diagram';
 import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
-import { stateStyle, transitionStyle } from '../styles';
+import { transitionStyle } from '../styles';
 import { Condition } from './Condition';
 import { Container } from '../basic/Container';
 
+/**
+ * Переход между состояниями.
+ * Выполняет отрисовку стрелки между тремя движущимися блоками:
+ * источник, назначение, а также {@link Condition|условие} перехода.
+ */
 export class Transition {
   container!: Container;
 
   source!: State;
   target!: State;
-  condition!: Condition;
   color!: string;
+  condition!: Condition;
 
   constructor(
     container: Container,
     source: State,
     target: State,
-    condition: ConditionType,
-    color: string
+    color: string,
+    condition: ConditionType
   ) {
     this.container = container;
 
     this.source = source;
     this.target = target;
 
-    this.condition = new Condition(this.container, condition);
-
     this.color = color;
+
+    this.condition = new Condition(this.container, condition);
+  }
+
+  toJSON() {
+    return {
+      source: this.source.id,
+      target: this.target.id,
+      color: this.color,
+      condition: this.condition,
+    };
   }
 
   private drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {

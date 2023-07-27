@@ -17,7 +17,7 @@ export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...prop
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-28 w-full max-w-3xl -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
+      className="absolute left-1/2 top-28 w-full max-w-2xl -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
       overlayClassName="bg-neutral-700 fixed inset-0 backdrop-blur"
       closeTimeoutMS={100}
     >
@@ -40,13 +40,13 @@ export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...prop
             className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
             onClick={props.onRequestClose}
           >
-            Cancel
+            Закрыть
           </button>
           <button
             type="submit"
             className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
           >
-            Save
+            Сохранить
           </button>
         </div>
       </form>

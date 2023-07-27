@@ -2,6 +2,7 @@ import React from 'react';
 
 interface DocsProps {}
 
+// @ts-ignore
 export const Docs: React.FC<DocsProps> = (props) => {
   return (
     <p>

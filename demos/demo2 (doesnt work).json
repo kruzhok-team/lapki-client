@@ -1,88 +1,38 @@
 {
   "states": {
     "on": {
-      "events": {
-        "onEnter": [
-          {
-            "component": "diod",
-            "method": "turnOn"
-          },
-          {
-            "component": "timer",
-            "method": "start",
-            "args": [1]
-          }
-        ]
-      },
-      "bounds": {
-        "height": 50,
-        "width": 100,
-        "x": 50,
-        "y": 50
-      }
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 96, "y": 264 }
     },
     "off": {
-      "events": {
-        "onEnter": [
-          {
-            "component": "diod",
-            "method": "turnOff"
-          },
-          {
-            "component": "timer",
-            "method": "start",
-            "args": [1]
-          }
-        ]
-      },
-      "bounds": {
-        "height": 50,
-        "width": 100,
-        "x": 200,
-        "y": 200
-      }
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOff" }] },
+      "bounds": { "x": 765, "y": 134 }
     },
-    "oops": {
-      "events": {},
-      "bounds": {
-        "height": 50,
-        "width": 100,
-        "x": 350,
-        "y": 300
-      }
-    }
+    "child state": { "parent": "on", "events": {}, "bounds": { "x": 0, "y": 50 } },
+    "child2 state": { "parent": "child state", "events": {}, "bounds": { "x": 0, "y": 0 } },
+    "child3 state": { "parent": "on", "events": {}, "bounds": { "x": 300, "y": 0 } }
   },
-
   "initialState": "on",
-
   "transitions": [
     {
       "source": "on",
       "target": "off",
+      "color": "#F29727",
       "condition": {
-        "component": "timer",
-        "method": "timeOut"
+        "position": { "x": 361, "y": 127 },
+        "component": "btn",
+        "method": "isJustPressed"
       }
     },
     {
-      "source": "on",
-      "target": "off",
+      "source": "off",
+      "target": "on",
+      "color": "#F24C3D",
       "condition": {
-        "component": "timer",
-        "method": "timeOut"
+        "position": { "x": 525, "y": 285 },
+        "component": "btn",
+        "method": "isJustPressed"
       }
     }
-  ],
-
-  "components": {
-    "diod": {
-      "type": "Led",
-      "parameters": {
-        "pin": 13
-      }
-    },
-    "timer": {
-      "type": "Timer"
-    }
-  }
+  ]
 }

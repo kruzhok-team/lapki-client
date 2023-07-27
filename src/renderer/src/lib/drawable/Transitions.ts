@@ -1,6 +1,3 @@
-import { nanoid } from 'nanoid';
-
-import { Elements } from '@renderer/types/diagram';
 import { Transition } from './Transition';
 import { State } from './State';
 import { GhostTransition } from './GhostTransition';
@@ -9,10 +6,14 @@ import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 type CreateStateCallback = (source: State, target: State) => void;
 
+/**
+ * Хранилище {@link Transition|переходов}.
+ * Отрисовывает и хранит переходы, предоставляет метод для
+ * создания новых переходов, в том числе отрисовывает
+ * {@link GhostTransition|«призрачный» переход}.
+ */
 export class Transitions {
   container!: Container;
-
-  items: Map<string, Transition> = new Map();
 
   ghost = new GhostTransition();
 
@@ -20,19 +21,6 @@ export class Transitions {
 
   constructor(container: Container) {
     this.container = container;
-  }
-
-  initItems(items: Elements['transitions']) {
-    for (const id in items) {
-      const { source, target, condition, color } = items[id];
-
-      const sourceState = this.container.states.items.get(source) as State;
-      const targetState = this.container.states.items.get(target) as State;
-
-      const transition = new Transition(this.container, sourceState, targetState, condition, color);
-
-      this.items.set(id, transition);
-    }
   }
 
   initEvents() {
@@ -44,7 +32,7 @@ export class Transitions {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.items.forEach((state) => {
+    this.container.machine.transitions.forEach((state) => {
       state.draw(ctx, canvas);
     });
 
@@ -61,57 +49,56 @@ export class Transitions {
     this.ghost.setSource(state);
   };
 
+  handleConditionClick = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
+    this.container.machine.removeSelection();
+    e.target.setIsSelected(true, JSON.stringify(e.target));
+  };
+
+  handleConditionDoubleClick = ({ source, target }: { source: State; target: State }) => {
+    this.createCallback?.(source, target);
+  };
+
+  handleContextMenu = (e: { target: State; event: any }) => {
+    e.event.stopPropagation();
+    this.container.machine.removeSelection();
+    console.log(this.container.machine.transitions.keys());
+    this.container.machine.deleteState(e.target.id);
+    e.target.setIsSelectedMenu(true);
+  };
+
   handleMouseMove = (e: MyMouseEvent) => {
     if (!this.ghost.source) return;
 
     this.ghost.setTarget({ x: e.x, y: e.y });
 
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   };
 
   handleMouseUpOnState = ({ target }: { target: State }) => {
+    this.container.machine.removeSelection();
     if (!this.ghost.source) return;
 
     this.createCallback?.(this.ghost.source, target);
 
     this.ghost.clear();
-
-    this.container.app.isDirty = true;
   };
 
   handleMouseUp = () => {
+    this.container.machine.removeSelection();
     if (!this.ghost.source) return;
 
     this.ghost.clear();
-
-    this.container.app.isDirty = true;
   };
 
-  createNewTransition(
-    source: State,
-    target: State,
-    component: string,
-    method: string,
-    color: string
-  ) {
-    // TODO Доделать парвильный condition
-    const transition = new Transition(
-      this.container,
-      source,
-      target,
-      {
-        component,
-        method,
-        position: {
-          x: 100,
-          y: 100,
-        },
-      },
-      color
-    );
+  watchTransition(transition: Transition) {
+    //Если клик был на блок transition, то он выполняет функции
+    transition.condition.on('click', this.handleConditionClick as any);
+    //Если клик был на блок transition, то он выполняет функции
+    transition.condition.on('dblclick', this.handleConditionDoubleClick as any);
+    //Если клик был за пределами блока transition, то он выполняет функции
+    transition.condition.on('mouseup', this.handleMouseUpOnState as any);
 
-    this.items.set(nanoid(), transition);
-
-    this.container.app.isDirty = true;
+    transition.condition.on('contextmenu', this.handleContextMenu as any);
   }
 }

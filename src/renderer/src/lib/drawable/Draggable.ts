@@ -1,15 +1,29 @@
-import { Rectangle } from '@renderer/types/graphics';
+import { Point, Rectangle } from '@renderer/types/graphics';
 import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Events } from './Events';
 
-// Сначала это задумывался как класс для разруливания квадратиков которые можно перемещать
-// потом он вырос в кашу из-за добавления вложенных стейтов
-// TODO Это явно нужно передать
+/**
+ * Перемещаемый элемент холста.
+ * Класс реализует перемещение фигуры с помощью мыши и рассчитывает
+ * размеры элемента с учётом вложенности.
+ * Внутри класс подписывается на события мыши и фильтрует относящиеся
+ * к своему объекту.
+ * При размещении на холсте класс учитывает панораму и зум холста.
+ *
+ * @remark
+ * Сначала это задумывался как класс для разруливания квадратиков,
+ * которые можно перемещать, но потом он вырос в кашу из-за добавления
+ * вложенных стейтов.
+ *
+ * TODO: Это явно нужно передать.
+ */
+
 export class Draggable extends EventEmitter {
   container!: Container;
-
+  statusevents!: Events;
   bounds!: Rectangle;
 
   parent?: Draggable;
@@ -18,6 +32,9 @@ export class Draggable extends EventEmitter {
   dragging = false;
 
   private isMouseDown = false;
+
+  private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
+  longPressTimeout = 2000;
 
   childrenPadding = 15;
 
@@ -31,10 +48,12 @@ export class Draggable extends EventEmitter {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
+    this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
+    this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
   }
 
   // Позиция рассчитанная с возможным родителем
-  private get compoundPosition() {
+  get compoundPosition() {
     let x = this.bounds.x;
     let y = this.bounds.y;
 
@@ -139,7 +158,7 @@ export class Draggable extends EventEmitter {
     const isUnderMouse = this.isUnderMouse(e);
 
     if (!isUnderMouse) return;
-
+    document.body.style.cursor = 'grabbing';
     // для того что-бы не хватать несколько элементов
     e.stopPropagation();
 
@@ -147,7 +166,16 @@ export class Draggable extends EventEmitter {
 
     this.isMouseDown = true;
 
+    clearTimeout(this.mouseDownTimerId);
+
+    this.mouseDownTimerId = setTimeout(() => {
+      this.emit('longpress', { event: e, target: this });
+    }, this.longPressTimeout);
+    // TODO: надо сбрасывать обратно при перемещении курсора!
+
     this.emit('mousedown', { event: e, target: this });
+
+    this.emit('click', { event: e, target: this });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -162,8 +190,7 @@ export class Draggable extends EventEmitter {
     }
 
     document.body.style.cursor = 'grabbing';
-
-    this.container.app.isDirty = true;
+    this.container.isDirty = true;
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
@@ -175,16 +202,32 @@ export class Draggable extends EventEmitter {
 
     if (!isUnderMouse) return;
 
+    clearTimeout(this.mouseDownTimerId);
+
     this.emit('mouseup', { event: e, target: this });
 
     if (this.isMouseDown) {
       this.isMouseDown = false;
-
       this.emit('click', { event: e, target: this });
     }
   };
 
-  isUnderMouse({ x, y }: MyMouseEvent) {
+  handleMouseDoubleClick = (e: MyMouseEvent) => {
+    const isUnderMouse = this.isUnderMouse(e);
+    if (!isUnderMouse) return;
+
+    // TODO: возможна коллизия с mouseup и click, нужно тестировать
+    this.emit('dblclick', { event: e, target: this });
+  };
+
+  handleContextMenuClick = (e: MyMouseEvent) => {
+    const isUnderMouse = this.isUnderMouse(e);
+    if (!isUnderMouse) return;
+
+    this.emit('contextmenu', { event: e, target: this });
+  };
+
+  isUnderMouse<T extends Point>({ x, y }: T) {
     return isPointInRectangle(this.drawBounds, { x, y });
   }
 }

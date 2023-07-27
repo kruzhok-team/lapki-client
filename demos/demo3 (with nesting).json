@@ -1,75 +1,42 @@
 {
   "states": {
     "on": {
-      "events": {
-        "onEnter": [
-          {
-            "component": "diod",
-            "method": "turnOn"
-          }
-        ]
-      },
-      "bounds": {
-        "x": 96,
-        "y": 264
-      }
+      "events": { "onExit": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 35, "y": 291 }
     },
-
     "off": {
       "events": {
         "onEnter": [
-          {
-            "component": "diod",
-            "method": "turnOff"
-          }
+          { "component": "diod", "method": "turnOff" },
+          { "component": "diod", "method": "turnOn" },
+          { "component": "diod", "method": "turnOff" },
+          { "component": "diod", "method": "turnOn" }
+        ],
+        "onExit": [
+          { "component": "diod", "method": "turnOff" },
+          { "component": "diod", "method": "turnOn" },
+          { "component": "diod", "method": "turnOff" },
+          { "component": "diod", "method": "turnOn" }
         ]
       },
-      "bounds": {
-        "x": 765,
-        "y": 134
-      }
+      "bounds": { "x": 187, "y": 141 }
     },
-
-    "child state": {
-      "parent": "on",
-      "events": {},
-      "bounds": {
-        "x": 0,
-        "y": 50
-      }
+    "NewTable": {
+      "events": { "onEnter": [{ "component": "diod", "method": "turnOn" }] },
+      "bounds": { "x": 188, "y": 21 }
     },
-
-    "child2 state": {
-      "parent": "child state",
-      "events": {},
-      "bounds": {
-        "x": 0,
-        "y": 0
-      }
-    },
-
-    "child3 state": {
-      "parent": "on",
-      "events": {},
-      "bounds": {
-        "x": 300,
-        "y": 0
-      }
-    }
+    "child state": { "parent": "on", "events": {}, "bounds": { "x": 0, "y": 50 } },
+    "child2 state": { "parent": "child state", "events": {}, "bounds": { "x": 0, "y": 0 } },
+    "child3 state": { "parent": "on", "events": {}, "bounds": { "x": 291, "y": 0 } }
   },
-
   "initialState": "on",
-
   "transitions": [
     {
       "source": "on",
       "target": "off",
       "color": "#F29727",
       "condition": {
-        "position": {
-          "x": 361,
-          "y": 127
-        },
+        "position": { "x": 457, "y": 173 },
         "component": "btn",
         "method": "isJustPressed"
       }
@@ -79,28 +46,16 @@
       "target": "on",
       "color": "#F24C3D",
       "condition": {
-        "position": {
-          "x": 525,
-          "y": 285
-        },
+        "position": { "x": 16, "y": 175 },
         "component": "btn",
         "method": "isJustPressed"
       }
-    }
-  ],
-
-  "components": {
-    "btn": {
-      "type": "Button",
-      "parameters": {
-        "pin": 10
-      }
     },
-    "diod": {
-      "type": "Led",
-      "parameters": {
-        "pin": 13
-      }
+    {
+      "source": "NewTable",
+      "target": "off",
+      "color": "#1100ff",
+      "condition": { "position": { "x": 12, "y": 77 }, "component": "btn", "method": "NewMethod" }
     }
-  }
+  ]
 }

@@ -5,6 +5,9 @@ import { Render } from './common/Render';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
 
+/**
+ * Редактор машин состояний.
+ */
 export class CanvasEditor {
   root!: HTMLElement;
   canvas!: Canvas;
@@ -14,41 +17,32 @@ export class CanvasEditor {
 
   container!: Container;
 
-  isDirty = true;
-
   constructor(container: HTMLDivElement, elements: Elements) {
     this.root = container;
     this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);
     this.keyboard = new Keyboard();
     this.render = new Render();
-
     this.root.append(this.canvas.element);
     this.canvas.resize();
     this.mouse.setOffset();
 
     this.container = new Container(this, elements);
-
     this.canvas.onResize = () => {
       this.mouse.setOffset();
-      this.isDirty = true;
+      this.container.isDirty = true;
     };
 
     this.render.subscribe(() => {
-      if (!this.isDirty) return;
-
+      if (!this.container.isDirty) return;
       this.mouse.tick();
-
       this.canvas.clear();
-
       this.canvas.draw((ctx, canvas) => {
         this.container.draw(ctx, canvas);
       });
-
-      this.isDirty = false;
+      this.container.isDirty = false;
     });
   }
-
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();

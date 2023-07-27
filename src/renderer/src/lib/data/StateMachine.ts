@@ -163,10 +163,7 @@ export class StateMachine extends EventEmitter {
     //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
     this.states.forEach((state) => {
       if (state.data.parent === name) {
-        //Удаляем данные о ребенке из родителя
-        delete state!.data['parent'];
-        //Удаляем данные о родителе у ребёнка
-        delete state!['parent'];
+        this.unlinkState(state.id);
       }
     });
 

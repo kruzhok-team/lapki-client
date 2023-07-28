@@ -14,6 +14,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [state, setState] = useState<{ state: State }>();
 
+  const [stateContextMenu, setStateContextMenu] = useState<{ state: State }>();
+  const [isContextMenu, setIsContextMenu] = useState(false);
+  const openContextMenu = () => setIsContextMenu(true);
+
   const [isStateModalOpen, setIsStateModalOpen] = useState(false);
   const openStateModal = () => setIsStateModalOpen(true);
   const closeStateModal = () => setIsStateModalOpen(false);
@@ -34,12 +38,20 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       i = i + 1;
       editor?.container.machine.createNewState('Состояние ' + i, position);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      console.log(position);
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateCreate((state) => {
       setState({ state });
       openStateModal();
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+    });
+
+    //Здесь мы открываем модальное окно редактирования ноды
+    editor.container.states.onStateContextMenu((state) => {
+      setStateContextMenu({ state });
+      openContextMenu();
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
@@ -83,12 +95,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu />
+        <StateContextMenu isOpen={isContextMenu} isData={state} />
       </div>
 
       <CreateStateModal
         isOpen={isStateModalOpen}
-        onOpen={state}
+        isData={state}
         onClose={closeStateModal}
         onSubmit={handleCreateState}
       />

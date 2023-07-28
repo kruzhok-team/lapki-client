@@ -6,7 +6,7 @@ import { TextInput } from './Modal/TextInput';
 
 interface CreateStateModalProps {
   isOpen: boolean;
-  onOpen: { state } | undefined;
+  isData: { state } | undefined;
   onClose: () => void;
   onSubmit: (data: CreateStateModalFormValues) => void;
 }
@@ -22,7 +22,7 @@ export interface CreateStateModalFormValues {
 export const CreateStateModal: React.FC<CreateStateModalProps> = ({
   onSubmit,
   onClose,
-  onOpen,
+  isData,
   ...props
 }) => {
   const {
@@ -40,11 +40,12 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
     onClose();
     reset();
   };
+  console.log(isData?.state.target);
   return (
     <Modal
       {...props}
       onRequestClose={onRequestClose}
-      title={'Редактирование состояния: ' + JSON.stringify(onOpen?.state.target.id)}
+      title={'Редактирование состояния: ' + JSON.stringify(isData?.state.target.name)}
       onSubmit={handleSubmit}
     >
       <TextInput

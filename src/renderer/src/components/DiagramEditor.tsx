@@ -14,10 +14,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [state, setState] = useState<{ state: State }>();
 
-  const [stateContextMenu, setStateContextMenu] = useState<{ state: State }>();
-  const [isContextMenu, setIsContextMenu] = useState(false);
-  const openContextMenu = () => setIsContextMenu(true);
-
   const [isStateModalOpen, setIsStateModalOpen] = useState(false);
   const openStateModal = () => setIsStateModalOpen(true);
   const closeStateModal = () => setIsStateModalOpen(false);
@@ -26,6 +22,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const [isTransitionModalOpen, setIsTransitionModalOpen] = useState(false);
   const openTransitionModal = () => setIsTransitionModalOpen(true);
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
+
+  const [isStateContextMenuOpen, setIsStateContextMenuOpen] = useState(false);
+  const [stateContextMenuX, setStateContextMenuX] = useState(0);
+  const [stateContextMenuY, setStateContextMenuY] = useState(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -48,11 +48,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
-    //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.states.onStateContextMenu((state) => {
-      setStateContextMenu({ state });
-      openContextMenu();
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+    editor.container.states.on('contextMenu', (e: any) => {
+      setStateContextMenuX(e.event.nativeEvent.clientX);
+      setStateContextMenuY(e.event.nativeEvent.clientY);
+      setIsStateContextMenuOpen(true);
     });
 
     //Здесь мы открываем модальное окно редактирования связи
@@ -95,7 +94,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu isOpen={isContextMenu} isData={state} />
+        <StateContextMenu
+          isOpen={isStateContextMenuOpen}
+          x={stateContextMenuX}
+          y={stateContextMenuY}
+        />
       </div>
 
       <CreateStateModal

@@ -3,7 +3,6 @@ import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Condition } from './Condition';
 
 type CreateStateCallback = (source: State, target: State) => void;
 

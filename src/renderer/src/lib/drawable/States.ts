@@ -67,7 +67,9 @@ export class States extends EventEmitter {
   handleContextMenu = (e: { target: State; event: any }) => {
     e.event.stopPropagation();
 
-    this.ContextMenuCallback?.(e);
+    this.emit('contextMenu', e);
+
+    // this.container.machine.deleteState(e.target.id);
   };
 
   handleLongPress = (e: { target: State }) => {

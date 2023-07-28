@@ -1,46 +1,67 @@
-import React, { useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { usePopper } from 'react-popper';
-import { DiagramEditor } from './DiagramEditor';
-
-interface StateContextMenuProps {}
 
 interface StateContextMenuProps {
+  x: number;
+  y: number;
   isOpen: boolean;
-  isData: { state } | undefined;
+}
+
+function generateGetBoundingClientRect(x = 0, y = 0) {
+  return () => ({
+    width: 0,
+    height: 0,
+    top: y,
+    right: x,
+    bottom: y,
+    left: x,
+  });
 }
 
 const virtualReference = {
-  getBoundingClientRect(x = 0, y = 0) {
-    return {
-      width: 0,
-      height: 0,
-      x: x,
-      y: y,
-    } as DOMRect;
-  },
-};
+  getBoundingClientRect: generateGetBoundingClientRect(),
+} as any;
 
-export const StateContextMenu: React.FC<StateContextMenuProps> = () => {
-  const [popperElement, setPopperElement] = React.useState(null);
-  const { styles, attributes } = usePopper(virtualReference, popperElement);
+export const StateContextMenu: React.FC<StateContextMenuProps> = ({ x, y, isOpen }) => {
+  const popperElementRef = useRef<HTMLDivElement>(null);
 
-  document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
-    console.log(x, y);
-    virtualReference.getBoundingClientRect(x, y);
+  const { styles, attributes, update } = usePopper(virtualReference, popperElementRef.current, {
+    placement: 'right-start',
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [5, 5],
+        },
+      },
+    ],
   });
+
+  useLayoutEffect(() => {
+    virtualReference.getBoundingClientRect = generateGetBoundingClientRect(x, y);
+
+    update?.();
+  }, [x, y]);
+
+  // useEffect(() => {
+  //   const fn = () => {
+
+  //   }
+
+  //   document.body.addEventListener()
+  // });
+
   return (
     <div
-      className="z-50 flex flex-col rounded-lg bg-neutral-800 p-4 text-neutral-100 outline-none"
-      ref={popperElement}
+      className="bg z-50 w-48 rounded-lg bg-[#404040] p-2 text-neutral-100 outline-none"
+      ref={popperElementRef}
       style={styles.popper}
       {...attributes.popper}
+      {...(isOpen && { 'data-show': true })}
     >
-      Context menu
-      <div>
-        Начальное состояние:
-        <input type="checkbox"></input>
-      </div>
-      <button type="button">Удалить</button>
+      <button className="w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white">
+        Delete
+      </button>
     </div>
   );
 };

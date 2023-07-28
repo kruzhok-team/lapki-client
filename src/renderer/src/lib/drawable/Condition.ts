@@ -1,7 +1,7 @@
 import { stateStyle, transitionStyle } from '../styles';
-import { Condition as ConditionType } from '@renderer/types/diagram';
 import { Draggable } from './Draggable';
 import { Container } from '../basic/Container';
+import { Transition } from './Transition';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
@@ -9,20 +9,28 @@ import { Container } from '../basic/Container';
  * обработку событий мыши.
  */
 export class Condition extends Draggable {
-  data!: ConditionType;
+  transition!: Transition;
+  // contextmenu!: ContextMenu;
+
   //Сюда закладываются получаемые данные при клике на связь и выводятся над ней
   isCondition;
   //Проверка нажатия на левую кнопку мыши для выделения связи
   isSelected = false;
 
-  constructor(container: Container, data: ConditionType) {
+  constructor(container: Container, transition: Transition) {
     super(container, {
-      x: data.position.x,
-      y: data.position.y,
+      x: transition.data.position.x,
+      y: transition.data.position.y,
       width: 150,
       height: 70,
     });
-    this.data = data;
+
+    this.transition = transition;
+    // this.contextmenu = new ContextMenu(container, this);
+  }
+
+  toJSON() {
+    return this.transition.data;
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
@@ -42,9 +50,10 @@ export class Condition extends Draggable {
 
     ctx.fillStyle = transitionStyle.bgColor;
 
+    const trigger = this.transition.data.trigger;
     ctx.beginPath();
-    ctx.fillText(this.data.component, x + p, y + p);
-    ctx.fillText(this.data.method, x + p, y + fontSize + p);
+    ctx.fillText(trigger.component, x + p, y + p);
+    ctx.fillText(trigger.method, x + p, y + fontSize + p);
     ctx.closePath();
 
     if (this.isSelected) {
@@ -54,7 +63,9 @@ export class Condition extends Draggable {
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-
+    
+    // NOTE: Для каждого нового объекта рисования требуется указывать их начало и конец,
+    //       а перед ними прописывать стили!
     ctx.beginPath();
     ctx.strokeStyle = transitionStyle.bgColor;
     ctx.roundRect(x, y, width, height + childrenHeight, transitionStyle.startSize);
@@ -89,17 +100,6 @@ export class Condition extends Draggable {
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
-  }
-
-  toJSON() {
-    return {
-      position: {
-        x: this.bounds.x,
-        y: this.bounds.y,
-      },
-      component: this.data.component,
-      method: this.data.method,
-    };
   }
 
   setIsSelected(value: boolean, target: string) {

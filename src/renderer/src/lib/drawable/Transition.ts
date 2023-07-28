@@ -1,6 +1,6 @@
 import { State } from './State';
 import { Point, TransitionLine } from '@renderer/types/graphics';
-import { Condition as ConditionType } from '@renderer/types/diagram';
+import { Transition as TransitionType } from '@renderer/types/diagram';
 import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
 import { transitionStyle } from '../styles';
 import { Condition } from './Condition';
@@ -13,34 +13,29 @@ import { Container } from '../basic/Container';
  */
 export class Transition {
   container!: Container;
-  condition!: Condition;
+
+  data!: TransitionType;
   source!: State;
   target!: State;
-  color!: string;
+  condition!: Condition;
 
   constructor(
     container: Container,
     source: State,
     target: State,
-    color: string,
-    condition: ConditionType
+    data: TransitionType,
   ) {
     this.container = container;
+    this.data = data;
+
     this.source = source;
     this.target = target;
 
-    this.color = color;
-
-    this.condition = new Condition(container, condition);
+    this.condition = new Condition(this.container, this);
   }
 
   toJSON() {
-    return {
-      source: this.source.data.name,
-      target: this.target.data.name,
-      color: this.color,
-      condition: this.condition,
-    };
+    return this.data;
   }
 
   private drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {
@@ -106,8 +101,8 @@ export class Transition {
     );
 
     ctx.lineWidth = transitionStyle.width;
-    ctx.strokeStyle = this.color;
-    ctx.fillStyle = this.color;
+    ctx.strokeStyle = this.data.color;
+    ctx.fillStyle = this.data.color;
 
     this.drawLine(ctx, sourceLine);
     this.drawLine(ctx, targetLine);

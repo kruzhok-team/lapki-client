@@ -1,4 +1,5 @@
-import { Condition, Elements } from '@renderer/types/diagram';
+import { Elements } from '@renderer/types/diagram';
+import { Transition as TransitionType } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { State } from '../drawable/State';
@@ -25,7 +26,7 @@ export class StateMachine extends EventEmitter {
   initialState: string = "";
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-
+  
   constructor(container: Container) {
     super();
     this.container = container;
@@ -65,12 +66,12 @@ export class StateMachine extends EventEmitter {
 
   initTransitions(items: Elements['transitions']) {
     for (const id in items) {
-      const { source, target, condition, color } = items[id];
+      const data = items[id];
+      
+      const sourceState = this.states.get(data.source) as State;
+      const targetState = this.states.get(data.target) as State;
 
-      const sourceState = this.states.get(source) as State;
-      const targetState = this.states.get(target) as State;
-
-      const transition = new Transition(this.container, sourceState, targetState, color, condition);
+      const transition = new Transition(this.container, sourceState, targetState, data);
 
       this.transitions.set(id, transition);
 
@@ -107,7 +108,7 @@ export class StateMachine extends EventEmitter {
       data: {
         name: name,
         bounds: { x, y, width, height },
-        events: {},
+        events: [],
       },
     });
 
@@ -206,14 +207,13 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createNewTransitionCond(
+  createNewTransitionFromData(
     source: State,
     target: State,
-    color: string,
-    condition: Condition,
+    transitionData: TransitionType,
     id?: string
   ) {
-    const transition = new Transition(this.container, source, target, color, condition);
+    const transition = new Transition(this.container, source, target, transitionData);
 
     const newId = typeof id !== 'undefined' ? id! : nanoid();
     this.transitions.set(newId, transition);
@@ -228,22 +228,27 @@ export class StateMachine extends EventEmitter {
     color: string,
     component: string,
     method: string,
-    position?: Point,
+    pos?: Point,
     id?: string
   ) {
     // TODO Доделать парвильный condition
-    const condition = {
-      position:
-        typeof position !== 'undefined'
-          ? position!
-          : {
-              x: 100,
-              y: 100,
-            },
-      component,
-      method,
+    const position = typeof pos !== 'undefined'
+      ? pos!
+      : {
+          x: 100,
+          y: 100,
+        };
+    const transitionData = {
+      source: source.id,
+      target: target.id,
+      color,
+      position,
+      trigger: {
+        component,
+        method,
+      }
     };
-    this.createNewTransitionCond(source, target, color, condition, id);
+    this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
   //Снять выделение с других нод при клике на новую

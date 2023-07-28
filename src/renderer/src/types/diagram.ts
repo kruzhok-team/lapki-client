@@ -1,31 +1,53 @@
 import { Point, Rectangle } from './graphics';
 
-export type Event = {
-  [id: string]: {
-    component: string;
-    method: string;
-  };
-};
-
-export type Condition = {
+export type Action = {
   component: string;
   method: string;
-  position: Point;
+  args?: any[];
+};
+
+export type Event = {
+  component: string;
+  method: string;
+  args?: any[];
+}
+
+export type Variable = {
+  component: string;
+  method: string;
+  args?: any[];
+}
+
+export type ActingEvent = Event & {
+  actions: Action[];
+}
+
+export type EventData = {
+  trigger: Event;
+  do: Action[];
 };
 
 export type State = {
   parent?: string;
   name: string;
   bounds: Rectangle;
-  events: Event;
+  events: EventData[];
+};
+
+export type Condition = {
+  type: string;
+  value: Variable | Condition[] | Condition | number | string;
 };
 
 export type Transition = {
   //id: string;
   source: string;
   target: string;
-  condition: Condition;
   color: string;
+  position: Point;
+  trigger: Event;
+  conditions?: Condition;
+  do?: Action[];
 };
 
 export type Component = {
@@ -35,7 +57,7 @@ export type Component = {
 
 export type Elements = {
   states: { [id: string]: State };
-  transitions: { [id: string]: Transition };
+  transitions: Transition[];
   components: { [id: string]: Component };
 
   initialState: string;

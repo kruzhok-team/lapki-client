@@ -1,7 +1,6 @@
 import { Container } from '../basic/Container';
 import { stateStyle } from '../styles';
-import { Event as EventType } from '@renderer/types/diagram';
-import { preloadImages } from '../utils';
+import { EventData } from '@renderer/types/diagram';
 import { Draggable } from './Draggable';
 import { picto } from './Picto';
 
@@ -14,12 +13,12 @@ import { picto } from './Picto';
 export class Events {
   container!: Container;
   draggable!: Draggable;
-  events!: EventType;
+  data!: EventData[];
 
-  constructor(container: Container, draggable: Draggable, events: EventType) {
+  constructor(container: Container, draggable: Draggable, data: EventData[]) {
     this.container = container;
     this.draggable = draggable;
-    this.events = events;
+    this.data = data;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -34,19 +33,22 @@ export class Events {
     const px = 15 / this.container.scale;
     const fontSize = stateStyle.titleFontSize / this.container.scale;
     const titleHeight = fontSize + paddingY * 2;
-
+    
     ctx.beginPath();
 
-    Object.entries(this.events).forEach(([eventName, events], i) => {
+    Object.entries(this.data).forEach(([_eventName, events], i) => {
       const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
-
-      if (eventName === 'onEnter') {
+      
+      if (events.trigger.method === 'onEnter') {
         picto.drawOnEnter(ctx, x + px, resultY);
       } 
-      if (eventName === 'onExit') {
+      if (events.trigger.method === 'onExit') {
         picto.drawOnExit(ctx, x + px, resultY);
       }
-      if (events[0].method === 'turnOn') {
+      
+      if (events.do.length == 0) return;
+
+      if (events.do[0].method === 'turnOn') {
         picto.drawDiodOn(ctx, x + 8 * px, resultY);
       } else {
         picto.drawDiodOff(ctx, x + 8 * px, resultY);
@@ -57,9 +59,6 @@ export class Events {
   }
 
   toJSON() {
-    return {
-      component: this.events.component,
-      method: this.events.method,
-    };
+    return this.data;
   }
 }

@@ -1,31 +1,67 @@
-import React, { useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { usePopper } from 'react-popper';
 
-interface StateContextMenuProps {}
+interface StateContextMenuProps {
+  x: number;
+  y: number;
+  isOpen: boolean;
+}
+
+function generateGetBoundingClientRect(x = 0, y = 0) {
+  return () => ({
+    width: 0,
+    height: 0,
+    top: y,
+    right: x,
+    bottom: y,
+    left: x,
+  });
+}
 
 const virtualReference = {
-  getBoundingClientRect() {
-    return {
-      top: 10,
-      left: 10,
-      bottom: 20,
-      right: 100,
-      width: 90,
-      height: 10,
-    };
-  },
+  getBoundingClientRect: generateGetBoundingClientRect(),
 } as any;
 
-export const StateContextMenu: React.FC<StateContextMenuProps> = () => {
+export const StateContextMenu: React.FC<StateContextMenuProps> = ({ x, y, isOpen }) => {
   const popperElementRef = useRef<HTMLDivElement>(null);
 
-  const { styles, attributes } = usePopper(virtualReference, popperElementRef.current);
+  const { styles, attributes, update } = usePopper(virtualReference, popperElementRef.current, {
+    placement: 'right-start',
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [5, 5],
+        },
+      },
+    ],
+  });
 
-  console.log(attributes);
+  useLayoutEffect(() => {
+    virtualReference.getBoundingClientRect = generateGetBoundingClientRect(x, y);
+
+    update?.();
+  }, [x, y]);
+
+  // useEffect(() => {
+  //   const fn = () => {
+
+  //   }
+
+  //   document.body.addEventListener()
+  // });
 
   return (
-    <div className="z-50" ref={popperElementRef} style={styles.popper} {...attributes.popper}>
-      Context menu
+    <div
+      className="z-50 w-48 rounded-sm bg-neutral-100 py-2"
+      ref={popperElementRef}
+      style={styles.popper}
+      {...attributes.popper}
+      {...(isOpen && { 'data-show': true })}
+    >
+      <button className="w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white">
+        Delete
+      </button>
     </div>
   );
 };

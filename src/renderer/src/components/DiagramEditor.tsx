@@ -23,6 +23,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const openTransitionModal = () => setIsTransitionModalOpen(true);
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
+  const [isStateContextMenuOpen, setIsStateContextMenuOpen] = useState(false);
+  const [stateContextMenuX, setStateContextMenuX] = useState(0);
+  const [stateContextMenuY, setStateContextMenuY] = useState(0);
+
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, elements);
@@ -41,6 +45,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       setState({ state });
       openStateModal();
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+    });
+
+    editor.container.states.on('contextMenu', (e: any) => {
+      setStateContextMenuX(e.event.nativeEvent.clientX);
+      setStateContextMenuY(e.event.nativeEvent.clientY);
+      setIsStateContextMenuOpen(true);
     });
 
     //Здесь мы открываем модальное окно редактирования связи
@@ -83,7 +93,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu />
+        <StateContextMenu
+          isOpen={isStateContextMenuOpen}
+          x={stateContextMenuX}
+          y={stateContextMenuY}
+        />
       </div>
 
       <CreateStateModal

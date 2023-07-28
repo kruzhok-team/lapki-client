@@ -63,7 +63,9 @@ export class States extends EventEmitter {
     e.event.stopPropagation();
     this.container.machine.removeSelection();
 
-    this.container.machine.deleteState(e.target.id);
+    this.emit('contextMenu', e);
+
+    // this.container.machine.deleteState(e.target.id);
   };
 
   handleLongPress = (e: { target: State }) => {

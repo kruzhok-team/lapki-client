@@ -6,6 +6,7 @@ import { clamp } from '../utils';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { Point } from '@renderer/types/graphics';
 import { StateMachine } from '../data/StateMachine';
+import { picto } from '../drawable/Picto';
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
@@ -41,8 +42,7 @@ export class Container {
     this.initEvents();
     this.states.initEvents();
     this.transitions.initEvents();
-    this.machine.initStates(elements.states, elements.initialState);
-    this.machine.initTransitions(elements.transitions);
+    this.machine.loadData(elements);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -137,15 +137,12 @@ export class Container {
     this.offset.y -= e.y * this.scale - e.y * newScale;
 
     this.scale = newScale;
+    picto.scale = newScale;
 
     this.isDirty = true;
   };
 
   get graphData() {
-    return {
-      states: { ...Object.fromEntries(this.machine.states) },
-      initialState: 'on', // TODO: начальное состояние должно приходить из данных
-      transitions: [...this.machine.transitions.values()],
-    };
+    return this.machine.graphData();
   }
 }

@@ -3,7 +3,7 @@ import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-import { customRandom, nanoid } from 'nanoid';
+import { customAlphabet, nanoid } from 'nanoid';
 import { Point } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
 
@@ -22,16 +22,31 @@ import { stateStyle } from '../styles';
 export class StateMachine extends EventEmitter {
   container!: Container;
 
+  initialState: string = "";
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-  isDirty = true;
 
   constructor(container: Container) {
     super();
     this.container = container;
   }
 
+  loadData(elements: Elements) {
+    this.initStates(elements.states, elements.initialState);
+    this.initTransitions(elements.transitions);
+  }
+
+  graphData() { 
+    return {
+      states: { ...Object.fromEntries(this.states) },
+      initialState: this.initialState,
+      transitions: [...this.transitions.values()],
+    };
+  }
+
   initStates(items: Elements['states'], initialState: string) {
+    this.initialState = initialState;
+
     for (const id in items) {
       const parent = this.states.get(items[id].parent ?? '');
       const state = new State({
@@ -81,18 +96,25 @@ export class StateMachine extends EventEmitter {
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
-    const nanoid = customRandom('abcdef', 5, (size) => {
-      return new Uint8Array(size).map(() => 256);
-    });
+    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+    var newId = nanoid();
+    while (this.states.has(newId)) {
+      newId = nanoid();
+    }
     const state = new State({
       container: this.container,
-      id: nanoid(),
+      id: newId,
       data: {
         name: name,
         bounds: { x, y, width, height },
         events: {},
       },
     });
+
+    // если у нас не было начального состояния, им станет новое
+    if (this.initialState === "") {
+      this.initialState = state.id;
+    }
 
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | undefined = undefined;
@@ -123,7 +145,7 @@ export class StateMachine extends EventEmitter {
       possibleParent?.children.set(state.id, state);
     }
 
-    this.states.set(name, state);
+    this.states.set(state.id, state);
 
     this.container.states.watchState(state);
     this.container.isDirty = true;
@@ -166,10 +188,7 @@ export class StateMachine extends EventEmitter {
     //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
     this.states.forEach((state) => {
       if (state.data.parent === id) {
-        //Удаляем данные о ребенке из родителя
-        delete state!.data['parent'];
-        //Удаляем данные о родителе у ребёнка
-        delete state!['parent'];
+        this.unlinkState(state.id);
       }
     });
 

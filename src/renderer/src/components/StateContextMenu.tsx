@@ -12,8 +12,8 @@ interface StateContextMenuProps {
 const virtualReference = {
   getBoundingClientRect(x = 0, y = 0) {
     return {
-      width: 100,
-      height: 200,
+      width: 0,
+      height: 0,
       x: x,
       y: y,
     } as DOMRect;
@@ -23,7 +23,6 @@ const virtualReference = {
 export const StateContextMenu: React.FC<StateContextMenuProps> = () => {
   const [popperElement, setPopperElement] = React.useState(null);
   const { styles, attributes } = usePopper(virtualReference, popperElement);
-  const Inc = { styles, attributes };
 
   document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
     console.log(x, y);

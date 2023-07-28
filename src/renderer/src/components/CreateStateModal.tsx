@@ -45,7 +45,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
     <Modal
       {...props}
       onRequestClose={onRequestClose}
-      title={'Редактирование состояния: ' + JSON.stringify(isData?.state.target.name)}
+      title={'Редактирование состояния: ' + JSON.stringify(isData?.state.id)}
       onSubmit={handleSubmit}
     >
       <TextInput

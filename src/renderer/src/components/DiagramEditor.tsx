@@ -23,16 +23,15 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const openTransitionModal = () => setIsTransitionModalOpen(true);
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
-  const [isStateContextMenuOpen, setIsStateContextMenuOpen] = useState(false);
-  const [stateContextMenuX, setStateContextMenuX] = useState(0);
-  const [stateContextMenuY, setStateContextMenuY] = useState(0);
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  const [ContextMenuX, setContextMenuX] = useState(0);
+  const [ContextMenuY, setContextMenuY] = useState(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, elements);
 
     let i: number = 0;
-
     //Добавляем пустую ноду в редактор
     editor?.container?.onStateDrop((position) => {
       i = i + 1;
@@ -49,9 +48,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     });
 
     editor.container.states.on('contextMenu', (e: any) => {
-      setStateContextMenuX(e.event.nativeEvent.clientX);
-      setStateContextMenuY(e.event.nativeEvent.clientY);
-      setIsStateContextMenuOpen(true);
+      setContextMenuX(e.event.nativeEvent.clientX);
+      setContextMenuY(e.event.nativeEvent.clientY);
+      setIsContextMenuOpen(true);
     });
 
     //Здесь мы открываем модальное окно редактирования связи
@@ -59,6 +58,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       setTransition({ source, target });
       openTransitionModal();
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+    });
+
+    editor.container.transitions.on('contextMenu', (e: any) => {
+      setContextMenuX(e.event.nativeEvent.clientX);
+      setContextMenuY(e.event.nativeEvent.clientY);
+      setIsContextMenuOpen(true);
     });
 
     //Таймер для сохранения изменений сделанных в редакторе
@@ -95,9 +100,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
         <StateContextMenu
-          isOpen={isStateContextMenuOpen}
-          x={stateContextMenuX}
-          y={stateContextMenuY}
+          isOpen={isContextMenuOpen}
+          setIsOpen={setIsContextMenuOpen}
+          x={ContextMenuX}
         />
       </div>
 

@@ -19,7 +19,6 @@ export class States extends EventEmitter {
   }
 
   createCallback?: CreateStateCallback;
-  ContextMenuCallback?: CreateStateCallback;
 
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
@@ -27,10 +26,6 @@ export class States extends EventEmitter {
 
   onStateCreate = (callback: CreateStateCallback) => {
     this.createCallback = callback;
-  };
-
-  onStateContextMenu = (callbackContext: CreateStateCallback) => {
-    this.ContextMenuCallback = callbackContext;
   };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

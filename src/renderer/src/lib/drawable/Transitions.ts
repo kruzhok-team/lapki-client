@@ -3,7 +3,6 @@ import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { EventEmitter } from '../common/EventEmitter';
 
 type CreateStateCallback = (source: State, target: State) => void;
 
@@ -13,7 +12,7 @@ type CreateStateCallback = (source: State, target: State) => void;
  * создания новых переходов, в том числе отрисовывает
  * {@link GhostTransition|«призрачный» переход}.
  */
-export class Transitions extends EventEmitter {
+export class Transitions {
   container!: Container;
 
   ghost = new GhostTransition();
@@ -21,7 +20,6 @@ export class Transitions extends EventEmitter {
   createCallback?: CreateStateCallback;
 
   constructor(container: Container) {
-    super();
     this.container = container;
   }
 
@@ -65,9 +63,9 @@ export class Transitions extends EventEmitter {
   handleContextMenu = (e: { target; event }) => {
     e.event.stopPropagation();
 
-    this.emit('contextMenu', e);
+    //this.emit('contextMenu', e);
 
-    //this.container.machine.deleteTransition(e.target);
+    this.container.machine.deleteTransition(e.target);
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

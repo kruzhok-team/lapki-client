@@ -23,10 +23,10 @@ import { stateStyle } from '../styles';
 export class StateMachine extends EventEmitter {
   container!: Container;
 
-  initialState: string = "";
+  initialState: string = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-  
+
   constructor(container: Container) {
     super();
     this.container = container;
@@ -37,7 +37,7 @@ export class StateMachine extends EventEmitter {
     this.initTransitions(elements.transitions);
   }
 
-  graphData() { 
+  graphData() {
     return {
       states: { ...Object.fromEntries(this.states) },
       initialState: this.initialState,
@@ -67,7 +67,7 @@ export class StateMachine extends EventEmitter {
   initTransitions(items: Elements['transitions']) {
     for (const id in items) {
       const data = items[id];
-      
+
       const sourceState = this.states.get(data.source) as State;
       const targetState = this.states.get(data.target) as State;
 
@@ -113,7 +113,7 @@ export class StateMachine extends EventEmitter {
     });
 
     // если у нас не было начального состояния, им станет новое
-    if (this.initialState === "") {
+    if (this.initialState === '') {
       this.initialState = state.id;
     }
 
@@ -232,12 +232,13 @@ export class StateMachine extends EventEmitter {
     id?: string
   ) {
     // TODO Доделать парвильный condition
-    const position = typeof pos !== 'undefined'
-      ? pos!
-      : {
-          x: 100,
-          y: 100,
-        };
+    const position =
+      typeof pos !== 'undefined'
+        ? pos!
+        : {
+            x: 100,
+            y: 100,
+          };
     const transitionData = {
       source: source.id,
       target: target.id,
@@ -246,7 +247,7 @@ export class StateMachine extends EventEmitter {
       trigger: {
         component,
         method,
-      }
+      },
     };
     this.createNewTransitionFromData(source, target, transitionData, id);
   }

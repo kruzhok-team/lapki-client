@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import { CodeEditor, DiagramEditor, Documentations, Tabs } from './components';
+import { DiagramEditor, Documentations, Tabs } from './components';
 import { Sidebar } from './components/Sidebar';
 import { Elements } from './types/diagram';
 
@@ -51,7 +51,7 @@ export const App: React.FC = () => {
 
   const ActiveEditor = [
     <DiagramEditor elements={elements!} />,
-    <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
+    //<CodeEditor value={localStorage.getItem('Data') ?? ''} />,
   ];
 
   return (

@@ -24,8 +24,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [ContextMenuX, setContextMenuX] = useState(0);
-  const [ContextMenuY, setContextMenuY] = useState(0);
+  const [contextMenuData, setContextMenuData] = useState<{ state: State }>();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -33,7 +32,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
 
     let i: number = 0;
     //Добавляем пустую ноду в редактор
-    editor?.container?.onStateDrop((position) => {
+    editor?.container?.on((position) => {
       i = i + 1;
       editor?.container.machine.createNewState('Состояние ' + i, position);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
@@ -47,10 +46,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
-    editor.container.states.on('contextMenu', (e: any) => {
-      setContextMenuX(e.event.nativeEvent.clientX);
-      setContextMenuY(e.event.nativeEvent.clientY);
+    //Здесь мы открываем модальное окно редактирования ноды
+    editor.container.states.onStateCreate((state) => {
+      setContextMenuData({ state });
       setIsContextMenuOpen(true);
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Здесь мы открываем модальное окно редактирования связи
@@ -58,12 +58,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       setTransition({ source, target });
       openTransitionModal();
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
-    });
-
-    editor.container.transitions.on('contextMenu', (e: any) => {
-      setContextMenuX(e.event.nativeEvent.clientX);
-      setContextMenuY(e.event.nativeEvent.clientY);
-      setIsContextMenuOpen(true);
     });
 
     //Таймер для сохранения изменений сделанных в редакторе
@@ -99,11 +93,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu
-          isOpen={isContextMenuOpen}
-          setIsOpen={setIsContextMenuOpen}
-          x={ContextMenuX}
-        />
+        <StateContextMenu isOpen={isContextMenuOpen} isData={contextMenuData} />
       </div>
 
       <CreateStateModal

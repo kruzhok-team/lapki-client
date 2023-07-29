@@ -25,8 +25,8 @@ export class Draggable extends EventEmitter {
   container!: Container;
   statusevents!: Events;
   bounds!: Rectangle;
+  id?: string;
   parent?: Draggable;
-  children: Map<string, Draggable> = new Map();
 
   dragging = false;
 
@@ -37,11 +37,12 @@ export class Draggable extends EventEmitter {
 
   childrenPadding = 15;
 
-  constructor(container: Container, bounds: Rectangle, parent?: Draggable) {
+  constructor(container: Container, bounds: Rectangle, id?: string, parent?: Draggable) {
     super();
 
     this.container = container;
     this.bounds = bounds;
+    this.id = id;
     this.parent = parent;
 
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
@@ -49,6 +50,12 @@ export class Draggable extends EventEmitter {
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
     this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
+  }
+
+  get children() {
+    return new Map(
+      [...this.container.machine.states].filter(([k, v]) => v.parent && v.parent.id === this.id)
+    );
   }
 
   // Позиция рассчитанная с возможным родителем

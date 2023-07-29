@@ -6,16 +6,25 @@ import onExit from '@renderer/assets/icons/onExit.svg';
 import DiodOn from '@renderer/assets/icons/DiodOn.svg';
 import DiodOff from '@renderer/assets/icons/DiodOff.svg';
 
+import InitialIcon from '@renderer/assets/icons/initial state.svg';
+
 var icoOnEnter!: HTMLImageElement;
 var icoOnExit!: HTMLImageElement;
 var icoDiodOn!: HTMLImageElement;
 var icoDiodOff!: HTMLImageElement;
 
-preloadImages([onEnter, onExit, DiodOn, DiodOff]).then(([onEnter, onExit, DiodOn, DiodOff]) => {
+export var icoInitialIcon!: HTMLImageElement;
+
+preloadImages([
+  onEnter, onExit, DiodOn, DiodOff, InitialIcon
+]).then(([
+  onEnter, onExit, DiodOn, DiodOff, initialIcon
+]) => {
   icoOnEnter = onEnter;
   icoOnExit = onExit;
   icoDiodOn = DiodOn;
   icoDiodOff = DiodOff;
+  icoInitialIcon = initialIcon;
 });
 
 export class Picto {

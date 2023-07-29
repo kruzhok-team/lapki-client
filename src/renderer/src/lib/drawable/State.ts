@@ -1,11 +1,11 @@
 import { State as StateType } from '@renderer/types/diagram';
-import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { preloadImages } from '../utils';
 import { Events } from './Events';
+import { icoInitialIcon } from './Picto';
 
 interface StateProps {
   container: Container;
@@ -47,10 +47,8 @@ export class State extends Draggable {
     this.data = data;
     this.container = container;
     if (initial) {
-      preloadImages([InitialIcon]).then(([icon]) => {
-        this.initialIcon = icon;
-        this.container.isDirty = true;
-      });
+      this.initialIcon = icoInitialIcon;
+      this.container.isDirty = true;
     }
 
     this.statusevent = new Events(this.container, this, this.data.events);

@@ -7,6 +7,7 @@ import { Transition } from '../drawable/Transition';
 import { customAlphabet, nanoid } from 'nanoid';
 import { Point } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
+import { icoInitialIcon } from '../drawable/Picto';
 
 /**
  * Данные машины состояний.
@@ -163,7 +164,7 @@ export class StateMachine extends EventEmitter {
 
     state!.parent?.children.delete(name);
     state!.parent = undefined;
-    delete state!.data['parent'];
+    delete state!.data.parent;
 
     state!.bounds = newBound;
 
@@ -193,13 +194,19 @@ export class StateMachine extends EventEmitter {
   }
 
   //Изменения начального состояния
-  initialStateCreate(idState: string) {
-    this.states.forEach((data) => {
-      if (data.id === idState) {
-        this.initialState = '';
+  changeInitialState(idState: string) {
+    const newInitial = this.states.get(idState);
+    if (typeof newInitial === "undefined") return;
+
+    const preInitial = this.states.get(this.initialState);
+    if (typeof preInitial !== 'undefined') {
+      preInitial!.initialIcon = undefined;
+    }
+    
+    newInitial!.initialIcon = icoInitialIcon;
+
         this.initialState = idState;
-      }
-    });
+
     this.container.isDirty = true;
   }
 

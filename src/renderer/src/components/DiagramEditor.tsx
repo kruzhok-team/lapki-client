@@ -104,7 +104,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   };
 
   const handleinitialState = (data: ContextMenu) => {
-    editor?.container.machine.initialStateCreate(data.id);
+    editor?.container.machine.changeInitialState(data.id);
   };
   const handleDeleteState = (data: ContextMenu) => {
     editor?.container.machine.deleteState(data.id);

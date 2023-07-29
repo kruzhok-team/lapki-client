@@ -2,8 +2,6 @@ import { State } from './State';
 import { EventEmitter } from '../common/EventEmitter';
 import { Container } from '../basic/Container';
 
-type CreateStateCallback = (state) => void;
-
 /**
  * Хранилище {@link State|состояний}.
  * Предоставляет подписку на события, связанные с состояниями,
@@ -18,14 +16,19 @@ export class States extends EventEmitter {
     this.container = container;
   }
 
-  createCallback?: CreateStateCallback;
+  createCallback!: (state) => void;
+  MenuCallback!: (state) => void;
 
   initEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
   }
 
-  onStateCreate = (callback: CreateStateCallback) => {
+  onStateCreate = (callback: (state) => void) => {
     this.createCallback = callback;
+  };
+
+  onStateContextMenu = (Menucallback: (state) => void) => {
+    this.MenuCallback = Menucallback;
   };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -62,7 +65,7 @@ export class States extends EventEmitter {
   handleContextMenu = (e: { target: State; event: any }) => {
     e.event.stopPropagation();
 
-    this.createCallback?.(e);
+    this.MenuCallback?.(e);
 
     // this.container.machine.deleteState(e.target.id);
   };

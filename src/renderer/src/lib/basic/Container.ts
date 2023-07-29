@@ -62,6 +62,7 @@ export class Container {
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel as any);
   }
 
@@ -79,6 +80,7 @@ export class Container {
 
   onStateDrop = (callback: (position: Point) => void) => {
     this.dropCallback = callback;
+    console.log(callback);
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
@@ -135,6 +137,18 @@ export class Container {
     picto.scale = newScale;
 
     this.isDirty = true;
+  };
+
+  handleMouseDoubleClick = (e: MyMouseEvent) => {
+    e.stopPropagation();
+
+    const rect = this.app.canvas.element.getBoundingClientRect();
+    const position = {
+      x: (e.nativeEvent.x - rect.left) * this.scale - this.offset.x,
+      y: (e.nativeEvent.y - rect.top) * this.scale - this.offset.y,
+    };
+
+    this.dropCallback?.(position);
   };
 
   get graphData() {

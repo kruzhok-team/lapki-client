@@ -24,19 +24,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [contextMenuData, setContextMenuData] = useState<{ state: State }>();
 
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, elements);
 
     let i: number = 0;
+
     //Добавляем пустую ноду в редактор
-    editor?.container?.on((position) => {
+    editor.container.onStateDrop((position) => {
       i = i + 1;
       editor?.container.machine.createNewState('Состояние ' + i, position);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
-      console.log(position);
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
@@ -46,9 +45,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
-    //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.states.onStateCreate((state) => {
-      setContextMenuData({ state });
+    //Здесь мы открываем контекстное меню
+    editor.container.states.onStateContextMenu((state) => {
+      setState({ state });
       setIsContextMenuOpen(true);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
@@ -93,7 +92,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu isOpen={isContextMenuOpen} isData={contextMenuData} />
+        <StateContextMenu isOpen={isContextMenuOpen} isData={state} />
       </div>
 
       <CreateStateModal

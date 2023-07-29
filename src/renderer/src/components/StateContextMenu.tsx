@@ -7,45 +7,42 @@ interface StateContextMenuProps {
 
 export const StateContextMenu: React.FC<StateContextMenuProps> = ({ isOpen, isData }) => {
   var x = isData?.state.target.drawBounds.x;
-  var y = isData?.state.target.drawBounds.y;
-  console.log(x, y);
+  var y = isData?.state.target.drawBounds.y + 32;
   const virtualEl = {
     getBoundingClientRect() {
       return {
-        width: isData?.state.target.bounds.width,
+        width: isData?.state.target.bounds.width * 3.2,
         height: isData?.state.target.bounds.height,
-        x: x,
-        y: y,
+        x: 0,
+        y: 0,
         top: y,
         left: x,
-        right: x,
-        bottom: y,
+        right: 0,
+        bottom: 0,
       };
     },
   };
 
   const { refs, floatingStyles } = useFloating({
+    placement: 'bottom',
     elements: {
       reference: virtualEl,
     },
-    middleware: [offset(), flip(), shift()],
+    middleware: [offset(), flip(), shift({ padding: 5 })],
   });
-  function Close() {
-    isOpen = false;
-  }
 
   return (
     <>
       <div
         ref={refs.setFloating}
         style={floatingStyles}
-        className="z-50 w-48 rounded-sm bg-neutral-100 py-2"
+        className="z-50 w-52 rounded-lg bg-neutral-100 p-2"
         {...(isOpen && { 'data-show': true })}
       >
-        <button
-          className="w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white"
-          onClick={Close}
-        >
+        <button className="w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white">
+          Начальное состояние
+        </button>
+        <button className="w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white">
           Delete
         </button>
       </div>

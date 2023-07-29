@@ -3,9 +3,8 @@ import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
-import { preloadImages } from '../utils';
 import { Events } from './Events';
-import { icoInitialIcon } from './Picto';
+import { picto } from './Picto';
 
 interface StateProps {
   container: Container;
@@ -23,6 +22,7 @@ interface StateProps {
 export class State extends Draggable {
   data!: StateType;
   isState;
+  isInitial = false;
   isSelected = false;
 
   statusevent!: Events;
@@ -47,7 +47,7 @@ export class State extends Draggable {
     this.data = data;
     this.container = container;
     if (initial) {
-      this.initialIcon = icoInitialIcon;
+      this.isInitial = true;
       this.container.isDirty = true;
     }
 
@@ -60,7 +60,7 @@ export class State extends Draggable {
     this.drawTitle(ctx);
     this.statusevent.draw(ctx);
 
-    if (this.initialIcon) {
+    if (this.isInitial) {
       this.drawInitialMark(ctx);
     }
 
@@ -183,19 +183,13 @@ export class State extends Draggable {
   }
 
   private drawInitialMark(ctx: CanvasRenderingContext2D) {
-    if (!this.initialIcon) return;
+    if (!this.isInitial) return;
 
     const { x, y } = this.drawBounds;
 
     ctx.beginPath();
 
-    ctx.drawImage(
-      this.initialIcon,
-      x - 30 / this.container.scale,
-      y,
-      25 / this.container.scale,
-      25 / this.container.scale
-    );
+    picto.drawInitialMark(ctx, x - 30 / this.container.scale, y);
 
     ctx.closePath();
   }

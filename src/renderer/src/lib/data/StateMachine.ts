@@ -7,7 +7,6 @@ import { Transition } from '../drawable/Transition';
 import { customAlphabet, nanoid } from 'nanoid';
 import { Point } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
-import { icoInitialIcon } from '../drawable/Picto';
 
 /**
  * Данные машины состояний.
@@ -193,19 +192,19 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  //Изменения начального состояния
+  // Изменение начального состояния
   changeInitialState(idState: string) {
     const newInitial = this.states.get(idState);
     if (typeof newInitial === "undefined") return;
 
     const preInitial = this.states.get(this.initialState);
     if (typeof preInitial !== 'undefined') {
-      preInitial!.initialIcon = undefined;
+      preInitial!.isInitial = false;
     }
     
-    newInitial!.initialIcon = icoInitialIcon;
+    newInitial!.isInitial = true;
 
-        this.initialState = idState;
+    this.initialState = idState;
 
     this.container.isDirty = true;
   }

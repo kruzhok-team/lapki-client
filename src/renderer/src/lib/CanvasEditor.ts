@@ -4,6 +4,7 @@ import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
+import { preloadPicto } from './drawable/Picto';
 
 /**
  * Редактор машин состояний.
@@ -18,6 +19,8 @@ export class CanvasEditor {
   container!: Container;
 
   constructor(container: HTMLDivElement, elements: Elements) {
+    preloadPicto(() => {this.container.isDirty = true;});
+    
     this.root = container;
     this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);

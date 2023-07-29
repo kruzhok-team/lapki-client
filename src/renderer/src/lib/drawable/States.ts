@@ -72,7 +72,7 @@ export class States extends EventEmitter {
 
   handleLongPress = (e: { target: State }) => {
     if (typeof e.target.parent !== 'undefined') {
-      this.container.machine.unlinkState(e.target.id);
+      this.container.machine.unlinkState(e.target.id!);
     }
     // TODO: если под курсором есть состояние – присоединить к нему
     // TODO: визуальная обратная связь

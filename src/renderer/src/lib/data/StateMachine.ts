@@ -77,6 +77,7 @@ export class StateMachine extends EventEmitter {
   }
 
   //В разработке (обновление имя, начального состояния)
+  // TODO: обновление меняет все состояния с таким именем, нужно менять сигнатуру!
   updateState(name: string, newName: string, events: string, component: string, method: string) {
     //var startEvents = {};
     //startEvents[events] = { component, method };
@@ -112,7 +113,7 @@ export class StateMachine extends EventEmitter {
 
     // если у нас не было начального состояния, им станет новое
     if (this.initialState === '') {
-      this.initialState = state.id;
+      this.initialState = state.id!;
     }
 
     // назначаем родительское состояние по месту его создания
@@ -143,7 +144,7 @@ export class StateMachine extends EventEmitter {
       state.parent = possibleParent;
     }
 
-    this.states.set(state.id, state);
+    this.states.set(state.id!, state);
 
     this.container.states.watchState(state);
     this.container.isDirty = true;
@@ -181,7 +182,7 @@ export class StateMachine extends EventEmitter {
     //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
     this.states.forEach((state) => {
       if (state.data.parent === idState) {
-        this.unlinkState(state.id);
+        this.unlinkState(state.id!);
       }
     });
     this.container.isDirty = true;
@@ -244,8 +245,8 @@ export class StateMachine extends EventEmitter {
             y: 100,
           };
     const transitionData = {
-      source: source.id,
-      target: target.id,
+      source: source.id!,
+      target: target.id!,
       color,
       position,
       trigger: {

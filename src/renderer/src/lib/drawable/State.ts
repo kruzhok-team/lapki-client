@@ -21,7 +21,6 @@ interface StateProps {
  * управление собственным выделением и отображение «хваталок».
  */
 export class State extends Draggable {
-  id: string;
   data!: StateType;
   isState;
   isSelected = false;
@@ -45,7 +44,6 @@ export class State extends Draggable {
 
   constructor({ id, container, data, parent, initial = false }: StateProps) {
     super(container, { ...data.bounds, width: 230, height: 100 }, id, parent);
-    this.id = id;
     this.data = data;
     this.container = container;
     if (initial) {

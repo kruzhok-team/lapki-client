@@ -27,6 +27,7 @@ export class Draggable extends EventEmitter {
   bounds!: Rectangle;
   id?: string;
   parent?: Draggable;
+  children: Map<string, Draggable> = new Map();
 
   dragging = false;
 
@@ -50,12 +51,6 @@ export class Draggable extends EventEmitter {
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
     this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
-  }
-
-  get children() {
-    return new Map(
-      [...this.container.machine.states].filter(([_k, v]) => v.parent && v.parent.id === this.id)
-    );
   }
 
   // Позиция рассчитанная с возможным родителем
@@ -177,7 +172,7 @@ export class Draggable extends EventEmitter {
     this.mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e, target: this });
     }, this.longPressTimeout);
-
+    
     this.emit('mousedown', { event: e, target: this });
 
     this.emit('click', { event: e, target: this });

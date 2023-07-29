@@ -56,6 +56,8 @@ export class StateMachine extends EventEmitter {
         parent,
         initial: id === initialState,
       });
+
+      state.parent?.children.set(id, state);
       this.container.states.watchState(state);
       this.states.set(id, state);
     }
@@ -142,6 +144,7 @@ export class StateMachine extends EventEmitter {
     }
     if (typeof possibleParent !== 'undefined') {
       state.parent = possibleParent;
+      possibleParent?.children.set(state.id!, state);
     }
 
     this.states.set(state.id!, state);
@@ -158,6 +161,7 @@ export class StateMachine extends EventEmitter {
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBound = { ...state!.bounds, ...state!.compoundPosition };
 
+    state!.parent?.children.delete(name);
     state!.parent = undefined;
     delete state!.data['parent'];
 

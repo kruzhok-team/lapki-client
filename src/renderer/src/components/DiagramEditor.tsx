@@ -4,7 +4,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
 import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
 import { State } from '@renderer/lib/drawable/State';
-import { StateContextMenu } from './StateContextMenu';
+import { ContextMenu, StateContextMenu } from './StateContextMenu';
 
 interface DiagramEditorProps {
   elements: Elements;
@@ -24,6 +24,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  const [stateMenu, setStateMenu] = useState<{ state: State }>();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -45,9 +46,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
-    //Здесь мы открываем контекстное меню
+    //Здесь мы открываем контекстное меню для состояния
     editor.container.states.onStateContextMenu((state) => {
-      setState({ state });
+      setStateMenu({ state });
       setIsContextMenuOpen(true);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
@@ -56,6 +57,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     editor.container.transitions.onTransitionCreate((source, target) => {
       setTransition({ source, target });
       openTransitionModal();
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+    });
+
+    //Здесь мы открываем контекстное меню для связи
+    editor.container.transitions.onTransitionContextMenu((state) => {
+      setStateMenu({ state });
+      setIsContextMenuOpen(true);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
@@ -72,7 +80,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   }, [containerRef.current]);
 
   const handleCreateState = (data: CreateStateModalFormValues) => {
-    editor?.container.machine.updateState(data.name, data.events, data.component, data.method);
+    editor?.container.machine.updateState(
+      data.name,
+      data.newName,
+      data.events,
+      data.component,
+      data.method
+    );
     closeStateModal();
   };
 
@@ -89,10 +103,26 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     closeTransitionModal();
   };
 
+  const handleinitialState = (data: ContextMenu) => {
+    editor?.container.machine.initialStateCreate(data.id);
+  };
+  const handleDeleteState = (data: ContextMenu) => {
+    editor?.container.machine.deleteState(data.id);
+  };
+  const handleDelTranState = (data: ContextMenu) => {
+    editor?.container.machine.deleteTransition(data.id);
+  };
+
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu isOpen={isContextMenuOpen} isData={state} />
+        <StateContextMenu
+          isOpen={isContextMenuOpen}
+          isData={stateMenu}
+          onClickDelState={handleDeleteState}
+          onClickInitial={handleinitialState}
+          onClickDelTran={handleDelTranState}
+        />
       </div>
 
       <CreateStateModal

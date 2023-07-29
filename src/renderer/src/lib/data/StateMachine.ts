@@ -22,7 +22,6 @@ import { stateStyle } from '../styles';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 export class StateMachine extends EventEmitter {
   container!: Container;
-
   initialState: string = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
@@ -78,13 +77,14 @@ export class StateMachine extends EventEmitter {
   }
 
   //В разработке (обновление имя, начального состояния)
-  updateState(name: string, events: string, component: string, method: string) {
-    var startEvents = {};
-    startEvents[events] = { component, method };
+  updateState(name: string, newName: string, events: string, component: string, method: string) {
+    //var startEvents = {};
+    //startEvents[events] = { component, method };
 
-    this.states.forEach((state, _id) => {
+    this.states.forEach((state, id) => {
       if (state.data.name === name) {
-        state.data.name = name;
+        console.log(state.data.name);
+        state.data.name = newName;
       }
     });
 
@@ -165,37 +165,45 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteState(id: string) {
-    const state = this.states.get(id);
-
-    console.log(id, state, this.states);
-
-    if (typeof state === 'undefined') return;
-
-    //Удаление ноды
-    this.states.delete(id);
+  //TODO необходимо придумать очистку события на удалённые объекты
+  deleteState(idState: string) {
+    this.states.delete(idState);
 
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
-      if (data.source.id === id || data.target.id === id) {
+      console.log(data);
+      if (data.source.id === idState || data.target.id === idState) {
+        console.log(data.source.id);
         this.transitions.delete(id);
       }
     });
 
     //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
     this.states.forEach((state) => {
-      if (state.data.parent === id) {
+      if (state.data.parent === idState) {
         this.unlinkState(state.id);
       }
     });
-
     this.container.isDirty = true;
   }
 
-  deleteTransition(condition: string) {
+  //Изменения начального состояния
+  initialStateCreate(idState: string) {
+    this.states.forEach((data) => {
+      if (data.id === idState) {
+        this.initialState = '';
+        this.initialState = idState;
+      }
+    });
+    this.container.isDirty = true;
+  }
+
+  deleteTransition(bounds: string) {
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
-      if (JSON.stringify(data.condition) === JSON.stringify(condition)) {
+      console.log(bounds);
+      console.log(data.condition.bounds);
+      if (JSON.stringify(data.condition.bounds) === JSON.stringify(bounds)) {
         this.transitions.delete(id);
       }
     });

@@ -4,8 +4,6 @@ import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 
-type CreateStateCallback = (source: State, target: State) => void;
-
 /**
  * Хранилище {@link Transition|переходов}.
  * Отрисовывает и хранит переходы, предоставляет метод для
@@ -17,7 +15,8 @@ export class Transitions {
 
   ghost = new GhostTransition();
 
-  createCallback?: CreateStateCallback;
+  createCallback?: (source: State, target: State) => void;
+  menuCallback?: (target: State) => void;
 
   constructor(container: Container) {
     this.container = container;
@@ -41,8 +40,12 @@ export class Transitions {
     }
   }
 
-  onTransitionCreate = (callback: CreateStateCallback) => {
+  onTransitionCreate = (callback: (source: State, target: State) => void) => {
     this.createCallback = callback;
+  };
+
+  onTransitionContextMenu = (callback: (target: State) => void) => {
+    this.menuCallback = callback;
   };
 
   handleStartNewTransition = (state) => {
@@ -60,12 +63,11 @@ export class Transitions {
   };
 
   //Удаление связей
-  handleContextMenu = (e: { target; event }) => {
-    e.event.stopPropagation();
-
+  handleContextMenu = (e: { target: State }) => {
     //this.emit('contextMenu', e);
+    this.menuCallback?.(e.target);
 
-    this.container.machine.deleteTransition(e.target);
+    //this.container.machine.deleteTransition(e.target);
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

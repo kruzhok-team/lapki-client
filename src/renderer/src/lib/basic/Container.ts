@@ -80,7 +80,6 @@ export class Container {
 
   onStateDrop = (callback: (position: Point) => void) => {
     this.dropCallback = callback;
-    console.log(callback);
   };
 
   handleMouseDown = (e: MyMouseEvent) => {

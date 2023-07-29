@@ -13,6 +13,7 @@ interface CreateStateModalProps {
 
 export interface CreateStateModalFormValues {
   name: string;
+  newName: string;
   events: string;
   component: string;
   method: string;
@@ -33,6 +34,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
   } = useForm<CreateStateModalFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
+    data.name = isData?.state.target.data.name;
     onSubmit(data);
   });
 
@@ -40,7 +42,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
     onClose();
     reset();
   };
-  console.log(isData?.state.target.data.name);
+
   return (
     <Modal
       {...props}
@@ -51,7 +53,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
       <TextInput
         label="Имя состояния:"
         placeholder="Выберите состояние"
-        {...register('name', {
+        {...register('newName', {
           required: 'Это поле обязательно к заполнению!',
           minLength: { value: 4, message: 'Минимум 4 символа!' },
         })}

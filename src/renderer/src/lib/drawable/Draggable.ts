@@ -177,7 +177,6 @@ export class Draggable extends EventEmitter {
     this.mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e, target: this });
     }, this.longPressTimeout);
-    // TODO: надо сбрасывать обратно при перемещении курсора!
 
     this.emit('mousedown', { event: e, target: this });
 

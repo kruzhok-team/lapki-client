@@ -5,6 +5,16 @@ import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 /**
+ * Функция, обрабатывающая запрос на создание перехода.
+ */
+type TransitionCreateCallback = (source: State, target: State) => void;
+
+/**
+ * Функция, обрабатывающая вызов контекстного меню.
+ */
+type MenuCallback = (target: State) => void;
+
+/**
  * Хранилище {@link Transition|переходов}.
  * Отрисовывает и хранит переходы, предоставляет метод для
  * создания новых переходов, в том числе отрисовывает
@@ -15,8 +25,8 @@ export class Transitions {
 
   ghost = new GhostTransition();
 
-  createCallback?: (source: State, target: State) => void;
-  menuCallback?: (target: State) => void;
+  createCallback?: TransitionCreateCallback;
+  menuCallback?: MenuCallback;
 
   constructor(container: Container) {
     this.container = container;
@@ -40,11 +50,11 @@ export class Transitions {
     }
   }
 
-  onTransitionCreate = (callback: (source: State, target: State) => void) => {
+  onTransitionCreate = (callback: TransitionCreateCallback) => {
     this.createCallback = callback;
   };
 
-  onTransitionContextMenu = (callback: (target: State) => void) => {
+  onTransitionContextMenu = (callback: MenuCallback) => {
     this.menuCallback = callback;
   };
 

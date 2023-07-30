@@ -3,9 +3,8 @@ import { EventEmitter } from '../common/EventEmitter';
 import { Container } from '../basic/Container';
 
 /**
- * Хранилище {@link State|состояний}.
- * Предоставляет подписку на события, связанные с состояниями,
- * а также метод для создания новых состояний.
+ * Контроллер {@link State|состояний}.
+ * Предоставляет подписку на события, связанные с состояниями.
  * Реализует отрисовку и обработку выделения состояний.
  */
 export class States extends EventEmitter {

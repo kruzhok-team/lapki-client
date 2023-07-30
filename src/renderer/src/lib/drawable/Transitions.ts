@@ -15,10 +15,9 @@ type TransitionCreateCallback = (source: State, target: State) => void;
 type MenuCallback = (target: State) => void;
 
 /**
- * Хранилище {@link Transition|переходов}.
- * Отрисовывает и хранит переходы, предоставляет метод для
- * создания новых переходов, в том числе отрисовывает
- * {@link GhostTransition|«призрачный» переход}.
+ * Контроллер {@link Transition|переходов}.
+ * Обрабатывает события, связанные с переходами.
+ * Отрисовывает переходы, в том числе {@link GhostTransition|«призрачный» переход}.
  */
 export class Transitions {
   container!: Container;

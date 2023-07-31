@@ -148,15 +148,15 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  unlinkState(name: string) {
-    const state = this.states.get(name);
+  unlinkState(id: string) {
+    const state = this.states.get(id);
     if (typeof state === 'undefined') return;
     if (typeof state!.parent === 'undefined') return;
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBound = { ...state!.bounds, ...state!.compoundPosition };
 
-    state!.parent?.children.delete(name);
+    state!.parent?.children.delete(id);
     state!.parent = undefined;
     delete state!.data.parent;
 
@@ -180,6 +180,9 @@ export class StateMachine extends EventEmitter {
         this.unlinkState(state.id!);
       }
     });
+    
+    // TODO: затирать начальное состояние, если удаляемое состояние было начальным
+
     this.states.delete(idState);
     this.container.isDirty = true;
   }

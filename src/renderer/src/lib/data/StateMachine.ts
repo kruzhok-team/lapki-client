@@ -1,4 +1,5 @@
 import { Elements } from '@renderer/types/diagram';
+import { Component } from '../Component';
 import { Transition as TransitionType } from '@renderer/types/diagram';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
@@ -25,6 +26,7 @@ export class StateMachine extends EventEmitter {
   initialState: string = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
+  components: Map<string, Component> = new Map<string, Component>();
 
   constructor(container: Container) {
     super();
@@ -34,6 +36,7 @@ export class StateMachine extends EventEmitter {
   loadData(elements: Elements) {
     this.initStates(elements.states, elements.initialState);
     this.initTransitions(elements.transitions);
+    this.initComponents(elements.components);
   }
 
   graphData() {
@@ -60,6 +63,12 @@ export class StateMachine extends EventEmitter {
       state.parent?.children.set(id, state);
       this.container.states.watchState(state);
       this.states.set(id, state);
+    }
+  }
+
+  initComponents(items: Elements['components']) {
+    for(const component_name in items){
+      this.components.set(component_name, new Component(items[component_name]));
     }
   }
 

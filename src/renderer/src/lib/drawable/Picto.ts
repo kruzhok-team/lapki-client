@@ -11,7 +11,7 @@ import { Rectangle } from '@renderer/types/graphics';
 
 var imagesLoaded = false;
 
-var icons: Map<string, HTMLImageElement> = new Map();
+export var icons: Map<string, HTMLImageElement> = new Map();
 
 /**
  * Загрузка графических ресурсов для пиктограмм

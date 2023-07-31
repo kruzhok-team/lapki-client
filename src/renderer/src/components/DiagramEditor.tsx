@@ -6,12 +6,16 @@ import { CreateTransitionModal, CreateTransitionModalFormValues } from './Create
 import { State } from '@renderer/lib/drawable/State';
 import { ContextMenu, StateContextMenu } from './StateContextMenu';
 
+export var canvasEditor: CanvasEditor;
 interface DiagramEditorProps {
   elements: Elements;
+  editor: CanvasEditor | null;
+  setEditor: (editor: CanvasEditor | null) => void;
 }
-export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
+
+export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, setEditor }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [editor, setEditor] = useState<CanvasEditor | null>(null);
+  
   const [state, setState] = useState<{ state: State }>();
 
   const [isStateModalOpen, setIsStateModalOpen] = useState(false);
@@ -29,7 +33,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, elements);
-
     let i: number = 0;
 
     //Добавляем пустую ноду в редактор
@@ -72,13 +75,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     }, 5000);
     setEditor(editor);
-
     return () => {
       editor.cleanUp();
       clearInterval(SaveEditor);
     };
   }, [containerRef.current]);
-
   const handleCreateState = (data: CreateStateModalFormValues) => {
     editor?.container.machine.updateState(
       data.name,

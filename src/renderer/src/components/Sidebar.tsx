@@ -9,10 +9,11 @@ import components from '../assets/img/components1.png';
 import drive from '../assets/img/flash-drive.png';
 import chip from '../assets/img/chip.png';
 import gear from '../assets/img/gear.png';
-
+import { StateMachine } from '@renderer/lib/data/StateMachine';
 interface SidebarProps {
   onRequestOpenFile: () => void;
   onRequestNewFile: () => void;
+  stateMachine: StateMachine | undefined;
 }
 
 const items = [
@@ -33,7 +34,7 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile, onRequestNewFile }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, onRequestOpenFile, onRequestNewFile }) => {
   const panelRef = useRef<ImperativePanelHandle>(null);
 
   const [activeTab, setActiveTab] = useState(0);
@@ -57,9 +58,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile, onRequestNe
   const tabs = useMemo(
     () => [
       <Menu onRequestOpenFile={onRequestOpenFile} onRequestNewFile={onRequestNewFile} />,
-      <Explorer />,
+      <Explorer stateMachine={stateMachine}/>,
     ],
-    []
+    [stateMachine]
   );
 
   return (

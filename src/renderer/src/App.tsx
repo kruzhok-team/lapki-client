@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import { DiagramEditor, Documentations, Tabs } from './components';
+import { CodeEditor, DiagramEditor, Documentations, Tabs } from './components';
 import { Sidebar } from './components/Sidebar';
 import { Elements } from './types/diagram';
 
@@ -18,7 +18,6 @@ import arrow1 from './assets/img/arrow1.png';
 export const App: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
-  /*const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);*/
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
 
@@ -51,7 +50,7 @@ export const App: React.FC = () => {
 
   const ActiveEditor = [
     <DiagramEditor elements={elements!} />,
-    //<CodeEditor value={localStorage.getItem('Data') ?? ''} />,
+    <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
   ];
 
   return (
@@ -67,9 +66,9 @@ export const App: React.FC = () => {
                   <div className="flex h-[2rem] items-center justify-between border-b border-[#4391BF]">
                     <Tabs fileName={fileName} functionTabs={handleClick} isActive={isActive} />
                     <p></p>
-                    <button className="w-[4vw]">
+                    {/*<button className="w-[4vw]">
                       <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
-                    </button>
+                    </button>*/}
                   </div>
                   {ActiveEditor.map((Element, i) => (
                     <div
@@ -89,7 +88,7 @@ export const App: React.FC = () => {
 
             <div className="bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)]">
               <button className="relative h-auto w-8" onClick={() => setIsDocOpen((p) => !p)}>
-                <img src={isDocOpen ? arrow1 : arrow} alt="" />
+                <img src={isDocOpen ? arrow1 : arrow} alt="" className="pointer-events-none" />
               </button>
 
               <div className={twMerge('w-96 transition-all', !isDocOpen && 'hidden')}>

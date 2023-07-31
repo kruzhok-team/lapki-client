@@ -1,8 +1,8 @@
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
-// @ts-ignore
-import close from '@renderer/assets/icons/close.svg';
+import '../index.css';
 
+import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
 interface TabsProps {
   functionTabs: (index) => void;
   fileName: string | null;
@@ -12,27 +12,32 @@ interface TabsProps {
 export const Tabs: React.FC<TabsProps> = ({ fileName, functionTabs, isActive }) => {
   const TabsItems = [
     {
-      Tab: 'SM: ' + fileName,
+      tab: 'SM: ' + fileName,
     },
     {
-      Tab: 'CODE: ' + fileName,
+      tab: 'CODE: ' + fileName,
+    },
+    {
+      tab: 'CODE: ' + 'jkfghdfkhdfgjkfchdkjsg',
     },
   ];
 
   return (
     <>
-      <div key="DivTabs" className="flex text-ellipsis">
-        {TabsItems.map(({ Tab }, index) => (
+      <div key="DivTabs" className="flex max-w-full font-Fira">
+        {TabsItems.map(({ tab }, index) => (
           <button
-            key={'Tab' + index}
+            key={'tab' + index}
             className={twMerge(
-              'flex  px-2 py-1 font-Fira text-base',
+              'flex items-center px-1 py-1',
               isActive(index) && 'bg-[#4391BF] bg-opacity-50'
             )}
             onClick={() => functionTabs(index)}
           >
-            {Tab}
-            {/*<img src={close} alt="" />*/}
+            <p className="w-auto truncate">{tab}</p>
+            <button className="p-2 hover:bg-[#FFFFFF]">
+              <Cross width="1rem" height="1rem" />
+            </button>
           </button>
         ))}
       </div>

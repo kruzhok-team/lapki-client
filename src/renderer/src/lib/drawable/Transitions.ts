@@ -67,16 +67,16 @@ export class Transitions {
     e.target.setIsSelected(true, JSON.stringify(e.target));
   };
 
-  handleConditionDoubleClick = (e: { source; target }) => {
+  handleConditionDoubleClick = (e: { source; target; event }) => {
+    e.event.stopPropagation();
     this.createCallback?.(e.source, e.target);
   };
 
   //Удаление связей
-  handleContextMenu = (e: { target: State }) => {
+  handleContextMenu = (e: { target; event }) => {
+    e.event.stopPropagation();
     //this.emit('contextMenu', e);
     this.menuCallback?.(e.target);
-
-    //this.container.machine.deleteTransition(e.target);
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -87,11 +87,12 @@ export class Transitions {
     this.container.isDirty = true;
   };
 
-  handleMouseUpOnState = ({ target }: { target: State }) => {
+  handleMouseUpOnState = (e: { target }) => {
     this.container.machine.removeSelection();
+
     if (!this.ghost.source) return;
 
-    this.createCallback?.(this.ghost.source, target);
+    this.createCallback?.(this.ghost.source, e.target);
 
     this.ghost.clear();
   };

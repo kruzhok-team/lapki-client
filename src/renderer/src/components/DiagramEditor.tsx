@@ -12,8 +12,8 @@ interface DiagramEditorProps {
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
-  const [state, setState] = useState<{ state: State }>();
 
+  const [state, setState] = useState<{ state: State }>();
   const [isStateModalOpen, setIsStateModalOpen] = useState(false);
   const openStateModal = () => setIsStateModalOpen(true);
   const closeStateModal = () => setIsStateModalOpen(false);
@@ -50,6 +50,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     editor.container.states.onStateContextMenu((state) => {
       setStateMenu({ state });
       setIsContextMenuOpen(true);
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Здесь мы открываем модальное окно редактирования связи
@@ -63,6 +64,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     editor.container.transitions.onTransitionContextMenu((state) => {
       setStateMenu({ state });
       setIsContextMenuOpen(true);
+      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Таймер для сохранения изменений сделанных в редакторе
@@ -102,18 +104,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
   };
 
   const handleinitialState = (data: ContextMenu) => {
-    editor?.container.machine.changeInitialState(data.id);
     setIsContextMenuOpen(false);
+    editor?.container.machine.changeInitialState(data.id);
   };
 
   const handleDeleteState = (data: ContextMenu) => {
-    editor?.container.machine.deleteState(data.id);
     setIsContextMenuOpen(false);
+    editor?.container.machine.deleteState(data.id);
   };
 
   const handleDelTranState = (data: ContextMenu) => {
-    editor?.container.machine.deleteTransition(data.id);
     setIsContextMenuOpen(false);
+    editor?.container.machine.deleteTransition(data.id);
   };
 
   return (

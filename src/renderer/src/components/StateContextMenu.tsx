@@ -23,10 +23,9 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
 
-  const handleClick = hookHandleSubmit((data) => {
+  const handleDeleteClick = hookHandleSubmit((data) => {
     //отсылаем id ноды для удаления состояния
     data.id = isData?.state.id;
-    console.log(isData?.state.isInitial);
     onClickDelState(data);
 
     //отсылаем bounds для удаления связи
@@ -40,6 +39,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     onClickInitial(data);
   });
 
+  //Рисуем виртуальный объект
   var x = isData?.state.computedPosition.x;
   var y = isData?.state.computedPosition.y + 26;
 
@@ -65,29 +65,49 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     },
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
+
+  //Массив кнопок
+  const button = [
+    {
+      text: 'Назначить начальным',
+      onClick: handleInitialState,
+      style:
+        (!isData?.state.isState || isData?.state.isInitial === true || !isData?.state.id) &&
+        'hidden',
+    },
+    {
+      text: 'Посмотреть код',
+      onClick: handleInitialState,
+    },
+    {
+      text: 'Удалить',
+      onClick: handleDeleteClick,
+    },
+  ];
+
   return (
     <>
       <div
         ref={refs.setFloating}
         style={floatingStyles}
-        className={twMerge('z-50 w-52 rounded-lg bg-neutral-100 p-2', !isOpen && 'hidden')}
+        key="ContextMenu"
+        className={twMerge(
+          'font z-50 w-56 rounded-lg bg-neutral-100 p-2 font-Fira text-base',
+          !isOpen && 'hidden'
+        )}
       >
-        <button
-          onClick={handleInitialState}
-          className={twMerge(
-            'w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white',
-            (isData?.state.isInitial === true || !isData?.state.id) && 'hidden'
-          )}
-        >
-          Начальное состояние
-        </button>
-
-        <button
-          onClick={handleClick}
-          className="w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white"
-        >
-          Delete
-        </button>
+        {button.map(({ text, onClick, style }, i) => (
+          <button
+            onClick={onClick}
+            key={'ContextMenu' + i}
+            className={twMerge(
+              'w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white',
+              style
+            )}
+          >
+            {text}
+          </button>
+        ))}
       </div>
     </>
   );

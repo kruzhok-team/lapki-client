@@ -12,7 +12,7 @@ interface CreateStateModalProps {
 }
 
 export interface CreateStateModalFormValues {
-  name: string;
+  id: string;
   newName: string;
   events: string;
   component: string;
@@ -34,7 +34,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
   } = useForm<CreateStateModalFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
-    data.name = isData?.state.target.data.name;
+    data.id = isData?.state.target.id;
     onSubmit(data);
   });
 
@@ -57,8 +57,8 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
           required: 'Это поле обязательно к заполнению!',
           minLength: { value: 4, message: 'Минимум 4 символа!' },
         })}
-        error={!!errors.name}
-        errorMessage={errors.name?.message ?? ''}
+        error={!!errors.id}
+        errorMessage={errors.id?.message ?? ''}
       />
 
       <TextInput

@@ -50,7 +50,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     editor.container.states.onStateContextMenu((state) => {
       setStateMenu({ state });
       setIsContextMenuOpen(true);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Здесь мы открываем модальное окно редактирования связи
@@ -64,7 +63,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
     editor.container.transitions.onTransitionContextMenu((state) => {
       setStateMenu({ state });
       setIsContextMenuOpen(true);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Таймер для сохранения изменений сделанных в редакторе
@@ -81,7 +79,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
 
   const handleCreateState = (data: CreateStateModalFormValues) => {
     editor?.container.machine.updateState(
-      data.name,
+      data.id,
       data.newName,
       data.events,
       data.component,
@@ -105,12 +103,17 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements }) => {
 
   const handleinitialState = (data: ContextMenu) => {
     editor?.container.machine.changeInitialState(data.id);
+    setIsContextMenuOpen(false);
   };
+
   const handleDeleteState = (data: ContextMenu) => {
     editor?.container.machine.deleteState(data.id);
+    setIsContextMenuOpen(false);
   };
+
   const handleDelTranState = (data: ContextMenu) => {
     editor?.container.machine.deleteTransition(data.id);
+    setIsContextMenuOpen(false);
   };
 
   return (

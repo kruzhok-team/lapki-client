@@ -78,15 +78,10 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  //В разработке (обновление имя, начального состояния)
-  // TODO: обновление меняет все состояния с таким именем, нужно менять сигнатуру!
+  //В разработке (обновление имя)
   updateState(name: string, newName: string, events: string, component: string, method: string) {
-    //var startEvents = {};
-    //startEvents[events] = { component, method };
-
-    this.states.forEach((state, id) => {
-      if (state.data.name === name) {
-        console.log(state.data.name);
+    this.states.forEach((state) => {
+      if (state.id === name) {
         state.data.name = newName;
       }
     });
@@ -172,13 +167,9 @@ export class StateMachine extends EventEmitter {
 
   //TODO необходимо придумать очистку события на удалённые объекты
   deleteState(idState: string) {
-    this.states.delete(idState);
-
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
-      console.log(data);
       if (data.source.id === idState || data.target.id === idState) {
-        console.log(data.source.id);
         this.transitions.delete(id);
       }
     });
@@ -189,19 +180,20 @@ export class StateMachine extends EventEmitter {
         this.unlinkState(state.id!);
       }
     });
+    this.states.delete(idState);
     this.container.isDirty = true;
   }
 
   // Изменение начального состояния
   changeInitialState(idState: string) {
     const newInitial = this.states.get(idState);
-    if (typeof newInitial === "undefined") return;
+    if (typeof newInitial === 'undefined') return;
 
     const preInitial = this.states.get(this.initialState);
     if (typeof preInitial !== 'undefined') {
       preInitial!.isInitial = false;
     }
-    
+
     newInitial!.isInitial = true;
 
     this.initialState = idState;
@@ -209,11 +201,9 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
+  //Удаление связей
   deleteTransition(bounds: string) {
-    //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
-      console.log(bounds);
-      console.log(data.condition.bounds);
       if (JSON.stringify(data.condition.bounds) === JSON.stringify(bounds)) {
         this.transitions.delete(id);
       }

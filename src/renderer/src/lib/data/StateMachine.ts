@@ -78,13 +78,13 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  //В разработке (обновление имя)
-  updateState(name: string, newName: string, events: string, component: string, method: string) {
-    this.states.forEach((state) => {
-      if (state.id === name) {
-        state.data.name = newName;
-      }
-    });
+  // TODO: разбить действия над состоянием, переименование идёт отдельно, события отдельно
+  // FIXME: в разработке (работает только переименование)
+  updateState(id: string, newName: string, events: string, component: string, method: string) {
+    const state = this.states.get(id);
+    if (typeof state === 'undefined') return;
+
+    state.data.name = newName;
 
     this.container.isDirty = true;
   }

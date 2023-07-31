@@ -5,7 +5,8 @@ import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable
 import { Explorer, Menu } from '../components';
 
 import menu from '../assets/img/menu.png';
-import components from '../assets/img/components1.png';
+import compiler from '../assets/img/forward.png';
+import components from '../assets/img/components.png';
 import drive from '../assets/img/flash-drive.png';
 import chip from '../assets/img/chip.png';
 import gear from '../assets/img/gear.png';
@@ -19,8 +20,12 @@ const items = [
   {
     imgSrc: menu,
   },
+
   {
     imgSrc: components,
+  },
+  {
+    imgSrc: compiler,
   },
   {
     imgSrc: drive,
@@ -30,6 +35,7 @@ const items = [
   },
   {
     imgSrc: gear,
+    style: true,
   },
 ];
 
@@ -65,9 +71,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onRequestOpenFile, onRequestNe
   return (
     <>
       <div className="flex flex-col gap-2 p-2">
-        {items.map(({ imgSrc }, i) => (
-          <button key={i} className="w-8" onClick={handleClick(i)}>
-            <img src={imgSrc} alt="" />
+        {items.map(({ imgSrc, style }, i) => (
+          <button key={i} className={twMerge('w-8', style && 'mt-auto')} onClick={handleClick(i)}>
+            <img src={imgSrc} alt="" className="pointer-events-none" />
           </button>
         ))}
       </div>

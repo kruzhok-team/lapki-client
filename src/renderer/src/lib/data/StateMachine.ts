@@ -20,6 +20,9 @@ import { stateStyle } from '../styles';
  * здесь. Сюда закладывается история правок, импорт и экспорт.
  */
 
+// FIXME: оптимизация: в сигнатуры функций можно поставить что-то типа (string | State),
+//        чтобы через раз не делать запрос в словарь
+
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 export class StateMachine extends EventEmitter {
   container!: Container;
@@ -147,14 +150,28 @@ export class StateMachine extends EventEmitter {
       }
     }
     if (typeof possibleParent !== 'undefined') {
-      state.parent = possibleParent;
-      possibleParent?.children.set(state.id!, state);
+      this.linkState(possibleParent.id!, state.id!);
     }
 
     this.states.set(state.id!, state);
 
     this.container.states.watchState(state);
     this.container.isDirty = true;
+  }
+
+  linkState(parentId: string, childId: string) {
+    const parent = this.states.get(parentId);
+    if (typeof parent === 'undefined') return;
+    const child = this.states.get(childId);
+    if (typeof child === 'undefined') return;
+
+    if (typeof child.parent !== 'undefined') {
+      this.unlinkState(childId);
+    }
+
+    child.parent = parent;
+    child.data.parent = parentId;
+    parent?.children.set(child.id!, child);
   }
 
   unlinkState(id: string) {

@@ -5,22 +5,26 @@ import { Panel, PanelGroup } from 'react-resizable-panels';
 import { CodeEditor, DiagramEditor, Documentations, Tabs } from './components';
 import { Sidebar } from './components/Sidebar';
 import { Elements } from './types/diagram';
-
 /*Первые иконки*/
 import arrow from './assets/img/arrow.png';
 // import forward from './assets/img/forward.png';
 /*Вторичные иконки*/
 import arrow1 from './assets/img/arrow1.png';
-
+import { CanvasEditor } from './lib/CanvasEditor';
+import { preloadPicto } from './lib/drawable/Picto';
 /**
  * React-компонент приложения
  */
 export const App: React.FC = () => {
+  preloadPicto(()=> void {});
+
+  // TODO: а если у нас будет несколько редакторов?
+
+  const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
-
   /*Открытие файла*/
   const handleOpenFile = async () => {
     const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
@@ -49,14 +53,14 @@ export const App: React.FC = () => {
   };
 
   const ActiveEditor = [
-    <DiagramEditor elements={elements!} />,
+    <DiagramEditor elements={elements!} editor={editor} setEditor={setEditor}/>,
     <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
   ];
 
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
-        <Sidebar onRequestOpenFile={handleOpenFile} onRequestNewFile={handleNewFile} />
+        <Sidebar stateMachine={editor?.container.machine} onRequestOpenFile={handleOpenFile} onRequestNewFile={handleNewFile} />
 
         <Panel>
           <div className="flex">

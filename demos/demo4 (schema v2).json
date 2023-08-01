@@ -95,5 +95,20 @@
         "method": "NewMethod"
       }
     }
-  ]
+  ],
+
+  "components": {
+    "diod1": {
+      "type": "LED",
+      "parameters": {
+        "pin": 12
+      }
+    },
+    "diod2": {
+      "type": "LED",
+      "parameters": {
+        "pin": 4
+      }
+    }
+  }
 }

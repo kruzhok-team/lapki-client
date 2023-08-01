@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
 
   const handleClick = (i: number) => () => {
     const panel = panelRef.current;
-
+    
     if (i === activeTab && panel) {
       if (panel.getCollapsed()) {
         panel.expand();
@@ -58,6 +58,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
     }
 
     setActiveTab(i);
+    const newPanel = panelRef.current;
+    if (newPanel?.getCollapsed()) {
+      newPanel.expand();
+    }
   };
 
   const tabs = useMemo(

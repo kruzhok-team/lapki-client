@@ -46,7 +46,7 @@ export class Draggable extends EventEmitter {
     this.id = id;
     this.parent = parent;
 
-    this.bindEvents()
+    this.bindEvents();
   }
 
   bindEvents() {
@@ -174,7 +174,7 @@ export class Draggable extends EventEmitter {
     document.body.style.cursor = 'grabbing';
     // для того что-бы не хватать несколько элементов
     e.stopPropagation();
-    
+
     // А это чтобы закрыть ненужное контекстное меню.
     // Если контекстное меню начнёт закрываться само по себе,
     // вы нарушили вселенский порядок событий, и эта строка
@@ -190,7 +190,7 @@ export class Draggable extends EventEmitter {
     this.mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e, target: this });
     }, this.longPressTimeout);
-    
+
     this.emit('mousedown', { event: e, target: this });
 
     this.emit('click', { event: e, target: this });
@@ -249,7 +249,11 @@ export class Draggable extends EventEmitter {
     this.emit('contextmenu', { event: e, target: this });
   };
 
-  isUnderMouse<T extends Point>({ x, y }: T) {
-    return isPointInRectangle(this.drawBounds, { x, y });
+  isUnderMouse<T extends Point>({ x, y }: T, withChildren?: boolean) {
+    const drawBounds = this.drawBounds;
+    const bounds = !withChildren
+      ? drawBounds
+      : { ...drawBounds, height: drawBounds.height + drawBounds.childrenHeight };
+    return isPointInRectangle(bounds, { x, y });
   }
 }

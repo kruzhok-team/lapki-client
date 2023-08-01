@@ -128,7 +128,7 @@ export class StateMachine extends EventEmitter {
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | undefined = undefined;
     for (const item of this.states.values()) {
-      if (item.isUnderMouse(state.computedPosition)) {
+      if (item.isUnderMouse(position, true)) {
         if (typeof possibleParent === 'undefined') {
           possibleParent = item;
         } else {
@@ -139,7 +139,7 @@ export class StateMachine extends EventEmitter {
             searchPending = false;
             for (const child of possibleParent.children.values()) {
               if (!(child instanceof State)) continue;
-              if (child.isUnderMouse(state.computedPosition)) {
+              if (child.isUnderMouse(position, true)) {
                 possibleParent = child as State;
                 searchPending = true;
                 break;
@@ -149,11 +149,14 @@ export class StateMachine extends EventEmitter {
         }
       }
     }
+
+    // кладём состояние в список
+    // делаем это сейчас, потому что иначе не сможем присоединить родительское
+    this.states.set(state.id!, state);
+
     if (typeof possibleParent !== 'undefined') {
       this.linkState(possibleParent.id!, state.id!);
     }
-
-    this.states.set(state.id!, state);
 
     this.container.states.watchState(state);
     this.container.isDirty = true;
@@ -169,9 +172,20 @@ export class StateMachine extends EventEmitter {
       this.unlinkState(childId);
     }
 
+    // Вычисляем новую координату внутри контейнера
+    const parentPos = parent.compoundPosition;
+    const childPos = child.compoundPosition;
+    const newBound = {
+      ...child.bounds,
+      x: Math.max(0, childPos.x - parentPos.x),
+      y: Math.max(0, childPos.y - parentPos.y - parent.bounds.height),
+    };
+
     child.parent = parent;
     child.data.parent = parentId;
     parent?.children.set(child.id!, child);
+
+    child.bounds = newBound;
   }
 
   unlinkState(id: string) {
@@ -205,10 +219,14 @@ export class StateMachine extends EventEmitter {
     });
 
     // Ищем дочерние состояния и отвязываем их от текущего
-    // FIXME: стоит ли перепривязывать их к родительскому?
     this.states.forEach((childState) => {
       if (childState.data.parent === idState) {
-        this.unlinkState(childState.id!);
+        // Если есть родительское, перепривязываем к нему
+        if (state!.data.parent) {
+          this.linkState(state!.data.parent!, childState.id!);
+        } else {
+          this.unlinkState(childState.id!);
+        }
       }
     });
 

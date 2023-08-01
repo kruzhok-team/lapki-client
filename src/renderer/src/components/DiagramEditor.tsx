@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Elements } from '@renderer/types/diagram';
-import { Tabs } from './Tabs';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
 import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
@@ -14,9 +13,15 @@ interface DiagramEditorProps {
   elements: Elements;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
+  setIdTextCode: (id: string | null) => void;
 }
 
-export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, setEditor }) => {
+export const DiagramEditor: React.FC<DiagramEditorProps> = ({
+  elements,
+  editor,
+  setEditor,
+  setIdTextCode,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useState<{ state: State }>();
@@ -117,7 +122,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, 
   };
 
   const handleShowCode = (data: ContextMenu) => {
-    console.log(data.id);
+    setIdTextCode(data.id);
     setIsContextMenuOpen(false);
   };
 

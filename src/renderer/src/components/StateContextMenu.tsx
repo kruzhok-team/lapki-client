@@ -17,6 +17,7 @@ interface StateContextMenuProps {
 
 export interface ContextMenu {
   id: string;
+  content: string;
 }
 
 export const StateContextMenu: React.FC<StateContextMenuProps> = ({
@@ -50,12 +51,13 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
     if (isData!.data instanceof Condition) {
       data.id = isData?.data.id!;
-
+      data.content = JSON.stringify(isData.data);
       onClickShowCode(data);
     }
 
     if (isData!.data instanceof State) {
       data.id = isData?.data.id!;
+      data.content = JSON.stringify(isData.data);
       onClickShowCode(data);
     }
   });

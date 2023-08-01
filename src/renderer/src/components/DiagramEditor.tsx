@@ -14,6 +14,7 @@ interface DiagramEditorProps {
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
   setIdTextCode: (id: string | null) => void;
+  setElementCode: (content: string | null) => void;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({
@@ -21,6 +22,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   editor,
   setEditor,
   setIdTextCode,
+  setElementCode,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -137,6 +139,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
 
   const handleShowCode = (data: ContextMenu) => {
     setIdTextCode(data.id);
+    setElementCode(data.content);
     setIsContextMenuOpen(false);
   };
 

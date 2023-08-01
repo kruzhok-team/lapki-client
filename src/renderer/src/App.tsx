@@ -45,9 +45,6 @@ export const App: React.FC = () => {
     console.log(FileNew);
   };
 
-  //Callback данные для получения ответа от контекстного меню
-  const [idTextCode, setIdTextCode] = useState<string | null>(null);
-
   const handleSaveFile = async () => {
     window.electron.ipcRenderer.invoke('dialog:saveFile', localStorage.getItem('Data'));
   };
@@ -63,6 +60,9 @@ export const App: React.FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
   };
 
+  //Callback данные для получения ответа от контекстного меню
+  const [idTextCode, setIdTextCode] = useState<string | null>(null);
+  const [ElementCode, setElementCode] = useState<string | null>(null);
   /** Callback функция выбора вкладки (машина состояний, код) */
   var [activeTab, setActiveTab] = useState<number | 0>(0);
   var isActive = (index: number) => activeTab === index;
@@ -82,6 +82,7 @@ export const App: React.FC = () => {
           editor={editor}
           setEditor={setEditor}
           setIdTextCode={setIdTextCode}
+          setElementCode={setElementCode}
         />
       ),
     },
@@ -96,7 +97,7 @@ export const App: React.FC = () => {
       //создаем новый элемент в массиве вкладок
       TabsItems.push({
         tab: idTextCode,
-        content: <CodeEditor value={idTextCode ?? ''} />,
+        content: <CodeEditor value={ElementCode ?? ''} />,
       });
   });
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import { CodeEditor, DiagramEditor, Documentations, Tabs } from './components';
+import { CodeEditor, DiagramEditor, Documentations, MenuProps, Tabs } from './components';
 import { Sidebar } from './components/Sidebar';
 import { Elements } from './types/diagram';
 /*Первые иконки*/
@@ -25,6 +25,7 @@ export const App: React.FC = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
+  
   /*Открытие файла*/
   const handleOpenFile = async () => {
     const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
@@ -42,6 +43,21 @@ export const App: React.FC = () => {
     console.log(FileNew);
   };
 
+  const handleSaveFile = async () => {
+    window.electron.ipcRenderer.invoke('dialog:saveFile', localStorage.getItem('Data'));
+  };
+
+  const handleSaveAsFile = async () => {
+    window.electron.ipcRenderer.invoke('dialog:saveAsFile', localStorage.getItem('Data'));
+  };
+
+  const menuProps: MenuProps = {
+    onRequestNewFile: handleNewFile,
+    onRequestOpenFile: handleOpenFile,
+    onRequestSaveFile: handleSaveFile,
+    onRequestSaveAsFile: handleSaveAsFile
+  }
+  
   /** Callback функция выбора вкладки (машина состояний, код) */
   const [activeTab, setActiveTab] = useState<number | 0>(0);
   const isActive = (index: number) => activeTab === index;
@@ -60,7 +76,7 @@ export const App: React.FC = () => {
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
-        <Sidebar stateMachine={editor?.container.machine} onRequestOpenFile={handleOpenFile} onRequestNewFile={handleNewFile} />
+        <Sidebar stateMachine={editor?.container.machine} menuProps={menuProps} />
 
         <Panel>
           <div className="flex">

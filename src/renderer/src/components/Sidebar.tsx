@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 
-import { Explorer, Menu } from '../components';
+import { Explorer, Menu, MenuProps } from '../components';
 
 import menu from '../assets/img/menu.png';
 import compiler from '../assets/img/forward.png';
@@ -12,8 +12,7 @@ import chip from '../assets/img/chip.png';
 import gear from '../assets/img/gear.png';
 import { StateMachine } from '@renderer/lib/data/StateMachine';
 interface SidebarProps {
-  onRequestOpenFile: () => void;
-  onRequestNewFile: () => void;
+  menuProps: MenuProps,
   stateMachine: StateMachine | undefined;
 }
 
@@ -40,7 +39,7 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, onRequestOpenFile, onRequestNewFile }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => {
   const panelRef = useRef<ImperativePanelHandle>(null);
 
   const [activeTab, setActiveTab] = useState(0);
@@ -63,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, onRequestOpenFil
 
   const tabs = useMemo(
     () => [
-      <Menu onRequestOpenFile={onRequestOpenFile} onRequestNewFile={onRequestNewFile} />,
+      <Menu {...menuProps} />,
       <Explorer stateMachine={stateMachine}/>,
     ],
     [stateMachine]

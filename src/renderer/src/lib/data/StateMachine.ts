@@ -26,6 +26,9 @@ import { stateStyle } from '../styles';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 export class StateMachine extends EventEmitter {
   container!: Container;
+
+  filename: string | null | undefined; 
+
   initialState: string = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();

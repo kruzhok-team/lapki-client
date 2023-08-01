@@ -33,7 +33,7 @@ type Handler = (e: MyMouseEvent) => any;
 
 /**
  * Система обработки событий специально для мыши.
- * Отличается от обычного EventEmitter возможностью отключить
+ * Отличается от обычного {@link EventEmitter} возможностью отключить
  * вызов обработчиков событий на любом из шагов (stopPropagation).
  */
 export class MouseEventEmitter {
@@ -62,6 +62,10 @@ export class MouseEventEmitter {
     if (handlers?.size === 0) {
       this.handlers.delete(name);
     }
+  }
+
+  reset() {
+    this.handlers.clear()
   }
 
   emit(name: string, event: Omit<MyMouseEvent, 'stopPropagation'>) {

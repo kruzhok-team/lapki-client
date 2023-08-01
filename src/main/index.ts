@@ -1,30 +1,32 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
-import path, { join } from 'path';
+import { join } from 'path';
 import fs from 'fs';
 import { optimizer, is } from '@electron-toolkit/utils';
+import { basename } from 'path';
 
 //import icon from '../../resources/icon.png?asset';
 
-let NameFile: string;
 /**
  * Асинхронный диалог открытия файла схемы.
  * @returns Promise
  */
 async function handleFileOpen() {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve, _reject) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [{ name: 'json', extensions: ['json'] }],
       properties: ['openFile'],
     });
-    NameFile = filePaths[0];
-    if (!canceled && filePaths[0]) {
-      fs.readFile(filePaths[0], 'utf-8', (err, data) => {
+    var fileName = filePaths[0];
+    if (!canceled && fileName) {
+      fs.readFile(fileName, 'utf-8', (err, data) => {
         if (err) {
-          return reject(new Error('An error ocсurred reading the file :' + err.message));
+          resolve([false, fileName, basename(fileName), err.message]);
+        } else {
+          resolve([true, fileName, basename(fileName), data]);
         }
-        var FileData = [path.basename(filePaths[0]), data];
-        resolve(FileData);
       });
+    } else {
+      resolve([false, null, null, '']);
     }
   });
 }
@@ -33,11 +35,15 @@ async function handleFileOpen() {
  * Асинхронное сохранение файла схемы.
  * @returns Promise
  */
-async function handleFileSave(data) {
-  return new Promise(async () => {
-    await fs.writeFile(NameFile, data, function (err) {
-      if (err) throw err;
-      console.log('Сохранено!');
+async function handleFileSave(fileName, data) {
+  return new Promise(async (resolve, _reject) => {
+    await fs.writeFile(fileName, data, function (err) {
+      if (err) {
+        resolve([false, fileName, err.message]);
+      } else {
+        console.log('Сохранено!');
+        resolve([true, fileName, basename(fileName)]);
+      }
     });
   });
 }
@@ -46,28 +52,38 @@ async function handleFileSave(data) {
  * Асинхронный диалог сохранения файла схемы.
  * @returns Promise
  */
-async function handleFileSaveAs(data) {
-  return new Promise(async () => {
+async function handleFileSaveAs(filename, data) {
+  return new Promise(async (resolve, _reject) => {
     await dialog
       .showSaveDialog({
         title: 'Выберите путь к файлу для сохранения',
-        defaultPath: path.join(__dirname, NameFile),
+        defaultPath: filename ? filename : __dirname, // path.join(__dirname, fileName),
         buttonLabel: 'Сохранить',
         filters: [{ name: 'json', extensions: ['json'] }],
       })
       .then((file) => {
-        if (!file.canceled) {
+        if (file.canceled) {
+          resolve([false, null, null]);
+        } else {
           // Создание и запись в файл
           if (typeof file.filePath === 'string') {
-            fs.writeFile(file.filePath?.toString(), data, function (err) {
-              if (err) throw err;
-              console.log('Сохранено!');
+            fs.writeFile(file.filePath!, data, function (err) {
+              if (err) {
+                resolve([false, file.filePath!, err.message]);
+                // throw err;
+              } else {
+                resolve([true, file.filePath!, basename(file.filePath!)]);
+                console.log('Сохранено!');
+              }
             });
+          } else {
+            resolve([false, null, null]);
           }
         }
       })
       .catch((err) => {
         console.log(err);
+        resolve([false, null, err.message]);
       });
   });
 }
@@ -121,12 +137,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle('dialog:openFile', handleFileOpen);
 
-  ipcMain.handle('dialog:saveFile', (_event, data) => {
-    return handleFileSave(data);
+  ipcMain.handle('dialog:saveFile', (_event, filename, data) => {
+    return handleFileSave(filename, data);
   });
 
-  ipcMain.handle('dialog:saveAsFile', (_event, data) => {
-    return handleFileSaveAs(data);
+  ipcMain.handle('dialog:saveAsFile', (_event, filename, data) => {
+    return handleFileSaveAs(filename, data);
   });
 
   // Горячие клавиши для режима разрабочика:

@@ -1,4 +1,4 @@
-import { Elements } from '@renderer/types/diagram';
+import { Elements, emptyElements } from '@renderer/types/diagram';
 import { Canvas } from './basic/Canvas';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
@@ -18,9 +18,11 @@ export class CanvasEditor {
 
   container!: Container;
 
-  constructor(container: HTMLDivElement, elements: Elements) {
-    preloadPicto(() => {this.container.isDirty = true;});
-    
+  constructor(container: HTMLDivElement, elements?: Elements) {
+    preloadPicto(() => {
+      this.container.isDirty = true;
+    });
+
     this.root = container;
     this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);
@@ -30,7 +32,8 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    this.container = new Container(this, elements);
+    const contElements = typeof elements !== 'undefined' ? elements : emptyElements();
+    this.container = new Container(this, contElements);
     this.canvas.onResize = () => {
       this.mouse.setOffset();
       this.container.isDirty = true;
@@ -46,6 +49,32 @@ export class CanvasEditor {
       this.container.isDirty = false;
     });
   }
+
+  get filename(): string | null | undefined {
+    return this.container.machine.filename;
+  }
+
+  set filename(name: string | null | undefined) {
+    this.container.machine.filename = name;
+  }
+  
+  loadData(elements: Elements, filename: string | null) {
+    // со всем разнообразием обрабатываемых событий пока что
+    // проще создать контейнер заново
+    
+    // предварительно сбрасываем все обработчики
+    this.mouse.reset();
+    this.keyboard.reset();
+    
+    this.container = new Container(this, elements);
+    this.container.machine.filename = filename;
+    this.container.isDirty = true;
+  }
+
+  getData(): string {
+    return JSON.stringify(this.container.machine.graphData());
+  }
+
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();

@@ -29,6 +29,10 @@ export class EventEmitter<T extends {} = {}> {
     }
   }
 
+  reset() {
+    this.handlers.clear()
+  }
+  
   emit(name: string, event: T) {
     if (this.handlers.has(name)) {
       const handlers = this.handlers.get(name);

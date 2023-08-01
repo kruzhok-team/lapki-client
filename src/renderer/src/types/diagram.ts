@@ -10,17 +10,17 @@ export type Event = {
   component: string;
   method: string;
   args?: any[];
-}
+};
 
 export type Variable = {
   component: string;
   method: string;
   args?: any[];
-}
+};
 
 export type ActingEvent = Event & {
   actions: Action[];
-}
+};
 
 export type EventData = {
   trigger: Event;
@@ -62,3 +62,12 @@ export type Elements = {
 
   initialState: string;
 };
+
+export function emptyElements(): Elements {
+  return {
+    states: {},
+    transitions: [],
+    components: {},
+    initialState: '',
+  };
+}

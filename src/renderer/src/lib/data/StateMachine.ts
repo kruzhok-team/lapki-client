@@ -70,7 +70,7 @@ export class StateMachine extends EventEmitter {
       const sourceState = this.states.get(data.source) as State;
       const targetState = this.states.get(data.target) as State;
 
-      const transition = new Transition(this.container, sourceState, targetState, data);
+      const transition = new Transition(this.container, sourceState, targetState, data, id);
 
       this.transitions.set(id, transition);
 
@@ -205,12 +205,12 @@ export class StateMachine extends EventEmitter {
   }
 
   //Удаление связей
-  deleteTransition(bounds: string) {
-    this.transitions.forEach((data, id) => {
-      if (JSON.stringify(data.condition.bounds) === JSON.stringify(bounds)) {
-        this.transitions.delete(id);
-      }
-    });
+  deleteTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (typeof transition === 'undefined') return;
+
+    this.transitions.delete(id);
+    // FIXME: остаётся невидимое условие
 
     this.container.isDirty = true;
   }
@@ -221,9 +221,9 @@ export class StateMachine extends EventEmitter {
     transitionData: TransitionType,
     id?: string
   ) {
-    const transition = new Transition(this.container, source, target, transitionData);
-
     const newId = typeof id !== 'undefined' ? id! : nanoid();
+    const transition = new Transition(this.container, source, target, transitionData, newId);
+
     this.transitions.set(newId, transition);
 
     this.container.transitions.watchTransition(transition);
@@ -260,7 +260,12 @@ export class StateMachine extends EventEmitter {
     this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
-  //Снять выделение с других нод при клике на новую
+  /** 
+   * Снимает выделение со всех нод и переходов.
+   * 
+   * @remark Выполняется при изменении выделения.
+   * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
+   */
   removeSelection() {
     this.states.forEach((state) => {
       state.setIsSelected(false, '');

@@ -17,13 +17,13 @@ export class Condition extends Draggable {
   //Проверка нажатия на левую кнопку мыши для выделения связи
   isSelected = false;
 
-  constructor(container: Container, transition: Transition) {
+  constructor(container: Container, transition: Transition, id: string) {
     super(container, {
       x: transition.data.position.x,
       y: transition.data.position.y,
       width: 150,
       height: 70,
-    });
+    }, id);
 
     this.transition = transition;
     // this.contextmenu = new ContextMenu(container, this);

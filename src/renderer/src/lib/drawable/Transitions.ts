@@ -3,6 +3,7 @@ import { State } from './State';
 import { GhostTransition } from './GhostTransition';
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Condition } from './Condition';
 
 /**
  * Функция, обрабатывающая запрос на создание перехода.
@@ -12,7 +13,7 @@ type TransitionCreateCallback = (source: State, target: State) => void;
 /**
  * Функция, обрабатывающая вызов контекстного меню.
  */
-type MenuCallback = (target: State) => void;
+type MenuCallback = (target: Condition) => void;
 
 /**
  * Контроллер {@link Transition|переходов}.

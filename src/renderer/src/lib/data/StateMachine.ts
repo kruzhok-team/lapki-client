@@ -47,6 +47,7 @@ export class StateMachine extends EventEmitter {
       states: { ...Object.fromEntries(this.states) },
       initialState: this.initialState,
       transitions: [...this.transitions.values()],
+      components: { ...Object.fromEntries(this.components) },
     };
   }
 

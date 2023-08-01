@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import { CodeEditor, DiagramEditor, Documentations } from './components';
+import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
 import { Elements } from './types/diagram';
 /*Первые иконки*/
@@ -27,6 +27,7 @@ export const App: React.FC = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
   const elements = fileContent ? (JSON.parse(fileContent) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
+
   /*Открытие файла*/
   const handleOpenFile = async () => {
     const FileDate = await window.electron.ipcRenderer.invoke('dialog:openFile');
@@ -46,6 +47,21 @@ export const App: React.FC = () => {
 
   //Callback данные для получения ответа от контекстного меню
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
+
+  const handleSaveFile = async () => {
+    window.electron.ipcRenderer.invoke('dialog:saveFile', localStorage.getItem('Data'));
+  };
+
+  const handleSaveAsFile = async () => {
+    window.electron.ipcRenderer.invoke('dialog:saveAsFile', localStorage.getItem('Data'));
+  };
+
+  const menuProps: MenuProps = {
+    onRequestNewFile: handleNewFile,
+    onRequestOpenFile: handleOpenFile,
+    onRequestSaveFile: handleSaveFile,
+    onRequestSaveAsFile: handleSaveAsFile,
+  };
 
   /** Callback функция выбора вкладки (машина состояний, код) */
   var [activeTab, setActiveTab] = useState<number | 0>(0);
@@ -75,24 +91,19 @@ export const App: React.FC = () => {
     },
   ];
 
-  TabsItems.forEach((name, id) => {
+  TabsItems.forEach(() => {
     if (idTextCode !== null)
       //создаем новый элемент в массиве вкладок
       TabsItems.push({
         tab: idTextCode,
         content: <CodeEditor value={idTextCode ?? ''} />,
       });
-    id + 1;
   });
 
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
-        <Sidebar
-          stateMachine={editor?.container.machine}
-          onRequestOpenFile={handleOpenFile}
-          onRequestNewFile={handleNewFile}
-        />
+        <Sidebar stateMachine={editor?.container.machine} menuProps={menuProps} />
 
         <Panel>
           <div className="flex">

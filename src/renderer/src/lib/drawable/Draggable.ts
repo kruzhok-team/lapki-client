@@ -46,11 +46,23 @@ export class Draggable extends EventEmitter {
     this.id = id;
     this.parent = parent;
 
+    this.bindEvents()
+  }
+
+  bindEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
     this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
+  }
+
+  unbindEvents() {
+    this.container.app.mouse.off('mouseup', this.handleMouseUp);
+    this.container.app.mouse.off('mousedown', this.handleMouseDown);
+    this.container.app.mouse.off('mousemove', this.handleMouseMove);
+    this.container.app.mouse.off('dblclick', this.handleMouseDoubleClick);
+    this.container.app.mouse.off('contextmenu', this.handleContextMenuClick);
   }
 
   // Позиция рассчитанная с возможным родителем
@@ -162,6 +174,12 @@ export class Draggable extends EventEmitter {
     document.body.style.cursor = 'grabbing';
     // для того что-бы не хватать несколько элементов
     e.stopPropagation();
+    
+    // А это чтобы закрыть ненужное контекстное меню.
+    // Если контекстное меню начнёт закрываться само по себе,
+    // вы нарушили вселенский порядок событий, и эта строка
+    // вызывается позже, чем открывается новое меню.
+    this.container.closeContextMenu();
 
     this.dragging = true;
 
@@ -202,6 +220,8 @@ export class Draggable extends EventEmitter {
 
     if (!isUnderMouse) return;
 
+    e.stopPropagation();
+
     clearTimeout(this.mouseDownTimerId);
 
     this.emit('mouseup', { event: e, target: this });
@@ -223,6 +243,8 @@ export class Draggable extends EventEmitter {
   handleContextMenuClick = (e: MyMouseEvent) => {
     const isUnderMouse = this.isUnderMouse(e);
     if (!isUnderMouse) return;
+
+    e.stopPropagation();
 
     this.emit('contextmenu', { event: e, target: this });
   };

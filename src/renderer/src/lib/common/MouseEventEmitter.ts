@@ -7,9 +7,22 @@ export interface MyMouseEvent {
   y: number;
   dx: number;
   dy: number;
+  /**
+   * Наличие зажатой левой кнопки. 
+   * Полезно для отслеживания перетаскивания.
+   */
   left: boolean;
+  button: Button;
   stopPropagation: () => void;
   nativeEvent: MouseEvent;
+}
+
+export enum Button {
+  left = 0,
+  middle = 1,
+  right = 2,
+  back = 3,
+  forward = 4,
 }
 
 /**

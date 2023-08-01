@@ -1,41 +1,36 @@
 import React from 'react';
 
-interface MenuProps {
-  onRequestOpenFile: () => void;
+export interface MenuProps {
   onRequestNewFile: () => void;
+  onRequestOpenFile: () => void;
+  onRequestSaveFile: () => void;
+  onRequestSaveAsFile: () => void;
 }
 
-const handleSaveFile = async () => {
-  window.electron.ipcRenderer.invoke('dialog:saveFile', localStorage.getItem('Data'));
-  localStorage.clear();
-};
-
-const handleSaveAsFile = async () => {
-  window.electron.ipcRenderer.invoke('dialog:saveAsFile', localStorage.getItem('Data'));
-  localStorage.clear();
-};
-
-export const Menu: React.FC<MenuProps> = ({ onRequestOpenFile, onRequestNewFile }) => {
+export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const items = [
     {
-      text: 'Новый файл',
-      onClick: onRequestNewFile,
+      text: 'Новая схема',
+      onClick: props.onRequestNewFile,
     },
     {
-      text: 'Открыть файл',
-      onClick: onRequestOpenFile,
+      text: 'Открыть...',
+      onClick: props.onRequestOpenFile,
     },
     {
-      text: 'Сохранить файл',
-      onClick: handleSaveFile,
+      text: 'Сохранить',
+      onClick: props.onRequestSaveFile,
     },
     {
-      text: 'Сохранить файл как...',
-      onClick: handleSaveAsFile,
+      text: 'Сохранить как...',
+      onClick: props.onRequestSaveAsFile,
     },
+    /*
     {
       text: 'Примеры',
+      // TODO: модальное окно с выбором примера
     },
+    */
   ];
 
   return (

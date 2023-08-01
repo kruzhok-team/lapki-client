@@ -31,6 +31,10 @@ export class EdgeHandlers {
     this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 
+  unbindEvents() {
+    this.app.mouse.off('mousedown', this.handleMouseDown);
+  }
+
   get position(): Point[] {
     const offset = 4 / this.app.container.scale;
     let {

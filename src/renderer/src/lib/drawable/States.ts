@@ -18,10 +18,6 @@ export class States extends EventEmitter {
   createCallback!: (state) => void;
   MenuCallback!: (state) => void;
 
-  initEvents() {
-    this.container.app.mouse.on('mouseup', this.handleMouseUp);
-  }
-
   onStateCreate = (callback: (state) => void) => {
     this.createCallback = callback;
   };
@@ -35,10 +31,6 @@ export class States extends EventEmitter {
       state.draw(ctx, canvas);
     });
   }
-
-  handleMouseUp = () => {
-    this.container.machine.removeSelection();
-  };
 
   handleStartNewTransition = (state: State) => {
     this.emit('startNewTransition', state);
@@ -85,5 +77,16 @@ export class States extends EventEmitter {
     state.on('longpress', this.handleLongPress as any);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
+  }
+
+  unwatchState(state: State) {
+    state.off('mouseup', this.handleMouseUpOnState as any);
+    state.off('click', this.handleStateClick as any);
+    state.off('dblclick', this.handleStateDoubleClick as any);
+    state.off('contextmenu', this.handleContextMenu as any);
+    state.off('longpress', this.handleLongPress as any);
+
+    state.edgeHandlers.unbindEvents();
+    state.unbindEvents();
   }
 }

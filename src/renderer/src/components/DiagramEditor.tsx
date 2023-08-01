@@ -59,6 +59,21 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
+    //Обработка правой кнопки на пустом поле
+    editor.container.onFieldContextMenu((position) => {
+      // TODO: меню для пустого поля
+      console.log({
+        context: 'DiagramEditor',
+        log: 'free field right click',
+        data: position,
+      });
+    });
+
+    // Закрытие контекстного меню
+    editor.container.onContextMenuClose(() => {
+      setIsContextMenuOpen(false);
+    });
+
     //Здесь мы открываем контекстное меню для состояния
     editor.container.states.onStateContextMenu((state: State) => {
       const bounds = state.drawBounds;
@@ -117,7 +132,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   };
 
   const handleinitialState = (data: ContextMenu) => {
-    setIsContextMenuOpen(false);
     editor?.container.machine.changeInitialState(data.id);
   };
 
@@ -127,12 +141,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   };
 
   const handleDeleteState = (data: ContextMenu) => {
-    setIsContextMenuOpen(false);
     editor?.container.machine.deleteState(data.id);
   };
 
   const handleDelTranState = (data: ContextMenu) => {
-    setIsContextMenuOpen(false);
     editor?.container.machine.deleteTransition(data.id);
   };
 
@@ -146,6 +158,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
           onClickInitial={handleinitialState}
           onClickDelTran={handleDelTranState}
           onClickShowCode={handleShowCode}
+          closeMenu={() => {
+            setIsContextMenuOpen(false);
+          }}
         />
       </div>
 

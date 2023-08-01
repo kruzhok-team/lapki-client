@@ -1,8 +1,4 @@
-import { MouseEventEmitter } from '../common/MouseEventEmitter';
-
-enum Button {
-  left = 0,
-}
+import { MouseEventEmitter, Button } from '../common/MouseEventEmitter';
 
 /**
  * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.
@@ -57,6 +53,7 @@ export class Mouse extends MouseEventEmitter {
       dx: x - this.px,
       dy: y - this.py,
       left: this.left,
+      button: e.button,
       nativeEvent: e,
     };
 
@@ -78,6 +75,7 @@ export class Mouse extends MouseEventEmitter {
       dx: x - this.px,
       dy: y - this.py,
       left: this.left,
+      button: e.button,
       nativeEvent: e,
     };
 
@@ -96,6 +94,7 @@ export class Mouse extends MouseEventEmitter {
       dx: x - this.px,
       dy: y - this.py,
       left: this.left,
+      button: e.button,
       nativeEvent: e,
     };
 
@@ -114,6 +113,7 @@ export class Mouse extends MouseEventEmitter {
       dx: x - this.px,
       dy: y - this.py,
       left: this.left,
+      button: e.button,
       nativeEvent: e,
     };
     this.emit('dblclick', event);
@@ -131,6 +131,7 @@ export class Mouse extends MouseEventEmitter {
       dx: x - this.px,
       dy: y - this.py,
       left: this.left,
+      button: e.button,
       nativeEvent: e,
     };
     this.emit('contextmenu', event);
@@ -144,6 +145,7 @@ export class Mouse extends MouseEventEmitter {
       dx: x - this.px,
       dy: y - this.py,
       left: this.left,
+      button: e.button,
       nativeEvent: e,
     };
 

@@ -20,6 +20,9 @@ import { stateStyle } from '../styles';
  * здесь. Сюда закладывается история правок, импорт и экспорт.
  */
 
+// FIXME: оптимизация: в сигнатуры функций можно поставить что-то типа (string | State),
+//        чтобы через раз не делать запрос в словарь
+
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 export class StateMachine extends EventEmitter {
   container!: Container;
@@ -147,14 +150,28 @@ export class StateMachine extends EventEmitter {
       }
     }
     if (typeof possibleParent !== 'undefined') {
-      state.parent = possibleParent;
-      possibleParent?.children.set(state.id!, state);
+      this.linkState(possibleParent.id!, state.id!);
     }
 
     this.states.set(state.id!, state);
 
     this.container.states.watchState(state);
     this.container.isDirty = true;
+  }
+
+  linkState(parentId: string, childId: string) {
+    const parent = this.states.get(parentId);
+    if (typeof parent === 'undefined') return;
+    const child = this.states.get(childId);
+    if (typeof child === 'undefined') return;
+
+    if (typeof child.parent !== 'undefined') {
+      this.unlinkState(childId);
+    }
+
+    child.parent = parent;
+    child.data.parent = parentId;
+    parent?.children.set(child.id!, child);
   }
 
   unlinkState(id: string) {
@@ -176,21 +193,36 @@ export class StateMachine extends EventEmitter {
 
   //TODO необходимо придумать очистку события на удалённые объекты
   deleteState(idState: string) {
+    const state = this.states.get(idState);
+    console.log(state);
+    if (typeof state === 'undefined') return;
+
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
       if (data.source.id === idState || data.target.id === idState) {
-        this.transitions.delete(id);
+        this.deleteTransition(id);
       }
     });
 
-    //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
-    this.states.forEach((state) => {
-      if (state.data.parent === idState) {
-        this.unlinkState(state.id!);
+    // Ищем дочерние состояния и отвязываем их от текущего
+    // FIXME: стоит ли перепривязывать их к родительскому?
+    this.states.forEach((childState) => {
+      if (childState.data.parent === idState) {
+        this.unlinkState(childState.id!);
       }
     });
 
-    this.initialState = '';
+    // Отсоединяемся от родительского состояния, если такое есть
+    if (state!.data.parent) {
+      this.unlinkState(state.id!);
+    }
+
+    // Если удаляемое состояние было начальным, стираем текущее значение
+    if (state!.isInitial) {
+      this.initialState = '';
+    }
+
+    this.container.states.unwatchState(state);
 
     this.states.delete(idState);
     this.container.isDirty = true;
@@ -218,8 +250,8 @@ export class StateMachine extends EventEmitter {
     const transition = this.transitions.get(id);
     if (typeof transition === 'undefined') return;
 
+    this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
-    // FIXME: остаётся невидимое условие
 
     this.container.isDirty = true;
   }

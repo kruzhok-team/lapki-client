@@ -12,6 +12,7 @@ interface StateContextMenuProps {
   onClickInitial: (data) => void;
   onClickDelTran: (data) => void;
   onClickShowCode: (data) => void;
+  closeMenu: () => void;
 }
 
 export interface ContextMenu {
@@ -25,10 +26,12 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   onClickDelState,
   onClickDelTran,
   onClickShowCode,
+  closeMenu,
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
 
   const handleDeleteClick = hookHandleSubmit((data) => {
+    closeMenu();
     if (typeof isData === 'undefined') return; // удалять нечего
 
     if (isData!.data instanceof Condition) {
@@ -59,6 +62,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
   //отсылаем id ноды для изменения начального состояния
   const handleInitialState = hookHandleSubmit((data) => {
+    closeMenu();
     if (typeof isData === 'undefined') return; // удалять нечего
     if (!(isData!.data instanceof State)) return; // не нода
     data.id = isData?.data.id!;
@@ -76,8 +80,8 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
         };
 
   //Рисуем виртуальный объект
-  var x = bounds.x;
-  var y = bounds.y + 26;
+  const x = bounds.x;
+  const y = bounds.y + 26;
 
   const virtualEl = {
     getBoundingClientRect() {

@@ -46,11 +46,23 @@ export class Draggable extends EventEmitter {
     this.id = id;
     this.parent = parent;
 
+    this.bindEvents()
+  }
+
+  bindEvents() {
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
     this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
+  }
+
+  unbindEvents() {
+    this.container.app.mouse.off('mouseup', this.handleMouseUp);
+    this.container.app.mouse.off('mousedown', this.handleMouseDown);
+    this.container.app.mouse.off('mousemove', this.handleMouseMove);
+    this.container.app.mouse.off('dblclick', this.handleMouseDoubleClick);
+    this.container.app.mouse.off('contextmenu', this.handleContextMenuClick);
   }
 
   // Позиция рассчитанная с возможным родителем

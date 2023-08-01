@@ -218,6 +218,7 @@ export class StateMachine extends EventEmitter {
     const transition = this.transitions.get(id);
     if (typeof transition === 'undefined') return;
 
+    this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
     // FIXME: остаётся невидимое условие
 

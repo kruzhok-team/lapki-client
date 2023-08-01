@@ -115,4 +115,12 @@ export class Transitions {
 
     transition.condition.on('contextmenu', this.handleContextMenu as any);
   }
+
+  unwatchTransition(transition: Transition) {
+    transition.condition.off('click', this.handleConditionClick as any);
+    transition.condition.off('dblclick', this.handleConditionDoubleClick as any);
+    transition.condition.off('mouseup', this.handleMouseUpOnState as any);
+    transition.condition.off('contextmenu', this.handleContextMenu as any);
+    transition.condition.unbindEvents();
+  }
 }

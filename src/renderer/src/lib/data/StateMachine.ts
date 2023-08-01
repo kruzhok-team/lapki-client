@@ -67,7 +67,7 @@ export class StateMachine extends EventEmitter {
   }
 
   initComponents(items: Elements['components']) {
-    for(const component_name in items){
+    for (const component_name in items) {
       this.components.set(component_name, new Component(items[component_name]));
     }
   }
@@ -189,8 +189,8 @@ export class StateMachine extends EventEmitter {
         this.unlinkState(state.id!);
       }
     });
-    
-    // TODO: затирать начальное состояние, если удаляемое состояние было начальным
+
+    this.initialState = '';
 
     this.states.delete(idState);
     this.container.isDirty = true;
@@ -269,9 +269,9 @@ export class StateMachine extends EventEmitter {
     this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
-  /** 
+  /**
    * Снимает выделение со всех нод и переходов.
-   * 
+   *
    * @remark Выполняется при изменении выделения.
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */

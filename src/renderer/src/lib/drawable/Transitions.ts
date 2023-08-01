@@ -99,9 +99,7 @@ export class Transitions {
   };
 
   handleMouseUp = () => {
-    this.container.machine.removeSelection();
     if (!this.ghost.source) return;
-
     this.ghost.clear();
   };
 

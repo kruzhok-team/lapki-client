@@ -40,7 +40,6 @@ export class Container {
     // Порядок важен, система очень тонкая
 
     this.initEvents();
-    this.states.initEvents();
     this.transitions.initEvents();
     this.machine.loadData(elements);
   }
@@ -88,7 +87,8 @@ export class Container {
     this.app.canvas.element.style.cursor = 'grabbing';
   };
 
-  handleMouseUp = () => {
+  handleMouseUp = (e: MyMouseEvent) => {
+    this.machine.removeSelection();
     if (!this.isPan) return;
 
     this.app.canvas.element.style.cursor = 'grab';

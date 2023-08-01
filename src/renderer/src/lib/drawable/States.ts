@@ -18,10 +18,6 @@ export class States extends EventEmitter {
   createCallback!: (state) => void;
   MenuCallback!: (state) => void;
 
-  initEvents() {
-    this.container.app.mouse.on('mouseup', this.handleMouseUp);
-  }
-
   onStateCreate = (callback: (state) => void) => {
     this.createCallback = callback;
   };
@@ -35,10 +31,6 @@ export class States extends EventEmitter {
       state.draw(ctx, canvas);
     });
   }
-
-  handleMouseUp = () => {
-    this.container.machine.removeSelection();
-  };
 
   handleStartNewTransition = (state: State) => {
     this.emit('startNewTransition', state);

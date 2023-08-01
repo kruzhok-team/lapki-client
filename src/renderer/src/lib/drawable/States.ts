@@ -86,4 +86,15 @@ export class States extends EventEmitter {
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
+
+  unwatchState(state: State) {
+    state.off('mouseup', this.handleMouseUpOnState as any);
+    state.off('click', this.handleStateClick as any);
+    state.off('dblclick', this.handleStateDoubleClick as any);
+    state.off('contextmenu', this.handleContextMenu as any);
+    state.off('longpress', this.handleLongPress as any);
+
+    state.edgeHandlers.unbindEvents();
+    state.unbindEvents();
+  }
 }

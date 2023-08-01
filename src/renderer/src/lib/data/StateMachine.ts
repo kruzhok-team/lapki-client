@@ -67,7 +67,7 @@ export class StateMachine extends EventEmitter {
   }
 
   initComponents(items: Elements['components']) {
-    for(const component_name in items){
+    for (const component_name in items) {
       this.components.set(component_name, new Component(items[component_name]));
     }
   }
@@ -176,21 +176,32 @@ export class StateMachine extends EventEmitter {
 
   //TODO необходимо придумать очистку события на удалённые объекты
   deleteState(idState: string) {
+    const state = this.states.get(idState);
+    console.log(state);
+    if (typeof state === 'undefined') return;
+
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
       if (data.source.id === idState || data.target.id === idState) {
-        this.transitions.delete(id);
+        this.deleteTransition(id);
       }
     });
 
-    //Проходим массив детей, если же дети есть, то удаляем у них свойство привязки к родителю
-    this.states.forEach((state) => {
-      if (state.data.parent === idState) {
-        this.unlinkState(state.id!);
+    // Ищем дочерние состояния и отвязываем их от текущего
+    // FIXME: стоит ли перепривязывать их к родительскому?
+    this.states.forEach((childState) => {
+      if (childState.data.parent === idState) {
+        this.unlinkState(childState.id!);
       }
     });
-    
+
+    // Отсоединяемся от родительского состояния, если такое есть
+    if (state!.data.parent) {
+      this.unlinkState(state.id!);
+    }
     // TODO: затирать начальное состояние, если удаляемое состояние было начальным
+
+    this.container.states.unwatchState(state);
 
     this.states.delete(idState);
     this.container.isDirty = true;
@@ -220,7 +231,6 @@ export class StateMachine extends EventEmitter {
 
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
-    // FIXME: остаётся невидимое условие
 
     this.container.isDirty = true;
   }
@@ -270,9 +280,9 @@ export class StateMachine extends EventEmitter {
     this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
-  /** 
+  /**
    * Снимает выделение со всех нод и переходов.
-   * 
+   *
    * @remark Выполняется при изменении выделения.
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */

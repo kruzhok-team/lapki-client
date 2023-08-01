@@ -11,6 +11,7 @@ interface StateContextMenuProps {
   onClickDelState: (data) => void;
   onClickInitial: (data) => void;
   onClickDelTran: (data) => void;
+  closeMenu: () => void;
 }
 
 export interface ContextMenu {
@@ -23,10 +24,12 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   onClickDelState,
   onClickInitial,
   onClickDelTran,
+  closeMenu
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
 
   const handleDeleteClick = hookHandleSubmit((data) => {
+    closeMenu();
     if (typeof isData === 'undefined') return; // удалять нечего
 
     if (isData!.data instanceof Condition) {
@@ -41,6 +44,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
   //отсылаем id ноды для изменения начального состояния
   const handleInitialState = hookHandleSubmit((data) => {
+    closeMenu();
     if (typeof isData === 'undefined') return; // удалять нечего
     if (!(isData!.data instanceof State)) return; // не нода
     data.id = isData?.data.id!;

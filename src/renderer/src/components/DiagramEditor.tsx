@@ -29,7 +29,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, 
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [contextMenuData, setContextMenuData] = useState<{ data: State | Condition, bounds: Rectangle }>();
+  const [contextMenuData, setContextMenuData] = useState<{
+    data: State | Condition;
+    bounds: Rectangle;
+  }>();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -50,9 +53,24 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, 
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
+    //Обработка правой кнопки на пустом поле
+    editor.container.onFieldContextMenu((position) => {
+      // TODO: меню для пустого поля
+      console.log({
+        context: 'DiagramEditor',
+        log: 'free field right click',
+        data: position,
+      });
+    });
+
+    // Закрытие контекстного меню
+    editor.container.onContextMenuClose(() => {
+      setIsContextMenuOpen(false);
+    });
+
     //Здесь мы открываем контекстное меню для состояния
-    editor.container.states.onStateContextMenu((state : State) => {
-      const bounds = state.drawBounds
+    editor.container.states.onStateContextMenu((state: State) => {
+      const bounds = state.drawBounds;
       setContextMenuData({ data: state, bounds });
       setIsContextMenuOpen(true);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
@@ -67,7 +85,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, 
 
     //Здесь мы открываем контекстное меню для связи
     editor.container.transitions.onTransitionContextMenu((condition: Condition) => {
-      const bounds = condition.drawBounds
+      const bounds = condition.drawBounds;
       setContextMenuData({ data: condition, bounds });
       setIsContextMenuOpen(true);
       localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
@@ -108,17 +126,14 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, 
   };
 
   const handleinitialState = (data: ContextMenu) => {
-    setIsContextMenuOpen(false);
     editor?.container.machine.changeInitialState(data.id);
   };
 
   const handleDeleteState = (data: ContextMenu) => {
-    setIsContextMenuOpen(false);
     editor?.container.machine.deleteState(data.id);
   };
 
   const handleDelTranState = (data: ContextMenu) => {
-    setIsContextMenuOpen(false);
     editor?.container.machine.deleteTransition(data.id);
   };
 
@@ -131,6 +146,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ elements, editor, 
           onClickDelState={handleDeleteState}
           onClickInitial={handleinitialState}
           onClickDelTran={handleDelTranState}
+          closeMenu={() => {
+            setIsContextMenuOpen(false);
+          }}
         />
       </div>
 

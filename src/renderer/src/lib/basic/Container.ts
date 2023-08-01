@@ -30,6 +30,8 @@ export class Container {
   isScale = false;
 
   dropCallback?: (position: Point) => void;
+  contextMenuOpenCallback? : (position: Point) => void;
+  contextMenuCloseCallback? : () => void;
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -61,6 +63,7 @@ export class Container {
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel as any);
   }
@@ -81,6 +84,18 @@ export class Container {
     this.dropCallback = callback;
   };
 
+  onFieldContextMenu = (callback: (position: Point) => void) => {
+    this.contextMenuOpenCallback = callback;
+  }
+
+  onContextMenuClose = (callback: () => void) => {
+    this.contextMenuCloseCallback = callback;
+  }
+
+  closeContextMenu = () => {
+    this.contextMenuCloseCallback?.();
+  }
+
   handleMouseDown = (e: MyMouseEvent) => {
     if (!this.isPan || !e.left) return;
 
@@ -89,6 +104,8 @@ export class Container {
 
   handleMouseUp = (e: MyMouseEvent) => {
     this.machine.removeSelection();
+    this.closeContextMenu();
+
     if (!this.isPan) return;
 
     this.app.canvas.element.style.cursor = 'grab';
@@ -103,6 +120,10 @@ export class Container {
 
     this.isDirty = true;
   };
+
+  handleFieldContextMenu = (e: MyMouseEvent) => {
+    this.contextMenuOpenCallback?.(e);
+  }
 
   handleSpaceDown = () => {
     this.isPan = true;

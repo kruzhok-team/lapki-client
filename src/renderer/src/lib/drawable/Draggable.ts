@@ -174,6 +174,12 @@ export class Draggable extends EventEmitter {
     document.body.style.cursor = 'grabbing';
     // для того что-бы не хватать несколько элементов
     e.stopPropagation();
+    
+    // А это чтобы закрыть ненужное контекстное меню.
+    // Если контекстное меню начнёт закрываться само по себе,
+    // вы нарушили вселенский порядок событий, и эта строка
+    // вызывается позже, чем открывается новое меню.
+    this.container.closeContextMenu();
 
     this.dragging = true;
 
@@ -214,6 +220,8 @@ export class Draggable extends EventEmitter {
 
     if (!isUnderMouse) return;
 
+    e.stopPropagation();
+
     clearTimeout(this.mouseDownTimerId);
 
     this.emit('mouseup', { event: e, target: this });
@@ -235,6 +243,8 @@ export class Draggable extends EventEmitter {
   handleContextMenuClick = (e: MyMouseEvent) => {
     const isUnderMouse = this.isUnderMouse(e);
     if (!isUnderMouse) return;
+
+    e.stopPropagation();
 
     this.emit('contextmenu', { event: e, target: this });
   };

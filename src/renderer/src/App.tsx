@@ -8,7 +8,7 @@ import { Elements } from './types/diagram';
 
 /*Первые иконки*/
 import arrow from './assets/img/arrow.png';
-//import forward from './assets/img/forward.png';
+// import forward from './assets/img/forward.png';
 /*Вторичные иконки*/
 import arrow1 from './assets/img/arrow1.png';
 

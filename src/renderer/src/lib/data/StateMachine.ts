@@ -70,7 +70,7 @@ export class StateMachine extends EventEmitter {
       const sourceState = this.states.get(data.source) as State;
       const targetState = this.states.get(data.target) as State;
 
-      const transition = new Transition(this.container, sourceState, targetState, data);
+      const transition = new Transition(this.container, sourceState, targetState, data, id);
 
       this.transitions.set(id, transition);
 
@@ -78,13 +78,13 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  //В разработке (обновление имя)
-  updateState(name: string, newName: string, events: string, component: string, method: string) {
-    this.states.forEach((state) => {
-      if (state.id === name) {
-        state.data.name = newName;
-      }
-    });
+  // TODO: разбить действия над состоянием, переименование идёт отдельно, события отдельно
+  // FIXME: в разработке (работает только переименование)
+  updateState(id: string, newName: string, events: string, component: string, method: string) {
+    const state = this.states.get(id);
+    if (typeof state === 'undefined') return;
+
+    state.data.name = newName;
 
     this.container.isDirty = true;
   }
@@ -148,15 +148,15 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  unlinkState(name: string) {
-    const state = this.states.get(name);
+  unlinkState(id: string) {
+    const state = this.states.get(id);
     if (typeof state === 'undefined') return;
     if (typeof state!.parent === 'undefined') return;
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBound = { ...state!.bounds, ...state!.compoundPosition };
 
-    state!.parent?.children.delete(name);
+    state!.parent?.children.delete(id);
     state!.parent = undefined;
     delete state!.data.parent;
 
@@ -180,6 +180,9 @@ export class StateMachine extends EventEmitter {
         this.unlinkState(state.id!);
       }
     });
+    
+    // TODO: затирать начальное состояние, если удаляемое состояние было начальным
+
     this.states.delete(idState);
     this.container.isDirty = true;
   }
@@ -202,12 +205,12 @@ export class StateMachine extends EventEmitter {
   }
 
   //Удаление связей
-  deleteTransition(bounds: string) {
-    this.transitions.forEach((data, id) => {
-      if (JSON.stringify(data.condition.bounds) === JSON.stringify(bounds)) {
-        this.transitions.delete(id);
-      }
-    });
+  deleteTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (typeof transition === 'undefined') return;
+
+    this.transitions.delete(id);
+    // FIXME: остаётся невидимое условие
 
     this.container.isDirty = true;
   }
@@ -218,9 +221,9 @@ export class StateMachine extends EventEmitter {
     transitionData: TransitionType,
     id?: string
   ) {
-    const transition = new Transition(this.container, source, target, transitionData);
-
     const newId = typeof id !== 'undefined' ? id! : nanoid();
+    const transition = new Transition(this.container, source, target, transitionData, newId);
+
     this.transitions.set(newId, transition);
 
     this.container.transitions.watchTransition(transition);
@@ -257,7 +260,12 @@ export class StateMachine extends EventEmitter {
     this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
-  //Снять выделение с других нод при клике на новую
+  /** 
+   * Снимает выделение со всех нод и переходов.
+   * 
+   * @remark Выполняется при изменении выделения.
+   * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
+   */
   removeSelection() {
     this.states.forEach((state) => {
       state.setIsSelected(false, '');

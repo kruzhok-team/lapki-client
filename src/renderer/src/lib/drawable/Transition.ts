@@ -18,20 +18,23 @@ export class Transition {
   source!: State;
   target!: State;
   condition!: Condition;
+  id!: string;
 
   constructor(
     container: Container,
     source: State,
     target: State,
     data: TransitionType,
+    id: string
   ) {
     this.container = container;
     this.data = data;
+    this.id = id;
 
     this.source = source;
     this.target = target;
 
-    this.condition = new Condition(this.container, this);
+    this.condition = new Condition(this.container, this, id);
   }
 
   toJSON() {

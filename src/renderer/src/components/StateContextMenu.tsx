@@ -1,10 +1,13 @@
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
+import { Condition } from '@renderer/lib/drawable/Condition';
+import { State } from '@renderer/lib/drawable/State';
+import { Rectangle } from '@renderer/types/graphics';
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 interface StateContextMenuProps {
   isOpen: boolean;
-  isData: { state } | undefined;
+  isData: { data: State | Condition, bounds: Rectangle } | undefined;
   onClickDelState: (data) => void;
   onClickInitial: (data) => void;
   onClickDelTran: (data) => void;
@@ -24,30 +27,39 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
 
   const handleDeleteClick = hookHandleSubmit((data) => {
-    //отсылаем id ноды для удаления состояния
-    data.id = isData?.state.id;
-    onClickDelState(data);
-
-    //отсылаем bounds для удаления связи
-    data.id = isData?.state.bounds;
-    onClickDelTran(data);
+    if (typeof isData === "undefined") return; // удалять нечего
+    
+    if (isData!.data instanceof Condition) {
+      data.id = isData?.data.id!;
+      onClickDelTran(data)
+    }
+    if (isData!.data instanceof State) {
+      data.id = isData?.data.id!;
+      onClickDelState(data)
+    }
   });
 
   //отсылаем id ноды для изменения начального состояния
   const handleInitialState = hookHandleSubmit((data) => {
-    data.id = isData?.state.id;
+    if (typeof isData === "undefined") return; // удалять нечего
+    if (!(isData!.data instanceof State)) return; // не нода
+    data.id = isData?.data.id!;
     onClickInitial(data);
   });
 
+  const bounds = typeof isData !== "undefined" ? isData!.bounds : {
+    x: 0, y: 0, width: 100, height: 100 
+  }
+
   //Рисуем виртуальный объект
-  var x = isData?.state.computedPosition.x;
-  var y = isData?.state.computedPosition.y + 26;
+  var x = bounds.x;
+  var y = bounds.y + 26;
 
   const virtualEl = {
     getBoundingClientRect() {
       return {
-        width: isData?.state.computedWidth + 20,
-        height: isData?.state.computedHeight + 20,
+        width: bounds.width + 20,
+        height: bounds.height + 20,
         x: 0,
         y: 0,
         top: y,
@@ -66,14 +78,15 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
 
+
   //Массив кнопок
   const button = [
     {
       text: 'Назначить начальным',
       onClick: handleInitialState,
       style:
-        (!isData?.state.isState || isData?.state.isInitial === true || !isData?.state.id) &&
-        'hidden',
+        (!(isData?.data instanceof State)) && 'hidden',
+      disabled: !(isData?.data instanceof State) || isData?.data.isInitial === true || !isData?.data.id
     },
     {
       text: 'Посмотреть код',
@@ -96,12 +109,13 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
           !isOpen && 'hidden'
         )}
       >
-        {button.map(({ text, onClick, style }, i) => (
+        {button.map(({ text, onClick, style, disabled }, i) => (
           <button
             onClick={onClick}
             key={'ContextMenu' + i}
+            disabled={disabled}
             className={twMerge(
-              'w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white',
+              'w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white disabled:text-gray-400',
               style
             )}
           >

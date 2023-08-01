@@ -83,7 +83,7 @@ export const App: React.FC = () => {
             <div className="flex-1">
               {elements ? (
                 <>
-                  <div className="flex h-[2rem] items-center justify-between border-b border-[#4391BF]">
+                  <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
                     <Tabs fileName={fileName} functionTabs={handleClick} isActive={isActive} />
                     <p></p>
                     {/*<button className="w-[4vw]">

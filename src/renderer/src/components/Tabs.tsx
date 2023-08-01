@@ -17,28 +17,27 @@ export const Tabs: React.FC<TabsProps> = ({ fileName, functionTabs, isActive }) 
     {
       tab: 'CODE: ' + fileName,
     },
-    {
-      tab: 'CODE: ' + 'jkfghdfkhdfgjkfchdkjsg',
-    },
   ];
 
   return (
     <>
-      <div key="DivTabs" className="flex max-w-full font-Fira">
+      <div className="flex font-Fira">
         {TabsItems.map(({ tab }, index) => (
-          <button
+          <div
             key={'tab' + index}
             className={twMerge(
-              'flex items-center px-1 py-1',
+              'flex items-center',
               isActive(index) && 'bg-[#4391BF] bg-opacity-50'
             )}
             onClick={() => functionTabs(index)}
           >
-            <p className="w-auto truncate">{tab}</p>
+            <div role="button" className="line-clamp-1 p-1">
+              {tab}
+            </div>
             <button className="p-2 hover:bg-[#FFFFFF]">
               <Cross width="1rem" height="1rem" />
             </button>
-          </button>
+          </div>
         ))}
       </div>
     </>

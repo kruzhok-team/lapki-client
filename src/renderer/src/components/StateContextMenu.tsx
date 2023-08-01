@@ -24,6 +24,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   onClickInitial,
   onClickDelState,
   onClickDelTran,
+  onClickShowCode,
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
 
@@ -41,9 +42,20 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   });
 
   //отсылаем данные ноды для показа его кода
-  const handleShowCode = (data) => {
-    return (data.id = isData!);
-  };
+  const handleShowCode = hookHandleSubmit((data) => {
+    if (typeof isData === 'undefined') return; // удалять нечего
+
+    if (isData!.data instanceof Condition) {
+      data.id = isData?.data.id!;
+
+      onClickShowCode(data);
+    }
+
+    if (isData!.data instanceof State) {
+      data.id = isData?.data.id!;
+      onClickShowCode(data);
+    }
+  });
 
   //отсылаем id ноды для изменения начального состояния
   const handleInitialState = hookHandleSubmit((data) => {

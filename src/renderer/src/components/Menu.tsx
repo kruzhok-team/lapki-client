@@ -10,24 +10,27 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const items = [
     {
-      text: 'Новый файл',
+      text: 'Новая схема',
       onClick: props.onRequestNewFile,
     },
     {
-      text: 'Открыть файл',
+      text: 'Открыть...',
       onClick: props.onRequestOpenFile,
     },
     {
-      text: 'Сохранить файл',
+      text: 'Сохранить',
       onClick: props.onRequestSaveFile,
     },
     {
-      text: 'Сохранить файл как...',
+      text: 'Сохранить как...',
       onClick: props.onRequestSaveAsFile,
     },
+    /*
     {
       text: 'Примеры',
+      // TODO: модальное окно с выбором примера
     },
+    */
   ];
 
   return (

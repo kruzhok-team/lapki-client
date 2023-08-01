@@ -199,7 +199,11 @@ export class StateMachine extends EventEmitter {
     if (state!.data.parent) {
       this.unlinkState(state.id!);
     }
-    // TODO: затирать начальное состояние, если удаляемое состояние было начальным
+
+    // Если удаляемое состояние было начальным, стираем текущее значение
+    if (state!.isInitial) {
+      this.initialState = '';
+    }
 
     this.container.states.unwatchState(state);
 

@@ -1,7 +1,9 @@
 import { Dispatch, SetStateAction } from 'react';
-import { CanvasEditor } from '../CanvasEditor';
+
 import { Elements, emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
+
+import { CanvasEditor } from '../CanvasEditor';
 
 export type EditorData = {
   name: string | null;

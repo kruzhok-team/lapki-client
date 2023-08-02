@@ -1,6 +1,7 @@
 import { State } from './State';
-import { EventEmitter } from '../common/EventEmitter';
+
 import { Container } from '../basic/Container';
+import { EventEmitter } from '../common/EventEmitter';
 
 /**
  * Контроллер {@link State|состояний}.

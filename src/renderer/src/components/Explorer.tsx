@@ -1,5 +1,6 @@
-import { StateMachine } from '@renderer/lib/data/StateMachine';
 import React from 'react';
+
+import { StateMachine } from '@renderer/lib/data/StateMachine';
 
 interface ExplorerProps {
   stateMachine: StateMachine | undefined;

@@ -1,17 +1,18 @@
-import { Component as ComponentType } from "@renderer/types/diagram";
-import { icons } from "./drawable/Picto";
+import { Component as ComponentType } from '@renderer/types/diagram';
 
-export class Component{
-    data!: ComponentType;
-    image: HTMLImageElement
+import { icons } from './drawable/Picto';
 
-    constructor(data: ComponentType){
-      this.data = data;
-      // this.image = icons[this.data.type];
-      this.image = icons.get("DiodOn")!;
-    }
+export class Component {
+  data!: ComponentType;
+  image: HTMLImageElement;
 
-    toJSON() {
-      return this.data;
-    }
+  constructor(data: ComponentType) {
+    this.data = data;
+    // this.image = icons[this.data.type];
+    this.image = icons.get('DiodOn')!;
+  }
+
+  toJSON() {
+    return this.data;
+  }
 }

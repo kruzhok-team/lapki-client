@@ -1,9 +1,10 @@
 import { Elements, emptyElements } from '@renderer/types/diagram';
+
 import { Canvas } from './basic/Canvas';
-import { Mouse } from './basic/Mouse';
-import { Render } from './common/Render';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
+import { Mouse } from './basic/Mouse';
+import { Render } from './common/Render';
 import { preloadPicto } from './drawable/Picto';
 
 /**

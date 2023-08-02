@@ -217,9 +217,9 @@ export const getTransitionLines = (
   state1: Rectangle,
   state2: Rectangle,
   condition: Rectangle,
-  rectPadding: number = 0,
-  startLinePadding: number = 0,
-  endLinePadding: number = 0
+  rectPadding = 0,
+  startLinePadding = 0,
+  endLinePadding = 0
 ) => {
   // const d1 = getDistanceBetweenRectangles(state1, condition);
   // const d2 = getDistanceBetweenRectangles(state2, condition);

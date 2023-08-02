@@ -1,7 +1,7 @@
 import React from 'react';
-import ReactModal, { Props } from 'react-modal';
 
 import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
+import ReactModal, { Props } from 'react-modal';
 
 import './style.css';
 

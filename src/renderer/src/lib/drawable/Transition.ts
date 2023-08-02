@@ -1,10 +1,12 @@
-import { State } from './State';
-import { Point, TransitionLine } from '@renderer/types/graphics';
 import { Transition as TransitionType } from '@renderer/types/diagram';
-import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
-import { transitionStyle } from '../styles';
+import { Point, TransitionLine } from '@renderer/types/graphics';
+
 import { Condition } from './Condition';
+import { State } from './State';
+
 import { Container } from '../basic/Container';
+import { transitionStyle } from '../styles';
+import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
 
 /**
  * Переход между состояниями.

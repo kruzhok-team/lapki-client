@@ -1,9 +1,11 @@
 import { Point, Rectangle } from '@renderer/types/graphics';
+
+import { Events } from './Events';
+
 import { Container } from '../basic/Container';
-import { isPointInRectangle } from '../utils';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Events } from './Events';
+import { isPointInRectangle } from '../utils';
 
 /**
  * Перемещаемый элемент холста.
@@ -151,9 +153,9 @@ export class Draggable extends EventEmitter {
   }
 
   get computedDimensions() {
-    let width = this.computedWidth;
-    let height = this.computedHeight;
-    let childrenHeight = this.childrenContainerHeight;
+    const width = this.computedWidth;
+    const height = this.computedHeight;
+    const childrenHeight = this.childrenContainerHeight;
 
     return { width, height, childrenHeight };
   }

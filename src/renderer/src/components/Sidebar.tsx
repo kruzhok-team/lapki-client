@@ -1,18 +1,19 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { twMerge } from 'tailwind-merge';
+
+import { StateMachine } from '@renderer/lib/data/StateMachine';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
+import { twMerge } from 'tailwind-merge';
 
-import { Explorer, Menu, MenuProps } from '../components';
-
-import menu from '../assets/img/menu.png';
-import compiler from '../assets/img/forward.png';
+import chip from '../assets/img/chip.png';
 import components from '../assets/img/components.png';
 import drive from '../assets/img/flash-drive.png';
-import chip from '../assets/img/chip.png';
+import compiler from '../assets/img/forward.png';
 import gear from '../assets/img/gear.png';
-import { StateMachine } from '@renderer/lib/data/StateMachine';
+import menu from '../assets/img/menu.png';
+import { Explorer, Menu, MenuProps } from '../components';
+
 interface SidebarProps {
-  menuProps: MenuProps,
+  menuProps: MenuProps;
   stateMachine: StateMachine | undefined;
 }
 
@@ -46,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
 
   const handleClick = (i: number) => () => {
     const panel = panelRef.current;
-    
+
     if (i === activeTab && panel) {
       if (panel.getCollapsed()) {
         panel.expand();
@@ -65,10 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
   };
 
   const tabs = useMemo(
-    () => [
-      <Menu {...menuProps} />,
-      <Explorer stateMachine={stateMachine}/>,
-    ],
+    () => [<Menu {...menuProps} />, <Explorer stateMachine={stateMachine} />],
     [stateMachine]
   );
 

@@ -1,9 +1,11 @@
-import { CanvasEditor } from '../CanvasEditor';
-import { Point } from '@renderer/types/graphics';
-import { isPointInRectangle, preloadImages } from '../utils';
-import { State } from './State';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import Icon from '@renderer/assets/icons/new transition.svg';
+import { Point } from '@renderer/types/graphics';
+
+import { State } from './State';
+
+import { CanvasEditor } from '../CanvasEditor';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { isPointInRectangle, preloadImages } from '../utils';
 
 /**
  * «Хваталки» для ноды, надстройка над State, отрисовывающая

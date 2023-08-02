@@ -1,9 +1,10 @@
 import React from 'react';
+
 import { useForm } from 'react-hook-form';
 
+import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
-import { ColorInput } from './Modal/ColorInput';
 
 interface CreateTransitionModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
     formState: { errors },
   } = useForm<CreateTransitionModalFormValues>({
     defaultValues: {
-      color: "#ffffff"
+      color: '#ffffff',
     },
   });
 
@@ -40,7 +41,7 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
   const onRequestClose = () => {
     onClose();
     // TODO: пока кажется лишним затирать текстовые поля
-    reset({ color: "#ffffff"});
+    reset({ color: '#ffffff' });
   };
 
   return (

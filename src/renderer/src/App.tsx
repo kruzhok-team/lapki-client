@@ -1,32 +1,29 @@
-import React, { useState } from 'react';
-import { twMerge } from 'tailwind-merge';
-import { Panel, PanelGroup } from 'react-resizable-panels';
+import { FC, useState } from 'react';
 
+import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
+import { Panel, PanelGroup } from 'react-resizable-panels';
+import { twMerge } from 'tailwind-merge';
+
+import arrow from './assets/img/arrow.png';
+import arrow1 from './assets/img/arrow1.png';
 import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
-/*Первые иконки*/
-import arrow from './assets/img/arrow.png';
-// import forward from './assets/img/forward.png';
-/*Вторичные иконки*/
-import arrow1 from './assets/img/arrow1.png';
-import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
 import { CanvasEditor } from './lib/CanvasEditor';
-import { preloadPicto } from './lib/drawable/Picto';
 import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
+import { preloadPicto } from './lib/drawable/Picto';
 import { isLeft, unwrapEither } from './types/Either';
 
 /**
  * React-компонент приложения
  */
-export const App: React.FC = () => {
+export const App: FC = () => {
   preloadPicto(() => void {});
 
   // TODO: а если у нас будет несколько редакторов?
 
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
-  let [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
+  const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
   const manager = new EditorManager(editor, editorData, setEditorData);
-  
   const [isDocOpen, setIsDocOpen] = useState(false);
 
   /*Открытие файла*/
@@ -83,8 +80,8 @@ export const App: React.FC = () => {
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
   const [ElementCode, setElementCode] = useState<string | null>(null);
   /** Callback функция выбора вкладки (машина состояний, код) */
-  var [activeTab, setActiveTab] = useState<number | 0>(0);
-  var isActive = (index: number) => activeTab === index;
+  const [activeTab, setActiveTab] = useState<number | 0>(0);
+  const isActive = (index: number) => activeTab === index;
   const handleClick = (index: number) => {
     if (activeTab === index) {
       setActiveTab(activeTab);
@@ -92,7 +89,7 @@ export const App: React.FC = () => {
     setActiveTab(index);
   };
 
-  var TabsItems = [
+  const TabsItems = [
     {
       tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       content: (

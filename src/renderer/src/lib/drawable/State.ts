@@ -1,10 +1,12 @@
 import { State as StateType } from '@renderer/types/diagram';
-import { Container } from '../basic/Container';
-import { stateStyle, transitionStyle } from '../styles';
+
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
 import { picto } from './Picto';
+
+import { Container } from '../basic/Container';
+import { stateStyle, transitionStyle } from '../styles';
 
 interface StateProps {
   container: Container;
@@ -38,7 +40,7 @@ export class State extends Draggable {
       parent: this.data.parent,
       name: this.data.name,
       events: this.data.events,
-      bounds: this.bounds,  // FIXME: должны учитывать дочерний контейнер?
+      bounds: this.bounds, // FIXME: должны учитывать дочерний контейнер?
     };
   }
 

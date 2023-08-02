@@ -1,7 +1,8 @@
-import { stateStyle, transitionStyle } from '../styles';
 import { Draggable } from './Draggable';
-import { Container } from '../basic/Container';
 import { Transition } from './Transition';
+
+import { Container } from '../basic/Container';
+import { stateStyle, transitionStyle } from '../styles';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
@@ -18,12 +19,16 @@ export class Condition extends Draggable {
   isSelected = false;
 
   constructor(container: Container, transition: Transition, id: string) {
-    super(container, {
-      x: transition.data.position.x,
-      y: transition.data.position.y,
-      width: 150,
-      height: 70,
-    }, id);
+    super(
+      container,
+      {
+        x: transition.data.position.x,
+        y: transition.data.position.y,
+        width: 150,
+        height: 70,
+      },
+      id
+    );
 
     this.transition = transition;
     // this.contextmenu = new ContextMenu(container, this);
@@ -63,7 +68,7 @@ export class Condition extends Draggable {
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    
+
     // NOTE: Для каждого нового объекта рисования требуется указывать их начало и конец,
     //       а перед ними прописывать стили!
     ctx.beginPath();

@@ -1,9 +1,10 @@
-import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
 import { EventData } from '@renderer/types/diagram';
+
 import { Draggable } from './Draggable';
 import { picto } from './Picto';
 
+import { Container } from '../basic/Container';
+import { stateStyle } from '../styles';
 
 /**
  * Событие состояний.
@@ -33,19 +34,19 @@ export class Events {
     const px = 15 / this.container.scale;
     const fontSize = stateStyle.titleFontSize / this.container.scale;
     const titleHeight = fontSize + paddingY * 2;
-    
+
     ctx.beginPath();
 
     Object.entries(this.data).forEach(([_eventName, events], i) => {
       const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
-      
+
       if (events.trigger.method === 'onEnter') {
         picto.drawOnEnter(ctx, x + px, resultY);
-      } 
+      }
       if (events.trigger.method === 'onExit') {
         picto.drawOnExit(ctx, x + px, resultY);
       }
-      
+
       if (events.do.length == 0) return;
 
       if (events.do[0].method === 'turnOn') {

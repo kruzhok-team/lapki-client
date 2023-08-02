@@ -27,8 +27,6 @@ import { stateStyle } from '../styles';
 export class StateMachine extends EventEmitter {
   container!: Container;
 
-  filename: string | null | undefined; 
-
   initialState: string = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
@@ -43,6 +41,20 @@ export class StateMachine extends EventEmitter {
     this.initStates(elements.states, elements.initialState);
     this.initTransitions(elements.transitions);
     this.initComponents(elements.components);
+  }
+
+  clear() {
+    this.transitions.forEach((value) => {
+      this.container.transitions.unwatchTransition(value);
+    });
+
+    this.states.forEach((value) => {
+      this.container.states.unwatchState(value);
+    });
+    this.initialState = '';
+    this.components.clear();
+    this.transitions.clear();
+    this.states.clear();
   }
 
   graphData() {

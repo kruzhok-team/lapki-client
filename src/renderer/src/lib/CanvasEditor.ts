@@ -50,24 +50,9 @@ export class CanvasEditor {
     });
   }
 
-  get filename(): string | null | undefined {
-    return this.container.machine.filename;
-  }
-
-  set filename(name: string | null | undefined) {
-    this.container.machine.filename = name;
-  }
-  
-  loadData(elements: Elements, filename: string | null) {
-    // со всем разнообразием обрабатываемых событий пока что
-    // проще создать контейнер заново
-    
-    // предварительно сбрасываем все обработчики
-    this.mouse.reset();
-    this.keyboard.reset();
-    
-    this.container = new Container(this, elements);
-    this.container.machine.filename = filename;
+  loadData(elements: Elements) {
+    this.container.machine.clear();
+    this.container.machine.loadData(elements);
     this.container.isDirty = true;
   }
 

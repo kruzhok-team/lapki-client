@@ -20,10 +20,6 @@ export class CanvasEditor {
   container!: Container;
 
   constructor(container: HTMLDivElement, elements?: Elements) {
-    preloadPicto(() => {
-      this.container.isDirty = true;
-    });
-
     this.root = container;
     this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);
@@ -39,6 +35,10 @@ export class CanvasEditor {
       this.mouse.setOffset();
       this.container.isDirty = true;
     };
+
+    preloadPicto(() => {
+      this.container.isDirty = true;
+    });
 
     this.render.subscribe(() => {
       if (!this.container.isDirty) return;

@@ -13,18 +13,8 @@ import arrow1 from './assets/img/arrow1.png';
 import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
 import { CanvasEditor } from './lib/CanvasEditor';
 import { preloadPicto } from './lib/drawable/Picto';
-
-type FileState = {
-  name: string | null;
-  shownName: string | null;
-  content: string | null;
-};
-
-const startFileState = {
-  name: null,
-  shownName: null,
-  content: null,
-};
+import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
+import { isLeft, unwrapEither } from './types/Either';
 
 /**
  * React-компонент приложения
@@ -35,79 +25,51 @@ export const App: React.FC = () => {
   // TODO: а если у нас будет несколько редакторов?
 
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
-  let [fileState, setFileState] = useState<FileState>(startFileState);
-  const elements = fileState.content ? (JSON.parse(fileState.content) as Elements) : null;
+  let [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
+  const elements = editorData.content ? (JSON.parse(editorData.content) as Elements) : null;
   const [isDocOpen, setIsDocOpen] = useState(false);
+  const manager = new EditorManager(editor, editorData, setEditorData);
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
     // TODO: переспрашивать, если файл изменён
-    const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile');
-    if (openData[0]) {
-      // TODO: валидация файла и вывод ошибок
-      const elements = JSON.parse(openData[3]) as Elements;
-      editor?.loadData(elements);
-      setFileState({
-        name: openData[1],
-        shownName: openData[2],
-        content: openData[3],
-      });
-    } else if (openData[1]) {
-      // TODO: вывод ошибки чтения
-      console.error(openData);
+    const result = await manager.open();
+    if (isLeft(result)) {
+      const cause = unwrapEither(result);
+      if (cause) {
+        // TODO: вывод ошибки чтения
+        console.log(cause);
+      }
     }
   };
 
   //Создание нового файла
   const handleNewFile = async () => {
     // TODO: переспрашивать, если файл изменён
-    editor?.loadData(emptyElements());
-    setFileState({
-      name: null,
-      shownName: null,
-      content: JSON.stringify(emptyElements()),
-    });
+    manager.newFile();
   };
 
   const handleSaveAsFile = async () => {
-    if (!editor) return;
-    const data = editor!.getData();
-    const saveData: [boolean, string | null, string | null] =
-      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', fileState.name, data);
-    if (saveData[0]) {
-      setFileState({
-        ...fileState,
-        name: saveData[1],
-        shownName: saveData[2],
-      });
-    } else if (saveData[1]) {
-      // TODO: вывод ошибки сохранения
-      console.error(saveData);
+    const result = await manager.saveAs();
+    if (isLeft(result)) {
+      const cause = unwrapEither(result);
+      if (cause) {
+        // TODO: вывод ошибки сохранения
+        console.log(cause);
+      }
     }
   };
 
   const handleSaveFile = async () => {
-    if (!editor) return;
-    if (!fileState.name) {
-      await handleSaveAsFile();
-      return;
-    }
-    const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
-      'dialog:saveFile',
-      fileState.name,
-      editor!.getData()
-    );
-    if (saveData[0]) {
-      // TODO: информировать об успешном сохранении
-      setFileState({
-        ...fileState,
-        name: saveData[1],
-        shownName: saveData[2],
-      });
+    const result = await manager.save();
+    if (isLeft(result)) {
+      const cause = unwrapEither(result);
+      if (cause) {
+        // TODO: вывод ошибки сохранения
+        console.log(cause);
+      }
     } else {
-      // TODO: вывод ошибки сохранения
-      console.error(saveData);
+      // TODO: информировать об успешном сохранении
     }
   };
 
@@ -133,7 +95,7 @@ export const App: React.FC = () => {
 
   var TabsItems = [
     {
-      tab: fileState.shownName ? 'SM: ' + fileState.shownName : 'SM: unnamed',
+      tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       content: (
         <DiagramEditor
           elements={elements!}
@@ -145,7 +107,7 @@ export const App: React.FC = () => {
       ),
     },
     {
-      tab: fileState.shownName ? 'CODE: ' + fileState.shownName : 'CODE: unnamed',
+      tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
       content: <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
     },
   ];

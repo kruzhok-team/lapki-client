@@ -7,7 +7,7 @@ import { twMerge } from 'tailwind-merge';
 
 interface StateContextMenuProps {
   isOpen: boolean;
-  isData: { data: State | Condition; bounds: Rectangle } | undefined;
+  isData: { data: State | Condition | null; bounds: Rectangle } | undefined;
   onClickDelState: (data) => void;
   onClickInitial: (data) => void;
   onClickDelTran: (data) => void;
@@ -48,6 +48,11 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   //отсылаем данные ноды для показа его кода
   const handleShowCode = hookHandleSubmit((data) => {
     if (typeof isData === 'undefined') return; // удалять нечего
+
+    if (isData!.data === null) {
+      data.id = 'FullCode';
+      onClickShowCode(data);
+    }
 
     if (isData!.data instanceof Condition) {
       data.id = isData?.data.id!;
@@ -124,6 +129,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     {
       text: 'Удалить',
       onClick: handleDeleteClick,
+      style: !isData?.data && 'hidden',
     },
   ];
 

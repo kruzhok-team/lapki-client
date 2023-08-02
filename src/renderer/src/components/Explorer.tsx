@@ -18,7 +18,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ stateMachine }) => {
           <div>
             {[...stateMachine.components.keys()].map((key) => (
               <div key={'explorer' + key}>
-                <img src={stateMachine.components.get(key)?.image.src}></img> {key}
+                <img src={stateMachine.components.get(key)?.image?.src}></img> {key}
               </div>
             ))}
           </div>

@@ -3,6 +3,7 @@ import { Transition } from './Transition';
 
 import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
+import { picto } from './Picto';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
@@ -24,7 +25,7 @@ export class Condition extends Draggable {
       {
         x: transition.data.position.x,
         y: transition.data.position.y,
-        width: 150,
+        width: 130,
         height: 70,
       },
       id
@@ -57,9 +58,13 @@ export class Condition extends Draggable {
 
     const trigger = this.transition.data.trigger;
     ctx.beginPath();
+    picto.drawEvent(ctx, trigger, x + p, y + p);
+    ctx.closePath();
+    /*
     ctx.fillText(trigger.component, x + p, y + p);
     ctx.fillText(trigger.method, x + p, y + fontSize + p);
     ctx.closePath();
+    */
 
     if (this.isSelected) {
       this.drawSelection(ctx);

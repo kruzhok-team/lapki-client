@@ -9,7 +9,7 @@ export class Component {
   constructor(data: ComponentType) {
     this.data = data;
     // this.image = icons[this.data.type];
-    this.image = icons.get('DiodOn')!;
+    this.image = icons.get('LED')!;
   }
 
   toJSON() {

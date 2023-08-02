@@ -40,20 +40,17 @@ export class Events {
     Object.entries(this.data).forEach(([_eventName, events], i) => {
       const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
 
-      if (events.trigger.method === 'onEnter') {
-        picto.drawOnEnter(ctx, x + px, resultY);
-      }
-      if (events.trigger.method === 'onExit') {
-        picto.drawOnExit(ctx, x + px, resultY);
-      }
+      picto.drawEvent(ctx, events.trigger, x + px, resultY);
 
       if (events.do.length == 0) return;
-
-      if (events.do[0].method === 'turnOn') {
-        picto.drawDiodOn(ctx, x + 8 * px, resultY);
-      } else {
-        picto.drawDiodOff(ctx, x + 8 * px, resultY);
-      }
+      events.do.forEach((act, i) => {
+        picto.drawAction(
+          ctx,
+          act,
+          x + (20 + (picto.eventWidth + 5) * (i + 1)) / picto.scale,
+          resultY
+        );
+      });
     });
 
     ctx.closePath();

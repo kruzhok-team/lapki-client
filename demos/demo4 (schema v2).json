@@ -5,7 +5,7 @@
       "events": [
         {
           "trigger": { "component": "System", "method": "onEnter" },
-          "do": [{ "component": "diod", "method": "turnOn" }]
+          "do": [{ "component": "LED", "method": "on" }]
         }
       ],
       "bounds": { "x": 35, "y": 291 }
@@ -16,19 +16,19 @@
         {
           "trigger": { "component": "System", "method": "onEnter" },
           "do": [
-            { "component": "diod", "method": "turnOff" },
-            { "component": "diod", "method": "turnOn" },
-            { "component": "diod", "method": "turnOff" },
-            { "component": "diod", "method": "turnOn" }
+            { "component": "LED", "method": "off" },
+            { "component": "LED", "method": "on" },
+            { "component": "LED", "method": "off" },
+            { "component": "LED", "method": "on" }
           ]
         },
         {
           "trigger": { "component": "System", "method": "onExit" },
           "do": [
-            { "component": "diod", "method": "turnOff" },
-            { "component": "diod", "method": "turnOn" },
-            { "component": "diod", "method": "turnOff" },
-            { "component": "diod", "method": "turnOn" }
+            { "component": "LED", "method": "off" },
+            { "component": "LED", "method": "on" },
+            { "component": "LED", "method": "off" },
+            { "component": "LED", "method": "on" }
           ]
         }
       ],
@@ -39,7 +39,7 @@
       "events": [
         {
           "trigger": { "component": "System", "method": "onEnter" },
-          "do": [{ "component": "diod", "method": "turnOn" }]
+          "do": [{ "component": "LED", "method": "on" }]
         }
       ],
       "bounds": { "x": 188, "y": 21 }
@@ -71,7 +71,7 @@
       "color": "#F29727",
       "position": { "x": 457, "y": 173 },
       "trigger": {
-        "component": "btn",
+        "component": "Button",
         "method": "isJustPressed"
       }
     },
@@ -81,7 +81,7 @@
       "color": "#F24C3D",
       "position": { "x": 16, "y": 175 },
       "trigger": {
-        "component": "btn",
+        "component": "Button",
         "method": "isJustPressed"
       }
     },
@@ -91,8 +91,8 @@
       "color": "#1100ff",
       "position": { "x": 12, "y": 77 },
       "trigger": {
-        "component": "btn",
-        "method": "NewMethod"
+        "component": "Button",
+        "method": "TheMethod"
       }
     }
   ],

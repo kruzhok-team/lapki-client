@@ -29,7 +29,6 @@ export class State extends Draggable {
 
   statusevent!: Events;
   edgeHandlers!: EdgeHandlers;
-  initialIcon?: HTMLImageElement;
   onEnter?: HTMLImageElement;
   onExit?: HTMLImageElement;
   DiodOn?: HTMLImageElement;
@@ -190,9 +189,12 @@ export class State extends Draggable {
     const { x, y } = this.drawBounds;
 
     ctx.beginPath();
-
-    picto.drawInitialMark(ctx, x - 30 / this.container.scale, y);
-
+    picto.drawImage(ctx, 'InitialIcon', {
+      x: x - 30 / this.container.scale,
+      y,
+      width: 25,
+      height: 25,
+    });
     ctx.closePath();
   }
 

@@ -257,3 +257,24 @@ export const preloadImages = (urls: string[]) => {
 
   return Promise.all(promises);
 };
+
+export const preloadImagesMap = (
+  m: Map<string, HTMLImageElement>,
+  urls: { [x: string]: string }
+) => {
+  const promises = Object.entries(urls).map(([key, url]): Promise<[string, HTMLImageElement]> => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+
+      image.onload = () => {
+        m.set(key, image);
+        resolve([key, image]);
+      };
+      image.onerror = () => reject(`Image failed to load: ${url}`);
+
+      image.src = url;
+    });
+  });
+
+  return Promise.all(promises);
+};

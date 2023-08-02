@@ -221,7 +221,6 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  //TODO необходимо придумать очистку события на удалённые объекты
   deleteState(idState: string) {
     const state = this.states.get(idState);
     console.log(state);

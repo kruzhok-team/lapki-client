@@ -110,7 +110,6 @@ export const App: React.FC = () => {
       console.error(saveData);
     }
   };
-
   const menuProps: MenuProps = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
@@ -120,18 +119,9 @@ export const App: React.FC = () => {
 
   //Callback данные для получения ответа от контекстного меню
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
-  const [ElementCode, setElementCode] = useState<string | null>(null);
-  /** Функция выбора вкладки (машина состояний, код) */
-  var [activeTab, setActiveTab] = useState<number | 0>(0);
-  var isActive = (index: number) => activeTab === index;
-  const handleClick = (index: number) => {
-    if (activeTab === index) {
-      setActiveTab(activeTab);
-    }
-    setActiveTab(index);
-  };
+  const [elementCode, setElementCode] = useState<string | null>(null);
 
-  var TabsItems = [
+  var tabsItems = [
     {
       tab: fileState.shownName ? 'SM: ' + fileState.shownName : 'SM: unnamed',
       content: (
@@ -150,12 +140,31 @@ export const App: React.FC = () => {
     },
   ];
 
-  if (idTextCode !== null) {
-    TabsItems.indexOf({ tab: idTextCode, content: <CodeEditor value={ElementCode ?? ''} /> }) === -1
-      ? TabsItems.push({ tab: idTextCode, content: <CodeEditor value={ElementCode ?? ''} /> })
+  /** Функция выбора вкладки (машина состояний, код) */
+  var [activeTab, setActiveTab] = useState<number | 0>(0);
+  var isActive = (index: number) => activeTab === index;
+
+  if (idTextCode !== null && idTextCode !== 'FullCode') {
+    tabsItems.indexOf({ tab: idTextCode, content: <CodeEditor value={elementCode ?? ''} /> }) === -1
+      ? tabsItems.push({ tab: idTextCode, content: <CodeEditor value={elementCode ?? ''} /> })
       : console.log('This item already exists');
-    console.log(TabsItems);
+  } else {
+    isActive(1);
   }
+  const handleShowTabs = async (index: number) => {
+    if (activeTab === index) {
+      setActiveTab(activeTab);
+    }
+    setActiveTab(index);
+  };
+  //Функция закрытия вкладки (РАБОЧАЯ)
+  const onClose = (id: number) => {
+    //Удаляем необходимую вкладку
+    tabsItems.splice(id, 1);
+    //Активируем самую первую вкладку
+    isActive(0);
+  };
+
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
@@ -167,20 +176,23 @@ export const App: React.FC = () => {
               {elements ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
-                    <div className="flex font-Fira">
-                      {TabsItems.map((name, id) => (
+                    <div className="flex font-Fira ">
+                      {tabsItems.map((name, id) => (
                         <div
                           key={'tab' + id}
                           className={twMerge(
-                            'flex items-center',
+                            'flex items-center p-1 hover:bg-[#4391BF] hover:bg-opacity-50',
                             isActive(id) && 'bg-[#4391BF] bg-opacity-50'
                           )}
-                          onClick={() => handleClick(id)}
                         >
-                          <div role="button" className="line-clamp-1 p-1">
+                          <div
+                            role="button"
+                            onClick={() => handleShowTabs(id)}
+                            className="line-clamp-1 p-1 "
+                          >
                             {name.tab}
                           </div>
-                          <button className="p-2 hover:bg-[#FFFFFF]">
+                          <button onClick={() => onClose(id)} className="p-1 hover:bg-[#FFFFFF]">
                             <Cross width="1rem" height="1rem" />
                           </button>
                         </div>
@@ -190,7 +202,7 @@ export const App: React.FC = () => {
                       <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
                     </button>*/}
                   </div>
-                  {TabsItems.map((name, id) => (
+                  {tabsItems.map((name, id) => (
                     <div
                       key={id + 'ActiveBlock'}
                       className={twMerge('hidden h-[calc(100vh-2rem)]', isActive(id) && 'block')}

@@ -93,7 +93,6 @@ export class Draggable extends EventEmitter {
 
   get computedWidth() {
     let width = this.bounds.width / this.container.scale;
-
     if (this.children.size > 0) {
       let rightChildren = this.children.values().next().value as Draggable;
 
@@ -109,11 +108,13 @@ export class Draggable extends EventEmitter {
       const x = this.computedPosition.x;
       const cx = rightChildren.computedPosition.x;
 
-      width =
+      width = Math.max(
+        width,
         cx +
-        rightChildren.computedDimensions.width -
-        x +
-        this.childrenPadding / this.container.scale;
+          rightChildren.computedDimensions.width -
+          x +
+          this.childrenPadding / this.container.scale
+      );
     }
 
     return width;
@@ -130,12 +131,12 @@ export class Draggable extends EventEmitter {
     let result = 0;
 
     this.children.forEach((children) => {
-      const y = children.computedPosition.y;
-      const height = children.computedHeight;
+      const y = children.bounds.y;
+      const height = children.bounds.height;
       const childrenContainerHeight = children.childrenContainerHeight;
 
-      const bY = bottomChildren.computedPosition.y;
-      const bHeight = bottomChildren.computedHeight;
+      const bY = bottomChildren.bounds.y;
+      const bHeight = bottomChildren.bounds.height;
       const bChildrenContainerHeight = bottomChildren.childrenContainerHeight;
 
       if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
@@ -143,11 +144,11 @@ export class Draggable extends EventEmitter {
       }
     });
 
-    const y = this.computedPosition.y;
-    const cy = bottomChildren.computedPosition.y;
-    const childrenContainerHeight = bottomChildren.childrenContainerHeight;
-
-    result = cy + childrenContainerHeight + this.childrenPadding / this.container.scale - y;
+    result =
+      bottomChildren.bounds.y +
+      bottomChildren.bounds.height +
+      bottomChildren.childrenContainerHeight +
+      (this.childrenPadding * 2) / this.container.scale;
 
     return result;
   }

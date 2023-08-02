@@ -6,7 +6,7 @@ import { Events } from './Events';
 import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import { stateStyle, transitionStyle } from '../styles';
+import { stateStyle } from '../styles';
 
 interface StateProps {
   container: Container;
@@ -158,6 +158,8 @@ export class State extends Draggable {
     ctx.stroke();
     ctx.closePath();
 
+    // Этот код рисует пояснялку, которая здесь не нужна.
+    /*
     //Начало рисования
     ctx.beginPath();
     //Добавляет стиль заднему фону
@@ -167,7 +169,13 @@ export class State extends Draggable {
     ctx.lineTo(x + 110 / this.container.scale, y - 2 / this.container.scale);
     ctx.lineTo(x + 120 / this.container.scale, y - 20 / this.container.scale);
     //Строит прямоугольник
-    ctx.roundRect(x, y - 120 / this.container.scale, width, height, transitionStyle.startSize);
+    ctx.roundRect(
+      x,
+      y - 120 / this.container.scale,
+      width,
+      100 / this.container.scale,
+      transitionStyle.startSize
+    );
     //Добавляет задний фон объекту канвы
     ctx.fill();
     //Конец рисования
@@ -180,6 +188,7 @@ export class State extends Draggable {
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
+    */
   }
 
   //Дополнять внешними border при добавлении дочерних состояний

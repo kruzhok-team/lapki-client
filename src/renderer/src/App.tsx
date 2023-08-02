@@ -47,7 +47,7 @@ export const App: React.FC = () => {
     if (openData[0]) {
       // TODO: валидация файла и вывод ошибок
       const elements = JSON.parse(openData[3]) as Elements;
-      editor?.loadData(elements, openData[1]);
+      editor?.loadData(elements);
       setFileState({
         name: openData[1],
         shownName: openData[2],
@@ -62,7 +62,7 @@ export const App: React.FC = () => {
   //Создание нового файла
   const handleNewFile = async () => {
     // TODO: переспрашивать, если файл изменён
-    editor?.loadData(emptyElements(), null);
+    editor?.loadData(emptyElements());
     setFileState({
       name: null,
       shownName: null,
@@ -81,7 +81,6 @@ export const App: React.FC = () => {
         name: saveData[1],
         shownName: saveData[2],
       });
-      editor.filename = saveData[1];
     } else if (saveData[1]) {
       // TODO: вывод ошибки сохранения
       console.error(saveData);

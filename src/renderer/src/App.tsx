@@ -122,7 +122,7 @@ export const App: React.FC = () => {
   //Callback данные для получения ответа от контекстного меню
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
   const [ElementCode, setElementCode] = useState<string | null>(null);
-  /** Callback функция выбора вкладки (машина состояний, код) */
+  /** Функция выбора вкладки (машина состояний, код) */
   var [activeTab, setActiveTab] = useState<number | 0>(0);
   var isActive = (index: number) => activeTab === index;
   const handleClick = (index: number) => {
@@ -151,15 +151,12 @@ export const App: React.FC = () => {
     },
   ];
 
-  TabsItems.forEach(() => {
-    if (idTextCode !== null)
-      //создаем новый элемент в массиве вкладок
-      TabsItems.push({
-        tab: idTextCode,
-        content: <CodeEditor value={ElementCode ?? ''} />,
-      });
-  });
-
+  if (idTextCode !== null) {
+    TabsItems.indexOf({ tab: idTextCode, content: <CodeEditor value={ElementCode ?? ''} /> }) === -1
+      ? TabsItems.push({ tab: idTextCode, content: <CodeEditor value={ElementCode ?? ''} /> })
+      : console.log('This item already exists');
+    console.log(TabsItems);
+  }
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">

@@ -1,10 +1,9 @@
 import { EventData } from '@renderer/types/diagram';
-
-import { Draggable } from './Draggable';
-import { picto } from './Picto';
+import { Rectangle } from '@renderer/types/graphics';
 
 import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
+import { State } from './State';
+import { picto } from './Picto';
 
 /**
  * Событие состояний.
@@ -13,13 +12,64 @@ import { stateStyle } from '../styles';
  */
 export class Events {
   container!: Container;
-  draggable!: Draggable;
+  parent!: State;
   data!: EventData[];
+  bounds!: Rectangle;
 
-  constructor(container: Container, draggable: Draggable, data: EventData[]) {
+  buttonMap!: Map<Rectangle, [number, number]>;
+
+  minEventRow = 2;
+  maxEventRow = 3;
+
+  minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
+  minHeight = picto.eventHeight;
+
+  eventRowLength = this.minEventRow;
+
+  constructor(container: Container, parent: State, data: EventData[]) {
     this.container = container;
-    this.draggable = draggable;
+    this.parent = parent;
     this.data = data;
+    this.bounds = {
+      x: 15,
+      y: 10,
+      width: this.minWidth,
+      height: this.minHeight,
+    };
+
+    this.buttonMap = new Map();
+    this.recalculate();
+  }
+
+  recalculate() {
+    const width = this.parent.computedWidth;
+
+    this.maxEventRow = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
+    let eventRows = 0;
+    let eventRowLength = this.minEventRow;
+    this.data.map((ev) => {
+      if (ev.do.length > eventRowLength) {
+        eventRowLength = Math.min(ev.do.length, this.maxEventRow);
+      }
+      eventRows += Math.max(1, Math.ceil(ev.do.length / this.maxEventRow));
+      // TODO: пересчитывать карту кнопок
+      // this.buttonMap.set(..., [i, -1]);
+    });
+    this.eventRowLength = eventRowLength;
+    /*
+    console.log([
+      'Events.recalc',
+      this.parent.id,
+      'maxEventRow',
+      this.maxEventRow,
+      'eventRowLength',
+      eventRowLength,
+      'eventRows',
+      eventRows,
+    ]);
+    */
+    this.bounds.width = 15 + (picto.eventWidth + 5) * (eventRowLength + 1);
+    this.bounds.height = Math.max(this.minHeight, 50 * eventRows);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -28,29 +78,32 @@ export class Events {
 
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.draggable.drawBounds;
+    const { x, y } = this.parent.drawBounds;
 
-    const paddingY = 10 / this.container.scale;
-    const px = 15 / this.container.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
-    const titleHeight = fontSize + paddingY * 2;
+    const paddingY = this.bounds.y / this.container.scale;
+    const px = this.bounds.x / this.container.scale;
+    const titleHeight = this.parent.titleHeight;
 
     ctx.beginPath();
 
-    Object.entries(this.data).forEach(([_eventName, events], i) => {
-      const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
+    let eventRow = 0;
+    const baseY = y + titleHeight + paddingY;
 
-      picto.drawEvent(ctx, events.trigger, x + px, resultY);
+    this.data.map((events, _eventIdx) => {
+      picto.drawEvent(ctx, events.trigger, x + px, baseY + (eventRow * 50) / this.container.scale);
 
-      if (events.do.length == 0) return;
-      events.do.forEach((act, i) => {
+      events.do.forEach((act, actIdx) => {
+        const ax = 1 + (actIdx % this.eventRowLength);
+        const ay = eventRow + Math.floor(actIdx / this.eventRowLength);
         picto.drawAction(
           ctx,
           act,
-          x + (20 + (picto.eventWidth + 5) * (i + 1)) / picto.scale,
-          resultY
+          x + (20 + (picto.eventWidth + 5) * ax) / picto.scale,
+          baseY + (ay * 50) / this.container.scale
         );
       });
+
+      eventRow += Math.max(1, Math.ceil(events.do.length / this.eventRowLength));
     });
 
     ctx.closePath();

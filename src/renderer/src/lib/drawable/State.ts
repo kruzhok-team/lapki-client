@@ -27,7 +27,7 @@ export class State extends Draggable {
   isInitial = false;
   isSelected = false;
 
-  statusevent!: Events;
+  eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
   onEnter?: HTMLImageElement;
   onExit?: HTMLImageElement;
@@ -47,19 +47,34 @@ export class State extends Draggable {
     super(container, { ...data.bounds, width: 230, height: 100 }, id, parent);
     this.data = data;
     this.container = container;
+
+    this.eventBox = new Events(this.container, this, this.data.events);
+    this.updateEventBox();
+    this.edgeHandlers = new EdgeHandlers(container.app, this);
+
     if (initial) {
       this.isInitial = true;
       this.container.isDirty = true;
     }
+  }
 
-    this.statusevent = new Events(this.container, this, this.data.events);
-    this.edgeHandlers = new EdgeHandlers(container.app, this);
+  updateEventBox() {
+    this.eventBox.recalculate();
+    // console.log(['State.updateEventBox', this.id, this.bounds, this.eventBox.bounds]);
+    this.bounds.width = Math.max(
+      this.bounds.width,
+      this.eventBox.bounds.width + this.eventBox.bounds.x
+    );
+    const calcHeight = this.titleHeight + this.eventBox.bounds.height + this.eventBox.bounds.y;
+    // this.bounds.height = Math.max(this.bounds.height, calcHeight);
+    this.bounds.height = calcHeight;
+    // console.log(['/State.updateEventBox', this.id, this.bounds]);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
-    this.statusevent.draw(ctx);
+    this.eventBox.draw(ctx);
 
     if (this.isInitial) {
       this.drawInitialMark(ctx);
@@ -94,14 +109,20 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
+  get titleHeight() {
+    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const paddingY = 10 / this.container.scale;
+    return fontSize + paddingY * 2;
+  }
+
   //Прорисовка заголовка блока состояния
   private drawTitle(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.drawBounds;
 
+    const fontSize = stateStyle.titleFontSize / this.container.scale;
     const paddingY = 10 / this.container.scale;
     const paddingX = 15 / this.container.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
-    const titleHeight = fontSize + paddingY * 2;
+    const titleHeight = this.titleHeight;
 
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.textBaseline = stateStyle.titleBaseLine;

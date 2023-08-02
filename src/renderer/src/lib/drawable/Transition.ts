@@ -37,7 +37,7 @@ export class Transition {
     this.condition = new Condition(this.container, this, id);
   }
 
-  toJSON() {
+  toJSON(): TransitionType {
     return this.data;
   }
 

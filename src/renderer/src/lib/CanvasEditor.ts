@@ -60,6 +60,10 @@ export class CanvasEditor {
     return JSON.stringify(this.container.machine.graphData());
   }
 
+  onDataUpdate(fn: (data: Elements) => void) {
+    this.container.machine.onDataUpdate(fn);
+  }
+
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();

@@ -99,6 +99,7 @@ export const App: React.FC = () => {
       content: (
         <DiagramEditor
           elements={elements!}
+          manager={manager}
           editor={editor}
           setEditor={setEditor}
           setIdTextCode={setIdTextCode}
@@ -108,7 +109,7 @@ export const App: React.FC = () => {
     },
     {
       tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
-      content: <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
+      content: <CodeEditor value={editorData.content ?? ''} />,
     },
   ];
 

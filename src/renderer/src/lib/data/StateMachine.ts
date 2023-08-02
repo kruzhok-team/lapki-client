@@ -32,6 +32,9 @@ export class StateMachine extends EventEmitter {
   transitions: Map<string, Transition> = new Map();
   components: Map<string, Component> = new Map<string, Component>();
 
+  // TODO: modified!: boolean;
+  dataUpdateCallback?: (e: Elements) => void;
+
   constructor(container: Container) {
     super();
     this.container = container;
@@ -41,6 +44,15 @@ export class StateMachine extends EventEmitter {
     this.initStates(elements.states, elements.initialState);
     this.initTransitions(elements.transitions);
     this.initComponents(elements.components);
+  }
+
+  onDataUpdate(fn: (e: Elements) => void) {
+    this.dataUpdateCallback = fn;
+  }
+
+  dataTrigger() {
+    // TODO: this.modified = true;
+    this.dataUpdateCallback?.(this.graphData());
   }
 
   clear() {
@@ -57,13 +69,26 @@ export class StateMachine extends EventEmitter {
     this.states.clear();
   }
 
-  graphData() {
-    return {
-      states: { ...Object.fromEntries(this.states) },
+  graphData(): Elements {
+    var states = {};
+    var transitions: TransitionType[] = [];
+    var components = {};
+    this.states.forEach((state, id) => {
+      states[id] = state.toJSON();
+    });
+    this.components.forEach((component, id) => {
+      components[id] = component.toJSON();
+    });
+    this.transitions.forEach((transition) => {
+      transitions.push(transition.toJSON());
+    });
+    const outData = {
+      states,
       initialState: this.initialState,
-      transitions: [...this.transitions.values()],
-      components: { ...Object.fromEntries(this.components) },
+      transitions,
+      components,
     };
+    return outData;
   }
 
   initStates(items: Elements['states'], initialState: string) {
@@ -176,6 +201,7 @@ export class StateMachine extends EventEmitter {
 
     this.container.states.watchState(state);
     this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   linkState(parentId: string, childId: string) {

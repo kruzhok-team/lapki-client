@@ -33,12 +33,12 @@ export class State extends Draggable {
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
 
-  toJSON() {
+  toJSON(): StateType {
     return {
       parent: this.data.parent,
       name: this.data.name,
       events: this.data.events,
-      bounds: { x: this.bounds.x, y: this.bounds.y },
+      bounds: this.bounds,  // FIXME: должны учитывать дочерний контейнер?
     };
   }
 

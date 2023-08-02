@@ -7,10 +7,12 @@ import { State } from '@renderer/lib/drawable/State';
 import { ContextMenu, StateContextMenu } from './StateContextMenu';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { Rectangle } from '@renderer/types/graphics';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 export var canvasEditor: CanvasEditor;
 interface DiagramEditorProps {
   elements: Elements;
+  manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
   setIdTextCode: (id: string | null) => void;
@@ -19,6 +21,7 @@ interface DiagramEditorProps {
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   elements,
+  manager,
   editor,
   setEditor,
   setIdTextCode,
@@ -51,14 +54,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.onStateDrop((position) => {
       i = i + 1;
       editor?.container.machine.createNewState('Состояние ' + i, position);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateCreate((state) => {
       setState({ state });
       openStateModal();
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      // manager.triggerDataUpdate();
     });
 
     //Обработка правой кнопки на пустом поле
@@ -81,14 +83,14 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       const bounds = state.drawBounds;
       setContextMenuData({ data: state, bounds });
       setIsContextMenuOpen(true);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      // manager.triggerDataUpdate();
     });
 
     //Здесь мы открываем модальное окно редактирования связи
     editor.container.transitions.onTransitionCreate((source, target) => {
       setTransition({ source, target });
       openTransitionModal();
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      // manager.triggerDataUpdate();
     });
 
     //Здесь мы открываем контекстное меню для связи
@@ -96,14 +98,16 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       const bounds = condition.drawBounds;
       setContextMenuData({ data: condition, bounds });
       setIsContextMenuOpen(true);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Таймер для сохранения изменений сделанных в редакторе
     const SaveEditor = setInterval(() => {
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      manager.triggerDataUpdate();
     }, 5000);
+
     setEditor(editor);
+    manager.watchEditor(editor);
+
     return () => {
       editor.cleanUp();
       clearInterval(SaveEditor);

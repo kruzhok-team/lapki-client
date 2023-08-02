@@ -10,4 +10,8 @@ export class Component{
       // this.image = icons[this.data.type];
       this.image = icons.get("DiodOn")!;
     }
+
+    toJSON() {
+      return this.data;
+    }
 }

@@ -1,12 +1,13 @@
 import { Dispatch, SetStateAction } from 'react';
 import { CanvasEditor } from '../CanvasEditor';
-import { Elements, emptyElements } from '@renderer/types/diagram';
+import { Component, Elements, emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 export type EditorData = {
   name: string | null;
   shownName: string | null;
   content: string | null;
+  components: { [id: string]: Component };
 };
 
 export type FileError = {
@@ -19,6 +20,7 @@ export function emptyEditorData(): EditorData {
     name: null,
     shownName: null,
     content: null,
+    components: {},
   };
 }
 
@@ -40,9 +42,25 @@ export class EditorManager {
     this.updateState = updateState;
   }
 
+  watchEditor(editor: CanvasEditor) {
+    this.editor = editor;
+    editor.onDataUpdate((data) => {
+      this.updateState({
+        ...this.state,
+        content: JSON.stringify(data, null, 2),
+        components: data.components,
+      });
+    });
+  }
+
+  triggerDataUpdate() {
+    this.editor?.container.machine.dataTrigger();
+  }
+
   newFile() {
     this.editor?.loadData(emptyElements());
     this.updateState({
+      ...this.state,
       name: null,
       shownName: null,
       content: JSON.stringify(emptyElements()),
@@ -57,6 +75,7 @@ export class EditorManager {
       const elements = JSON.parse(openData[3]) as Elements;
       this.editor?.loadData(elements);
       this.updateState({
+        ...this.state,
         name: openData[1],
         shownName: openData[2],
         content: openData[3],

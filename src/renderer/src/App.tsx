@@ -4,7 +4,6 @@ import { Panel, PanelGroup } from 'react-resizable-panels';
 
 import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
-import { Elements, emptyElements } from './types/diagram';
 /*Первые иконки*/
 import arrow from './assets/img/arrow.png';
 // import forward from './assets/img/forward.png';
@@ -26,9 +25,9 @@ export const App: React.FC = () => {
 
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   let [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
-  const elements = editorData.content ? (JSON.parse(editorData.content) as Elements) : null;
-  const [isDocOpen, setIsDocOpen] = useState(false);
   const manager = new EditorManager(editor, editorData, setEditorData);
+  
+  const [isDocOpen, setIsDocOpen] = useState(false);
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
@@ -98,7 +97,6 @@ export const App: React.FC = () => {
       tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       content: (
         <DiagramEditor
-          elements={elements!}
           manager={manager}
           editor={editor}
           setEditor={setEditor}
@@ -130,7 +128,7 @@ export const App: React.FC = () => {
         <Panel>
           <div className="flex">
             <div className="flex-1">
-              {elements ? (
+              {editorData.content ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
                     <div className="flex font-Fira">

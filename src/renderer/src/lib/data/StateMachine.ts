@@ -52,6 +52,7 @@ export class StateMachine extends EventEmitter {
 
   dataTrigger() {
     // TODO: this.modified = true;
+    this.container.isDirty = true;
     this.dataUpdateCallback?.(this.graphData());
   }
 
@@ -139,7 +140,7 @@ export class StateMachine extends EventEmitter {
 
     state.data.name = newName;
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   createNewState(name: string, position: Point) {
@@ -200,7 +201,6 @@ export class StateMachine extends EventEmitter {
     }
 
     this.container.states.watchState(state);
-    this.container.isDirty = true;
     this.dataTrigger();
   }
 
@@ -228,6 +228,8 @@ export class StateMachine extends EventEmitter {
     parent?.children.set(child.id!, child);
 
     child.bounds = newBound;
+
+    this.dataTrigger();
   }
 
   unlinkState(id: string) {
@@ -244,7 +246,7 @@ export class StateMachine extends EventEmitter {
 
     state!.bounds = newBound;
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   //TODO необходимо придумать очистку события на удалённые объекты
@@ -285,7 +287,7 @@ export class StateMachine extends EventEmitter {
     this.container.states.unwatchState(state);
 
     this.states.delete(idState);
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   // Изменение начального состояния
@@ -302,7 +304,7 @@ export class StateMachine extends EventEmitter {
 
     this.initialState = idState;
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   //Удаление связей
@@ -313,7 +315,7 @@ export class StateMachine extends EventEmitter {
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   createNewTransitionFromData(
@@ -328,7 +330,7 @@ export class StateMachine extends EventEmitter {
     this.transitions.set(newId, transition);
 
     this.container.transitions.watchTransition(transition);
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   createNewTransition(

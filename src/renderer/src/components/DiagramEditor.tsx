@@ -11,7 +11,6 @@ import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 export var canvasEditor: CanvasEditor;
 interface DiagramEditorProps {
-  elements: Elements;
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
@@ -20,7 +19,6 @@ interface DiagramEditorProps {
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({
-  elements,
   manager,
   editor,
   setEditor,
@@ -47,7 +45,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const editor = new CanvasEditor(containerRef.current, elements);
+    const editor = new CanvasEditor(containerRef.current, manager.state.data);
     let i: number = 0;
 
     //Добавляем пустую ноду в редактор
@@ -100,17 +98,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       setIsContextMenuOpen(true);
     });
 
-    //Таймер для сохранения изменений сделанных в редакторе
-    const SaveEditor = setInterval(() => {
-      manager.triggerDataUpdate();
-    }, 5000);
-
     setEditor(editor);
     manager.watchEditor(editor);
 
     return () => {
-      editor.cleanUp();
-      clearInterval(SaveEditor);
+      manager.unwatchEditor();
     };
   }, [containerRef.current]);
   const handleCreateState = (data: CreateStateModalFormValues) => {

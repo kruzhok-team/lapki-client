@@ -1,13 +1,13 @@
 import { Dispatch, SetStateAction } from 'react';
 import { CanvasEditor } from '../CanvasEditor';
-import { Component, Elements, emptyElements } from '@renderer/types/diagram';
+import { Elements, emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 export type EditorData = {
   name: string | null;
   shownName: string | null;
   content: string | null;
-  components: { [id: string]: Component };
+  data: Elements;
 };
 
 export type FileError = {
@@ -20,7 +20,7 @@ export function emptyEditorData(): EditorData {
     name: null,
     shownName: null,
     content: null,
-    components: {},
+    data: emptyElements(),
   };
 }
 
@@ -31,6 +31,8 @@ export class EditorManager {
   editor: CanvasEditor | null;
   state!: EditorData;
   updateState!: Dispatch<SetStateAction<EditorData>>;
+
+  updateInterval?: ReturnType<typeof setInterval>;
 
   constructor(
     editor: CanvasEditor | null,
@@ -45,12 +47,23 @@ export class EditorManager {
   watchEditor(editor: CanvasEditor) {
     this.editor = editor;
     editor.onDataUpdate((data) => {
+      console.log(data);
       this.updateState({
         ...this.state,
+        data,
         content: JSON.stringify(data, null, 2),
-        components: data.components,
       });
     });
+
+    //Таймер для сохранения изменений сделанных в редакторе
+    this.updateInterval = setInterval(() => {
+      this.triggerDataUpdate();
+    }, 5000);
+  }
+
+  unwatchEditor() {
+    clearInterval(this.updateInterval);
+    this.editor?.cleanUp();
   }
 
   triggerDataUpdate() {
@@ -58,12 +71,14 @@ export class EditorManager {
   }
 
   newFile() {
-    this.editor?.loadData(emptyElements());
+    const data = emptyElements();
+    this.editor?.loadData(data);
     this.updateState({
       ...this.state,
       name: null,
       shownName: null,
-      content: JSON.stringify(emptyElements()),
+      content: JSON.stringify(data),
+      data,
     });
   }
 
@@ -72,13 +87,14 @@ export class EditorManager {
       await window.electron.ipcRenderer.invoke('dialog:openFile');
     if (openData[0]) {
       // TODO: валидация файла и вывод ошибок
-      const elements = JSON.parse(openData[3]) as Elements;
-      this.editor?.loadData(elements);
+      const data = JSON.parse(openData[3]) as Elements;
+      this.editor?.loadData(data);
       this.updateState({
         ...this.state,
         name: openData[1],
         shownName: openData[2],
         content: openData[3],
+        data,
       });
       return makeRight(null);
     } else if (openData[1]) {

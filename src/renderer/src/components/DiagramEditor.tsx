@@ -39,7 +39,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<{
-    data: State | Condition;
+    data: State | Condition | null;
     bounds: Rectangle;
   }>();
 
@@ -63,12 +63,9 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
     //Обработка правой кнопки на пустом поле
     editor.container.onFieldContextMenu((position) => {
-      // TODO: меню для пустого поля
-      console.log({
-        context: 'DiagramEditor',
-        log: 'free field right click',
-        data: position,
-      });
+      const bounds = { ...position, width: 0, height: 0 };
+      setContextMenuData({ data: null, bounds });
+      setIsContextMenuOpen(true);
     });
 
     // Закрытие контекстного меню
@@ -109,6 +106,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     // в архитектуре этого компонента.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef.current]);
+
   const handleCreateState = (data: CreateStateModalFormValues) => {
     editor?.container.machine.updateState(
       data.id,
@@ -138,6 +136,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   };
 
   const handleShowCode = (data: ContextMenu) => {
+    console.log(data);
     setIdTextCode(data.id);
     setElementCode(data.content);
     setIsContextMenuOpen(false);

@@ -1,9 +1,10 @@
-import { Transition } from './Transition';
-import { State } from './State';
+import { Condition } from './Condition';
 import { GhostTransition } from './GhostTransition';
+import { State } from './State';
+import { Transition } from './Transition';
+
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Condition } from './Condition';
 
 /**
  * Функция, обрабатывающая запрос на создание перехода.

@@ -5,6 +5,7 @@ export interface MenuProps {
   onRequestOpenFile: () => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
+  // TODO: isModified: boolean;
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
@@ -20,6 +21,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
+      // TODO: disabled: !props.isModified,
     },
     {
       text: 'Сохранить как...',
@@ -44,7 +46,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       {items.map(({ text, onClick }) => (
         <button
           key={text}
-          className="bg-opacity-50 py-2 text-center text-base hover:bg-[#4391BF]"
+          className="bg-opacity-50 py-2 text-center text-base enabled:hover:bg-[#4391BF] disabled:text-gray-400"
           onClick={onClick}
         >
           {text}

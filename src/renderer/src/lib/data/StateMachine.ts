@@ -1,13 +1,15 @@
-import { Elements } from '@renderer/types/diagram';
-import { Component } from '../Component';
-import { Transition as TransitionType } from '@renderer/types/diagram';
+import { Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import { Point } from '@renderer/types/graphics';
+import { customAlphabet, nanoid } from 'nanoid';
+
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
+import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-import { customAlphabet, nanoid } from 'nanoid';
-import { Point } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
+
+export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
 /**
  * Данные машины состояний.
@@ -27,10 +29,12 @@ import { stateStyle } from '../styles';
 export class StateMachine extends EventEmitter {
   container!: Container;
 
-  initialState: string = '';
+  initialState = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
   components: Map<string, Component> = new Map<string, Component>();
+
+  dataUpdateCallback?: DataUpdateCallback;
 
   constructor(container: Container) {
     super();
@@ -41,6 +45,15 @@ export class StateMachine extends EventEmitter {
     this.initStates(elements.states, elements.initialState);
     this.initTransitions(elements.transitions);
     this.initComponents(elements.components);
+  }
+
+  onDataUpdate(fn?: DataUpdateCallback) {
+    this.dataUpdateCallback = fn;
+  }
+
+  dataTrigger(silent?: boolean) {
+    this.container.isDirty = true;
+    this.dataUpdateCallback?.(this.graphData(), !silent);
   }
 
   clear() {
@@ -57,13 +70,26 @@ export class StateMachine extends EventEmitter {
     this.states.clear();
   }
 
-  graphData() {
-    return {
-      states: { ...Object.fromEntries(this.states) },
+  graphData(): Elements {
+    const states = {};
+    const transitions: TransitionType[] = [];
+    const components = {};
+    this.states.forEach((state, id) => {
+      states[id] = state.toJSON();
+    });
+    this.components.forEach((component, id) => {
+      components[id] = component.toJSON();
+    });
+    this.transitions.forEach((transition) => {
+      transitions.push(transition.toJSON());
+    });
+    const outData = {
+      states,
       initialState: this.initialState,
-      transitions: [...this.transitions.values()],
-      components: { ...Object.fromEntries(this.components) },
+      transitions,
+      components,
     };
+    return outData;
   }
 
   initStates(items: Elements['states'], initialState: string) {
@@ -114,7 +140,7 @@ export class StateMachine extends EventEmitter {
 
     state.data.name = newName;
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   createNewState(name: string, position: Point) {
@@ -122,7 +148,7 @@ export class StateMachine extends EventEmitter {
     const x = position.x - width / 2;
     const y = position.y - height / 2;
     const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-    var newId = nanoid();
+    let newId = nanoid();
     while (this.states.has(newId)) {
       newId = nanoid();
     }
@@ -175,7 +201,7 @@ export class StateMachine extends EventEmitter {
     }
 
     this.container.states.watchState(state);
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   linkState(parentId: string, childId: string) {
@@ -202,23 +228,25 @@ export class StateMachine extends EventEmitter {
     parent?.children.set(child.id!, child);
 
     child.bounds = newBound;
+
+    this.dataTrigger();
   }
 
   unlinkState(id: string) {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
-    if (typeof state!.parent === 'undefined') return;
+    if (typeof state.parent === 'undefined') return;
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
-    const newBound = { ...state!.bounds, ...state!.compoundPosition };
+    const newBound = { ...state.bounds, ...state.compoundPosition };
 
-    state!.parent?.children.delete(id);
-    state!.parent = undefined;
-    delete state!.data.parent;
+    state.parent?.children.delete(id);
+    state.parent = undefined;
+    delete state.data.parent;
 
-    state!.bounds = newBound;
+    state.bounds = newBound;
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   deleteState(idState: string) {
@@ -237,8 +265,8 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((childState) => {
       if (childState.data.parent === idState) {
         // Если есть родительское, перепривязываем к нему
-        if (state!.data.parent) {
-          this.linkState(state!.data.parent!, childState.id!);
+        if (state.data.parent) {
+          this.linkState(state.data.parent, childState.id!);
         } else {
           this.unlinkState(childState.id!);
         }
@@ -246,19 +274,19 @@ export class StateMachine extends EventEmitter {
     });
 
     // Отсоединяемся от родительского состояния, если такое есть
-    if (state!.data.parent) {
+    if (state.data.parent) {
       this.unlinkState(state.id!);
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
-    if (state!.isInitial) {
+    if (state.isInitial) {
       this.initialState = '';
     }
 
     this.container.states.unwatchState(state);
 
     this.states.delete(idState);
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   // Изменение начального состояния
@@ -268,14 +296,14 @@ export class StateMachine extends EventEmitter {
 
     const preInitial = this.states.get(this.initialState);
     if (typeof preInitial !== 'undefined') {
-      preInitial!.isInitial = false;
+      preInitial.isInitial = false;
     }
 
-    newInitial!.isInitial = true;
+    newInitial.isInitial = true;
 
     this.initialState = idState;
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   //Удаление связей
@@ -286,7 +314,7 @@ export class StateMachine extends EventEmitter {
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
 
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   createNewTransitionFromData(
@@ -295,13 +323,13 @@ export class StateMachine extends EventEmitter {
     transitionData: TransitionType,
     id?: string
   ) {
-    const newId = typeof id !== 'undefined' ? id! : nanoid();
+    const newId = typeof id !== 'undefined' ? id : nanoid();
     const transition = new Transition(this.container, source, target, transitionData, newId);
 
     this.transitions.set(newId, transition);
 
     this.container.transitions.watchTransition(transition);
-    this.container.isDirty = true;
+    this.dataTrigger();
   }
 
   createNewTransition(
@@ -316,7 +344,7 @@ export class StateMachine extends EventEmitter {
     // TODO Доделать парвильный condition
     const position =
       typeof pos !== 'undefined'
-        ? pos!
+        ? pos
         : {
             x: 100,
             y: 100,

@@ -1,7 +1,9 @@
-import { stateStyle, transitionStyle } from '../styles';
 import { Draggable } from './Draggable';
-import { Container } from '../basic/Container';
 import { Transition } from './Transition';
+
+import { Container } from '../basic/Container';
+import { stateStyle, transitionStyle } from '../styles';
+import { picto } from './Picto';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
@@ -18,12 +20,16 @@ export class Condition extends Draggable {
   isSelected = false;
 
   constructor(container: Container, transition: Transition, id: string) {
-    super(container, {
-      x: transition.data.position.x,
-      y: transition.data.position.y,
-      width: 150,
-      height: 70,
-    }, id);
+    super(
+      container,
+      {
+        x: transition.data.position.x,
+        y: transition.data.position.y,
+        width: 130,
+        height: 70,
+      },
+      id
+    );
 
     this.transition = transition;
     // this.contextmenu = new ContextMenu(container, this);
@@ -52,9 +58,13 @@ export class Condition extends Draggable {
 
     const trigger = this.transition.data.trigger;
     ctx.beginPath();
+    picto.drawEvent(ctx, trigger, x + p, y + p);
+    ctx.closePath();
+    /*
     ctx.fillText(trigger.component, x + p, y + p);
     ctx.fillText(trigger.method, x + p, y + fontSize + p);
     ctx.closePath();
+    */
 
     if (this.isSelected) {
       this.drawSelection(ctx);
@@ -63,7 +73,7 @@ export class Condition extends Draggable {
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    
+
     // NOTE: Для каждого нового объекта рисования требуется указывать их начало и конец,
     //       а перед ними прописывать стили!
     ctx.beginPath();

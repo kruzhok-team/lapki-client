@@ -1,12 +1,16 @@
 import { Dispatch, SetStateAction } from 'react';
-import { CanvasEditor } from '../CanvasEditor';
+
 import { Elements, emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
+
+import { CanvasEditor } from '../CanvasEditor';
 
 export type EditorData = {
   name: string | null;
   shownName: string | null;
   content: string | null;
+  data: Elements;
+  modified: boolean;
 };
 
 export type FileError = {
@@ -19,6 +23,8 @@ export function emptyEditorData(): EditorData {
     name: null,
     shownName: null,
     content: null,
+    data: emptyElements(),
+    modified: false,
   };
 }
 
@@ -30,22 +36,59 @@ export class EditorManager {
   state!: EditorData;
   updateState!: Dispatch<SetStateAction<EditorData>>;
 
+  updateInterval?: ReturnType<typeof setInterval>;
+
   constructor(
     editor: CanvasEditor | null,
     state: EditorData,
     updateState: Dispatch<SetStateAction<EditorData>>
   ) {
+    // console.log(['EditorManager constructor']);
     this.editor = editor;
     this.state = state;
     this.updateState = updateState;
   }
 
+  watchEditor(editor: CanvasEditor) {
+    this.editor = editor;
+    editor.onDataUpdate((data, modified) => {
+      // console.log(['onDataUpdate', data, modified]);
+      const newState = {
+        ...this.state,
+        data,
+        content: JSON.stringify(data, null, 2),
+        modified: modified || this.state.modified,
+      };
+      this.updateState(newState);
+      // FIXME: не обновляется флаг modified
+      console.log(['onDataUpdate-post', newState, this.state]);
+    });
+
+    //Таймер для сохранения изменений сделанных в редакторе
+    this.updateInterval = setInterval(() => {
+      this.triggerDataUpdate();
+    }, 5000);
+  }
+
+  unwatchEditor() {
+    clearInterval(this.updateInterval);
+    this.editor?.cleanUp();
+  }
+
+  triggerDataUpdate() {
+    this.editor?.container.machine.dataTrigger(true);
+  }
+
   newFile() {
-    this.editor?.loadData(emptyElements());
+    const data = emptyElements();
+    this.editor?.loadData(data);
     this.updateState({
+      ...this.state,
       name: null,
       shownName: null,
-      content: JSON.stringify(emptyElements()),
+      content: JSON.stringify(data),
+      data,
+      modified: false,
     });
   }
 
@@ -54,12 +97,15 @@ export class EditorManager {
       await window.electron.ipcRenderer.invoke('dialog:openFile');
     if (openData[0]) {
       // TODO: валидация файла и вывод ошибок
-      const elements = JSON.parse(openData[3]) as Elements;
-      this.editor?.loadData(elements);
+      const data = JSON.parse(openData[3]) as Elements;
+      this.editor?.loadData(data);
       this.updateState({
+        ...this.state,
         name: openData[1],
         shownName: openData[2],
         content: openData[3],
+        data,
+        modified: false,
       });
       return makeRight(null);
     } else if (openData[1]) {
@@ -86,6 +132,7 @@ export class EditorManager {
         ...this.state,
         name: saveData[1],
         shownName: saveData[2],
+        modified: false,
       });
       return makeRight(null);
     } else {
@@ -106,6 +153,7 @@ export class EditorManager {
         ...this.state,
         name: saveData[1],
         shownName: saveData[2],
+        modified: false,
       });
       return makeRight(null);
     } else if (saveData[1]) {

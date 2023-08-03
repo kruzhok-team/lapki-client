@@ -217,9 +217,9 @@ export const getTransitionLines = (
   state1: Rectangle,
   state2: Rectangle,
   condition: Rectangle,
-  rectPadding: number = 0,
-  startLinePadding: number = 0,
-  endLinePadding: number = 0
+  rectPadding = 0,
+  startLinePadding = 0,
+  endLinePadding = 0
 ) => {
   // const d1 = getDistanceBetweenRectangles(state1, condition);
   // const d2 = getDistanceBetweenRectangles(state2, condition);
@@ -249,6 +249,27 @@ export const preloadImages = (urls: string[]) => {
       const image = new Image();
 
       image.onload = () => resolve(image);
+      image.onerror = () => reject(`Image failed to load: ${url}`);
+
+      image.src = url;
+    });
+  });
+
+  return Promise.all(promises);
+};
+
+export const preloadImagesMap = (
+  m: Map<string, HTMLImageElement>,
+  urls: { [x: string]: string }
+) => {
+  const promises = Object.entries(urls).map(([key, url]): Promise<[string, HTMLImageElement]> => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+
+      image.onload = () => {
+        m.set(key, image);
+        resolve([key, image]);
+      };
       image.onerror = () => reject(`Image failed to load: ${url}`);
 
       image.src = url;

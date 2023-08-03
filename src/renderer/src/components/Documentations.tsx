@@ -1,7 +1,9 @@
 import { useState } from 'react';
+
 /*Загрузка документации*/
-import { Docs } from '../assets/file/Docs';
 import { twMerge } from 'tailwind-merge';
+
+import { Docs } from '../assets/file/Docs';
 
 export function Documentations() {
   const [activeTab, setActiveTab] = useState<number>(0);

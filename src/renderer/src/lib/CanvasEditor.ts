@@ -1,10 +1,12 @@
 import { Elements, emptyElements } from '@renderer/types/diagram';
+
 import { Canvas } from './basic/Canvas';
-import { Mouse } from './basic/Mouse';
-import { Render } from './common/Render';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
+import { Mouse } from './basic/Mouse';
+import { Render } from './common/Render';
 import { preloadPicto } from './drawable/Picto';
+import { DataUpdateCallback } from './data/StateMachine';
 
 /**
  * Редактор машин состояний.
@@ -19,10 +21,6 @@ export class CanvasEditor {
   container!: Container;
 
   constructor(container: HTMLDivElement, elements?: Elements) {
-    preloadPicto(() => {
-      this.container.isDirty = true;
-    });
-
     this.root = container;
     this.canvas = new Canvas(this, 'rgb(38, 38, 38)');
     this.mouse = new Mouse(this.canvas.element);
@@ -38,6 +36,10 @@ export class CanvasEditor {
       this.mouse.setOffset();
       this.container.isDirty = true;
     };
+
+    preloadPicto(() => {
+      this.container.isDirty = true;
+    });
 
     this.render.subscribe(() => {
       if (!this.container.isDirty) return;
@@ -60,8 +62,13 @@ export class CanvasEditor {
     return JSON.stringify(this.container.machine.graphData());
   }
 
+  onDataUpdate(fn: DataUpdateCallback) {
+    this.container.machine.onDataUpdate(fn);
+  }
+
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
+    this.container.machine.onDataUpdate(undefined);
   }
 }

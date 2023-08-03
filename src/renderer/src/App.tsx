@@ -1,32 +1,29 @@
-import React, { useRef, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
 import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
-import { Elements } from './types/diagram';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { CanvasEditor } from './lib/CanvasEditor';
-import { preloadPicto } from './lib/drawable/Picto';
 import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
+import { preloadPicto } from './lib/drawable/Picto';
 import { isLeft, unwrapEither } from './types/Either';
 
 /**
  * React-компонент приложения
  */
-
-export const App: React.FC = () => {
+export const App: FC = () => {
   preloadPicto(() => void {});
 
   // TODO: а если у нас будет несколько редакторов?
 
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
-  let [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
-  const elements = editorData.content ? (JSON.parse(editorData.content) as Elements) : null;
-  const [isDocOpen, setIsDocOpen] = useState(false);
+  const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
   const manager = new EditorManager(editor, editorData, setEditorData);
+  const [isDocOpen, setIsDocOpen] = useState(false);
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
@@ -86,7 +83,7 @@ export const App: React.FC = () => {
       tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       content: (
         <DiagramEditor
-          elements={elements!}
+          manager={manager}
           editor={editor}
           setEditor={setEditor}
           setIdTextCode={setIdTextCode}
@@ -96,7 +93,7 @@ export const App: React.FC = () => {
     },
     {
       tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
-      content: <CodeEditor value={localStorage.getItem('Data') ?? ''} />,
+      content: <CodeEditor value={editorData.content ?? ''} />,
     },
   ];
 
@@ -138,7 +135,7 @@ export const App: React.FC = () => {
         <Panel>
           <div className="flex">
             <div className="flex-1">
-              {elements && countRef.current ? (
+              {editorData.content ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
                     <div className="flex font-Fira ">

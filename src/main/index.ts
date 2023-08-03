@@ -1,8 +1,8 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
-import { join } from 'path';
-import fs from 'fs';
 import { optimizer, is } from '@electron-toolkit/utils';
-import { basename } from 'path';
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
+
+import fs from 'fs';
+import { join, basename } from 'path';
 
 //import icon from '../../resources/icon.png?asset';
 
@@ -16,7 +16,7 @@ async function handleFileOpen() {
       filters: [{ name: 'json', extensions: ['json'] }],
       properties: ['openFile'],
     });
-    var fileName = filePaths[0];
+    const fileName = filePaths[0];
     if (!canceled && fileName) {
       fs.readFile(fileName, 'utf-8', (err, data) => {
         if (err) {

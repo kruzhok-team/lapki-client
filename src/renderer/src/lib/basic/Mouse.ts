@@ -8,8 +8,8 @@ import { MouseEventEmitter, Button } from '../common/MouseEventEmitter';
 export class Mouse extends MouseEventEmitter {
   element!: HTMLElement;
 
-  left: boolean = false;
-  pleft: boolean = false;
+  left = false;
+  pleft = false;
 
   px = 0;
   py = 0;

@@ -8,7 +8,7 @@ export interface MyMouseEvent {
   dx: number;
   dy: number;
   /**
-   * Наличие зажатой левой кнопки. 
+   * Наличие зажатой левой кнопки.
    * Полезно для отслеживания перетаскивания.
    */
   left: boolean;
@@ -65,7 +65,7 @@ export class MouseEventEmitter {
   }
 
   reset() {
-    this.handlers.clear()
+    this.handlers.clear();
   }
 
   emit(name: string, event: Omit<MyMouseEvent, 'stopPropagation'>) {

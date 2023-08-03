@@ -1,5 +1,5 @@
-import { State } from '../drawable/State';
 import { Container } from '../basic/Container';
+import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 
 type CreateStateCallback = (state) => void;

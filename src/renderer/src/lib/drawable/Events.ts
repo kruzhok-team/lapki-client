@@ -1,9 +1,9 @@
-import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
 import { EventData } from '@renderer/types/diagram';
-import { Draggable } from './Draggable';
-import { picto } from './Picto';
+import { Rectangle } from '@renderer/types/graphics';
 
+import { Container } from '../basic/Container';
+import { State } from './State';
+import { picto } from './Picto';
 
 /**
  * Событие состояний.
@@ -12,13 +12,42 @@ import { picto } from './Picto';
  */
 export class Events {
   container!: Container;
-  draggable!: Draggable;
+  parent!: State;
   data!: EventData[];
+  bounds!: Rectangle;
 
-  constructor(container: Container, draggable: Draggable, data: EventData[]) {
+  buttonMap!: Map<Rectangle, [number, number]>;
+
+  minEventRow = 3;
+
+  minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
+  minHeight = picto.eventHeight;
+
+  constructor(container: Container, parent: State, data: EventData[]) {
     this.container = container;
-    this.draggable = draggable;
+    this.parent = parent;
     this.data = data;
+    this.bounds = {
+      x: 15,
+      y: 10,
+      width: this.minWidth,
+      height: this.minHeight,
+    };
+
+    this.buttonMap = new Map();
+    this.recalculate();
+  }
+
+  recalculate() {
+    let eventRows = 0;
+    // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
+    // но в таком случае контейнер может начать «скакать»
+    this.data.map((ev) => {
+      eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
+      // TODO: пересчитывать карту кнопок
+      // this.buttonMap.set(..., [i, -1]);
+    });
+    this.bounds.height = Math.max(this.minHeight, 50 * eventRows);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -27,32 +56,34 @@ export class Events {
 
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.draggable.drawBounds;
+    const { x, y, width } = this.parent.drawBounds;
 
-    const paddingY = 10 / this.container.scale;
-    const px = 15 / this.container.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
-    const titleHeight = fontSize + paddingY * 2;
-    
+    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
+
+    const paddingY = this.bounds.y / this.container.scale;
+    const px = this.bounds.x / this.container.scale;
+    const titleHeight = this.parent.titleHeight;
+
     ctx.beginPath();
 
-    Object.entries(this.data).forEach(([_eventName, events], i) => {
-      const resultY = y + titleHeight + paddingY + (i * 50) / this.container.scale;
-      
-      if (events.trigger.method === 'onEnter') {
-        picto.drawOnEnter(ctx, x + px, resultY);
-      } 
-      if (events.trigger.method === 'onExit') {
-        picto.drawOnExit(ctx, x + px, resultY);
-      }
-      
-      if (events.do.length == 0) return;
+    let eventRow = 0;
+    const baseY = y + titleHeight + paddingY;
 
-      if (events.do[0].method === 'turnOn') {
-        picto.drawDiodOn(ctx, x + 8 * px, resultY);
-      } else {
-        picto.drawDiodOff(ctx, x + 8 * px, resultY);
-      }
+    this.data.map((events, _eventIdx) => {
+      picto.drawEvent(ctx, events.trigger, x + px, baseY + (eventRow * 50) / this.container.scale);
+
+      events.do.forEach((act, actIdx) => {
+        const ax = 1 + (actIdx % eventRowLength);
+        const ay = eventRow + Math.floor(actIdx / eventRowLength);
+        picto.drawAction(
+          ctx,
+          act,
+          x + (20 + (picto.eventWidth + 5) * ax) / picto.scale,
+          baseY + (ay * 50) / this.container.scale
+        );
+      });
+
+      eventRow += Math.max(1, Math.ceil(events.do.length / eventRowLength));
     });
 
     ctx.closePath();

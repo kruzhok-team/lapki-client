@@ -1,24 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Elements } from '@renderer/types/diagram';
+import { FC, useEffect, useRef, useState } from 'react';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
-import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
-import { State } from '@renderer/lib/drawable/State';
-import { ContextMenu, StateContextMenu } from './StateContextMenu';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Condition } from '@renderer/lib/drawable/Condition';
+import { State } from '@renderer/lib/drawable/State';
 import { Rectangle } from '@renderer/types/graphics';
 
-export var canvasEditor: CanvasEditor;
+import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
+import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
+import { ContextMenu, StateContextMenu } from './StateContextMenu';
+
 interface DiagramEditorProps {
-  elements: Elements;
+  manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
   setIdTextCode: (id: string | null) => void;
   setElementCode: (content: string | null) => void;
 }
 
-export const DiagramEditor: React.FC<DiagramEditorProps> = ({
-  elements,
+export const DiagramEditor: FC<DiagramEditorProps> = ({
+  manager,
   editor,
   setEditor,
   setIdTextCode,
@@ -44,21 +45,20 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const editor = new CanvasEditor(containerRef.current, elements);
-    let i: number = 0;
+    const editor = new CanvasEditor(containerRef.current, manager.state.data);
+    let i = 0;
 
     //Добавляем пустую ноду в редактор
     editor.container.onStateDrop((position) => {
       i = i + 1;
       editor?.container.machine.createNewState('Состояние ' + i, position);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateCreate((state) => {
       setState({ state });
       openStateModal();
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      // manager.triggerDataUpdate();
     });
 
     //Обработка правой кнопки на пустом поле
@@ -78,14 +78,14 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       const bounds = state.drawBounds;
       setContextMenuData({ data: state, bounds });
       setIsContextMenuOpen(true);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      // manager.triggerDataUpdate();
     });
 
     //Здесь мы открываем модальное окно редактирования связи
     editor.container.transitions.onTransitionCreate((source, target) => {
       setTransition({ source, target });
       openTransitionModal();
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
+      // manager.triggerDataUpdate();
     });
 
     //Здесь мы открываем контекстное меню для связи
@@ -93,18 +93,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       const bounds = condition.drawBounds;
       setContextMenuData({ data: condition, bounds });
       setIsContextMenuOpen(true);
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
     });
 
-    //Таймер для сохранения изменений сделанных в редакторе
-    const SaveEditor = setInterval(() => {
-      localStorage.setItem('Data', JSON.stringify(editor.container.graphData));
-    }, 5000);
     setEditor(editor);
+    manager.watchEditor(editor);
+
     return () => {
-      editor.cleanUp();
-      clearInterval(SaveEditor);
+      manager.unwatchEditor();
     };
+    // FIXME: Агрессивный ESLint ругается, что containerRef не влияет
+    // на перезапуск эффекта. Но это неправда. Хотя возможно, проблема
+    // в архитектуре этого компонента.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef.current]);
 
   const handleCreateState = (data: CreateStateModalFormValues) => {

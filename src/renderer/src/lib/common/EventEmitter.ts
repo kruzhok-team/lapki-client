@@ -1,5 +1,5 @@
 /**
- * Система обработки событий с подпиской и генерацией сигналов 
+ * Система обработки событий с подпиской и генерацией сигналов
  */
 export class EventEmitter<T extends {} = {}> {
   handlers = new Map<string, Set<Function>>();
@@ -30,9 +30,9 @@ export class EventEmitter<T extends {} = {}> {
   }
 
   reset() {
-    this.handlers.clear()
+    this.handlers.clear();
   }
-  
+
   emit(name: string, event: T) {
     if (this.handlers.has(name)) {
       const handlers = this.handlers.get(name);

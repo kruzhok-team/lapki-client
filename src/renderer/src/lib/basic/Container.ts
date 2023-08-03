@@ -1,12 +1,13 @@
 import { Elements } from '@renderer/types/diagram';
-import { States } from '../drawable/States';
-import { Transitions } from '../drawable/Transitions';
-import { CanvasEditor } from '../CanvasEditor';
-import { clamp } from '../utils';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { Point } from '@renderer/types/graphics';
+
+import { CanvasEditor } from '../CanvasEditor';
+import { Button, MyMouseEvent } from '../common/MouseEventEmitter';
 import { StateMachine } from '../data/StateMachine';
 import { picto } from '../drawable/Picto';
+import { States } from '../drawable/States';
+import { Transitions } from '../drawable/Transitions';
+import { clamp } from '../utils';
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
@@ -30,8 +31,8 @@ export class Container {
   isScale = false;
 
   dropCallback?: (position: Point) => void;
-  contextMenuOpenCallback? : (position: Point) => void;
-  contextMenuCloseCallback? : () => void;
+  contextMenuOpenCallback?: (position: Point) => void;
+  contextMenuCloseCallback?: () => void;
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -86,15 +87,16 @@ export class Container {
 
   onFieldContextMenu = (callback: (position: Point) => void) => {
     this.contextMenuOpenCallback = callback;
-  }
+  };
 
   onContextMenuClose = (callback: () => void) => {
     this.contextMenuCloseCallback = callback;
-  }
+  };
 
   closeContextMenu = () => {
     this.contextMenuCloseCallback?.();
-  }
+    // console.log(['closeContextMenu']);
+  };
 
   handleMouseDown = (e: MyMouseEvent) => {
     if (!this.isPan || !e.left) return;
@@ -104,7 +106,9 @@ export class Container {
 
   handleMouseUp = (e: MyMouseEvent) => {
     this.machine.removeSelection();
-    this.closeContextMenu();
+    if (e.button != Button.right) {
+      this.closeContextMenu();
+    }
 
     if (!this.isPan) return;
 
@@ -123,7 +127,7 @@ export class Container {
 
   handleFieldContextMenu = (e: MyMouseEvent) => {
     this.contextMenuOpenCallback?.(e);
-  }
+  };
 
   handleSpaceDown = () => {
     this.isPan = true;

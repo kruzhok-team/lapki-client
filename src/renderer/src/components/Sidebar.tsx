@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { twMerge } from 'tailwind-merge';
+
+import { StateMachine } from '@renderer/lib/data/StateMachine';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
+import { twMerge } from 'tailwind-merge';
 
 import { Explorer, Menu, Compiler, Loader, MenuProps } from '../components';
 
@@ -11,7 +13,6 @@ import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 
-import { StateMachine } from '@renderer/lib/data/StateMachine';
 interface SidebarProps {
   menuProps: MenuProps;
   stateMachine: StateMachine | undefined;

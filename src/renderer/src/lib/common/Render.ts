@@ -6,10 +6,10 @@ type Subscriber = (data: Render) => void;
  * Класс для подписки на событие отрисовки кадра анимации.
  */
 export class Render extends Observer<Subscriber> {
-  timestamp: number = 0;
-  ptimestamp: number = 0;
-  fps: number = 0;
-  secondPart: number = 0;
+  timestamp = 0;
+  ptimestamp = 0;
+  fps = 0;
+  secondPart = 0;
 
   constructor() {
     super();

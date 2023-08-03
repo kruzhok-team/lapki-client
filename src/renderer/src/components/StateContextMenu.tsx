@@ -56,13 +56,13 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
     if (isData!.data instanceof Condition) {
       data.id = isData?.data.id!;
-      data.content = JSON.stringify(isData.data);
+      data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
     }
 
     if (isData!.data instanceof State) {
       data.id = isData?.data.id!;
-      data.content = JSON.stringify(isData.data);
+      data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
     }
   });

@@ -1,4 +1,5 @@
 import { ComponentProps, forwardRef } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
 interface ColorInputProps extends ComponentProps<'input'> {

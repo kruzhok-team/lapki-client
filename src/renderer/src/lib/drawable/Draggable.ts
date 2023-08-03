@@ -219,13 +219,12 @@ export class Draggable extends EventEmitter {
 
     document.body.style.cursor = 'default';
 
-    const isUnderMouse = this.isUnderMouse(e);
+    clearTimeout(this.mouseDownTimerId);
 
+    const isUnderMouse = this.isUnderMouse(e);
     if (!isUnderMouse) return;
 
     e.stopPropagation();
-
-    clearTimeout(this.mouseDownTimerId);
 
     this.emit('mouseup', { event: e, target: this });
 

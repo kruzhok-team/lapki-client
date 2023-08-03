@@ -38,7 +38,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   return (
     <section
       key="SectionMenu"
-      className="flex h-full w-full flex-col items-stretch bg-[#4391BF] bg-opacity-50 font-Fira"
+      className="flex h-full w-full flex-col items-stretch bg-[#a1c8df] font-Fira"
     >
       <div className="w-full px-4 pt-2 text-center">
         <p className="mb-3 border-b border-white pb-2 text-lg">Меню</p>

@@ -136,7 +136,6 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   };
 
   const handleShowCode = (data: ContextMenu) => {
-    console.log(data);
     setIdTextCode(data.id);
     setElementCode(data.content);
     setIsContextMenuOpen(false);

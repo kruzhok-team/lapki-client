@@ -1,13 +1,12 @@
-import { FC, useState } from 'react';
-
-import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
-import { Panel, PanelGroup } from 'react-resizable-panels';
+import { FC, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
+import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import arrow from './assets/img/arrow.png';
-import arrow1 from './assets/img/arrow1.png';
 import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
+
+import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { CanvasEditor } from './lib/CanvasEditor';
 import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
 import { preloadPicto } from './lib/drawable/Picto';
@@ -107,6 +106,7 @@ export const App: FC = () => {
   //Callback данные для получения ответа от контекстного меню
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
   const [elementCode, setElementCode] = useState<string | null>(null);
+  const countRef = useRef<{ tab: string; content: JSX.Element }[]>([]);
 
   const tabsItems = [
     {
@@ -130,26 +130,31 @@ export const App: FC = () => {
   /** Функция выбора вкладки (машина состояний, код) */
   var [activeTab, setActiveTab] = useState<number | 0>(0);
   var isActive = (index: number) => activeTab === index;
-
-  if (idTextCode !== null && idTextCode !== 'FullCode') {
-    tabsItems.indexOf({ tab: idTextCode, content: <CodeEditor value={elementCode ?? ''} /> }) === -1
-      ? tabsItems.push({ tab: idTextCode, content: <CodeEditor value={elementCode ?? ''} /> })
-      : console.log('This item already exists');
-  } else {
-    isActive(1);
-  }
-  const handleShowTabs = async (index: number) => {
-    if (activeTab === index) {
+  const handleShowTabs = (id: number) => {
+    if (activeTab === id) {
       setActiveTab(activeTab);
     }
-    setActiveTab(index);
+    setActiveTab(id);
   };
+  //Проверяем сколько элементов в массиве, если меньше 2, то записываем в useRef
+  if (countRef.current.length <= 2) {
+    countRef.current = tabsItems;
+  }
+
+  if (idTextCode !== null) {
+    const trueTab = countRef.current.find((item) => item.tab === idTextCode);
+    if (trueTab === undefined) {
+      countRef.current.push({
+        tab: idTextCode,
+        content: <CodeEditor value={elementCode ?? ''} />,
+      });
+    }
+  }
   //Функция закрытия вкладки (РАБОЧАЯ)
   const onClose = (id: number) => {
     //Удаляем необходимую вкладку
-    tabsItems.splice(id, 1);
+    countRef.current.splice(id, 1);
     //Активируем самую первую вкладку
-    isActive(0);
   };
 
   return (
@@ -160,11 +165,11 @@ export const App: FC = () => {
         <Panel>
           <div className="flex">
             <div className="flex-1">
-              {editorData.content ? (
+              {editorData.content && countRef.current ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
                     <div className="flex font-Fira ">
-                      {tabsItems.map((name, id) => (
+                      {countRef.current.map((name, id) => (
                         <div
                           key={'tab' + id}
                           className={twMerge(
@@ -180,7 +185,7 @@ export const App: FC = () => {
                             {name.tab}
                           </div>
                           <button onClick={() => onClose(id)} className="p-1 hover:bg-[#FFFFFF]">
-                            <Cross width="1rem" height="1rem" />
+                            <Close width="1rem" height="1rem" />
                           </button>
                         </div>
                       ))}
@@ -189,7 +194,7 @@ export const App: FC = () => {
                       <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
                     </button>*/}
                   </div>
-                  {tabsItems.map((name, id) => (
+                  {countRef.current.map((name, id) => (
                     <div
                       key={id + 'ActiveBlock'}
                       className={twMerge('hidden h-[calc(100vh-2rem)]', isActive(id) && 'block')}
@@ -207,7 +212,7 @@ export const App: FC = () => {
 
             <div className="bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)]">
               <button className="relative h-auto w-8" onClick={() => setIsDocOpen((p) => !p)}>
-                <img src={isDocOpen ? arrow1 : arrow} alt="" className="pointer-events-none" />
+                <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
               </button>
 
               <div className={twMerge('w-96 transition-all', !isDocOpen && 'hidden')}>

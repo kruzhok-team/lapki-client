@@ -9,7 +9,7 @@ interface ExplorerProps {
 export const Explorer: React.FC<ExplorerProps> = ({ stateMachine }) => {
   console.log(stateMachine);
   return (
-    <section className="flex h-full flex-col justify-between bg-[#4391BF] bg-opacity-50 font-Fira text-base">
+    <section className="flex h-full flex-col justify-between bg-[#a1c8df] font-Fira text-base">
       <div className="w-full px-4 pt-2 text-center">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Проводник</h1>
 

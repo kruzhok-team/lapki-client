@@ -1,7 +1,6 @@
 import React from 'react';
-
-import { ReactComponent as Cross } from '@renderer/assets/icons/cross.svg';
 import ReactModal, { Props } from 'react-modal';
+import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 
 import './style.css';
 
@@ -40,7 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
           className="rounded-full border-none p-3 text-neutral-50 shadow-none outline-1 outline-neutral-100 transition-colors hover:bg-neutral-700"
           onClick={props.onRequestClose}
         >
-          <Cross width="1rem" height="1rem" />
+          <Close width="1rem" height="1rem" />
         </button>
       </div>
 

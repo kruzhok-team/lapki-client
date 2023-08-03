@@ -1,36 +1,35 @@
 /**
- * Кодер JSON-формата схемы.
+ * Кодер JSON-формата описания платформы.
  * Выполняет кодирование и декодирование с проверкой данных на корректность.
  *
  * Декодер бросает исключение, если JSON не соответствует схеме.
  */
 
 /*
-Для регенерации этого модуля после изменений типов в Elements:
+  Для регенерации этого модуля после изменений типов в Platforms:
 
-- перегенерировать схему: `npm run schema:elements`
-- взять файл schema/Elements.json, __положить в коммит__
-- зайти на сайт https://app.quicktype.io/
-- выбрать 
-Source type -> JSON Schema, и вставить содержимое туда. 
-Language -> TypeScript
-Use types instead of interfaces -> включено
-Name -> ввести «Elements»
-- вставить содержимое файла в поле слева
-- скопировать содержимое файла НИЖЕ ФУНКЦИИ invalidValue
-- заменить соответствующий участок этого файла
+  - перегенерировать схему: `npm run schema:platforms`
+  - взять файл schema/Platforms.json, __положить в коммит__
+  - зайти на сайт https://app.quicktype.io/
+  - выбрать 
+      Source type -> JSON Schema, и вставить содержимое туда. 
+      Language -> TypeScript
+      Use types instead of interfaces -> включено
+      Name -> ввести «Platforms»
+  - вставить содержимое файла в поле слева
+  - скопировать содержимое файла **НИЖЕ ФУНКЦИИ invalidValue**
+  - заменить соответствующий участок этого файла
 */
-// TODO: унифицировать обвязку, чтобы копировать только typeMap
 
-import { Elements } from '@renderer/types/diagram';
+import { Platforms } from '@renderer/types/platform';
 
-export default class ElementsJSONCodec {
-  public static toElements(json: string): Elements {
-    return cast(JSON.parse(json), r('Elements'));
+export default class PlatformsJSONCodec {
+  public static toPlatforms(json: string): Platforms {
+    return cast(JSON.parse(json), r('Platforms'));
   }
 
-  public static elementsToJson(value: Elements): string {
-    return JSON.stringify(uncast(value, r('Elements')), null, 2);
+  public static platformsToJson(value: Platforms): string {
+    return JSON.stringify(uncast(value, r('Platforms')), null, 2);
   }
 }
 
@@ -205,101 +204,140 @@ function r(name: string) {
 }
 
 const typeMap: any = {
-  Elements: o(
+  PlatformFile: o(
     [
-      { json: 'components', js: 'components', typ: m(r('Component')) },
-      { json: 'initialState', js: 'initialState', typ: '' },
-      { json: 'states', js: 'states', typ: m(r('State')) },
-      { json: 'transitions', js: 'transitions', typ: a(r('Transition')) },
+      { json: '$ref', js: '$ref', typ: '' },
+      { json: '$schema', js: '$schema', typ: '' },
+      { json: 'definitions', js: 'definitions', typ: r('Definitions') },
     ],
     false
   ),
-  Component: o(
+  Definitions: o(
     [
-      { json: 'parameters', js: 'parameters', typ: m('any') },
+      { json: 'ArgType', js: 'ArgType', typ: r('ArgType') },
+      { json: 'ComponentProto', js: 'ComponentProto', typ: r('ComponentProto') },
+      { json: 'MethodProto', js: 'MethodProto', typ: r('MethodProto') },
+      { json: 'ParameterProto', js: 'ParameterProto', typ: r('ParameterProto') },
+      { json: 'Platform', js: 'Platform', typ: r('Platform') },
+      { json: 'Platforms', js: 'Platforms', typ: r('Platforms') },
+      { json: 'SignalProto', js: 'SignalProto', typ: r('Proto') },
+      { json: 'VariableProto', js: 'VariableProto', typ: r('Proto') },
+    ],
+    false
+  ),
+  ArgType: o([{ json: 'anyOf', js: 'anyOf', typ: a(r('AnyOf')) }], false),
+  AnyOf: o(
+    [
+      { json: 'type', js: 'type', typ: '' },
+      { json: 'items', js: 'items', typ: u(undefined, r('Description')) },
+    ],
+    false
+  ),
+  Description: o([{ json: 'type', js: 'type', typ: r('TypeEnum') }], false),
+  ComponentProto: o(
+    [
+      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
+      { json: 'properties', js: 'properties', typ: r('ComponentProtoProperties') },
+      { json: 'required', js: 'required', typ: a('') },
       { json: 'type', js: 'type', typ: '' },
     ],
     false
   ),
-  State: o(
+  ComponentProtoProperties: o(
     [
-      { json: 'bounds', js: 'bounds', typ: r('Rectangle') },
-      { json: 'events', js: 'events', typ: a(r('EventData')) },
-      { json: 'name', js: 'name', typ: '' },
-      { json: 'parent', js: 'parent', typ: u(undefined, '') },
+      { json: 'description', js: 'description', typ: r('Description') },
+      { json: 'img', js: 'img', typ: r('Description') },
+      { json: 'methods', js: 'methods', typ: r('Methods') },
+      { json: 'name', js: 'name', typ: r('Description') },
+      { json: 'parameters', js: 'parameters', typ: r('Methods') },
+      { json: 'signals', js: 'signals', typ: r('Methods') },
+      { json: 'singletone', js: 'singletone', typ: r('Description') },
+      { json: 'variables', js: 'variables', typ: r('Methods') },
     ],
     false
   ),
-  Rectangle: o(
+  Methods: o(
     [
-      { json: 'height', js: 'height', typ: 3.14 },
-      { json: 'width', js: 'width', typ: 3.14 },
-      { json: 'x', js: 'x', typ: 3.14 },
-      { json: 'y', js: 'y', typ: 3.14 },
-    ],
-    false
-  ),
-  EventData: o(
-    [
-      { json: 'do', js: 'do', typ: a(r('Action')) },
-      { json: 'trigger', js: 'trigger', typ: r('Event') },
-    ],
-    false
-  ),
-  Action: o(
-    [
-      { json: 'args', js: 'args', typ: u(undefined, a('any')) },
-      { json: 'component', js: 'component', typ: '' },
-      { json: 'method', js: 'method', typ: '' },
-    ],
-    false
-  ),
-  Event: o(
-    [
-      { json: 'args', js: 'args', typ: u(undefined, a('any')) },
-      { json: 'component', js: 'component', typ: '' },
-      { json: 'method', js: 'method', typ: '' },
-    ],
-    false
-  ),
-  Transition: o(
-    [
-      { json: 'color', js: 'color', typ: '' },
-      { json: 'conditions', js: 'conditions', typ: u(undefined, r('Condition')) },
-      { json: 'do', js: 'do', typ: u(undefined, a(r('Action'))) },
-      { json: 'position', js: 'position', typ: r('Point') },
-      { json: 'source', js: 'source', typ: '' },
-      { json: 'target', js: 'target', typ: '' },
-      { json: 'trigger', js: 'trigger', typ: r('Event') },
-    ],
-    false
-  ),
-  Variable: o(
-    [
-      { json: 'args', js: 'args', typ: u(undefined, a('any')) },
-      { json: 'component', js: 'component', typ: u(undefined, '') },
-      { json: 'method', js: 'method', typ: u(undefined, '') },
-      { json: 'type', js: 'type', typ: u(undefined, '') },
-      {
-        json: 'value',
-        js: 'value',
-        typ: u(undefined, u(a(r('Condition')), r('Variable'), 3.14, '')),
-      },
-    ],
-    false
-  ),
-  Condition: o(
-    [
+      { json: 'additionalProperties', js: 'additionalProperties', typ: r('TypeClass') },
       { json: 'type', js: 'type', typ: '' },
-      { json: 'value', js: 'value', typ: u(a(r('Condition')), r('Variable'), 3.14, '') },
     ],
     false
   ),
-  Point: o(
+  TypeClass: o([{ json: '$ref', js: '$ref', typ: '' }], false),
+  MethodProto: o(
     [
-      { json: 'x', js: 'x', typ: 3.14 },
-      { json: 'y', js: 'y', typ: 3.14 },
+      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
+      { json: 'properties', js: 'properties', typ: r('MethodProtoProperties') },
+      { json: 'type', js: 'type', typ: '' },
     ],
     false
   ),
+  MethodProtoProperties: o(
+    [
+      { json: 'description', js: 'description', typ: r('Description') },
+      { json: 'img', js: 'img', typ: r('Description') },
+      { json: 'parameters', js: 'parameters', typ: r('Methods') },
+    ],
+    false
+  ),
+  ParameterProto: o(
+    [
+      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
+      { json: 'properties', js: 'properties', typ: r('ParameterProtoProperties') },
+      { json: 'type', js: 'type', typ: '' },
+    ],
+    false
+  ),
+  ParameterProtoProperties: o(
+    [
+      { json: 'description', js: 'description', typ: r('Description') },
+      { json: 'img', js: 'img', typ: r('Description') },
+      { json: 'name', js: 'name', typ: r('Description') },
+      { json: 'type', js: 'type', typ: r('TypeClass') },
+    ],
+    false
+  ),
+  Platform: o(
+    [
+      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
+      { json: 'properties', js: 'properties', typ: r('PlatformProperties') },
+      { json: 'required', js: 'required', typ: a('') },
+      { json: 'type', js: 'type', typ: '' },
+    ],
+    false
+  ),
+  PlatformProperties: o(
+    [
+      { json: 'components', js: 'components', typ: r('Methods') },
+      { json: 'description', js: 'description', typ: r('Description') },
+      { json: 'name', js: 'name', typ: r('Description') },
+    ],
+    false
+  ),
+  Platforms: o(
+    [
+      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
+      { json: 'properties', js: 'properties', typ: r('PlatformsProperties') },
+      { json: 'required', js: 'required', typ: a('') },
+      { json: 'type', js: 'type', typ: '' },
+    ],
+    false
+  ),
+  PlatformsProperties: o([{ json: 'platform', js: 'platform', typ: r('Methods') }], false),
+  Proto: o(
+    [
+      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
+      { json: 'properties', js: 'properties', typ: r('SignalProtoProperties') },
+      { json: 'type', js: 'type', typ: '' },
+    ],
+    false
+  ),
+  SignalProtoProperties: o(
+    [
+      { json: 'description', js: 'description', typ: r('Description') },
+      { json: 'img', js: 'img', typ: r('Description') },
+    ],
+    false
+  ),
+  TypeEnum: ['boolean', 'string'],
 };

@@ -1,0 +1,272 @@
+{
+  "$ref": "#/definitions/Elements",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Action": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "items": {},
+          "type": "array"
+        },
+        "component": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "method"
+      ],
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "properties": {
+        "parameters": {
+          "type": "object"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "parameters"
+      ],
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Variable"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/Condition"
+              },
+              "type": "array"
+            },
+            {
+              "$ref": "#/definitions/Condition"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "type": "object"
+    },
+    "Elements": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Component"
+          },
+          "type": "object"
+        },
+        "initialState": {
+          "type": "string"
+        },
+        "states": {
+          "additionalProperties": {
+            "$ref": "#/definitions/State"
+          },
+          "type": "object"
+        },
+        "transitions": {
+          "items": {
+            "$ref": "#/definitions/Transition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "states",
+        "transitions",
+        "components",
+        "initialState"
+      ],
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "items": {},
+          "type": "array"
+        },
+        "component": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "method"
+      ],
+      "type": "object"
+    },
+    "EventData": {
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "items": {
+            "$ref": "#/definitions/Action"
+          },
+          "type": "array"
+        },
+        "trigger": {
+          "$ref": "#/definitions/Event"
+        }
+      },
+      "required": [
+        "trigger",
+        "do"
+      ],
+      "type": "object"
+    },
+    "Point": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "Rectangle": {
+      "additionalProperties": false,
+      "properties": {
+        "height": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "height",
+        "width",
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "State": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "$ref": "#/definitions/Rectangle"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/definitions/EventData"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "bounds",
+        "events"
+      ],
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "conditions": {
+          "$ref": "#/definitions/Condition"
+        },
+        "do": {
+          "items": {
+            "$ref": "#/definitions/Action"
+          },
+          "type": "array"
+        },
+        "position": {
+          "$ref": "#/definitions/Point"
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "trigger": {
+          "$ref": "#/definitions/Event"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "color",
+        "position",
+        "trigger"
+      ],
+      "type": "object"
+    },
+    "Variable": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "items": {},
+          "type": "array"
+        },
+        "component": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "method"
+      ],
+      "type": "object"
+    }
+  }
+}

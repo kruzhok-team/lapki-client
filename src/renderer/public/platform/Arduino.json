@@ -1,72 +1,70 @@
 {
-    "platform":{
-        "Arduino": {
-            "components": {
-                "Button" : {
-                    "description" : "Hardware Abstraction for Buttons. It provides an easy way of handling buttons.",
-                    "img": "",
-                    "signals": {
-                        "isPressed" : {
-                            "img" : "",
-                            "description" : "Return true if the button has been pressed"
-                        },
-                        "clicked": {
-                            "img" : "",
-                            "description" : "Return > 0 if the button is clicked, or 0 if not."
-                        },
-                        "будет еще": {}
-                    },
-                    "parameters": {
-                        "buttonPin" : {
-                            "img" : "",
-                            "type": "uint8_t",
-                            "description" : "buttonPin  sets the pin that this switch is connected to"
-                        },
-                        "buttonMode" : {
-                            "img" : "",
-                            "type": "uint8_t",
-                            "description" : "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
-                        }
-                    },
-                    "variables" : {},
-                    "methods" : {"что-то еще": ""},
-                    "singletone" : "False"
-
-                },
-
-                "LED" : {
-                    "description" : "Hardware Abstraction for LEDs. It provides an easy way of handling LEDs.",
-                    "img": "",
-                    "signals": {},
-                    "parameters": {
-                        "ledPin" : {
-                            "img" : "",
-                            "type": "uint8_t",
-                            "description" : "ledPin the pin connected to this LED"
-                        },
-                        "buttonMode" : {
-                            "img" : "",
-                            "type": "uint8_t",
-                            "description" : "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
-                        }
-                    },
-                    "variables" : {},
-                    "methods" : {
-                        "on": {
-                            "img" : "",
-                            "parameters": {},
-                            "description" : "Set this LED on"
-                        },
-                        "off": {
-                            "img" : "",
-                            "parameters": {},
-                            "description" : "Set this LED off"
-                        }
-                    },
-                    "singletone" : "False"
-
-                }
+  "platform": {
+    "ArduinoUno": {
+      "name": "Arduino Uno",
+      "components": {
+        "Button": {
+          "description": "Hardware Abstraction for Buttons. It provides an easy way of handling buttons.",
+          "img": "",
+          "signals": {
+            "isPressed": {
+              "img": "",
+              "description": "Return true if the button has been pressed"
+            },
+            "clicked": {
+              "img": "",
+              "description": "Return > 0 if the button is clicked, or 0 if not."
             }
+          },
+          "parameters": {
+            "buttonPin": {
+              "img": "",
+              "type": "uint8_t",
+              "description": "buttonPin  sets the pin that this switch is connected to"
+            },
+            "buttonMode": {
+              "img": "",
+              "type": "uint8_t",
+              "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
+            }
+          },
+          "variables": {},
+          "methods": {},
+          "singletone": false
+        },
+
+        "LED": {
+          "description": "Hardware Abstraction for LEDs. It provides an easy way of handling LEDs.",
+          "img": "",
+          "signals": {},
+          "parameters": {
+            "ledPin": {
+              "img": "",
+              "type": "uint8_t",
+              "description": "ledPin the pin connected to this LED"
+            },
+            "buttonMode": {
+              "img": "",
+              "type": "uint8_t",
+              "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
+            }
+          },
+          "variables": {},
+          "methods": {
+            "on": {
+              "img": "",
+              "parameters": {},
+              "description": "Set this LED on"
+            },
+            "off": {
+              "img": "",
+              "parameters": {},
+              "description": "Set this LED off"
+            }
+          },
+          "singletone": false
         }
+      }
     }
+  }
 }

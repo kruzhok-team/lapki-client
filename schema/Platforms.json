@@ -1,0 +1,164 @@
+{
+  "$ref": "#/definitions/Platforms",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArgType": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "ComponentProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        },
+        "methods": {
+          "additionalProperties": {
+            "$ref": "#/definitions/MethodProto"
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterProto"
+          },
+          "type": "object"
+        },
+        "signals": {
+          "additionalProperties": {
+            "$ref": "#/definitions/SignalProto"
+          },
+          "type": "object"
+        },
+        "singletone": {
+          "type": "boolean"
+        },
+        "variables": {
+          "additionalProperties": {
+            "$ref": "#/definitions/VariableProto"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "signals",
+        "variables",
+        "methods",
+        "parameters"
+      ],
+      "type": "object"
+    },
+    "MethodProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ArgType"
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "ParameterProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ArgType"
+        }
+      },
+      "type": "object"
+    },
+    "Platform": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ComponentProto"
+          },
+          "type": "object"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "components"
+      ],
+      "type": "object"
+    },
+    "Platforms": {
+      "additionalProperties": false,
+      "properties": {
+        "platform": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Platform"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "platform"
+      ],
+      "type": "object"
+    },
+    "SignalProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "VariableProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

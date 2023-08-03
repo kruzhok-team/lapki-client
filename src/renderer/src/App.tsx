@@ -136,6 +136,7 @@ export const App: FC = () => {
     }
     setActiveTab(id);
   };
+
   //Проверяем сколько элементов в массиве, если меньше 2, то записываем в useRef
   if (countRef.current.length <= 2) {
     countRef.current = tabsItems;
@@ -148,15 +149,18 @@ export const App: FC = () => {
         tab: idTextCode,
         content: <CodeEditor value={elementCode ?? ''} />,
       });
+      handleShowTabs(countRef.current.length - 1);
     }
   }
   //Функция закрытия вкладки (РАБОЧАЯ)
   const onClose = (id: number) => {
+    console.log(id);
+    console.log(countRef.current);
     //Удаляем необходимую вкладку
     countRef.current.splice(id, 1);
-    //Активируем самую первую вкладку
+    countRef.current = tabsItems;
+    handleShowTabs(0);
   };
-
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
@@ -168,7 +172,7 @@ export const App: FC = () => {
               {editorData.content /* && countRef.current */ ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
-                    <div className="flex font-Fira ">
+                    <div className="flex font-Fira">
                       {countRef.current.map((name, id) => (
                         <div
                           key={'tab' + id}

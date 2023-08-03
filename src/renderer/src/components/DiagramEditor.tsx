@@ -46,12 +46,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, manager.state.data);
-    let i = 0;
 
     //Добавляем пустую ноду в редактор
     editor.container.onStateDrop((position) => {
-      i = i + 1;
-      editor?.container.machine.createNewState('Состояние ' + i, position);
+      editor?.container.machine.createNewState('Состояние', position);
     });
 
     //Здесь мы открываем модальное окно редактирования ноды

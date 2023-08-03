@@ -13,7 +13,7 @@ interface ModalProps extends Props {
   onSubmit: React.FormEventHandler;
 }
 
-export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...props }) => {
+export const FormModal: React.FC<ModalProps> = ({ children, title, onSubmit, ...props }) => {
   return (
     <ReactModal
       {...props}

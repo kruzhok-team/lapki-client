@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { Modal } from './Modal/Modal';
+import { FormModal } from './Modal/FormModal';
 import { TextInput } from './Modal/TextInput';
 
 interface CreateStateModalProps {
@@ -45,7 +45,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
   };
 
   return (
-    <Modal
+    <FormModal
       {...props}
       onRequestClose={onRequestClose}
       title={'Редактирование состояния: ' + JSON.stringify(isData?.state.target.data.name)}
@@ -94,6 +94,6 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
         error={!!errors.method}
         errorMessage={errors.method?.message ?? ''}
       />
-    </Modal>
+    </FormModal>
   );
 };

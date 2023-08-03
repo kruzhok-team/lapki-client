@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ColorInput } from './Modal/ColorInput';
-import { Modal } from './Modal/Modal';
+import { FormModal } from './Modal/FormModal';
 import { TextInput } from './Modal/TextInput';
 
 interface CreateTransitionModalProps {
@@ -45,7 +45,7 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
   };
 
   return (
-    <Modal
+    <FormModal
       {...props}
       onRequestClose={onRequestClose}
       title="Редактор соединения"
@@ -79,6 +79,6 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
         error={!!errors.color}
         errorMessage={errors.color?.message ?? ''}
       />
-    </Modal>
+    </FormModal>
   );
 };

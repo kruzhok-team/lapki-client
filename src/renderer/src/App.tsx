@@ -165,7 +165,7 @@ export const App: FC = () => {
         <Panel>
           <div className="flex">
             <div className="flex-1">
-              {editorData.content && countRef.current ? (
+              {editorData.content /* && countRef.current */ ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
                     <div className="flex font-Fira ">

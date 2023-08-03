@@ -1,6 +1,7 @@
 import React from 'react';
-import ReactModal, { Props } from 'react-modal';
+
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
+import ReactModal, { Props } from 'react-modal';
 
 import './style.css';
 

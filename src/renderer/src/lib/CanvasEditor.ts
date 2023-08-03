@@ -59,7 +59,7 @@ export class CanvasEditor {
   }
 
   getData(): string {
-    return JSON.stringify(this.container.machine.graphData());
+    return JSON.stringify(this.container.machine.graphData(), null, 2);
   }
 
   onDataUpdate(fn: DataUpdateCallback) {

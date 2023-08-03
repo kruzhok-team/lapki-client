@@ -9,11 +9,24 @@ ReactModal.setAppElement('#root');
 
 interface ModalProps extends Props {
   title: string;
+  cancelLabel?: string;
+  submitLabel?: string;
+  extraLabel?: string;
   children: React.ReactNode;
+  onExtra?: React.FormEventHandler;
   onSubmit: React.FormEventHandler;
 }
 
-export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...props }) => {
+export const Modal: React.FC<ModalProps> = ({
+  children,
+  title,
+  onSubmit,
+  cancelLabel,
+  submitLabel,
+  extraLabel: extraButton,
+  onExtra: onExtraButton,
+  ...props
+}) => {
   return (
     <ReactModal
       {...props}
@@ -40,13 +53,21 @@ export const Modal: React.FC<ModalProps> = ({ children, title, onSubmit, ...prop
             className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
             onClick={props.onRequestClose}
           >
-            Закрыть
+            {cancelLabel ?? 'Закрыть'}
+          </button>
+          <button
+            type="button"
+            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+            hidden={!extraButton}
+            onClick={onExtraButton}
+          >
+            {extraButton ?? ''}
           </button>
           <button
             type="submit"
             className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
           >
-            Сохранить
+            {submitLabel ?? 'Сохранить'}
           </button>
         </div>
       </form>

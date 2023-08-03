@@ -2,39 +2,39 @@ import React, { useMemo, useState, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 
-import { Explorer, Menu, MenuProps } from '../components';
+import { Explorer, Menu, Compiler, Loader, MenuProps } from '../components';
 
-import menu from '../assets/img/menu.png';
-import compiler from '../assets/img/forward.png';
-import components from '../assets/img/components.png';
-import drive from '../assets/img/flash-drive.png';
-import chip from '../assets/img/chip.png';
-import gear from '../assets/img/gear.png';
+import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
+import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
+import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
+import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
+import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
+import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
+
 import { StateMachine } from '@renderer/lib/data/StateMachine';
 interface SidebarProps {
-  menuProps: MenuProps,
+  menuProps: MenuProps;
   stateMachine: StateMachine | undefined;
 }
 
 const items = [
   {
-    imgSrc: menu,
-  },
-
-  {
-    imgSrc: components,
+    svgIcon: <MenuIcon />,
   },
   {
-    imgSrc: compiler,
+    svgIcon: <CompilerIcon />,
   },
   {
-    imgSrc: drive,
+    svgIcon: <ComponentsIcon />,
   },
   {
-    imgSrc: chip,
+    svgIcon: <DriveIcon />,
   },
   {
-    imgSrc: gear,
+    svgIcon: <ChipIcon />,
+  },
+  {
+    svgIcon: <SettingsIcon />,
     style: true,
   },
 ];
@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
 
   const handleClick = (i: number) => () => {
     const panel = panelRef.current;
-    
+
     if (i === activeTab && panel) {
       if (panel.getCollapsed()) {
         panel.expand();
@@ -67,17 +67,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
   const tabs = useMemo(
     () => [
       <Menu {...menuProps} />,
-      <Explorer stateMachine={stateMachine}/>,
+      <Explorer stateMachine={stateMachine} />,
+      <Compiler />,
+      <Loader />,
     ],
     [stateMachine]
   );
 
   return (
     <>
-      <div className="flex flex-col gap-2 p-2">
-        {items.map(({ imgSrc, style }, i) => (
+      <div className="flex flex-col gap-4 p-2 ">
+        {items.map(({ svgIcon, style }, i) => (
           <button key={i} className={twMerge('w-8', style && 'mt-auto')} onClick={handleClick(i)}>
-            <img src={imgSrc} alt="" className="pointer-events-none" />
+            {svgIcon}
           </button>
         ))}
       </div>
@@ -85,7 +87,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
       <Panel collapsible={true} minSize={20} defaultSize={20} ref={panelRef}>
         <div className="h-full w-full">
           {tabs.map((Element, i) => (
-            <div key={i} className={twMerge('hidden h-full', i === activeTab && 'block')}>
+            <div
+              key={i}
+              className={twMerge(
+                'hidden h-full border-l-4 border-[#a1c8df]',
+                i === activeTab && 'block'
+              )}
+            >
               {Element}
             </div>
           ))}

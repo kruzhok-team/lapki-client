@@ -23,10 +23,10 @@ const items = [
     svgIcon: <MenuIcon />,
   },
   {
-    svgIcon: <CompilerIcon />,
+    svgIcon: <ComponentsIcon />,
   },
   {
-    svgIcon: <ComponentsIcon />,
+    svgIcon: <CompilerIcon />,
   },
   {
     svgIcon: <DriveIcon />,

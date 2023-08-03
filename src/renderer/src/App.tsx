@@ -12,6 +12,7 @@ import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorMan
 import { preloadPicto } from './lib/drawable/Picto';
 import { isLeft, unwrapEither } from './types/Either';
 import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
+import { MessageModal, MessageModalData } from './components/MessageModal';
 
 /**
  * React-компонент приложения
@@ -30,6 +31,40 @@ export const App: FC = () => {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const openSaveModal = () => setIsSaveModalOpen(true);
   const closeSaveModal = () => setIsSaveModalOpen(false);
+
+  const [msgModalData, setMsgModalData] = useState<MessageModalData>();
+  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
+  const openMsgModal = (data: MessageModalData) => {
+    setMsgModalData(data);
+    setIsMsgModalOpen(true);
+  };
+  const closeMsgModal = () => setIsMsgModalOpen(false);
+  const openSaveError = (cause) => {
+    openMsgModal({
+      caption: 'Ошибка',
+      text: (
+        <div>
+          <p> Не удалось записать схему в </p>
+          <code>{cause.name}</code>
+          <br /> <br />
+          <p> {cause.content} </p>
+        </div>
+      ),
+    });
+  };
+  const openLoadError = (cause) => {
+    openMsgModal({
+      caption: 'Ошибка',
+      text: (
+        <div>
+          <p> Не удалось прочесть схему из </p>
+          <code>{cause.name}</code>
+          <br /> <br />
+          <p> {cause.content} </p>
+        </div>
+      ),
+    });
+  };
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
@@ -52,8 +87,7 @@ export const App: FC = () => {
     if (isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
-        // TODO: вывод ошибки чтения
-        console.log(cause);
+        openLoadError(cause);
       }
     }
   };
@@ -78,8 +112,7 @@ export const App: FC = () => {
     if (isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
-        // TODO: вывод ошибки сохранения
-        console.log(cause);
+        openSaveError(cause);
       }
     }
   };
@@ -89,8 +122,7 @@ export const App: FC = () => {
     if (isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
-        // TODO: вывод ошибки сохранения
-        console.log(cause);
+        openSaveError(cause);
       }
     } else {
       // TODO: информировать об успешном сохранении
@@ -226,7 +258,9 @@ export const App: FC = () => {
           </div>
         </Panel>
       </PanelGroup>
+
       <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
+      <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
     </div>
   );
 };

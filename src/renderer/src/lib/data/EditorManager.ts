@@ -4,6 +4,7 @@ import { Elements, emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import { CanvasEditor } from '../CanvasEditor';
+import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
 
 export type EditorData = {
   name: string | null;
@@ -96,18 +97,30 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile');
     if (openData[0]) {
-      // TODO: валидация файла и вывод ошибок
-      const data = JSON.parse(openData[3]) as Elements;
-      this.editor?.loadData(data);
-      this.updateState({
-        ...this.state,
-        name: openData[1],
-        shownName: openData[2],
-        content: openData[3],
-        data,
-        modified: false,
-      });
-      return makeRight(null);
+      try {
+        const data = ElementsJSONCodec.toElements(openData[3]);
+        this.editor?.loadData(data);
+        this.updateState({
+          ...this.state,
+          name: openData[1],
+          shownName: openData[2],
+          content: openData[3],
+          data,
+          modified: false,
+        });
+        return makeRight(null);
+      } catch (e) {
+        let errText = 'unknown error';
+        if (typeof e === 'string') {
+          errText = e.toUpperCase();
+        } else if (e instanceof Error) {
+          errText = e.message;
+        }
+        return makeLeft({
+          name: openData[1]!,
+          content: 'Ошибка формата: ' + errText,
+        });
+      }
     } else if (openData[1]) {
       return makeLeft({
         name: openData[1]!,

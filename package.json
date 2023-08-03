@@ -6,6 +6,7 @@
   "author": "example.com",
   "homepage": "https://www.electronjs.org",
   "scripts": {
+    "schema:elements": "ts-json-schema-generator -o schema/Elements.json --path ./src/renderer/src/types/diagram.ts --type Elements",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
@@ -36,6 +37,7 @@
     "react-resizable-panels": "^0.0.54",
     "tailwind-merge": "^1.13.2",
     "tailwind-scrollbar": "^3.0.4",
+    "ts-json-schema-generator": "^1.2.0",
     "vite-plugin-svgr": "^3.2.0"
   },
   "devDependencies": {

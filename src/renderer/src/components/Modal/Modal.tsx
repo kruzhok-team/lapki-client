@@ -23,8 +23,8 @@ export const Modal: React.FC<ModalProps> = ({
   onSubmit,
   cancelLabel,
   submitLabel,
-  extraLabel: extraButton,
-  onExtra: onExtraButton,
+  extraLabel,
+  onExtra,
   ...props
 }) => {
   return (
@@ -58,14 +58,15 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="button"
             className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-            hidden={!extraButton}
-            onClick={onExtraButton}
+            hidden={!extraLabel}
+            onClick={onExtra}
           >
-            {extraButton ?? ''}
+            {extraLabel ?? ''}
           </button>
           <button
             type="submit"
             className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+            hidden={!submitLabel}
           >
             {submitLabel ?? 'Сохранить'}
           </button>

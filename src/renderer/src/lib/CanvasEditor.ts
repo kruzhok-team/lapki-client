@@ -6,6 +6,7 @@ import { Keyboard } from './basic/Keyboard';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
 import { preloadPicto } from './drawable/Picto';
+import { DataUpdateCallback } from './data/StateMachine';
 
 /**
  * Редактор машин состояний.
@@ -61,12 +62,13 @@ export class CanvasEditor {
     return JSON.stringify(this.container.machine.graphData());
   }
 
-  onDataUpdate(fn: (data: Elements) => void) {
+  onDataUpdate(fn: DataUpdateCallback) {
     this.container.machine.onDataUpdate(fn);
   }
 
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
+    this.container.machine.onDataUpdate(undefined);
   }
 }

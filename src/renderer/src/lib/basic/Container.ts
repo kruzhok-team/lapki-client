@@ -95,6 +95,7 @@ export class Container {
 
   closeContextMenu = () => {
     this.contextMenuCloseCallback?.();
+    // console.log(['closeContextMenu']);
   };
 
   handleMouseDown = (e: MyMouseEvent) => {

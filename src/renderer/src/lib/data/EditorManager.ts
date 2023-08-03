@@ -10,6 +10,7 @@ export type EditorData = {
   shownName: string | null;
   content: string | null;
   data: Elements;
+  modified: boolean;
 };
 
 export type FileError = {
@@ -23,6 +24,7 @@ export function emptyEditorData(): EditorData {
     shownName: null,
     content: null,
     data: emptyElements(),
+    modified: false,
   };
 }
 
@@ -41,6 +43,7 @@ export class EditorManager {
     state: EditorData,
     updateState: Dispatch<SetStateAction<EditorData>>
   ) {
+    // console.log(['EditorManager constructor']);
     this.editor = editor;
     this.state = state;
     this.updateState = updateState;
@@ -48,13 +51,17 @@ export class EditorManager {
 
   watchEditor(editor: CanvasEditor) {
     this.editor = editor;
-    editor.onDataUpdate((data) => {
-      console.log(data);
-      this.updateState({
+    editor.onDataUpdate((data, modified) => {
+      // console.log(['onDataUpdate', data, modified]);
+      const newState = {
         ...this.state,
         data,
         content: JSON.stringify(data, null, 2),
-      });
+        modified: modified || this.state.modified,
+      };
+      this.updateState(newState);
+      // FIXME: не обновляется флаг modified
+      console.log(['onDataUpdate-post', newState, this.state]);
     });
 
     //Таймер для сохранения изменений сделанных в редакторе
@@ -69,7 +76,7 @@ export class EditorManager {
   }
 
   triggerDataUpdate() {
-    this.editor?.container.machine.dataTrigger();
+    this.editor?.container.machine.dataTrigger(true);
   }
 
   newFile() {
@@ -81,6 +88,7 @@ export class EditorManager {
       shownName: null,
       content: JSON.stringify(data),
       data,
+      modified: false,
     });
   }
 
@@ -97,6 +105,7 @@ export class EditorManager {
         shownName: openData[2],
         content: openData[3],
         data,
+        modified: false,
       });
       return makeRight(null);
     } else if (openData[1]) {
@@ -123,6 +132,7 @@ export class EditorManager {
         ...this.state,
         name: saveData[1],
         shownName: saveData[2],
+        modified: false,
       });
       return makeRight(null);
     } else {
@@ -143,6 +153,7 @@ export class EditorManager {
         ...this.state,
         name: saveData[1],
         shownName: saveData[2],
+        modified: false,
       });
       return makeRight(null);
     } else if (saveData[1]) {

@@ -9,6 +9,8 @@ import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 import { stateStyle } from '../styles';
 
+export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
+
 /**
  * Данные машины состояний.
  * Хранит все состояния и переходы, предоставляет интерфейс
@@ -32,8 +34,7 @@ export class StateMachine extends EventEmitter {
   transitions: Map<string, Transition> = new Map();
   components: Map<string, Component> = new Map<string, Component>();
 
-  // TODO: modified!: boolean;
-  dataUpdateCallback?: (e: Elements) => void;
+  dataUpdateCallback?: DataUpdateCallback;
 
   constructor(container: Container) {
     super();
@@ -46,14 +47,13 @@ export class StateMachine extends EventEmitter {
     this.initComponents(elements.components);
   }
 
-  onDataUpdate(fn: (e: Elements) => void) {
+  onDataUpdate(fn?: DataUpdateCallback) {
     this.dataUpdateCallback = fn;
   }
 
-  dataTrigger() {
-    // TODO: this.modified = true;
+  dataTrigger(silent?: boolean) {
     this.container.isDirty = true;
-    this.dataUpdateCallback?.(this.graphData());
+    this.dataUpdateCallback?.(this.graphData(), !silent);
   }
 
   clear() {

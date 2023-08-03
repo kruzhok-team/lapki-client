@@ -18,13 +18,10 @@ export class Events {
 
   buttonMap!: Map<Rectangle, [number, number]>;
 
-  minEventRow = 2;
-  maxEventRow = 3;
+  minEventRow = 3;
 
   minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
   minHeight = picto.eventHeight;
-
-  eventRowLength = this.minEventRow;
 
   constructor(container: Container, parent: State, data: EventData[]) {
     this.container = container;
@@ -42,33 +39,14 @@ export class Events {
   }
 
   recalculate() {
-    const width = this.parent.computedWidth;
-
-    this.maxEventRow = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
     let eventRows = 0;
-    let eventRowLength = this.minEventRow;
+    // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
+    // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
-      if (ev.do.length > eventRowLength) {
-        eventRowLength = Math.min(ev.do.length, this.maxEventRow);
-      }
-      eventRows += Math.max(1, Math.ceil(ev.do.length / this.maxEventRow));
+      eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
       // TODO: пересчитывать карту кнопок
       // this.buttonMap.set(..., [i, -1]);
     });
-    this.eventRowLength = eventRowLength;
-    /*
-    console.log([
-      'Events.recalc',
-      this.parent.id,
-      'maxEventRow',
-      this.maxEventRow,
-      'eventRowLength',
-      eventRowLength,
-      'eventRows',
-      eventRows,
-    ]);
-    */
-    this.bounds.width = 15 + (picto.eventWidth + 5) * (eventRowLength + 1);
     this.bounds.height = Math.max(this.minHeight, 50 * eventRows);
   }
 
@@ -78,7 +56,9 @@ export class Events {
 
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.parent.drawBounds;
+    const { x, y, width } = this.parent.drawBounds;
+
+    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
     const paddingY = this.bounds.y / this.container.scale;
     const px = this.bounds.x / this.container.scale;
@@ -93,8 +73,8 @@ export class Events {
       picto.drawEvent(ctx, events.trigger, x + px, baseY + (eventRow * 50) / this.container.scale);
 
       events.do.forEach((act, actIdx) => {
-        const ax = 1 + (actIdx % this.eventRowLength);
-        const ay = eventRow + Math.floor(actIdx / this.eventRowLength);
+        const ax = 1 + (actIdx % eventRowLength);
+        const ay = eventRow + Math.floor(actIdx / eventRowLength);
         picto.drawAction(
           ctx,
           act,
@@ -103,7 +83,7 @@ export class Events {
         );
       });
 
-      eventRow += Math.max(1, Math.ceil(events.do.length / this.eventRowLength));
+      eventRow += Math.max(1, Math.ceil(events.do.length / eventRowLength));
     });
 
     ctx.closePath();

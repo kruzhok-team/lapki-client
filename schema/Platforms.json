@@ -56,7 +56,6 @@
         }
       },
       "required": [
-        "name",
         "signals",
         "variables",
         "methods",

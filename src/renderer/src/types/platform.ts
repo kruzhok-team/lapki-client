@@ -26,7 +26,7 @@ export type ParameterProto = {
 };
 
 export type ComponentProto = {
-  name: string;
+  name?: string;
   description?: string;
   singletone?: boolean;
   img?: string;

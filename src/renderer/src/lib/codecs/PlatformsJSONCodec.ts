@@ -204,140 +204,57 @@ function r(name: string) {
 }
 
 const typeMap: any = {
-  PlatformFile: o(
+  Platforms: o([{ json: 'platform', js: 'platform', typ: m(r('Platform')) }], false),
+  Platform: o(
     [
-      { json: '$ref', js: '$ref', typ: '' },
-      { json: '$schema', js: '$schema', typ: '' },
-      { json: 'definitions', js: 'definitions', typ: r('Definitions') },
+      { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'name', js: 'name', typ: u(undefined, '') },
     ],
     false
   ),
-  Definitions: o(
-    [
-      { json: 'ArgType', js: 'ArgType', typ: r('ArgType') },
-      { json: 'ComponentProto', js: 'ComponentProto', typ: r('ComponentProto') },
-      { json: 'MethodProto', js: 'MethodProto', typ: r('MethodProto') },
-      { json: 'ParameterProto', js: 'ParameterProto', typ: r('ParameterProto') },
-      { json: 'Platform', js: 'Platform', typ: r('Platform') },
-      { json: 'Platforms', js: 'Platforms', typ: r('Platforms') },
-      { json: 'SignalProto', js: 'SignalProto', typ: r('Proto') },
-      { json: 'VariableProto', js: 'VariableProto', typ: r('Proto') },
-    ],
-    false
-  ),
-  ArgType: o([{ json: 'anyOf', js: 'anyOf', typ: a(r('AnyOf')) }], false),
-  AnyOf: o(
-    [
-      { json: 'type', js: 'type', typ: '' },
-      { json: 'items', js: 'items', typ: u(undefined, r('Description')) },
-    ],
-    false
-  ),
-  Description: o([{ json: 'type', js: 'type', typ: r('TypeEnum') }], false),
   ComponentProto: o(
     [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
-      { json: 'properties', js: 'properties', typ: r('ComponentProtoProperties') },
-      { json: 'required', js: 'required', typ: a('') },
-      { json: 'type', js: 'type', typ: '' },
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
+      { json: 'methods', js: 'methods', typ: m(r('MethodProto')) },
+      { json: 'name', js: 'name', typ: u(undefined, '') },
+      { json: 'parameters', js: 'parameters', typ: m(r('ParameterProto')) },
+      { json: 'signals', js: 'signals', typ: m(r('SignalProto')) },
+      { json: 'singletone', js: 'singletone', typ: u(undefined, true) },
+      { json: 'variables', js: 'variables', typ: m(r('VariableProto')) },
     ],
     false
   ),
-  ComponentProtoProperties: o(
-    [
-      { json: 'description', js: 'description', typ: r('Description') },
-      { json: 'img', js: 'img', typ: r('Description') },
-      { json: 'methods', js: 'methods', typ: r('Methods') },
-      { json: 'name', js: 'name', typ: r('Description') },
-      { json: 'parameters', js: 'parameters', typ: r('Methods') },
-      { json: 'signals', js: 'signals', typ: r('Methods') },
-      { json: 'singletone', js: 'singletone', typ: r('Description') },
-      { json: 'variables', js: 'variables', typ: r('Methods') },
-    ],
-    false
-  ),
-  Methods: o(
-    [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: r('TypeClass') },
-      { json: 'type', js: 'type', typ: '' },
-    ],
-    false
-  ),
-  TypeClass: o([{ json: '$ref', js: '$ref', typ: '' }], false),
   MethodProto: o(
     [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
-      { json: 'properties', js: 'properties', typ: r('MethodProtoProperties') },
-      { json: 'type', js: 'type', typ: '' },
-    ],
-    false
-  ),
-  MethodProtoProperties: o(
-    [
-      { json: 'description', js: 'description', typ: r('Description') },
-      { json: 'img', js: 'img', typ: r('Description') },
-      { json: 'parameters', js: 'parameters', typ: r('Methods') },
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, m(u(a(''), ''))) },
     ],
     false
   ),
   ParameterProto: o(
     [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
-      { json: 'properties', js: 'properties', typ: r('ParameterProtoProperties') },
-      { json: 'type', js: 'type', typ: '' },
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
+      { json: 'name', js: 'name', typ: u(undefined, '') },
+      { json: 'type', js: 'type', typ: u(undefined, u(a(''), '')) },
     ],
     false
   ),
-  ParameterProtoProperties: o(
+  SignalProto: o(
     [
-      { json: 'description', js: 'description', typ: r('Description') },
-      { json: 'img', js: 'img', typ: r('Description') },
-      { json: 'name', js: 'name', typ: r('Description') },
-      { json: 'type', js: 'type', typ: r('TypeClass') },
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
     ],
     false
   ),
-  Platform: o(
+  VariableProto: o(
     [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
-      { json: 'properties', js: 'properties', typ: r('PlatformProperties') },
-      { json: 'required', js: 'required', typ: a('') },
-      { json: 'type', js: 'type', typ: '' },
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
     ],
     false
   ),
-  PlatformProperties: o(
-    [
-      { json: 'components', js: 'components', typ: r('Methods') },
-      { json: 'description', js: 'description', typ: r('Description') },
-      { json: 'name', js: 'name', typ: r('Description') },
-    ],
-    false
-  ),
-  Platforms: o(
-    [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
-      { json: 'properties', js: 'properties', typ: r('PlatformsProperties') },
-      { json: 'required', js: 'required', typ: a('') },
-      { json: 'type', js: 'type', typ: '' },
-    ],
-    false
-  ),
-  PlatformsProperties: o([{ json: 'platform', js: 'platform', typ: r('Methods') }], false),
-  Proto: o(
-    [
-      { json: 'additionalProperties', js: 'additionalProperties', typ: true },
-      { json: 'properties', js: 'properties', typ: r('SignalProtoProperties') },
-      { json: 'type', js: 'type', typ: '' },
-    ],
-    false
-  ),
-  SignalProtoProperties: o(
-    [
-      { json: 'description', js: 'description', typ: r('Description') },
-      { json: 'img', js: 'img', typ: r('Description') },
-    ],
-    false
-  ),
-  TypeEnum: ['boolean', 'string'],
 };

@@ -2,7 +2,7 @@ import { Elements } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
 import { CanvasEditor } from '../CanvasEditor';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Button, MyMouseEvent } from '../common/MouseEventEmitter';
 import { StateMachine } from '../data/StateMachine';
 import { picto } from '../drawable/Picto';
 import { States } from '../drawable/States';
@@ -106,7 +106,9 @@ export class Container {
 
   handleMouseUp = (e: MyMouseEvent) => {
     this.machine.removeSelection();
-    this.closeContextMenu();
+    if (e.button != Button.right) {
+      this.closeContextMenu();
+    }
 
     if (!this.isPan) return;
 

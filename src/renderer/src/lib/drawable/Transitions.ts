@@ -5,6 +5,7 @@ import { Transition } from './Transition';
 
 import { Container } from '../basic/Container';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Point } from '@renderer/types/graphics';
 
 /**
  * Функция, обрабатывающая запрос на создание перехода.
@@ -14,7 +15,7 @@ type TransitionCreateCallback = (source: State, target: State) => void;
 /**
  * Функция, обрабатывающая вызов контекстного меню.
  */
-type MenuCallback = (target: Condition) => void;
+type MenuCallback = (target: Condition, pos: Point) => void;
 
 /**
  * Контроллер {@link Transition|переходов}.
@@ -75,10 +76,11 @@ export class Transitions {
   };
 
   //Удаление связей
-  handleContextMenu = (e: { target; event }) => {
+  handleContextMenu = (e: { target: Condition; event: MyMouseEvent }) => {
     e.event.stopPropagation();
-    //this.emit('contextMenu', e);
-    this.menuCallback?.(e.target);
+    console.log(['handleContextMenu', e.target]);
+
+    this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

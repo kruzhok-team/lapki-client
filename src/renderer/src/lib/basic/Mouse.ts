@@ -1,3 +1,4 @@
+import { Point } from '@renderer/types/graphics';
 import { MouseEventEmitter, Button } from '../common/MouseEventEmitter';
 
 /**
@@ -22,7 +23,7 @@ export class Mouse extends MouseEventEmitter {
 
     this.element = element;
 
-    this.element.addEventListener('contextmenu', this.RightClickHandler);
+    this.element.addEventListener('contextmenu', this.rightClickHandler);
     this.element.addEventListener('dblclick', this.doubleClickHandler);
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
@@ -34,6 +35,10 @@ export class Mouse extends MouseEventEmitter {
     const bounds = this.element.getBoundingClientRect();
     this.leftOffset = bounds.left;
     this.topOffset = bounds.top;
+  }
+
+  getOffset(): Point {
+    return { x: this.leftOffset, y: this.topOffset };
   }
 
   getPosition(e: MouseEvent) {
@@ -119,7 +124,7 @@ export class Mouse extends MouseEventEmitter {
     this.emit('dblclick', event);
   };
 
-  RightClickHandler = (e: MouseEvent) => {
+  rightClickHandler = (e: MouseEvent) => {
     if (e.button === Button.left) {
       this.left = false;
     }

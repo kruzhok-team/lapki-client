@@ -1,13 +1,18 @@
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
-import { Rectangle } from '@renderer/types/graphics';
+import { Point } from '@renderer/types/graphics';
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
+export interface StateContextMenuData {
+  data: State | Condition | null;
+  position: Point;
+}
+
 interface StateContextMenuProps {
   isOpen: boolean;
-  isData: { data: State | Condition | null; bounds: Rectangle } | undefined;
+  isData: StateContextMenuData | undefined;
   onClickDelState: (data) => void;
   onClickInitial: (data) => void;
   onClickDelTran: (data) => void;
@@ -47,6 +52,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
   //отсылаем данные ноды для показа его кода
   const handleShowCode = hookHandleSubmit((data) => {
+    console.log(['handleShowCode', isData]);
     if (typeof isData === 'undefined') return; // удалять нечего
 
     if (isData!.data === null) {
@@ -55,7 +61,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     }
 
     if (isData!.data instanceof Condition) {
-      data.id = isData?.data.id!;
+      data.id = isData?.data.transition.id!;
       data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
     }
@@ -76,25 +82,16 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     onClickInitial(data);
   });
 
-  const bounds =
-    typeof isData !== 'undefined'
-      ? isData!.bounds
-      : {
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100,
-        };
-
   //Рисуем виртуальный объект
-  const x = bounds.x;
-  const y = bounds.y + 26;
+  const position = isData?.position ?? { x: 0, y: 0 };
+  const x = position.x;
+  const y = position.y;
 
   const virtualEl = {
     getBoundingClientRect() {
       return {
-        width: bounds.width + 20,
-        height: bounds.height + 20,
+        width: 20,
+        height: 20,
         x: 0,
         y: 0,
         top: y,

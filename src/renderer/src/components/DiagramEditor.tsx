@@ -4,11 +4,11 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
-import { Rectangle } from '@renderer/types/graphics';
+import { Point } from '@renderer/types/graphics';
 
 import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
 import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
-import { ContextMenu, StateContextMenu } from './StateContextMenu';
+import { ContextMenu, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 
 interface DiagramEditorProps {
   manager: EditorManager;
@@ -38,10 +38,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const closeTransitionModal = () => setIsTransitionModalOpen(false);
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [contextMenuData, setContextMenuData] = useState<{
-    data: State | Condition | null;
-    bounds: Rectangle;
-  }>();
+  const [contextMenuData, setContextMenuData] = useState<StateContextMenuData>();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -60,9 +57,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     });
 
     //Обработка правой кнопки на пустом поле
-    editor.container.onFieldContextMenu((position) => {
-      const bounds = { ...position, width: 0, height: 0 };
-      setContextMenuData({ data: null, bounds });
+    editor.container.onFieldContextMenu((pos) => {
+      const offset = editor.mouse.getOffset();
+      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
+      setContextMenuData({ data: null, position });
       setIsContextMenuOpen(true);
     });
 
@@ -72,9 +70,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     });
 
     //Здесь мы открываем контекстное меню для состояния
-    editor.container.states.onStateContextMenu((state: State) => {
-      const bounds = state.drawBounds;
-      setContextMenuData({ data: state, bounds });
+    editor.container.states.onStateContextMenu((state: State, pos) => {
+      const offset = editor.mouse.getOffset();
+      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
+      setContextMenuData({ data: state, position });
       setIsContextMenuOpen(true);
       // manager.triggerDataUpdate();
     });
@@ -87,9 +86,12 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     });
 
     //Здесь мы открываем контекстное меню для связи
-    editor.container.transitions.onTransitionContextMenu((condition: Condition) => {
-      const bounds = condition.drawBounds;
-      setContextMenuData({ data: condition, bounds });
+    editor.container.transitions.onTransitionContextMenu((condition: Condition, pos: Point) => {
+      console.log(['handleContextMenu', condition]);
+
+      const offset = editor.mouse.getOffset();
+      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
+      setContextMenuData({ data: condition, position });
       setIsContextMenuOpen(true);
     });
 

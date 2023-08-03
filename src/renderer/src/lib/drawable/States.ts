@@ -2,6 +2,12 @@ import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { Point } from 'electron';
+
+type CreateCallback = (state: State) => void;
+
+type MenuCallback = (state: State, pos: Point) => void;
 
 /**
  * Контроллер {@link State|состояний}.
@@ -16,15 +22,15 @@ export class States extends EventEmitter {
     this.container = container;
   }
 
-  createCallback!: (state) => void;
-  MenuCallback!: (state) => void;
+  createCallback!: CreateCallback;
+  menuCallback!: MenuCallback;
 
-  onStateCreate = (callback: (state) => void) => {
+  onStateCreate = (callback: CreateCallback) => {
     this.createCallback = callback;
   };
 
-  onStateContextMenu = (Menucallback: (state) => void) => {
-    this.MenuCallback = Menucallback;
+  onStateContextMenu = (menuCallback: MenuCallback) => {
+    this.menuCallback = menuCallback;
   };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -37,29 +43,27 @@ export class States extends EventEmitter {
     this.emit('startNewTransition', state);
   };
 
-  handleMouseUpOnState = (e: { target: State; event: any }) => {
+  handleMouseUpOnState = (e: { target: State; event: MyMouseEvent }) => {
     this.emit('mouseUpOnState', e);
   };
 
-  handleStateClick = (e: { target: State; event: any }) => {
+  handleStateClick = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
     this.container.machine.removeSelection();
     e.target.setIsSelected(true, JSON.stringify(e.target));
   };
 
-  handleStateDoubleClick = (e: { target: State; event: any }) => {
+  handleStateDoubleClick = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    this.createCallback?.(e);
+    this.createCallback?.(e.target);
   };
 
-  handleContextMenu = (e: { target: State; event: any }) => {
+  handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    this.MenuCallback?.(e.target);
-
-    // this.container.machine.deleteState(e.target.id);
+    this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
   };
 
   handleLongPress = (e: { target: State }) => {

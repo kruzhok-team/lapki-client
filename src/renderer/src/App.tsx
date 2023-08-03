@@ -12,6 +12,7 @@ import { CanvasEditor } from './lib/CanvasEditor';
 import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
 import { preloadPicto } from './lib/drawable/Picto';
 import { isLeft, unwrapEither } from './types/Either';
+import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
 
 /**
  * React-компонент приложения
@@ -26,9 +27,28 @@ export const App: FC = () => {
   const manager = new EditorManager(editor, editorData, setEditorData);
   const [isDocOpen, setIsDocOpen] = useState(false);
 
+  const [saveModalData, setSaveModalData] = useState<SaveModalData>();
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const openSaveModal = () => setIsSaveModalOpen(true);
+  const closeSaveModal = () => setIsSaveModalOpen(false);
+
   /*Открытие файла*/
   const handleOpenFile = async () => {
-    // TODO: переспрашивать, если файл изменён
+    // TODO: if (editorData.modified)
+    if (editorData.content) {
+      setSaveModalData({
+        shownName: editorData.shownName,
+        question: 'Хотите сохранить файл перед тем, как открыть другой?',
+        onConfirm: performOpenFile,
+        onSave: handleSaveFile,
+      });
+      openSaveModal();
+    } else {
+      await performOpenFile();
+    }
+  };
+
+  const performOpenFile = async () => {
     const result = await manager.open();
     if (isLeft(result)) {
       const cause = unwrapEither(result);
@@ -38,11 +58,20 @@ export const App: FC = () => {
       }
     }
   };
-
   //Создание нового файла
   const handleNewFile = async () => {
-    // TODO: переспрашивать, если файл изменён
-    manager.newFile();
+    // TODO: if (editorData.modified)
+    if (editorData.content) {
+      setSaveModalData({
+        shownName: editorData.shownName,
+        question: 'Хотите сохранить файл перед тем, как создать новый?',
+        onConfirm: manager.newFile,
+        onSave: handleSaveFile,
+      });
+      openSaveModal();
+    } else {
+      manager.newFile();
+    }
   };
 
   const handleSaveAsFile = async () => {
@@ -188,6 +217,7 @@ export const App: FC = () => {
           </div>
         </Panel>
       </PanelGroup>
+      <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
     </div>
   );
 };

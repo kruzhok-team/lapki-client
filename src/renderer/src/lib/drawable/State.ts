@@ -23,10 +23,8 @@ interface StateProps {
  */
 export class State extends Draggable {
   data!: StateType;
-  isState;
   isInitial = false;
   isSelected = false;
-
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
   onEnter?: HTMLImageElement;
@@ -228,8 +226,7 @@ export class State extends Draggable {
     ctx.closePath();
   }
 
-  setIsSelected(value: boolean, target: string) {
+  setIsSelected(value: boolean) {
     this.isSelected = value;
-    this.isState = target;
   }
 }

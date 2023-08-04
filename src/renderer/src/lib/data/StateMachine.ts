@@ -370,11 +370,11 @@ export class StateMachine extends EventEmitter {
    */
   removeSelection() {
     this.states.forEach((state) => {
-      state.setIsSelected(false, '');
+      state.setIsSelected(false);
     });
 
     this.transitions.forEach((value) => {
-      value.condition.setIsSelected(false, '');
+      value.condition.setIsSelected(false);
     });
 
     this.container.isDirty = true;

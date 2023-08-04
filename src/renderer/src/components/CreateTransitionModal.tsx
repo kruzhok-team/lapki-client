@@ -35,6 +35,7 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
   });
 
   const handleSubmit = hookHandleSubmit((data) => {
+    console.log(data);
     onSubmit(data);
   });
 
@@ -50,6 +51,7 @@ export const CreateTransitionModal: React.FC<CreateTransitionModalProps> = ({
       onRequestClose={onRequestClose}
       title="Редактор соединения"
       onSubmit={handleSubmit}
+      submitLabel="Сохранить"
     >
       <TextInput
         label="Компонент:"

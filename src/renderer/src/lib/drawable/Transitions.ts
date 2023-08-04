@@ -67,7 +67,7 @@ export class Transitions {
   handleConditionClick = (e: { target; event }) => {
     e.event.stopPropagation();
     this.container.machine.removeSelection();
-    e.target.setIsSelected(true, JSON.stringify(e.target));
+    e.target.setIsSelected(true);
   };
 
   handleConditionDoubleClick = (e: { source; target; event }) => {

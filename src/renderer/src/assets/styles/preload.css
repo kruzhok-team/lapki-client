@@ -1,0 +1,79 @@
+:root {
+  --loading-opacity: 60%;
+}
+
+.loading-overlay {
+  background-color: #1b1b1b;
+  opacity: var(--loading-opacity);
+
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: loadingFadeBg 1s linear;
+}
+
+.loading-spinner {
+  width: 100vw;
+  height: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+}
+
+.loading-spinner span {
+  font-size: 2rem;
+  animation: loadingFade 1s linear 0s alternate infinite;
+  padding-right: 1rem;
+}
+
+.half-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid #03fc4e;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: loadingSpin 0.5s linear 0s infinite;
+}
+
+@keyframes loadingBigger {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(2);
+  }
+}
+
+@keyframes loadingSpin {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loadingFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loadingFadeBg {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: var(--loading-opacity);
+  }
+}

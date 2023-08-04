@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
         ))}
       </div>
 
-      <Panel collapsible={true} minSize={45} defaultSize={45} ref={panelRef}>
+      <Panel collapsible={true} minSize={20} defaultSize={20} ref={panelRef}>
         <div className="h-full w-full">
           {tabs.map((Element, i) => (
             <div

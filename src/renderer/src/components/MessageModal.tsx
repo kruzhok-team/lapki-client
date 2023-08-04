@@ -19,13 +19,7 @@ export const MessageModal: React.FC<MessageModalProps> = ({ onClose, isData, ...
   };
 
   return (
-    <Modal
-      {...props}
-      onRequestClose={onRequestClose}
-      title={isData?.caption ?? 'Сообщение'}
-      submitLabel=""
-      onSubmit={() => {}}
-    >
+    <Modal {...props} onRequestClose={onRequestClose} title={isData?.caption ?? 'Сообщение'}>
       {isData?.text ?? 'Все, что нас не убивает, делает нас сильнее. /Ф.В. Ницше./'}
     </Modal>
   );

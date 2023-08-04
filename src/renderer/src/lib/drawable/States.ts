@@ -100,8 +100,6 @@ export class States extends EventEmitter {
     } else {
       this.createCallback?.(e.target);
     }
-
-    this.emit('mouseup', document.body.removeChild(input));
   };
 
   handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {

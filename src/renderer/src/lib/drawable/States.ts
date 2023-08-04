@@ -51,13 +51,57 @@ export class States extends EventEmitter {
     e.event.stopPropagation();
 
     this.container.machine.removeSelection();
-    e.target.setIsSelected(true, JSON.stringify(e.target));
+    e.target.setIsSelected(true);
   };
 
   handleStateDoubleClick = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    this.createCallback?.(e.target);
+    var input = document.createElement('input');
+    //Function to dynamically add an input box:
+    const addInput = (x, y) => {
+      input.value = e.target.data.name;
+      input.type = 'text';
+      input.minLength = 4;
+      input.maxLength = 30;
+      input.style.borderTopLeftRadius = 6 + 'px';
+      input.style.borderTopRightRadius = 6 + 'px';
+      input.style.width = e.target.computedWidth + 'px';
+      input.style.height = e.target.titleHeight + 'px';
+      input.style.background = '#525252';
+      input.style.position = 'fixed';
+      input.style.left = x + 'px';
+      input.style.top = y + 'px';
+
+      input.onkeydown = handleEnter;
+      document.body.appendChild(input);
+
+      input.focus();
+    };
+
+    const handleEnter = (data) => {
+      var keyCode = data.keyCode;
+      if (keyCode === 13 || keyCode === 27) {
+        console.log(e.target.data.name);
+        e.target.data.name = input.value;
+        document.body.removeChild(input);
+        this.container.machine.dataTrigger(true);
+      }
+    };
+
+    //Высчитываем позицию нажатия внутри состояния
+    const globalOffset = e.target.container.app.mouse.getOffset();
+    const y = e.event.y - e.target.computedPosition.y;
+    if (y <= e.target.titleHeight) {
+      addInput(
+        e.target.computedPosition.x + globalOffset.x,
+        e.target.computedPosition.y + globalOffset.y
+      );
+    } else {
+      this.createCallback?.(e.target);
+    }
+
+    this.emit('mouseup', document.body.removeChild(input));
   };
 
   handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {

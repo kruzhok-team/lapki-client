@@ -12,10 +12,7 @@ import { picto } from './Picto';
  */
 export class Condition extends Draggable {
   transition!: Transition;
-  // contextmenu!: ContextMenu;
 
-  //Сюда закладываются получаемые данные при клике на связь и выводятся над ней
-  isCondition;
   //Проверка нажатия на левую кнопку мыши для выделения связи
   isSelected = false;
 
@@ -81,41 +78,9 @@ export class Condition extends Draggable {
     ctx.roundRect(x, y, width, height + childrenHeight, transitionStyle.startSize);
     ctx.stroke();
     ctx.closePath();
-
-    /*
-    //Начало рисования
-    ctx.beginPath();
-    //Добавляет стиль заднему фону
-    ctx.fillStyle = stateStyle.bodyBg;
-    //создает указательный треугольник
-    ctx.moveTo(x + 60 / this.container.scale, y - 20 / this.container.scale);
-    ctx.lineTo(x + 70 / this.container.scale, y - 2 / this.container.scale);
-    ctx.lineTo(x + 80 / this.container.scale, y - 20 / this.container.scale);
-    //Строит прямоугольник
-    ctx.roundRect(
-      x,
-      y - 90 / this.container.scale,
-      width,
-      height + childrenHeight,
-      transitionStyle.startSize
-    );
-    //Добавляет задний фон объекту канвы
-    ctx.fill();
-    //Конец рисования
-    ctx.closePath();
-
-    ctx.beginPath();
-    //Добавляет стиль тексту
-    ctx.fillStyle = transitionStyle.bgColor;
-    ctx.fillText(this.isCondition, x, y - 80 / this.container.scale);
-    //Добавляет задний фон объекту канвы
-    ctx.fill();
-    ctx.closePath();
-    */
   }
 
-  setIsSelected(value: boolean, target: string) {
+  setIsSelected(value: boolean) {
     this.isSelected = value;
-    this.isCondition = target;
   }
 }

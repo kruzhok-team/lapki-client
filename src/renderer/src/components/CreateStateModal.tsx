@@ -35,7 +35,7 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
   } = useForm<CreateStateModalFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
-    data.id = isData?.state.target.id;
+    data.id = isData?.state.id;
     onSubmit(data);
   });
 
@@ -43,13 +43,13 @@ export const CreateStateModal: React.FC<CreateStateModalProps> = ({
     onClose();
     reset();
   };
-
   return (
     <Modal
       {...props}
       onRequestClose={onRequestClose}
-      title={'Редактирование состояния: ' + JSON.stringify(isData?.state.target.data.name)}
+      title={'Редактирование состояния: ' + JSON.stringify(isData?.state.data.name)}
       onSubmit={handleSubmit}
+      submitLabel="Сохранить"
     >
       <TextInput
         label="Имя состояния:"

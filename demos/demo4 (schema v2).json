@@ -4,111 +4,195 @@
       "name": "state1",
       "events": [
         {
-          "trigger": { "component": "System", "method": "onEnter" },
-          "do": [{ "component": "LED", "method": "on" }]
+          "do": [
+            {
+              "component": "LED",
+              "method": "on"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
         }
       ],
-      "bounds": { "x": 35, "y": 291 }
+      "bounds": {
+        "height": 95,
+        "width": 450,
+        "x": 50,
+        "y": 431
+      }
     },
     "diod2": {
       "name": "state2",
       "events": [
         {
-          "trigger": { "component": "System", "method": "onEnter" },
           "do": [
-            { "component": "LED", "method": "off" },
-            { "component": "LED", "method": "on" },
-            { "component": "LED", "method": "off" },
-            { "component": "LED", "method": "on" }
-          ]
+            {
+              "component": "LED",
+              "method": "off"
+            },
+            {
+              "component": "LED",
+              "method": "on"
+            },
+            {
+              "component": "LED",
+              "method": "off"
+            },
+            {
+              "component": "LED",
+              "method": "on"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
         },
         {
-          "trigger": { "component": "System", "method": "onExit" },
           "do": [
-            { "component": "LED", "method": "off" },
-            { "component": "LED", "method": "on" },
-            { "component": "LED", "method": "off" },
-            { "component": "LED", "method": "on" }
-          ]
+            {
+              "component": "LED",
+              "method": "off"
+            },
+            {
+              "component": "LED",
+              "method": "on"
+            },
+            {
+              "component": "LED",
+              "method": "off"
+            },
+            {
+              "component": "LED",
+              "method": "on"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onExit"
+          }
         }
       ],
-      "bounds": { "x": 187, "y": 141 }
+      "bounds": {
+        "height": 245,
+        "width": 450,
+        "x": 195,
+        "y": 141
+      }
     },
     "diod3": {
       "name": "state3",
       "events": [
         {
-          "trigger": { "component": "System", "method": "onEnter" },
-          "do": [{ "component": "LED", "method": "on" }]
+          "do": [
+            {
+              "component": "LED",
+              "method": "on"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
         }
       ],
-      "bounds": { "x": 188, "y": 21 }
+      "bounds": {
+        "height": 95,
+        "width": 450,
+        "x": 188,
+        "y": 21
+      }
     },
     "childState": {
-      "name": "child state1",
       "parent": "diod1",
+      "name": "child state1",
       "events": [],
-      "bounds": { "x": 0, "y": 50 }
+      "bounds": {
+        "height": 85,
+        "width": 450,
+        "x": 0,
+        "y": 117
+      }
     },
     "childState2": {
-      "name": "child state2",
       "parent": "childState",
+      "name": "child state2",
       "events": [],
-      "bounds": { "x": 0, "y": 0 }
+      "bounds": {
+        "height": 85,
+        "width": 450,
+        "x": 0,
+        "y": 0
+      }
     },
     "childState3": {
-      "name": "child state3",
       "parent": "diod1",
+      "name": "child state3",
       "events": [],
-      "bounds": { "x": 291, "y": 0 }
+      "bounds": {
+        "height": 85,
+        "width": 450,
+        "x": 291,
+        "y": 0
+      }
     }
   },
   "initialState": "diod1",
   "transitions": [
     {
+      "color": "#F29727",
+      "position": {
+        "x": 457,
+        "y": 173
+      },
       "source": "diod1",
       "target": "diod2",
-      "color": "#F29727",
-      "position": { "x": 457, "y": 173 },
       "trigger": {
         "component": "Button",
         "method": "isJustPressed"
       }
     },
     {
+      "color": "#F24C3D",
+      "position": {
+        "x": 16,
+        "y": 175
+      },
       "source": "diod2",
       "target": "diod1",
-      "color": "#F24C3D",
-      "position": { "x": 16, "y": 175 },
       "trigger": {
         "component": "Button",
         "method": "isJustPressed"
       }
     },
     {
+      "color": "#1100ff",
+      "position": {
+        "x": 12,
+        "y": 77
+      },
       "source": "diod3",
       "target": "diod2",
-      "color": "#1100ff",
-      "position": { "x": 12, "y": 77 },
       "trigger": {
         "component": "Button",
         "method": "TheMethod"
       }
     }
   ],
-
   "components": {
     "diod1": {
-      "type": "LED",
       "parameters": {
         "pin": 12
-      }
+      },
+      "type": "LED"
     },
     "diod2": {
-      "type": "LED",
       "parameters": {
         "pin": 4
-      }
+      },
+      "type": "LED"
     }
   }
 }

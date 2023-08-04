@@ -7,18 +7,16 @@ interface ExplorerProps {
 }
 
 export const Explorer: React.FC<ExplorerProps> = ({ stateMachine }) => {
-  console.log(stateMachine);
   return (
     <section className="flex h-full flex-col justify-between bg-[#a1c8df] font-Fira text-base">
       <div className="w-full px-4 pt-2 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Проводник</h1>
-
-        <h2 className="mb-4 ">Компоненты</h2>
+        <h1 className="mb-3 border-b border-white pb-2 text-lg">Компоненты</h1>
         {stateMachine && (
-          <div>
+          <div className="flex flex-col items-center">
             {[...stateMachine.components.keys()].map((key) => (
-              <div key={'explorer' + key}>
-                <img src={stateMachine.components.get(key)?.image?.src}></img> {key}
+              <div className="mb-4 h-20 w-20" key={'explorer' + key}>
+                <img src={stateMachine.components.get(key)?.image?.src}></img>
+                {key}
               </div>
             ))}
           </div>

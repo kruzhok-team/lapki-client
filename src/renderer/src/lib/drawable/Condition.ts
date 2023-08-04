@@ -82,6 +82,7 @@ export class Condition extends Draggable {
     ctx.stroke();
     ctx.closePath();
 
+    /*
     //Начало рисования
     ctx.beginPath();
     //Добавляет стиль заднему фону
@@ -110,6 +111,7 @@ export class Condition extends Draggable {
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
+    */
   }
 
   setIsSelected(value: boolean, target: string) {

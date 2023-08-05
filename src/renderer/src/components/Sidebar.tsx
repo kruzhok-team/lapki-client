@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
 
   return (
     <>
-      <div className="flex flex-col gap-4 p-2 ">
+      <div className="flex flex-col gap-4 bg-white p-2 ">
         {items.map(({ svgIcon, style }, i) => (
           <button key={i} className={twMerge('w-8', style && 'mt-auto')} onClick={handleClick(i)}>
             {svgIcon}

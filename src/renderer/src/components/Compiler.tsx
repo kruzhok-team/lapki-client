@@ -22,15 +22,28 @@ const button = [
   },
 ];
 
+
 export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus, handleCompile}) => {
+  var disabled = false;
+  var style = "my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white";
+
+  if(compilerStatus == "Не подключен"){
+    disabled = true;
+    style = "my-2 rounded border-2 border-[#557b91] p-2 bg-[#425f70] text-white opacity-50"
+  }
+  console.log(disabled)
   return (
     <section className="flex h-full flex-col bg-[#a1c8df] font-Fira text-base">
       <div className="w-full px-4 pt-2 text-center">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Компилятор</h1>
       </div>
-      <button className="my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white" onClick={handleCompile}>
-        Скомпилировать
-      </button>
+      {/*Если не подключен - заблокировать кнопки*/}
+      {
+
+        <button disabled={disabled} className={style} onClick={handleCompile}>
+          Скомпилировать
+        </button> 
+      }
       <div className="h-full select-text overflow-y-auto break-words rounded bg-white p-2">
         Статус: {compilerStatus}
         <br></br>

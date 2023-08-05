@@ -113,6 +113,12 @@
         },
         "name": {
           "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterProto"
+          },
+          "type": "object"
         }
       },
       "required": [

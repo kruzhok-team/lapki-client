@@ -203,6 +203,7 @@ const typeMap: any = {
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: u(undefined, '') },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
     ],
     false
   ),

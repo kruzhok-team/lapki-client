@@ -43,6 +43,12 @@ export type Platform = {
   parameters?: { [name: string]: ParameterProto };
 };
 
+export type PlatformInfo = {
+  idx: string;
+  name: string;
+  description: string;
+};
+
 export type Platforms = {
   platform: { [id: string]: Platform };
 };

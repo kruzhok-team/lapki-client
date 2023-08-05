@@ -13,7 +13,7 @@ import { isLeft, unwrapEither } from './types/Either';
 import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
 import { MessageModal, MessageModalData } from './components/MessageModal';
 import { LoadingOverlay } from './components/LoadingOverlay';
-import { preloadPlatforms } from './lib/data/PlatformManager';
+import { getPlatformsErrors, preloadPlatforms } from './lib/data/PlatformLoader';
 import { preloadPicto } from './lib/drawable/Picto';
 
 /**
@@ -201,6 +201,27 @@ export const App: FC = () => {
     preloadPlatforms(() => {
       console.log('plaforms loaded!');
       setLoadingOverlay(false);
+      const errs = getPlatformsErrors();
+      if (Object.keys(errs)) {
+        openMsgModal({
+          caption: 'Внимание',
+          text: (
+            <div>
+              <p> Есть проблемы с загруженными платформами. </p>
+              <br />
+              <ul>
+                {Object.entries(errs).map(([platform, err]) => {
+                  return (
+                    <li key={platform}>
+                      <b>{platform}</b>: {err}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ),
+        });
+      }
     });
   }, []);
 

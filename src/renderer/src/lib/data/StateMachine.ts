@@ -134,12 +134,40 @@ export class StateMachine extends EventEmitter {
 
   // TODO: разбить действия над состоянием, переименование идёт отдельно, события отдельно
   // FIXME: в разработке (работает только переименование)
-  updateState(id: string, newName: string, events: string, component: string, method: string) {
+  updateState(id: string, name: string) {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
 
-    state.data.name = newName;
+    state.data.name = name;
 
+    this.dataTrigger();
+  }
+
+  // TODO: разбить действия над состоянием, переименование идёт отдельно, события отдельно
+  // FIXME: в разработке (работает только переименование)
+  newPictoState(id: string, component: string, method: string) {
+    const state = this.states.get(id);
+    console.log(state);
+    console.log(id);
+    if (typeof state === 'undefined') return;
+
+    state.data.events.push(
+      ...[
+        {
+          do: [
+            {
+              component: component,
+              method: method,
+            },
+          ],
+          trigger: {
+            component: component,
+            method: method,
+          },
+        },
+      ]
+    );
+    console.log(state.data.events);
     this.dataTrigger();
   }
 

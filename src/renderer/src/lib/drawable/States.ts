@@ -3,10 +3,10 @@ import { State } from './State';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Point } from 'electron';
+import { Point } from '@renderer/types/graphics';
 
 type CreateCallback = (state: State) => void;
-
+type CreateNameCallback = (state: State) => void;
 type MenuCallback = (state: State, pos: Point) => void;
 
 /**
@@ -23,10 +23,15 @@ export class States extends EventEmitter {
   }
 
   createCallback!: CreateCallback;
+  createNameCallback!: CreateNameCallback;
   menuCallback!: MenuCallback;
 
   onStateCreate = (callback: CreateCallback) => {
     this.createCallback = callback;
+  };
+
+  onStateNameCreate = (nameCallback: CreateNameCallback) => {
+    this.createNameCallback = nameCallback;
   };
 
   onStateContextMenu = (menuCallback: MenuCallback) => {
@@ -57,51 +62,13 @@ export class States extends EventEmitter {
   handleStateDoubleClick = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    var input = document.createElement('input');
-    //Function to dynamically add an input box:
-    const addInput = (x, y) => {
-      input.value = e.target.data.name;
-      input.type = 'text';
-      input.minLength = 4;
-      input.maxLength = 30;
-      input.style.borderTopLeftRadius = 6 + 'px';
-      input.style.borderTopRightRadius = 6 + 'px';
-      input.style.width = e.target.computedWidth + 'px';
-      input.style.height = e.target.titleHeight + 'px';
-      input.style.background = '#525252';
-      input.style.position = 'fixed';
-      input.style.left = x + 'px';
-      input.style.top = y + 'px';
-
-      input.onkeydown = handleEnter;
-      document.body.appendChild(input);
-
-      input.focus();
-    };
-
-    const handleEnter = (data) => {
-      var keyCode = data.keyCode;
-      if (keyCode === 13 || keyCode === 27) {
-        console.log(e.target.data.name);
-        e.target.data.name = input.value;
-        document.body.removeChild(input);
-        this.container.machine.dataTrigger(true);
-      }
-    };
-
-    //Высчитываем позицию нажатия внутри состояния
-    const globalOffset = e.target.container.app.mouse.getOffset();
     const y = e.event.y - e.target.computedPosition.y;
     if (y <= e.target.titleHeight) {
-      addInput(
-        e.target.computedPosition.x + globalOffset.x,
-        e.target.computedPosition.y + globalOffset.y
-      );
+      this.createNameCallback?.(e.target);
     } else {
       this.createCallback?.(e.target);
     }
-
-    this.emit('mouseup', document.body.removeChild(input));
+    this.container.machine.dataTrigger(true);
   };
 
   handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {

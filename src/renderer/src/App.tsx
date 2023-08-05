@@ -246,8 +246,8 @@ export const App: FC = () => {
               )}
             </div>
 
-            <div className="bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)]">
-              <button className="relative h-auto w-8" onClick={() => setIsDocOpen((p) => !p)}>
+            <div className={twMerge('bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)] bg-white')}>
+              <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
                 <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
               </button>
 

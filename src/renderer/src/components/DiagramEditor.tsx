@@ -4,10 +4,9 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
-import { Point } from '@renderer/types/graphics';
+import { Point, Rectangle } from '@renderer/types/graphics';
 
-import { CreateStateModal, CreateStateModalFormValues } from './CreateStateModal';
-import { CreateTransitionModal, CreateTransitionModalFormValues } from './CreateTransitionModal';
+import { CreateModal, CreateModalFormValues } from './CreateModal';
 import { ContextMenu, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 
 interface DiagramEditorProps {
@@ -28,14 +27,11 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useState<{ state: State }>();
-  const [isStateModalOpen, setIsStateModalOpen] = useState(false);
-  const openStateModal = () => setIsStateModalOpen(true);
-  const closeStateModal = () => setIsStateModalOpen(false);
-
+  const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
   const [transition, setTransition] = useState<{ source: State; target: State } | null>(null);
-  const [isTransitionModalOpen, setIsTransitionModalOpen] = useState(false);
-  const openTransitionModal = () => setIsTransitionModalOpen(true);
-  const closeTransitionModal = () => setIsTransitionModalOpen(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<StateContextMenuData>();
@@ -51,9 +47,27 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateCreate((state) => {
+      setNameState(undefined);
+      setTransition(null);
       setState({ state });
-      openStateModal();
+      openModal();
       // manager.triggerDataUpdate();
+    });
+
+    //Здесь мы открываем модальное окно редактирования ноды
+    editor.container.states.onStateNameCreate((state: State) => {
+      const globalOffset = state.container.app.mouse.getOffset();
+      const statePos = state.computedPosition;
+      const position = {
+        x: statePos.x + globalOffset.x + 1,
+        y: statePos.y + globalOffset.y + 1,
+        width: state.computedWidth - 2,
+        height: state.titleHeight - 1,
+      };
+      setState(undefined);
+      setTransition(null);
+      setNameState({ state, position });
+      openModal();
     });
 
     //Обработка правой кнопки на пустом поле
@@ -80,8 +94,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
     //Здесь мы открываем модальное окно редактирования связи
     editor.container.transitions.onTransitionCreate((source, target) => {
+      setState(undefined);
+      setNameState(undefined);
       setTransition({ source, target });
-      openTransitionModal();
+      openModal();
       // manager.triggerDataUpdate();
     });
 
@@ -107,19 +123,14 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef.current]);
 
-  const handleCreateState = (data: CreateStateModalFormValues) => {
-    editor?.container.machine.updateState(
-      data.id,
-      data.newName,
-      data.events,
-      data.component,
-      data.method
-    );
-    closeStateModal();
-  };
-
-  const handleCreateTransition = (data: CreateTransitionModalFormValues) => {
-    if (transition) {
+  const handleCreateModal = (data: CreateModalFormValues) => {
+    if (data.key === 1) {
+      editor?.container.machine.newPictoState(data.id, data.component, data.method);
+      console.log('Состояние');
+    } else if (data.key === 2) {
+      editor?.container.machine.updateState(data.id, data.name);
+      console.log('Имя');
+    } else if (transition) {
       editor?.container.machine.createNewTransition(
         transition.source,
         transition.target,
@@ -127,8 +138,9 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         data.component,
         data.method
       );
+      console.log('Связь');
     }
-    closeTransitionModal();
+    closeModal();
   };
 
   const handleinitialState = (data: ContextMenu) => {
@@ -165,17 +177,20 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         />
       </div>
 
-      <CreateStateModal
-        isOpen={isStateModalOpen}
-        isData={state}
-        onClose={closeStateModal}
-        onSubmit={handleCreateState}
-      />
+      {/* <CreateNameStateModal
+        isOpen={isNameStateModalOpen}
+        isData={inputNameState}
+        closeMenu={() => {
+          setIsContextMenuOpen(false);
+        }}
+      /> */}
 
-      <CreateTransitionModal
-        isOpen={isTransitionModalOpen}
-        onClose={closeTransitionModal}
-        onSubmit={handleCreateTransition}
+      <CreateModal
+        isOpen={isModalOpen}
+        isData={state}
+        isName={nameState}
+        onClose={closeModal}
+        onSubmit={handleCreateModal}
       />
     </>
   );

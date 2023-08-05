@@ -54,8 +54,9 @@ export class Condition extends Draggable {
     ctx.fillStyle = transitionStyle.bgColor;
 
     const trigger = this.transition.data.trigger;
+    const platform = this.container.machine.platform;
     ctx.beginPath();
-    picto.drawEvent(ctx, trigger, x + p, y + p);
+    platform.drawEvent(ctx, trigger, x + p, y + p);
     ctx.closePath();
     /*
     ctx.fillText(trigger.component, x + p, y + p);

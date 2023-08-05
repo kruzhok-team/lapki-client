@@ -69,13 +69,20 @@ export class Events {
     let eventRow = 0;
     const baseY = y + titleHeight + paddingY;
 
+    const platform = this.container.machine.platform;
+
     this.data.map((events, _eventIdx) => {
-      picto.drawEvent(ctx, events.trigger, x + px, baseY + (eventRow * 50) / this.container.scale);
+      platform.drawEvent(
+        ctx,
+        events.trigger,
+        x + px,
+        baseY + (eventRow * 50) / this.container.scale
+      );
 
       events.do.forEach((act, actIdx) => {
         const ax = 1 + (actIdx % eventRowLength);
         const ay = eventRow + Math.floor(actIdx / eventRowLength);
-        picto.drawAction(
+        platform.drawAction(
           ctx,
           act,
           x + (20 + (picto.eventWidth + 5) * ax) / picto.scale,

@@ -8,6 +8,7 @@ import { Action, Event } from '@renderer/types/diagram';
 let imagesLoaded = false;
 
 export const icons: Map<string, HTMLImageElement> = new Map();
+// TODO? export const iconsPaths: Map<string, string> = new Map();
 
 /* TODO: сейчас набор значков фиксирован, большее число здесь будет
           смотреться ужасно. Нужно переделать предзагрузку.
@@ -42,16 +43,20 @@ export function preloadPicto(callback: () => void) {
   });
 }
 
+export type PictoProps = {
+  leftIcon?: string;
+  rightIcon: string;
+  bgColor?: string;
+  fgColor?: string;
+  // TODO: args
+};
+
 /**
  * Отрисовщик пиктограмм.
  * Выполняет отрисовку пиктограмм с учётом масштаба.
  */
 export class Picto {
   scale = 1;
-
-  componentToIcon: Map<string, string> = new Map();
-  actionToIcon: Map<string, string> = new Map();
-  nameToIcon: Map<string, string> = new Map();
 
   isResourcesReady() {
     return imagesLoaded;
@@ -95,48 +100,11 @@ export class Picto {
     ctx.stroke();
   }
 
-  getComponentIcon(name: string) {
-    // FIXME: учесть тип компонента и платформу!
-    if (icons.has(name)) {
-      return name;
-    } else {
-      return 'unknown';
-    }
-  }
-
-  getEventIcon(component: string, method: string) {
-    // FIXME: учесть тип компонента и платформу!
-    const name = `${component}/${method}`;
-    if (icons.has(name)) {
-      return name;
-    } else {
-      return 'unknown';
-    }
-  }
-
-  getActionIcon(component: string, method: string) {
-    // FIXME: учесть тип компонента и платформу!
-    const name = `${component}/${method}`;
-    if (icons.has(name)) {
-      return name;
-    } else {
-      return 'unknown';
-    }
-  }
-
-  drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {
-    let leftIcon: string | null = null;
-    let rightIcon: string | null = null;
-    let bgColor = '#3a426b';
-    let fgColor = '#fff';
-
-    if (ev.component === 'System') {
-      // ev.method === 'onEnter' || ev.method === 'onExit'
-      rightIcon = ev.method;
-    } else {
-      leftIcon = this.getComponentIcon(ev.component);
-      rightIcon = this.getEventIcon(ev.component, ev.method);
-    }
+  drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+    let leftIcon = ps.leftIcon;
+    let rightIcon = ps.rightIcon;
+    let bgColor = ps.bgColor ?? '#3a426b';
+    let fgColor = ps.fgColor ?? '#fff';
 
     // Рамка
     this.drawBorder(ctx, x, y, bgColor, fgColor);
@@ -175,78 +143,6 @@ export class Picto {
         height: this.iconSize,
       });
     }
-  }
-
-  drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number) {
-    let leftIcon: string | null = null;
-    let rightIcon: string | null = null;
-    let bgColor = '#5b5f73';
-    let fgColor = '#fff';
-
-    if (ac.component === 'System') {
-      rightIcon = ac.method;
-    } else {
-      leftIcon = this.getComponentIcon(ac.component);
-      rightIcon = this.getActionIcon(ac.component, ac.method);
-    }
-
-    // Рамка
-    this.drawBorder(ctx, x, y, bgColor, fgColor);
-
-    if (!rightIcon) return;
-    if (!leftIcon) {
-      // single icon mode
-      this.drawImage(ctx, rightIcon, {
-        x: x + (this.eventWidth - this.iconSize) / 2 / this.scale,
-        y: y + this.iconVOffset / this.scale,
-        width: this.iconSize,
-        height: this.iconSize,
-      });
-    } else {
-      // double icon mode
-      this.drawImage(ctx, leftIcon, {
-        x: x + this.iconHOffset / this.scale,
-        y: y + this.iconVOffset / this.scale,
-        width: this.iconSize,
-        height: this.iconSize,
-      });
-
-      ctx.strokeStyle = fgColor;
-      ctx.lineWidth = 1;
-      ctx.moveTo(x + this.eventWidth / 2 / this.scale, y + this.separatorVOffset / this.scale);
-      ctx.lineTo(
-        x + this.eventWidth / 2 / this.scale,
-        y + (this.eventHeight - this.separatorVOffset) / this.scale
-      );
-      ctx.stroke();
-
-      this.drawImage(ctx, rightIcon, {
-        x: x + (this.eventWidth - this.iconSize - this.iconHOffset) / this.scale,
-        y: y + this.iconVOffset / this.scale,
-        width: this.iconSize,
-        height: this.iconSize,
-      });
-    }
-  }
-
-  drawDiodOn(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    const bounds = {
-      x,
-      y,
-      width: 100,
-      height: 40,
-    };
-    this.drawImage(ctx, 'DiodOn', bounds);
-  }
-
-  drawDiodOff(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    const bounds = {
-      x,
-      y,
-      width: 100,
-      height: 40,
-    };
-    this.drawImage(ctx, 'DiodOff', bounds);
   }
 }
 

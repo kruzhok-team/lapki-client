@@ -81,8 +81,11 @@ export class EditorManager {
     this.editor?.container.machine.dataTrigger(true);
   }
 
-  newFile() {
-    const data = emptyElements();
+  newFile(platformIdx: string) {
+    if (!isPlatformAvailable(platformIdx)) {
+      throw Error('unknown platform ' + platformIdx);
+    }
+    const data = { ...emptyElements(), platform: platformIdx };
     this.editor?.loadData(data);
     this.updateState({
       ...this.state,

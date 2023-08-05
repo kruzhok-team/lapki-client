@@ -15,6 +15,7 @@ import { MessageModal, MessageModalData } from './components/MessageModal';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { getPlatformsErrors, preloadPlatforms } from './lib/data/PlatformLoader';
 import { preloadPicto } from './lib/drawable/Picto';
+import { PlatformSelectModal } from './components/PlatformSelectModal';
 
 /**
  * React-компонент приложения
@@ -28,6 +29,10 @@ export const App: FC = () => {
   const [isDocOpen, setIsDocOpen] = useState(false);
 
   const [isLoadingOverlay, setLoadingOverlay] = useState<boolean>(true);
+
+  const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
+  const openPlatformModal = () => setIsPlatformModalOpen(true);
+  const closePlatformModal = () => setIsPlatformModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -100,13 +105,17 @@ export const App: FC = () => {
       setSaveModalData({
         shownName: editorData.shownName,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
-        onConfirm: manager.newFile,
+        onConfirm: openPlatformModal,
         onSave: handleSaveFile,
       });
       openSaveModal();
     } else {
-      manager.newFile();
+      openPlatformModal();
     }
+  };
+
+  const performNewFile = (idx: string) => {
+    manager.newFile(idx);
   };
 
   const handleSaveAsFile = async () => {
@@ -293,6 +302,11 @@ export const App: FC = () => {
 
       <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
       <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
+      <PlatformSelectModal
+        isOpen={isPlatformModalOpen}
+        onCreate={performNewFile}
+        onClose={closePlatformModal}
+      />
 
       <LoadingOverlay isOpen={isLoadingOverlay}></LoadingOverlay>
     </div>

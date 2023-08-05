@@ -30,6 +30,7 @@
     "@monaco-editor/react": "^4.5.1",
     "@uiw/react-codesandbox": "^1.1.5",
     "curved-arrows": "^0.1.0",
+    "isomorphic-ws": "^5.0.0",
     "monaco-editor": "^0.39.0",
     "nanoid": "^4.0.2",
     "react-hook-form": "^7.45.1",
@@ -39,7 +40,8 @@
     "tailwind-merge": "^1.13.2",
     "tailwind-scrollbar": "^3.0.4",
     "ts-json-schema-generator": "^1.2.0",
-    "vite-plugin-svgr": "^3.2.0"
+    "vite-plugin-svgr": "^3.2.0",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",

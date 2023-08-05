@@ -3,7 +3,7 @@ import React, { useMemo, useState, useRef } from 'react';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
 
-import { Explorer, Menu, Compiler, Loader, MenuProps } from '../components';
+import { Explorer, Menu, Compiler, Loader, MenuProps, CompilerProps } from '../components';
 
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
@@ -12,10 +12,12 @@ import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { StateMachine } from '@renderer/lib/data/StateMachine';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 interface SidebarProps {
   menuProps: MenuProps;
   stateMachine: StateMachine | undefined;
+  compilerProps: CompilerProps;
 }
 
 const items = [
@@ -40,7 +42,7 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ compilerProps, stateMachine, menuProps }) => {
   const panelRef = useRef<ImperativePanelHandle>(null);
 
   const [activeTab, setActiveTab] = useState(0);
@@ -69,10 +71,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
     () => [
       <Menu {...menuProps} />,
       <Explorer stateMachine={stateMachine} />,
-      <Compiler />,
+      <Compiler {...compilerProps}/>,
       <Loader />,
     ],
-    [stateMachine]
+    [stateMachine, compilerProps]
   );
 
   return (

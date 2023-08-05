@@ -5,6 +5,7 @@ import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import { CanvasEditor } from '../CanvasEditor';
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
+import { Compiler } from '@renderer/components/Modules/Compiler';
 
 export type EditorData = {
   name: string | null;
@@ -91,6 +92,10 @@ export class EditorManager {
       data,
       modified: false,
     });
+  }
+
+  compile(platform: string): void{
+    Compiler.compile(platform, this.state!.data);
   }
 
   async open(): Promise<Either<FileError | null, null>> {

@@ -1,3 +1,4 @@
+import { Condition } from '@renderer/lib/drawable/Condition';
 import { Point, Rectangle } from './graphics';
 
 export type Action = {

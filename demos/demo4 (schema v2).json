@@ -152,7 +152,9 @@
       "trigger": {
         "component": "Button",
         "method": "isJustPressed"
-      }
+      },
+      "do": [],
+      "conditions": {}
     },
     {
       "color": "#F24C3D",
@@ -165,7 +167,9 @@
       "trigger": {
         "component": "Button",
         "method": "isJustPressed"
-      }
+      },
+      "do": [],
+      "conditions": {}
     },
     {
       "color": "#1100ff",
@@ -178,7 +182,9 @@
       "trigger": {
         "component": "Button",
         "method": "TheMethod"
-      }
+      },
+      "do": [],
+      "conditions": {}
     }
   ],
   "components": {

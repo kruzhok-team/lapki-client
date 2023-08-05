@@ -2,7 +2,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
+import { CodeEditor, CompilerProps, DiagramEditor, Documentations, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
@@ -15,13 +15,16 @@ import { MessageModal, MessageModalData } from './components/MessageModal';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { preloadPlatforms } from './lib/data/PlatformManager';
 import { preloadPicto } from './lib/drawable/Picto';
-
+import { Compiler } from './components/Modules/Compiler';
+import { CompilerResult } from './types/CompilerTypes';
 /**
  * React-компонент приложения
  */
 export const App: FC = () => {
   // TODO: а если у нас будет несколько редакторов?
 
+  const [compilerData, setCompilerData] = useState<CompilerResult | string | undefined>(undefined);
+  const [compilerStatus, setCompilerStatus] = useState<string>("Не подключен.");
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
   const manager = new EditorManager(editor, editorData, setEditorData);
@@ -109,6 +112,11 @@ export const App: FC = () => {
     }
   };
 
+  const handleCompile = async () => {
+    // TODO: платформы
+    manager.compile("arduino");
+  };
+
   const handleSaveAsFile = async () => {
     const result = await manager.saveAs();
     if (isLeft(result)) {
@@ -130,6 +138,13 @@ export const App: FC = () => {
       // TODO: информировать об успешном сохранении
     }
   };
+
+  const compilerProps: CompilerProps = {
+    compilerData: compilerData,
+    compilerStatus: compilerStatus,
+    handleCompile: handleCompile,
+  };
+
   const menuProps: MenuProps = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
@@ -141,7 +156,7 @@ export const App: FC = () => {
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
   const [elementCode, setElementCode] = useState<string | null>(null);
   const countRef = useRef<{ tab: string; content: JSX.Element }[]>([]);
-
+  
   const tabsItems = [
     {
       tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
@@ -197,6 +212,8 @@ export const App: FC = () => {
   };
 
   useEffect(() => {
+    Compiler.bindReact(setCompilerData, setCompilerStatus);
+    Compiler.connect(`${Compiler.base_address}main`)
     preloadPicto(() => void {});
     preloadPlatforms(() => {
       console.log('plaforms loaded!');
@@ -204,10 +221,11 @@ export const App: FC = () => {
     });
   }, []);
 
+
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
-        <Sidebar stateMachine={editor?.container.machine} menuProps={menuProps} />
+        <Sidebar compilerProps={compilerProps} stateMachine={editor?.container.machine} menuProps={menuProps} />
 
         <Panel>
           <div className="flex">

@@ -8,19 +8,13 @@
 /*
 Для регенерации этого модуля после изменений типов в Elements:
 
-- перегенерировать схему: `npm run schema:elements`
-- взять файл schema/Elements.json, __положить в коммит__
-- зайти на сайт https://app.quicktype.io/
-- выбрать 
-Source type -> JSON Schema, и вставить содержимое туда. 
-Language -> TypeScript
-Use types instead of interfaces -> включено
-Name -> ввести «Elements»
-- вставить содержимое файла в поле слева
-- скопировать содержимое файла НИЖЕ ФУНКЦИИ invalidValue
-- заменить соответствующий участок этого файла
+- перегенерировать схему и кодер: `npm run type:elements`
+- скопировать typeMap из temp.ts и заменить определение в этом файле (см. ЛИНИЯ ОБРЫВА).
+- __положить в коммит__ schema/Elements.json, 
+- удалить qt-temp.ts: `npm run quicktype:clean`
 */
 // TODO: унифицировать обвязку, чтобы копировать только typeMap
+//       https://blog.quicktype.io/customizing-quicktype/
 
 import { Elements } from '@renderer/types/diagram';
 
@@ -42,8 +36,6 @@ function invalidValue(typ: any, val: any, key: any, parent: any = ''): never {
     `Invalid value${keyText}${parentText}. Expected ${prettyTyp} but got ${JSON.stringify(val)}`
   );
 }
-
-///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///
 
 function prettyTypeName(typ: any): string {
   if (Array.isArray(typ)) {
@@ -204,11 +196,15 @@ function r(name: string) {
   return { ref: name };
 }
 
+///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///
+
 const typeMap: any = {
   Elements: o(
     [
       { json: 'components', js: 'components', typ: m(r('Component')) },
       { json: 'initialState', js: 'initialState', typ: '' },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, m('')) },
+      { json: 'platform', js: 'platform', typ: '' },
       { json: 'states', js: 'states', typ: m(r('State')) },
       { json: 'transitions', js: 'transitions', typ: a(r('Transition')) },
     ],

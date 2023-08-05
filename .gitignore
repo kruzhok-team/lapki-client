@@ -7,3 +7,4 @@ out
 build
 package-lock.json
 *.tsbuildinfo
+qt-temp.ts

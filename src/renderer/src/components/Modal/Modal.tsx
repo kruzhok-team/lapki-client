@@ -14,7 +14,7 @@ interface ModalProps extends Props {
   extraLabel?: string;
   children: React.ReactNode;
   onExtra?: React.FormEventHandler;
-  onSubmit: React.FormEventHandler;
+  onSubmit?: React.FormEventHandler;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -66,7 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="submit"
             className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-            hidden={!submitLabel}
+            hidden={!onSubmit}
           >
             {submitLabel ?? 'Сохранить'}
           </button>

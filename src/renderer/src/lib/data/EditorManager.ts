@@ -5,6 +5,7 @@ import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import { CanvasEditor } from '../CanvasEditor';
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
+import { isPlatformAvailable } from './PlatformLoader';
 
 export type EditorData = {
   name: string | null;
@@ -80,8 +81,11 @@ export class EditorManager {
     this.editor?.container.machine.dataTrigger(true);
   }
 
-  newFile() {
-    const data = emptyElements();
+  newFile(platformIdx: string) {
+    if (!isPlatformAvailable(platformIdx)) {
+      throw Error('unknown platform ' + platformIdx);
+    }
+    const data = { ...emptyElements(), platform: platformIdx };
     this.editor?.loadData(data);
     this.updateState({
       ...this.state,
@@ -99,6 +103,12 @@ export class EditorManager {
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);
+        if (!isPlatformAvailable(data.platform)) {
+          return makeLeft({
+            name: openData[1]!,
+            content: `Незнакомая платформа "${data.platform}".`,
+          });
+        }
         this.editor?.loadData(data);
         this.updateState({
           ...this.state,

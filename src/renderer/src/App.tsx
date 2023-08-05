@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
@@ -9,23 +9,30 @@ import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { CanvasEditor } from './lib/CanvasEditor';
 import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
-import { preloadPicto } from './lib/drawable/Picto';
 import { isLeft, unwrapEither } from './types/Either';
 import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
 import { MessageModal, MessageModalData } from './components/MessageModal';
+import { LoadingOverlay } from './components/LoadingOverlay';
+import { getPlatformsErrors, preloadPlatforms } from './lib/data/PlatformLoader';
+import { preloadPicto } from './lib/drawable/Picto';
+import { PlatformSelectModal } from './components/PlatformSelectModal';
 
 /**
  * React-компонент приложения
  */
 export const App: FC = () => {
-  preloadPicto(() => void {});
-
   // TODO: а если у нас будет несколько редакторов?
 
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
   const manager = new EditorManager(editor, editorData, setEditorData);
   const [isDocOpen, setIsDocOpen] = useState(false);
+
+  const [isLoadingOverlay, setLoadingOverlay] = useState<boolean>(true);
+
+  const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
+  const openPlatformModal = () => setIsPlatformModalOpen(true);
+  const closePlatformModal = () => setIsPlatformModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -98,13 +105,17 @@ export const App: FC = () => {
       setSaveModalData({
         shownName: editorData.shownName,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
-        onConfirm: manager.newFile,
+        onConfirm: openPlatformModal,
         onSave: handleSaveFile,
       });
       openSaveModal();
     } else {
-      manager.newFile();
+      openPlatformModal();
     }
+  };
+
+  const performNewFile = (idx: string) => {
+    manager.newFile(idx);
   };
 
   const handleSaveAsFile = async () => {
@@ -193,6 +204,36 @@ export const App: FC = () => {
     countRef.current = tabsItems;
     handleShowTabs(0);
   };
+
+  useEffect(() => {
+    preloadPicto(() => void {});
+    preloadPlatforms(() => {
+      console.log('plaforms loaded!');
+      setLoadingOverlay(false);
+      const errs = getPlatformsErrors();
+      if (Object.keys(errs).length > 0) {
+        openMsgModal({
+          caption: 'Внимание',
+          text: (
+            <div>
+              <p> Есть проблемы с загруженными платформами. </p>
+              <br />
+              <ul>
+                {Object.entries(errs).map(([platform, err]) => {
+                  return (
+                    <li key={platform}>
+                      <b>{platform}</b>: {err}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ),
+        });
+      }
+    });
+  }, []);
+
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
@@ -261,6 +302,13 @@ export const App: FC = () => {
 
       <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
       <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
+      <PlatformSelectModal
+        isOpen={isPlatformModalOpen}
+        onCreate={performNewFile}
+        onClose={closePlatformModal}
+      />
+
+      <LoadingOverlay isOpen={isLoadingOverlay}></LoadingOverlay>
     </div>
   );
 };

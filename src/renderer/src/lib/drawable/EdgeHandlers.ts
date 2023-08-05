@@ -11,7 +11,7 @@ import { isPointInRectangle, preloadImages } from '../utils';
  * «Хваталки» для ноды, надстройка над State, отрисовывающая
  * элементы, позволяющие создать новый переход путём drag-n-drop.
  *
- * @remark
+ * @privateRemarks
  * TODO: Возможно эти штуки нужно переделать на обычные dom div?
  */
 export class EdgeHandlers {

@@ -8,17 +8,10 @@
 /*
   Для регенерации этого модуля после изменений типов в Platforms:
 
-  - перегенерировать схему: `npm run schema:platforms`
-  - взять файл schema/Platforms.json, __положить в коммит__
-  - зайти на сайт https://app.quicktype.io/
-  - выбрать 
-      Source type -> JSON Schema, и вставить содержимое туда. 
-      Language -> TypeScript
-      Use types instead of interfaces -> включено
-      Name -> ввести «Platforms»
-  - вставить содержимое файла в поле слева
-  - скопировать содержимое файла **НИЖЕ ФУНКЦИИ invalidValue**
-  - заменить соответствующий участок этого файла
+- перегенерировать схему и кодер: `npm run type:platforms`
+- скопировать typeMap из temp.ts и заменить определение в этом файле (см. ЛИНИЯ ОБРЫВА).
+- __положить в коммит__ schema/Platforms.json, 
+- удалить qt-temp.ts: `npm run quicktype:clean`
 */
 
 import { Platforms } from '@renderer/types/platform';
@@ -41,8 +34,6 @@ function invalidValue(typ: any, val: any, key: any, parent: any = ''): never {
     `Invalid value${keyText}${parentText}. Expected ${prettyTyp} but got ${JSON.stringify(val)}`
   );
 }
-
-///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///
 
 function prettyTypeName(typ: any): string {
   if (Array.isArray(typ)) {
@@ -203,6 +194,8 @@ function r(name: string) {
   return { ref: name };
 }
 
+///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///
+
 const typeMap: any = {
   Platforms: o([{ json: 'platform', js: 'platform', typ: m(r('Platform')) }], false),
   Platform: o(
@@ -210,6 +203,7 @@ const typeMap: any = {
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: u(undefined, '') },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
     ],
     false
   ),

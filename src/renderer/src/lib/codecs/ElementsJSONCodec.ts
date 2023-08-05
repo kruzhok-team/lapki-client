@@ -212,7 +212,7 @@ const typeMap: any = {
   ),
   Component: o(
     [
-      { json: 'parameters', js: 'parameters', typ: m('any') },
+      { json: 'parameters', js: 'parameters', typ: m('') },
       { json: 'type', js: 'type', typ: '' },
     ],
     false
@@ -244,7 +244,7 @@ const typeMap: any = {
   ),
   Action: o(
     [
-      { json: 'args', js: 'args', typ: u(undefined, a('any')) },
+      { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: '' },
       { json: 'method', js: 'method', typ: '' },
     ],
@@ -252,7 +252,7 @@ const typeMap: any = {
   ),
   Event: o(
     [
-      { json: 'args', js: 'args', typ: u(undefined, a('any')) },
+      { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: '' },
       { json: 'method', js: 'method', typ: '' },
     ],
@@ -272,7 +272,7 @@ const typeMap: any = {
   ),
   Variable: o(
     [
-      { json: 'args', js: 'args', typ: u(undefined, a('any')) },
+      { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: u(undefined, '') },
       { json: 'method', js: 'method', typ: u(undefined, '') },
       { json: 'type', js: 'type', typ: u(undefined, '') },

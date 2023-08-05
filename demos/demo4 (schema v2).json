@@ -185,13 +185,13 @@
   "components": {
     "diod1": {
       "parameters": {
-        "pin": 12
+        "pin": "12"
       },
       "type": "LED"
     },
     "diod2": {
       "parameters": {
-        "pin": 4
+        "pin": "4"
       },
       "type": "LED"
     }

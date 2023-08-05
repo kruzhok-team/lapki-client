@@ -3,28 +3,25 @@ import { Point, Rectangle } from './graphics';
 export type Action = {
   component: string;
   method: string;
-  args?: any[];
+  args?: { [key: string]: string };
 };
 
 export type Event = {
   component: string;
   method: string;
-  args?: any[];
+  args?: { [key: string]: string };
 };
 
 export type Variable = {
   component: string;
   method: string;
-  args?: any[];
-};
-
-export type ActingEvent = Event & {
-  actions: Action[];
+  args?: { [key: string]: string };
 };
 
 export type EventData = {
   trigger: Event;
   do: Action[];
+  // TODO: conditions?: Condition;
 };
 
 export type State = {
@@ -52,7 +49,7 @@ export type Transition = {
 
 export type Component = {
   type: string;
-  parameters: { [key: string]: any };
+  parameters: { [key: string]: string };
 };
 
 export type Elements = {

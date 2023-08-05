@@ -6,8 +6,10 @@
       "additionalProperties": false,
       "properties": {
         "args": {
-          "items": {},
-          "type": "array"
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
         },
         "component": {
           "type": "string"
@@ -26,6 +28,9 @@
       "additionalProperties": false,
       "properties": {
         "parameters": {
+          "additionalProperties": {
+            "type": "string"
+          },
           "type": "object"
         },
         "type": {
@@ -120,8 +125,10 @@
       "additionalProperties": false,
       "properties": {
         "args": {
-          "items": {},
-          "type": "array"
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
         },
         "component": {
           "type": "string"
@@ -262,8 +269,10 @@
       "additionalProperties": false,
       "properties": {
         "args": {
-          "items": {},
-          "type": "array"
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
         },
         "component": {
           "type": "string"

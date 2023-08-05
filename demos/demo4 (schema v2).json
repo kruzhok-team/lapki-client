@@ -1,4 +1,5 @@
 {
+  "platform": "ArduinoUno",
   "states": {
     "diod1": {
       "name": "state1",

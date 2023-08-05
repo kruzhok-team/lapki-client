@@ -8,6 +8,8 @@ import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 import { stateStyle } from '../styles';
+import { PlatformManager } from './PlatformManager';
+import { loadPlatform } from './PlatformLoader';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -32,7 +34,11 @@ export class StateMachine extends EventEmitter {
   initialState = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-  components: Map<string, Component> = new Map<string, Component>();
+  components: Map<string, Component> = new Map();
+
+  platform!: PlatformManager;
+  platformIdx!: string;
+  parameters: Map<string, string> = new Map();
 
   dataUpdateCallback?: DataUpdateCallback;
 
@@ -44,6 +50,7 @@ export class StateMachine extends EventEmitter {
   loadData(elements: Elements) {
     this.initStates(elements.states, elements.initialState);
     this.initTransitions(elements.transitions);
+    this.initPlatform(elements.platform, elements.parameters);
     this.initComponents(elements.components);
   }
 
@@ -68,12 +75,16 @@ export class StateMachine extends EventEmitter {
     this.components.clear();
     this.transitions.clear();
     this.states.clear();
+    this.parameters.clear();
+    this.platformIdx = '';
+    // FIXME: platform не обнуляется
   }
 
   graphData(): Elements {
     const states = {};
     const transitions: TransitionType[] = [];
     const components = {};
+    const parameters = {};
     this.states.forEach((state, id) => {
       states[id] = state.toJSON();
     });
@@ -83,12 +94,19 @@ export class StateMachine extends EventEmitter {
     this.transitions.forEach((transition) => {
       transitions.push(transition.toJSON());
     });
+    this.parameters.forEach((parameter, id) => {
+      parameters[id] = parameter;
+    });
+
     const outData = {
       states,
       initialState: this.initialState,
       transitions,
       components,
+      parameters,
+      platform: this.platformIdx,
     };
+
     return outData;
   }
 
@@ -130,6 +148,20 @@ export class StateMachine extends EventEmitter {
 
       this.container.transitions.watchTransition(transition);
     }
+  }
+
+  initPlatform(platformIdx: string, parameters: Elements['parameters']) {
+    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
+    const platform = loadPlatform(platformIdx);
+    if (typeof platform === 'undefined') {
+      throw Error("couldn't init platform " + platformIdx);
+    }
+    this.platform = platform;
+    this.platformIdx = platformIdx;
+    for (const paramName in parameters) {
+      this.parameters.set(paramName, parameters[paramName]);
+    }
+    // TODO: валидировать список параметров?
   }
 
   // TODO: разбить действия над состоянием, переименование идёт отдельно, события отдельно

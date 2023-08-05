@@ -61,6 +61,9 @@ export type Elements = {
   components: { [id: string]: Component };
 
   initialState: string;
+
+  platform: string;
+  parameters?: { [key: string]: string };
 };
 
 export function emptyElements(): Elements {
@@ -69,5 +72,8 @@ export function emptyElements(): Elements {
     transitions: [],
     components: {},
     initialState: '',
+
+    platform: '',
+    parameters: {},
   };
 }

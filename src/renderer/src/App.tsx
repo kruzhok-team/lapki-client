@@ -202,7 +202,7 @@ export const App: FC = () => {
       console.log('plaforms loaded!');
       setLoadingOverlay(false);
       const errs = getPlatformsErrors();
-      if (Object.keys(errs)) {
+      if (Object.keys(errs).length > 0) {
         openMsgModal({
           caption: 'Внимание',
           text: (

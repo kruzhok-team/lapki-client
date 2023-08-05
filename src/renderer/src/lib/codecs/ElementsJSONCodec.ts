@@ -203,6 +203,8 @@ const typeMap: any = {
     [
       { json: 'components', js: 'components', typ: m(r('Component')) },
       { json: 'initialState', js: 'initialState', typ: '' },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, m('')) },
+      { json: 'platform', js: 'platform', typ: '' },
       { json: 'states', js: 'states', typ: m(r('State')) },
       { json: 'transitions', js: 'transitions', typ: a(r('Transition')) },
     ],

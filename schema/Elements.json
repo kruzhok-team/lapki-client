@@ -85,6 +85,15 @@
         "initialState": {
           "type": "string"
         },
+        "parameters": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "platform": {
+          "type": "string"
+        },
         "states": {
           "additionalProperties": {
             "$ref": "#/definitions/State"
@@ -102,7 +111,8 @@
         "states",
         "transitions",
         "components",
-        "initialState"
+        "initialState",
+        "platform"
       ],
       "type": "object"
     },

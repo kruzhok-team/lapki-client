@@ -79,6 +79,10 @@ export function getPlatformsErrors(): { [url: string]: string } {
   return Object.fromEntries(platformsErrors.entries());
 }
 
+export function isPlatformAvailable(idx: string): boolean {
+  return platforms.has(idx);
+}
+
 export function getAvailablePlatforms(): PlatformInfo[] {
   return Array.from(platforms.entries()).map(([idx, pfm]) => {
     return {

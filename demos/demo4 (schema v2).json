@@ -152,7 +152,7 @@
       "target": "diod2",
       "trigger": {
         "component": "Button",
-        "method": "isJustPressed"
+        "method": "isPressed"
       }
     },
     {
@@ -165,7 +165,7 @@
       "target": "diod1",
       "trigger": {
         "component": "Button",
-        "method": "isJustPressed"
+        "method": "isPressed"
       }
     },
     {
@@ -178,7 +178,7 @@
       "target": "diod2",
       "trigger": {
         "component": "Button",
-        "method": "TheMethod"
+        "method": "clicked"
       }
     }
   ],

@@ -58,6 +58,7 @@ export class PlatformManager {
   getComponentIcon(name: string, isName?: boolean) {
     const query = isName ? this.resolveComponent(name) : name;
     const icon = this.componentToIcon.get(query);
+    // console.log(['getComponentIcon', name, isName, icon]);
     if (icon && icons.has(icon)) {
       return icon;
     } else {

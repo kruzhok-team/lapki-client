@@ -142,7 +142,13 @@ export class StateMachine extends EventEmitter {
       const sourceState = this.states.get(data.source) as State;
       const targetState = this.states.get(data.target) as State;
 
-      const transition = new Transition(this.container, sourceState, targetState, data, id);
+      const transition = new Transition({
+        container: this.container,
+        source: sourceState,
+        target: targetState,
+        data: data,
+        id: id,
+      });
 
       this.transitions.set(id, transition);
 
@@ -177,28 +183,30 @@ export class StateMachine extends EventEmitter {
 
   // TODO: разбить действия над состоянием, переименование идёт отдельно, события отдельно
   // FIXME: в разработке (работает только переименование)
-  newPictoState(id: string, component: string, method: string) {
+  newPictoState(
+    id: string,
+    doComponent: string,
+    doMethod: string,
+    triggerComponent: string,
+    triggerMethod: string
+  ) {
     const state = this.states.get(id);
-    console.log(state);
-    console.log(id);
     if (typeof state === 'undefined') return;
 
-    state.data.events.push(
-      ...[
+    state.data.events.push({
+      do: [
         {
-          do: [
-            {
-              component: component,
-              method: method,
-            },
-          ],
-          trigger: {
-            component: component,
-            method: method,
-          },
+          args: undefined,
+          component: doComponent,
+          method: doMethod,
         },
-      ]
-    );
+      ],
+      trigger: {
+        args: undefined,
+        component: triggerComponent,
+        method: triggerMethod,
+      },
+    });
     console.log(state.data.events);
     this.dataTrigger();
   }
@@ -311,7 +319,6 @@ export class StateMachine extends EventEmitter {
 
   deleteState(idState: string) {
     const state = this.states.get(idState);
-    console.log(state);
     if (typeof state === 'undefined') return;
 
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
@@ -384,7 +391,13 @@ export class StateMachine extends EventEmitter {
     id?: string
   ) {
     const newId = typeof id !== 'undefined' ? id : nanoid();
-    const transition = new Transition(this.container, source, target, transitionData, newId);
+    const transition = new Transition({
+      container: this.container,
+      source: source,
+      target: target,
+      data: transitionData,
+      id: newId,
+    });
 
     this.transitions.set(newId, transition);
 
@@ -392,23 +405,21 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  //TODO Надо придумать как избавиться от самописного undefined
   createNewTransition(
+    id: string | undefined,
     source: State,
     target: State,
     color: string,
     component: string,
     method: string,
-    pos?: Point,
-    id?: string
+    position: Point
   ) {
-    // TODO Доделать парвильный condition
-    const position =
-      typeof pos !== 'undefined'
-        ? pos
-        : {
-            x: 100,
-            y: 100,
-          };
+    if (id !== undefined) {
+      const transition = this.transitions.get(id);
+      if (typeof transition === 'undefined') return;
+    }
+
     const transitionData = {
       source: source.id!,
       target: target.id!,

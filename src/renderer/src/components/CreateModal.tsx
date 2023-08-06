@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form';
 
 import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
-import { TextInput } from './Modal/TextInput';
 import { twMerge } from 'tailwind-merge';
+import { TextSelect } from './Modal/TextSelect';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -19,10 +19,11 @@ export interface CreateModalFormValues {
   id: string;
   key: number;
   name: string;
-  events: string;
+  doComponent: string;
+  doMethod: string;
+  triggerComponent: string;
+  triggerMethod: string;
   color: string;
-  component: string;
-  method: string;
 }
 
 export const CreateModal: React.FC<CreateModalProps> = ({
@@ -63,6 +64,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const handleEnter = (e) => {
     var keyCode = e.keyCode;
     if (keyCode === 13 || keyCode === 27) {
+      onRequestClose();
       handleSubmit();
     }
   };
@@ -108,41 +110,121 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           >
             {!isData || (
               <>
-                <TextInput
+                <TextSelect
                   label="Событие:"
-                  placeholder="Выберите событие"
-                  {...register('events', {
+                  placeholder="Выберите модуль события"
+                  {...register('triggerComponent', {
                     required: 'Это поле обязательно к заполнению!',
-                    minLength: { value: 2, message: 'Минимум 2 символа!' },
                   })}
-                  error={!!errors.events}
-                  errorMessage={errors.events?.message ?? ''}
+                  error={!!errors.triggerComponent}
+                  errorMessage={errors.triggerComponent?.message ?? ''}
+                />
+                <TextSelect
+                  label=""
+                  placeholder="Выберите действие события"
+                  {...register('triggerMethod', {
+                    required: 'Это поле обязательно к заполнению!',
+                  })}
+                  error={!!errors.triggerMethod}
+                  errorMessage={errors.triggerMethod?.message ?? ''}
                 />
               </>
             )}
-
-            <TextInput
+            <TextSelect
+              label="Компонент:"
+              placeholder="Выберите компонент события"
+              {...register('doComponent', {
+                required: 'Это поле обязательно к заполнению!',
+              })}
+              error={!!errors.doComponent}
+              errorMessage={errors.doComponent?.message ?? ''}
+            />
+            <TextSelect
+              label="Метод:"
+              placeholder="Выберите метод события"
+              {...register('doMethod', {
+                required: 'Это поле обязательно к заполнению!',
+              })}
+              error={!!errors.doMethod}
+              errorMessage={errors.doMethod?.message ?? ''}
+            />
+            {/* <TextInput
               label="Компонент:"
               placeholder="Компонент"
-              {...register('component', {
+              {...register('eventsTriggerComponent', {
                 required: 'Это поле обязательно к заполнению!',
                 minLength: { value: 2, message: 'Минимум 2 символа' },
               })}
-              error={!!errors.component}
-              errorMessage={errors.component?.message ?? ''}
+              error={!!errors.eventsTriggerComponent}
+              errorMessage={errors.eventsTriggerComponent?.message ?? ''}
             />
             <TextInput
               label="Метод:"
               placeholder="Метод"
-              {...register('method', {
+              {...register('eventsTriggerMethod', {
                 required: 'Это поле обязательно к заполнению!',
                 minLength: { value: 2, message: 'Минимум 2 символа' },
               })}
-              error={!!errors.method}
-              errorMessage={errors.method?.message ?? ''}
-            />
+              error={!!errors.eventsTriggerMethod}
+              errorMessage={errors.eventsTriggerMethod?.message ?? ''}
+            /> */}
             {isData !== undefined || (
               <>
+                <div className="flex">
+                  <input id="input-check" type="checkbox" className="mr-2" />
+                  <p>Условие</p>
+                </div>
+                <div className="flex">
+                  <input type="checkbox" className="mr-2" />
+                  <TextSelect
+                    label="Компонент:"
+                    placeholder="Выберите компонент события"
+                    {...register('doComponent', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    error={!!errors.doComponent}
+                    errorMessage={errors.doComponent?.message ?? ''}
+                  />
+                  <TextSelect
+                    label="Метод:"
+                    placeholder="Выберите метод события"
+                    {...register('doMethod', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    error={!!errors.doMethod}
+                    errorMessage={errors.doMethod?.message ?? ''}
+                  />
+                </div>
+                <select className="ml-8 w-[80px] rounded border bg-transparent px-3 py-2 text-center text-white">
+                  <option className="bg-black" label="<"></option>
+                  <option className="bg-black" label=">"></option>
+                  <option className="bg-black" label="="></option>
+                  <option className="bg-black" label="!="></option>
+                  <option className="bg-black" label="<="></option>
+                  <option className="bg-black" label=">="></option>
+                </select>
+                <div className="flex">
+                  <input type="checkbox" className="mr-2" />
+                  <TextSelect
+                    label="Компонент:"
+                    placeholder="Выберите компонент события"
+                    {...register('doComponent', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    error={!!errors.doComponent}
+                    errorMessage={errors.doComponent?.message ?? ''}
+                  />
+                  <TextSelect
+                    label="Метод:"
+                    placeholder="Выберите метод события"
+                    {...register('doMethod', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    error={!!errors.doMethod}
+                    errorMessage={errors.doMethod?.message ?? ''}
+                  />
+                </div>
+
                 <ColorInput
                   label="Цвет связи:"
                   {...register('color', { required: 'Это поле обязательно к заполнению!' })}

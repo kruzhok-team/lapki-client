@@ -8,6 +8,13 @@ import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
 import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
 
+interface TransitionProps {
+  container: Container;
+  source: State;
+  target: State;
+  data: TransitionType;
+  id: string;
+}
 /**
  * Переход между состояниями.
  * Выполняет отрисовку стрелки между тремя движущимися блоками:
@@ -22,13 +29,7 @@ export class Transition {
   condition!: Condition;
   id!: string;
 
-  constructor(
-    container: Container,
-    source: State,
-    target: State,
-    data: TransitionType,
-    id: string
-  ) {
+  constructor({ container, source, target, data, id }: TransitionProps) {
     this.container = container;
     this.data = data;
     this.id = id;

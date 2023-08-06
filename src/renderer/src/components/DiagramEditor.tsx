@@ -28,7 +28,8 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
   const [state, setState] = useState<{ state: State }>();
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
-  const [transition, setTransition] = useState<{ source: State; target: State } | null>(null);
+  const [transition, setTransition] = useState<{ target: Condition } | null>(null);
+  const [newTransition, setNewTransition] = useState<{ source: State; target: State } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -93,10 +94,21 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     });
 
     //Здесь мы открываем модальное окно редактирования связи
-    editor.container.transitions.onTransitionCreate((source, target) => {
+    editor.container.transitions.onTransitionCreate((target) => {
       setState(undefined);
       setNameState(undefined);
-      setTransition({ source, target });
+      setNewTransition(null);
+      setTransition({ target });
+      openModal();
+      // manager.triggerDataUpdate();
+    });
+
+    //Здесь мы открываем модальное окно редактирования связи
+    editor.container.transitions.onNewTransitionCreate((source, target) => {
+      setState(undefined);
+      setNameState(undefined);
+      setTransition(null);
+      setNewTransition({ source, target });
       openModal();
       // manager.triggerDataUpdate();
     });
@@ -125,20 +137,35 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
   const handleCreateModal = (data: CreateModalFormValues) => {
     if (data.key === 1) {
-      editor?.container.machine.newPictoState(data.id, data.component, data.method);
-      console.log('Состояние');
+      editor?.container.machine.newPictoState(
+        data.id,
+        data.doComponent,
+        data.doMethod,
+        data.triggerComponent,
+        data.triggerMethod
+      );
     } else if (data.key === 2) {
       editor?.container.machine.updateState(data.id, data.name);
-      console.log('Имя');
     } else if (transition) {
       editor?.container.machine.createNewTransition(
-        transition.source,
-        transition.target,
+        transition?.target.id!,
+        transition?.target.transition.source,
+        transition?.target.transition.target,
         data.color,
-        data.component,
-        data.method
+        data.triggerComponent,
+        data.triggerMethod,
+        transition?.target.bounds
       );
-      console.log('Связь');
+    } else if (newTransition) {
+      editor?.container.machine.createNewTransition(
+        newTransition?.target.id,
+        newTransition?.source,
+        newTransition?.target,
+        data.color,
+        data.triggerComponent,
+        data.triggerMethod,
+        newTransition?.target.bounds
+      );
     }
     closeModal();
   };

@@ -10,7 +10,12 @@ import { Point } from '@renderer/types/graphics';
 /**
  * Функция, обрабатывающая запрос на создание перехода.
  */
-type TransitionCreateCallback = (source: State, target: State) => void;
+type TransitionCreateCallback = (target: Condition) => void;
+
+/**
+ * Функция, обрабатывающая запрос на MouseUpState.
+ */
+type TransitionCallback = (source: State, target: State) => void;
 
 /**
  * Функция, обрабатывающая вызов контекстного меню.
@@ -28,6 +33,7 @@ export class Transitions {
   ghost = new GhostTransition();
 
   createCallback?: TransitionCreateCallback;
+  createStateCallback?: TransitionCallback;
   menuCallback?: MenuCallback;
 
   constructor(container: Container) {
@@ -56,6 +62,10 @@ export class Transitions {
     this.createCallback = callback;
   };
 
+  onNewTransitionCreate = (callback: TransitionCallback) => {
+    this.createStateCallback = callback;
+  };
+
   onTransitionContextMenu = (callback: MenuCallback) => {
     this.menuCallback = callback;
   };
@@ -64,15 +74,15 @@ export class Transitions {
     this.ghost.setSource(state);
   };
 
-  handleConditionClick = (e: { target; event }) => {
+  handleConditionClick = (e: { target: Condition; event: MyMouseEvent }) => {
     e.event.stopPropagation();
     this.container.machine.removeSelection();
     e.target.setIsSelected(true);
   };
 
-  handleConditionDoubleClick = (e: { source; target; event }) => {
+  handleConditionDoubleClick = (e: { target: Condition; event: MyMouseEvent }) => {
     e.event.stopPropagation();
-    this.createCallback?.(e.source, e.target);
+    this.createCallback?.(e.target);
   };
 
   //Удаление связей
@@ -96,7 +106,7 @@ export class Transitions {
 
     if (!this.ghost.source) return;
 
-    this.createCallback?.(this.ghost.source, e.target);
+    this.createStateCallback?.(this.ghost.source, e.target);
 
     this.ghost.clear();
   };

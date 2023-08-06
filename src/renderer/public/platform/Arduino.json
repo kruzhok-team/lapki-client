@@ -5,14 +5,14 @@
       "components": {
         "Button": {
           "description": "Hardware Abstraction for Buttons. It provides an easy way of handling buttons.",
-          "img": "",
+          "img": "arduino/switch.svg",
           "signals": {
             "isPressed": {
-              "img": "",
+              "img": "arduino/button-1.svg",
               "description": "Return true if the button has been pressed"
             },
             "clicked": {
-              "img": "",
+              "img": "arduino/button.svg",
               "description": "Return > 0 if the button is clicked, or 0 if not."
             }
           },
@@ -35,7 +35,7 @@
 
         "LED": {
           "description": "Hardware Abstraction for LEDs. It provides an easy way of handling LEDs.",
-          "img": "",
+          "img": "arduino/led.svg",
           "signals": {},
           "parameters": {
             "ledPin": {
@@ -52,12 +52,12 @@
           "variables": {},
           "methods": {
             "on": {
-              "img": "",
+              "img": "arduino/switch-on.svg",
               "parameters": {},
               "description": "Set this LED on"
             },
             "off": {
-              "img": "",
+              "img": "arduino/switch-off.svg",
               "parameters": {},
               "description": "Set this LED off"
             }

@@ -2,6 +2,12 @@ import { Platform } from '@renderer/types/platform';
 import { icons, picto } from '../drawable/Picto';
 import { Action, Event } from '@renderer/types/diagram';
 
+export type ListEntry = {
+  name: string;
+  description?: string;
+  img?: string;
+};
+
 export class PlatformManager {
   name!: string;
   data!: Platform;
@@ -53,6 +59,38 @@ export class PlatformManager {
 
   resolveComponent(name: string): string {
     return this.nameToComponent.get(name) ?? name;
+  }
+
+  getAvailableEvents(name: string, isType?: boolean): ListEntry[] {
+    const outs: ListEntry[] = [];
+    const query = isType ? name : this.resolveComponent(name);
+    const component = this.data.components[query];
+    if (!component) return outs;
+    const signals = component.signals;
+    for (const eName in signals) {
+      outs.push({
+        name: eName,
+        description: signals[eName].description,
+        img: signals[eName].img,
+      });
+    }
+    return outs;
+  }
+
+  getAvailableMethods(name: string, isType?: boolean): ListEntry[] {
+    const outs: ListEntry[] = [];
+    const query = isType ? name : this.resolveComponent(name);
+    const component = this.data.components[query];
+    if (!component) return outs;
+    const methods = component.methods;
+    for (const mName in methods) {
+      outs.push({
+        name: mName,
+        description: methods[mName].description,
+        img: methods[mName].img,
+      });
+    }
+    return outs;
   }
 
   getComponentIcon(name: string, isName?: boolean) {

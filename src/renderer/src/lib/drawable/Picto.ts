@@ -3,7 +3,6 @@ import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
 import { preloadImagesMap } from '../utils';
-import { Action, Event } from '@renderer/types/diagram';
 
 let imagesLoaded = false;
 

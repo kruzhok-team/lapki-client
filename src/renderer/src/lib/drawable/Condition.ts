@@ -3,7 +3,6 @@ import { Transition } from './Transition';
 
 import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
-import { picto } from './Picto';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).

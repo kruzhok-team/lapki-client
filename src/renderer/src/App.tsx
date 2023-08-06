@@ -182,6 +182,7 @@ export const App: FC = () => {
 
   //Проверяем сколько элементов в массиве, если меньше 2, то записываем в useRef
   if (countRef.current.length <= 2) {
+    countRef.current = [];
     countRef.current = tabsItems;
   }
 

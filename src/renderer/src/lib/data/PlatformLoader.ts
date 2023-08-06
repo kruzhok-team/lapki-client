@@ -2,6 +2,7 @@ import { Platform, PlatformInfo, Platforms } from '@renderer/types/platform';
 import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
 import { PlatformManager } from './PlatformManager';
+import { extendPreloadPicto } from '../drawable/Picto';
 
 // TODO? выдача стандартного файла для платформы
 
@@ -96,5 +97,40 @@ export function getAvailablePlatforms(): PlatformInfo[] {
 export function loadPlatform(idx: string): PlatformManager | undefined {
   const pfm = platforms.get(idx);
   if (typeof pfm === 'undefined') return undefined;
-  return new PlatformManager(pfm);
+  return new PlatformManager(idx, pfm);
+}
+
+export function preparePreloadImages() {
+  // FIXME: только относительные пути в папке img
+  const resolveImg = (p: string) => '/img/' + p;
+  const newImgs: { [k: string]: string } = {};
+  platforms.forEach((platform) => {
+    // TODO: забирать картинки из platform.parameters
+    for (const cId in platform.components) {
+      const component = platform.components[cId];
+      // TODO: забирать картинки из component.variables
+      if (component.img) {
+        newImgs[component.img] = resolveImg(component.img);
+      }
+      for (const sId in component.signals) {
+        const signal = component.signals[sId];
+        if (signal.img) {
+          newImgs[signal.img] = resolveImg(signal.img);
+        }
+      }
+      for (const mId in component.methods) {
+        const method = component.methods[mId];
+        if (method.img) {
+          newImgs[method.img] = resolveImg(method.img);
+        }
+      }
+      for (const vId in component.variables) {
+        const variable = component.variables[vId];
+        if (variable.img) {
+          newImgs[variable.img] = resolveImg(variable.img);
+        }
+      }
+    }
+  });
+  extendPreloadPicto(newImgs);
 }

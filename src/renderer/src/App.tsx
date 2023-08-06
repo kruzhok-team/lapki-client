@@ -13,7 +13,11 @@ import { isLeft, unwrapEither } from './types/Either';
 import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
 import { MessageModal, MessageModalData } from './components/MessageModal';
 import { LoadingOverlay } from './components/LoadingOverlay';
-import { getPlatformsErrors, preloadPlatforms } from './lib/data/PlatformLoader';
+import {
+  getPlatformsErrors,
+  preloadPlatforms,
+  preparePreloadImages,
+} from './lib/data/PlatformLoader';
 import { preloadPicto } from './lib/drawable/Picto';
 import { PlatformSelectModal } from './components/PlatformSelectModal';
 
@@ -206,8 +210,9 @@ export const App: FC = () => {
   };
 
   useEffect(() => {
-    preloadPicto(() => void {});
     preloadPlatforms(() => {
+      preparePreloadImages();
+      preloadPicto(() => void {});
       console.log('plaforms loaded!');
       setLoadingOverlay(false);
       const errs = getPlatformsErrors();

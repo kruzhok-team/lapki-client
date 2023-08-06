@@ -130,8 +130,10 @@ export class StateMachine extends EventEmitter {
   }
 
   initComponents(items: Elements['components']) {
-    for (const component_name in items) {
-      this.components.set(component_name, new Component(items[component_name]));
+    for (const name in items) {
+      const component = items[name];
+      this.components.set(name, new Component(component));
+      this.platform.nameToComponent[name] = component.type;
     }
   }
 

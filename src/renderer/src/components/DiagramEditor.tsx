@@ -103,7 +103,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       // manager.triggerDataUpdate();
     });
 
-    //Здесь мы открываем модальное окно редактирования связи
+    //Здесь мы открываем модальное окно редактирования новой связи
     editor.container.transitions.onNewTransitionCreate((source, target) => {
       setState(undefined);
       setNameState(undefined);
@@ -158,7 +158,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       );
     } else if (newTransition) {
       editor?.container.machine.createNewTransition(
-        newTransition?.target.id,
+        undefined,
         newTransition?.source,
         newTransition?.target,
         data.color,

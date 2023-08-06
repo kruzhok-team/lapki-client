@@ -7,7 +7,7 @@
         {
           "do": [
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "on"
             }
           ],
@@ -30,19 +30,19 @@
         {
           "do": [
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "off"
             },
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "on"
             },
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "off"
             },
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "on"
             }
           ],
@@ -54,19 +54,19 @@
         {
           "do": [
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "off"
             },
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "on"
             },
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "off"
             },
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "on"
             }
           ],
@@ -89,7 +89,7 @@
         {
           "do": [
             {
-              "component": "LED",
+              "component": "diod1",
               "method": "on"
             }
           ],
@@ -151,8 +151,8 @@
       "source": "diod1",
       "target": "diod2",
       "trigger": {
-        "component": "Button",
-        "method": "isJustPressed"
+        "component": "button1",
+        "method": "isPressed"
       }
     },
     {
@@ -164,8 +164,8 @@
       "source": "diod2",
       "target": "diod1",
       "trigger": {
-        "component": "Button",
-        "method": "isJustPressed"
+        "component": "button1",
+        "method": "isPressed"
       }
     },
     {
@@ -177,8 +177,8 @@
       "source": "diod3",
       "target": "diod2",
       "trigger": {
-        "component": "Button",
-        "method": "TheMethod"
+        "component": "button1",
+        "method": "clicked"
       }
     }
   ],
@@ -189,11 +189,11 @@
       },
       "type": "LED"
     },
-    "diod2": {
+    "button1": {
       "parameters": {
         "pin": "4"
       },
-      "type": "LED"
+      "type": "Button"
     }
   }
 }

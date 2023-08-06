@@ -1,4 +1,3 @@
-import Icon from '@renderer/assets/icons/new transition.svg';
 import { Point } from '@renderer/types/graphics';
 
 import { State } from './State';
@@ -6,6 +5,7 @@ import { State } from './State';
 import { CanvasEditor } from '../CanvasEditor';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { isPointInRectangle, preloadImages } from '../utils';
+import { icons } from './Picto';
 
 /**
  * «Хваталки» для ноды, надстройка над State, отрисовывающая
@@ -20,16 +20,9 @@ export class EdgeHandlers {
 
   onStartNewTransition?: (state: State) => void;
 
-  icon!: HTMLImageElement;
-
   constructor(app: CanvasEditor, state: State) {
     this.app = app;
     this.state = state;
-
-    preloadImages([Icon]).then(([icon]) => {
-      this.icon = icon;
-    });
-
     this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 
@@ -80,10 +73,13 @@ export class EdgeHandlers {
     return this.state;
   }
   draw(ctx: CanvasRenderingContext2D) {
+    const icon = icons.get('EdgeHandle');
+    if (!icon) return;
+
     ctx.beginPath();
 
     for (const { x, y } of this.position) {
-      ctx.drawImage(this.icon, x, y, this.size, this.size);
+      ctx.drawImage(icon, x, y, this.size, this.size);
     }
 
     ctx.fillStyle = '#FFF';

@@ -18,10 +18,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "component",
-        "method"
-      ],
+      "required": ["component", "method"],
       "type": "object"
     },
     "Component": {
@@ -37,10 +34,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "type",
-        "parameters"
-      ],
+      "required": ["type", "parameters"],
       "type": "object"
     },
     "Condition": {
@@ -72,10 +66,7 @@
           ]
         }
       },
-      "required": [
-        "type",
-        "value"
-      ],
+      "required": ["type", "value"],
       "type": "object"
     },
     "Elements": {
@@ -112,13 +103,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "states",
-        "transitions",
-        "components",
-        "initialState",
-        "platform"
-      ],
+      "required": ["states", "transitions", "components", "initialState", "platform"],
       "type": "object"
     },
     "Event": {
@@ -137,10 +122,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "component",
-        "method"
-      ],
+      "required": ["component", "method"],
       "type": "object"
     },
     "EventData": {
@@ -156,10 +138,7 @@
           "$ref": "#/definitions/Event"
         }
       },
-      "required": [
-        "trigger",
-        "do"
-      ],
+      "required": ["trigger", "do"],
       "type": "object"
     },
     "Point": {
@@ -172,10 +151,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "x",
-        "y"
-      ],
+      "required": ["x", "y"],
       "type": "object"
     },
     "Rectangle": {
@@ -194,12 +170,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "height",
-        "width",
-        "x",
-        "y"
-      ],
+      "required": ["height", "width", "x", "y"],
       "type": "object"
     },
     "State": {
@@ -221,11 +192,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name",
-        "bounds",
-        "events"
-      ],
+      "required": ["name", "bounds", "events"],
       "type": "object"
     },
     "Transition": {
@@ -234,7 +201,7 @@
         "color": {
           "type": "string"
         },
-        "conditions": {
+        "condition": {
           "$ref": "#/definitions/Condition"
         },
         "do": {
@@ -256,13 +223,7 @@
           "$ref": "#/definitions/Event"
         }
       },
-      "required": [
-        "source",
-        "target",
-        "color",
-        "position",
-        "trigger"
-      ],
+      "required": ["source", "target", "color", "position", "trigger"],
       "type": "object"
     },
     "Variable": {
@@ -281,10 +242,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "component",
-        "method"
-      ],
+      "required": ["component", "method"],
       "type": "object"
     }
   }

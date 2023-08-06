@@ -1,5 +1,6 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
 import { preloadImagesMap } from '../utils';
@@ -9,22 +10,21 @@ let imagesLoaded = false;
 export const icons: Map<string, HTMLImageElement> = new Map();
 // TODO? export const iconsPaths: Map<string, string> = new Map();
 
-/* TODO: сейчас набор значков фиксирован, большее число здесь будет
-          смотреться ужасно. Нужно переделать предзагрузку.
-*/
 const basePicto = {
+  EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
+  variable: '/img/arduino/variable-type.svg',
 
   onEnter: '/img/bearloga/event_enter.svg',
   onExit: '/img/bearloga/event_exit.svg',
-  'bearloga/sensor': '/img/bearloga/sensor.svg',
-  Button: '/img/bearloga/health.svg',
-  'Button/isJustPressed': '/img/bearloga/explode.svg',
-  LED: '/img/bearloga/ability_done.svg',
-  'LED/on': '/img/bearloga/ability_available.svg',
-  'LED/off': '/img/bearloga/activate.svg',
 };
+
+export function extendPreloadPicto(addition: { [path: string]: string }) {
+  for (const key in addition) {
+    basePicto[key] = addition[key];
+  }
+}
 
 /**
  * Загрузка графических ресурсов для пиктограмм

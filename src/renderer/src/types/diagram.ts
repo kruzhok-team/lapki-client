@@ -21,7 +21,7 @@ export type Variable = {
 export type EventData = {
   trigger: Event;
   do: Action[];
-  // TODO: conditions?: Condition;
+  // TODO: condition?: Condition;
 };
 
 export type State = {
@@ -43,7 +43,7 @@ export type Transition = {
   color: string;
   position: Point;
   trigger: Event;
-  conditions?: Condition;
+  condition?: Condition;
   do?: Action[];
 };
 

@@ -261,7 +261,7 @@ const typeMap: any = {
   Transition: o(
     [
       { json: 'color', js: 'color', typ: '' },
-      { json: 'conditions', js: 'conditions', typ: u(undefined, r('Condition')) },
+      { json: 'condition', js: 'condition', typ: u(undefined, r('Condition')) },
       { json: 'do', js: 'do', typ: u(undefined, a(r('Action'))) },
       { json: 'position', js: 'position', typ: r('Point') },
       { json: 'source', js: 'source', typ: '' },

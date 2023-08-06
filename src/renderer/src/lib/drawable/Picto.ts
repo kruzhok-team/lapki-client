@@ -1,5 +1,6 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
 import { preloadImagesMap } from '../utils';
@@ -10,6 +11,7 @@ export const icons: Map<string, HTMLImageElement> = new Map();
 // TODO? export const iconsPaths: Map<string, string> = new Map();
 
 const basePicto = {
+  EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
   variable: '/img/arduino/variable-type.svg',

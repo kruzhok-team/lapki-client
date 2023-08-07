@@ -148,7 +148,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       editor?.container.machine.updateState(data.id, data.name);
     } else if (transition) {
       editor?.container.machine.createNewTransition(
-        transition?.target.id!,
+        transition?.target.id,
         transition?.target.transition.source,
         transition?.target.transition.target,
         data.color,
@@ -204,21 +204,18 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         />
       </div>
 
-      {/* <CreateNameStateModal
-        isOpen={isNameStateModalOpen}
-        isData={inputNameState}
-        closeMenu={() => {
-          setIsContextMenuOpen(false);
-        }}
-      /> */}
-
-      <CreateModal
-        isOpen={isModalOpen}
-        isData={state}
-        isName={nameState}
-        onClose={closeModal}
-        onSubmit={handleCreateModal}
-      />
+      {isModalOpen ? (
+        <CreateModal
+          editor={editor}
+          isOpen={isModalOpen}
+          isData={state}
+          isName={nameState}
+          onClose={closeModal}
+          onSubmit={handleCreateModal}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };

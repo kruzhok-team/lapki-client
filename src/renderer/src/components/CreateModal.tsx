@@ -6,8 +6,10 @@ import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
 import { TextSelect } from './Modal/TextSelect';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 interface CreateModalProps {
+  editor?: CanvasEditor | null;
   isOpen: boolean;
   isData: { state } | undefined;
   isName: { state; position } | undefined;
@@ -31,6 +33,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   onClose,
   isData,
   isName,
+  editor,
   ...props
 }) => {
   const {
@@ -46,6 +49,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const input = document.getElementById('input') as HTMLInputElement | null;
 
+  const components = editor?.container.machine.components.keys();
+  const methods = editor?.container.machine.platform.getAvailableEvents('System');
+  console.log(components, methods);
   const onRequestClose = () => {
     onClose();
     // TODO: пока кажется лишним затирать текстовые поля
@@ -74,12 +80,31 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     input.style.top = isName?.position.y + 'px';
     input.style.width = isName?.position.width + 'px';
     input.style.height = isName?.position.height + 'px';
+    input.focus();
 
     input.onkeydown = handleEnter;
-
-    input.focus();
   }
 
+  const selectElse = [
+    {
+      label: '>',
+    },
+    {
+      label: '<',
+    },
+    {
+      label: '=',
+    },
+    {
+      label: '!=',
+    },
+    {
+      label: '>=',
+    },
+    {
+      label: '<=',
+    },
+  ];
   return (
     <>
       {isName !== undefined ? (
@@ -148,26 +173,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               error={!!errors.doMethod}
               errorMessage={errors.doMethod?.message ?? ''}
             />
-            {/* <TextInput
-              label="Компонент:"
-              placeholder="Компонент"
-              {...register('eventsTriggerComponent', {
-                required: 'Это поле обязательно к заполнению!',
-                minLength: { value: 2, message: 'Минимум 2 символа' },
-              })}
-              error={!!errors.eventsTriggerComponent}
-              errorMessage={errors.eventsTriggerComponent?.message ?? ''}
-            />
-            <TextInput
-              label="Метод:"
-              placeholder="Метод"
-              {...register('eventsTriggerMethod', {
-                required: 'Это поле обязательно к заполнению!',
-                minLength: { value: 2, message: 'Минимум 2 символа' },
-              })}
-              error={!!errors.eventsTriggerMethod}
-              errorMessage={errors.eventsTriggerMethod?.message ?? ''}
-            /> */}
             {isData !== undefined || (
               <>
                 <div className="flex">
@@ -195,13 +200,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                     errorMessage={errors.doMethod?.message ?? ''}
                   />
                 </div>
-                <select className="ml-8 w-[80px] rounded border bg-transparent px-3 py-2 text-center text-white">
-                  <option className="bg-black" label="<"></option>
-                  <option className="bg-black" label=">"></option>
-                  <option className="bg-black" label="="></option>
-                  <option className="bg-black" label="!="></option>
-                  <option className="bg-black" label="<="></option>
-                  <option className="bg-black" label=">="></option>
+                <select className="ml-6 w-[80px] rounded border bg-transparent px-2 py-1 text-center text-white">
+                  {selectElse.map((content) => (
+                    <option
+                      key={'option' + content.label}
+                      className="bg-black"
+                      value={content.label}
+                      label={content.label}
+                    ></option>
+                  ))}
                 </select>
                 <div className="flex">
                   <input type="checkbox" className="mr-2" />

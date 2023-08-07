@@ -195,21 +195,34 @@ export class StateMachine extends EventEmitter {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
 
-    state.data.events.push({
-      do: [
-        {
+    const trueTab = state.data.events.find(
+      (value) =>
+        triggerComponent === value.trigger.component &&
+        triggerMethod === value.trigger.method &&
+        undefined === value.trigger.args // FIXME: сравнение по args может не работать
+    );
+    if (trueTab === undefined) {
+      state.data.events.push({
+        do: [
+          {
+            args: undefined,
+            component: doComponent,
+            method: doMethod,
+          },
+        ],
+        trigger: {
           args: undefined,
-          component: doComponent,
-          method: doMethod,
+          component: triggerComponent,
+          method: triggerMethod,
         },
-      ],
-      trigger: {
+      });
+    } else {
+      trueTab.do.push({
         args: undefined,
-        component: triggerComponent,
-        method: triggerMethod,
-      },
-    });
-    console.log(state.data.events);
+        component: doComponent,
+        method: doMethod,
+      });
+    }
     this.dataTrigger();
   }
 
@@ -407,7 +420,6 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  //TODO Надо придумать как избавиться от самописного undefined
   createNewTransition(
     id: string | undefined,
     source: State,

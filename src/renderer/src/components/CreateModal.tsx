@@ -47,8 +47,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     },
   });
 
-  const input = document.getElementById('input') as HTMLInputElement | null;
-
   const components = editor?.container.machine.components.keys();
   const methods = editor?.container.machine.platform.getAvailableEvents('System');
   console.log(components, methods);
@@ -61,62 +59,46 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const handleSubmit = hookHandleSubmit((data) => {
     isData?.state.id !== undefined
       ? ((data.id = isData?.state.id), (data.name = isData?.state.data.name), (data.key = 1))
-      : input?.value !== undefined
-      ? ((data.id = isName?.state.id), (data.name = input?.value), (data.key = 2))
+      : data.name !== undefined
+      ? ((data.id = isName?.state.id), (data.key = 2))
       : (data.key = 3);
     onSubmit(data);
   });
 
-  const handleEnter = (e) => {
-    var keyCode = e.keyCode;
-    if (keyCode === 13 || keyCode === 27) {
-      onRequestClose();
-      handleSubmit();
-    }
+  const inputStyle = {
+    left: isName?.position.x + 'px',
+    top: isName?.position.y + 'px',
+    width: isName?.position.width + 'px',
+    height: isName?.position.height + 'px',
   };
 
-  if (input !== null) {
-    input.style.left = isName?.position.x + 'px';
-    input.style.top = isName?.position.y + 'px';
-    input.style.width = isName?.position.width + 'px';
-    input.style.height = isName?.position.height + 'px';
-    input.focus();
-
-    input.onkeydown = handleEnter;
-  }
-
-  const selectElse = [
-    {
-      label: '>',
-    },
-    {
-      label: '<',
-    },
-    {
-      label: '=',
-    },
-    {
-      label: '!=',
-    },
-    {
-      label: '>=',
-    },
-    {
-      label: '<=',
-    },
-  ];
+  const selectElse = ['>', '<', '=', '!=', '>=', '<='];
   return (
     <>
       {isName !== undefined ? (
         <>
           <input
-            id="input"
-            className={twMerge('fixed rounded-t-[6px] bg-[#525252] font-Fira text-white')}
+            style={inputStyle}
+            autoFocus
+            onKeyUp={(e) => {
+              var keyCode = e.keyCode;
+              if (e.key === 'Enter') {
+                handleSubmit();
+              } else if (keyCode === 27) {
+                onRequestClose();
+              }
+            }}
+            className={twMerge(
+              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 font-Fira text-white focus:outline-none'
+            )}
             placeholder="Придумайте название"
             maxLength={20}
             {...register('name', {
-              required: 'Это поле обязательно к заполнению!',
+              onBlur() {
+                onRequestClose();
+              },
               minLength: { value: 2, message: 'Минимум 2 символа!' },
+              value: isName.state.data.name,
             })}
           />
         </>
@@ -203,10 +185,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 <select className="ml-6 w-[80px] rounded border bg-transparent px-2 py-1 text-center text-white">
                   {selectElse.map((content) => (
                     <option
-                      key={'option' + content.label}
+                      key={'option' + content}
                       className="bg-black"
-                      value={content.label}
-                      label={content.label}
+                      value={content}
+                      label={content}
                     ></option>
                   ))}
                 </select>

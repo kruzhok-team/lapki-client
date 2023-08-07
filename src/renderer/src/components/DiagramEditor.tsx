@@ -60,10 +60,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       const globalOffset = state.container.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {
-        x: statePos.x + globalOffset.x + 1,
-        y: statePos.y + globalOffset.y + 1,
-        width: state.computedWidth - 2,
-        height: state.titleHeight - 1,
+        x: statePos.x + globalOffset.x,
+        y: statePos.y + globalOffset.y,
+        width: state.computedWidth,
+        height: state.titleHeight,
       };
       setState(undefined);
       setTransition(null);

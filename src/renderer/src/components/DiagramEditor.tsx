@@ -7,7 +7,9 @@ import { State } from '@renderer/lib/drawable/State';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalFormValues } from './CreateModal';
+
 import { ContextMenu, StateContextMenu, StateContextMenuData } from './StateContextMenu';
+import { CreateEventsModal, CreateEventsModalFormValues } from './CreateEventsModal';
 
 interface DiagramEditorProps {
   manager: EditorManager;
@@ -26,14 +28,18 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [state, setState] = useState<{ state: State }>();
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
+  const [state, setState] = useState<{ state: State }>();
+  const [events, setEvents] = useState<{ doComponent: string; doMethod: string }>();
   const [transition, setTransition] = useState<{ target: Condition } | null>(null);
   const [newTransition, setNewTransition] = useState<{ source: State; target: State } | null>(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
+  const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
+  const openEventsModal = () => setIsEventsModalOpen(true);
+  const closeEventsModal = () => setIsEventsModalOpen(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<StateContextMenuData>();
 
@@ -50,6 +56,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     editor.container.states.onStateCreate((state) => {
       setNameState(undefined);
       setTransition(null);
+      setEvents(undefined);
       setState({ state });
       openModal();
       // manager.triggerDataUpdate();
@@ -66,6 +73,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         height: state.titleHeight,
       };
       setState(undefined);
+      setEvents(undefined);
       setTransition(null);
       setNameState({ state, position });
       openModal();
@@ -96,6 +104,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     //Здесь мы открываем модальное окно редактирования связи
     editor.container.transitions.onTransitionCreate((target) => {
       setState(undefined);
+      setEvents(undefined);
       setNameState(undefined);
       setNewTransition(null);
       setTransition({ target });
@@ -106,6 +115,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     //Здесь мы открываем модальное окно редактирования новой связи
     editor.container.transitions.onNewTransitionCreate((source, target) => {
       setState(undefined);
+      setEvents(undefined);
       setNameState(undefined);
       setTransition(null);
       setNewTransition({ source, target });
@@ -135,12 +145,20 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerRef.current]);
 
+  const handleCreateEventsModal = (data: CreateEventsModalFormValues) => {
+    const doComponent = data.doComponent;
+    const doMethod = data.doMethod;
+    setEvents({ doComponent, doMethod });
+    openModal();
+    closeEventsModal();
+  };
+
   const handleCreateModal = (data: CreateModalFormValues) => {
     if (data.key === 1) {
       editor?.container.machine.newPictoState(
         data.id,
-        data.doComponent,
-        data.doMethod,
+        events!.doComponent,
+        events!.doMethod,
         data.triggerComponent,
         data.triggerMethod
       );
@@ -152,8 +170,8 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         transition?.target.transition.source,
         transition?.target.transition.target,
         data.color,
-        data.triggerComponent,
-        data.triggerMethod,
+        events!.doComponent,
+        events!.doMethod,
         transition?.target.bounds
       );
     } else if (newTransition) {
@@ -204,10 +222,18 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         />
       </div>
 
+      <CreateEventsModal
+        isOpen={isEventsModalOpen}
+        onClose={closeEventsModal}
+        onSubmit={handleCreateEventsModal}
+        title={'Выбор события'}
+      />
+
       {isModalOpen ? (
         <CreateModal
           editor={editor}
           isOpen={isModalOpen}
+          onOpenEventsModal={openEventsModal}
           isData={state}
           isName={nameState}
           onClose={closeModal}

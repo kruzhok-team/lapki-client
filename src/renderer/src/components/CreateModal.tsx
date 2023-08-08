@@ -13,6 +13,7 @@ interface CreateModalProps {
   isOpen: boolean;
   isData: { state } | undefined;
   isName: { state; position } | undefined;
+  onOpenEventsModal: () => void;
   onClose: () => void;
   onSubmit: (data: CreateModalFormValues) => void;
 }
@@ -30,6 +31,7 @@ export interface CreateModalFormValues {
 
 export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
+  onOpenEventsModal,
   onClose,
   isData,
   isName,
@@ -137,24 +139,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 />
               </>
             )}
-            <TextSelect
-              label="Компонент:"
-              placeholder="Выберите компонент события"
-              {...register('doComponent', {
-                required: 'Это поле обязательно к заполнению!',
-              })}
-              error={!!errors.doComponent}
-              errorMessage={errors.doComponent?.message ?? ''}
-            />
-            <TextSelect
-              label="Метод:"
-              placeholder="Выберите метод события"
-              {...register('doMethod', {
-                required: 'Это поле обязательно к заполнению!',
-              })}
-              error={!!errors.doMethod}
-              errorMessage={errors.doMethod?.message ?? ''}
-            />
+            <button
+              type="button"
+              className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+              onClick={onOpenEventsModal}
+            >
+              Выбрать событие
+            </button>
             {isData !== undefined || (
               <>
                 <div className="flex">

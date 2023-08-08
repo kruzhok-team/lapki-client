@@ -11,11 +11,11 @@ interface TextInputProps extends ComponentProps<'input'> {
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   ({ label, error, errorMessage, ...props }, ref) => {
     return (
-      <label className={twMerge('flex flex-col', error && 'text-red-500')}>
+      <label className={twMerge('mr-2 mt-1 flex flex-col', error && 'text-red-500')}>
         {label}
         <input
           className={twMerge(
-            'max-w-[250px] rounded border bg-transparent px-3 py-2 outline-none transition-colors placeholder:font-normal',
+            'w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-[0.23rem] outline-none transition-colors placeholder:font-normal',
             error && 'border-red-500 placeholder:text-red-500',
             !error && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
           )}

@@ -30,7 +30,12 @@ export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
           {...props}
         >
           {options.map((option) => (
-            <option key={'option' + option.value} value={option.value} label={option.label} />
+            <option
+              className="bg-neutral-800"
+              key={'option' + option.value}
+              value={option.value}
+              label={option.label}
+            />
           ))}
         </select>
         <p className="min-h-[24px] text-[14px] text-red-500">{errorMessage}</p>

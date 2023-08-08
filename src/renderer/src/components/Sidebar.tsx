@@ -9,9 +9,10 @@ import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
 import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
-import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
+//import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { StateMachine } from '@renderer/lib/data/StateMachine';
+import { Setting } from './Setting';
 
 interface SidebarProps {
   menuProps: MenuProps;
@@ -31,9 +32,9 @@ const items = [
   {
     svgIcon: <DriveIcon />,
   },
-  {
-    svgIcon: <ChipIcon />,
-  },
+  // {
+  //   svgIcon: <ChipIcon />,
+  // },
   {
     svgIcon: <SettingsIcon />,
     style: true,
@@ -71,6 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ stateMachine, menuProps }) => 
       <Explorer stateMachine={stateMachine} />,
       <Compiler />,
       <Loader />,
+      <Setting />,
     ],
     [stateMachine]
   );

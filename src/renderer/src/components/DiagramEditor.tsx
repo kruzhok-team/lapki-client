@@ -31,8 +31,8 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
   const [state, setState] = useState<{ state: State }>();
   const [events, setEvents] = useState<{ doComponent: string; doMethod: string }>();
-  const [transition, setTransition] = useState<{ target: Condition } | null>(null);
-  const [newTransition, setNewTransition] = useState<{ source: State; target: State } | null>(null);
+  const [transition, setTransition] = useState<{ target: Condition }>();
+  const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
@@ -51,17 +51,21 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     editor.container.onStateDrop((position) => {
       editor?.container.machine.createNewState('Состояние', position);
     });
-
+    const ClearUseState = () => {
+      //Очищаем все старые данные
+      setState(undefined);
+      setEvents(undefined);
+      setNameState(undefined);
+      setTransition(undefined);
+      setNewTransition(undefined);
+    };
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateCreate((state) => {
-      setNameState(undefined);
-      setTransition(null);
-      setEvents(undefined);
+      ClearUseState();
       setState({ state });
       openModal();
       // manager.triggerDataUpdate();
     });
-
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateNameCreate((state: State) => {
       const globalOffset = state.container.app.mouse.getOffset();
@@ -72,9 +76,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         width: state.computedWidth,
         height: state.titleHeight,
       };
-      setState(undefined);
-      setEvents(undefined);
-      setTransition(null);
+      ClearUseState();
       setNameState({ state, position });
       openModal();
     });
@@ -103,10 +105,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
     //Здесь мы открываем модальное окно редактирования связи
     editor.container.transitions.onTransitionCreate((target) => {
-      setState(undefined);
-      setEvents(undefined);
-      setNameState(undefined);
-      setNewTransition(null);
+      ClearUseState();
       setTransition({ target });
       openModal();
       // manager.triggerDataUpdate();
@@ -114,10 +113,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
     //Здесь мы открываем модальное окно редактирования новой связи
     editor.container.transitions.onNewTransitionCreate((source, target) => {
-      setState(undefined);
-      setEvents(undefined);
-      setNameState(undefined);
-      setTransition(null);
+      ClearUseState();
       setNewTransition({ source, target });
       openModal();
       // manager.triggerDataUpdate();
@@ -149,12 +145,16 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     const doComponent = data.doComponent;
     const doMethod = data.doMethod;
     setEvents({ doComponent, doMethod });
-    openModal();
+    if (!isModalOpen) {
+      //Сюда положить функцию для редактирования события
+    }
     closeEventsModal();
   };
 
   const handleCreateModal = (data: CreateModalFormValues) => {
     if (data.key === 1) {
+      editor?.container.machine.updateState(data.id, data.name);
+    } else if (data.key === 2) {
       editor?.container.machine.newPictoState(
         data.id,
         events!.doComponent,
@@ -162,9 +162,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         data.triggerComponent,
         data.triggerMethod
       );
-    } else if (data.key === 2) {
-      editor?.container.machine.updateState(data.id, data.name);
-    } else if (transition) {
+    } else if (transition && data.key === 3) {
       editor?.container.machine.createNewTransition(
         transition?.target.id,
         transition?.target.transition.source,
@@ -180,8 +178,8 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         newTransition?.source,
         newTransition?.target,
         data.color,
-        data.triggerComponent,
-        data.triggerMethod,
+        events!.doComponent,
+        events!.doMethod,
         newTransition?.target.bounds
       );
     }
@@ -226,7 +224,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         isOpen={isEventsModalOpen}
         onClose={closeEventsModal}
         onSubmit={handleCreateEventsModal}
-        title={'Выбор события'}
+        title={'Выбор действия'}
       />
 
       {isModalOpen ? (

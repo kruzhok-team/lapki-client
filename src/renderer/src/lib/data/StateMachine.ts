@@ -455,6 +455,7 @@ export class StateMachine extends EventEmitter {
   removeSelection() {
     this.states.forEach((state) => {
       state.setIsSelected(false);
+      state.eventBox.selection = undefined;
     });
 
     this.transitions.forEach((value) => {

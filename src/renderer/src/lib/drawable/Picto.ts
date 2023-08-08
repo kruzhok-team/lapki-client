@@ -99,6 +99,15 @@ export class Picto {
     ctx.stroke();
   }
 
+  drawCursor(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    // FIXME: рисовать лучше под иконкой, рисует фон, даже если не просишь
+    ctx.strokeStyle = '#fff';
+    ctx.fillStyle = 'none';
+    ctx.lineWidth = 3 / this.scale;
+    ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
+    ctx.stroke();
+  }
+
   drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
     let leftIcon = ps.leftIcon;
     let rightIcon = ps.rightIcon;

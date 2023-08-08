@@ -4,7 +4,7 @@ import { State } from './State';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { isPointInRectangle, preloadImages } from '../utils';
+import { isPointInRectangle } from '../utils';
 import { icons } from './Picto';
 
 /**

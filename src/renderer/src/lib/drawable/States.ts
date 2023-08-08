@@ -57,16 +57,35 @@ export class States extends EventEmitter {
 
     this.container.machine.removeSelection();
     e.target.setIsSelected(true);
+
+    const targetPos = e.target.computedPosition;
+    const titleHeight = e.target.titleHeight;
+    const y = e.event.y - targetPos.y;
+    // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
+    if (y > titleHeight) {
+      // FIXME: пересчитывает координаты внутри, ещё раз
+      e.target.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+    }
   };
 
   handleStateDoubleClick = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    const y = e.event.y - e.target.computedPosition.y;
-    if (y <= e.target.titleHeight) {
+    const targetPos = e.target.computedPosition;
+    const titleHeight = e.target.titleHeight;
+    const y = e.event.y - targetPos.y;
+    if (y <= titleHeight) {
       this.createNameCallback?.(e.target);
     } else {
-      this.createCallback?.(e.target);
+      // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
+      // FIXME: пересчитывает координаты внутри, ещё раз
+      const eventIdx = e.target.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+      if (!eventIdx) {
+        this.createCallback?.(e.target);
+      } else {
+        console.log(['event-double-click', eventIdx]);
+        // TODO: обработка двойного клика на действии
+      }
     }
     this.container.machine.dataTrigger(true);
   };

@@ -223,10 +223,11 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  newСhildrenState(state: State, position: Point) {
+  linkStateByPoint(state: State, position: Point) {
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | undefined = undefined;
     for (const item of this.states.values()) {
+      if (state.id == item.id) continue;
       if (item.isUnderMouse(position, true)) {
         if (typeof possibleParent === 'undefined') {
           possibleParent = item;
@@ -238,6 +239,7 @@ export class StateMachine extends EventEmitter {
             searchPending = false;
             for (const child of possibleParent.children.values()) {
               if (!(child instanceof State)) continue;
+              if (state.id == child.id) continue;
               if (child.isUnderMouse(position, true)) {
                 possibleParent = child as State;
                 searchPending = true;
@@ -248,9 +250,6 @@ export class StateMachine extends EventEmitter {
         }
       }
     }
-    // кладём состояние в список
-    // делаем это сейчас, потому что иначе не сможем присоединить родительское
-    this.states.set(state.id!, state);
 
     if (possibleParent !== state && typeof possibleParent !== 'undefined') {
       this.linkState(possibleParent.id!, state.id!);
@@ -281,8 +280,11 @@ export class StateMachine extends EventEmitter {
       this.initialState = state.id!;
     }
 
-    //Ложим один state в другой
-    this.newСhildrenState(state, position);
+    // кладём состояние в список
+    this.states.set(state.id!, state);
+
+    // вкладываем состояние, если оно создано над другим
+    this.linkStateByPoint(state, position);
 
     this.container.states.watchState(state);
     this.dataTrigger();

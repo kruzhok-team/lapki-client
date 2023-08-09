@@ -15,7 +15,7 @@ type TransitionCreateCallback = (target: Condition) => void;
 /**
  * Функция, обрабатывающая запрос на MouseUpState.
  */
-type TransitionCallback = (source: State, target: State) => void;
+type TransitionNewCreateCallback = (source: State, target: State) => void;
 
 /**
  * Функция, обрабатывающая вызов контекстного меню.
@@ -33,7 +33,7 @@ export class Transitions {
   ghost = new GhostTransition();
 
   createCallback?: TransitionCreateCallback;
-  createStateCallback?: TransitionCallback;
+  newCreateCallback?: TransitionNewCreateCallback;
   menuCallback?: MenuCallback;
 
   constructor(container: Container) {
@@ -62,8 +62,8 @@ export class Transitions {
     this.createCallback = callback;
   };
 
-  onNewTransitionCreate = (callback: TransitionCallback) => {
-    this.createStateCallback = callback;
+  onNewTransitionCreate = (callback: TransitionNewCreateCallback) => {
+    this.newCreateCallback = callback;
   };
 
   onTransitionContextMenu = (callback: MenuCallback) => {
@@ -85,10 +85,8 @@ export class Transitions {
     this.createCallback?.(e.target);
   };
 
-  //Удаление связей
   handleContextMenu = (e: { target: Condition; event: MyMouseEvent }) => {
     e.event.stopPropagation();
-    console.log(['handleContextMenu', e.target]);
 
     this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
   };
@@ -106,7 +104,7 @@ export class Transitions {
 
     if (!this.ghost.source) return;
 
-    this.createStateCallback?.(this.ghost.source, e.target);
+    this.newCreateCallback?.(this.ghost.source, e.target);
 
     this.ghost.clear();
   };

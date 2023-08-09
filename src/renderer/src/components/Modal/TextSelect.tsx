@@ -4,6 +4,8 @@ import { twMerge } from 'tailwind-merge';
 
 interface TextSelectProps extends ComponentProps<'select'> {
   label: string;
+  //value - переменная содержащая данные события, на который кликнули
+  //value: string | undefined;
   error?: boolean;
   errorMessage: string;
 }
@@ -11,7 +13,9 @@ interface TextSelectProps extends ComponentProps<'select'> {
 const options = [
   { value: 'System', label: 'System' },
   { value: 'onEnter', label: 'onEnter' },
+  { value: 'onExit', label: 'onExit' },
   { value: 'LED', label: 'LED' },
+  { value: 'off', label: 'off' },
   { value: 'on', label: 'on' },
 ];
 

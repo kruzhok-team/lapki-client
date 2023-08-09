@@ -66,7 +66,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
 
-      setContextMenuData({ data: null, position, event: undefined });
+      setContextMenuData({ data: null, canvasPos: pos, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 
@@ -102,7 +102,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     editor.container.states.onStateContextMenu((state: State, pos) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, position, event: undefined });
+      setContextMenuData({ data: state, canvasPos: pos, position, event: undefined });
       setIsContextMenuOpen(true);
       // manager.triggerDataUpdate();
     });
@@ -116,7 +116,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     editor.container.states.onEventContextMenu((state, pos, event) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, position, event });
+      setContextMenuData({ data: state, canvasPos: pos, position, event });
       setIsContextMenuOpen(true);
     });
 
@@ -142,7 +142,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: condition, position, event: undefined });
+      setContextMenuData({ data: condition, canvasPos: pos, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 
@@ -203,7 +203,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     closeModal();
   };
 
-  const handleinitialState = (data: ContextMenu) => {
+  const handleNewState = (pos: Point) => {
+    editor?.container.machine.createNewState('Состояние', pos);
+  };
+
     editor?.container.machine.changeInitialState(data.id);
   };
 
@@ -231,6 +234,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         <StateContextMenu
           isOpen={isContextMenuOpen}
           isData={contextMenuData}
+          onClickNewState={handleNewState}
           onClickDelState={handleDeleteState}
           onClickInitial={handleinitialState}
           onClickDelTran={handleDelTranState}

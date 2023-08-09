@@ -8,6 +8,7 @@ import { twMerge } from 'tailwind-merge';
 
 export interface StateContextMenuData {
   data: State | Condition | null;
+  canvasPos: Point;
   position: Point;
   event: EventSelection | undefined;
 }
@@ -15,11 +16,7 @@ export interface StateContextMenuData {
 interface StateContextMenuProps {
   isOpen: boolean;
   isData: StateContextMenuData | undefined;
-  onClickDelState: (data) => void;
-  onClickInitial: (data) => void;
-  onClickDelTran: (data) => void;
-  onClickDelEvent: (data) => void;
-  onClickShowCode: (data) => void;
+  onClickNewState: (pos: Point) => void;
   closeMenu: () => void;
 }
 
@@ -32,6 +29,7 @@ export interface ContextMenu {
 export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   isOpen,
   isData,
+  onClickNewState,
   onClickInitial,
   onClickDelState,
   onClickDelTran,
@@ -40,6 +38,12 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   closeMenu,
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
+
+  const handleNewState = hookHandleSubmit((_data) => {
+    closeMenu();
+    if (typeof isData?.canvasPos === 'undefined') return;
+    onClickNewState(isData.canvasPos);
+  });
 
   const handleDeleteClick = hookHandleSubmit((data) => {
     closeMenu();
@@ -51,7 +55,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     }
     if (isData!.data instanceof State) {
       data.id = isData?.data.id!;
-      if (isData!.event === undefined) {
+      if (!isData!.event) {
         onClickDelState(data);
       } else {
         data.eventId = isData?.event;
@@ -122,6 +126,11 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
   //Массив кнопок
   const button = [
+    {
+      text: 'Вставить состояние',
+      onClick: handleNewState,
+      style: (!(isData?.data instanceof State) || isData!.event) && 'hidden',
+    },
     {
       text: 'Назначить начальным',
       onClick: handleInitialState,

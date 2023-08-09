@@ -14,16 +14,14 @@ export const Explorer: React.FC<ExplorerProps> = ({ stateMachine }) => {
         {stateMachine && (
           <div className="flex flex-col items-center">
             {[...stateMachine.components.keys()].map((key) => (
-              <div className="mb-4 h-20 w-20" key={'explorer' + key}>
-                <img src={stateMachine.components.get(key)?.image?.src}></img>
+              <div className="mb-4 h-20 w-20 cursor-pointer" draggable key={'explorer' + key}>
+                <img src={stateMachine.components.get(key)?.image?.src} />
                 {key}
               </div>
             ))}
           </div>
         )}
-        <div className="cursor-pointer rounded bg-neutral-700 px-4 py-3 text-neutral-50" draggable>
-          Состояние
-        </div>
+        <div className=" rounded bg-neutral-700 px-4 py-3 text-neutral-50">Добавить компонент</div>
       </div>
 
       <div className="h-[500px] px-4 text-center">

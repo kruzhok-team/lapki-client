@@ -3,7 +3,7 @@ import React, { useMemo, useState, useRef } from 'react';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
 
-import { Explorer, Menu, Compiler, Loader, MenuProps, CompilerProps } from '../components';
+import { Explorer, Menu, Compiler, Loader, MenuProps, CompilerProps, FlasherProps } from '../components';
 
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
@@ -18,6 +18,7 @@ interface SidebarProps {
   menuProps: MenuProps;
   stateMachine: StateMachine | undefined;
   compilerProps: CompilerProps;
+  flasherProps: FlasherProps,
 }
 
 const items = [
@@ -42,7 +43,7 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ compilerProps, stateMachine, menuProps }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ flasherProps, compilerProps, stateMachine, menuProps }) => {
   const panelRef = useRef<ImperativePanelHandle>(null);
 
   const [activeTab, setActiveTab] = useState(0);
@@ -72,9 +73,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ compilerProps, stateMachine, m
       <Menu {...menuProps} />,
       <Explorer stateMachine={stateMachine} />,
       <Compiler {...compilerProps}/>,
-      <Loader />,
+      <Loader {...flasherProps}/>,
     ],
-    [stateMachine, compilerProps]
+    [stateMachine, compilerProps, flasherProps]
   );
 
   return (

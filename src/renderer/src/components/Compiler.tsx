@@ -2,19 +2,23 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import React from 'react';
 
 export interface CompilerProps {
-  compilerData: CompilerResult | string | undefined,
+  compilerData: CompilerResult | undefined,
   compilerStatus: string,
-  handleCompile: () => void,
+  handleCompile: () => void;
 }
 
 const button = [
   {
     name: 'Сохранить артефакт',
+    handler: () => void {
+      
+    }
   },
   {
     name: 'Сохранить код',
   },
   {
+    
     name: 'Показать код',
   },
   {
@@ -26,12 +30,10 @@ const button = [
 export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus, handleCompile}) => {
   var disabled = false;
   var style = "my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white";
-
   if(compilerStatus == "Не подключен"){
     disabled = true;
     style = "my-2 rounded border-2 border-[#557b91] p-2 bg-[#425f70] text-white opacity-50"
   }
-  console.log(disabled)
   return (
     <section className="flex h-full flex-col bg-[#a1c8df] font-Fira text-base">
       <div className="w-full px-4 pt-2 text-center">
@@ -48,7 +50,9 @@ export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus,
         Статус: {compilerStatus}
         <br></br>
         <br></br>
-        Результат компиляции: { compilerData ? compilerData.toString(): "Нет данных"}
+        Результат компиляции:{ compilerData ? compilerData.result: 
+          
+          "Нет данных"}
       </div>
       {button.map(({ name }, i) => (
         <button

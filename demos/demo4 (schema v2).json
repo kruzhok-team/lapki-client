@@ -153,8 +153,7 @@
         "component": "Button",
         "method": "isJustPressed"
       },
-      "do": [],
-      "conditions": {}
+      "do": []
     },
     {
       "color": "#F24C3D",
@@ -168,8 +167,7 @@
         "component": "Button",
         "method": "isJustPressed"
       },
-      "do": [],
-      "conditions": {}
+      "do": []
     },
     {
       "color": "#1100ff",
@@ -183,8 +181,7 @@
         "component": "Button",
         "method": "TheMethod"
       },
-      "do": [],
-      "conditions": {}
+      "do": []
     }
   ],
   "components": {

@@ -10,6 +10,7 @@ import { CreateModal, CreateModalFormValues } from './CreateModal';
 
 import { ContextMenu, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { CreateEventsModal, CreateEventsModalFormValues } from './CreateEventsModal';
+import { EventSelection } from '@renderer/lib/drawable/Events';
 
 interface DiagramEditorProps {
   manager: EditorManager;
@@ -31,6 +32,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
   const [state, setState] = useState<{ state: State }>();
   const [events, setEvents] = useState<{ doComponent: string; doMethod: string }>();
+  const [idEvents, setIdEvents] = useState<{ state: State; event: EventSelection }>();
   const [transition, setTransition] = useState<{ target: Condition }>();
   const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
 
@@ -46,11 +48,6 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     const editor = new CanvasEditor(containerRef.current, manager.state.data);
-
-    //Добавляем пустую ноду в редактор
-    editor.container.onStateDrop((position) => {
-      editor?.container.machine.createNewState('Состояние', position);
-    });
     const ClearUseState = () => {
       //Очищаем все старые данные
       setState(undefined);
@@ -59,13 +56,25 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       setTransition(undefined);
       setNewTransition(undefined);
     };
-    //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.states.onStateCreate((state) => {
-      ClearUseState();
-      setState({ state });
-      openModal();
-      // manager.triggerDataUpdate();
+    // Закрытие контекстного меню
+    editor.container.onContextMenuClose(() => {
+      setIsContextMenuOpen(false);
     });
+
+    //Обработка правой кнопки на пустом поле
+    editor.container.onFieldContextMenu((pos) => {
+      const offset = editor.mouse.getOffset();
+      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
+
+      setContextMenuData({ data: null, position, event: undefined });
+      setIsContextMenuOpen(true);
+    });
+
+    //Перетаскиваем компонент в редактор
+    editor.container.onStateDrop((position) => {
+      editor?.container.machine.createNewState('Состояние', position);
+    });
+
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.states.onStateNameCreate((state: State) => {
       const globalOffset = state.container.app.mouse.getOffset();
@@ -81,29 +90,35 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       openModal();
     });
 
-    //Обработка правой кнопки на пустом поле
-    editor.container.onFieldContextMenu((pos) => {
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: null, position });
-      setIsContextMenuOpen(true);
-    });
-
-    // Закрытие контекстного меню
-    editor.container.onContextMenuClose(() => {
-      setIsContextMenuOpen(false);
+    //Здесь мы открываем модальное окно редактирования ноды
+    editor.container.states.onStateCreate((state) => {
+      ClearUseState();
+      setState({ state });
+      openModal();
+      // manager.triggerDataUpdate();
     });
 
     //Здесь мы открываем контекстное меню для состояния
     editor.container.states.onStateContextMenu((state: State, pos) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, position });
+      setContextMenuData({ data: state, position, event: undefined });
       setIsContextMenuOpen(true);
       // manager.triggerDataUpdate();
     });
 
-    //Здесь мы открываем модальное окно редактирования связи
+    editor.container.states.onStateEventCreate((state, event) => {
+      ClearUseState();
+      setIdEvents({ state, event });
+      openEventsModal();
+    });
+
+    editor.container.states.onEventContextMenu((state, position, event) => {
+      setContextMenuData({ data: state, position, event });
+      setIsContextMenuOpen(true);
+    });
+
+    //Здесь мы открываем модальное окно редактирования созданной связи
     editor.container.transitions.onTransitionCreate((target) => {
       ClearUseState();
       setTransition({ target });
@@ -125,7 +140,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: condition, position });
+      setContextMenuData({ data: condition, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 
@@ -146,7 +161,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     const doMethod = data.doMethod;
     setEvents({ doComponent, doMethod });
     if (!isModalOpen) {
-      //Сюда положить функцию для редактирования события
+      editor?.container.machine.createEvent(data.id, doComponent, doMethod);
     }
     closeEventsModal();
   };
@@ -204,6 +219,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     editor?.container.machine.deleteTransition(data.id);
   };
 
+  const handleDelEventState = (data: ContextMenu) => {
+    editor?.container.machine.deleteEvent(data.id, data.eventId);
+  };
+
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
@@ -213,6 +232,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
           onClickDelState={handleDeleteState}
           onClickInitial={handleinitialState}
           onClickDelTran={handleDelTranState}
+          onClickDelEvent={handleDelEventState}
           onClickShowCode={handleShowCode}
           closeMenu={() => {
             setIsContextMenuOpen(false);
@@ -222,9 +242,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
       <CreateEventsModal
         isOpen={isEventsModalOpen}
+        isData={idEvents}
         onClose={closeEventsModal}
         onSubmit={handleCreateEventsModal}
-        title={'Выбор действия'}
+        title={'Редактирование события'}
       />
 
       {isModalOpen ? (

@@ -10,6 +10,7 @@ import { Transition } from '../drawable/Transition';
 import { stateStyle } from '../styles';
 import { PlatformManager } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
+import { EventSelection } from '../drawable/Events';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -222,30 +223,7 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  createNewState(name: string, position: Point) {
-    const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
-    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-    let newId = nanoid();
-    while (this.states.has(newId)) {
-      newId = nanoid();
-    }
-    const state = new State({
-      container: this.container,
-      id: newId,
-      data: {
-        name: name,
-        bounds: { x, y, width, height },
-        events: [],
-      },
-    });
-
-    // если у нас не было начального состояния, им станет новое
-    if (this.initialState === '') {
-      this.initialState = state.id!;
-    }
-
+  newСhildrenState(state: State, position: Point) {
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | undefined = undefined;
     for (const item of this.states.values()) {
@@ -270,14 +248,41 @@ export class StateMachine extends EventEmitter {
         }
       }
     }
-
     // кладём состояние в список
     // делаем это сейчас, потому что иначе не сможем присоединить родительское
     this.states.set(state.id!, state);
 
-    if (typeof possibleParent !== 'undefined') {
+    if (possibleParent !== state && typeof possibleParent !== 'undefined') {
       this.linkState(possibleParent.id!, state.id!);
     }
+  }
+
+  createNewState(name: string, position: Point) {
+    const { width, height } = stateStyle;
+    const x = position.x - width / 2;
+    const y = position.y - height / 2;
+    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+    let newId = nanoid();
+    while (this.states.has(newId)) {
+      newId = nanoid();
+    }
+    const state = new State({
+      container: this.container,
+      id: newId,
+      data: {
+        name: name,
+        bounds: { x, y, width, height },
+        events: [],
+      },
+    });
+
+    // если у нас не было начального состояния, им станет новое
+    if (this.initialState === '') {
+      this.initialState = state.id!;
+    }
+
+    //Ложим один state в другой
+    this.newСhildrenState(state, position);
 
     this.container.states.watchState(state);
     this.dataTrigger();
@@ -328,6 +333,7 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  //Удаление состояния
   deleteState(idState: string) {
     const state = this.states.get(idState);
     if (typeof state === 'undefined') return;
@@ -384,7 +390,7 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  //Удаление связей
+  // Удаление связи
   deleteTransition(id: string) {
     const transition = this.transitions.get(id);
     if (typeof transition === 'undefined') return;
@@ -416,6 +422,7 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  // Создание новой связи между состояниями и редактирование уже созданных
   createNewTransition(
     id: string | undefined,
     source: State,
@@ -443,6 +450,33 @@ export class StateMachine extends EventEmitter {
     this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
+  // Редактирование события в состояниях
+  createEvent(data: { state; event } | undefined, component, method) {
+    const state = this.states.get(data?.state.id);
+    if (typeof state === 'undefined') return;
+    state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].component = component;
+    state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].method = method;
+    this.dataTrigger();
+  }
+
+  // Удаление события в состояниях
+  //TODO показывать предупреждение при удалении события в в состоянии(модалка)
+  deleteEvent(id: string, eventId: EventSelection) {
+    const state = this.states.get(id);
+    if (typeof state === 'undefined') return;
+    console.log(eventId.actionIdx, eventId.eventIdx);
+    if (eventId.actionIdx === null) {
+      state.eventBox.data.splice(eventId.eventIdx, 1);
+    } else {
+      state.eventBox.data[eventId.eventIdx].do.splice(eventId.actionIdx!, 1);
+      // Проверяем, есть ли действия в событие, если нет, то удалять его
+      if (state.eventBox.data[eventId.eventIdx].do.length === 0) {
+        state.eventBox.data.splice(eventId.eventIdx, 1);
+      }
+    }
+
+    this.dataTrigger();
+  }
   /**
    * Снимает выделение со всех нод и переходов.
    *

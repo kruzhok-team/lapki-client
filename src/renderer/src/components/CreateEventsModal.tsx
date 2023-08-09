@@ -3,9 +3,12 @@ import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
 import { TextSelect } from './Modal/TextSelect';
+import { EventSelection } from '../lib/drawable/Events';
 import { useForm } from 'react-hook-form';
+import { State } from '@renderer/lib/drawable/State';
 
 interface EventsModalProps extends Props {
+  isData: { state: State; event: EventSelection } | undefined;
   title: string;
   cancelLabel?: string;
   submitLabel?: string;
@@ -17,19 +20,21 @@ interface EventsModalProps extends Props {
 }
 
 export interface CreateEventsModalFormValues {
+  id: { state: State; event: EventSelection } | undefined;
   doComponent: string;
   doMethod: string;
 }
 
 export const CreateEventsModal: React.FC<EventsModalProps> = ({
-  children,
+  isData,
   title,
-  onSubmit,
-  onClose,
   cancelLabel,
   submitLabel,
   extraLabel,
+  children,
   onExtra,
+  onSubmit,
+  onClose,
   ...props
 }) => {
   const {
@@ -39,24 +44,24 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   } = useForm<CreateEventsModalFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
+    data.id = isData;
     onSubmit(data);
   });
-
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-28  w-full max-w-xs -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
+      className="absolute left-1/2 top-28 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
       overlayClassName="bg-neutral-700 fixed inset-0 backdrop-blur z-50"
       closeTimeoutMS={100}
       onRequestClose={onClose}
     >
-      <div className="relative mb-5 flex items-center justify-between border-b border-neutral-400 pb-1">
+      <div className="relative mb-5 justify-between border-b border-neutral-400 pb-1">
         <h1 className="text-2xl font-bold">{title}</h1>
       </div>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <TextSelect
-            label="Событие:"
+            label="Компонент:"
             placeholder="Выберите компонент события"
             {...register('doComponent', {
               required: 'Это поле обязательно к заполнению!',

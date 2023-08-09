@@ -1,5 +1,6 @@
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { Condition } from '@renderer/lib/drawable/Condition';
+import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
 import { useForm } from 'react-hook-form';
@@ -8,6 +9,7 @@ import { twMerge } from 'tailwind-merge';
 export interface StateContextMenuData {
   data: State | Condition | null;
   position: Point;
+  event: EventSelection | undefined;
 }
 
 interface StateContextMenuProps {
@@ -16,12 +18,14 @@ interface StateContextMenuProps {
   onClickDelState: (data) => void;
   onClickInitial: (data) => void;
   onClickDelTran: (data) => void;
+  onClickDelEvent: (data) => void;
   onClickShowCode: (data) => void;
   closeMenu: () => void;
 }
 
 export interface ContextMenu {
   id: string;
+  eventId: EventSelection;
   content: string;
 }
 
@@ -31,6 +35,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   onClickInitial,
   onClickDelState,
   onClickDelTran,
+  onClickDelEvent,
   onClickShowCode,
   closeMenu,
 }) => {
@@ -46,7 +51,12 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     }
     if (isData!.data instanceof State) {
       data.id = isData?.data.id!;
-      onClickDelState(data);
+      if (isData!.event === undefined) {
+        onClickDelState(data);
+      } else {
+        data.eventId = isData?.event;
+        onClickDelEvent(data);
+      }
     }
   });
 
@@ -115,13 +125,14 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     {
       text: 'Назначить начальным',
       onClick: handleInitialState,
-      style: !(isData?.data instanceof State) && 'hidden',
+      style: !(isData?.data instanceof State && isData?.event === undefined) && 'hidden',
       disabled:
         !(isData?.data instanceof State) || isData?.data.isInitial === true || !isData?.data.id,
     },
     {
       text: 'Посмотреть код',
       onClick: handleShowCode,
+      style: !(isData?.event === undefined) && 'hidden',
     },
     {
       text: 'Удалить',

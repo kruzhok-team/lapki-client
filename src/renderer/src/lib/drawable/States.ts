@@ -4,10 +4,13 @@ import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { Point } from '@renderer/types/graphics';
+import { EventSelection } from './Events';
 
-type CreateCallback = (state: State) => void;
 type CreateNameCallback = (state: State) => void;
+type CreateCallback = (state: State) => void;
 type MenuCallback = (state: State, pos: Point) => void;
+type CreateEventCallback = (state: State, events: EventSelection) => void;
+type MenuEventCallback = (state: State, position: Point, events: EventSelection) => void;
 
 /**
  * Контроллер {@link State|состояний}.
@@ -24,6 +27,8 @@ export class States extends EventEmitter {
 
   createCallback!: CreateCallback;
   createNameCallback!: CreateNameCallback;
+  createEventCallback!: CreateEventCallback;
+  menuEventCallback!: MenuEventCallback;
   menuCallback!: MenuCallback;
 
   onStateCreate = (callback: CreateCallback) => {
@@ -34,8 +39,16 @@ export class States extends EventEmitter {
     this.createNameCallback = nameCallback;
   };
 
+  onStateEventCreate = (eventCallback: CreateEventCallback) => {
+    this.createEventCallback = eventCallback;
+  };
+
   onStateContextMenu = (menuCallback: MenuCallback) => {
     this.menuCallback = menuCallback;
+  };
+
+  onEventContextMenu = (menuEventCallback: MenuEventCallback) => {
+    this.menuEventCallback = menuEventCallback;
   };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -83,8 +96,7 @@ export class States extends EventEmitter {
       if (!eventIdx) {
         this.createCallback?.(e.target);
       } else {
-        console.log(['event-double-click', eventIdx]);
-        // TODO: обработка двойного клика на действии
+        this.createEventCallback?.(e.target, eventIdx);
       }
     }
     this.container.machine.dataTrigger(true);
@@ -93,13 +105,23 @@ export class States extends EventEmitter {
   handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
+    const eventIdx = e.target.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+    if (!eventIdx) {
+      this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
+    } else {
+      this.menuEventCallback?.(e.target, { x: e.event.x + 250, y: e.event.y + 50 }, eventIdx);
+    }
   };
 
-  handleLongPress = (e: { target: State }) => {
+  handleLongPress = (e: { target: State; event: MyMouseEvent }) => {
+    e.event.stopPropagation();
+
     if (typeof e.target.parent !== 'undefined') {
       this.container.machine.unlinkState(e.target.id!);
     }
+
+    this.container.machine.newСhildrenState(e.target, e.event);
+
     // TODO: если под курсором есть состояние – присоединить к нему
     // TODO: визуальная обратная связь
   };

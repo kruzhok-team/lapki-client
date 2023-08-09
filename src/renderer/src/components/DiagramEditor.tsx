@@ -8,7 +8,7 @@ import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalFormValues } from './CreateModal';
 
-import { ContextMenu, StateContextMenu, StateContextMenuData } from './StateContextMenu';
+import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { CreateEventsModal, CreateEventsModalFormValues } from './CreateEventsModal';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 
@@ -203,29 +203,27 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     closeModal();
   };
 
-  const handleNewState = (pos: Point) => {
-    editor?.container.machine.createNewState('Состояние', pos);
-  };
-
-    editor?.container.machine.changeInitialState(data.id);
-  };
-
-  const handleShowCode = (data: ContextMenu) => {
-    setIdTextCode(data.id);
-    setElementCode(data.content);
-    setIsContextMenuOpen(false);
-  };
-
-  const handleDeleteState = (data: ContextMenu) => {
-    editor?.container.machine.deleteState(data.id);
-  };
-
-  const handleDelTranState = (data: ContextMenu) => {
-    editor?.container.machine.deleteTransition(data.id);
-  };
-
-  const handleDelEventState = (data: ContextMenu) => {
-    editor?.container.machine.deleteEvent(data.id, data.eventId);
+  const contextMenuCallbacks = {
+    onClickNewState: (pos: Point) => {
+      editor?.container.machine.createNewState('Состояние', pos);
+    },
+    onClickInitial: (data: ContextMenuForm) => {
+      editor?.container.machine.changeInitialState(data.id);
+    },
+    onClickShowCode: (data: ContextMenuForm) => {
+      setIdTextCode(data.id);
+      setElementCode(data.content);
+      setIsContextMenuOpen(false);
+    },
+    onClickDelState: (data: ContextMenuForm) => {
+      editor?.container.machine.deleteState(data.id);
+    },
+    onClickDelTran: (data: ContextMenuForm) => {
+      editor?.container.machine.deleteTransition(data.id);
+    },
+    onClickDelEvent: (data: ContextMenuForm) => {
+      editor?.container.machine.deleteEvent(data.id, data.eventId);
+    },
   };
 
   return (
@@ -234,12 +232,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         <StateContextMenu
           isOpen={isContextMenuOpen}
           isData={contextMenuData}
-          onClickNewState={handleNewState}
-          onClickDelState={handleDeleteState}
-          onClickInitial={handleinitialState}
-          onClickDelTran={handleDelTranState}
-          onClickDelEvent={handleDelEventState}
-          onClickShowCode={handleShowCode}
+          callbacks={contextMenuCallbacks}
           closeMenu={() => {
             setIsContextMenuOpen(false);
           }}

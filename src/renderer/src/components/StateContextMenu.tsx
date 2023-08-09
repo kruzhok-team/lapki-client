@@ -13,14 +13,23 @@ export interface StateContextMenuData {
   event: EventSelection | undefined;
 }
 
+export interface StateContextMenuCallbacks {
+  onClickNewState: (pos: Point) => void;
+  onClickDelState: (data: ContextMenuForm) => void;
+  onClickInitial: (data: ContextMenuForm) => void;
+  onClickDelTran: (data: ContextMenuForm) => void;
+  onClickDelEvent: (data: ContextMenuForm) => void;
+  onClickShowCode: (data: ContextMenuForm) => void;
+}
+
 interface StateContextMenuProps {
   isOpen: boolean;
   isData: StateContextMenuData | undefined;
-  onClickNewState: (pos: Point) => void;
+  callbacks: StateContextMenuCallbacks;
   closeMenu: () => void;
 }
 
-export interface ContextMenu {
+export interface ContextMenuForm {
   id: string;
   eventId: EventSelection;
   content: string;
@@ -29,15 +38,17 @@ export interface ContextMenu {
 export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   isOpen,
   isData,
-  onClickNewState,
-  onClickInitial,
-  onClickDelState,
-  onClickDelTran,
-  onClickDelEvent,
-  onClickShowCode,
   closeMenu,
+  callbacks: {
+    onClickNewState,
+    onClickInitial,
+    onClickDelState,
+    onClickDelTran,
+    onClickDelEvent,
+    onClickShowCode,
+  },
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm<ContextMenu>();
+  const { handleSubmit: hookHandleSubmit } = useForm<ContextMenuForm>();
 
   const handleNewState = hookHandleSubmit((_data) => {
     closeMenu();

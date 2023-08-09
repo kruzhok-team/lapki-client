@@ -103,6 +103,7 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
+      webSecurity: false,
     },
   });
   // Разворачиваем окно на весь экран

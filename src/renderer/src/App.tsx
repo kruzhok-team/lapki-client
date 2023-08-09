@@ -2,7 +2,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 
-import { CodeEditor, DiagramEditor, Documentations, MenuProps } from './components';
+import { CodeEditor, CompilerProps, DiagramEditor, Documentations, FlasherProps, MenuProps } from './components';
 import { Sidebar } from './components/Sidebar';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
@@ -20,13 +20,23 @@ import {
 } from './lib/data/PlatformLoader';
 import { preloadPicto } from './lib/drawable/Picto';
 import { PlatformSelectModal } from './components/PlatformSelectModal';
+import { Compiler } from './components/Modules/Compiler';
+import { CompilerResult } from './types/CompilerTypes';
+import { Flasher } from './components/Modules/Flasher';
+import { Device } from './types/FlasherTypes';
 
 /**
  * React-компонент приложения
  */
 export const App: FC = () => {
   // TODO: а если у нас будет несколько редакторов?
-
+  const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
+  const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>("Не подключен.");
+  const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map);
+  
+  const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
+  const [compilerStatus, setCompilerStatus] = useState<string>("Не подключен.");
+  
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
   const manager = new EditorManager(editor, editorData, setEditorData);
@@ -77,6 +87,16 @@ export const App: FC = () => {
     });
   };
 
+  const handleGetList = async () => {
+    manager.getList();
+  }
+
+  const handleFlashBinary = async () => {
+    //Рассчет на то, что пользователь не сможет нажать кнопку загрузки,
+    //если нет данных от компилятора
+    manager.flash(compilerData!.binary!, currentDevice!);
+  }
+  
   /*Открытие файла*/
   const handleOpenFile = async () => {
     // TODO: if (editorData.modified)
@@ -121,6 +141,11 @@ export const App: FC = () => {
   const performNewFile = (idx: string) => {
     manager.newFile(idx);
   };
+  
+  const handleCompile = async () => {
+    // TODO: платформы
+    manager.compile("arduino");
+  };
 
   const handleSaveAsFile = async () => {
     const result = await manager.saveAs();
@@ -143,6 +168,21 @@ export const App: FC = () => {
       // TODO: информировать об успешном сохранении
     }
   };
+  const flasherProps: FlasherProps = {
+    devices: flasherDevices,
+    currentDevice: currentDevice,
+    connectionStatus: flasherConnectionStatus,
+    setCurrentDevice: setCurrentDevice,
+    handleGetList: handleGetList,
+    handleFlash: handleFlashBinary
+  }
+  
+  const compilerProps: CompilerProps = {
+    compilerData: compilerData,
+    compilerStatus: compilerStatus,
+    handleCompile: handleCompile,
+  };
+
   const menuProps: MenuProps = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
@@ -154,7 +194,7 @@ export const App: FC = () => {
   const [idTextCode, setIdTextCode] = useState<string | null>(null);
   const [elementCode, setElementCode] = useState<string | null>(null);
   const countRef = useRef<{ tab: string; content: JSX.Element }[]>([]);
-
+  
   const tabsItems = [
     {
       tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
@@ -211,6 +251,12 @@ export const App: FC = () => {
   };
 
   useEffect(() => {
+    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus);
+    Flasher.initReader();
+    Flasher.connect(Flasher.base_address);
+    
+    Compiler.bindReact(setCompilerData, setCompilerStatus);
+    Compiler.connect(`${Compiler.base_address}main`)
     preloadPlatforms(() => {
       preparePreloadImages();
       preloadPicto(() => void {});
@@ -243,7 +289,7 @@ export const App: FC = () => {
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
-        <Sidebar stateMachine={editor?.container.machine} menuProps={menuProps} />
+        <Sidebar flasherProps={flasherProps}  compilerProps={compilerProps} stateMachine={editor?.container.machine} menuProps={menuProps} />
 
         <Panel>
           <div className="flex">

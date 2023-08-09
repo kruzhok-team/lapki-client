@@ -6,6 +6,9 @@ import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { CanvasEditor } from '../CanvasEditor';
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
 import { isPlatformAvailable } from './PlatformLoader';
+import { Compiler } from '@renderer/components/Modules/Compiler';
+import { Binary } from '@renderer/types/CompilerTypes';
+import { Flasher } from '@renderer/components/Modules/Flasher';
 
 export type EditorData = {
   name: string | null;
@@ -95,6 +98,18 @@ export class EditorManager {
       data,
       modified: false,
     });
+  }
+
+  compile(platform: string): void{
+    Compiler.compile(platform, this.state!.data);
+  }
+
+  flash(binaries: Array<Binary>, deviceID: string): void {
+    Flasher.flash(binaries, deviceID);
+  }
+
+  getList(): void {
+    Flasher.getList();
   }
 
   async open(): Promise<Either<FileError | null, null>> {

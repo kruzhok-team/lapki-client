@@ -109,7 +109,7 @@ export class States extends EventEmitter {
     if (!eventIdx) {
       this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
     } else {
-      this.menuEventCallback?.(e.target, { x: e.event.x + 250, y: e.event.y + 50 }, eventIdx);
+      this.menuEventCallback?.(e.target, { x: e.event.x, y: e.event.y }, eventIdx);
     }
   };
 

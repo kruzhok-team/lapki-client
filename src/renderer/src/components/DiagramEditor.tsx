@@ -113,7 +113,9 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       openEventsModal();
     });
 
-    editor.container.states.onEventContextMenu((state, position, event) => {
+    editor.container.states.onEventContextMenu((state, pos, event) => {
+      const offset = editor.mouse.getOffset();
+      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
       setContextMenuData({ data: state, position, event });
       setIsContextMenuOpen(true);
     });

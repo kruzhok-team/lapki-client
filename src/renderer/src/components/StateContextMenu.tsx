@@ -20,13 +20,13 @@ export interface StateContextMenuCallbacks {
   onClickDelTran: (data: ContextMenuForm) => void;
   onClickDelEvent: (data: ContextMenuForm) => void;
   onClickShowCode: (data: ContextMenuForm) => void;
+  onCloseMe: () => void;
 }
 
 interface StateContextMenuProps {
   isOpen: boolean;
   isData: StateContextMenuData | undefined;
   callbacks: StateContextMenuCallbacks;
-  closeMenu: () => void;
 }
 
 export interface ContextMenuForm {
@@ -38,7 +38,6 @@ export interface ContextMenuForm {
 export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   isOpen,
   isData,
-  closeMenu,
   callbacks: {
     onClickNewState,
     onClickInitial,
@@ -46,18 +45,19 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     onClickDelTran,
     onClickDelEvent,
     onClickShowCode,
+    onCloseMe,
   },
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenuForm>();
 
   const handleNewState = hookHandleSubmit((_data) => {
-    closeMenu();
+    onCloseMe();
     if (typeof isData?.canvasPos === 'undefined') return;
     onClickNewState(isData.canvasPos);
   });
 
   const handleDeleteClick = hookHandleSubmit((data) => {
-    closeMenu();
+    onCloseMe();
     if (typeof isData === 'undefined') return; // удалять нечего
 
     if (isData!.data instanceof Condition) {
@@ -81,17 +81,20 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     if (typeof isData === 'undefined') return; // удалять нечего
 
     if (isData!.data === null) {
+      onCloseMe();
       data.id = 'FullCode';
       onClickShowCode(data);
     }
 
     if (isData!.data instanceof Condition) {
+      onCloseMe();
       data.id = isData?.data.transition.id!;
       data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
     }
 
     if (isData!.data instanceof State) {
+      onCloseMe();
       data.id = isData?.data.id!;
       data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
@@ -100,7 +103,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
   //отсылаем id ноды для изменения начального состояния
   const handleInitialState = hookHandleSubmit((data) => {
-    closeMenu();
+    onCloseMe();
     if (typeof isData === 'undefined') return; // удалять нечего
     if (!(isData!.data instanceof State)) return; // не нода
     data.id = isData?.data.id!;

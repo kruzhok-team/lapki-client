@@ -16,16 +16,14 @@ interface DiagramEditorProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
-  setIdTextCode: (id: string | null) => void;
-  setElementCode: (content: string | null) => void;
+  onCodeSnippet: (id: string, content?: string) => void;
 }
 
 export const DiagramEditor: FC<DiagramEditorProps> = ({
   manager,
   editor,
   setEditor,
-  setIdTextCode,
-  setElementCode,
+  onCodeSnippet,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -211,9 +209,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       editor?.container.machine.changeInitialState(data.id);
     },
     onClickShowCode: (data: ContextMenuForm) => {
-      setIdTextCode(data.id);
-      setElementCode(data.content);
-      setIsContextMenuOpen(false);
+      onCodeSnippet(data.id, data.content);
     },
     onClickDelState: (data: ContextMenuForm) => {
       editor?.container.machine.deleteState(data.id);
@@ -224,6 +220,9 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     onClickDelEvent: (data: ContextMenuForm) => {
       editor?.container.machine.deleteEvent(data.id, data.eventId);
     },
+    onCloseMe: () => {
+      setIsContextMenuOpen(false);
+    },
   };
 
   return (
@@ -233,9 +232,6 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
           isOpen={isContextMenuOpen}
           isData={contextMenuData}
           callbacks={contextMenuCallbacks}
-          closeMenu={() => {
-            setIsContextMenuOpen(false);
-          }}
         />
       </div>
 

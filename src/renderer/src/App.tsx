@@ -93,6 +93,26 @@ export const App: FC = () => {
       ),
     });
   };
+  const openPlatformError = (errs: { [k: string]: string }) => {
+    openMsgModal({
+      caption: 'Внимание',
+      text: (
+        <div>
+          <p> Есть проблемы с загруженными платформами. </p>
+          <br />
+          <ul>
+            {Object.entries(errs).map(([platform, err]) => {
+              return (
+                <li key={platform}>
+                  <b>{platform}</b>: {err}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ),
+    });
+  };
 
   const handleGetList = async () => {
     manager.getList();
@@ -274,24 +294,7 @@ export const App: FC = () => {
       setLoadingOverlay(false);
       const errs = getPlatformsErrors();
       if (Object.keys(errs).length > 0) {
-        openMsgModal({
-          caption: 'Внимание',
-          text: (
-            <div>
-              <p> Есть проблемы с загруженными платформами. </p>
-              <br />
-              <ul>
-                {Object.entries(errs).map(([platform, err]) => {
-                  return (
-                    <li key={platform}>
-                      <b>{platform}</b>: {err}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ),
-        });
+        openPlatformError(errs);
       }
     });
   }, []);

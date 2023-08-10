@@ -6,8 +6,9 @@ import { TextSelect } from './Modal/TextSelect';
 import { EventSelection } from '../lib/drawable/Events';
 import { useForm } from 'react-hook-form';
 import { State } from '@renderer/lib/drawable/State';
+import { Action } from '@renderer/types/diagram';
 
-interface EventsModalProps extends Props {
+interface MethodModalProps extends Props {
   isData: { state: State; event: EventSelection } | undefined;
   title: string;
   cancelLabel?: string;
@@ -15,17 +16,18 @@ interface EventsModalProps extends Props {
   extraLabel?: string;
   children?: React.ReactNode;
   onExtra?: React.FormEventHandler;
-  onSubmit: (data: CreateEventsModalFormValues) => void;
+  onSubmit: (data: CreateMethodModalFormValues) => void;
   onClose: () => void;
 }
 
-export interface CreateEventsModalFormValues {
+export interface CreateMethodModalFormValues {
   id: { state: State; event: EventSelection } | undefined;
   doComponent: string;
   doMethod: string;
+  doCondition: Action[];
 }
 
-export const CreateEventsModal: React.FC<EventsModalProps> = ({
+export const CreateMethodModal: React.FC<MethodModalProps> = ({
   isData,
   title,
   cancelLabel,
@@ -41,16 +43,22 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     register,
     handleSubmit: hookHandleSubmit,
     formState: { errors },
-  } = useForm<CreateEventsModalFormValues>();
+  } = useForm<CreateMethodModalFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
-    data.id = isData;
+    doCondition = [
+      {
+        component: data.doComponent,
+        method: data.doMethod,
+        args: '',
+      },
+    ];
     onSubmit(data);
   });
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-28 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
+      className="absolute left-1/2 top-28 w-full max-w-xl -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
       overlayClassName="bg-neutral-700 fixed inset-0 backdrop-blur z-50"
       closeTimeoutMS={100}
       onRequestClose={onClose}
@@ -59,7 +67,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
         <h1 className="text-2xl font-bold">{title}</h1>
       </div>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        <div className="mb-4 flex">
           <TextSelect
             label="Компонент(событие):"
             placeholder="Выберите компонент события"
@@ -79,8 +87,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             errorMessage={errors.doMethod?.message ?? ''}
           />
         </div>
-
-        <div className="flex items-center justify-end gap-2">
+        <div className="m-2 h-40 max-w-lg overflow-y-auto break-words rounded bg-neutral-700">
+          {}
+        </div>
+        <div className="mt-4 flex items-center justify-end gap-2">
           <button
             type="button"
             className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"

@@ -1,9 +1,11 @@
-import { Elements } from "@renderer/types/diagram";
 import Websocket from "isomorphic-ws";
-import { CompilerSettings, CompilerResult, Binary, SourceFile, CompilerResponse } from "@renderer/types/CompilerTypes";
 import { Dispatch, SetStateAction } from "react";
-import "blob-util"
 import { base64StringToBlob } from "blob-util";
+
+import { Elements } from "@renderer/types/diagram";
+import { CompilerSettings, CompilerResult, Binary, SourceFile} from "@renderer/types/CompilerTypes";
+
+
 export class Compiler {
     static port = 8081;
     static host = "localhost";
@@ -14,7 +16,10 @@ export class Compiler {
     // Статус подключения.
     static setCompilerStatus: Dispatch<SetStateAction<string>>;
 
-    
+    static timerID: NodeJS.Timeout; 
+    //Если за данное время не пришел ответ от компилятора
+    //мы считаем, что произошла ошибка.
+    static timeOutTime = 100000;
     static timeoutSetted = false;
 
     static setDefaultStatus() {
@@ -66,37 +71,38 @@ export class Compiler {
         };
 
         ws.onmessage = ((msg) => {
-          const data = JSON.parse(msg.data);
+          this.setCompilerStatus("Подключен");
+          if (this.timerID) {
+            clearTimeout(this.timerID);
+          }
+          const data = JSON.parse(msg.data) as CompilerResult;
           
           if(data.binary.length > 0){
             this.binary = [];
-            this.decodeBinaries(data.binary);
+            this.binary = data.binary;
           }
           else {
             this.binary = undefined;
           }
-          this.setCompilerData({result: data.result, 
-                                stdout: data.stdout,
-                                stderr: data.stderr,
-                                binary: this.binary,
-                                source: this.getSourceFiles(data.source)} as CompilerResult);
-          });
+          console.log(data);
+          this.setCompilerData(data);
+        });
 
         ws.onclose = () => {
-            console.log("closed");
-            this.setCompilerStatus("Не подключен")
-            this.connection = undefined;
-            this.connecting = false;
-            if(!this.timeoutSetted){
-              this.timeoutSetted = true;
-              timeout += 2000;
-              setTimeout(() => {
-                console.log(timeout);
-                this.connect(route, timeout);
-                this.timeoutSetted = false;
-              }, timeout
-              );
-            }
+          console.log("closed");
+          this.setCompilerStatus("Не подключен")
+          this.connection = undefined;
+          this.connecting = false;
+          if(!this.timeoutSetted){
+            this.timeoutSetted = true;
+            timeout += 2000;
+            setTimeout(() => {
+              console.log(timeout);
+              this.connect(route, timeout);
+              this.timeoutSetted = false;
+            }, timeout
+            );
+          }
         };
 
         return ws
@@ -105,14 +111,24 @@ export class Compiler {
     static compile(platform: string, data: Elements){
       const route = `${this.base_address}main`  
       const ws: Websocket = this.connect(route);
-      const compilerSettings: CompilerSettings = {compiler: "arduino-cli", filename: "biba", flags: ["-b", "arduino:avr:uno"] }; 
+      let compilerSettings: CompilerSettings; 
+      if (platform == "ArduinoUno") {
+        ws.send("arduino");
+        compilerSettings = {compiler: "arduino-cli", filename: "biba", flags: ["-b", "arduino:avr:uno"] }
+      }
+      else {
+        return;
+      }
+
       const obj = {   
               ...data, 
               compilerSettings: compilerSettings
             }
             
-      ws.send(platform);
       ws.send(JSON.stringify(obj));
       this.setCompilerStatus("Идет компиляция...");
+      this.timerID = setTimeout(()=>{
+        Compiler.setCompilerStatus("Что-то пошло не так...");
+      }, this.timeOutTime)
     }
 } 

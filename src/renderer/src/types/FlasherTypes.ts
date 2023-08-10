@@ -1,7 +1,7 @@
 export type FlasherData = {
   devices: Map<string, Device>,
-  currentDevice: string,
-  log: string
+  log: string | undefined,
+  connectionStatus: string,
 }
 
 export type FlashStart = {
@@ -9,9 +9,18 @@ export type FlashStart = {
   fileSize: number
 }
 
+export type FlashUpdatePort = {
+  deviceID: string,
+  portName: string
+}
+
 export type FlasherMessage = {
   type: string,
-  payload: string | Device | FlashStart | undefined 
+  payload: string | Device | FlashStart | UpdateDelete | undefined 
+}
+
+export type UpdateDelete = {
+  deviceID: string
 }
 
 export type Device = {

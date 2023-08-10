@@ -261,5 +261,7 @@
             "pin": "13"
           }
         }
-  }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno"
 }

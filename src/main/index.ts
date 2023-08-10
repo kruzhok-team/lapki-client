@@ -3,6 +3,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 
 import fs from 'fs';
 import { join, basename } from 'path';
+import { SourceFile } from '../renderer/src/types/CompilerTypes'
 
 //import icon from '../../resources/icon.png?asset';
 
@@ -29,6 +30,38 @@ async function handleFileOpen() {
       resolve([false, null, null, '']);
     }
   });
+}
+
+async function handleSaveIntoFolder(data: Array<SourceFile>) {
+  return new Promise(async (resolve, _reject) => {
+    await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+    })
+    .then((file) => {
+      const directory = file.filePaths[0];
+      if (!file.canceled && directory){
+        data.map((element) => {
+          const path = directory.concat("/", element.filename, ".", element.extension)
+          fs.writeFile(
+            path,
+            element.fileContent,
+            function (err) {
+              if (err) {
+                resolve([false, directory, err.message]);
+              } else {
+                console.log('Сохранено!');
+                resolve([true, directory, basename(directory)]);
+              }
+            }
+          )
+        })
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      resolve([false, null, err.message]);
+    });
+  })
 }
 
 /**
@@ -135,6 +168,9 @@ function createWindow(): void {
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
   // IPC из отрисовщика, в основном диалоговые окна
+  ipcMain.handle('dialog:saveIntoFolder', (_event, data) => {
+    return handleSaveIntoFolder(data);
+  })
 
   ipcMain.handle('dialog:openFile', handleFileOpen);
 

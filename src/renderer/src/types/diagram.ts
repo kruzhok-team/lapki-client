@@ -1,4 +1,3 @@
-import { CompilerSettings } from './CompilerTypes';
 import { Point, Rectangle } from './graphics';
 
 export type Action = {

@@ -1,30 +1,21 @@
-//Необработанный ответ
-export type CompilerResponse = {
-  result: string,
-  stdout: string,
-  stderr: string,
-  binary: Array<Map<string, string>>,
-  source: Array<Map<string, string>>
-}
-
-//Обработанный ответ, с которым можно работать
 export type CompilerResult = {
   result: string,
   stdout: string,
   stderr: string,
-  binary: Array<Binary> | undefined,
-  source: Array<SourceFile> | undefined
+  binary: Array<Binary>
+  source: Array<SourceFile>
 }
 
 
 export type SourceFile = {
   filename: string,
+  extension: string,
   fileContent: string;
 }
 
 export type Binary = {
   filename: string,
-  binary: Blob
+  fileContent: Blob
 }
 
 export type CompilerSettings = {

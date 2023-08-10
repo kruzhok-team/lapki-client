@@ -7,7 +7,7 @@ import { CanvasEditor } from '../CanvasEditor';
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
 import { isPlatformAvailable } from './PlatformLoader';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Binary } from '@renderer/types/CompilerTypes';
+import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 
 export type EditorData = {
@@ -153,6 +153,13 @@ export class EditorManager {
       });
     }
     return makeLeft(null);
+  }
+
+  async saveIntoFolder(data: Array<SourceFile>) {
+    await window.electron.ipcRenderer.invoke(
+      'dialog:saveIntoFolder',
+      data
+    );
   }
 
   async save(): Promise<Either<FileError | null, null>> {

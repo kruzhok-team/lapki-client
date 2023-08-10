@@ -3,19 +3,21 @@ import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
 import { Device } from '@renderer/types/FlasherTypes';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 export interface FlasherProps {
   devices: Map<string, Device>,
   currentDevice: string | undefined,
   connectionStatus: string,
-  setCurrentDevice: Dispatch<string | undefined>
+  flasherLog: string | undefined,
+  compilerData: CompilerResult | undefined,
+  setCurrentDevice: Dispatch<string | undefined>,
   handleGetList: () => void;
   handleFlash: () => void;
-}   
+}
 
-export const Loader: React.FC<FlasherProps> = ({currentDevice, devices, connectionStatus, setCurrentDevice, handleGetList, handleFlash}) => {
+export const Loader: React.FC<FlasherProps> = ({currentDevice, devices, connectionStatus, compilerData, flasherLog, setCurrentDevice, handleGetList, handleFlash}) => {
   const isActive = (id: string) => currentDevice === id;
-  console.log(devices)
 
   return (
     <section className="flex h-full flex-col bg-[#a1c8df] text-center font-Fira text-base">
@@ -36,7 +38,8 @@ export const Loader: React.FC<FlasherProps> = ({currentDevice, devices, connecti
         <p>{connectionStatus}</p>
         {[...devices.keys()].map((key) => (
           <button key={key}
-          className="my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white"
+          className={twMerge("my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white", 
+                              isActive(key) && "bg-[#557b91] text-white")}
           onClick={() => setCurrentDevice(key)}>
           {devices.get(key)?.name}
           </button>
@@ -57,18 +60,15 @@ export const Loader: React.FC<FlasherProps> = ({currentDevice, devices, connecti
         ))}
       </div>
 
-      <button className="my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white" onClick={handleFlash}>
+      <button className={twMerge("my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white", 
+                         (compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice) && "opacity-50")}
+              onClick={handleFlash} 
+              disabled={compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice}>
         Загрузить
       </button>
       <div className="mt-1 h-96 select-text items-center overflow-y-auto break-words rounded bg-white p-2 text-left">
         <div>
-          Данные, которые необходимо отобразить, после загрузки на Arduino;
-          <br />
-          <br />
-          Данные, которые необходимо отобразить, после загрузки на Arduino;
-          <br />
-          <br />
-          Данные, которые необходимо отобразить, после загрузки на Arduino;
+          {flasherLog}
         </div>
       </div>
     </section>

@@ -1,0 +1,82 @@
+{
+    "states": {
+      "diod1": {
+        "name": "Включен",
+        "events": [
+          {
+            "do": [
+              {
+                "component": "diod1",
+                "method": "on"
+              }
+            ],
+            "trigger": {
+              "component": "System",
+              "method": "onEnter"
+            }
+          }
+        ],
+        "bounds": {
+          "height": 95,
+          "width": 450,
+          "x": 82,
+          "y": 57
+        }
+      },
+      "diod2": {
+        "name": "Выключен",
+        "events": [
+          {
+            "do": [
+              {
+                "component": "diod1",
+                "method": "off"
+              }
+            ],
+            "trigger": {
+              "component": "System",
+              "method": "onEnter"
+            }
+          }
+        ],
+        "bounds": {
+          "height": 95,
+          "width": 450,
+          "x": 81,
+          "y": 334
+        }
+      }
+    },
+    "initialState": "diod1",
+    "transitions": [
+      {
+        "color": "#F29727",
+        "position": {
+          "x": 457,
+          "y": 173
+        },
+        "source": "diod1",
+        "target": "diod2",
+        "trigger": {
+          "component": "btn",
+          "method": "clicked"
+        }
+      }
+    ],
+    "components": {
+      "diod1": {
+        "parameters": {
+          "pin": "12"
+        },
+        "type": "LED"
+      },
+      "btn": {
+        "parameters": {
+            "pin": "5"
+        },
+        "type": "Button"
+      }
+    },
+    "parameters": {},
+    "platform": "ArduinoUno"
+  }

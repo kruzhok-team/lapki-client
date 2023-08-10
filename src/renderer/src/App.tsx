@@ -40,6 +40,7 @@ export const App: FC = () => {
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
+  const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
@@ -170,8 +171,11 @@ export const App: FC = () => {
   };
 
   const handleCompile = async () => {
-    // TODO: платформы
-    manager.compile('arduino');
+    manager.compile(editor!.container.machine.platformIdx);
+  };
+
+  const handleSaveIntoFolder = async () => {
+    await manager.saveIntoFolder(compilerData!.source);
   };
 
   const handleSaveAsFile = async () => {
@@ -195,10 +199,28 @@ export const App: FC = () => {
       // TODO: информировать об успешном сохранении
     }
   };
+
+  const addTab = (name: string, content: string) => {
+    tabsItems.push({
+      tab: name,
+      content: <CodeEditor value={content} />,
+    });
+  };
+
+  const handleAddStdoutTab = () => {
+    addTab('stdout', compilerData!.stdout);
+  };
+
+  const handleAddStderrTab = () => {
+    addTab('stderr', compilerData!.stderr);
+  };
+
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
     currentDevice: currentDevice,
     connectionStatus: flasherConnectionStatus,
+    flasherLog: flasherLog,
+    compilerData: compilerData,
     setCurrentDevice: setCurrentDevice,
     handleGetList: handleGetList,
     handleFlash: handleFlashBinary,
@@ -207,7 +229,11 @@ export const App: FC = () => {
   const compilerProps: CompilerProps = {
     compilerData: compilerData,
     compilerStatus: compilerStatus,
+    fileReady: editor !== null,
+    handleAddStdoutTab: handleAddStdoutTab,
+    handleAddStderrTab: handleAddStderrTab,
     handleCompile: handleCompile,
+    handleSaveIntoFolder: handleSaveIntoFolder,
   };
 
   const menuProps: MenuProps = {
@@ -281,7 +307,7 @@ export const App: FC = () => {
   };
 
   useEffect(() => {
-    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus);
+    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
     Flasher.initReader();
     Flasher.connect(Flasher.base_address);
 

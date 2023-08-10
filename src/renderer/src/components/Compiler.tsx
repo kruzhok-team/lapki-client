@@ -7,6 +7,8 @@ export interface CompilerProps {
   compilerStatus: string,
   fileReady: boolean,
   handleCompile: () => void;
+  handleAddStdoutTab: () => void;
+  handleAddStderrTab: () => void;
 }
 
 const button = [
@@ -17,7 +19,6 @@ const button = [
     name: 'Сохранить код',
   },
   {
-    
     name: 'Показать код',
   },
   {
@@ -26,7 +27,7 @@ const button = [
 ];
 
 
-export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus, fileReady, handleCompile}) => {
+export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus, fileReady, handleCompile, handleAddStdoutTab, handleAddStderrTab}) => {
   const handle = async () => {
     console.log("biba")
   }
@@ -54,7 +55,7 @@ export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus,
       <button
           className={twMerge("my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white", 
           (compilerData?.stderr === undefined) && "opacity-50")}
-          onClick={handle}
+          onClick={handleAddStderrTab}
           disabled={compilerData?.stderr === undefined}
         >
           Показать stderr
@@ -62,8 +63,8 @@ export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus,
       <button
           className={twMerge("my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white", 
           (compilerData?.stdout === undefined) && "opacity-50")}
-          onClick={handle}
           disabled={compilerData?.stdout === undefined}
+          onClick={handleAddStdoutTab}
         >
           Показать stdout
       </button>

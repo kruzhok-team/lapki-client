@@ -11,10 +11,10 @@ export interface FlasherProps {
   connectionStatus: string,
   flasherLog: string | undefined,
   compilerData: CompilerResult | undefined,
-  setCurrentDevice: Dispatch<string | undefined>
+  setCurrentDevice: Dispatch<string | undefined>,
   handleGetList: () => void;
   handleFlash: () => void;
-}   
+}
 
 export const Loader: React.FC<FlasherProps> = ({currentDevice, devices, connectionStatus, compilerData, flasherLog, setCurrentDevice, handleGetList, handleFlash}) => {
   const isActive = (id: string) => currentDevice === id;

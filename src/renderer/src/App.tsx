@@ -167,6 +167,22 @@ export const App: FC = () => {
       // TODO: информировать об успешном сохранении
     }
   };
+
+  const addTab = (name: string, content: string) => {
+    tabsItems.push({
+      tab: name,
+      content: <CodeEditor value={content} />,
+    });
+  }
+
+  const handleAddStdoutTab = () => {
+    addTab("stdout", compilerData!.stdout);
+  }
+
+  const handleAddStderrTab = () => {
+    addTab("stderr", compilerData!.stderr);
+  }
+
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
     currentDevice: currentDevice,
@@ -181,7 +197,9 @@ export const App: FC = () => {
   const compilerProps: CompilerProps = {
     compilerData: compilerData,
     compilerStatus: compilerStatus,
-    fileReady: editor !== null, 
+    fileReady: editor !== null,
+    handleAddStdoutTab: handleAddStdoutTab,
+    handleAddStderrTab: handleAddStderrTab,
     handleCompile: handleCompile,
   };
 

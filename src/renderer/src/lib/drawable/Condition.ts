@@ -3,12 +3,14 @@ import { Transition } from './Transition';
 
 import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
+import { picto } from './Picto';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
  * Перемещаемый элемент схемы, выполняет отрисовку и
  * обработку событий мыши.
  */
+
 export class Condition extends Draggable {
   transition!: Transition;
 
@@ -57,6 +59,24 @@ export class Condition extends Draggable {
     ctx.beginPath();
     platform.drawEvent(ctx, trigger, x + p, y + p);
     ctx.closePath();
+
+    //Здесь начинается прорисовка действий для связей
+    //TODO Требуется доработка
+    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
+    const px = x + p / this.container.scale;
+    const py = y + p / this.container.scale;
+    const yDx = picto.eventHeight + 10;
+
+    ctx.beginPath();
+    this.transition.data.do?.forEach((data, actIdx) => {
+      const ax = 1 + (actIdx % eventRowLength);
+      const ay = 0 + Math.floor(actIdx / eventRowLength);
+      const aX = px + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
+      const aY = py + (ay * yDx) / this.container.scale;
+      platform.drawEvent(ctx, data, aX, aY);
+    });
+    ctx.closePath();
+
     /*
     ctx.fillText(trigger.component, x + p, y + p);
     ctx.fillText(trigger.method, x + p, y + fontSize + p);

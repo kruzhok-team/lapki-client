@@ -7,9 +7,10 @@ import { State } from '@renderer/lib/drawable/State';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalFormValues } from './CreateModal';
+import { CreateEventsModal, CreateEventsModalFormValues } from './CreateEventsModal';
+import { CreateMethodModal, CreateMethodModalFormValues } from './CreateMethodModal';
 
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
-import { CreateEventsModal, CreateEventsModalFormValues } from './CreateEventsModal';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 
 interface DiagramEditorProps {
@@ -40,6 +41,9 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
   const openEventsModal = () => setIsEventsModalOpen(true);
   const closeEventsModal = () => setIsEventsModalOpen(false);
+  const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
+  const openMethodModal = () => setIsMethodModalOpen(true);
+  const closeMethodModal = () => setIsMethodModalOpen(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<StateContextMenuData>();
 
@@ -183,8 +187,8 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         transition?.target.transition.source,
         transition?.target.transition.target,
         data.color,
-        events!.doComponent,
-        events!.doMethod,
+        data.doComponent,
+        data.doMethod,
         transition?.target.bounds
       );
     } else if (newTransition) {
@@ -193,8 +197,8 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         newTransition?.source,
         newTransition?.target,
         data.color,
-        events!.doComponent,
-        events!.doMethod,
+        data.doComponent,
+        data.doMethod,
         newTransition?.target.bounds
       );
     }
@@ -243,11 +247,19 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         title={'Редактирование события'}
       />
 
+      <CreateMethodModal
+        isOpen={isMethodModalOpen}
+        isData={idEvents}
+        onClose={closeMethodModal}
+        onSubmit={handleCreateEventsModal}
+        title={'Добавление действий'}
+      />
+
       {isModalOpen ? (
         <CreateModal
           editor={editor}
           isOpen={isModalOpen}
-          onOpenEventsModal={openEventsModal}
+          onOpenMethodModal={openMethodModal}
           isData={state}
           isName={nameState}
           onClose={closeModal}

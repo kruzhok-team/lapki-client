@@ -14,7 +14,7 @@ interface CreateModalProps {
   isOpen: boolean;
   isData: { state } | undefined;
   isName: { state; position } | undefined;
-  onOpenEventsModal: () => void;
+  onOpenMethodModal: () => void;
   onClose: () => void;
   onSubmit: (data: CreateModalFormValues) => void;
 }
@@ -40,7 +40,7 @@ export interface CreateModalFormValues {
 
 export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
-  onOpenEventsModal,
+  onOpenMethodModal,
   onClose,
   isData,
   isName,
@@ -58,9 +58,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     },
   });
 
-  const components = editor?.container.machine.components.keys();
-  const methods = editor?.container.machine.platform.getAvailableEvents('System');
+  const components = Object.fromEntries(editor!.container.machine.components);
+  const methods = editor?.container.machine.platform.getAvailableEvents('Button');
   console.log(components, methods);
+
   const onRequestClose = () => {
     onClose();
     // TODO: пока кажется лишним затирать текстовые поля
@@ -154,11 +155,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {!isData || (
               <div className="flex items-end">
                 <TextSelect
-                  label="Событие:"
+                  label="Компонент(событие):"
                   placeholder="Выберите модуль события"
                   {...register('triggerComponent', {
                     required: 'Это поле обязательно к заполнению!',
                   })}
+                  isElse={true}
                   error={!!errors.triggerComponent}
                   errorMessage={errors.triggerComponent?.message ?? ''}
                 />
@@ -168,124 +170,155 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   {...register('triggerMethod', {
                     required: 'Это поле обязательно к заполнению!',
                   })}
+                  isElse={true}
                   error={!!errors.triggerMethod}
                   errorMessage={errors.triggerMethod?.message ?? ''}
                 />
               </div>
             )}
+            <div className="flex">
+              <TextSelect
+                label="Компонент(событие):"
+                placeholder="Выберите компонент события"
+                {...register('doComponent', {
+                  required: 'Это поле обязательно к заполнению!',
+                })}
+                isElse={false}
+                error={!!errors.doComponent}
+                errorMessage={errors.doComponent?.message ?? ''}
+              />
+              <TextSelect
+                label="Действие:"
+                placeholder="Выберите метод события"
+                {...register('doMethod', {
+                  required: 'Это поле обязательно к заполнению!',
+                })}
+                isElse={false}
+                error={!!errors.doMethod}
+                errorMessage={errors.doMethod?.message ?? ''}
+              />
+            </div>
+
+            <div className="flex">
+              <label
+                className={twMerge(
+                  'my-2 select-none rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-500',
+                  !isElse && 'bg-neutral-500'
+                )}
+              >
+                <input type="checkbox" onChange={handleIsElse} className="h-0 w-0 opacity-0" />
+                <span>Условие</span>
+              </label>
+            </div>
+            <div className="flex">
+              <input
+                type="checkbox"
+                onChange={handleParamOne}
+                className={twMerge('mr-2', isElse && 'hidden')}
+              />
+              {isParamOne ? (
+                <>
+                  <TextSelect
+                    label="Компонент(событие):"
+                    placeholder="Выберите компонент события"
+                    {...register('doComponentOneElse', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    isElse={isElse}
+                    error={!!errors.doComponentOneElse}
+                    errorMessage={errors.doComponentOneElse?.message ?? ''}
+                  />
+                  <TextSelect
+                    label="Действие:"
+                    placeholder="Выберите метод события"
+                    {...register('doMethodOneElse', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    isElse={isElse}
+                    error={!!errors.doMethodOneElse}
+                    errorMessage={errors.doMethodOneElse?.message ?? ''}
+                  />
+                </>
+              ) : (
+                <TextInput
+                  label="Параметр:"
+                  placeholder="Напишите параметр"
+                  {...register('argsOneElse', {
+                    required: 'Это поле обязательно к заполнению!',
+                  })}
+                  isElse={isElse}
+                  error={!!errors.argsOneElse}
+                  errorMessage={errors.argsOneElse?.message ?? ''}
+                />
+              )}
+            </div>
+            <select
+              className={twMerge(
+                'mb-4 ml-6 w-[80px] rounded border bg-transparent px-2 py-1 text-center text-white',
+                isElse && 'hidden'
+              )}
+            >
+              {selectElse.map((content) => (
+                <option
+                  key={'option' + content}
+                  className="bg-neutral-800"
+                  value={content}
+                  label={content}
+                ></option>
+              ))}
+            </select>
+            <div className="flex">
+              <input
+                type="checkbox"
+                disabled={isElse}
+                onChange={handleParamTwo}
+                className={twMerge('mr-2', isElse && 'hidden')}
+              />
+              {isParamTwo ? (
+                <>
+                  <TextSelect
+                    label="Компонент(событие):"
+                    placeholder="Выберите компонент события"
+                    {...register('doComponentTwoElse', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    isElse={isElse}
+                    error={!!errors.doComponentTwoElse}
+                    errorMessage={errors.doComponentTwoElse?.message ?? ''}
+                  />
+                  <TextSelect
+                    label="Действие:"
+                    placeholder="Выберите метод события"
+                    {...register('doMethodTwoElse', {
+                      required: 'Это поле обязательно к заполнению!',
+                    })}
+                    isElse={isElse}
+                    error={!!errors.doMethodTwoElse}
+                    errorMessage={errors.doMethodTwoElse?.message ?? ''}
+                  />
+                </>
+              ) : (
+                <TextInput
+                  label="Параметр:"
+                  placeholder="Напишите параметр"
+                  {...register('argsTwoElse', {
+                    required: 'Это поле обязательно к заполнению!',
+                  })}
+                  isElse={isElse}
+                  error={!!errors.argsTwoElse}
+                  errorMessage={errors.argsTwoElse?.message ?? ''}
+                />
+              )}
+            </div>
             <button
               type="button"
-              className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-              onClick={onOpenEventsModal}
+              className="my-2 rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+              onClick={onOpenMethodModal}
             >
-              Выбрать действие
+              Добавить действие
             </button>
             {isData !== undefined || (
               <>
-                <div className="flex">
-                  <input type="checkbox" onChange={handleIsElse} className="mr-2" />
-                  <p>Условие</p>
-                </div>
-                <div className="flex">
-                  <input
-                    type="checkbox"
-                    disabled={isElse}
-                    onChange={handleParamOne}
-                    className="mr-2"
-                  />
-                  {isParamOne ? (
-                    <>
-                      <TextSelect
-                        label="Компонент:"
-                        placeholder="Выберите компонент события"
-                        {...register('doComponentOneElse', {
-                          required: 'Это поле обязательно к заполнению!',
-                        })}
-                        disabled={isElse}
-                        error={!!errors.doComponentOneElse}
-                        errorMessage={errors.doComponentOneElse?.message ?? ''}
-                      />
-                      <TextSelect
-                        label="Метод:"
-                        placeholder="Выберите метод события"
-                        {...register('doMethodOneElse', {
-                          required: 'Это поле обязательно к заполнению!',
-                        })}
-                        disabled={isElse}
-                        error={!!errors.doMethodOneElse}
-                        errorMessage={errors.doMethodOneElse?.message ?? ''}
-                      />
-                    </>
-                  ) : (
-                    <TextInput
-                      label="Параметр:"
-                      placeholder="Напишите параметр"
-                      {...register('argsOneElse', {
-                        required: 'Это поле обязательно к заполнению!',
-                      })}
-                      disabled={isElse}
-                      error={!!errors.argsOneElse}
-                      errorMessage={errors.argsOneElse?.message ?? ''}
-                    />
-                  )}
-                </div>
-                <select
-                  disabled={isElse}
-                  className="ml-6 w-[80px] rounded border bg-transparent px-2 py-1 text-center text-white"
-                >
-                  {selectElse.map((content) => (
-                    <option
-                      key={'option' + content}
-                      className="bg-neutral-800"
-                      value={content}
-                      label={content}
-                    ></option>
-                  ))}
-                </select>
-                <div className="flex">
-                  <input
-                    type="checkbox"
-                    disabled={isElse}
-                    onChange={handleParamTwo}
-                    className="mr-2"
-                  />
-                  {isParamTwo ? (
-                    <>
-                      <TextSelect
-                        label="Компонент:"
-                        placeholder="Выберите компонент события"
-                        {...register('doComponentTwoElse', {
-                          required: 'Это поле обязательно к заполнению!',
-                        })}
-                        disabled={isElse}
-                        error={!!errors.doComponentTwoElse}
-                        errorMessage={errors.doComponentTwoElse?.message ?? ''}
-                      />
-                      <TextSelect
-                        label="Метод:"
-                        placeholder="Выберите метод события"
-                        {...register('doMethodTwoElse', {
-                          required: 'Это поле обязательно к заполнению!',
-                        })}
-                        disabled={isElse}
-                        error={!!errors.doMethodTwoElse}
-                        errorMessage={errors.doMethodTwoElse?.message ?? ''}
-                      />
-                    </>
-                  ) : (
-                    <TextInput
-                      label="Параметр:"
-                      placeholder="Напишите параметр"
-                      {...register('argsTwoElse', {
-                        required: 'Это поле обязательно к заполнению!',
-                      })}
-                      disabled={isElse}
-                      error={!!errors.argsTwoElse}
-                      errorMessage={errors.argsTwoElse?.message ?? ''}
-                    />
-                  )}
-                </div>
-
                 <ColorInput
                   label="Цвет связи:"
                   {...register('color', { required: 'Это поле обязательно к заполнению!' })}

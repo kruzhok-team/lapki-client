@@ -1,11 +1,10 @@
 import { ComponentProps, forwardRef } from 'react';
-
 import { twMerge } from 'tailwind-merge';
 
 interface TextSelectProps extends ComponentProps<'select'> {
   label: string;
   //value - переменная содержащая данные события, на который кликнули
-  //value: string | undefined;
+  isElse: boolean;
   error?: boolean;
   errorMessage: string;
 }
@@ -18,11 +17,12 @@ const options = [
   { value: 'off', label: 'off' },
   { value: 'on', label: 'on' },
 ];
-
 export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
-  ({ label, error, errorMessage, ...props }, ref) => {
+  ({ label, isElse, error, errorMessage, ...props }, ref) => {
     return (
-      <label className={twMerge('mr-2 mt-1 flex flex-col', error && 'text-red-500')}>
+      <label
+        className={twMerge('mx-1 flex flex-col ', error && 'text-red-500', isElse && 'hidden')}
+      >
         {label}
         <select
           className={twMerge(

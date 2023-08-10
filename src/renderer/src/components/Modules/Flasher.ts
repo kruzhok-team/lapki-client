@@ -211,21 +211,24 @@ export class Flasher {
   }
 
   static setBinary(binaries: Array<Binary>){
-    binaries.map((binary)=> {
-      if(binary.filename.match(".hex")){
-        this.binary = binary.binary;
+    binaries.map((bin)=> {
+      console.log(bin.filename)
+      if(bin.filename.endsWith("ino.hex")){
+        console.log(bin.fileContent)
+        Flasher.binary = bin.fileContent;
         return;
       };
     })
   }
 
-  static async flash(binaries: Array<Binary>, deviceID: string): Promise<void>{
+  static flash(binaries: Array<Binary>, deviceID: string): void{
     this.refresh();
     this.setBinary(binaries);
-
+    console.log(typeof Flasher.binary)
+    
     const payload = {
       deviceID: deviceID,
-      fileSize: this.binary.size
+      fileSize: Flasher.binary.size
     } as FlashStart;
     const request = {
       type: "flash-start",

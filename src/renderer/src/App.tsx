@@ -146,6 +146,10 @@ export const App: FC = () => {
     manager.compile(editor!.container.machine.platformIdx);
   };
 
+  const handleSaveIntoFolder = async () => {
+    await manager.saveIntoFolder(compilerData!.source)
+  }
+
   const handleSaveAsFile = async () => {
     const result = await manager.saveAs();
     if (isLeft(result)) {
@@ -201,6 +205,7 @@ export const App: FC = () => {
     handleAddStdoutTab: handleAddStdoutTab,
     handleAddStderrTab: handleAddStderrTab,
     handleCompile: handleCompile,
+    handleSaveIntoFolder: handleSaveIntoFolder
   };
 
   const menuProps: MenuProps = {

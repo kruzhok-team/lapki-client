@@ -9,12 +9,13 @@ export type CompilerResult = {
 
 export type SourceFile = {
   filename: string,
+  extension: string,
   fileContent: string;
 }
 
 export type Binary = {
   filename: string,
-  binary: Blob
+  fileContent: Blob
 }
 
 export type CompilerSettings = {

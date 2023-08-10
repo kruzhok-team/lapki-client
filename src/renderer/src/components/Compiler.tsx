@@ -9,28 +9,29 @@ export interface CompilerProps {
   handleCompile: () => void;
   handleAddStdoutTab: () => void;
   handleAddStderrTab: () => void;
+  handleSaveIntoFolder: () => void;
 }
 
-const button = [
-  {
-    name: 'Сохранить артефакт',
-  },
-  {
-    name: 'Сохранить код',
-  },
-  {
-    name: 'Показать код',
-  },
-  {
-    name: 'Прошить...',
-  },
-];
 
-
-export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus, fileReady, handleCompile, handleAddStdoutTab, handleAddStderrTab}) => {
-  const handle = async () => {
-    console.log("biba")
-  }
+export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus, fileReady, handleCompile, handleAddStdoutTab, handleAddStderrTab, handleSaveIntoFolder}) => {
+  const button = [
+    {
+      name: 'Сохранить артефакт',
+      handler: () => {console.log("click")}
+    },
+    {
+      name: 'Сохранить код',
+      handler: handleSaveIntoFolder,
+    },
+    {
+      name: 'Показать код',
+      handler: () => {console.log("click")}
+    },
+    {
+      name: 'Прошить...',
+      handler: () => {console.log("click")}
+    },
+  ];
 
   return (
     <section className="flex h-full flex-col bg-[#a1c8df] font-Fira text-base">
@@ -68,12 +69,12 @@ export const Compiler: React.FC<CompilerProps> = ({compilerData, compilerStatus,
         >
           Показать stdout
       </button>
-      {button.map(({ name }, i) => (
+      {button.map(({ name, handler }, i) => (
         <button
           key={'compiler' + i}
           className={twMerge("my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white", 
           (compilerData?.binary === undefined || compilerData.binary.length == 0) && "border-[#557b91] opacity-50")}
-          onClick={handle}
+          onClick={handler}
           disabled={compilerData?.binary === undefined}
         >
           {name}

@@ -42,7 +42,8 @@ export class Compiler {
 
     static decodeBinaries(binaries: Array<any>){
       binaries.map((binary) => {
-        this.binary?.push({filename: binary.filename, binary: base64StringToBlob(binary.fileContent!)} as Binary);
+        console.log(base64StringToBlob(binary.fileContent!))
+        this.binary?.push({filename: binary.filename, fileContent: base64StringToBlob(binary.fileContent!)} as Binary);
       });
     }
 
@@ -79,12 +80,12 @@ export class Compiler {
           
           if(data.binary.length > 0){
             this.binary = [];
-            this.binary = data.binary;
+            this.decodeBinaries(data.binary);
+            data.binary = this.binary;
           }
           else {
             this.binary = undefined;
           }
-          console.log(data);
           this.setCompilerData(data);
         });
 

@@ -166,7 +166,25 @@
       "trigger": {
         "component": "button1",
         "method": "isPressed"
-      }
+      },
+      "do": [
+        {
+          "component": "diod1",
+          "method": "off"
+        },
+        {
+          "component": "diod1",
+          "method": "on"
+        },
+        {
+          "component": "button1",
+          "method": "isPressed"
+        },
+        {
+          "component": "button1",
+          "method": "clicked"
+        }
+      ]
     },
     {
       "color": "#1100ff",

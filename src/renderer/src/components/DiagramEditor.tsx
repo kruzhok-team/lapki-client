@@ -227,13 +227,13 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        <StateContextMenu
-          isOpen={isContextMenuOpen}
-          isData={contextMenuData}
-          callbacks={contextMenuCallbacks}
-        />
-      </div>
+      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
+
+      <StateContextMenu
+        isOpen={isContextMenuOpen}
+        isData={contextMenuData}
+        callbacks={contextMenuCallbacks}
+      />
 
       <CreateEventsModal
         isOpen={isEventsModalOpen}

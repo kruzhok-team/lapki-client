@@ -125,6 +125,11 @@ export const App: FC = () => {
     manager.flash(compilerData!.binary!, currentDevice!);
   };
 
+  const handleSaveBinaryIntoFolder = async () => {
+    const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
+    manager.saveIntoFolder(preparedData);
+  }
+
   /*Открытие файла*/
   const handleOpenFile = async () => {
     // TODO: if (editorData.modified)
@@ -174,7 +179,7 @@ export const App: FC = () => {
     manager.compile(editor!.container.machine.platformIdx);
   };
 
-  const handleSaveIntoFolder = async () => {
+  const handleSaveSourceIntoFolder = async () => {
     await manager.saveIntoFolder(compilerData!.source);
   };
 
@@ -208,6 +213,7 @@ export const App: FC = () => {
   };
 
   const handleAddStdoutTab = () => {
+    console.log(compilerData!.stdout);
     addTab('stdout', compilerData!.stdout);
   };
 
@@ -233,7 +239,8 @@ export const App: FC = () => {
     handleAddStdoutTab: handleAddStdoutTab,
     handleAddStderrTab: handleAddStderrTab,
     handleCompile: handleCompile,
-    handleSaveIntoFolder: handleSaveIntoFolder,
+    handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
+    handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder
   };
 
   const menuProps: MenuProps = {

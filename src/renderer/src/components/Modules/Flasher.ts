@@ -235,12 +235,13 @@ export class Flasher {
     this.filePos = 0;
   }
 
-  static setBinary(binaries: Array<Binary>) {
+  static async setBinary(binaries: Array<Binary>) {
     binaries.map((bin) => {
       console.log(bin.filename);
-      if (bin.filename.endsWith('ino.hex')) {
+      if (bin.extension == 'ino.hex') {
+        console.log(bin.extension)
         console.log(bin.fileContent);
-        Flasher.binary = bin.fileContent;
+        Flasher.binary = bin.fileContent as Blob;
         return;
       }
     });

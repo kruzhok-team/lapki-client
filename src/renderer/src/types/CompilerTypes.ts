@@ -15,7 +15,8 @@ export type SourceFile = {
 
 export type Binary = {
   filename: string,
-  fileContent: Blob
+  extension: string,
+  fileContent: Blob | Buffer
 }
 
 export type CompilerSettings = {

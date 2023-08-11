@@ -9,7 +9,8 @@ export interface CompilerProps {
   handleCompile: () => void;
   handleAddStdoutTab: () => void;
   handleAddStderrTab: () => void;
-  handleSaveIntoFolder: () => void;
+  handleSaveSourceIntoFolder: () => void;
+  handleSaveBinaryIntoFolder: () => void;
 }
 
 export const Compiler: React.FC<CompilerProps> = ({
@@ -19,18 +20,17 @@ export const Compiler: React.FC<CompilerProps> = ({
   handleCompile,
   handleAddStdoutTab,
   handleAddStderrTab,
-  handleSaveIntoFolder,
+  handleSaveSourceIntoFolder,
+  handleSaveBinaryIntoFolder
 }) => {
   const button = [
     {
       name: 'Сохранить артефакт',
-      handler: () => {
-        console.log('click');
-      },
+      handler: handleSaveBinaryIntoFolder
     },
     {
       name: 'Сохранить код',
-      handler: handleSaveIntoFolder,
+      handler: handleSaveSourceIntoFolder,
     },
     {
       name: 'Показать код',

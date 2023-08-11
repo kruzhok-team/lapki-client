@@ -155,7 +155,7 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  async saveIntoFolder(data: Array<SourceFile>) {
+  async saveIntoFolder(data: Array<SourceFile | Binary>) {
     await window.electron.ipcRenderer.invoke(
       'dialog:saveIntoFolder',
       data

@@ -3,7 +3,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 
 import fs from 'fs';
 import { join, basename } from 'path';
-import { SourceFile } from '../renderer/src/types/CompilerTypes'
+import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes'
 
 //import icon from '../../resources/icon.png?asset';
 
@@ -32,7 +32,7 @@ async function handleFileOpen() {
   });
 }
 
-async function handleSaveIntoFolder(data: Array<SourceFile>) {
+async function handleSaveIntoFolder(data: Array<SourceFile | Binary>) {
   return new Promise(async (resolve, _reject) => {
     await dialog.showOpenDialog({
       properties: ['openDirectory'],
@@ -44,7 +44,7 @@ async function handleSaveIntoFolder(data: Array<SourceFile>) {
           const path = directory.concat("/", element.filename, ".", element.extension)
           fs.writeFile(
             path,
-            element.fileContent,
+            element.fileContent as Buffer | string,
             function (err) {
               if (err) {
                 resolve([false, directory, err.message]);

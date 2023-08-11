@@ -1,13 +1,14 @@
-import { Elements } from '@renderer/types/diagram';
 import Websocket from 'isomorphic-ws';
+import { Dispatch, SetStateAction } from 'react';
+import { base64StringToBlob } from 'blob-util';
+import { Buffer } from 'buffer';
+import { Elements } from '@renderer/types/diagram';
 import {
   CompilerSettings,
   CompilerResult,
   Binary,
   SourceFile,
 } from '@renderer/types/CompilerTypes';
-import { Dispatch, SetStateAction } from 'react';
-import { base64StringToBlob } from 'blob-util';
 
 export class Compiler {
   static port = 8081;
@@ -48,17 +49,28 @@ export class Compiler {
   static decodeBinaries(binaries: Array<any>) {
     binaries.map((binary) => {
       console.log(base64StringToBlob(binary.fileContent!));
+      console.log(binary.filename, binary.extension)
       this.binary?.push({
         filename: binary.filename,
+        extension: binary.extension,
         fileContent: base64StringToBlob(binary.fileContent!),
       } as Binary);
     });
   }
 
+  static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>>{
+    const newArray = Object.assign([], binaries) as Binary[];
+    for (const bin of newArray){
+      bin.fileContent = Buffer.from(await (bin.fileContent as Blob).arrayBuffer());
+    }
+
+    return newArray;
+  }
+
   static getSourceFiles(sources: Array<any>): Array<SourceFile> {
     const result = new Array<SourceFile>();
     sources.map((source) => {
-      result.push({ filename: source.filename, fileContent: source.fileContent } as SourceFile);
+      result.push({ filename: source.filename, extension: source.extension, fileContent: source.fileContent } as SourceFile);
     });
 
     return result;

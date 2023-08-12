@@ -45,29 +45,36 @@ export class EditorManager {
 
   constructor(
     editor: CanvasEditor | null,
-    state: EditorData,
+    initState: EditorData | undefined,
     updateState: Dispatch<SetStateAction<EditorData>>
   ) {
     // console.log(['EditorManager constructor']);
     this.editor = editor;
-    this.state = state;
+    this.state = initState ?? emptyEditorData();
     this.updateState = updateState;
+  }
+
+  mutateState(fn: (state: EditorData) => EditorData) {
+    this.state = fn(this.state);
+    this.updateState(this.state);
+  }
+
+  onDataUpdate(that: EditorManager) {
+    return (data: Elements, modified: boolean) => {
+      // console.log(['onDataUpdate-pre', that.state, data, modified]);
+      that.mutateState((state) => ({
+        ...state,
+        data,
+        content: JSON.stringify(data, null, 2),
+        modified: modified || this.state.modified,
+      }));
+      console.log(['onDataUpdate-post', that.state]);
+    };
   }
 
   watchEditor(editor: CanvasEditor) {
     this.editor = editor;
-    editor.onDataUpdate((data, modified) => {
-      // console.log(['onDataUpdate', data, modified]);
-      const newState = {
-        ...this.state,
-        data,
-        content: JSON.stringify(data, null, 2),
-        modified: modified || this.state.modified,
-      };
-      this.updateState(newState);
-      // FIXME: не обновляется флаг modified
-      console.log(['onDataUpdate-post', newState, this.state]);
-    });
+    editor.onDataUpdate(this.onDataUpdate(this));
 
     //Таймер для сохранения изменений сделанных в редакторе
     this.updateInterval = setInterval(() => {
@@ -77,7 +84,6 @@ export class EditorManager {
 
   unwatchEditor() {
     clearInterval(this.updateInterval);
-    this.editor?.cleanUp();
   }
 
   triggerDataUpdate() {
@@ -90,18 +96,18 @@ export class EditorManager {
     }
     const data = { ...emptyElements(), platform: platformIdx };
     this.editor?.loadData(data);
-    this.updateState({
-      ...this.state,
+    this.mutateState((state) => ({
+      ...state,
       name: null,
       shownName: null,
       content: JSON.stringify(data),
       data,
       modified: false,
-    });
+    }));
   }
 
-  compile(platform: string): void{
-    Compiler.compile(platform, this.state!.data);
+  compile(platform: string): void {
+    Compiler.compile(platform, this.state.data);
   }
 
   flash(binaries: Array<Binary>, deviceID: string): void {
@@ -125,14 +131,14 @@ export class EditorManager {
           });
         }
         this.editor?.loadData(data);
-        this.updateState({
-          ...this.state,
+        this.mutateState((state) => ({
+          ...state,
           name: openData[1],
           shownName: openData[2],
           content: openData[3],
           data,
           modified: false,
-        });
+        }));
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -156,10 +162,7 @@ export class EditorManager {
   }
 
   async saveIntoFolder(data: Array<SourceFile | Binary>) {
-    await window.electron.ipcRenderer.invoke(
-      'dialog:saveIntoFolder',
-      data
-    );
+    await window.electron.ipcRenderer.invoke('dialog:saveIntoFolder', data);
   }
 
   async save(): Promise<Either<FileError | null, null>> {
@@ -173,12 +176,12 @@ export class EditorManager {
       this.editor!.getData()
     );
     if (saveData[0]) {
-      this.updateState({
-        ...this.state,
+      this.mutateState((state) => ({
+        ...state,
         name: saveData[1],
         shownName: saveData[2],
         modified: false,
-      });
+      }));
       return makeRight(null);
     } else {
       return makeLeft({
@@ -194,12 +197,12 @@ export class EditorManager {
     const saveData: [boolean, string | null, string | null] =
       await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.state.name, data);
     if (saveData[0]) {
-      this.updateState({
-        ...this.state,
+      this.mutateState((state) => ({
+        ...state,
         name: saveData[1],
         shownName: saveData[2],
         modified: false,
-      });
+      }));
       return makeRight(null);
     } else if (saveData[1]) {
       return makeLeft({

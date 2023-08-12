@@ -14,8 +14,6 @@ import { Sidebar } from './components/Sidebar';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
-import { CanvasEditor } from './lib/CanvasEditor';
-import { EditorManager, EditorData, emptyEditorData } from './lib/data/EditorManager';
 import { isLeft, unwrapEither } from './types/Either';
 import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
 import { MessageModal, MessageModalData } from './components/MessageModal';
@@ -31,6 +29,7 @@ import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
+import useEditorManager from './components/utils/useEditorManager';
 
 /**
  * React-компонент приложения
@@ -45,9 +44,10 @@ export const App: FC = () => {
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
 
-  const [editor, setEditor] = useState<CanvasEditor | null>(null);
-  const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
-  const manager = new EditorManager(editor, editorData, setEditorData);
+  const lapki = useEditorManager();
+  const editor = lapki.editor;
+  const manager = lapki.managerRef.current;
+  const editorData = lapki.editorData;
   const [isDocOpen, setIsDocOpen] = useState(false);
 
   const [isLoadingOverlay, setLoadingOverlay] = useState<boolean>(true);
@@ -116,19 +116,19 @@ export const App: FC = () => {
   };
 
   const handleGetList = async () => {
-    manager.getList();
+    manager?.getList();
   };
 
   const handleFlashBinary = async () => {
     //Рассчет на то, что пользователь не сможет нажать кнопку загрузки,
     //если нет данных от компилятора
-    manager.flash(compilerData!.binary!, currentDevice!);
+    manager?.flash(compilerData!.binary!, currentDevice!);
   };
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    manager.saveIntoFolder(preparedData);
-  }
+    manager?.saveIntoFolder(preparedData);
+  };
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
@@ -147,8 +147,8 @@ export const App: FC = () => {
   };
 
   const performOpenFile = async () => {
-    const result = await manager.open();
-    if (isLeft(result)) {
+    const result = await manager?.open();
+    if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
         openLoadError(cause);
@@ -172,20 +172,20 @@ export const App: FC = () => {
   };
 
   const performNewFile = (idx: string) => {
-    manager.newFile(idx);
+    manager?.newFile(idx);
   };
 
   const handleCompile = async () => {
-    manager.compile(editor!.container.machine.platformIdx);
+    manager?.compile(editor!.container.machine.platformIdx);
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager.saveIntoFolder(compilerData!.source);
+    await manager?.saveIntoFolder(compilerData!.source);
   };
 
   const handleSaveAsFile = async () => {
-    const result = await manager.saveAs();
-    if (isLeft(result)) {
+    const result = await manager?.saveAs();
+    if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
         openSaveError(cause);
@@ -194,8 +194,8 @@ export const App: FC = () => {
   };
 
   const handleSaveFile = async () => {
-    const result = await manager.save();
-    if (isLeft(result)) {
+    const result = await manager?.save();
+    if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
         openSaveError(cause);
@@ -240,7 +240,7 @@ export const App: FC = () => {
     handleAddStderrTab: handleAddStderrTab,
     handleCompile: handleCompile,
     handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
-    handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder
+    handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
   };
 
   const menuProps: MenuProps = {
@@ -264,9 +264,9 @@ export const App: FC = () => {
       tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       content: (
         <DiagramEditor
-          manager={manager}
+          manager={manager!}
           editor={editor}
-          setEditor={setEditor}
+          setEditor={lapki.setEditor}
           onCodeSnippet={onCodeSnippet}
         />
       ),

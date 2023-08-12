@@ -49,6 +49,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
+    // console.log(['DiagramEditor.init', manager.state.data]);
     const editor = new CanvasEditor(containerRef.current, manager.state.data);
     const ClearUseState = () => {
       //Очищаем все старые данные
@@ -149,16 +150,18 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     });
 
     setEditor(editor);
-    manager.watchEditor(editor);
+    // слежка за редактором назначится по этой же строчке
 
     return () => {
-      manager.unwatchEditor();
+      // снятие слежки произойдёт по смене редактора новым
+      // manager.unwatchEditor();
+      editor?.cleanUp();
     };
-    // FIXME: Агрессивный ESLint ругается, что containerRef не влияет
-    // на перезапуск эффекта. Но это неправда. Хотя возможно, проблема
-    // в архитектуре этого компонента.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerRef.current]);
+    // FIXME: containerRef не влияет на перезапуск эффекта.
+    // Скорее всего, контейнер меняться уже не будет, поэтому
+    // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
+    // }, [ containerRef.current ]);
+  }, []);
 
   const handleCreateEventsModal = (data: CreateEventsModalFormValues) => {
     const doComponent = data.doComponent;

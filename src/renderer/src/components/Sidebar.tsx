@@ -23,6 +23,7 @@ import { Setting } from './Setting';
 import { EditorRef } from './utils/useEditorManager';
 
 interface SidebarProps {
+  minSize: number;
   editorRef: EditorRef;
   menuProps: MenuProps;
   compilerProps: CompilerProps;
@@ -52,6 +53,7 @@ const items = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
+  minSize,
   flasherProps,
   compilerProps,
   editorRef,
@@ -102,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      <Panel collapsible={true} minSize={20} defaultSize={20} ref={panelRef}>
+      <Panel collapsible={true} minSize={minSize} defaultSize={minSize} ref={panelRef}>
         <div className="h-full w-full">
           {tabs.map((Element, i) => (
             <div

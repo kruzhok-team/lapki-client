@@ -1,21 +1,22 @@
 import React from 'react';
-
-import { StateMachine } from '@renderer/lib/data/StateMachine';
+import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import { EditorRef } from './utils/useEditorManager';
 
 interface ExplorerProps {
-  stateMachine: StateMachine | undefined;
+  editorRef: EditorRef;
 }
 
-export const Explorer: React.FC<ExplorerProps> = ({ stateMachine }) => {
+export const Explorer: React.FC<ExplorerProps> = ({ editorRef }) => {
+  const editorData = editorRef.editorData;
   return (
     <section className="flex h-full flex-col justify-between bg-[#a1c8df] font-Fira text-base">
       <div className="w-full px-4 pt-2 text-center">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Компоненты</h1>
-        {stateMachine && (
+        {editorData?.content && (
           <div className="flex flex-col items-center">
-            {[...stateMachine.components.keys()].map((key) => (
+            {Object.entries(editorData?.data.components).map(([key, _component]) => (
               <div className="mb-4 h-20 w-20 cursor-pointer" draggable key={'explorer' + key}>
-                <img src={stateMachine.components.get(key)?.image?.src} />
+                <img src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon} />
                 {key}
               </div>
             ))}

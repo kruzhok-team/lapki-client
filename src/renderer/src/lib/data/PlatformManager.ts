@@ -104,6 +104,12 @@ export class PlatformManager {
     }
   }
 
+  getComponentIconUrl(name: string, isName?: boolean): string {
+    const query = this.getComponentIcon(name, isName);
+    // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
+    return icons.get(query)!.src;
+  }
+
   getEventIcon(component: string, method: string) {
     const icon = this.eventToIcon.get(`${component}/${method}`);
     if (icon && icons.has(icon)) {

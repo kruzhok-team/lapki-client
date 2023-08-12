@@ -3,7 +3,15 @@ import React, { useMemo, useState, useRef } from 'react';
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
 
-import { Explorer, Menu, Compiler, Loader, MenuProps, CompilerProps, FlasherProps } from '../components';
+import {
+  Explorer,
+  Menu,
+  Compiler,
+  Loader,
+  MenuProps,
+  CompilerProps,
+  FlasherProps,
+} from '../components';
 
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
@@ -11,14 +19,14 @@ import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/compone
 import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 //import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { StateMachine } from '@renderer/lib/data/StateMachine';
 import { Setting } from './Setting';
+import { EditorRef } from './utils/useEditorManager';
 
 interface SidebarProps {
+  editorRef: EditorRef;
   menuProps: MenuProps;
-  stateMachine: StateMachine | undefined;
   compilerProps: CompilerProps;
-  flasherProps: FlasherProps,
+  flasherProps: FlasherProps;
 }
 
 const items = [
@@ -43,7 +51,12 @@ const items = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ flasherProps, compilerProps, stateMachine, menuProps }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  flasherProps,
+  compilerProps,
+  editorRef,
+  menuProps,
+}) => {
   const panelRef = useRef<ImperativePanelHandle>(null);
 
   const [activeTab, setActiveTab] = useState(0);
@@ -71,12 +84,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ flasherProps, compilerProps, s
   const tabs = useMemo(
     () => [
       <Menu {...menuProps} />,
-      <Explorer stateMachine={stateMachine} />,
-      <Compiler {...compilerProps}/>,
-      <Loader {...flasherProps}/>,
+      <Explorer editorRef={editorRef} />,
+      <Compiler {...compilerProps} />,
+      <Loader {...flasherProps} />,
       <Setting />,
     ],
-    [stateMachine, compilerProps, flasherProps]
+    [editorRef, compilerProps, flasherProps]
   );
 
   return (

@@ -336,9 +336,9 @@ export const App: FC = () => {
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal">
         <Sidebar
+          editorRef={lapki}
           flasherProps={flasherProps}
           compilerProps={compilerProps}
-          stateMachine={editor?.container.machine}
           menuProps={menuProps}
         />
 

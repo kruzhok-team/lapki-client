@@ -30,7 +30,6 @@ import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import useEditorManager from './components/utils/useEditorManager';
-import usePanelMinSize from './components/utils/usePanelMinSize';
 
 /**
  * React-компонент приложения
@@ -333,20 +332,17 @@ export const App: FC = () => {
     });
   }, []);
 
-  const { minSize } = usePanelMinSize('group', 250);
-
   return (
     <div className="h-screen select-none">
       <PanelGroup direction="horizontal" id="group">
         <Sidebar
-          minSize={minSize}
           editorRef={lapki}
           flasherProps={flasherProps}
           compilerProps={compilerProps}
           menuProps={menuProps}
         />
 
-        <Panel>
+        <Panel order={1}>
           <div className="flex">
             <div className="flex-1">
               {editorData.content /* && countRef.current */ ? (

@@ -1,12 +1,17 @@
-import { useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { PanelOnResize } from 'react-resizable-panels';
 
 // вольная адаптация
 // https://github.com/bvaughn/react-resizable-panels/issues/48#issuecomment-1368106118
 
-// FIXME: задаёт минимальный размер, но не фиксирует, когда он ниже требуемого.
+// FIXME: onPanelMinSize не учитывает текущий setMinSize, поэтому используется реф.
 
-export default function usePanelMinSize(groupName: string, minPixelSize: number) {
-  const [minSize, setMinSize] = useState(20);
+export default function usePanelMinSize(
+  groupName: string,
+  minPixelSize: number,
+  resizeCallback?: PanelOnResize
+) {
+  const minSizeRef = useRef(20);
 
   useLayoutEffect(() => {
     const panelGroup = document.querySelector(`[data-panel-group-id="${groupName}"]`);
@@ -19,8 +24,10 @@ export default function usePanelMinSize(groupName: string, minPixelSize: number)
       });
 
       if (width >= minPixelSize) {
-        console.log(['setMinSize', panelGroup.offsetWidth, width, (minPixelSize / width) * 100]);
-        setMinSize((minPixelSize / width) * 100);
+        const oldSize = minSizeRef.current;
+        const newSize = (minPixelSize / width) * 100;
+        minSizeRef.current = newSize;
+        resizeCallback?.(newSize, oldSize);
       }
     });
     observer.observe(panelGroup);
@@ -37,5 +44,5 @@ export default function usePanelMinSize(groupName: string, minPixelSize: number)
     };
   }, [groupName, minPixelSize]);
 
-  return { minSize };
+  return { minSizeRef };
 }

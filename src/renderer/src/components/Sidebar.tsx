@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useCallback } from 'react';
 
 import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
@@ -21,9 +21,9 @@ import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { Setting } from './Setting';
 import { EditorRef } from './utils/useEditorManager';
+import usePanelMinSize from './utils/usePanelMinSize';
 
 interface SidebarProps {
-  minSize: number;
   editorRef: EditorRef;
   menuProps: MenuProps;
   compilerProps: CompilerProps;
@@ -53,7 +53,6 @@ const items = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  minSize,
   flasherProps,
   compilerProps,
   editorRef,
@@ -94,6 +93,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
     [editorRef, compilerProps, flasherProps]
   );
 
+  // Очень грязный хак для фиксации размера боковой панели при изменении размера.
+  // Дёргается, срабатывает через раз, не использует useState, ищет знатока React для починки.
+  // FIXME: см. проблему в usePanelMinSize, из-за замыкания setMinSize useState бесполезен
+  // const [minSize, setMinSize] = useState(20);
+  const onPanelMinSize = useCallback((size: number, prevSize: number) => {
+    if (!panelRef.current) return;
+    // setMinSize(size);
+    const panelSize = panelRef.current.getSize();
+    // console.log([`onPanelMinSize size=${size} prevSize=${prevSize} minSize=${minSize}, panelSize=${panelSize}`]);
+    if (panelSize < size) {
+      // console.log(['onPanelMinSize: fix']);
+      panelRef.current.resize(size);
+    } else {
+      panelRef.current.resize((size / prevSize) * panelSize);
+    }
+  }, []);
+  const { minSizeRef } = usePanelMinSize('group', 250, onPanelMinSize);
+
   return (
     <>
       <div className="flex flex-col gap-4 bg-white p-2 ">
@@ -104,7 +121,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      <Panel collapsible={true} minSize={minSize} defaultSize={minSize} ref={panelRef}>
+      <Panel
+        collapsible={true}
+        minSize={minSizeRef.current}
+        defaultSize={minSizeRef.current}
+        ref={panelRef}
+        order={0}
+      >
         <div className="h-full w-full">
           {tabs.map((Element, i) => (
             <div

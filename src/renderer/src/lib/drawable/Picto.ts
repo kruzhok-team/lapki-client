@@ -14,6 +14,7 @@ const basePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
+  system: '/img/arduino/action.svg',
   variable: '/img/arduino/variable-type.svg',
 
   onEnter: '/img/bearloga/event_enter.svg',

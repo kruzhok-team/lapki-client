@@ -1,11 +1,26 @@
 import { Platform } from '@renderer/types/platform';
 import { icons, picto } from '../drawable/Picto';
 import { Action, Event } from '@renderer/types/diagram';
+import { ComponentProto } from '@renderer/types/platform';
 
 export type ListEntry = {
   name: string;
   description?: string;
   img?: string;
+};
+
+export const systemComponent: ComponentProto = {
+  name: 'Система',
+  description: 'Встроенные платформонезависимые события и методы',
+  singletone: true,
+  img: 'system',
+  signals: {
+    onEnter: { img: 'onEnter', description: 'Выполнять при переходе в это состояние' },
+    onExit: { img: 'onExit', description: 'Выполнять при переходе из этого состояния' },
+  },
+  variables: {}, // TODO: userVar
+  methods: {}, // TODO: userCode
+  parameters: {}, // TODO: userVarList
 };
 
 export class PlatformManager {
@@ -27,6 +42,11 @@ export class PlatformManager {
   constructor(name: string, platform: Platform) {
     this.name = name;
     this.data = platform;
+
+    if (!this.data.components['System']) {
+      this.componentToIcon.set('System', systemComponent.img!);
+      // this.data.components['System'] = systemComponent;
+    }
 
     // TODO: забирать картинки из platform.variables
     for (const cId in platform.components) {
@@ -61,10 +81,15 @@ export class PlatformManager {
     return this.nameToComponent.get(name) ?? name;
   }
 
+  getComponent(name: string, isType?: boolean): ComponentProto | undefined {
+    if (name == 'System') return systemComponent;
+    const query = isType ? name : this.resolveComponent(name);
+    return this.data.components[query];
+  }
+
   getAvailableEvents(name: string, isType?: boolean): ListEntry[] {
     const outs: ListEntry[] = [];
-    const query = isType ? name : this.resolveComponent(name);
-    const component = this.data.components[query];
+    const component = this.getComponent(name, isType);
     if (!component) return outs;
     const signals = component.signals;
     for (const eName in signals) {
@@ -79,8 +104,7 @@ export class PlatformManager {
 
   getAvailableMethods(name: string, isType?: boolean): ListEntry[] {
     const outs: ListEntry[] = [];
-    const query = isType ? name : this.resolveComponent(name);
-    const component = this.data.components[query];
+    const component = this.getComponent(name, isType);
     if (!component) return outs;
     const methods = component.methods;
     for (const mName in methods) {

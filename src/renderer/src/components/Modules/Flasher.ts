@@ -197,21 +197,6 @@ export class Flasher {
       timeout = 0;
     };
 
-    ws.onmessage = (msg: MessageEvent) => {
-      console.log(msg.data);
-      const response = JSON.parse(msg.data) as FlasherMessage;
-      console.log(response.type);
-      switch (response.type) {
-        case 'flash-next-block': {
-          this.sendBlob();
-        }
-        case 'flash-done': {
-        }
-        case 'device': {
-          this.addDevice(response.payload as Device);
-        }
-      }
-    };
 
     ws.onclose = () => {
       console.log('closed');

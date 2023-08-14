@@ -18,14 +18,18 @@ export interface FlasherProps {
 
 export const Loader: React.FC<FlasherProps> = ({currentDevice, devices, connectionStatus, compilerData, flasherLog, setCurrentDevice, handleGetList, handleFlash}) => {
   const isActive = (id: string) => currentDevice === id;
-
+  console.log(connectionStatus)
   return (
     <section className="flex h-full flex-col bg-[#a1c8df] text-center font-Fira text-base">
       <div className="w-full px-4 pt-2">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Загрузчик</h1>
       </div>
       <div className="my-2 flex rounded border-2 border-[#557b91]">
-        <button className="flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white" onClick={handleGetList}>
+        <button 
+            className={twMerge("flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white", 
+            connectionStatus != 'Подключен' && "opacity-50")}
+            onClick={handleGetList}
+            disabled={connectionStatus != 'Подключен'}>
           <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
           Обновить
         </button>

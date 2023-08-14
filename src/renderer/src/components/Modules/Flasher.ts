@@ -93,7 +93,6 @@ export class Flasher {
   }
 
   static getList(): void {
-    this.setFlasherDevices(new Map());
     this.connection.send(
       JSON.stringify({
         type: 'get-list',
@@ -121,6 +120,7 @@ export class Flasher {
       this.connection = ws;
       this.connecting = false;
       this.timeoutSetted = false;
+      this.setFlasherDevices(new Map());
 
       ws.onmessage = (msg: MessageEvent) => {
         console.log(msg.data);

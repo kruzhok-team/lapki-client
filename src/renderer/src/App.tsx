@@ -132,8 +132,7 @@ export const App: FC = () => {
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
-    // TODO: if (editorData.modified)
-    if (editorData.content) {
+    if (editorData.content && editorData.modified) {
       setSaveModalData({
         shownName: editorData.shownName,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
@@ -157,8 +156,7 @@ export const App: FC = () => {
   };
   //Создание нового файла
   const handleNewFile = async () => {
-    // TODO: if (editorData.modified)
-    if (editorData.content) {
+    if (editorData.content && editorData.modified) {
       setSaveModalData({
         shownName: editorData.shownName,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
@@ -395,7 +393,7 @@ export const App: FC = () => {
                 <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
               </button>
 
-              <div className={twMerge('w-96 transition-all', !isDocOpen && 'hidden')}>
+              <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
                 <Documentations />
               </div>
             </div>

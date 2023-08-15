@@ -13,7 +13,7 @@ import {
   FlasherProps,
 } from '../components';
 
-import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
+import MenuImg from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
 import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
@@ -29,28 +29,6 @@ interface SidebarProps {
   compilerProps: CompilerProps;
   flasherProps: FlasherProps;
 }
-
-const items = [
-  {
-    svgIcon: <MenuIcon />,
-  },
-  {
-    svgIcon: <ComponentsIcon />,
-  },
-  {
-    svgIcon: <CompilerIcon />,
-  },
-  {
-    svgIcon: <DriveIcon />,
-  },
-  // {
-  //   svgIcon: <ChipIcon />,
-  // },
-  {
-    svgIcon: <SettingsIcon />,
-    style: true,
-  },
-];
 
 export const Sidebar: React.FC<SidebarProps> = ({
   flasherProps,
@@ -82,6 +60,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
+  const items = useMemo(
+    () => [
+      {
+        svgIcon: (
+          <svg overflow="visible" height={32} width={32}>
+            <image width={32} href={MenuImg} />
+            {editorRef.editorData.modified ? <circle cx={30} cy={3} r={4} fill="#880000ee" /> : ''}
+          </svg>
+        ),
+      },
+      {
+        svgIcon: <ComponentsIcon />,
+      },
+      {
+        svgIcon: <CompilerIcon />,
+      },
+      {
+        svgIcon: <DriveIcon />,
+      },
+      // {
+      //   svgIcon: <ChipIcon />,
+      // },
+      {
+        svgIcon: <SettingsIcon />,
+        style: true,
+      },
+    ],
+    [editorRef.editorData]
+  );
+
   const tabs = useMemo(
     () => [
       <Menu {...menuProps} />,
@@ -90,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Loader {...flasherProps} />,
       <Setting />,
     ],
-    [editorRef, compilerProps, flasherProps]
+    [editorRef.editorData, compilerProps, flasherProps]
   );
 
   // Очень грязный хак для фиксации размера боковой панели при изменении размера.

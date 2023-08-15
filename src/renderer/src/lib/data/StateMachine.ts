@@ -1,4 +1,4 @@
-import { Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import { Action, Elements, Transition as TransitionType } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
 
@@ -184,8 +184,7 @@ export class StateMachine extends EventEmitter {
 
   newPictoState(
     id: string,
-    doComponent: string,
-    doMethod: string,
+    events: Action[],
     triggerComponent: string,
     triggerMethod: string
   ) {
@@ -198,27 +197,18 @@ export class StateMachine extends EventEmitter {
         triggerMethod === value.trigger.method &&
         undefined === value.trigger.args // FIXME: сравнение по args может не работать
     );
+
     if (trueTab === undefined) {
-      state.data.events.push({
-        do: [
-          {
-            args: undefined,
-            component: doComponent,
-            method: doMethod,
-          },
-        ],
+      state.data.events = [...state.data.events, {
+        do: events,
         trigger: {
           args: undefined,
           component: triggerComponent,
           method: triggerMethod,
-        },
-      });
+        }
+      }];
     } else {
-      trueTab.do.push({
-        args: undefined,
-        component: doComponent,
-        method: doMethod,
-      });
+      trueTab.do = [...trueTab.do, events[0]]
     }
     this.dataTrigger();
   }
@@ -432,6 +422,7 @@ export class StateMachine extends EventEmitter {
     color: string,
     component: string,
     method: string,
+    condition: Action[],
     position: Point
   ) {
     if (id !== undefined) {
@@ -448,6 +439,7 @@ export class StateMachine extends EventEmitter {
         component,
         method,
       },
+      do: condition,
     };
     this.createNewTransitionFromData(source, target, transitionData, id);
   }

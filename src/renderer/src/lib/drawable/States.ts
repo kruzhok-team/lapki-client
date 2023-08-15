@@ -9,7 +9,7 @@ import { EventSelection } from './Events';
 type CreateNameCallback = (state: State) => void;
 type CreateCallback = (state: State) => void;
 type MenuCallback = (state: State, pos: Point) => void;
-type CreateEventCallback = (state: State, events: EventSelection) => void;
+type CreateEventCallback = (state: State, events: EventSelection, click: boolean) => void;
 type MenuEventCallback = (state: State, position: Point, events: EventSelection) => void;
 
 /**
@@ -96,7 +96,7 @@ export class States extends EventEmitter {
       if (!eventIdx) {
         this.createCallback?.(e.target);
       } else {
-        this.createEventCallback?.(e.target, eventIdx);
+        this.createEventCallback?.(e.target, eventIdx, true);
       }
     }
     this.container.machine.dataTrigger(true);

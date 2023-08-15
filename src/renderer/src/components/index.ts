@@ -3,7 +3,7 @@ export * from './CodeEditor';
 export * from './Compiler';
 export * from './CreateModal';
 export * from './DiagramEditor';
-export * from './Documentations';
+export * from './Documentation/Documentation';
 export * from './Explorer';
 export * from './Loader';
 export * from './Menu';

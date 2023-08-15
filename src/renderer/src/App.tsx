@@ -393,7 +393,7 @@ export const App: FC = () => {
                 <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
               </button>
 
-              <div className={twMerge('w-96 transition-all', !isDocOpen && 'hidden')}>
+              <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
                 <Documentations />
               </div>
             </div>

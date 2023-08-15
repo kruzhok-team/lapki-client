@@ -394,7 +394,7 @@ export const App: FC = () => {
               </button>
 
               <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
-                <Documentations />
+                <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
               </div>
             </div>
           </div>

@@ -5,13 +5,13 @@ import Show from './components/Show';
 /*Загрузка документации*/
 import { twMerge } from 'tailwind-merge';
 
-export function Documentations() {
+export function Documentations({ baseUrl }: { baseUrl: string }) {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [data, setData] = useState<{ body: File }>();
   const [html, setHtml] = useState('');
 
   const getData = () => {
-    fetch('https://lapki-doc.polyus-nt.ru/')
+    fetch(baseUrl)
       .then((data) => data.json())
       .then((data) => {
         setData(data);
@@ -20,9 +20,7 @@ export function Documentations() {
 
   const onItemClicked = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, item) => {
     event.stopPropagation();
-    console.log('item');
-    console.log(item);
-    fetch(encodeURI(`https://lapki-doc.polyus-nt.ru/${item.path}`))
+    fetch(encodeURI(`${baseUrl}${item.path}`))
       .then((data) => data.text())
       .then((html) => {
         setHtml(html);

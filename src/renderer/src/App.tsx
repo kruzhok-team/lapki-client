@@ -331,7 +331,7 @@ export const App: FC = () => {
   }, []);
 
   return (
-    <div className="h-screen select-none">
+    <div className="h-screen font-Fira select-none">
       <PanelGroup direction="horizontal" id="group">
         <Sidebar
           editorRef={lapki}
@@ -346,7 +346,7 @@ export const App: FC = () => {
               {editorData.content /* && countRef.current */ ? (
                 <>
                   <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
-                    <div className="flex font-Fira">
+                    <div className="flex">
                       {countRef.current.map((name, id) => (
                         <div
                           key={'tab' + id}
@@ -358,7 +358,7 @@ export const App: FC = () => {
                           <div
                             role="button"
                             onClick={() => handleShowTabs(id)}
-                            className="line-clamp-1 p-1 "
+                            className="line-clamp-1 p-1"
                           >
                             {name.tab}
                           </div>

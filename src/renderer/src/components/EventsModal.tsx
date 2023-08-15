@@ -69,7 +69,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       overlayClassName="bg-neutral-700 fixed inset-0 backdrop-blur z-50"
       onRequestClose={onClose}
     >
-      <div className="relative mb-5 justify-between border-b border-neutral-400 pb-1">
+      <div className="relative mb-3 justify-between border-b border-neutral-400 pb-1">
         <h1 className="text-2xl font-bold">Редактирование событий</h1>
       </div>
       <form onSubmit={handleSubmit}>
@@ -114,7 +114,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           </button>}
           
         </div>
-        {!props.isData?.click && <div className="flex flex-col items-center m-2 h-60 max-w-lg overflow-y-auto break-words rounded bg-neutral-700">
+        {!props.isData?.click && <div className="flex flex-col items-center m-2 h-48 max-w-lg overflow-y-auto break-words rounded bg-neutral-700">
               {condition.map((data, key) => (
               <div key={"newEvent" + key} draggable className={twMerge('flex px-1 justify-around items-center min-h-[3.5rem] border-2 w-40 m-2 rounded bg-neutral-700', /*key && 'order-'+{key}*/)}>
                 <div>

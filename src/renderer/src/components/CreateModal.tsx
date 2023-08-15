@@ -126,7 +126,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               }
             }}
             className={twMerge(
-              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 font-Fira text-white focus:outline-none'
+              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 text-white focus:outline-none'
             )}
             placeholder="Придумайте название"
             maxLength={20}

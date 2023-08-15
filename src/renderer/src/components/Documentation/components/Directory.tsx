@@ -21,7 +21,7 @@ export const Directory = ({
 
   return (
     <Item onClick={onDirectoryClicked}>
-      <span className=" fle block truncate pb-2 pl-0 pr-2 pt-2 transition hover:bg-gray-100">
+      <span className="block truncate pb-2 pl-0 pr-2 pt-2 transition hover:bg-gray-100">
         <DirectoryIcon />
         {item.name}
       </span>

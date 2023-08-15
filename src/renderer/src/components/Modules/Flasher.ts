@@ -223,7 +223,7 @@ export class Flasher {
   static async setBinary(binaries: Array<Binary>) {
     binaries.map((bin) => {
       console.log(bin.filename);
-      if (bin.extension == 'ino.hex') {
+      if (bin.extension.endsWith('ino.hex')) {
         console.log(bin.extension)
         console.log(bin.fileContent);
         Flasher.binary = bin.fileContent as Blob;

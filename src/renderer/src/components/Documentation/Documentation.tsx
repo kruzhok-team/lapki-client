@@ -44,7 +44,7 @@ export function Documentations() {
           )}
           onClick={() => setActiveTab(0)}
         >
-          Руководство
+          Содержание
         </button>
         <button
           className={twMerge(
@@ -53,7 +53,7 @@ export function Documentations() {
           )}
           onClick={() => setActiveTab(1)}
         >
-          Справка
+          Просмотр
         </button>
       </div>
 

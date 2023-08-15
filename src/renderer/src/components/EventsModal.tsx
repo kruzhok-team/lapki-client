@@ -101,7 +101,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             })}
             isElse={false}
             error={!!errors.doArgs}
-            //Не критичная ошибка, работает и без определения того или иного типа
+            //Не критичная ошибка
             errorMessage={errors.doArgs?.message ?? ''}
           />
           {!props.isData?.click &&

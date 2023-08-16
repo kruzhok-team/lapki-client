@@ -3,7 +3,8 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron';
 
 import fs from 'fs';
 import { join, basename } from 'path';
-import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes'
+import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
+import { ModuleManager } from './modules/ModuleManager';
 
 //import icon from '../../resources/icon.png?asset';
 
@@ -34,34 +35,31 @@ async function handleFileOpen() {
 
 async function handleSaveIntoFolder(data: Array<SourceFile | Binary>) {
   return new Promise(async (resolve, _reject) => {
-    await dialog.showOpenDialog({
-      properties: ['openDirectory'],
-    })
-    .then((file) => {
-      const directory = file.filePaths[0];
-      if (!file.canceled && directory){
-        data.map((element) => {
-          const path = directory.concat("/", element.filename, ".", element.extension)
-          fs.writeFile(
-            path,
-            element.fileContent as Buffer | string,
-            function (err) {
+    await dialog
+      .showOpenDialog({
+        properties: ['openDirectory'],
+      })
+      .then((file) => {
+        const directory = file.filePaths[0];
+        if (!file.canceled && directory) {
+          data.map((element) => {
+            const path = directory.concat('/', element.filename, '.', element.extension);
+            fs.writeFile(path, element.fileContent as Buffer | string, function (err) {
               if (err) {
                 resolve([false, directory, err.message]);
               } else {
                 console.log('Сохранено!');
                 resolve([true, directory, basename(directory)]);
               }
-            }
-          )
-        })
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      resolve([false, null, err.message]);
-    });
-  })
+            });
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        resolve([false, null, err.message]);
+      });
+  });
 }
 
 /**
@@ -170,7 +168,7 @@ app.whenReady().then(() => {
   // IPC из отрисовщика, в основном диалоговые окна
   ipcMain.handle('dialog:saveIntoFolder', (_event, data) => {
     return handleSaveIntoFolder(data);
-  })
+  });
 
   ipcMain.handle('dialog:openFile', handleFileOpen);
 
@@ -182,6 +180,13 @@ app.whenReady().then(() => {
     return handleFileSaveAs(filename, data);
   });
 
+  ipcMain.handle('Module:startLocalModule', (_event, module: string) => {
+    return ModuleManager.startLocalModule(module);
+  });
+
+  ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
+    return ModuleManager.stopModule(module);
+  })
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки
   // - CmdOrCtrl + R – перезагрузить страницу
@@ -189,7 +194,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-
+  ModuleManager.startLocalModule("lapki-flasher");
   createWindow();
 
   app.on('activate', function () {

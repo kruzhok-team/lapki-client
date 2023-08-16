@@ -20,7 +20,7 @@ export class Flasher {
   static devices: Map<string, Device>;
 
   // Переменные, связанные с отправкой бинарных данных
-  static reader = new FileReader();
+  static reader: FileReader;
   static binary: Blob;
   static currentBlob: Blob;
   static filePos: number = 0;
@@ -29,8 +29,19 @@ export class Flasher {
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
 
+  static changeHost(host: string, port: number) {
+    this.host = host;
+    this.port = port;
+    this.base_address = `ws://${this.host}:${this.port}/flasher`;
+    this.connection = undefined;
+    this.setFlasherConnectionStatus('Подключение к новому хосту...');
+    this.setFlasherDevices(new Map());
+    this.connect(this.base_address);
+  }
+
   //Когда прочитывает блоб - отправляет его
-  static initReader(): void {
+  static initReader(reader): void {
+    this.reader = reader;
     this.reader.onloadend = function (evt) {
       if (evt.target?.readyState == FileReader.DONE) {
         console.log('BLOB');
@@ -197,7 +208,6 @@ export class Flasher {
       timeout = 0;
     };
 
-
     ws.onclose = () => {
       console.log('closed');
       this.connecting = false;
@@ -224,7 +234,7 @@ export class Flasher {
     binaries.map((bin) => {
       console.log(bin.filename);
       if (bin.extension == 'ino.hex') {
-        console.log(bin.extension)
+        console.log(bin.extension);
         console.log(bin.fileContent);
         Flasher.binary = bin.fileContent as Blob;
         return;

@@ -101,7 +101,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             })}
             isElse={false}
             error={!!errors.doArgs}
-            //Не критичная ошибка
+            // FIXME: некритичная ошибка по типам
+            // @ts-ignore
             errorMessage={errors.doArgs?.message ?? ''}
           />
           {!props.isData?.click &&

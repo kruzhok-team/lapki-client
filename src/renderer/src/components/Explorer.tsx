@@ -7,11 +7,19 @@ import AddIcon from '@renderer/assets/icons/new transition.svg';
 
 import './component-list.css';
 
-interface ExplorerProps {
-  editorRef: EditorRef;
+export interface ExplorerCallbacks {
+  onRequestAddComponent: () => void;
 }
 
-export const Explorer: React.FC<ExplorerProps> = ({ editorRef }) => {
+interface ExplorerProps {
+  editorRef: EditorRef;
+  callbacks: ExplorerCallbacks;
+}
+
+export const Explorer: React.FC<ExplorerProps> = ({
+  editorRef,
+  callbacks: { onRequestAddComponent },
+}) => {
   const editorData = editorRef.editorData;
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -36,7 +44,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editorRef }) => {
 
   const onAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(['add-component-click']);
+    onRequestAddComponent();
   };
 
   const content: ScrollableListItem[] = Object.entries(editorData?.data.components).map(
@@ -65,14 +73,18 @@ export const Explorer: React.FC<ExplorerProps> = ({ editorRef }) => {
       onClick={onUnClick}
     >
       <div
-        className="w-full flex-auto px-4 pt-2 items-center text-center"
+        className="w-full flex-auto items-center px-4 pt-2 text-center"
         style={{ height: `{dividerHeight}px` }}
       >
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Компоненты</h1>
-        <div className="py-2 component-add" onClick={onAddClick}>
+        <button
+          className="component-add"
+          disabled={!editorRef.editorData.content}
+          onClick={onAddClick}
+        >
           <img src={AddIcon} />
-          <div>Добавить...</div>
-        </div>
+          <p>Добавить...</p>
+        </button>
         <ScrollableList
           listItems={content ?? []}
           heightOfItem={10}

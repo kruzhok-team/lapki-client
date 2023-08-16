@@ -1,7 +1,7 @@
 .component-add {
   /* border-radius: 0.25rem; */ /* 4px */
   --tw-bg-opacity: 1;
-  width: 100% + 1.5rem;
+  width: calc(100% + 1.5rem);
   margin: -0.25rem -0.75rem;
   padding-left: 1rem;
   padding-top: 0.25rem;
@@ -19,7 +19,7 @@
   margin-left: -0.6rem;
 }
 
-.component-add:hover {
+.component-add:enabled:hover {
   /* border-radius: 0.25rem; */ /* 4px */
   background-color: rgb(96, 96, 96);
   color: rgb(250 250 250);

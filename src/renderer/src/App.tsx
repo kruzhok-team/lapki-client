@@ -10,7 +10,7 @@ import {
   FlasherProps,
   MenuProps,
 } from './components';
-import { Sidebar } from './components/Sidebar';
+import { Sidebar, SidebarCallbacks } from './components/Sidebar';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
@@ -30,6 +30,11 @@ import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import useEditorManager from './components/utils/useEditorManager';
+import {
+  ComponentSelectData,
+  ComponentSelectModal,
+  emptyCompData,
+} from './components/ComponentSelectModal';
 
 /**
  * React-компонент приложения
@@ -55,6 +60,11 @@ export const App: FC = () => {
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
+
+  const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
+  const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
+  const openCompAddModal = () => setIsCompAddModalOpen(true);
+  const closeCompAddModal = () => setIsCompAddModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -241,11 +251,28 @@ export const App: FC = () => {
     handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
   };
 
-  const menuProps: MenuProps = {
+  const onRequestAddComponent = () => {
+    const vacantComponents = editor!.container.machine.getVacantComponents();
+    const existingComponents = new Set<string>();
+    for (const name of editor!.container.machine.components.keys()) {
+      existingComponents.add(name);
+    }
+    setCompAddModalData({ vacantComponents, existingComponents });
+    openCompAddModal();
+  };
+
+  const handleAddComponent = (idx: string, name?: string) => {
+    const realName = name ?? idx;
+    editor!.container.machine.addNewComponent(realName, idx);
+    // console.log(['handleAddComponent', idx, name]);
+  };
+
+  const sidebarCallbacks: SidebarCallbacks = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
     onRequestSaveFile: handleSaveFile,
     onRequestSaveAsFile: handleSaveAsFile,
+    onRequestAddComponent,
   };
 
   //Callback данные для получения ответа от контекстного меню
@@ -331,13 +358,13 @@ export const App: FC = () => {
   }, []);
 
   return (
-    <div className="h-screen font-Fira select-none">
+    <div className="h-screen select-none font-Fira">
       <PanelGroup direction="horizontal" id="group">
         <Sidebar
           editorRef={lapki}
           flasherProps={flasherProps}
           compilerProps={compilerProps}
-          menuProps={menuProps}
+          callbacks={sidebarCallbacks}
         />
 
         <Panel order={1}>
@@ -407,6 +434,12 @@ export const App: FC = () => {
         isOpen={isPlatformModalOpen}
         onCreate={performNewFile}
         onClose={closePlatformModal}
+      />
+      <ComponentSelectModal
+        isOpen={isCompAddModalOpen}
+        data={compAddModalData}
+        onClose={closeCompAddModal}
+        onSubmit={handleAddComponent}
       />
 
       <LoadingOverlay isOpen={isLoadingOverlay}></LoadingOverlay>

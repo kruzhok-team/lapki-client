@@ -8,7 +8,7 @@ import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 import { stateStyle } from '../styles';
-import { PlatformManager } from './PlatformManager';
+import { ComponentEntry, PlatformManager } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
 
@@ -182,12 +182,7 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  newPictoState(
-    id: string,
-    events: Action[],
-    triggerComponent: string,
-    triggerMethod: string
-  ) {
+  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
 
@@ -199,16 +194,19 @@ export class StateMachine extends EventEmitter {
     );
 
     if (trueTab === undefined) {
-      state.data.events = [...state.data.events, {
-        do: events,
-        trigger: {
-          args: undefined,
-          component: triggerComponent,
-          method: triggerMethod,
-        }
-      }];
+      state.data.events = [
+        ...state.data.events,
+        {
+          do: events,
+          trigger: {
+            args: undefined,
+            component: triggerComponent,
+            method: triggerMethod,
+          },
+        },
+      ];
     } else {
-      trueTab.do = [...trueTab.do, events[0]]
+      trueTab.do = [...trueTab.do, events[0]];
     }
     this.dataTrigger();
   }
@@ -471,6 +469,24 @@ export class StateMachine extends EventEmitter {
 
     this.dataTrigger();
   }
+
+  addNewComponent(name: string, type: string) {
+    if (this.components.has(name)) {
+      console.log(['bad new component', name, type]);
+      return;
+    }
+
+    const component = new Component({
+      type,
+      parameters: {},
+    });
+
+    this.components.set(name, component);
+    this.platform.nameToComponent.set(name, type);
+
+    this.dataTrigger();
+  }
+
   /**
    * Снимает выделение со всех нод и переходов.
    *
@@ -491,5 +507,21 @@ export class StateMachine extends EventEmitter {
     });
 
     this.container.isDirty = true;
+  }
+
+  getVacantComponents(): ComponentEntry[] {
+    const vacant: ComponentEntry[] = [];
+    for (const idx in this.platform.data.components) {
+      const compo = this.platform.data.components[idx];
+      if (compo.singletone && this.components.has(idx)) continue;
+      vacant.push({
+        idx,
+        name: compo.name ?? idx,
+        img: compo.img ?? 'unknown',
+        description: compo.description ?? '',
+        singletone: compo.singletone ?? false,
+      });
+    }
+    return vacant;
   }
 }

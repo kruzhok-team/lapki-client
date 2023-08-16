@@ -9,6 +9,14 @@ export type ListEntry = {
   img?: string;
 };
 
+export type ComponentEntry = {
+  idx: string;
+  name: string;
+  description?: string;
+  img?: string;
+  singletone: boolean;
+};
+
 export const systemComponent: ComponentProto = {
   name: 'Система',
   description: 'Встроенные платформонезависимые события и методы',

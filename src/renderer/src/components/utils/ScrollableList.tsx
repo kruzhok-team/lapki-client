@@ -36,7 +36,7 @@ export default class ScrollableList extends Component<ScrollableListProps, Scrol
   setListRef: (element: any) => void;
 
   constructor(props: ScrollableListProps) {
-    super({ ...ScrollableList.defaultProps, ...props });
+    super(props);
     this.state = { scrollPosition: 0 };
     this.list = null;
 

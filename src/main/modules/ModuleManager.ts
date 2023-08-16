@@ -7,10 +7,19 @@ export class ModuleManager {
   static startLocalModule(module: string) {
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
+      var chprocess;
       switch (platform) {
         case 'linux':
-          const chprocess = spawn(`./src/main/modules/src/${platform}/${module}`);
-          this.localProccesses.set(module, chprocess);
+          chprocess = spawn(`./src/main/modules/src/${platform}/${module}`);
+          break;
+        case 'win32':
+          chprocess = spawn(`src/main/modules/src/${platform}/${module}.exe`);
+          break;
+        default:
+          console.log(`Платформа ${platform} не поддерживается (:^( )`);
+      }
+      if (chprocess !== undefined){
+        this.localProccesses.set(module, chprocess);
           chprocess.stdout.on('data', (data) => {
             console.log(`${module}-stdout: ${data}`);
           });
@@ -21,12 +30,6 @@ export class ModuleManager {
           chprocess.on('exit', () => {
             console.log(`${module}-exit!`);
           });
-          break;
-        case 'win32':
-          console.log('biba boba');
-          break;
-        default:
-          console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
     } else {
       console.log(`${module} is already local`);

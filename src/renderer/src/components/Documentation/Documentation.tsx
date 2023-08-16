@@ -9,6 +9,7 @@ export function Documentations({ baseUrl }: { baseUrl: string }) {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [data, setData] = useState<{ body: File }>();
   const [html, setHtml] = useState('');
+  const [documentLink, setDocumentLink] = useState('');
 
   const getData = () => {
     fetch(baseUrl)
@@ -20,12 +21,18 @@ export function Documentations({ baseUrl }: { baseUrl: string }) {
 
   const onItemClicked = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, item) => {
     event.stopPropagation();
-    fetch(encodeURI(`${baseUrl}${item.path}`))
-      .then((data) => data.text())
-      .then((html) => {
-        setHtml(html);
-        setActiveTab(1);
-      });
+    if (item.path.endsWith('html')) {
+      fetch(encodeURI(`${baseUrl}${item.path}`))
+        .then((data) => data.text())
+        .then((html) => {
+          setHtml(html);
+          setActiveTab(1);
+        });
+    } else {
+      setHtml('');
+      setDocumentLink(`${baseUrl}${item.path}`);
+      setActiveTab(1);
+    }
   };
 
   useEffect(() => {
@@ -71,7 +78,7 @@ export function Documentations({ baseUrl }: { baseUrl: string }) {
         </div>
 
         <div className={twMerge(activeTab !== 1 && 'hidden')}>
-          <Show html={html} />
+          <Show html={html} documentLink={documentLink} />
         </div>
       </div>
     </section>

@@ -14,7 +14,7 @@ interface CreateModalProps {
   isOpen: boolean;
   isData: { state } | undefined;
   isName: { state; position } | undefined;
-  onOpenMethodModal: () => void;
+  onOpenEventsModal: () => void;
   onClose: () => void;
   onSubmit: (data: CreateModalFormValues) => void;
 }
@@ -40,7 +40,7 @@ export interface CreateModalFormValues {
 
 export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
-  onOpenMethodModal,
+  onOpenEventsModal,
   onClose,
   isData,
   isName,
@@ -126,7 +126,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               }
             }}
             className={twMerge(
-              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 font-Fira text-white focus:outline-none'
+              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 text-white focus:outline-none'
             )}
             placeholder="Придумайте название"
             maxLength={20}
@@ -313,7 +313,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             <button
               type="button"
               className="my-2 rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-              onClick={onOpenMethodModal}
+              onClick={onOpenEventsModal}
             >
               Добавить действие
             </button>

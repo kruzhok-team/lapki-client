@@ -7,11 +7,11 @@ import { State } from '@renderer/lib/drawable/State';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalFormValues } from './CreateModal';
-import { CreateEventsModal, CreateEventsModalFormValues } from './CreateEventsModal';
-import { CreateMethodModal, CreateMethodModalFormValues } from './CreateMethodModal';
+import { CreateEventsModal, EventsModalFormValues } from './EventsModal';
 
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
+import { Action } from '@renderer/types/diagram';
 
 interface DiagramEditorProps {
   manager: EditorManager;
@@ -27,11 +27,10 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   onCodeSnippet,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
   const [state, setState] = useState<{ state: State }>();
-  const [events, setEvents] = useState<{ doComponent: string; doMethod: string }>();
-  const [idEvents, setIdEvents] = useState<{ state: State; event: EventSelection }>();
+  const [events, setEvents] = useState<{ doCondition: Action[] }>();
+  const [idEvents, setIdEvents] = useState<{ state: State; event: EventSelection, click: boolean }>();
   const [transition, setTransition] = useState<{ target: Condition }>();
   const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
 
@@ -41,9 +40,6 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
   const openEventsModal = () => setIsEventsModalOpen(true);
   const closeEventsModal = () => setIsEventsModalOpen(false);
-  const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
-  const openMethodModal = () => setIsMethodModalOpen(true);
-  const closeMethodModal = () => setIsMethodModalOpen(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<StateContextMenuData>();
 
@@ -55,6 +51,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       //Очищаем все старые данные
       setState(undefined);
       setEvents(undefined);
+      setIdEvents(undefined);
       setNameState(undefined);
       setTransition(undefined);
       setNewTransition(undefined);
@@ -110,9 +107,9 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
       // manager.triggerDataUpdate();
     });
 
-    editor.container.states.onStateEventCreate((state, event) => {
+    editor.container.states.onStateEventCreate((state, event, click) => {
       ClearUseState();
-      setIdEvents({ state, event });
+      setIdEvents({ state, event, click });
       openEventsModal();
     });
 
@@ -163,11 +160,12 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     // }, [ containerRef.current ]);
   }, []);
 
-  const handleCreateEventsModal = (data: CreateEventsModalFormValues) => {
+  const handleCreateEventsModal = (data: EventsModalFormValues) => {
     const doComponent = data.doComponent;
     const doMethod = data.doMethod;
-    setEvents({ doComponent, doMethod });
-    if (!isModalOpen) {
+    const doCondition = data.condition;
+    setEvents({ doCondition });
+    if (!isModalOpen && idEvents?.click) {
       editor?.container.machine.createEvent(data.id, doComponent, doMethod);
     }
     closeEventsModal();
@@ -179,8 +177,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
     } else if (data.key === 2) {
       editor?.container.machine.newPictoState(
         data.id,
-        events!.doComponent,
-        events!.doMethod,
+        events!.doCondition,
         data.triggerComponent,
         data.triggerMethod
       );
@@ -192,6 +189,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         data.color,
         data.doComponent,
         data.doMethod,
+        events!.doCondition,
         transition?.target.bounds
       );
     } else if (newTransition) {
@@ -202,6 +200,7 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         data.color,
         data.doComponent,
         data.doMethod,
+        events!.doCondition,
         newTransition?.target.bounds
       );
     }
@@ -247,22 +246,13 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
         isData={idEvents}
         onClose={closeEventsModal}
         onSubmit={handleCreateEventsModal}
-        title={'Редактирование события'}
-      />
-
-      <CreateMethodModal
-        isOpen={isMethodModalOpen}
-        isData={idEvents}
-        onClose={closeMethodModal}
-        onSubmit={handleCreateEventsModal}
-        title={'Добавление действий'}
       />
 
       {isModalOpen ? (
         <CreateModal
           editor={editor}
           isOpen={isModalOpen}
-          onOpenMethodModal={openMethodModal}
+          onOpenEventsModal={openEventsModal}
           isData={state}
           isName={nameState}
           onClose={closeModal}

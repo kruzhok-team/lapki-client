@@ -65,13 +65,13 @@ export const Explorer: React.FC<ExplorerProps> = ({ editorRef }) => {
       onClick={onUnClick}
     >
       <div
-        className="w-full flex-auto px-4 pt-2 text-center"
+        className="w-full flex-auto px-4 pt-2 items-center text-center"
         style={{ height: `{dividerHeight}px` }}
       >
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Компоненты</h1>
-        <div className="component-add" onClick={onAddClick}>
+        <div className="py-2 component-add" onClick={onAddClick}>
           <img src={AddIcon} />
-          <p>Добавить...</p>
+          <div>Добавить...</div>
         </div>
         <ScrollableList
           listItems={content ?? []}
@@ -82,7 +82,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editorRef }) => {
       </div>
 
       <div className="h-full flex-auto px-4 pt-3 text-center">
-        <h1 className="mb-3 border-b border-white  pb-2 text-lg">Иерархия состояний</h1>
+        <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
 
         <div>
           Не забыть посмотреть варианты древа и возможности редактирования машины состояний

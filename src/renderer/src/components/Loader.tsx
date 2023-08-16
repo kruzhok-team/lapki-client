@@ -52,10 +52,6 @@ export const Loader: React.FC<FlasherProps> = ({
         <button
           className="p-1 hover:bg-[#557b91] hover:text-white"
           onClick={function handleClick() {
-            /*const hostItems ={
-              value: "локальный",
-              handler: ()=>{console.log("локальный")},
-            }*/
             var list = document.getElementById('ollist')!;
 
             if (list.style.display == 'none' || list.style.display == '') {

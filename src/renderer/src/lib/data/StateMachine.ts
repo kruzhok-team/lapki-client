@@ -182,12 +182,7 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  newPictoState(
-    id: string,
-    events: Action[],
-    triggerComponent: string,
-    triggerMethod: string
-  ) {
+  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
 
@@ -199,16 +194,19 @@ export class StateMachine extends EventEmitter {
     );
 
     if (trueTab === undefined) {
-      state.data.events = [...state.data.events, {
-        do: events,
-        trigger: {
-          args: undefined,
-          component: triggerComponent,
-          method: triggerMethod,
-        }
-      }];
+      state.data.events = [
+        ...state.data.events,
+        {
+          do: events,
+          trigger: {
+            args: undefined,
+            component: triggerComponent,
+            method: triggerMethod,
+          },
+        },
+      ];
     } else {
-      trueTab.do = [...trueTab.do, events[0]]
+      trueTab.do = [...trueTab.do, events[0]];
     }
     this.dataTrigger();
   }

@@ -70,14 +70,24 @@ export class Flasher {
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
   }
+  /*
+    Добавляет устройство в список устройств
 
-  static addDevice(device: Device): void {
+    @param {device} устройство для добавления
+    @returns {isNew} true, если устройство новое, иначе false
+  */
+  static addDevice(device: Device): boolean {
+    let isNew : boolean = false;
     this.setFlasherDevices((oldValue) => {
       console.log(device);
+      if (!oldValue.has(device.deviceID)){
+        isNew = true;
+      }
       const newValue = new Map(oldValue);
       newValue.set(device.deviceID, device);
       return newValue;
     });
+    return isNew
   }
 
   static deleteDevice(deviceID: string): void {
@@ -110,7 +120,7 @@ export class Flasher {
         payload: undefined,
       } as FlasherMessage)
     );
-    this.setFlasherLog('Запрос get-list отправлен!');
+    this.setFlasherLog('Запрос на обновление списка отправлен!');
   }
 
   static checkConnection(): boolean {
@@ -146,8 +156,11 @@ export class Flasher {
             break;
           }
           case 'device': {
-            this.addDevice(response.payload as Device);
-            this.setFlasherLog('Добавлено устройство!');
+            if (this.addDevice(response.payload as Device)){
+              this.setFlasherLog('Добавлено устройство!');
+            } else{
+              this.setFlasherLog('Состояние об устройстве синхронизировано');
+            }
             break;
           }
           case 'device-update-delete': {
@@ -177,11 +190,11 @@ export class Flasher {
             break;
           }
           case 'flash-disconnected': {
-            this.setFlasherLog('Устройство есть в списке, но оно не подключено к серверу');
+            this.setFlasherLog('Не удалось выполнить операцию прошивки, так как устройство больше не подключено');
             break;
           }
           case 'flash-wrong-id': {
-            this.setFlasherLog('Устройства с таким id нету в списке');
+            this.setFlasherLog('Не удалось выполнить операцию прошивки, так как так устройство не подключено');
             break;
           }
           case 'flash-not-finished': {
@@ -193,14 +206,17 @@ export class Flasher {
             break;
           }
           case 'event-not-supported': {
-            this.setFlasherLog('Сервер получил от клиента неизвестный тип сообщения');
+            this.setFlasherLog('Загрузчик получил неизвестный тип сообщения');
             break;
           }
           case 'get-list-cooldown': {
             this.setFlasherLog(
-              "Запрос на 'get-list' отклонён так как, клиент недавно уже получил новый список"
+              "Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён"
             );
             break;
+          }
+          case 'empty-list':{
+            this.setFlasherLog("Устройства не найдены");
           }
         }
       };

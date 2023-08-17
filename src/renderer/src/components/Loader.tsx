@@ -86,7 +86,7 @@ export const Loader: React.FC<FlasherProps> = ({
             )}
             onClick={() => setCurrentDevice(key)}
           >
-            {devices.get(key)?.name}
+            {devices.get(key)?.name + ' (' + devices.get(key)?.portName + ')'}
           </button>
         ))}
       </div>
@@ -94,11 +94,10 @@ export const Loader: React.FC<FlasherProps> = ({
         {[...devices.keys()].map((key) => (
           <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
             <div className="flex items-center">{devices.get(key)?.name}</div>
-            <p>Device ID: {devices.get(key)?.deviceID}</p>
-            <p>Serial ID: {devices.get(key)?.serialID}</p>
-            <p>Port: {devices.get(key)?.portName}</p>
-            <p>Controller: {devices.get(key)?.controller}</p>
-            <p>Programmer: {devices.get(key)?.programmer}</p>
+            <p>Серийный номер: {devices.get(key)?.serialID}</p>
+            <p>Порт: {devices.get(key)?.portName}</p>
+            <p>Контроллер: {devices.get(key)?.controller}</p>
+            <p>Программатор: {devices.get(key)?.programmer}</p>
           </div>
         ))}
       </div>

@@ -153,7 +153,7 @@ export class Flasher {
             break;
           }
           case 'flash-done': {
-            this.setFlasherLog('Загрузка завершена!');
+            this.setFlasherLog(`Загрузка завершена!\n${response.payload}`);
             break;
           }
           case 'device': {

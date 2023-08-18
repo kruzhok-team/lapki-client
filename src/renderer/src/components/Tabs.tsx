@@ -24,14 +24,14 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   /** Функция выбора вкладки (машина состояний, код) */
   const [activeTab, setActiveTab] = useState<number | 0>(0);
   const isActive = (index: number) => setActiveTab(index);
-  const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
-  const tabs = [...props.tabsItems, ...tabsNewItems];
+  const [tabs, setTabs] = useState<TabData[]>([...props.tabsItems]);
+
   const codeShow = (name, code) => {
-    if (name !== null && code !== null) {
-      const trueTab = tabsNewItems.find((item) => item.tab === name);
+    if (name !== undefined && code !== undefined) {
+      const trueTab = tabs.find((item) => item.tab === name);
       if (trueTab === undefined) {
-        setTabsNewItems([
-          ...tabsNewItems,
+        setTabs([
+          ...tabs,
           {
             tab: name,
             content: <CodeEditor value={code} />,
@@ -46,27 +46,25 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
 
   //Функция закрытия вкладки (РАБОЧАЯ)
   const onClose = (id: number) => {
-    console.log(id);
-    console.log(tabsNewItems);
-    tabsNewItems.splice(id - 2, 1);
+    tabs.splice(id, 1);
     isActive(0);
   };
 
   return (
     <>
       <section className="flex">
-        {tabs.map((name, id) => (
+        {tabs.map((value, id) => (
           <div
             key={'tab' + id}
             className={twMerge(
-              'flex items-center p-1 hover:bg-[#4391BF] hover:bg-opacity-50',
-              activeTab === id && 'border-t-2 border-t-[#4391BF] border-opacity-50'
+              'box-border flex items-center border-t-2 border-t-[#FFF] p-1 hover:border-t-[#4391BF] hover:border-opacity-50',
+              activeTab === id && ' border-t-[#4391BF] border-opacity-50'
             )}
           >
             <div role="button" onClick={() => isActive(id)} className="line-clamp-1 p-1">
-              {name.tab}
+              {value.tab}
             </div>
-            {!name.cantClose ? (
+            {!value.cantClose ? (
               <button onClick={() => onClose(id)} className="p-1 hover:bg-[#FFFFFF]">
                 <Close width="1rem" height="1rem" />
               </button>
@@ -76,12 +74,12 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
           </div>
         ))}
       </section>
-      {tabs.map((name, id) => (
+      {tabs.map((value, id) => (
         <div
           key={id + 'ActiveBlock'}
           className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
         >
-          {name.content}
+          {value.content}
         </div>
       ))}
     </>

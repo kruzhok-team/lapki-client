@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import './assets/styles/fira-sans.css';
 import { App } from './App';
+import { WhoopsieScreen } from './components/WhoopsieScreen';
 
 /*
  Для отладки мы запускаем React в строгом режиме.
@@ -16,6 +17,8 @@ import { App } from './App';
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
-    <App />
+    <WhoopsieScreen>
+      <App />
+    </WhoopsieScreen>
   </StrictMode>
 );

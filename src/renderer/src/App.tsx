@@ -7,7 +7,6 @@ import {
   DiagramEditor,
   Documentations,
   FlasherProps,
-  LoadingOverlay,
   MenuProps,
   PlatformSelectModal,
   SaveModalData,
@@ -37,6 +36,7 @@ import {
   ComponentSelectModal,
   emptyCompData,
 } from './components/ComponentSelectModal';
+import { hideLoadingOverlay } from './components/utils/OverlayControl';
 
 /**
  * React-компонент приложения
@@ -307,6 +307,7 @@ export const App: React.FC = () => {
       if (Object.keys(errs).length > 0) {
         openPlatformError(errs);
       }
+      hideLoadingOverlay();
     });
   }, []);
 
@@ -377,8 +378,6 @@ export const App: React.FC = () => {
         onClose={closeCompAddModal}
         onSubmit={handleAddComponent}
       />
-
-      <LoadingOverlay isOpen={isLoadingOverlay}></LoadingOverlay>
     </div>
   );
 };

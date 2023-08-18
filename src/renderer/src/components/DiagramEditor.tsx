@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -17,7 +17,7 @@ interface DiagramEditorProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
-  onCodeSnippet: (id: string, content?: string) => void;
+  onCodeSnippet: (name: string, code: string) => void;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({

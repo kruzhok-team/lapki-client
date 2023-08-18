@@ -10,8 +10,10 @@ import { twMerge } from 'tailwind-merge';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 
+ReactModal.setAppElement('#root');
+
 interface EventsModalProps extends Props {
-  isData: { state: State; event: EventSelection, click: boolean } | undefined;
+  isData: { state: State; event: EventSelection; click: boolean } | undefined;
   cancelLabel?: string;
   submitLabel?: string;
   onSubmit: (data: EventsModalFormValues) => void;
@@ -20,10 +22,10 @@ interface EventsModalProps extends Props {
 
 export interface EventsModalFormValues {
   //Импорт State из lib/drawable/State ломает VS Code, пришлось убрать определение типа
-  id: {state, event: EventSelection} | undefined;
+  id: { state; event: EventSelection } | undefined;
   doComponent: string;
   doMethod: string;
-  doArgs: {[key: string]: string } | undefined;
+  doArgs: { [key: string]: string } | undefined;
   condition: Action[];
 }
 
@@ -40,16 +42,21 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     formState: { errors },
   } = useForm<EventsModalFormValues>();
 
-  const [condition, setCondition] = useState<{component: string, method: string, args?: {[key: string]: string }}[]>([]);
+  const [condition, setCondition] = useState<
+    { component: string; method: string; args?: { [key: string]: string } }[]
+  >([]);
   //функция для создания новых действий
-  const onCreateEvents = hookHandleSubmit ((data) => {
-    setCondition([...condition, {
+  const onCreateEvents = hookHandleSubmit((data) => {
+    setCondition([
+      ...condition,
+      {
         component: data.doComponent,
         method: data.doMethod,
         args: data.doArgs,
-    }])
+      },
+    ]);
   });
-  
+
   const handleSubmit = hookHandleSubmit((data) => {
     data.id = props.isData;
     data.condition = condition;
@@ -65,7 +72,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   return (
     <ReactModal
       {...props}
-      className="absolute font-Fira left-1/2 top-12 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
+      className="absolute left-1/2 top-12 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 font-Fira text-neutral-100 outline-none"
       overlayClassName="bg-neutral-700 fixed inset-0 backdrop-blur z-50"
       onRequestClose={onClose}
     >
@@ -82,7 +89,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             })}
             isElse={false}
             error={!!errors.doComponent}
-            errorMessage={errors.doComponent?.message ?? ''}/>
+            errorMessage={errors.doComponent?.message ?? ''}
+          />
           <TextSelect
             label="Действие:"
             placeholder="Выберите метод события"
@@ -104,36 +112,34 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             //Не критичная ошибка
             errorMessage={errors.doArgs?.message ?? ''}
           />
-          {!props.isData?.click &&
-          <button
-            type="button"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-            onClick={onCreateEvents}
-          >
-          Добавить
-          </button>}
-          
+          {!props.isData?.click && (
+            <button
+              type="button"
+              className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+              onClick={onCreateEvents}
+            >
+              Добавить
+            </button>
+          )}
         </div>
-        {!props.isData?.click && <div className="flex flex-col items-center m-2 h-48 max-w-lg overflow-y-auto break-words rounded bg-neutral-700">
-              {condition.map((data, key) => (
-              <div key={"newEvent" + key} draggable className={twMerge('flex px-1 justify-around items-center min-h-[3.5rem] border-2 w-40 m-2 rounded bg-neutral-700', /*key && 'order-'+{key}*/)}>
-                <div>
-                  {data.component}
-                </div>
-                <div className="border-2 h-full border-white"></div>
-                <div>
-                  {data.method}
-                </div>
-                {
-                data.args !== undefined ||
-                  <div>
-                    {data.args}
-                  </div>
-                }
+        {!props.isData?.click && (
+          <div className="m-2 flex h-48 max-w-lg flex-col items-center overflow-y-auto break-words rounded bg-neutral-700">
+            {condition.map((data, key) => (
+              <div
+                key={'newEvent' + key}
+                draggable
+                className={twMerge(
+                  'm-2 flex min-h-[3.5rem] w-40 items-center justify-around rounded border-2 bg-neutral-700 px-1' /*key && 'order-'+{key}*/
+                )}
+              >
+                <div>{data.component}</div>
+                <div className="h-full border-2 border-white"></div>
+                <div>{data.method}</div>
+                {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
-        </div>
-        }
+          </div>
+        )}
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"

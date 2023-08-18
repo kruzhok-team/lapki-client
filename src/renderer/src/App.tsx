@@ -1,30 +1,30 @@
-import { FC, useEffect, useRef, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
+import { useEffect, useState } from 'react';
 import { Panel, PanelGroup } from 'react-resizable-panels';
-
+import { twMerge } from 'tailwind-merge';
 import {
   CodeEditor,
   CompilerProps,
   DiagramEditor,
   Documentations,
   FlasherProps,
+  LoadingOverlay,
   MenuProps,
+  PlatformSelectModal,
+  SaveModalData,
+  SaveRemindModal,
+  MessageModal,
+  MessageModalData,
+  Sidebar,
+  Tabs,
 } from './components';
-import { Sidebar } from './components/Sidebar';
-
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
-import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { isLeft, unwrapEither } from './types/Either';
-import { SaveModalData, SaveRemindModal } from './components/SaveRemindModal';
-import { MessageModal, MessageModalData } from './components/MessageModal';
-import { LoadingOverlay } from './components/LoadingOverlay';
 import {
   getPlatformsErrors,
   preloadPlatforms,
   preparePreloadImages,
 } from './lib/data/PlatformLoader';
 import { preloadPicto } from './lib/drawable/Picto';
-import { PlatformSelectModal } from './components/PlatformSelectModal';
 import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
@@ -34,7 +34,7 @@ import useEditorManager from './components/utils/useEditorManager';
 /**
  * React-компонент приложения
  */
-export const App: FC = () => {
+export const App: React.FC = () => {
   // TODO: а если у нас будет несколько редакторов?
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -203,20 +203,18 @@ export const App: FC = () => {
     }
   };
 
-  const addTab = (name: string, content: string) => {
-    tabsItems.push({
-      tab: name,
-      content: <CodeEditor value={content} />,
-    });
+  const [tabData, setTabData] = useState<{ name: string; code: string } | null>(null);
+  const onCodeSnippet = (name: string, code: string) => {
+    setTabData({ name, code });
   };
 
   const handleAddStdoutTab = () => {
     console.log(compilerData!.stdout);
-    addTab('stdout', compilerData!.stdout);
+    onCodeSnippet('stdout', compilerData!.stdout);
   };
 
   const handleAddStderrTab = () => {
-    addTab('stderr', compilerData!.stderr);
+    onCodeSnippet('stderr', compilerData!.stderr);
   };
 
   const flasherProps: FlasherProps = {
@@ -248,69 +246,6 @@ export const App: FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
   };
 
-  //Callback данные для получения ответа от контекстного меню
-  const [idTextCode, setIdTextCode] = useState<string | null>(null);
-  const [elementCode, setElementCode] = useState<string | null>(null);
-  const countRef = useRef<{ tab: string; content: JSX.Element }[]>([]);
-  const onCodeSnippet = (id: string, code?: string) => {
-    setIdTextCode(id);
-    setElementCode(code ?? null);
-  };
-
-  const tabsItems = [
-    {
-      tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
-      content: (
-        <DiagramEditor
-          manager={manager!}
-          editor={editor}
-          setEditor={lapki.setEditor}
-          onCodeSnippet={onCodeSnippet}
-        />
-      ),
-    },
-    {
-      tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
-      content: <CodeEditor value={editorData.content ?? ''} />,
-    },
-  ];
-
-  /** Функция выбора вкладки (машина состояний, код) */
-  var [activeTab, setActiveTab] = useState<number | 0>(0);
-  var isActive = (index: number) => activeTab === index;
-  const handleShowTabs = (id: number) => {
-    if (activeTab === id) {
-      setActiveTab(activeTab);
-    }
-    setActiveTab(id);
-  };
-
-  //Проверяем сколько элементов в массиве, если меньше 2, то записываем в useRef
-  if (countRef.current.length <= 2) {
-    countRef.current = [];
-    countRef.current = tabsItems;
-  }
-
-  if (idTextCode !== null) {
-    const trueTab = countRef.current.find((item) => item.tab === idTextCode);
-    if (trueTab === undefined) {
-      countRef.current.push({
-        tab: idTextCode,
-        content: <CodeEditor value={elementCode ?? ''} />,
-      });
-      handleShowTabs(countRef.current.length - 1);
-    }
-  }
-  //Функция закрытия вкладки (РАБОЧАЯ)
-  const onClose = (id: number) => {
-    console.log(id);
-    console.log(countRef.current);
-    //Удаляем необходимую вкладку
-    countRef.current.splice(id, 1);
-    countRef.current = tabsItems;
-    handleShowTabs(0);
-  };
-
   useEffect(() => {
     Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
     Flasher.initReader();
@@ -330,8 +265,27 @@ export const App: FC = () => {
     });
   }, []);
 
+  const tabsItems = [
+    {
+      tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
+      cantClose: true,
+      content: (
+        <DiagramEditor
+          manager={manager!}
+          editor={editor}
+          setEditor={lapki.setEditor}
+          onCodeSnippet={onCodeSnippet}
+        />
+      ),
+    },
+    {
+      tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
+      cantClose: true,
+      content: <CodeEditor value={editorData.content ?? ''} />,
+    },
+  ];
   return (
-    <div className="h-screen font-Fira select-none">
+    <div className="h-screen select-none font-Fira">
       <PanelGroup direction="horizontal" id="group">
         <Sidebar
           editorRef={lapki}
@@ -343,44 +297,8 @@ export const App: FC = () => {
         <Panel order={1}>
           <div className="flex">
             <div className="flex-1">
-              {editorData.content /* && countRef.current */ ? (
-                <>
-                  <div className="flex h-[2rem] items-center border-b border-[#4391BF]">
-                    <div className="flex">
-                      {countRef.current.map((name, id) => (
-                        <div
-                          key={'tab' + id}
-                          className={twMerge(
-                            'flex items-center p-1 hover:bg-[#4391BF] hover:bg-opacity-50',
-                            isActive(id) && 'bg-[#4391BF] bg-opacity-50'
-                          )}
-                        >
-                          <div
-                            role="button"
-                            onClick={() => handleShowTabs(id)}
-                            className="line-clamp-1 p-1"
-                          >
-                            {name.tab}
-                          </div>
-                          <button onClick={() => onClose(id)} className="p-1 hover:bg-[#FFFFFF]">
-                            <Close width="1rem" height="1rem" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    {/*<button className="w-[4vw]">
-                      <img src={forward} alt="" className="m-auto h-[2.5vw] w-[2.5vw]"></img>
-                    </button>*/}
-                  </div>
-                  {countRef.current.map((name, id) => (
-                    <div
-                      key={id + 'ActiveBlock'}
-                      className={twMerge('hidden h-[calc(100vh-2rem)]', isActive(id) && 'block')}
-                    >
-                      {name.content}
-                    </div>
-                  ))}
-                </>
+              {editorData.content ? (
+                <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
               ) : (
                 <p className="pt-24 text-center font-Fira text-base">
                   Откройте файл или перенесите его сюда...

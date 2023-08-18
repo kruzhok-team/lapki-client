@@ -213,6 +213,19 @@ export const App: FC = () => {
     }
   };
 
+  const handleLocalFlasher = async () => {
+    console.log('local');
+    await manager?.startLocalModule('lapki-flasher');
+    //Стандартный порт
+    await manager?.changeFlasherHost('localhost', 8080);
+  };
+
+  const handleRemoteFlasher = async () => {
+    console.log('remote');
+    // await manager?.stopLocalModule('lapki-flasher');
+    await manager?.changeFlasherHost('localhost', 8089);
+  };
+
   const addTab = (name: string, content: string) => {
     tabsItems.push({
       tab: name,
@@ -238,6 +251,8 @@ export const App: FC = () => {
     setCurrentDevice: setCurrentDevice,
     handleGetList: handleGetList,
     handleFlash: handleFlashBinary,
+    handleLocalFlasher: handleLocalFlasher,
+    handleRemoteFlasher: handleRemoteFlasher,
   };
 
   const compilerProps: CompilerProps = {
@@ -340,7 +355,8 @@ export const App: FC = () => {
 
   useEffect(() => {
     Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
-    Flasher.initReader();
+    const reader = new FileReader();
+    Flasher.initReader(reader);
     Flasher.connect(Flasher.base_address);
 
     Compiler.bindReact(setCompilerData, setCompilerStatus);

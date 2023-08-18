@@ -6,8 +6,8 @@ import {
   handleFileSaveAs,
   handleSaveIntoFolder,
 } from './file-handlers';
-
 import { join } from 'path';
+import { ModuleManager } from './modules/ModuleManager';
 
 //import icon from '../../resources/icon.png?asset';
 
@@ -72,6 +72,13 @@ app.whenReady().then(() => {
     return handleFileSaveAs(filename, data);
   });
 
+  ipcMain.handle('Module:startLocalModule', (_event, module: string) => {
+    return ModuleManager.startLocalModule(module);
+  });
+
+  ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
+    return ModuleManager.stopModule(module);
+  });
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки
   // - CmdOrCtrl + R – перезагрузить страницу
@@ -79,7 +86,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-
+  ModuleManager.startLocalModule('lapki-flasher');
   createWindow();
 
   app.on('activate', function () {

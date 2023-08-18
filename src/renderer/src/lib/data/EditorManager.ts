@@ -165,6 +165,18 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('dialog:saveIntoFolder', data);
   }
 
+  async startLocalModule(module: string) {
+    await window.electron.ipcRenderer.invoke('Module:startLocalModule', module);
+  }
+
+  async changeFlasherHost(host: string, port: number) {
+    Flasher.changeHost(host, port);
+  }
+
+  async stopLocalModule(module: string) {
+    await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
+  }
+
   async save(): Promise<Either<FileError | null, null>> {
     if (!this.editor) return makeLeft(null);
     if (!this.state.name) {

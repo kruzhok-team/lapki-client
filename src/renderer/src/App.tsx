@@ -206,13 +206,13 @@ export const App: FC = () => {
     console.log('local');
     await manager?.startLocalModule('lapki-flasher');
     //Стандартный порт
-    await manager?.changeFlasherHost('localhost', 8080);
+    manager?.changeFlasherHost('localhost', 8080);
   };
 
-  const handleRemoteFlasher = async () => {
+  const handleRemoteFlasher = () => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
-    await manager?.changeFlasherHost('localhost', 8089);
+    manager?.changeFlasherHost('localhost', 8089);
   };
 
   const addTab = (name: string, content: string) => {
@@ -326,11 +326,6 @@ export const App: FC = () => {
   };
 
   useEffect(() => {
-    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
-    const reader = new FileReader();
-    Flasher.initReader(reader);
-    Flasher.connect(Flasher.base_address);
-
     Compiler.bindReact(setCompilerData, setCompilerStatus);
     Compiler.connect(`${Compiler.base_address}main`);
     preloadPlatforms(() => {
@@ -344,6 +339,13 @@ export const App: FC = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
+    const reader = new FileReader();
+    Flasher.initReader(reader);
+    Flasher.connect(Flasher.base_address);
+  });
 
   return (
     <div className="h-screen select-none">

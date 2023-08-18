@@ -33,6 +33,7 @@ export class Flasher {
     this.host = host;
     this.port = port;
     this.base_address = `ws://${this.host}:${this.port}/flasher`;
+    this.connection.close();
     this.connection = undefined;
     this.setFlasherConnectionStatus('Подключение к новому хосту...');
     this.setFlasherDevices(new Map());
@@ -77,17 +78,17 @@ export class Flasher {
     @returns {isNew} true, если устройство новое, иначе false
   */
   static addDevice(device: Device): boolean {
-    let isNew : boolean = false;
+    let isNew: boolean = false;
     this.setFlasherDevices((oldValue) => {
       console.log(device);
-      if (!oldValue.has(device.deviceID)){
+      if (!oldValue.has(device.deviceID)) {
         isNew = true;
       }
       const newValue = new Map(oldValue);
       newValue.set(device.deviceID, device);
       return newValue;
     });
-    return isNew
+    return isNew;
   }
 
   static deleteDevice(deviceID: string): void {
@@ -156,9 +157,9 @@ export class Flasher {
             break;
           }
           case 'device': {
-            if (this.addDevice(response.payload as Device)){
+            if (this.addDevice(response.payload as Device)) {
               this.setFlasherLog('Добавлено устройство!');
-            } else{
+            } else {
               this.setFlasherLog('Состояние об устройстве синхронизировано');
             }
             break;
@@ -190,11 +191,15 @@ export class Flasher {
             break;
           }
           case 'flash-disconnected': {
-            this.setFlasherLog('Не удалось выполнить операцию прошивки, так как устройство больше не подключено');
+            this.setFlasherLog(
+              'Не удалось выполнить операцию прошивки, так как устройство больше не подключено'
+            );
             break;
           }
           case 'flash-wrong-id': {
-            this.setFlasherLog('Не удалось выполнить операцию прошивки, так как так устройство не подключено');
+            this.setFlasherLog(
+              'Не удалось выполнить операцию прошивки, так как так устройство не подключено'
+            );
             break;
           }
           case 'flash-not-finished': {
@@ -211,12 +216,12 @@ export class Flasher {
           }
           case 'get-list-cooldown': {
             this.setFlasherLog(
-              "Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён"
+              'Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён'
             );
             break;
           }
-          case 'empty-list':{
-            this.setFlasherLog("Устройства не найдены");
+          case 'empty-list': {
+            this.setFlasherLog('Устройства не найдены');
           }
         }
       };

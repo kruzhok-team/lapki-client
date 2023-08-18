@@ -16,6 +16,7 @@ import {
   MessageModalData,
   Sidebar,
   Tabs,
+  TabDataAdd,
 } from './components';
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { isLeft, unwrapEither } from './types/Either';
@@ -203,7 +204,7 @@ export const App: React.FC = () => {
     }
   };
 
-  const [tabData, setTabData] = useState<{ name: string; code: string } | null>(null);
+  const [tabData, setTabData] = useState<TabDataAdd | null>(null);
   const onCodeSnippet = (name: string, code: string) => {
     setTabData({ name, code });
   };

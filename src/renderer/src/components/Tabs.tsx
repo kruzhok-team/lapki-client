@@ -9,47 +9,50 @@ export interface TabData {
   cantClose?: boolean;
 }
 
+export interface TabDataAdd {
+  name: string;
+  code: string;
+}
+
 export interface TabsProps {
   tabsItems: TabData[];
-  tabData: { name: string; code: string } | null;
-  setTabData: React.Dispatch<
-    React.SetStateAction<{
-      name: string;
-      code: string;
-    } | null>
-  >;
+  tabData: TabDataAdd | null;
+  setTabData: React.Dispatch<React.SetStateAction<TabDataAdd | null>>;
 }
 
 export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   /** Функция выбора вкладки (машина состояний, код) */
   const [activeTab, setActiveTab] = useState<number | 0>(0);
   const isActive = (index: number) => setActiveTab(index);
-  const [tabs, setTabs] = useState<TabData[]>([...props.tabsItems]);
+  const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
+  const tabs = [...props.tabsItems, ...tabsNewItems];
 
-  const codeShow = (name, code) => {
-    if (name !== undefined && code !== undefined) {
-      const trueTab = tabs.find((item) => item.tab === name);
+  useEffect(() => {
+    if (props.tabData !== null) {
+      const trueTab = tabs.find((item) => item.tab === props.tabData?.name);
       if (trueTab === undefined) {
-        setTabs([
-          ...tabs,
+        setTabsNewItems([
+          ...tabsNewItems,
           {
-            tab: name,
-            content: <CodeEditor value={code} />,
+            tab: props.tabData.name,
+            content: <CodeEditor value={props.tabData.code} />,
           },
         ]);
         isActive(tabs.length);
         props.setTabData(null);
+      } else {
+        tabs.map((value, id) => {
+          trueTab.tab === value.tab || isActive(id + 1);
+        });
       }
     }
-  };
-  codeShow(props.tabData?.name, props.tabData?.code);
-
-  //Функция закрытия вкладки (РАБОЧАЯ)
+  }, [props.tabData]);
+  
   const onClose = (id: number) => {
-    tabs.splice(id, 1);
+    setTabsNewItems((tabs) => tabs.splice(id, 1));
     isActive(0);
   };
-
+  
   return (
     <>
       <section className="flex">
@@ -65,7 +68,10 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
               {value.tab}
             </div>
             {!value.cantClose ? (
-              <button onClick={() => onClose(id)} className="p-1 hover:bg-[#FFFFFF]">
+              <button
+                onClick={() => onClose(id)}
+                className="p-1 hover:bg-[#4391BF] hover:bg-opacity-50 "
+              >
                 <Close width="1rem" height="1rem" />
               </button>
             ) : (

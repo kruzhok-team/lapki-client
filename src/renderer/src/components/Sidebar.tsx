@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [sidebarTabActive, setSidebarTabActive] = useState(0);
   const [width, setWidth] = React.useState(250);
   const [minWidth, setMinWidth] = React.useState(200);
-  const [maxWidth, setMaxWidth] = React.useState('100%');
+  const [maxWidth, setMaxWidth] = React.useState('80vw');
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const handleClick = (i: number) => () => {
@@ -96,7 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       setMaxWidth(5);
       setMinWidth(5);
     } else {
-      setMaxWidth('100%');
+      setMaxWidth('80vw');
       setMinWidth(200);
     }
   }, [isCollapsed]);

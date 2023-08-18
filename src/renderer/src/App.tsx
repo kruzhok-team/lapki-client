@@ -1,6 +1,5 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-import { Panel, PanelGroup } from 'react-resizable-panels';
 
 import {
   CodeEditor,
@@ -332,7 +331,7 @@ export const App: FC = () => {
 
   return (
     <div className="h-screen select-none">
-      <PanelGroup direction="horizontal" autoSaveId="persistence" id="group" units="pixels">
+      <div className="flex h-full w-full flex-row overflow-hidden">
         <Sidebar
           editorRef={lapki}
           flasherProps={flasherProps}
@@ -340,7 +339,7 @@ export const App: FC = () => {
           menuProps={menuProps}
         />
 
-        <Panel order={1}>
+        <div className="flex-auto  overflow-hidden">
           <div className="flex">
             <div className="flex-1">
               {editorData.content /* && countRef.current */ ? (
@@ -398,8 +397,8 @@ export const App: FC = () => {
               </div>
             </div>
           </div>
-        </Panel>
-      </PanelGroup>
+        </div>
+      </div>
 
       <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
       <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />

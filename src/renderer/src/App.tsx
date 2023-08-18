@@ -332,7 +332,7 @@ export const App: FC = () => {
 
   return (
     <div className="h-screen select-none">
-      <PanelGroup direction="horizontal" id="group">
+      <PanelGroup direction="horizontal" autoSaveId="persistence" id="group" units="pixels">
         <Sidebar
           editorRef={lapki}
           flasherProps={flasherProps}

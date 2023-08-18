@@ -39,16 +39,17 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
           },
         ]);
         isActive(tabs.length);
-        props.setTabData(null);
       } else {
-        tabs.map((value, id) => {
-          trueTab.tab === value.tab || isActive(id + 1);
+        tabs.forEach((value, id) => {
+          console.log(trueTab.tab, value.tab);
+          trueTab.tab !== value.tab || isActive(id);
         });
       }
     }
   }, [props.tabData]);
 
   const onClose = (id: number) => {
+    console.log(id);
     setTabsNewItems((tabs) => tabs.splice(id, 1));
     isActive(0);
   };

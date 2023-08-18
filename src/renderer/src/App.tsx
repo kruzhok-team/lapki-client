@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Panel, PanelGroup } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
+
 import {
   CodeEditor,
   CompilerProps,
@@ -330,8 +330,8 @@ export const App: React.FC = () => {
     },
   ];
   return (
-    <div className="h-screen select-none font-Fira">
-      <PanelGroup direction="horizontal" id="group">
+    <div className="h-screen select-none">
+      <div className="flex h-full w-full flex-row overflow-hidden">
         <Sidebar
           editorRef={lapki}
           flasherProps={flasherProps}
@@ -339,7 +339,7 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <Panel order={1}>
+        <div className="flex-auto  overflow-hidden">
           <div className="flex">
             <div className="flex-1">
               {editorData.content ? (
@@ -357,12 +357,12 @@ export const App: React.FC = () => {
               </button>
 
               <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
-                <Documentations />
+                <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
               </div>
             </div>
           </div>
-        </Panel>
-      </PanelGroup>
+        </div>
+      </div>
 
       <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
       <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />

@@ -1,7 +1,7 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState } from 'react';
 
-import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
+import { Resizable } from 're-resizable';
 
 import {
   Explorer,
@@ -21,7 +21,6 @@ import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { Setting } from './Setting';
 import { EditorRef } from './utils/useEditorManager';
-// import usePanelMinSize from './utils/usePanelMinSize';
 
 interface SidebarProps {
   editorRef: EditorRef;
@@ -37,16 +36,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   menuProps,
 }) => {
   const [sidebarTabActive, setSidebarTabActive] = useState(0);
-
-  const panelRef = useRef<ImperativePanelHandle>(null);
+  const [width, setWidth] = React.useState(250);
+  const [minWidth, setMinWidth] = React.useState(200);
+  const [maxWidth, setMaxWidth] = React.useState('100%');
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const handleClick = (i: number) => () => {
-    const panel = panelRef.current;
     if (i === sidebarTabActive) {
-      panel?.getCollapsed() ? panel?.expand() : panel?.collapse();
+      isCollapsed ? setIsCollapsed(false) : setIsCollapsed(true);
     } else {
       setSidebarTabActive(i);
-      panel?.getCollapsed() ? panel?.expand() : null;
+      isCollapsed ? setIsCollapsed(false) : null;
     }
   };
 
@@ -91,9 +91,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
     [editorRef.editorData, compilerProps, flasherProps]
   );
 
-  // Очень грязный хак для фиксации размера боковой панели при изменении размера.
-  // Дёргается, срабатывает через раз, не использует useState, ищет знатока React для починки.
-  // FIXME: см. проблему в usePanelMinSize, из-за замыкания setMinSize useState бесполезен
+  React.useEffect(() => {
+    if (isCollapsed) {
+      setMaxWidth(5);
+      setMinWidth(5);
+    } else {
+      setMaxWidth('100%');
+      setMinWidth(200);
+    }
+  }, [isCollapsed]);
+
+  const handleResize = (e) => {
+    e.pageX < 100 ? setIsCollapsed(true) : setIsCollapsed(false);
+  };
+
+  const handleResizeStop = (d) => {
+    setWidth(width + d.width);
+  };
 
   return (
     <>
@@ -105,13 +119,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </div>
 
-      <Panel collapsible={true} minSize={250} defaultSize={250} order={0} ref={panelRef}>
+      <Resizable
+        enable={{ right: true }}
+        size={{ width: width, height: '100vh' }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: 'solid 1px #ddd',
+          background: '#f0f0f0',
+          overflow: 'hidden',
+        }}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onResize={handleResize}
+        onResizeStop={handleResizeStop}
+      >
         <div className="h-full w-full">
           {tabs.map((Element, i) => (
             <div
               key={i}
               className={twMerge(
-                'hidden h-full border-l-4 border-[#a1c8df]',
+                'hidden h-full border-l-4 border-r-4 border-[#a1c8df]',
                 i === sidebarTabActive && 'block'
               )}
             >
@@ -119,11 +148,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           ))}
         </div>
-      </Panel>
+      </Resizable>
 
-      <PanelResizeHandle className="group">
+      {/* <PanelResizeHandle className="group">
         <div className="h-full w-1 bg-[#4391BF] bg-opacity-50 transition-colors group-hover:bg-opacity-100 group-data-[resize-handle-active]:bg-opacity-100" />
-      </PanelResizeHandle>
+      </PanelResizeHandle> */}
     </>
   );
 };

@@ -58,10 +58,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     },
   });
 
-  const components = Object.fromEntries(editor!.container.machine.components);
-  const methods = editor?.container.machine.platform.getAvailableEvents('Button');
-  console.log(components, methods);
-
   const onRequestClose = () => {
     onClose();
     // TODO: пока кажется лишним затирать текстовые поля

@@ -10,6 +10,8 @@ import { twMerge } from 'tailwind-merge';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 
+ReactModal.setAppElement('#root');
+
 interface EventsModalProps extends Props {
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
   cancelLabel?: string;

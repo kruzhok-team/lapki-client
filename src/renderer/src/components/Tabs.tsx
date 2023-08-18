@@ -61,11 +61,11 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
           <div
             key={'tab' + id}
             className={twMerge(
-              'box-border flex items-center border-t-2 border-t-[#FFF] p-1 hover:border-t-[#4391BF] hover:border-opacity-50',
-              activeTab === id && ' border-t-[#4391BF] border-opacity-50'
+              'flex items-center border-b-4 border-b-[#FFF] p-1 pb-[-10px] hover:border-b-[#4391BF] hover:border-opacity-50',
+              activeTab === id && 'border-b-[#4391BF] border-opacity-50'
             )}
           >
-            <div role="button" onClick={() => isActive(id)} className="line-clamp-1 p-1">
+            <div role="button" onClick={() => isActive(id)} className="line-clamp-1 px-1 pt-1">
               {value.tab}
             </div>
             {!value.cantClose ? (

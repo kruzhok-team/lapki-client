@@ -11,6 +11,7 @@ import {
   MenuProps,
   CompilerProps,
   FlasherProps,
+  ExplorerCallbacks,
 } from '../components';
 
 import MenuImg from '@renderer/assets/icons/menu.svg';
@@ -23,9 +24,19 @@ import { Setting } from './Setting';
 import { EditorRef } from './utils/useEditorManager';
 import usePanelMinSize from './utils/usePanelMinSize';
 
+export interface SidebarCallbacks {
+  onRequestNewFile: () => void;
+  onRequestOpenFile: () => void;
+  onRequestSaveFile: () => void;
+  onRequestSaveAsFile: () => void;
+  onRequestAddComponent: () => void;
+  // TODO: onRequestEditComponent: (name: string) => void;
+  // TODO: onRequestRemoveComponent: (name: string) => void;
+}
+
 interface SidebarProps {
   editorRef: EditorRef;
-  menuProps: MenuProps;
+  callbacks: SidebarCallbacks;
   compilerProps: CompilerProps;
   flasherProps: FlasherProps;
 }
@@ -34,7 +45,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   flasherProps,
   compilerProps,
   editorRef,
-  menuProps,
+  callbacks: {
+    onRequestNewFile,
+    onRequestOpenFile,
+    onRequestSaveFile,
+    onRequestSaveAsFile,
+    onRequestAddComponent,
+  },
 }) => {
   const panelRef = useRef<ImperativePanelHandle>(null);
 
@@ -90,10 +107,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
     [editorRef.editorData]
   );
 
+  const menuProps: MenuProps = {
+    onRequestNewFile,
+    onRequestOpenFile,
+    onRequestSaveFile,
+    onRequestSaveAsFile,
+  };
+
+  const explorerCallbacks: ExplorerCallbacks = {
+    onRequestAddComponent,
+  };
+
   const tabs = useMemo(
     () => [
       <Menu {...menuProps} />,
-      <Explorer editorRef={editorRef} />,
+      <Explorer editorRef={editorRef} callbacks={explorerCallbacks} />,
       <Compiler {...compilerProps} />,
       <Loader {...flasherProps} />,
       <Setting />,

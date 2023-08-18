@@ -1,33 +1,33 @@
 export type FlasherData = {
-  devices: Map<string, Device>,
-  log: string | undefined,
-  connectionStatus: string,
-}
+  devices: Map<string, Device>;
+  log: string | undefined;
+  connectionStatus: string;
+};
 
 export type FlashStart = {
-  deviceID: string,
-  fileSize: number
-}
+  deviceID: string;
+  fileSize: number;
+};
 
 export type FlashUpdatePort = {
-  deviceID: string,
-  portName: string
-}
+  deviceID: string;
+  portName: string;
+};
 
 export type FlasherMessage = {
-  type: string,
-  payload: string | Device | FlashStart | UpdateDelete | undefined 
-}
+  type: string;
+  payload: string | Device | FlashStart | UpdateDelete | undefined;
+};
 
 export type UpdateDelete = {
-  deviceID: string
-}
+  deviceID: string;
+};
 
 export type Device = {
-  deviceID: string,
-  name: string,
-  controller: string,
-  programmer: string,
-  portName: string,
-  serialID: string
-}
+  deviceID: string;
+  name: string;
+  controller: string;
+  programmer: string;
+  portName: string;
+  serialID: string;
+};

@@ -15,6 +15,7 @@ interface ModalProps extends Props {
   children: React.ReactNode;
   onExtra?: React.FormEventHandler;
   onSubmit?: React.FormEventHandler;
+  submitDisabled?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -25,12 +26,13 @@ export const Modal: React.FC<ModalProps> = ({
   submitLabel,
   extraLabel,
   onExtra,
+  submitDisabled,
   ...props
 }) => {
   return (
     <ReactModal
       {...props}
-      className="absolute font-Fira left-1/2 top-12 w-full max-w-2xl -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
+      className="absolute left-1/2 top-12 w-full max-w-2xl -translate-x-1/2 rounded-lg bg-neutral-800 p-6 font-Fira text-neutral-100 outline-none"
       overlayClassName="bg-neutral-700 fixed inset-0 backdrop-blur z-0"
       closeTimeoutMS={100}
     >
@@ -65,8 +67,9 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
           <button
             type="submit"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+            className="rounded bg-neutral-700 px-4 py-2 transition-colors enabled:hover:bg-neutral-600 disabled:bg-neutral-900 disabled:text-neutral-500"
             hidden={!onSubmit}
+            disabled={submitDisabled}
           >
             {submitLabel ?? 'Сохранить'}
           </button>

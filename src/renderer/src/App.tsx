@@ -15,6 +15,7 @@ import {
   MessageModal,
   MessageModalData,
   Sidebar,
+  SidebarCallbacks,
   Tabs,
   TabDataAdd,
 } from './components';
@@ -31,6 +32,11 @@ import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import useEditorManager from './components/utils/useEditorManager';
+import {
+  ComponentSelectData,
+  ComponentSelectModal,
+  emptyCompData,
+} from './components/ComponentSelectModal';
 
 /**
  * React-компонент приложения
@@ -56,6 +62,11 @@ export const App: React.FC = () => {
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
+
+  const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
+  const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
+  const openCompAddModal = () => setIsCompAddModalOpen(true);
+  const closeCompAddModal = () => setIsCompAddModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -204,6 +215,19 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleLocalFlasher = async () => {
+    console.log('local');
+    await manager?.startLocalModule('lapki-flasher');
+    //Стандартный порт
+    await manager?.changeFlasherHost('localhost', 8080);
+  };
+
+  const handleRemoteFlasher = async () => {
+    console.log('remote');
+    // await manager?.stopLocalModule('lapki-flasher');
+    await manager?.changeFlasherHost('localhost', 8089);
+  };
+
   const [tabData, setTabData] = useState<TabDataAdd | null>(null);
   const onCodeSnippet = (name: string, code: string) => {
     setTabData({ name, code });
@@ -227,6 +251,8 @@ export const App: React.FC = () => {
     setCurrentDevice: setCurrentDevice,
     handleGetList: handleGetList,
     handleFlash: handleFlashBinary,
+    handleLocalFlasher: handleLocalFlasher,
+    handleRemoteFlasher: handleRemoteFlasher,
   };
 
   const compilerProps: CompilerProps = {
@@ -240,16 +266,34 @@ export const App: React.FC = () => {
     handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
   };
 
-  const menuProps: MenuProps = {
+  const onRequestAddComponent = () => {
+    const vacantComponents = editor!.container.machine.getVacantComponents();
+    const existingComponents = new Set<string>();
+    for (const name of editor!.container.machine.components.keys()) {
+      existingComponents.add(name);
+    }
+    setCompAddModalData({ vacantComponents, existingComponents });
+    openCompAddModal();
+  };
+
+  const handleAddComponent = (idx: string, name?: string) => {
+    const realName = name ?? idx;
+    editor!.container.machine.addNewComponent(realName, idx);
+    // console.log(['handleAddComponent', idx, name]);
+  };
+
+  const sidebarCallbacks: SidebarCallbacks = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
     onRequestSaveFile: handleSaveFile,
     onRequestSaveAsFile: handleSaveAsFile,
+    onRequestAddComponent,
   };
 
   useEffect(() => {
     Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
-    Flasher.initReader();
+    const reader = new FileReader();
+    Flasher.initReader(reader);
     Flasher.connect(Flasher.base_address);
 
     Compiler.bindReact(setCompilerData, setCompilerStatus);
@@ -292,7 +336,7 @@ export const App: React.FC = () => {
           editorRef={lapki}
           flasherProps={flasherProps}
           compilerProps={compilerProps}
-          menuProps={menuProps}
+          callbacks={sidebarCallbacks}
         />
 
         <Panel order={1}>
@@ -326,6 +370,12 @@ export const App: React.FC = () => {
         isOpen={isPlatformModalOpen}
         onCreate={performNewFile}
         onClose={closePlatformModal}
+      />
+      <ComponentSelectModal
+        isOpen={isCompAddModalOpen}
+        data={compAddModalData}
+        onClose={closeCompAddModal}
+        onSubmit={handleAddComponent}
       />
 
       <LoadingOverlay isOpen={isLoadingOverlay}></LoadingOverlay>

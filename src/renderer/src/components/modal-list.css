@@ -1,0 +1,45 @@
+.modal-list {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  overflow-y: auto;
+  width: 100%;
+  /* border: #ddd solid 1px; */
+  margin-top: 0.5rem;
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  /* padding-top: 0.5rem; */
+}
+
+.modal-list .item {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  /* height: 35px; */
+  padding: 5px;
+  background-color: #f2f2f2;
+  border-bottom: #ddd solid 1px;
+  pointer-events: none;
+}
+
+/* width */
+.modal-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.modal-list::-webkit-scrollbar-track {
+  background: #888;
+  border-radius: 5px;
+}
+
+/* Handle */
+.modal-list::-webkit-scrollbar-thumb {
+  background: #000;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+.modal-list ::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -18,18 +18,18 @@ export class ModuleManager {
         default:
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
-      if (chprocess !== undefined){
+      if (chprocess !== undefined) {
         this.localProccesses.set(module, chprocess);
-          chprocess.stdout.on('data', (data) => {
-            console.log(`${module}-stdout: ${data}`);
-          });
-          chprocess.stderr.on('data', (data) => {
-            console.log(`${module}-stderr: ${data}`);
-          });
+        chprocess.stdout.on('data', (data) => {
+          console.log(`${module}-stdout: ${data}`);
+        });
+        chprocess.stderr.on('data', (data) => {
+          console.log(`${module}-stderr: ${data}`);
+        });
 
-          chprocess.on('exit', () => {
-            console.log(`${module}-exit!`);
-          });
+        chprocess.on('exit', () => {
+          console.log(`${module}-exit!`);
+        });
       }
     } else {
       console.log(`${module} is already local`);

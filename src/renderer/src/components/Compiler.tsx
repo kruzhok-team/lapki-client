@@ -21,12 +21,12 @@ export const Compiler: React.FC<CompilerProps> = ({
   handleAddStdoutTab,
   handleAddStderrTab,
   handleSaveSourceIntoFolder,
-  handleSaveBinaryIntoFolder
+  handleSaveBinaryIntoFolder,
 }) => {
   const button = [
     {
       name: 'Сохранить артефакт',
-      handler: handleSaveBinaryIntoFolder
+      handler: handleSaveBinaryIntoFolder,
     },
     {
       name: 'Сохранить код',

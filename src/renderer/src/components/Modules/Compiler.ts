@@ -49,7 +49,7 @@ export class Compiler {
   static decodeBinaries(binaries: Array<any>) {
     binaries.map((binary) => {
       console.log(base64StringToBlob(binary.fileContent!));
-      console.log(binary.filename, binary.extension)
+      console.log(binary.filename, binary.extension);
       this.binary?.push({
         filename: binary.filename,
         extension: binary.extension,
@@ -58,9 +58,9 @@ export class Compiler {
     });
   }
 
-  static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>>{
+  static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>> {
     const newArray = Object.assign([], binaries) as Binary[];
-    for (const bin of newArray){
+    for (const bin of newArray) {
       bin.fileContent = Buffer.from(await (bin.fileContent as Blob).arrayBuffer());
     }
 
@@ -70,7 +70,11 @@ export class Compiler {
   static getSourceFiles(sources: Array<any>): Array<SourceFile> {
     const result = new Array<SourceFile>();
     sources.map((source) => {
-      result.push({ filename: source.filename, extension: source.extension, fileContent: source.fileContent } as SourceFile);
+      result.push({
+        filename: source.filename,
+        extension: source.extension,
+        fileContent: source.fileContent,
+      } as SourceFile);
     });
 
     return result;

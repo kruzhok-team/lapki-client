@@ -30,7 +30,11 @@ export const DiagramEditor: FC<DiagramEditorProps> = ({
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
   const [state, setState] = useState<{ state: State }>();
   const [events, setEvents] = useState<{ doCondition: Action[] }>();
-  const [idEvents, setIdEvents] = useState<{ state: State; event: EventSelection, click: boolean }>();
+  const [idEvents, setIdEvents] = useState<{
+    state: State;
+    event: EventSelection;
+    click: boolean;
+  }>();
   const [transition, setTransition] = useState<{ target: Condition }>();
   const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
 

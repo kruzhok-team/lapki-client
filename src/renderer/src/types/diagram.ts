@@ -3,7 +3,13 @@ import { Point, Rectangle } from './graphics';
 export type Action = {
   component: string;
   method: string;
-  args?: { [key: string]: string };
+  args?: { [key: string]: string | Variable };
+};
+
+export type CompilerSettings = {
+  filename: string;
+  compiler: string;
+  flags: Array<string>;
 };
 
 export type Event = {
@@ -43,7 +49,7 @@ export type Transition = {
   color: string;
   position: Point;
   trigger: Event;
-  condition?: Condition;
+  condition?: Condition | null;
   do?: Action[];
 };
 
@@ -61,6 +67,7 @@ export type Elements = {
 
   platform: string;
   parameters?: { [key: string]: string };
+  compilerSettings?: CompilerSettings | null;
 };
 
 export function emptyElements(): Elements {
@@ -72,5 +79,6 @@ export function emptyElements(): Elements {
 
     platform: '',
     parameters: {},
+    compilerSettings: null,
   };
 }

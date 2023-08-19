@@ -57,8 +57,6 @@ export const App: React.FC = () => {
   const editorData = lapki.editorData;
   const [isDocOpen, setIsDocOpen] = useState(false);
 
-  const [isLoadingOverlay, setLoadingOverlay] = useState<boolean>(true);
-
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
@@ -297,12 +295,11 @@ export const App: React.FC = () => {
       preparePreloadImages();
       preloadPicto(() => void {});
       console.log('plaforms loaded!');
-      setLoadingOverlay(false);
+      hideLoadingOverlay();
       const errs = getPlatformsErrors();
       if (Object.keys(errs).length > 0) {
         openPlatformError(errs);
       }
-      hideLoadingOverlay();
     });
   }, []);
 

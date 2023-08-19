@@ -11,7 +11,7 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const items = [
     {
-      text: 'Новая схема',
+      text: 'Создать...',
       onClick: props.onRequestNewFile,
     },
     {

@@ -331,7 +331,7 @@ export const App: React.FC = () => {
     const reader = new FileReader();
     Flasher.initReader(reader);
     Flasher.connect(Flasher.base_address);
-  });
+  }, []);
 
   return (
     <div className="h-screen select-none">

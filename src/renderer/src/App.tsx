@@ -30,6 +30,7 @@ import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
+import { Component as ComponentData } from './types/diagram';
 import useEditorManager from './components/utils/useEditorManager';
 import {
   ComponentSelectData,
@@ -37,6 +38,11 @@ import {
   emptyCompData,
 } from './components/ComponentSelectModal';
 import { hideLoadingOverlay } from './components/utils/OverlayControl';
+import {
+  ComponentEditData,
+  ComponentEditModal,
+  emptyCompEditData,
+} from './components/ComponentEditModal';
 
 /**
  * React-компонент приложения
@@ -65,6 +71,11 @@ export const App: React.FC = () => {
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
   const openCompAddModal = () => setIsCompAddModalOpen(true);
   const closeCompAddModal = () => setIsCompAddModalOpen(false);
+
+  const [compEditModalData, setCompEditModalData] = useState<ComponentEditData>(emptyCompEditData);
+  const [isCompEditModalOpen, setIsCompEditModalOpen] = useState(false);
+  const openCompEditModal = () => setIsCompEditModalOpen(true);
+  const closeCompEditModal = () => setIsCompEditModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -265,9 +276,10 @@ export const App: React.FC = () => {
   };
 
   const onRequestAddComponent = () => {
-    const vacantComponents = editor!.container.machine.getVacantComponents();
+    const machine = editor!.container.machine;
+    const vacantComponents = machine.getVacantComponents();
     const existingComponents = new Set<string>();
-    for (const name of editor!.container.machine.components.keys()) {
+    for (const name of machine.components.keys()) {
       existingComponents.add(name);
     }
     setCompAddModalData({ vacantComponents, existingComponents });
@@ -280,12 +292,43 @@ export const App: React.FC = () => {
     // console.log(['handleAddComponent', idx, name]);
   };
 
+  const onRequestEditComponent = (idx: string) => {
+    const machine = editor!.container.machine;
+    const component = machine.components.get(idx);
+    if (typeof component === 'undefined') return;
+    const data = component.data;
+    const proto = machine.platform.data.components[data.type];
+    if (typeof proto === 'undefined') {
+      console.error('non-existing %s %s', idx, data.type);
+      return;
+    }
+
+    const existingComponents = new Set<string>();
+    for (const name of machine.components.keys()) {
+      if (name == idx) continue;
+      existingComponents.add(name);
+    }
+
+    console.log(['component-edit', idx, data, proto]);
+    setCompEditModalData({ idx, data, proto, existingComponents });
+    openCompEditModal();
+  };
+
+  const handleEditComponent = (idx: string, data: ComponentData) => {
+    console.log(['component-edit', idx, data]);
+  };
+
+  const handleDeleteComponent = (idx: string) => {
+    console.log(['component-delete', idx]);
+  };
+
   const sidebarCallbacks: SidebarCallbacks = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
     onRequestSaveFile: handleSaveFile,
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
+    onRequestEditComponent,
   };
 
   useEffect(() => {
@@ -377,6 +420,13 @@ export const App: React.FC = () => {
         data={compAddModalData}
         onClose={closeCompAddModal}
         onSubmit={handleAddComponent}
+      />
+      <ComponentEditModal
+        isOpen={isCompEditModalOpen}
+        data={compEditModalData}
+        onClose={closeCompEditModal}
+        onComponentEdit={handleEditComponent}
+        onComponentDelete={handleDeleteComponent}
       />
     </div>
   );

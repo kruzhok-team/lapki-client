@@ -9,6 +9,7 @@ import './component-list.css';
 
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
+  onRequestEditComponent: (idx: string) => void;
 }
 
 interface ExplorerProps {
@@ -18,7 +19,7 @@ interface ExplorerProps {
 
 export const Explorer: React.FC<ExplorerProps> = ({
   editorRef,
-  callbacks: { onRequestAddComponent },
+  callbacks: { onRequestAddComponent, onRequestEditComponent },
 }) => {
   const editorData = editorRef.editorData;
   const [cursor, setCursor] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
 
   const onCompDblClick = (e: React.MouseEvent, key: string) => {
     e.stopPropagation();
-    console.log(['component-double-click', key]);
+    onRequestEditComponent(key);
   };
 
   const onCompRightClick = (e: React.MouseEvent, key: string) => {

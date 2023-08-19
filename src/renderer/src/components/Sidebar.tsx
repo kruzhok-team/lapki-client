@@ -29,7 +29,7 @@ export interface SidebarCallbacks {
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
   onRequestAddComponent: () => void;
-  // TODO: onRequestEditComponent: (name: string) => void;
+  onRequestEditComponent: (idx: string) => void;
   // TODO: onRequestRemoveComponent: (name: string) => void;
 }
 
@@ -50,6 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestSaveFile,
     onRequestSaveAsFile,
     onRequestAddComponent,
+    onRequestEditComponent,
   },
 }) => {
   const [sidebarTabActive, setSidebarTabActive] = useState(0);
@@ -106,6 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const explorerCallbacks: ExplorerCallbacks = {
     onRequestAddComponent,
+    onRequestEditComponent,
   };
 
   const tabs = useMemo(
@@ -121,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   React.useEffect(() => {
     if (isCollapsed) {
-      setMaxWidth(5);
+      setMaxWidth('5px');
       setMinWidth(5);
     } else {
       setMaxWidth('80vw');

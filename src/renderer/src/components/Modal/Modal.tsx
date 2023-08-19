@@ -12,8 +12,10 @@ interface ModalProps extends Props {
   cancelLabel?: string;
   submitLabel?: string;
   extraLabel?: string;
+  sideLabel?: string;
   children: React.ReactNode;
   onExtra?: React.FormEventHandler;
+  onSide?: React.FormEventHandler;
   onSubmit?: React.FormEventHandler;
   submitDisabled?: boolean;
 }
@@ -25,7 +27,9 @@ export const Modal: React.FC<ModalProps> = ({
   cancelLabel,
   submitLabel,
   extraLabel,
+  sideLabel,
   onExtra,
+  onSide,
   submitDisabled,
   ...props
 }) => {
@@ -50,6 +54,15 @@ export const Modal: React.FC<ModalProps> = ({
         <div className="mb-4">{children}</div>
 
         <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            className="rounded px-4 py-2 text-red-400 transition-colors hover:text-red-200"
+            onClick={onSide}
+            hidden={!sideLabel}
+          >
+            {sideLabel}
+          </button>
+          <div className="flex-grow"></div>
           <button
             type="button"
             className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"

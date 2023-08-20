@@ -186,7 +186,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
     return ModuleManager.stopModule(module);
-  })
+  });
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки
   // - CmdOrCtrl + R – перезагрузить страницу
@@ -194,7 +194,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-  ModuleManager.startLocalModule("lapki-flasher");
+  ModuleManager.startLocalModule('lapki-flasher');
   createWindow();
 
   app.on('activate', function () {
@@ -207,6 +207,8 @@ app.whenReady().then(() => {
 // Завершаем приложение, когда окна закрыты.
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
+  // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
+  ModuleManager.stopModule('lapki-flasher');
   if (process.platform !== 'darwin') {
     app.quit();
   }

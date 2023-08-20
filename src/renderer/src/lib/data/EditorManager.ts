@@ -129,8 +129,6 @@ export class EditorManager {
           });
         }
         this.editor?.loadData(data);
-        const filename = openData[2]?.replace(".graphml", ".json")
-        console.log(openData[1], openData[2])
         this.mutateState((state) => ({
           ...state,
           name: openData[1]!.replace('.graphml', '.json'),

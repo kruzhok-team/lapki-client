@@ -59,8 +59,7 @@ export const App: React.FC = () => {
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
-  const [importData, setImportData] = useState<string | undefined>(undefined)
-
+  const [importData, setImportData] = useState<string | undefined>(undefined);
 
   const lapki = useEditorManager();
   const editor = lapki.editor;
@@ -263,10 +262,8 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (importData && openData) {
       manager?.parseImportData(importData, openData!);
-      console.log(importData);
       setImportData(undefined);
     }
-
   }, [importData]);
 
   const flasherProps: FlasherProps = {

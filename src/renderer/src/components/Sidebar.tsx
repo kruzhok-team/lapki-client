@@ -106,6 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestSaveFile,
     onRequestSaveAsFile,
     onRequestImport,
+    compilerStatus: compilerProps.compilerStatus
   };
 
   const explorerCallbacks: ExplorerCallbacks = {

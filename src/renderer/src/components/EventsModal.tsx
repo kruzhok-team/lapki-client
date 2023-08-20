@@ -6,13 +6,12 @@ import { TextSelect } from './Modal/TextSelect';
 import { EventSelection } from '../lib/drawable/Events';
 import { useForm } from 'react-hook-form';
 import { TextInput } from './Modal/TextInput';
-import { twMerge } from 'tailwind-merge';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
-
-ReactModal.setAppElement('#root');
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 interface EventsModalProps extends Props {
+  editor: CanvasEditor | null;
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
   cancelLabel?: string;
   submitLabel?: string;
@@ -21,7 +20,6 @@ interface EventsModalProps extends Props {
 }
 
 export interface EventsModalFormValues {
-  //Импорт State из lib/drawable/State ломает VS Code, пришлось убрать определение типа
   id: { state; event: EventSelection } | undefined;
   doComponent: string;
   doMethod: string;
@@ -42,11 +40,27 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     formState: { errors },
   } = useForm<EventsModalFormValues>();
 
+  const components = props.editor?.container.machine.components;
+  const methods = props.editor?.container.machine.platform.getAvailableEvents('Button');
+  console.log(components, methods);
+
   const [condition, setCondition] = useState<
     { component: string; method: string; args?: { [key: string]: string } }[]
   >([]);
-  //функция для создания новых действий
-  const onCreateEvents = hookHandleSubmit((data) => {
+
+  // //функция для создания новых действий
+  // const onCreateEvents = hookHandleSubmit((data) => {
+  //   setCondition([
+  //     ...condition,
+  //     {
+  //       component: data.doComponent,
+  //       method: data.doMethod,
+  //       args: data.doArgs,
+  //     },
+  //   ]);
+  // });
+
+  const handleSubmit = hookHandleSubmit((data) => {
     setCondition([
       ...condition,
       {
@@ -55,19 +69,18 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
         args: data.doArgs,
       },
     ]);
-  });
-
-  const handleSubmit = hookHandleSubmit((data) => {
     data.id = props.isData;
     data.condition = condition;
     onSubmit(data);
   });
 
-  //Ниже будет реализована функция для обработки перетаскивания событий между собой
-  // const [dragId, setDragId] = useState();
-  // const handleDrag = (ev) => {
-  //   setDragId(ev.currentTarget.id);
-  // };
+  //Ниже будет реализована функция для обработки перетаскивания событий между собой, надо будет перетащить его в другую модалку
+
+  /* const [dragId, setDragId] = useState();
+    const handleDrag = (ev) => {
+    setDragId(ev.currentTarget.id);
+    }; 
+  */
 
   return (
     <ReactModal
@@ -77,13 +90,12 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       onRequestClose={onClose}
     >
       <div className="relative mb-3 justify-between border-b border-neutral-400 pb-1">
-        <h1 className="text-2xl font-bold">Редактирование событий</h1>
+        <h1 className="text-2xl font-bold">Редактирование события</h1>
       </div>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col items-center">
           <TextSelect
             label="Компонент(событие):"
-            placeholder="Выберите компонент события"
             {...register('doComponent', {
               required: 'Это поле обязательно к заполнению!',
             })}
@@ -93,7 +105,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           />
           <TextSelect
             label="Действие:"
-            placeholder="Выберите метод события"
             {...register('doMethod', {
               required: 'Это поле обязательно к заполнению!',
             })}
@@ -113,7 +124,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             // @ts-ignore
             errorMessage={errors.doArgs?.message ?? ''}
           />
-          {!props.isData?.click && (
+        </div>
+        {/* {!props.isData?.click && (
             <button
               type="button"
               className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
@@ -122,7 +134,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               Добавить
             </button>
           )}
-        </div>
+        
         {!props.isData?.click && (
           <div className="m-2 flex h-48 max-w-lg flex-col items-center overflow-y-auto break-words rounded bg-neutral-700">
             {condition.map((data, key) => (
@@ -130,7 +142,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
                 key={'newEvent' + key}
                 draggable
                 className={twMerge(
-                  'm-2 flex min-h-[3.5rem] w-40 items-center justify-around rounded border-2 bg-neutral-700 px-1' /*key && 'order-'+{key}*/
+                  'm-2 flex min-h-[3.5rem] w-40 items-center justify-around rounded border-2 bg-neutral-700 px-1' key && 'order-'+{key}
                 )}
               >
                 <div>{data.component}</div>
@@ -140,7 +152,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               </div>
             ))}
           </div>
-        )}
+        )} */}
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Panel, PanelGroup } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
+
 import {
   CompilerProps,
   DiagramEditor,
   Documentations,
   FlasherProps,
-  LoadingOverlay,
   PlatformSelectModal,
   SaveModalData,
   SaveRemindModal,
@@ -30,12 +29,19 @@ import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
+import { Component as ComponentData } from './types/diagram';
 import useEditorManager from './components/utils/useEditorManager';
 import {
   ComponentSelectData,
   ComponentSelectModal,
   emptyCompData,
 } from './components/ComponentSelectModal';
+import { hideLoadingOverlay } from './components/utils/OverlayControl';
+import {
+  ComponentEditData,
+  ComponentEditModal,
+  emptyCompEditData,
+} from './components/ComponentEditModal';
 
 /**
  * React-компонент приложения
@@ -56,8 +62,6 @@ export const App: React.FC = () => {
   const editorData = lapki.editorData;
   const [isDocOpen, setIsDocOpen] = useState(false);
 
-  const [isLoadingOverlay, setLoadingOverlay] = useState<boolean>(true);
-
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
@@ -66,6 +70,11 @@ export const App: React.FC = () => {
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
   const openCompAddModal = () => setIsCompAddModalOpen(true);
   const closeCompAddModal = () => setIsCompAddModalOpen(false);
+
+  const [compEditModalData, setCompEditModalData] = useState<ComponentEditData>(emptyCompEditData);
+  const [isCompEditModalOpen, setIsCompEditModalOpen] = useState(false);
+  const openCompEditModal = () => setIsCompEditModalOpen(true);
+  const closeCompEditModal = () => setIsCompEditModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -218,13 +227,13 @@ export const App: React.FC = () => {
     console.log('local');
     await manager?.startLocalModule('lapki-flasher');
     //Стандартный порт
-    await manager?.changeFlasherHost('localhost', 8080);
+    manager?.changeFlasherHost('localhost', 8080);
   };
 
-  const handleRemoteFlasher = async () => {
+  const handleRemoteFlasher = () => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
-    await manager?.changeFlasherHost('localhost', 8089);
+    manager?.changeFlasherHost('localhost', 8089);
   };
 
   const [tabData, setTabData] = useState<TabDataAdd | null>(null);
@@ -266,9 +275,10 @@ export const App: React.FC = () => {
   };
 
   const onRequestAddComponent = () => {
-    const vacantComponents = editor!.container.machine.getVacantComponents();
+    const machine = editor!.container.machine;
+    const vacantComponents = machine.getVacantComponents();
     const existingComponents = new Set<string>();
-    for (const name of editor!.container.machine.components.keys()) {
+    for (const name of machine.components.keys()) {
       existingComponents.add(name);
     }
     setCompAddModalData({ vacantComponents, existingComponents });
@@ -281,26 +291,52 @@ export const App: React.FC = () => {
     // console.log(['handleAddComponent', idx, name]);
   };
 
+  const onRequestEditComponent = (idx: string) => {
+    const machine = editor!.container.machine;
+    const component = machine.components.get(idx);
+    if (typeof component === 'undefined') return;
+    const data = component.data;
+    const proto = machine.platform.data.components[data.type];
+    if (typeof proto === 'undefined') {
+      console.error('non-existing %s %s', idx, data.type);
+      return;
+    }
+
+    const existingComponents = new Set<string>();
+    for (const name of machine.components.keys()) {
+      if (name == idx) continue;
+      existingComponents.add(name);
+    }
+
+    console.log(['component-edit', idx, data, proto]);
+    setCompEditModalData({ idx, data, proto, existingComponents });
+    openCompEditModal();
+  };
+
+  const handleEditComponent = (idx: string, data: ComponentData) => {
+    console.log(['component-edit', idx, data]);
+  };
+
+  const handleDeleteComponent = (idx: string) => {
+    console.log(['component-delete', idx]);
+  };
+
   const sidebarCallbacks: SidebarCallbacks = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
     onRequestSaveFile: handleSaveFile,
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
+    onRequestEditComponent,
   };
   useEffect(() => {
-    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
-    const reader = new FileReader();
-    Flasher.initReader(reader);
-    Flasher.connect(Flasher.base_address);
-
     Compiler.bindReact(setCompilerData, setCompilerStatus);
     Compiler.connect(`${Compiler.base_address}main`);
     preloadPlatforms(() => {
       preparePreloadImages();
       preloadPicto(() => void {});
       console.log('plaforms loaded!');
-      setLoadingOverlay(false);
+      hideLoadingOverlay();
       const errs = getPlatformsErrors();
       if (Object.keys(errs).length > 0) {
         openPlatformError(errs);
@@ -323,24 +359,27 @@ export const App: React.FC = () => {
       ),
     },
   ];
+
+  useEffect(() => {
+    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
+    const reader = new FileReader();
+    Flasher.initReader(reader);
+    Flasher.connect(Flasher.base_address);
+  }, []);
+
   return (
-    <div className="h-screen select-none font-Fira">
-      <PanelGroup direction="horizontal" id="group">
+    <div className="h-screen select-none">
+      <div className="flex h-full w-full flex-row overflow-hidden">
         <Sidebar
           editorRef={lapki}
           flasherProps={flasherProps}
           compilerProps={compilerProps}
           callbacks={sidebarCallbacks}
         />
-        {/* Высота прописана по калькулятору, так как при начальном указании нужных процентов блок начинает сжиматься неправильно */}
-        <Panel order={1}>
-          <div className="flex min-w-0 justify-between">
-            <div
-              className={twMerge(
-                'max-w-[calc(100%-2rem)] flex-1',
-                isDocOpen && 'max-w-[calc(100%-22rem)]'
-              )}
-            >
+
+        <div className="flex-auto overflow-hidden">
+          <div className="flex">
+            <div className="flex-1">
               {editorData.content ? (
                 <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
               ) : (
@@ -356,12 +395,12 @@ export const App: React.FC = () => {
               </button>
 
               <div className={twMerge('w-80 transition-all', !isDocOpen && 'hidden')}>
-                <Documentations />
+                <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
               </div>
             </div>
           </div>
-        </Panel>
-      </PanelGroup>
+        </div>
+      </div>
 
       <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
       <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
@@ -376,8 +415,13 @@ export const App: React.FC = () => {
         onClose={closeCompAddModal}
         onSubmit={handleAddComponent}
       />
-
-      <LoadingOverlay isOpen={isLoadingOverlay}></LoadingOverlay>
+      <ComponentEditModal
+        isOpen={isCompEditModalOpen}
+        data={compEditModalData}
+        onClose={closeCompEditModal}
+        onComponentEdit={handleEditComponent}
+        onComponentDelete={handleDeleteComponent}
+      />
     </div>
   );
 };

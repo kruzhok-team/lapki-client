@@ -8,12 +8,28 @@ export class ModuleManager {
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
       var chprocess;
+      /*
+        параметры локального загрузчика:
+          -address string
+              адресс для подключения (default "localhost:8080")
+          -fileSize int
+              максимальный размер файла, загружаемого на сервер (в байтах) (default 2097152)
+          -listCooldown int
+              минимальное время (в секундах), через которое клиент может снова запросить список устройств, игнорируется, если количество клиентов меньше чем 2 (default 2)      
+          -msgSize int
+              максмальный размер одного сообщения, передаваемого через веб-сокеты (в байтах) (default 1024)
+          -thread int
+              максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
+          -updateList int
+              количество секунд между автоматическими обновлениями (default 15)
+      */
+      var flasherArgs: string[] = ['-updateList=10', '-listCooldown=0'];
       switch (platform) {
         case 'linux':
-          chprocess = spawn(`./src/main/modules/src/${platform}/${module}`);
+          chprocess = spawn(`./src/main/modules/src/${platform}/${module}`, flasherArgs);
           break;
         case 'win32':
-          chprocess = spawn(`src/main/modules/src/${platform}/${module}.exe`);
+          chprocess = spawn(`src/main/modules/src/${platform}/${module}.exe`, flasherArgs);
           break;
         default:
           console.log(`Платформа ${platform} не поддерживается (:^( )`);

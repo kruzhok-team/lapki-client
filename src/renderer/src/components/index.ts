@@ -7,7 +7,6 @@ export * from './Documentation/Documentation';
 export * from './Explorer';
 export * from './Loader';
 export * from './Menu';
-export * from './LoadingOverlay';
 export * from './SaveRemindModal';
 export * from './PlatformSelectModal';
 export * from './MessageModal';

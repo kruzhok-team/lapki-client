@@ -169,7 +169,7 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('Module:startLocalModule', module);
   }
 
-  async changeFlasherHost(host: string, port: number) {
+  changeFlasherHost(host: string, port: number) {
     Flasher.changeHost(host, port);
   }
 

@@ -25,7 +25,7 @@ export const Compiler: React.FC<CompilerProps> = ({
 }) => {
   const button = [
     {
-      name: 'Сохранить артефакт',
+      name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
     },
     {

@@ -43,6 +43,10 @@ function createWindow(): void {
     return { action: 'deny' };
   });
 
+  ipcMain.handle('devtools', (_event) => {
+    mainWindow.webContents.openDevTools();
+  });
+
   // Развилка для горячей пересборки через Electron-Vite.
   // В режиме разработки открываем особый адрес, в релизе – собранный HTML-файл
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -79,6 +83,7 @@ app.whenReady().then(() => {
   ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
     return ModuleManager.stopModule(module);
   });
+
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки
   // - CmdOrCtrl + R – перезагрузить страницу

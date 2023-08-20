@@ -93,10 +93,7 @@ export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
     id: entry.idx,
     content: (
       <div
-        className={twMerge(
-          entry.name == cursor?.idx && 'bg-slate-600',
-          'flex items-center pb-1 pt-1'
-        )}
+        className={twMerge(entry.name == cursor?.idx && 'bg-slate-600', 'flex items-center py-1')}
         onClick={(e) => onCompClick(e, entry)}
       >
         <img

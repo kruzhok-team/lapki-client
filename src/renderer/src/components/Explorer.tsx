@@ -9,6 +9,7 @@ import './component-list.css';
 
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
+  onRequestEditComponent: (idx: string) => void;
 }
 
 interface ExplorerProps {
@@ -18,7 +19,7 @@ interface ExplorerProps {
 
 export const Explorer: React.FC<ExplorerProps> = ({
   editorRef,
-  callbacks: { onRequestAddComponent },
+  callbacks: { onRequestAddComponent, onRequestEditComponent },
 }) => {
   const editorData = editorRef.editorData;
   const [cursor, setCursor] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
 
   const onCompDblClick = (e: React.MouseEvent, key: string) => {
     e.stopPropagation();
-    console.log(['component-double-click', key]);
+    onRequestEditComponent(key);
   };
 
   const onCompRightClick = (e: React.MouseEvent, key: string) => {
@@ -92,7 +93,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
           className="component-list"
         />
       </div>
-
+      {/* TODO: 
       <div className="h-full flex-auto px-4 pt-3 text-center">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
 
@@ -101,6 +102,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
           отсюда!!!
         </div>
       </div>
+       */}
     </section>
   );
 };

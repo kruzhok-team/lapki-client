@@ -16,6 +16,7 @@ export class Flasher {
   static connection: Websocket | undefined;
   static connecting: boolean = false;
   static timeoutSetted = false;
+  static timerID: NodeJS.Timeout | undefined;
 
   static devices: Map<string, Device>;
 
@@ -32,8 +33,17 @@ export class Flasher {
   static changeHost(host: string, port: number) {
     this.host = host;
     this.port = port;
-    this.base_address = `ws://${this.host}:${this.port}/flasher`;
+    this.base_address = `ws://${host}:${port}/flasher`;
+    this.timeoutSetted = true;
+    this.connection?.close();
     this.connection = undefined;
+
+    if (this.timerID) {
+      console.log('Timer cleared');
+      clearTimeout(this.timerID);
+      this.timerID = undefined;
+      this.timeoutSetted = false;
+    }
     this.setFlasherConnectionStatus('Подключение к новому хосту...');
     this.setFlasherDevices(new Map());
     this.connect(this.base_address);
@@ -140,7 +150,6 @@ export class Flasher {
 
       this.connection = ws;
       this.connecting = false;
-      this.timeoutSetted = false;
       this.setFlasherDevices(new Map());
 
       ws.onmessage = (msg: MessageEvent) => {
@@ -236,9 +245,12 @@ export class Flasher {
       if (!this.timeoutSetted) {
         this.timeoutSetted = true;
         timeout += 5000;
-        setTimeout(() => {
-          this.connect(route, timeout);
-          this.timeoutSetted = false;
+        console.log(`${route} set timer`);
+        console.log(timeout);
+        this.timerID = setTimeout(() => {
+          console.log(`${route} inTimer`);
+          Flasher.connect(route, timeout);
+          Flasher.timeoutSetted = false;
         }, timeout);
       }
     };

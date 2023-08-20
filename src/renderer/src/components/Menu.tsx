@@ -34,7 +34,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       disabled: false,
     },
     {
-      text: 'Импорт',
+      text: 'Импорт...',
       onClick: () => {
         props.onRequestImport('BearlogaDefend');
       },

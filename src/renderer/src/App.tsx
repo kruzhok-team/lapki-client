@@ -203,16 +203,24 @@ export const App: FC = () => {
   };
 
   const handleLocalFlasher = async () => {
-    console.log('local');
-    await manager?.startLocalModule('lapki-flasher');
-    //Стандартный порт
-    manager?.changeFlasherHost('localhost', 8080);
+    if (Flasher.connecting) {
+      console.log('Нельзя сменить хост во время подключения');
+    } else {
+      console.log('local');
+      await manager?.startLocalModule('lapki-flasher');
+      //Стандартный порт
+      manager?.changeFlasherHost('localhost', 8080);
+    }
   };
 
   const handleRemoteFlasher = () => {
-    console.log('remote');
-    // await manager?.stopLocalModule('lapki-flasher');
-    manager?.changeFlasherHost('localhost', 8089);
+    if (Flasher.connecting) {
+      console.log('Нельзя сменить хост во время подключения');
+    } else {
+      console.log('remote');
+      // await manager?.stopLocalModule('lapki-flasher');
+      manager?.changeFlasherHost('localhost', 8089);
+    }
   };
 
   const addTab = (name: string, content: string) => {
@@ -327,6 +335,7 @@ export const App: FC = () => {
 
   useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus);
+    console.log('CONNECTING TO COMPILER');
     Compiler.connect(`${Compiler.base_address}main`);
     preloadPlatforms(() => {
       preparePreloadImages();
@@ -344,8 +353,10 @@ export const App: FC = () => {
     Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
     const reader = new FileReader();
     Flasher.initReader(reader);
+    console.log('CONNECTING TO FLASHER');
     Flasher.connect(Flasher.base_address);
-  });
+    // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
+  }, []);
 
   return (
     <div className="h-screen select-none">

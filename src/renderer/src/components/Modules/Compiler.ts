@@ -103,11 +103,12 @@ export class Compiler {
 
     ws.onmessage = (msg) => {
       // console.log(msg);
-      const data = JSON.parse(msg.data);
-      console.log(data);
       this.setCompilerStatus('Подключен');
+      clearTimeout(this.timerID);
+      let data;
       switch (this.mode) {
         case 'compile':
+          data = JSON.parse(msg.data);
           console.log(msg.data);
           console.log(typeof data);
           if (data.binary.length > 0) {
@@ -125,9 +126,24 @@ export class Compiler {
           } as CompilerResult);
           break;
         case 'import':
+          data = JSON.parse(msg.data);
           // TODO: Сразу распарсить как Elements.
           this.setImportData(JSON.stringify(data.source[0].fileContent));
           break;
+        case 'export':
+          data = msg.data;
+          console.log(data);
+          this.setCompilerData({
+            result: 'OK',
+            binary: [],
+            source: [
+              {
+                filename: 'Autoborder_638264648325956870',
+                extension: 'graphml',
+                fileContent: data,
+              },
+            ],
+          });
         default:
           break;
       }
@@ -177,6 +193,12 @@ export class Compiler {
         ws.send(data);
         console.log('import!');
         this.mode = 'import';
+        break;
+      case 'BearlogaDefend':
+        ws.send('berlogaExport');
+        ws.send(JSON.stringify(data));
+        console.log('export!');
+        this.mode = 'export';
         break;
       default:
         console.log('unknown platform');

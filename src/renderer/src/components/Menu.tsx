@@ -11,8 +11,6 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  console.log(props.compilerStatus);
-  console.log(props.compilerStatus !== 'Подключен');
   const items = [
     {
       text: 'Создать...',

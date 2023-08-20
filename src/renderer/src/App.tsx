@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
 import {
-  CodeEditor,
   CompilerProps,
   DiagramEditor,
   Documentations,
   FlasherProps,
   LoadingOverlay,
-  MenuProps,
   PlatformSelectModal,
   SaveModalData,
   SaveRemindModal,
@@ -19,6 +17,7 @@ import {
   Tabs,
   TabDataAdd,
 } from './components';
+import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { isLeft, unwrapEither } from './types/Either';
 import {
@@ -229,17 +228,17 @@ export const App: React.FC = () => {
   };
 
   const [tabData, setTabData] = useState<TabDataAdd | null>(null);
-  const onCodeSnippet = (name: string, code: string) => {
-    setTabData({ name, code });
+  const onCodeSnippet = (type: string, name: string, code: string) => {
+    setTabData({ type, name, code });
   };
 
   const handleAddStdoutTab = () => {
     console.log(compilerData!.stdout);
-    onCodeSnippet('stdout', compilerData!.stdout);
+    onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout);
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet('stderr', compilerData!.stderr);
+    onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr);
   };
 
   const flasherProps: FlasherProps = {
@@ -289,7 +288,6 @@ export const App: React.FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
   };
-
   useEffect(() => {
     Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
     const reader = new FileReader();
@@ -312,7 +310,8 @@ export const App: React.FC = () => {
 
   const tabsItems = [
     {
-      tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
+      svgIcon: <EditorIcon />,
+      //tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       cantClose: true,
       content: (
         <DiagramEditor
@@ -322,11 +321,6 @@ export const App: React.FC = () => {
           onCodeSnippet={onCodeSnippet}
         />
       ),
-    },
-    {
-      tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
-      cantClose: true,
-      content: <CodeEditor value={editorData.content ?? ''} />,
     },
   ];
   return (
@@ -338,10 +332,15 @@ export const App: React.FC = () => {
           compilerProps={compilerProps}
           callbacks={sidebarCallbacks}
         />
-
+        {/* Высота прописана по калькулятору, так как при начальном указании нужных процентов блок начинает сжиматься неправильно */}
         <Panel order={1}>
-          <div className="flex">
-            <div className="flex-1">
+          <div className="flex min-w-0 justify-between">
+            <div
+              className={twMerge(
+                'max-w-[calc(100%-2rem)] flex-1',
+                isDocOpen && 'max-w-[calc(100%-22rem)]'
+              )}
+            >
               {editorData.content ? (
                 <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
               ) : (
@@ -351,12 +350,12 @@ export const App: React.FC = () => {
               )}
             </div>
 
-            <div className={twMerge('bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)] bg-white')}>
+            <div className={twMerge('m-auto flex h-[calc(100vh-2rem)] bg-white')}>
               <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
                 <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
               </button>
 
-              <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
+              <div className={twMerge('w-80 transition-all', !isDocOpen && 'hidden')}>
                 <Documentations />
               </div>
             </div>

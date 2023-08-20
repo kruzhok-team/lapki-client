@@ -56,6 +56,11 @@ export const App: React.FC = () => {
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
+  const [openData, setOpenData] = useState<
+    [boolean, string | null, string | null, string] | undefined
+  >(undefined);
+  const [importData, setImportData] = useState<string | undefined>(undefined)
+
 
   const lapki = useEditorManager();
   const editor = lapki.editor;
@@ -199,7 +204,7 @@ export const App: React.FC = () => {
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager?.saveIntoFolder(compilerData!.source);
+    await manager?.saveIntoFolder(compilerData!.source!);
   };
 
   const handleSaveAsFile = async () => {
@@ -244,12 +249,25 @@ export const App: React.FC = () => {
 
   const handleAddStdoutTab = () => {
     console.log(compilerData!.stdout);
-    onCodeSnippet('stdout', compilerData!.stdout);
+    onCodeSnippet('stdout', compilerData!.stdout!);
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet('stderr', compilerData!.stderr);
+    onCodeSnippet('stderr', compilerData!.stderr!);
   };
+
+  const handleImport = async (platform: string) => {
+    await manager?.import(platform, setOpenData);
+  };
+
+  useEffect(() => {
+    if (importData && openData) {
+      manager?.parseImportData(importData, openData!);
+      console.log(importData);
+      setImportData(undefined);
+    }
+
+  }, [importData]);
 
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
@@ -329,10 +347,11 @@ export const App: React.FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
     onRequestEditComponent,
+    onRequestImport: handleImport,
   };
 
   useEffect(() => {
-    Compiler.bindReact(setCompilerData, setCompilerStatus);
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
     Compiler.connect(`${Compiler.base_address}main`);
     preloadPlatforms(() => {
       preparePreloadImages();

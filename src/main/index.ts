@@ -66,7 +66,9 @@ app.whenReady().then(() => {
     return handleSaveIntoFolder(data);
   });
 
-  ipcMain.handle('dialog:openFile', handleFileOpen);
+  ipcMain.handle('dialog:openFile', (_event, platform: string) => {
+    return handleFileOpen(platform);
+  });
 
   ipcMain.handle('dialog:saveFile', (_event, filename, data) => {
     return handleFileSave(filename, data);
@@ -83,6 +85,7 @@ app.whenReady().then(() => {
   ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
     return ModuleManager.stopModule(module);
   });
+
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

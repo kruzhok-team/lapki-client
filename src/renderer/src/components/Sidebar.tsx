@@ -30,6 +30,7 @@ export interface SidebarCallbacks {
   onRequestSaveAsFile: () => void;
   onRequestAddComponent: () => void;
   onRequestEditComponent: (idx: string) => void;
+  onRequestImport: (platform: string) => void;
   // TODO: onRequestRemoveComponent: (name: string) => void;
 }
 
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestSaveAsFile,
     onRequestAddComponent,
     onRequestEditComponent,
+    onRequestImport,
   },
 }) => {
   const [sidebarTabActive, setSidebarTabActive] = useState(0);
@@ -103,6 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestOpenFile,
     onRequestSaveFile,
     onRequestSaveAsFile,
+    onRequestImport,
   };
 
   const explorerCallbacks: ExplorerCallbacks = {

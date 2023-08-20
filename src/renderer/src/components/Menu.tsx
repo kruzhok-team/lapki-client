@@ -5,6 +5,7 @@ export interface MenuProps {
   onRequestOpenFile: () => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
+  onRequestImport: (platform: string) => void;
   // TODO: isModified: boolean;
 }
 
@@ -26,6 +27,12 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Сохранить как...',
       onClick: props.onRequestSaveAsFile,
+    },
+    {
+      text: 'Импорт',
+      onClick: () => {
+        props.onRequestImport('BearlogaDefend');
+      },
     },
     /*
     {

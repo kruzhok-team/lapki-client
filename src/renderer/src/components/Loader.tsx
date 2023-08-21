@@ -35,71 +35,70 @@ export const Loader: React.FC<FlasherProps> = ({
   const isActive = (id: string) => currentDevice === id;
 
   return (
-    <section className="flex h-full flex-col bg-[#a1c8df] text-center font-Fira text-base">
-      <div className="w-full px-4 pt-2">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Загрузчик</h1>
-      </div>
-      <div className="my-2 flex rounded border-2 border-[#557b91]">
-        <button
-          className={twMerge(
-            'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-            connectionStatus != 'Подключен' && 'opacity-50'
-          )}
-          onClick={handleGetList}
-          disabled={connectionStatus != 'Подключен'}
-        >
-          <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
-          Обновить
-        </button>
-        <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>
-          <Setting width="1.5rem" height="1.5rem" />
-        </button>
-      </div>
+    <section className="flex h-full flex-col text-center">
+      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
+        Загрузчик
+      </h3>
 
-      <div className=" h-40 select-text items-center overflow-y-auto break-words rounded bg-white p-2">
-        <p>{connectionStatus}</p>
-        {[...devices.keys()].map((key) => (
+      <div className="px-4">
+        <div className="my-2 flex rounded border-2 border-[#557b91]">
           <button
-            key={key}
             className={twMerge(
-              'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
-              isActive(key) && 'bg-[#557b91] text-white'
+              'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
+              connectionStatus != 'Подключен' && 'opacity-50'
             )}
-            onClick={() => setCurrentDevice(key)}
+            onClick={handleGetList}
+            disabled={connectionStatus != 'Подключен'}
           >
-            {devices.get(key)?.name + ' (' + devices.get(key)?.portName + ')'}
+            <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
+            Обновить
           </button>
-        ))}
-      </div>
-      <div className="mt-1 h-64 select-text items-center overflow-y-auto break-words rounded bg-white p-2 text-left">
-        {[...devices.keys()].map((key) => (
-          <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
-            <div className="flex items-center">{devices.get(key)?.name}</div>
-            <p>Серийный номер: {devices.get(key)?.serialID}</p>
-            <p>Порт: {devices.get(key)?.portName}</p>
-            <p>Контроллер: {devices.get(key)?.controller}</p>
-            <p>Программатор: {devices.get(key)?.programmer}</p>
-          </div>
-        ))}
-      </div>
+          <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>
+            <Setting width="1.5rem" height="1.5rem" />
+          </button>
+        </div>
 
-      <button
-        className={twMerge(
-          'my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white',
-          (compilerData?.binary === undefined ||
-            compilerData.binary.length == 0 ||
-            !currentDevice) &&
-            'opacity-50'
-        )}
-        onClick={handleFlash}
-        disabled={
-          compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice
-        }
-      >
-        Загрузить
-      </button>
-      <div className="mt-1 h-96 select-text items-center overflow-y-auto break-words rounded bg-white p-2 text-left">
-        <div>{flasherLog}</div>
+        <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
+          <p>{connectionStatus}</p>
+          {[...devices.keys()].map((key) => (
+            <button
+              key={key}
+              className={twMerge(
+                'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
+                isActive(key) && 'bg-[#557b91] text-white'
+              )}
+              onClick={() => setCurrentDevice(key)}
+            >
+              {devices.get(key)?.name + ' (' + devices.get(key)?.portName + ')'}
+            </button>
+          ))}
+        </div>
+
+        <div className="mb-2 h-64 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
+          {[...devices.keys()].map((key) => (
+            <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
+              <div className="flex items-center">{devices.get(key)?.name}</div>
+              <p>Серийный номер: {devices.get(key)?.serialID}</p>
+              <p>Порт: {devices.get(key)?.portName}</p>
+              <p>Контроллер: {devices.get(key)?.controller}</p>
+              <p>Программатор: {devices.get(key)?.programmer}</p>
+            </div>
+          ))}
+        </div>
+
+        <button
+          className="btn mb-2"
+          onClick={handleFlash}
+          disabled={
+            compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice
+          }
+        >
+          Загрузить
+        </button>
+
+        <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
+          {flasherLog}
+        </div>
       </div>
     </section>
   );

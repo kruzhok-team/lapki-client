@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-Fira text-text-primary;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply rounded bg-bg-btn px-3 py-2 transition-colors enabled:hover:bg-bg-btnHover enabled:active:bg-bg-btnActive disabled:cursor-not-allowed disabled:bg-opacity-50;
+  }
+}

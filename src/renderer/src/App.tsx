@@ -4,7 +4,6 @@ import { twMerge } from 'tailwind-merge';
 import {
   CompilerProps,
   DiagramEditor,
-  Documentations,
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
@@ -19,7 +18,7 @@ import {
   TabDataAdd,
 } from './components';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+
 import { isLeft, unwrapEither } from './types/Either';
 import {
   getPlatformsErrors,
@@ -66,7 +65,6 @@ export const App: React.FC = () => {
   const editor = lapki.editor;
   const manager = lapki.managerRef.current;
   const editorData = lapki.editorData;
-  const [isDocOpen, setIsDocOpen] = useState(false);
 
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
@@ -389,7 +387,7 @@ export const App: React.FC = () => {
     {
       svgIcon: <EditorIcon />,
       //tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
-      cantClose: true,
+      canClose: false,
       content: (
         <DiagramEditor
           manager={manager!}
@@ -420,31 +418,12 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <div className="flex w-full min-w-0">
-          <div
-            className={twMerge(
-              'max-w-[calc(100%-2rem)] flex-1',
-              isDocOpen && 'max-w-[calc(100%-27rem)]'
-            )}
-          >
-            {editorData.content ? (
-              <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
-            ) : (
-              <p className="pt-24 text-center font-Fira text-base">
-                Откройте файл или перенесите его сюда...
-              </p>
-            )}
-          </div>
-
-          <div className={twMerge('m-auto flex h-[calc(100vh-2rem)] bg-white')}>
-            <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
-              <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
-            </button>
-
-            <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
-              <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
-            </div>
-          </div>
+        <div className="w-full min-w-0 bg-bg-primary">
+          {editorData.content ? (
+            <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+          ) : (
+            <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
+          )}
         </div>
       </div>
 

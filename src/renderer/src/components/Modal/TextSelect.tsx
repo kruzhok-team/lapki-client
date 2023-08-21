@@ -26,7 +26,7 @@ export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
         {label}
         <select
           className={twMerge(
-            'h-[34px] w-[200px] max-w-[200px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal',
+            'h-[34px] w-[200px] max-w-[200px] rounded border bg-transparent px-2 py-1 outline-none transition-colors',
             error && 'border-red-500 placeholder:text-red-500',
             !error && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
           )}

@@ -70,14 +70,14 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
     <>
       <section
         className={twMerge(
-          ' flex gap-1 overflow-x-auto break-words px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]'
+          'flex gap-1 overflow-x-auto break-words px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]'
         )}
       >
         {tabs.map(({ svgIcon, tab, cantClose }, id) => (
           <div
             key={'tab' + id}
             className={twMerge(
-              'group/item bg-4 my-1 flex items-center rounded-full bg-[#d6d6d6] hover:rounded-full hover:bg-[#a1c8df]',
+              'group/item my-1 flex items-center rounded-full bg-[#d6d6d6] hover:rounded-full hover:bg-[#a1c8df]',
               activeTab === id && 'rounded-full bg-[#a1c8df]'
             )}
           >

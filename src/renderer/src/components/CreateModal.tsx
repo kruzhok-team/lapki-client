@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -69,7 +69,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const components = editor!.container.machine.components;
   const methods = editor?.container.machine.platform.getAvailableEvents('Button');
-  //console.log(components, methods);
+  console.log(components, methods);
 
   //-----------------------------Функция для закрытия модального окна-----------------------------------
   const onRequestClose = () => {
@@ -198,7 +198,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               />
             </div>
             {/*--------------------------------------Добавление условия------------------------------------------*/}
-            <div className="flex items-start justify-between">
+            <div className="flex items-start">
               <div className="my-3 flex items-center">
                 <label className="mx-1">Если: </label>
                 <label
@@ -213,11 +213,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
 
               <div className="flex flex-col">
-                <div className="flex">
+                <div className="flex items-center">
                   <input
                     type="checkbox"
                     onChange={handleParamOne}
-                    className={twMerge('mr-2', isElse && 'hidden')}
+                    className={twMerge('mx-2', isElse && 'hidden')}
                   />
                   {isParamOne ? (
                     <>
@@ -255,7 +255,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 </div>
                 <select
                   className={twMerge(
-                    'mb-4 ml-6 w-[80px] rounded border bg-transparent px-2 py-1 text-center text-white',
+                    'mb-4 ml-8 w-[60px] rounded border bg-transparent px-1 py-1 text-white',
                     isElse && 'hidden'
                   )}
                 >
@@ -268,12 +268,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                     ></option>
                   ))}
                 </select>
-                <div className="flex">
+                <div className="flex items-center">
                   <input
                     type="checkbox"
                     disabled={isElse}
                     onChange={handleParamTwo}
-                    className={twMerge('mr-2', isElse && 'hidden')}
+                    className={twMerge('mx-2', isElse && 'hidden')}
                   />
                   {isParamTwo ? (
                     <>

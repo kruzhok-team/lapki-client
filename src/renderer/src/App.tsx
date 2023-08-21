@@ -377,26 +377,29 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <div className="flex-auto overflow-hidden">
-          <div className="flex">
-            <div className="flex-1">
-              {editorData.content ? (
-                <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
-              ) : (
-                <p className="pt-24 text-center font-Fira text-base">
-                  Откройте файл или перенесите его сюда...
-                </p>
-              )}
-            </div>
+        <div className="flex w-full min-w-0">
+          <div
+            className={twMerge(
+              'max-w-[calc(100%-2rem)] flex-1',
+              isDocOpen && 'max-w-[calc(100%-27rem)]'
+            )}
+          >
+            {editorData.content ? (
+              <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+            ) : (
+              <p className="pt-24 text-center font-Fira text-base">
+                Откройте файл или перенесите его сюда...
+              </p>
+            )}
+          </div>
 
-            <div className={twMerge('m-auto flex h-[calc(100vh-2rem)] bg-white')}>
-              <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
-                <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
-              </button>
+          <div className={twMerge('m-auto flex h-[calc(100vh-2rem)] bg-white')}>
+            <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
+              <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
+            </button>
 
-              <div className={twMerge('w-80 transition-all', !isDocOpen && 'hidden')}>
-                <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
-              </div>
+            <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
+              <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
             </div>
           </div>
         </div>

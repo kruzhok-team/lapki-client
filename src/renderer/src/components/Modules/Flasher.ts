@@ -157,6 +157,7 @@ export class Flasher {
       this.connection = ws;
       this.connecting = false;
       this.setFlasherDevices(new Map());
+      timeout = 0;
 
       ws.onmessage = (msg: MessageEvent) => {
         console.log(msg.data);
@@ -247,7 +248,10 @@ export class Flasher {
         this.connecting = false;
         this.setFlasherConnectionStatus('Не подключен');
         this.connection = undefined;
-        this.tryToReconnect(route, timeout);
+        this.timerID = setTimeout(() => {
+          console.log(`${route} inTimer: ${timeout}`);
+          this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
+        }, timeout);
       }
     };
 
@@ -286,19 +290,6 @@ export class Flasher {
     console.log(request);
     this.connection.send(JSON.stringify(request));
     this.setFlasherLog('Идет загрузка...');
-  }
-
-  /*
-    Переподключение к хосту 
-
-    @param {route} адресс к которому нужно переподключиться
-    @returns {timeout} время, через которое нужно осуществить переподключение (следующий вызов произойдёт через timeout+incTimeout)
-  */
-  static tryToReconnect(route: string, timeout: number): void {
-    this.timerID = setTimeout(() => {
-      console.log(`${route} inTimer: ${timeout + this.incTimeout}`);
-      this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
-    }, timeout);
   }
 
   // получение адреса в виде строки

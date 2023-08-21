@@ -12,7 +12,7 @@ import { Dispatch, SetStateAction } from 'react';
 export class Flasher {
   static port = 8080;
   static host = 'localhost';
-  static base_address = `ws://${this.host}:${this.port}/flasher`;
+  static base_address = this.makeAddress(this.host, this.port);
   static connection: Websocket | undefined;
   static connecting: boolean = false;
   static timerID: NodeJS.Timeout | undefined;
@@ -35,7 +35,7 @@ export class Flasher {
   static changeHost(host: string, port: number) {
     this.host = host;
     this.port = port;
-    let new_address = `ws://${host}:${port}/flasher`;
+    let new_address = this.makeAddress(host, port);
     console.log(`Changing host from ${this.base_address} to ${new_address}`);
     if (new_address == this.base_address) {
       return;
@@ -290,10 +290,21 @@ export class Flasher {
     this.setFlasherLog('Идет загрузка...');
   }
 
+  /*
+    Переподключение к хосту 
+
+    @param {route} адресс к которому нужно переподключиться
+    @returns {timeout} время, через которое нужно осуществить переподключение (следующий вызов произойдёт через timeout+incTimeout)
+  */
   static tryToReconnect(route: string, timeout: number): void {
     this.timerID = setTimeout(() => {
       console.log(`${route} inTimer: ${timeout + this.incTimeout}`);
       this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
     }, timeout);
+  }
+
+  // получение адреса в виде строки
+  static makeAddress(host: string, port: number): string {
+    return `ws://${host}:${port}/flasher`;
   }
 }

@@ -17,7 +17,7 @@ interface DiagramEditorProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
-  onCodeSnippet: (type: string, name: string, code: string) => void;
+  onCodeSnippet: (type: string, name: string, code: string, language: string) => void;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({
@@ -223,7 +223,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.name = manager.state.shownName!;
         data.content = manager.state.content!;
       }
-      onCodeSnippet(data.type, data.name, data.content);
+      onCodeSnippet(data.type, data.name, data.content, 'json');
     },
     onClickDelState: (data: ContextMenuForm) => {
       editor?.container.machine.deleteState(data.name);

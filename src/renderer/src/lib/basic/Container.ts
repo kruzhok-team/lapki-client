@@ -28,7 +28,6 @@ export class Container {
   scale = 1;
 
   isPan = false;
-  isScale = false;
 
   dropCallback?: (position: Point) => void;
   contextMenuOpenCallback?: (position: Point) => void;
@@ -58,8 +57,6 @@ export class Container {
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('ctrldown', this.handleCtrlDown);
-    this.app.keyboard.on('ctrlup', this.handleCtrlUp);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -99,20 +96,20 @@ export class Container {
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
+    this.isPan = true;
     if (!this.isPan || !e.left) return;
 
     this.app.canvas.element.style.cursor = 'grabbing';
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
+    this.isPan = false;
     this.machine.removeSelection();
     if (e.button != Button.right) {
       this.closeContextMenu();
     }
 
-    if (!this.isPan) return;
-
-    this.app.canvas.element.style.cursor = 'grab';
+    this.app.canvas.element.style.cursor = 'default';
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -141,16 +138,7 @@ export class Container {
     this.app.canvas.element.style.cursor = 'default';
   };
 
-  handleCtrlDown = () => {
-    this.isScale = true;
-  };
-
-  handleCtrlUp = () => {
-    this.isScale = false;
-  };
-
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
-    if (!this.isScale) return;
     e.nativeEvent.preventDefault();
 
     const newScale = clamp(this.scale + e.nativeEvent.deltaY * 0.001, 0.5, 2);

@@ -16,6 +16,7 @@ export interface FlasherProps {
   handleFlash: () => void;
   handleLocalFlasher: () => void;
   handleRemoteFlasher: () => void;
+  handleHostChange: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
@@ -29,6 +30,7 @@ export const Loader: React.FC<FlasherProps> = ({
   handleFlash,
   handleLocalFlasher,
   handleRemoteFlasher,
+  handleHostChange,
 }) => {
   const isActive = (id: string) => currentDevice === id;
 
@@ -39,7 +41,7 @@ export const Loader: React.FC<FlasherProps> = ({
       </h3>
 
       <div className="px-4">
-        <div className="my-2 flex rounded border border-border-primary">
+        <div className="my-2 flex rounded border-2 border-[#557b91]">
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
@@ -51,31 +53,9 @@ export const Loader: React.FC<FlasherProps> = ({
             <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
             Обновить
           </button>
-
-          <button
-            className="p-1 hover:bg-[#557b91] hover:text-white"
-            onClick={function handleClick() {
-              var list = document.getElementById('ollist')!;
-
-              if (list.style.display == 'none' || list.style.display == '') {
-                list.style.display = 'block';
-              } else {
-                list.style.display = 'none';
-              }
-            }}
-          >
+          <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>
             <Setting width="1.5rem" height="1.5rem" />
           </button>
-          <ol id="ollist" hidden>
-            <div>
-              {' '}
-              <li onClick={handleLocalFlasher}> Локальный</li>{' '}
-            </div>
-            <div>
-              {' '}
-              <li onClick={handleRemoteFlasher}>Удалённый</li>{' '}
-            </div>
-          </ol>
         </div>
 
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">

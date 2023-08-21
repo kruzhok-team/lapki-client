@@ -77,7 +77,7 @@ export function Documentations({ baseUrl }: { baseUrl: string }) {
           )}
         </div>
 
-        <div className={twMerge(activeTab !== 1 && 'hidden')}>
+        <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
           <Show html={html} documentLink={documentLink} />
         </div>
       </div>

@@ -6,6 +6,8 @@ import {
   DiagramEditor,
   FlasherProps,
   PlatformSelectModal,
+  FlasherSelectModal,
+  FlasherRemoteHostModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -26,7 +28,7 @@ import {
 import { preloadPicto } from './lib/drawable/Picto';
 import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
-import { Flasher } from './components/Modules/Flasher';
+import { FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT, Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import { Component as ComponentData } from './types/diagram';
 import useEditorManager from './components/utils/useEditorManager';
@@ -67,6 +69,14 @@ export const App: React.FC = () => {
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
+
+  const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
+  const openFlasherModal = () => setIsFlasherModalOpen(true);
+  const closeFlasherModal = () => setIsFlasherModalOpen(false);
+
+  const [isFlasherRemoteHostModalOpen, setIsFlasherRemoteHostModalOpen] = useState(false);
+  const openFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(true);
+  const closeFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(false);
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -225,25 +235,29 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleLocalFlasher = async () => {
+  const handleHostChange = async () => {
     if (Flasher.connecting) {
-      console.log('Нельзя сменить хост во время подключения');
+      // вывести сообщение: Нельзя сменить хост во время подключения
     } else {
-      console.log('local');
-      await manager?.startLocalModule('lapki-flasher');
-      //Стандартный порт
-      manager?.changeFlasherHost('localhost', 8080);
+      openFlasherModal();
     }
   };
 
+  const handleLocalFlasher = async () => {
+    console.log('local');
+    await manager?.startLocalModule('lapki-flasher');
+    //Стандартный порт
+    manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
+  };
+
   const handleRemoteFlasher = () => {
-    if (Flasher.connecting) {
-      console.log('Нельзя сменить хост во время подключения');
-    } else {
-      console.log('remote');
-      // await manager?.stopLocalModule('lapki-flasher');
-      manager?.changeFlasherHost('localhost', 8089);
-    }
+    openFlasherRemoteHostModal();
+  };
+
+  const handleRemoteHostFlasherSubmit = (host: string, port: number) => {
+    console.log('remote');
+    // await manager?.stopLocalModule('lapki-flasher');
+    manager?.changeFlasherHost(host, port);
   };
 
   const [tabData, setTabData] = useState<TabDataAdd | null>(null);
@@ -282,6 +296,7 @@ export const App: React.FC = () => {
     handleFlash: handleFlashBinary,
     handleLocalFlasher: handleLocalFlasher,
     handleRemoteFlasher: handleRemoteFlasher,
+    handleHostChange: handleHostChange,
   };
 
   const compilerProps: CompilerProps = {
@@ -418,6 +433,17 @@ export const App: React.FC = () => {
         isOpen={isPlatformModalOpen}
         onCreate={performNewFile}
         onClose={closePlatformModal}
+      />
+      <FlasherSelectModal
+        isOpen={isFlasherModalOpen}
+        handleLocal={handleLocalFlasher}
+        handleRemote={handleRemoteFlasher}
+        onClose={closeFlasherModal}
+      />
+      <FlasherRemoteHostModal
+        isOpen={isFlasherRemoteHostModalOpen}
+        onSubmit={handleRemoteHostFlasherSubmit}
+        onClose={closeFlasherRemoteHostModal}
       />
       <ComponentSelectModal
         isOpen={isCompAddModalOpen}

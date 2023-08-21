@@ -8,10 +8,11 @@ import {
 } from '@renderer/types/FlasherTypes';
 import Websocket from 'isomorphic-ws';
 import { Dispatch, SetStateAction } from 'react';
-
+export const FLASHER_LOCAL_PORT = 8080;
+export const FLASHER_LOCAL_HOST = 'localhost';
 export class Flasher {
-  static port = 8080;
-  static host = 'localhost';
+  static port = FLASHER_LOCAL_PORT;
+  static host = FLASHER_LOCAL_HOST;
   static base_address = this.makeAddress(this.host, this.port);
   static connection: Websocket | undefined;
   static connecting: boolean = false;

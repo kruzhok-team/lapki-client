@@ -239,8 +239,6 @@ export class Flasher {
           }
         }
       };
-
-      //timeout = 0;
     };
 
     ws.onclose = () => {

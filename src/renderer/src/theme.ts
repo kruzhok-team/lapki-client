@@ -43,8 +43,8 @@ const light = {
     success: 'lime',
 
     bg: {
-      primary: '#f2f2f2',
-      secondary: '#e7e7e7',
+      primary: '#e7e7e7',
+      secondary: '#f2f2f2',
       hover: '#cfcfcf',
       active: '#c2c2c2',
       btn: '#4391BF',

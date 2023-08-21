@@ -261,17 +261,42 @@ export const App: React.FC = () => {
   };
 
   const [tabData, setTabData] = useState<TabDataAdd | null>(null);
-  const onCodeSnippet = (type: string, name: string, code: string) => {
-    setTabData({ type, name, code });
+  const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
+    setTabData({ type, name, code, language });
   };
 
   const handleAddStdoutTab = () => {
     console.log(compilerData!.stdout);
-    onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '');
+    onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '');
+    onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '', 'txt');
+  };
+
+  const handleShowSource = () => {
+    compilerData!.source!.map((element) => {
+      console.log('here!');
+      onCodeSnippet(
+        'Компилятор',
+        `${element.filename}.${element.extension}`,
+        element.fileContent,
+        'cpp'
+      );
+    });
+    // const source = compilerData!.source!;
+    // onCodeSnippet(
+    //   'Компилятор',
+    //   `${source[0].filename}.${source[0].extension}`,
+    //   source[0].fileContent ?? '',
+    //   'cpp'
+    // );
+    // onCodeSnippet(
+    //   'Компилятор',
+    //   `${source[1].filename}.${source[1].extension}`,
+    //   source[1].fileContent ?? '',
+    //   'cpp'
+    // );
   };
 
   const handleImport = async (platform: string) => {
@@ -308,6 +333,7 @@ export const App: React.FC = () => {
     handleCompile: handleCompile,
     handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
     handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
+    handleShowSource: handleShowSource,
   };
 
   const onRequestAddComponent = () => {

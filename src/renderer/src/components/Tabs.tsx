@@ -20,6 +20,7 @@ export interface TabDataAdd {
   type: string;
   name: string;
   code: string;
+  language: string;
 }
 
 export interface TabsProps {
@@ -53,7 +54,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
                 <StateIcon />
               ),
             tab: props.tabData.name,
-            content: <CodeEditor value={props.tabData.code} />,
+            content: <CodeEditor language={props.tabData.language} value={props.tabData.code} />,
           },
         ]);
         isActive(tabs.length);

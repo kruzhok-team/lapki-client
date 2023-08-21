@@ -18,9 +18,9 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     show: false,
-    //resizable: false, // запрет на изменение размеров окна
-    minHeight: 768,
-    minWidth: 1366,
+    resizable: true, // запрет на изменение размеров окна
+    minHeight: 600,
+    minWidth: 1000,
     autoHideMenuBar: true,
     //...(process.platform === 'win32' ? { icon } : {}),
     webPreferences: {

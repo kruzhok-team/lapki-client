@@ -11,6 +11,7 @@ export interface CompilerProps {
   handleAddStderrTab: () => void;
   handleSaveSourceIntoFolder: () => void;
   handleSaveBinaryIntoFolder: () => void;
+  handleShowSource: () => void;
 }
 
 export const Compiler: React.FC<CompilerProps> = ({
@@ -22,6 +23,7 @@ export const Compiler: React.FC<CompilerProps> = ({
   handleAddStderrTab,
   handleSaveSourceIntoFolder,
   handleSaveBinaryIntoFolder,
+  handleShowSource,
 }) => {
   const button = [
     {
@@ -46,10 +48,8 @@ export const Compiler: React.FC<CompilerProps> = ({
     },
     {
       name: 'Показать код',
-      handler: () => {
-        console.log('click');
-      },
-      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
+      handler: handleShowSource,
+      condition: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Прошить...',

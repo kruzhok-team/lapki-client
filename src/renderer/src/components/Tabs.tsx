@@ -1,15 +1,21 @@
 import { twMerge } from 'tailwind-merge';
-import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
+
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
+import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
+import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
+import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { useEffect, useState } from 'react';
 import { CodeEditor } from './CodeEditor';
 
 export interface TabData {
-  tab: string;
+  svgIcon?: JSX.Element;
+  tab?: string;
   content: JSX.Element;
   cantClose?: boolean;
 }
 
 export interface TabDataAdd {
+  type: string;
   name: string;
   code: string;
 }
@@ -26,7 +32,6 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   const isActive = (index: number) => setActiveTab(index);
   const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
   const tabs = [...props.tabsItems, ...tabsNewItems];
-
   useEffect(() => {
     if (props.tabData !== null) {
       const trueTab = tabs.find((item) => item.tab === props.tabData?.name);
@@ -34,14 +39,22 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
         setTabsNewItems([
           ...tabsNewItems,
           {
+            svgIcon:
+              props.tabData.type === 'code' ? (
+                <CodeIcon />
+              ) : props.tabData.type === 'transition' ? (
+                <TransitionIcon />
+              ) : (
+                <StateIcon />
+              ),
             tab: props.tabData.name,
             content: <CodeEditor value={props.tabData.code} />,
           },
         ]);
         isActive(tabs.length);
+        props.setTabData(null);
       } else {
         tabs.forEach((value, id) => {
-          console.log(trueTab.tab, value.tab);
           trueTab.tab !== value.tab || isActive(id);
         });
       }
@@ -49,31 +62,39 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   }, [props.tabData]);
 
   const onClose = (id: number) => {
-    console.log(id);
-    setTabsNewItems((tabs) => tabs.splice(id, 1));
+    setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));
+    console.log(activeTab);
     isActive(0);
   };
-
   return (
     <>
-      <section className="flex">
-        {tabs.map((value, id) => (
+      <section
+        className={twMerge(
+          'flex gap-1 overflow-x-auto break-words px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]'
+        )}
+      >
+        {tabs.map(({ svgIcon, tab, cantClose }, id) => (
           <div
             key={'tab' + id}
             className={twMerge(
-              'flex items-center border-b-4 border-b-[#FFF] p-1 pb-[-10px] hover:border-b-[#4391BF] hover:border-opacity-50',
-              activeTab === id && 'border-b-[#4391BF] border-opacity-50'
+              'group/item my-1 flex items-center rounded-full bg-[#d6d6d6] hover:rounded-full hover:bg-[#a1c8df]',
+              activeTab === id && 'rounded-full bg-[#a1c8df]'
             )}
           >
-            <div role="button" onClick={() => isActive(id)} className="line-clamp-1 px-1 pt-1">
-              {value.tab}
+            {/*Если захотите увеличить или убавить размер вкладок, то в родительском стиле +/- px-i, а у текста +/- m-i*/}
+            <div className="flex items-center px-1" role="button" onClick={() => isActive(id)}>
+              <div className="m-1">{svgIcon}</div>
+              <div className={twMerge('m-1 line-clamp-1 w-20', id === 0 && 'hidden')}>{tab}</div>
             </div>
-            {!value.cantClose ? (
+            {!cantClose ? (
               <button
                 onClick={() => onClose(id)}
-                className="p-1 hover:bg-[#4391BF] hover:bg-opacity-50 "
+                className={twMerge(
+                  'hover:rounder-[1rem] invisible mr-1 rounded-full p-1 group-hover/item:visible hover:bg-[#FFF]',
+                  activeTab === id && 'visible'
+                )}
               >
-                <Close width="1rem" height="1rem" />
+                <CloseIcon />
               </button>
             ) : (
               ''

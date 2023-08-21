@@ -27,22 +27,26 @@ export const Compiler: React.FC<CompilerProps> = ({
     {
       name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
+      condition: compilerData?.binary === undefined || compilerData.binary.length == 0,
     },
     {
       name: 'Сохранить код',
       handler: handleSaveSourceIntoFolder,
+      condition: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Показать код',
       handler: () => {
         console.log('click');
       },
+      condition: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Прошить...',
       handler: () => {
         console.log('click');
       },
+      condition: compilerData?.binary === undefined || compilerData.binary.length == 0,
     },
   ];
   const cantCompile =
@@ -92,16 +96,15 @@ export const Compiler: React.FC<CompilerProps> = ({
       >
         Показать stdout
       </button>
-      {button.map(({ name, handler }, i) => (
+      {button.map(({ name, handler, condition }, i) => (
         <button
           key={'compiler' + i}
           className={twMerge(
             'my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white',
-            (compilerData?.binary === undefined || compilerData.binary.length == 0) &&
-              'border-[#557b91] opacity-50'
+            condition && 'border-[#557b91] opacity-50'
           )}
           onClick={handler}
-          disabled={compilerData?.binary === undefined}
+          disabled={condition}
         >
           {name}
         </button>

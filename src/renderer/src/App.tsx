@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import {
-  CodeEditor,
   CompilerProps,
   DiagramEditor,
   Documentations,
   FlasherProps,
-  MenuProps,
   PlatformSelectModal,
   SaveModalData,
   SaveRemindModal,
@@ -18,6 +16,7 @@ import {
   Tabs,
   TabDataAdd,
 } from './components';
+import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { isLeft, unwrapEither } from './types/Either';
 import {
@@ -56,6 +55,10 @@ export const App: React.FC = () => {
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
+  const [openData, setOpenData] = useState<
+    [boolean, string | null, string | null, string] | undefined
+  >(undefined);
+  const [importData, setImportData] = useState<string | undefined>(undefined);
 
   const lapki = useEditorManager();
   const editor = lapki.editor;
@@ -199,7 +202,7 @@ export const App: React.FC = () => {
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager?.saveIntoFolder(compilerData!.source);
+    await manager?.saveIntoFolder(compilerData!.source!);
   };
 
   const handleSaveAsFile = async () => {
@@ -225,31 +228,50 @@ export const App: React.FC = () => {
   };
 
   const handleLocalFlasher = async () => {
-    console.log('local');
-    await manager?.startLocalModule('lapki-flasher');
-    //Стандартный порт
-    manager?.changeFlasherHost('localhost', 8080);
+    if (Flasher.connecting) {
+      console.log('Нельзя сменить хост во время подключения');
+    } else {
+      console.log('local');
+      await manager?.startLocalModule('lapki-flasher');
+      //Стандартный порт
+      manager?.changeFlasherHost('localhost', 8080);
+    }
   };
 
   const handleRemoteFlasher = () => {
-    console.log('remote');
-    // await manager?.stopLocalModule('lapki-flasher');
-    manager?.changeFlasherHost('localhost', 8089);
+    if (Flasher.connecting) {
+      console.log('Нельзя сменить хост во время подключения');
+    } else {
+      console.log('remote');
+      // await manager?.stopLocalModule('lapki-flasher');
+      manager?.changeFlasherHost('localhost', 8089);
+    }
   };
 
   const [tabData, setTabData] = useState<TabDataAdd | null>(null);
-  const onCodeSnippet = (name: string, code: string) => {
-    setTabData({ name, code });
+  const onCodeSnippet = (type: string, name: string, code: string) => {
+    setTabData({ type, name, code });
   };
 
   const handleAddStdoutTab = () => {
     console.log(compilerData!.stdout);
-    onCodeSnippet('stdout', compilerData!.stdout);
+    onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '');
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet('stderr', compilerData!.stderr);
+    onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '');
   };
+
+  const handleImport = async (platform: string) => {
+    await manager?.import(platform, setOpenData);
+  };
+
+  useEffect(() => {
+    if (importData && openData) {
+      manager?.parseImportData(importData, openData!);
+      setImportData(undefined);
+    }
+  }, [importData]);
 
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
@@ -329,10 +351,12 @@ export const App: React.FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
     onRequestEditComponent,
+    onRequestImport: handleImport,
   };
 
   useEffect(() => {
-    Compiler.bindReact(setCompilerData, setCompilerStatus);
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    console.log('CONNECTING TO COMPILER');
     Compiler.connect(`${Compiler.base_address}main`);
     preloadPlatforms(() => {
       preparePreloadImages();
@@ -348,7 +372,8 @@ export const App: React.FC = () => {
 
   const tabsItems = [
     {
-      tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
+      svgIcon: <EditorIcon />,
+      //tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
       cantClose: true,
       content: (
         <DiagramEditor
@@ -359,18 +384,15 @@ export const App: React.FC = () => {
         />
       ),
     },
-    {
-      tab: editorData.shownName ? 'CODE: ' + editorData.shownName : 'CODE: unnamed',
-      cantClose: true,
-      content: <CodeEditor value={editorData.content ?? ''} />,
-    },
   ];
 
   useEffect(() => {
     Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
     const reader = new FileReader();
     Flasher.initReader(reader);
+    console.log('CONNECTING TO FLASHER');
     Flasher.connect(Flasher.base_address);
+    // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 
   return (
@@ -383,26 +405,29 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <div className="flex-auto  overflow-hidden">
-          <div className="flex">
-            <div className="flex-1">
-              {editorData.content ? (
-                <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
-              ) : (
-                <p className="pt-24 text-center font-Fira text-base">
-                  Откройте файл или перенесите его сюда...
-                </p>
-              )}
-            </div>
+        <div className="flex w-full min-w-0">
+          <div
+            className={twMerge(
+              'max-w-[calc(100%-2rem)] flex-1',
+              isDocOpen && 'max-w-[calc(100%-27rem)]'
+            )}
+          >
+            {editorData.content ? (
+              <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+            ) : (
+              <p className="pt-24 text-center font-Fira text-base">
+                Откройте файл или перенесите его сюда...
+              </p>
+            )}
+          </div>
 
-            <div className={twMerge('bottom-0 right-0 m-auto flex h-[calc(100vh-2rem)] bg-white')}>
-              <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
-                <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
-              </button>
+          <div className={twMerge('m-auto flex h-[calc(100vh-2rem)] bg-white')}>
+            <button className="relative w-8" onClick={() => setIsDocOpen((p) => !p)}>
+              <Arrow transform={isDocOpen ? 'rotate(0)' : 'rotate(180)'} />
+            </button>
 
-              <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
-                <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
-              </div>
+            <div className={twMerge('w-[400px] transition-all', !isDocOpen && 'hidden')}>
+              <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
             </div>
           </div>
         </div>

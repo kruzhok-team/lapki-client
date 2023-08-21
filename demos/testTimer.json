@@ -1,0 +1,106 @@
+{
+    "states": {
+      "n0": {
+        "name": "state1",
+        "events": [
+            {
+                "trigger": {
+                    "component": "System",
+                    "method": "onEnter"
+                },
+                "do": [
+                    {
+                        "component": "timer",
+                        "method": "start",
+                        "args": {
+                            "interval": "5000"
+                        }
+                    }
+                ]
+            }
+        ],
+        "bounds": {
+            "x": 196,
+            "y": 364,
+            "height": 95,
+            "width": 450
+        }
+      },
+      "n1": {
+        "name": "state2",
+        "events": [
+            {
+                "trigger": {
+                    "component": "System",
+                    "method": "onEnter"
+                },
+                "do": [
+                    {
+                        "component": "timer",
+                        "method": "start",
+                        "args": {
+                            "interval": "5000"
+                        }
+                    }
+                ]
+            }
+        ],
+        "bounds": {
+            "x": 196,
+            "y": 364,
+            "height": 95,
+            "width": 450
+        }
+      }
+    },
+  
+    "initialState": "n0",
+  
+    "transitions": [
+      {
+        "source": "n0",
+        "target": "n1",
+        "color": "#F29727",
+        "position": {
+          "x": 361,
+          "y": 127
+        },
+        "trigger": {
+          "component": "timer",
+          "method": "timeout"
+        },
+        "condition": null,
+        "do":[]
+      },
+      {
+        "source": "n1",
+        "target": "n0",
+        "color": "#F29727",
+        "position": {
+          "x": 361,
+          "y": 127
+        },
+        "trigger": {
+          "component": "timer",
+          "method": "timeout"
+        },
+        "condition": null,
+        "do":[]
+      }
+    ],
+  
+    "components": {
+        "timer": {
+            "type": "Timer",
+            "parameters": {}
+          }
+    },
+    "compilerSettings": {
+        "filename": "ExampleSketch",
+        "compiler": "arduino-cli",
+        "flags": ["-b", "arduino:avr:uno"]
+    },
+
+    "platform": "ArduinoUno",
+    "parameters": {}
+}

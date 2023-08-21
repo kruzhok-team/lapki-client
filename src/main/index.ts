@@ -66,7 +66,9 @@ app.whenReady().then(() => {
     return handleSaveIntoFolder(data);
   });
 
-  ipcMain.handle('dialog:openFile', handleFileOpen);
+  ipcMain.handle('dialog:openFile', (_event, platform: string) => {
+    return handleFileOpen(platform);
+  });
 
   ipcMain.handle('dialog:saveFile', (_event, filename, data) => {
     return handleFileSave(filename, data);
@@ -104,6 +106,8 @@ app.whenReady().then(() => {
 // Завершаем приложение, когда окна закрыты.
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
+  // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
+  ModuleManager.stopModule('lapki-flasher');
   if (process.platform !== 'darwin') {
     app.quit();
   }

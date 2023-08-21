@@ -56,6 +56,7 @@ export class CanvasEditor {
     this.container.machine.clear();
     this.container.machine.loadData(elements);
     this.container.isDirty = true;
+    console.log("loaded!")
   }
 
   getData(): string {

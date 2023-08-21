@@ -86,7 +86,6 @@ app.whenReady().then(() => {
     return ModuleManager.stopModule(module);
   });
 
-
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки
   // - CmdOrCtrl + R – перезагрузить страницу
@@ -107,6 +106,8 @@ app.whenReady().then(() => {
 // Завершаем приложение, когда окна закрыты.
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
+  // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
+  ModuleManager.stopModule('lapki-flasher');
   if (process.platform !== 'darwin') {
     app.quit();
   }

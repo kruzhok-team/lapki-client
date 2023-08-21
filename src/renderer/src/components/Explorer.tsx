@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { twMerge } from 'tailwind-merge';
+
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
+
 import { EditorRef } from './utils/useEditorManager';
 import ScrollableList, { ScrollableListItem } from './utils/ScrollableList';
-import { twMerge } from 'tailwind-merge';
-import AddIcon from '@renderer/assets/icons/new transition.svg';
 
 import './component-list.css';
 
@@ -53,7 +55,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
       id: key,
       content: (
         <div
-          className={twMerge(key == cursor && 'bg-slate-600', 'flex items-center pb-1 pt-1')}
+          className={twMerge(key == cursor && 'bg-primary', 'flex items-center pb-1 pt-1')}
           onClick={(e) => onCompClick(e, key)}
           onDoubleClick={(e) => onCompDblClick(e, key)}
           onContextMenu={(e) => onCompRightClick(e, key)}
@@ -69,22 +71,19 @@ export const Explorer: React.FC<ExplorerProps> = ({
   );
 
   return (
-    <section
-      className="flex h-full flex-col justify-start bg-[#a1c8df] font-Fira text-base"
-      onClick={onUnClick}
-    >
-      <div
-        className="w-full flex-auto items-center px-4 pt-2 text-center"
-        style={{ height: `{dividerHeight}px` }}
-      >
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Компоненты</h1>
+    <section className="flex flex-col" onClick={onUnClick}>
+      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
+        Компоненты
+      </h3>
+
+      <div className="px-4 py-2 text-center">
         <button
-          className="component-add"
+          className="btn flex w-full items-center gap-2"
           disabled={!editorRef.editorData.content}
           onClick={onAddClick}
         >
-          <img src={AddIcon} />
-          <p>Добавить...</p>
+          <AddIcon />
+          Добавить...
         </button>
         <ScrollableList
           listItems={content ?? []}
@@ -93,6 +92,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
           className="component-list"
         />
       </div>
+
       {/* TODO: 
       <div className="h-full flex-auto px-4 pt-3 text-center">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>

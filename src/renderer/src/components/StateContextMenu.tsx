@@ -175,7 +175,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
         style={floatingStyles}
         key="ContextMenu"
         className={twMerge(
-          'font z-50 w-56 rounded-lg bg-neutral-100 p-2 font-Fira text-base',
+          'font z-50 w-56 rounded-lg bg-neutral-100 p-2 text-base',
           !isOpen && 'hidden'
         )}
       >

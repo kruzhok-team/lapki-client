@@ -49,17 +49,13 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   ];
 
   return (
-    <section
-      key="SectionMenu"
-      className="flex h-full w-full flex-col items-stretch bg-[#a1c8df] font-Fira"
-    >
-      <div className="w-full px-4 pt-2 text-center">
-        <p className="mb-3 border-b border-white pb-2 text-lg">Меню</p>
-      </div>
+    <section key="SectionMenu" className="flex flex-col">
+      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">Меню</h3>
+
       {items.map(({ text, onClick, disabled }) => (
         <button
           key={text}
-          className="bg-opacity-50 py-2 text-center text-base enabled:hover:bg-[#4391BF] disabled:text-gray-400"
+          className="py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled"
           onClick={onClick}
           disabled={disabled}
         >

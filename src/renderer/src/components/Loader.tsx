@@ -16,6 +16,7 @@ export interface FlasherProps {
   handleFlash: () => void;
   handleLocalFlasher: () => void;
   handleRemoteFlasher: () => void;
+  handleHostChange: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
@@ -29,6 +30,7 @@ export const Loader: React.FC<FlasherProps> = ({
   handleFlash,
   handleLocalFlasher,
   handleRemoteFlasher,
+  handleHostChange,
 }) => {
   const isActive = (id: string) => currentDevice === id;
 
@@ -49,30 +51,9 @@ export const Loader: React.FC<FlasherProps> = ({
           <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
           Обновить
         </button>
-        <button
-          className="p-1 hover:bg-[#557b91] hover:text-white"
-          onClick={function handleClick() {
-            var list = document.getElementById('ollist')!;
-
-            if (list.style.display == 'none' || list.style.display == '') {
-              list.style.display = 'block';
-            } else {
-              list.style.display = 'none';
-            }
-          }}
-        >
+        <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>
           <Setting width="1.5rem" height="1.5rem" />
         </button>
-        <ol id="ollist" hidden>
-          <div>
-            {' '}
-            <li onClick={handleLocalFlasher}> Локальный</li>{' '}
-          </div>
-          <div>
-            {' '}
-            <li onClick={handleRemoteFlasher}>Удалённый</li>{' '}
-          </div>
-        </ol>
       </div>
 
       <div className=" h-40 select-text items-center overflow-y-auto break-words rounded bg-white p-2">

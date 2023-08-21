@@ -147,13 +147,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <div className="flex flex-col bg-bg-primary">
+      <div className="flex flex-col border-r border-border-primary bg-bg-primary">
         {items.map(({ svgIcon, style }, i) => (
           <button
             key={i}
             className={twMerge(
-              'w-12 p-2 text-text-inactive transition-colors hover:text-text-primary',
-              i === sidebarTabActive && 'text-text-primary',
+              'w-12 border-l-2 border-transparent p-2 text-text-inactive transition-colors hover:text-text-primary',
+              i === sidebarTabActive && 'border-primary text-text-primary',
               style && 'mt-auto'
             )}
             onClick={handleClick(i)}

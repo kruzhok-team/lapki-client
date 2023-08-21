@@ -173,11 +173,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
       <div
         ref={refs.setFloating}
         style={floatingStyles}
-        key="ContextMenu"
-        className={twMerge(
-          'font z-50 w-56 rounded-lg bg-neutral-100 p-2 text-base',
-          !isOpen && 'hidden'
-        )}
+        className={twMerge('z-50 w-56 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
       >
         {button.map(({ text, onClick, style, disabled }, i) => (
           <button
@@ -185,7 +181,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
             key={'ContextMenu' + i}
             disabled={disabled}
             className={twMerge(
-              'w-full px-4 py-2 transition-colors hover:bg-red-600 hover:text-white disabled:text-gray-400',
+              'w-full rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
               style
             )}
           >

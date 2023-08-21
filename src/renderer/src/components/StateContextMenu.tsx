@@ -30,7 +30,8 @@ interface StateContextMenuProps {
 }
 
 export interface ContextMenuForm {
-  id: string;
+  name: string;
+  type: string;
   eventId: EventSelection;
   content: string;
 }
@@ -61,11 +62,11 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     if (typeof isData === 'undefined') return; // удалять нечего
 
     if (isData!.data instanceof Condition) {
-      data.id = isData?.data.id!;
+      data.name = isData?.data.id!;
       onClickDelTran(data);
     }
     if (isData!.data instanceof State) {
-      data.id = isData?.data.id!;
+      data.name = isData?.data.id!;
       if (!isData!.event) {
         onClickDelState(data);
       } else {
@@ -82,20 +83,23 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
 
     if (isData!.data === null) {
       onCloseMe();
-      data.id = 'FullCode';
+      data.type = 'code';
+      data.name = 'FullCode';
       onClickShowCode(data);
     }
 
     if (isData!.data instanceof Condition) {
       onCloseMe();
-      data.id = isData?.data.transition.id!;
+      data.type = 'transition';
+      data.name = isData?.data.transition.id!;
       data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
     }
 
     if (isData!.data instanceof State) {
       onCloseMe();
-      data.id = isData?.data.id!;
+      data.type = 'state';
+      data.name = isData?.data.id!;
       data.content = JSON.stringify(isData.data, null, 2);
       onClickShowCode(data);
     }
@@ -106,7 +110,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     onCloseMe();
     if (typeof isData === 'undefined') return; // удалять нечего
     if (!(isData!.data instanceof State)) return; // не нода
-    data.id = isData?.data.id!;
+    data.name = isData?.data.id!;
     onClickInitial(data);
   });
 

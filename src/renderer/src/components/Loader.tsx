@@ -50,7 +50,7 @@ export const Loader: React.FC<FlasherProps> = ({
             onClick={handleGetList}
             disabled={connectionStatus != 'Подключен'}
           >
-            <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
+            <Update width="1.5rem" height="1.5rem" className="mr-1" />
             Обновить
           </button>
           <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>

@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="relative">
             <MenuIcon />
             {editorRef.editorData.modified && (
-              <div className="absolute right-0 top-0 aspect-square h-2 w-2" />
+              <div className="absolute right-0 top-0 h-2 w-2 rounded-full bg-primary" />
             )}
           </div>
         ),

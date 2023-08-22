@@ -5,9 +5,8 @@ import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
 import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+
 import { CodeEditor } from './CodeEditor';
-import { Documentations } from './Documentation/Documentation';
 
 export interface TabData {
   svgIcon?: JSX.Element;
@@ -35,8 +34,6 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   const isActive = (index: number) => setActiveTab(index);
   const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
   const tabs = [...props.tabsItems, ...tabsNewItems];
-
-  const [isDocOpen, setIsDocOpen] = useState(false);
 
   useEffect(() => {
     if (props.tabData !== null) {
@@ -111,26 +108,9 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
       {tabs.map((value, id) => (
         <div
           key={id}
-          className={twMerge('relative hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
+          className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
         >
           {value.content}
-
-          <div
-            className={twMerge(
-              'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
-              isDocOpen && 'translate-x-0'
-            )}
-          >
-            <button className="w-8" onClick={() => setIsDocOpen((p) => !p)}>
-              <Arrow
-                className={twMerge('rotate-180 transition-transform', isDocOpen && 'rotate-0')}
-              />
-            </button>
-
-            <div className="w-[400px]">
-              <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
-            </div>
-          </div>
         </div>
       ))}
     </>

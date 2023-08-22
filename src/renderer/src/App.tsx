@@ -250,8 +250,11 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
   };
 
-  const handleRemoteFlasher = () => {
-    openFlasherRemoteHostModal();
+  const handleRemoteFlasher = (host: string, port: number) => {
+    //openFlasherRemoteHostModal();
+    console.log('remote');
+    // await manager?.stopLocalModule('lapki-flasher');
+    manager?.changeFlasherHost(host, port);
   };
 
   const handleRemoteHostFlasherSubmit = (host: string, port: number) => {

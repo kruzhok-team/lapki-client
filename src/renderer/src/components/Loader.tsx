@@ -15,7 +15,7 @@ export interface FlasherProps {
   handleGetList: () => void;
   handleFlash: () => void;
   handleLocalFlasher: () => void;
-  handleRemoteFlasher: () => void;
+  handleRemoteFlasher: (host: string, port: number) => void;
   handleHostChange: () => void;
 }
 

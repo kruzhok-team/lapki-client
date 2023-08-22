@@ -4,7 +4,7 @@ import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
 import { Device } from '@renderer/types/FlasherTypes';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-
+import { FLASHER_CONNECTED, FLASHER_CONNECTING, FLASHER_SWITCHING_HOST } from './Modules/Flasher';
 export interface FlasherProps {
   devices: Map<string, Device>;
   currentDevice: string | undefined;
@@ -43,15 +43,26 @@ export const Loader: React.FC<FlasherProps> = ({
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              connectionStatus != 'Подключен' && 'opacity-50'
+              connectionStatus != FLASHER_CONNECTED && 'opacity-50'
             )}
             onClick={handleGetList}
-            disabled={connectionStatus != 'Подключен'}
+            disabled={connectionStatus != FLASHER_CONNECTED}
           >
-            <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF;" />
+            <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF" />
             Обновить
           </button>
-          <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>
+          <button
+            className={twMerge(
+              'p-1 hover:bg-[#557b91] hover:text-white',
+              (connectionStatus == FLASHER_CONNECTING ||
+                connectionStatus == FLASHER_SWITCHING_HOST) &&
+                'opacity-50'
+            )}
+            onClick={handleHostChange}
+            disabled={
+              connectionStatus == FLASHER_CONNECTING || connectionStatus == FLASHER_SWITCHING_HOST
+            }
+          >
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>

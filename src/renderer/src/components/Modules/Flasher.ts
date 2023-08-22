@@ -37,9 +37,6 @@ export class Flasher {
     this.host = host;
     this.port = port;
     let new_address = this.makeAddress(host, port);
-    if (this.connection && new_address == this.base_address) {
-      return;
-    }
     console.log(`Changing host from ${this.base_address} to ${new_address}`);
     this.base_address = new_address;
     this.connection?.close();

@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:y="http://www.yworks.com/xml/graphml">
+  <graph>
+    <node id="">
+      <data>
+        <y:GenericNode configuration="com.yworks.bpmn.Event.withShadow">
+          <y:NodeLabel />
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n0">
+      <data>
+        <y:GenericNode>
+          <y:NodeLabel>Скан</y:NodeLabel>
+          <y:NodeLabel>entry/
+Сенсор.ПоискВрагаПоДистанции(мин)
+exit/
+Сенсор.ОстановкаПоиска()
+</y:NodeLabel>
+          <y:Geometry x="-751.1937" y="-42.67488" width="411.2" height="255" />
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n1">
+      <data>
+        <y:GroupNode>
+          <y:NodeLabel>Бой</y:NodeLabel>
+          <y:NodeLabel>entry/
+exit/
+</y:NodeLabel>
+          <y:Geometry x="-35.0172043" y="-246.653076" width="517.2018" height="748.572632" />
+        </y:GroupNode>
+      </data>
+      <graph>
+        <node id="n1::n2">
+          <data>
+            <y:GenericNode>
+              <y:NodeLabel>Сближение</y:NodeLabel>
+              <y:NodeLabel>entry/
+МодульДвижения.ДвигатьсяКЦели()
+exit/
+МодульДвижения.Стоп()
+</y:NodeLabel>
+              <y:Geometry x="-32.01631" y="-103.86673" width="411.2" height="235" />
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n1::n3">
+          <data>
+            <y:GenericNode>
+              <y:NodeLabel>Атака</y:NodeLabel>
+              <y:NodeLabel>entry/
+ОружиеМассовое.АтаковатьЦель()
+exit/
+</y:NodeLabel>
+              <y:Geometry x="-38.01808" y="-457.4394" width="411.2" height="157" />
+            </y:GenericNode>
+          </data>
+        </node>
+      </graph>
+    </node>
+    <edge source="n0" target="n1::n2">
+      <y:EdgeLabel>Сенсор.ЦельПолучена/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n1" target="n0">
+      <y:EdgeLabel>АнализаторЦели.ЦельПотеряна/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n1" target="n0">
+      <y:EdgeLabel>АнализаторЦели.ЦельУничтожена/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n1::n2" target="n1::n3">
+      <y:EdgeLabel>ОружиеМассовое.ЦельВошлаВЗонуАтаки/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n1::n3" target="n1::n2">
+      <y:EdgeLabel>ОружиеМассовое.ЦельВышлаИзЗоныАтаки/
+</y:EdgeLabel>
+    </edge>
+    <edge source="" target="n0">
+      <y:EdgeLabel></y:EdgeLabel>
+    </edge>
+  </graph>
+</graphml>

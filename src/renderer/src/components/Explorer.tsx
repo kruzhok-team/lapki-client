@@ -61,10 +61,12 @@ export const Explorer: React.FC<ExplorerProps> = ({
           onContextMenu={(e) => onCompRightClick(e, key)}
         >
           <img
-            style={{ height: '32px' }}
+            style={{ height: '32px', width: '32px' }}
             src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon}
           />
-          <p className={twMerge('line-clamp-1', key == cursor && 'text-white')}>{key}</p>
+          <p className={twMerge('ml-2 line-clamp-1', key == cursor && 'text-white')}>
+            {key}
+          </p>
         </div>
       ),
     })

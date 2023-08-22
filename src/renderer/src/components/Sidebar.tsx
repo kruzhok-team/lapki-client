@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   },
 }) => {
   const [sidebarTabActive, setSidebarTabActive] = useState(0);
-  const [width, setWidth] = React.useState(250);
+  const [width, setWidth] = React.useState(260);
   const [minWidth, setMinWidth] = React.useState(200);
   const [maxWidth, setMaxWidth] = React.useState('80vw');
   const [isCollapsed, setIsCollapsed] = React.useState(false);

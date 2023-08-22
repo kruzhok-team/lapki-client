@@ -10,6 +10,14 @@
 
 @layer components {
   .btn {
-    @apply rounded bg-bg-btn px-3 py-2 transition-colors enabled:hover:bg-bg-btnHover enabled:active:bg-bg-btnActive disabled:cursor-not-allowed disabled:opacity-30;
+    @apply rounded border border-transparent px-8 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
+  }
+
+  .btn-primary {
+    @apply btn border-primary bg-primary text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
+  }
+
+  .btn-secondary {
+    @apply btn border border-text-primary enabled:hover:opacity-80 enabled:active:opacity-60;
   }
 }

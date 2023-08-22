@@ -78,7 +78,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
 
       <div className="px-4 py-2 text-center">
         <button
-          className="btn flex w-full items-center gap-2"
+          className="btn-primary flex w-full items-center gap-3"
           disabled={!editorRef.editorData.content}
           onClick={onAddClick}
         >

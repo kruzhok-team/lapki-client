@@ -87,7 +87,7 @@ export const Loader: React.FC<FlasherProps> = ({
         </div>
 
         <button
-          className="btn mb-2"
+          className="btn-primary mb-2"
           onClick={handleFlash}
           disabled={
             compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice

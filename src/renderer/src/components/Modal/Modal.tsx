@@ -36,14 +36,14 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-12 w-full max-w-2xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
+      className="absolute left-1/2 top-12 w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
       overlayClassName="bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-0"
-      closeTimeoutMS={300}
+      closeTimeoutMS={200}
     >
-      <div className="relative mb-3 flex items-center justify-between border-b border-neutral-400 pb-1">
+      <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          className="rounded-full border-none p-3 text-neutral-50 shadow-none outline-1 outline-neutral-100 transition-colors hover:bg-neutral-700"
+          className="rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active"
           onClick={props.onRequestClose}
         >
           <Close width="1rem" height="1rem" />
@@ -63,11 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
             {sideLabel}
           </button>
           <div className="flex-grow"></div>
-          <button
-            type="button"
-            className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
-            onClick={props.onRequestClose}
-          >
+          <button type="button" className="btn-secondary" onClick={props.onRequestClose}>
             {cancelLabel ?? 'Закрыть'}
           </button>
           <button
@@ -80,7 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
           <button
             type="submit"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors enabled:hover:bg-neutral-600 disabled:bg-neutral-900 disabled:text-neutral-500"
+            className="btn-primary"
             hidden={!onSubmit}
             disabled={submitDisabled}
           >

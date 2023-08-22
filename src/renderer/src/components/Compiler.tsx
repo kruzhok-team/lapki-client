@@ -70,7 +70,7 @@ export const Compiler: React.FC<CompilerProps> = ({
       </h3>
 
       <div className="flex flex-col px-4">
-        <button disabled={disabled} className="btn mb-4" onClick={handleCompile}>
+        <button disabled={disabled} className="btn-primary mb-4" onClick={handleCompile}>
           Скомпилировать
         </button>
 
@@ -88,7 +88,7 @@ export const Compiler: React.FC<CompilerProps> = ({
         </div>
 
         {button.map(({ name, handler, disabled }, i) => (
-          <button key={i} className="btn mb-2" onClick={handler} disabled={disabled}>
+          <button key={i} className="btn-primary mb-2" onClick={handler} disabled={disabled}>
             {name}
           </button>
         ))}

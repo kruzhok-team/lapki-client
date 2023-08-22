@@ -278,13 +278,12 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(host, port);
   };
 
-  const [tabData, setTabData] = useState<TabDataAdd | null>(null);
+  const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
   const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
-    setTabData({ type, name, code, language });
+    setTabData([{ type, name, code, language }]);
   };
 
   const handleAddStdoutTab = () => {
-    console.log(compilerData!.stdout);
     onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
   };
 
@@ -293,28 +292,18 @@ export const App: React.FC = () => {
   };
 
   const handleShowSource = () => {
+    const newTabs = new Array<TabDataAdd>();
     compilerData!.source!.map((element) => {
       console.log('here!');
-      onCodeSnippet(
-        'Компилятор',
-        `${element.filename}.${element.extension}`,
-        element.fileContent,
-        'cpp'
-      );
+      newTabs.push({
+        type: 'Компилятор',
+        name: `${element.filename}.${element.extension}`,
+        code: element.fileContent,
+        language: 'cpp',
+      });
     });
-    // const source = compilerData!.source!;
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[0].filename}.${source[0].extension}`,
-    //   source[0].fileContent ?? '',
-    //   'cpp'
-    // );
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[1].filename}.${source[1].extension}`,
-    //   source[1].fileContent ?? '',
-    //   'cpp'
-    // );
+
+    setTabData(newTabs);
   };
 
   const handleImport = async (platform: string) => {

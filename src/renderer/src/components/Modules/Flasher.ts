@@ -37,10 +37,10 @@ export class Flasher {
     this.host = host;
     this.port = port;
     let new_address = this.makeAddress(host, port);
-    console.log(`Changing host from ${this.base_address} to ${new_address}`);
-    if (new_address == this.base_address) {
+    if (this.connection && new_address == this.base_address) {
       return;
     }
+    console.log(`Changing host from ${this.base_address} to ${new_address}`);
     this.base_address = new_address;
     this.connection?.close();
     if (this.timerID) {
@@ -145,8 +145,14 @@ export class Flasher {
   static connect(route: string, timeout: number = 0): Websocket {
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
-
-    const ws = new Websocket(route);
+    var ws;
+    try {
+      ws = new Websocket(route);
+    } catch (error) {
+      console.log('Flasher websocket error');
+      this.setFlasherConnectionStatus('Ошибка при попытке подключиться');
+      return;
+    }
     this.setFlasherConnectionStatus('Идет подключение...');
     this.connecting = true;
     console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);

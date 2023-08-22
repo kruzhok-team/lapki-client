@@ -1,5 +1,9 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-// import { Flasher } from '../../renderer/src/components/Modules/Flasher';
+import {
+  FLASHER_LOCAL_HOST,
+  FLASHER_LOCAL_PORT,
+  Flasher,
+} from '../../renderer/src/components/Modules/Flasher';
 
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
@@ -23,7 +27,11 @@ export class ModuleManager {
           -updateList int
               количество секунд между автоматическими обновлениями (default 15)
       */
-      var flasherArgs: string[] = ['-updateList=10', '-listCooldown=0'];
+      var flasherArgs: string[] = [
+        '-updateList=10',
+        '-listCooldown=0',
+        `-address=${Flasher.makeAddress(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT)}`,
+      ];
       switch (platform) {
         case 'linux':
           chprocess = spawn(`./src/main/modules/src/${platform}/${module}`, flasherArgs);

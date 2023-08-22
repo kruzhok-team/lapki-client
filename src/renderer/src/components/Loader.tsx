@@ -28,8 +28,6 @@ export const Loader: React.FC<FlasherProps> = ({
   setCurrentDevice,
   handleGetList,
   handleFlash,
-  handleLocalFlasher,
-  handleRemoteFlasher,
   handleHostChange,
 }) => {
   const isActive = (id: string) => currentDevice === id;

@@ -55,7 +55,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       {items.map(({ text, onClick, disabled }) => (
         <button
           key={text}
-          className="py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled"
+          className="px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled"
           onClick={onClick}
           disabled={disabled}
         >

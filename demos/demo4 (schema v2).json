@@ -1,5 +1,4 @@
 {
-  "platform": "ArduinoUno",
   "states": {
     "diod1": {
       "name": "state1",
@@ -143,30 +142,7 @@
   "initialState": "diod1",
   "transitions": [
     {
-      "color": "#F29727",
-      "position": {
-        "x": 457,
-        "y": 173
-      },
-      "source": "diod1",
-      "target": "diod2",
-      "trigger": {
-        "component": "button1",
-        "method": "isPressed"
-      }
-    },
-    {
       "color": "#F24C3D",
-      "position": {
-        "x": 16,
-        "y": 175
-      },
-      "source": "diod2",
-      "target": "diod1",
-      "trigger": {
-        "component": "button1",
-        "method": "isPressed"
-      },
       "do": [
         {
           "component": "diod1",
@@ -184,7 +160,17 @@
           "component": "button1",
           "method": "clicked"
         }
-      ]
+      ],
+      "position": {
+        "x": 16,
+        "y": 175
+      },
+      "source": "diod2",
+      "target": "diod1",
+      "trigger": {
+        "component": "button1",
+        "method": "isPressed"
+      }
     },
     {
       "color": "#1100ff",
@@ -213,5 +199,7 @@
       },
       "type": "Button"
     }
-  }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno"
 }

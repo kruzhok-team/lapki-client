@@ -487,6 +487,20 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  removeComponent(name: string, purge?: boolean) {
+    if (!this.components.has(name)) return;
+
+    if (purge) {
+      // TODO: «вымарывание» компонента из машины
+      console.error('removeComponent purge not implemented yet');
+    }
+
+    this.components.delete(name);
+    this.platform.nameToComponent.delete(name);
+
+    this.dataTrigger();
+  }
+
   /**
    * Снимает выделение со всех нод и переходов.
    *

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import {
   CompilerProps,
@@ -411,7 +410,7 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteComponent = (idx: string) => {
-    console.log(['component-delete-apply', idx]);
+    editor!.container.machine.removeComponent(idx, false);
     closeCompEditModal();
   };
 

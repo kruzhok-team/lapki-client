@@ -57,9 +57,9 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
         <span className="px-1 font-bold">{compoLabel}</span>?
       </p>
       <br />
-      <p className="italic text-red-500">
-        Удаление компонента приведёт к удалению всех событий, переходов и действий, связанных с этим
-        компонентом.
+      <p className="italic">
+        Удаление не затрагивает переходы, события и действия, их содержимое будет заменено
+        характерными значками. Вам необходимо удалить эти элементы вручную.
       </p>
     </Modal>
   );

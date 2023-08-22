@@ -224,7 +224,9 @@ export class Draggable extends EventEmitter {
     const isUnderMouse = this.isUnderMouse(e);
     if (!isUnderMouse) return;
 
-    e.stopPropagation();
+    // Был баг с остановкой перетаскивания на другом элементе
+    // может привезти к новым багам (пока на карандаше)
+    // e.stopPropagation();
 
     this.emit('mouseup', { event: e, target: this });
 

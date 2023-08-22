@@ -1,5 +1,5 @@
 const dark = {
-  codeEditorTheme: "vs-dark",
+  codeEditorTheme: 'vs-dark',
   colors: {
     primary: '#0C4BEE',
     error: 'red',
@@ -39,7 +39,7 @@ const dark = {
 };
 
 const light = {
-  codeEditorTheme: "vs-light",
+  codeEditorTheme: 'vs-light',
   colors: {
     primary: '#0C4BEE',
     error: 'red',
@@ -81,7 +81,7 @@ const light = {
 const getTheme = () => {
   //TODO Тут нужно откуда-нибудь достать тему
 
-  return light;
+  return dark;
 };
 
 export default getTheme();

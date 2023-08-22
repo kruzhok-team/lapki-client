@@ -38,7 +38,7 @@ export const Modal: React.FC<ModalProps> = ({
       {...props}
       className="absolute left-1/2 top-12 w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
       overlayClassName="bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-0"
-      closeTimeoutMS={200}
+      closeTimeoutMS={100}
     >
       <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
         <h1 className="text-2xl font-bold">{title}</h1>

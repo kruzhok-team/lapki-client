@@ -248,14 +248,17 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         isData={contextMenuData}
         callbacks={contextMenuCallbacks}
       />
-
-      <CreateEventsModal
-        editor={editor}
-        isOpen={isEventsModalOpen}
-        isData={idEvents}
-        onClose={closeEventsModal}
-        onSubmit={handleCreateEventsModal}
-      />
+      {isEventsModalOpen ? (
+        <CreateEventsModal
+          editor={editor}
+          isOpen={isEventsModalOpen}
+          isData={idEvents}
+          onClose={closeEventsModal}
+          onSubmit={handleCreateEventsModal}
+        />
+      ) : (
+        ''
+      )}
 
       {isModalOpen ? (
         <CreateModal

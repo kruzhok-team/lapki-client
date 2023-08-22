@@ -103,9 +103,11 @@ export class Transitions {
     this.container.machine.removeSelection();
 
     if (!this.ghost.source) return;
-
-    this.newCreateCallback?.(this.ghost.source, e.target);
-
+    // Переход создаётся только на другое состояние
+    // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
+    if (e.target instanceof State && e.target !== this.ghost.source) {
+      this.newCreateCallback?.(this.ghost.source, e.target);
+    }
     this.ghost.clear();
   };
 

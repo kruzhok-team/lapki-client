@@ -8,7 +8,7 @@ import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { CodeEditor } from './CodeEditor';
 import { Documentations } from './Documentation/Documentation';
-import theme from "@renderer/theme"
+import theme from '@renderer/theme';
 export interface TabData {
   svgIcon?: JSX.Element;
   tab?: string;
@@ -25,8 +25,8 @@ export interface TabDataAdd {
 
 export interface TabsProps {
   tabsItems: TabData[];
-  tabData: TabDataAdd | null;
-  setTabData: React.Dispatch<React.SetStateAction<TabDataAdd | null>>;
+  tabData: TabDataAdd[] | null;
+  setTabData: React.Dispatch<React.SetStateAction<TabDataAdd[] | null>>;
 }
 
 export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
@@ -39,31 +39,33 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   const [isDocOpen, setIsDocOpen] = useState(false);
 
   useEffect(() => {
+    console.log('yes yes');
     if (props.tabData !== null) {
-      const trueTab = tabs.find((item) => item.tab === props.tabData?.name);
-      if (trueTab === undefined) {
-        setTabsNewItems([
-          ...tabsNewItems,
-          {
+      const newTabs = new Array<TabData>();
+      props.tabData.map((tab) => {
+        const trueTab = tabs.find((item) => item.tab === tab.name);
+        if (trueTab === undefined) {
+          newTabs.push({
             svgIcon:
-              props.tabData.type === 'code' ? (
+              tab.type === 'code' ? (
                 <CodeIcon />
-              ) : props.tabData.type === 'transition' ? (
+              ) : tab.type === 'transition' ? (
                 <TransitionIcon />
               ) : (
                 <StateIcon />
               ),
-            tab: props.tabData.name,
-            content: <CodeEditor language={props.tabData.language} value={props.tabData.code} />,
-          },
-        ]);
-        isActive(tabs.length);
-        props.setTabData(null);
-      } else {
-        tabs.forEach((value, id) => {
-          trueTab.tab !== value.tab || isActive(id);
-        });
-      }
+            tab: tab.name,
+            content: <CodeEditor language={tab.language} value={tab.code} />,
+          });
+          isActive(tabs.length)
+        } else {
+          tabs.forEach((value, id) => {
+            trueTab.tab !== value.tab || isActive(id);
+          });
+        }
+      });
+      setTabsNewItems([...tabsNewItems, ...newTabs]);
+      props.setTabData(null);
     }
   }, [props.tabData, theme]);
 

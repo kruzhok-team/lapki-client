@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import Editor, { loader, EditorProps } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';

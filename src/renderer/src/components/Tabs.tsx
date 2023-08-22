@@ -8,7 +8,7 @@ import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { CodeEditor } from './CodeEditor';
 import { Documentations } from './Documentation/Documentation';
-
+import theme from "@renderer/theme"
 export interface TabData {
   svgIcon?: JSX.Element;
   tab?: string;
@@ -65,7 +65,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
         });
       }
     }
-  }, [props.tabData]);
+  }, [props.tabData, theme]);
 
   const onClose = (id: number) => {
     setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));

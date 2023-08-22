@@ -32,6 +32,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   submitLabel,
   onSubmit,
   onClose,
+  editor,
   ...props
 }) => {
   const {
@@ -40,14 +41,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     formState: { errors },
   } = useForm<EventsModalFormValues>();
 
-  const components = props.editor?.container.machine.components;
-  const methods = props.editor?.container.machine.platform.getAvailableEvents('Button');
-  console.log(components, methods);
+  const machine = editor!.container.machine;
+  const [eventMethods, setEventMethods] = useState<string>();
 
-  const [condition, setCondition] = useState<
-    { component: string; method: string; args?: { [key: string]: string } }[]
-  >([]);
-
+  const [condition, setCondition] = useState<Action[]>([]);
   // //функция для создания новых действий
   // const onCreateEvents = hookHandleSubmit((data) => {
   //   setCondition([
@@ -61,6 +58,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   // });
 
   const handleSubmit = hookHandleSubmit((data) => {
+    console.log(data.doComponent, data.doMethod);
     setCondition([
       ...condition,
       {
@@ -71,6 +69,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     ]);
     data.id = props.isData;
     data.condition = condition;
+    console.log(condition);
     onSubmit(data);
   });
 
@@ -97,20 +96,19 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           <TextSelect
             label="Компонент(событие):"
             {...register('doComponent', {
-              required: 'Это поле обязательно к заполнению!',
+              onChange(event) {
+                setEventMethods(event.target.value);
+              },
             })}
+            machine={machine}
             isElse={false}
-            error={!!errors.doComponent}
-            errorMessage={errors.doComponent?.message ?? ''}
           />
           <TextSelect
             label="Действие:"
-            {...register('doMethod', {
-              required: 'Это поле обязательно к заполнению!',
-            })}
+            {...register('doMethod', {})}
+            machine={machine}
             isElse={false}
-            error={!!errors.doMethod}
-            errorMessage={errors.doMethod?.message ?? ''}
+            content={eventMethods}
           />
           <TextInput
             label="Параметр:"
@@ -125,34 +123,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             errorMessage={errors.doArgs?.message ?? ''}
           />
         </div>
-        {/* {!props.isData?.click && (
-            <button
-              type="button"
-              className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-              onClick={onCreateEvents}
-            >
-              Добавить
-            </button>
-          )}
-        
-        {!props.isData?.click && (
-          <div className="m-2 flex h-48 max-w-lg flex-col items-center overflow-y-auto break-words rounded bg-neutral-700">
-            {condition.map((data, key) => (
-              <div
-                key={'newEvent' + key}
-                draggable
-                className={twMerge(
-                  'm-2 flex min-h-[3.5rem] w-40 items-center justify-around rounded border-2 bg-neutral-700 px-1' key && 'order-'+{key}
-                )}
-              >
-                <div>{data.component}</div>
-                <div className="h-full border-2 border-white"></div>
-                <div>{data.method}</div>
-                {data.args !== undefined || <div>{data.args}</div>}
-              </div>
-            ))}
-          </div>
-        )} */}
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"

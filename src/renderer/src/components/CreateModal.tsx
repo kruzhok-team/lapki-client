@@ -67,9 +67,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     },
   });
 
-  const components = editor!.container.machine.components;
-  const methods = editor?.container.machine.platform.getAvailableEvents('Button');
-  console.log(components, methods);
+  //--------------------------------Работа со списком компонентов---------------------------------------
+  const machine = editor!.container.machine;
+  const [eventMethods, setEventMethods] = useState<string>();
+  const [param1Variables, setParam1Variables] = useState<string>();
+  const [param2Variables, setParam2Variables] = useState<string>();
+  //-----------------------------------------------------------------------------------------------------
 
   //-----------------------------Функция для закрытия модального окна-----------------------------------
   const onRequestClose = () => {
@@ -148,7 +151,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               }
             }}
             className={twMerge(
-              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 text-white focus:outline-none'
+              'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 font-Fira text-white focus:outline-none'
             )}
             placeholder="Придумайте название"
             maxLength={20}
@@ -181,20 +184,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <TextSelect
                 label="Компонент(событие):"
                 {...register('triggerComponent', {
-                  required: 'Это поле обязательно к заполнению!',
+                  onChange(event) {
+                    setEventMethods(event.target.value);
+                  },
                 })}
+                machine={machine}
                 isElse={false}
-                error={!!errors.triggerComponent}
-                errorMessage={errors.triggerComponent?.message ?? ''}
               />
               <TextSelect
                 label="Действие:"
-                {...register('triggerMethod', {
-                  required: 'Это поле обязательно к заполнению!',
-                })}
+                {...register('triggerMethod', {})}
+                machine={machine}
                 isElse={false}
-                error={!!errors.triggerMethod}
-                errorMessage={errors.triggerMethod?.message ?? ''}
+                content={eventMethods}
               />
             </div>
             {/*--------------------------------------Добавление условия------------------------------------------*/}
@@ -224,20 +226,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                       <TextSelect
                         label="Компонент(событие):"
                         {...register('doComponentOneElse', {
-                          required: 'Это поле обязательно к заполнению!',
+                          onChange(event) {
+                            setParam1Variables(event.target.value);
+                          },
                         })}
+                        machine={machine}
                         isElse={isElse}
-                        error={!!errors.doComponentOneElse}
-                        errorMessage={errors.doComponentOneElse?.message ?? ''}
                       />
                       <TextSelect
                         label="Действие:"
-                        {...register('doMethodOneElse', {
-                          required: 'Это поле обязательно к заполнению!',
-                        })}
+                        {...register('doMethodOneElse', {})}
+                        machine={machine}
                         isElse={isElse}
-                        error={!!errors.doMethodOneElse}
-                        errorMessage={errors.doMethodOneElse?.message ?? ''}
+                        content={param1Variables}
                       />
                     </>
                   ) : (
@@ -280,20 +281,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                       <TextSelect
                         label="Компонент(событие):"
                         {...register('doComponentTwoElse', {
-                          required: 'Это поле обязательно к заполнению!',
+                          onChange(event) {
+                            setParam2Variables(event.target.value);
+                          },
                         })}
+                        machine={machine}
                         isElse={isElse}
-                        error={!!errors.doComponentTwoElse}
-                        errorMessage={errors.doComponentTwoElse?.message ?? ''}
                       />
                       <TextSelect
                         label="Действие:"
-                        {...register('doMethodTwoElse', {
-                          required: 'Это поле обязательно к заполнению!',
-                        })}
+                        {...register('doMethodTwoElse', {})}
+                        machine={machine}
                         isElse={isElse}
-                        error={!!errors.doMethodTwoElse}
-                        errorMessage={errors.doMethodTwoElse?.message ?? ''}
+                        content={param2Variables}
                       />
                     </>
                   ) : (

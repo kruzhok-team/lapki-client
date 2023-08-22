@@ -1,48 +1,70 @@
-import { ComponentProps, forwardRef } from 'react';
+import { StateMachine } from '@renderer/lib/data/StateMachine';
+import { useEffect, useState, forwardRef, ComponentProps } from 'react';
 import { twMerge } from 'tailwind-merge';
+
+export interface SelectEntry {
+  idx: string;
+  name: string;
+  img?: string;
+}
 
 interface TextSelectProps extends ComponentProps<'select'> {
   label: string;
-  //value - переменная содержащая данные события, на который кликнули
+  machine: StateMachine;
+  content?: string | undefined;
   isElse: boolean;
-  error?: boolean;
-  errorMessage: string;
 }
 
-const options = [
-  { value: 'System', label: 'System' },
-  { value: 'onEnter', label: 'onEnter' },
-  { value: 'onExit', label: 'onExit' },
-  { value: 'LED', label: 'LED' },
-  { value: 'off', label: 'off' },
-  { value: 'on', label: 'on' },
-];
 export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
-  ({ label, isElse, error, errorMessage, ...props }, ref) => {
+  ({ label, machine, content, isElse, ...props }, ref) => {
+    const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
+
+    useEffect(() => {
+      if (content === undefined) {
+        setEventComponents(
+          Array.from(machine.components.entries()).map(([idx, _component]) => {
+            return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
+          })
+        );
+      } else {
+        if (machine.platform.getAvailableMethods(content).length !== 0) {
+          setEventComponents(
+            machine.platform.getAvailableMethods(content).map((entry) => {
+              return { idx: entry.name, name: entry.name, img: entry.img };
+            })
+          );
+        } else {
+          setEventComponents(
+            machine.platform.getAvailableEvents(content).map((entry) => {
+              return { idx: entry.name, name: entry.name, img: entry.img };
+            })
+          );
+        }
+      }
+    }, [content]);
+
     return (
-      <label
-        className={twMerge('mx-1 flex flex-col ', error && 'text-red-500', isElse && 'hidden')}
-      >
+      <label className={twMerge('mx-1 flex flex-col ', isElse && 'hidden')}>
         {label}
         <select
           className={twMerge(
-            'h-[34px] w-[200px] max-w-[200px] rounded border bg-transparent px-2 py-1 outline-none transition-colors',
-            error && 'border-red-500 placeholder:text-red-500',
-            !error && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
+            'mb-4 h-[34px] w-[200px] max-w-[200px] rounded border bg-transparent px-2 py-1 outline-none transition-colors'
           )}
           ref={ref}
           {...props}
+          required
         >
-          {options.map((option) => (
+          {eventComponents.map((option, _key) => (
             <option
               className="bg-neutral-800"
-              key={'option' + option.value}
-              value={option.value}
-              label={option.label}
-            />
+              key={'option' + option.name}
+              value={option.name}
+              label={option.name}
+            >
+              {/*option.img ? <img style={{ height: '16px' }} src={option.img} /> : ''*/}
+            </option>
           ))}
         </select>
-        <p className="min-h-[24px] text-[14px] text-red-500">{errorMessage}</p>
       </label>
     );
   }

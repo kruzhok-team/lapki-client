@@ -6,7 +6,6 @@ import {
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
-  FlasherRemoteHostModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -79,10 +78,6 @@ export const App: React.FC = () => {
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
   const closeFlasherModal = () => setIsFlasherModalOpen(false);
-
-  const [isFlasherRemoteHostModalOpen, setIsFlasherRemoteHostModalOpen] = useState(false);
-  const openFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(true);
-  const closeFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(false);
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -269,13 +264,6 @@ export const App: React.FC = () => {
   };
 
   const handleRemoteFlasher = (host: string, port: number) => {
-    //openFlasherRemoteHostModal();
-    console.log('remote');
-    // await manager?.stopLocalModule('lapki-flasher');
-    manager?.changeFlasherHost(host, port);
-  };
-
-  const handleRemoteHostFlasherSubmit = (host: string, port: number) => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
@@ -500,11 +488,6 @@ export const App: React.FC = () => {
         handleLocal={handleLocalFlasher}
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}
-      />
-      <FlasherRemoteHostModal
-        isOpen={isFlasherRemoteHostModalOpen}
-        onSubmit={handleRemoteHostFlasherSubmit}
-        onClose={closeFlasherRemoteHostModal}
       />
       <ComponentSelectModal
         isOpen={isCompAddModalOpen}

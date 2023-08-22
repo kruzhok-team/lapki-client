@@ -80,7 +80,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           errorMessage={''}
         />
       </div>
-      <div>
+      <div className="flex">
         <TextInput
           label="Хост:"
           {...register('host')}
@@ -90,8 +90,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           errorMessage={''}
           defaultValue={localStorage.getItem(localStorageHost) ?? ''}
         />
-      </div>
-      <div>
         <TextInput
           label="Порт:"
           {...register('port')}

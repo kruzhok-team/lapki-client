@@ -12,6 +12,7 @@ import './component-list.css';
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
   onRequestEditComponent: (idx: string) => void;
+  onRequestDeleteComponent: (idx: string) => void;
 }
 
 interface ExplorerProps {
@@ -43,6 +44,8 @@ export const Explorer: React.FC<ExplorerProps> = ({
   const onCompRightClick = (e: React.MouseEvent, key: string) => {
     e.stopPropagation();
     console.log(['component-right-click', key]);
+    // TODO: контекстное меню? клонировать, переименовать, удалить
+    // onRequestDeleteComponent(key);
   };
 
   const onAddClick = (e: React.MouseEvent) => {

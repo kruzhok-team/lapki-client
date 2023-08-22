@@ -7,7 +7,7 @@ import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 
 import { CodeEditor } from './CodeEditor';
-
+import theme from '@renderer/theme';
 export interface TabData {
   svgIcon?: JSX.Element;
   tab?: string;
@@ -62,7 +62,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
         });
       }
     }
-  }, [props.tabData]);
+  }, [props.tabData, theme]);
 
   const onClose = (id: number) => {
     setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));
@@ -94,7 +94,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
                   onClose(id);
                 }}
                 className={twMerge(
-                  'rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-bg-btn',
+                  'hover:bg-bg-btn rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100',
                   activeTab === id && 'opacity-100'
                 )}
               >

@@ -41,6 +41,7 @@ export class Transitions {
   }
 
   initEvents() {
+    document.addEventListener('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
@@ -114,6 +115,7 @@ export class Transitions {
   handleMouseUp = () => {
     if (!this.ghost.source) return;
     this.ghost.clear();
+    this.container.isDirty = true;
   };
 
   watchTransition(transition: Transition) {

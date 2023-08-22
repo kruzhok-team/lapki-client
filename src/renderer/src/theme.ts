@@ -1,4 +1,5 @@
 const dark = {
+  codeEditorTheme: "vs-dark",
   colors: {
     primary: '#0C4BEE',
     error: 'red',
@@ -38,6 +39,7 @@ const dark = {
 };
 
 const light = {
+  codeEditorTheme: "vs-light",
   colors: {
     primary: '#0C4BEE',
     error: 'red',

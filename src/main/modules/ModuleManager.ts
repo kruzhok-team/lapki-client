@@ -30,7 +30,7 @@ export class ModuleManager {
       var flasherArgs: string[] = [
         '-updateList=10',
         '-listCooldown=0',
-        `-address=${Flasher.makeAddress(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT)}`,
+        `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
       ];
       switch (platform) {
         case 'linux':

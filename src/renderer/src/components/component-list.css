@@ -1,47 +1,10 @@
-.component-add {
-  /* border-radius: 0.25rem; */ /* 4px */
-  --tw-bg-opacity: 1;
-  width: calc(100% + 1.5rem);
-  margin: -0.25rem -0.75rem;
-  padding-left: 1rem;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  color: rgb(250 250 250);
-  background-color: rgb(64 64 64 / 0.5);
-  text-align: left;
-  display: flex;
-  align-items: center;
-}
-
-.component-add img {
-  height: 20px;
-  padding-right: 0.5rem;
-  margin-left: -0.6rem;
-}
-
-.component-add:enabled {
-  /* border-radius: 0.25rem; */ /* 4px */
-  background-color: rgb(45, 45, 45);
-  color: rgb(250 250 250);
-}
-
-.component-add:enabled:hover {
-  /* border-radius: 0.25rem; */ /* 4px */
-  background-color: rgb(96, 96, 96);
-  color: rgb(250 250 250);
-}
-
 .component-list {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   height: 350px;
   overflow-y: auto;
-  /* border: #ddd solid 1px; */
   margin-top: 0.5rem;
-  margin-left: -0.75rem;
-  margin-right: -0.75rem;
-  /* padding-top: 0.5rem; */
 }
 
 /* width */

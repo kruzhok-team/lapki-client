@@ -14,9 +14,9 @@ import {
   ExplorerCallbacks,
 } from '../components';
 
-import MenuImg from '@renderer/assets/icons/menu.svg';
-import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
+import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
+import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 //import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
@@ -30,6 +30,7 @@ export interface SidebarCallbacks {
   onRequestSaveAsFile: () => void;
   onRequestAddComponent: () => void;
   onRequestEditComponent: (idx: string) => void;
+  onRequestImport: (platform: string) => void;
   // TODO: onRequestRemoveComponent: (name: string) => void;
 }
 
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestSaveAsFile,
     onRequestAddComponent,
     onRequestEditComponent,
+    onRequestImport,
   },
 }) => {
   const [sidebarTabActive, setSidebarTabActive] = useState(0);
@@ -72,10 +74,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     () => [
       {
         svgIcon: (
-          <svg overflow="visible" height={32} width={32}>
-            <image width={32} href={MenuImg} />
-            {editorRef.editorData.modified ? <circle cx={30} cy={3} r={4} fill="#880000ee" /> : ''}
-          </svg>
+          <div className="relative">
+            <MenuIcon />
+            {editorRef.editorData.modified && (
+              <div className="absolute right-0 top-0 aspect-square h-2 w-2" />
+            )}
+          </div>
         ),
       },
       {
@@ -103,6 +107,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestOpenFile,
     onRequestSaveFile,
     onRequestSaveAsFile,
+    onRequestImport,
+    compilerStatus: compilerProps.compilerStatus,
   };
 
   const explorerCallbacks: ExplorerCallbacks = {
@@ -141,9 +147,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <div className="flex flex-col gap-4 bg-white p-2 ">
+      <div className="flex flex-col border-r border-border-primary bg-bg-primary">
         {items.map(({ svgIcon, style }, i) => (
-          <button key={i} className={twMerge('w-8', style && 'mt-auto')} onClick={handleClick(i)}>
+          <button
+            key={i}
+            className={twMerge(
+              'w-12 border-l-2 border-transparent p-2 text-text-inactive transition-colors hover:text-text-primary',
+              i === sidebarTabActive && 'border-primary text-text-primary',
+              style && 'mt-auto'
+            )}
+            onClick={handleClick(i)}
+          >
             {svgIcon}
           </button>
         ))}
@@ -152,25 +166,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Resizable
         enable={{ right: true }}
         size={{ width: width, height: '100vh' }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: 'solid 1px #ddd',
-          background: '#f0f0f0',
-          overflow: 'hidden',
-        }}
         minWidth={minWidth}
         maxWidth={maxWidth}
         onResize={handleResize}
         onResizeStop={handleResizeStop}
+        className="flex items-center justify-center overflow-hidden bg-bg-secondary"
       >
         <div className="h-full w-full">
           {tabs.map((Element, i) => (
             <div
               key={i}
               className={twMerge(
-                'hidden h-full border-l-4 border-r-4 border-[#a1c8df]',
+                'hidden h-full border-r border-border-primary',
                 i === sidebarTabActive && 'block'
               )}
             >

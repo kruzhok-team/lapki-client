@@ -10,6 +10,7 @@ import {
   SourceFile,
 } from '@renderer/types/CompilerTypes';
 
+
 export class Compiler {
   static port = 8081;
   static host = 'localhost';
@@ -19,6 +20,9 @@ export class Compiler {
   static setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>;
   // Статус подключения.
   static setCompilerStatus: Dispatch<SetStateAction<string>>;
+  static setCompilerMode: Dispatch<SetStateAction<string>>;
+  static setImportData: Dispatch<SetStateAction<string | undefined>>;
+  static mode: string;
 
   static timerID: NodeJS.Timeout;
   //Если за данное время не пришел ответ от компилятора
@@ -33,10 +37,12 @@ export class Compiler {
 
   static bindReact(
     setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>,
-    setCompilerStatus: Dispatch<SetStateAction<string>>
+    setCompilerStatus: Dispatch<SetStateAction<string>>,
+    setImportData: Dispatch<SetStateAction<string | undefined>>
   ): void {
     this.setCompilerData = setCompilerData;
     this.setCompilerStatus = setCompilerStatus;
+    this.setImportData = setImportData;
   }
 
   static binary: Array<Binary> | undefined = undefined;
@@ -86,6 +92,7 @@ export class Compiler {
     this.setCompilerStatus('Идет подключение...');
     const ws = new WebSocket(route);
     this.connecting = true;
+
     ws.onopen = () => {
       console.log('Compiler: connected');
       this.setCompilerStatus('Подключен');
@@ -96,54 +103,51 @@ export class Compiler {
     };
 
     ws.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.binary.length > 0) {
-        this.binary = [];
-        this.decodeBinaries(data.binary);
-      } else {
-        this.binary = undefined;
-      }
-      this.setCompilerData({
-        result: data.result,
-        stdout: data.stdout,
-        stderr: data.stderr,
-        binary: this.binary,
-        source: this.getSourceFiles(data.source),
-      } as CompilerResult);
-    };
-
-    ws.onclose = () => {
-      console.log('closed');
-      this.setCompilerStatus('Не подключен');
-      this.connection = undefined;
-      this.connecting = false;
-      if (!this.timeoutSetted) {
-        this.timeoutSetted = true;
-        timeout += 2000;
-        setTimeout(() => {
-          console.log(timeout);
-          this.connect(route, timeout);
-          this.timeoutSetted = false;
-        }, timeout);
-      }
-    };
-
-    ws.onmessage = (msg) => {
+      // console.log(msg);
       this.setCompilerStatus('Подключен');
-      if (this.timerID) {
-        clearTimeout(this.timerID);
+      clearTimeout(this.timerID);
+      let data;
+      switch (this.mode) {
+        case 'compile':
+          data = JSON.parse(msg.data);
+          console.log(msg.data);
+          console.log(typeof data);
+          if (data.binary.length > 0) {
+            this.binary = [];
+            this.decodeBinaries(data.binary);
+          } else {
+            this.binary = undefined;
+          }
+          this.setCompilerData({
+            result: data.result,
+            stdout: data.stdout,
+            stderr: data.stderr,
+            binary: this.binary,
+            source: this.getSourceFiles(data.source),
+          } as CompilerResult);
+          break;
+        case 'import':
+          data = JSON.parse(msg.data);
+          // TODO: Сразу распарсить как Elements.
+          this.setImportData(JSON.stringify(data.source[0].fileContent));
+          break;
+        case 'export':
+          data = msg.data;
+          console.log(data);
+          this.setCompilerData({
+            result: 'OK',
+            binary: [],
+            source: [
+              {
+                filename: 'Autoborder_638264648325956870',
+                extension: 'graphml',
+                fileContent: data,
+              },
+            ],
+          });
+        default:
+          break;
       }
-      const data = JSON.parse(msg.data) as CompilerResult;
-
-      if (data.binary.length > 0) {
-        this.binary = [];
-        this.decodeBinaries(data.binary);
-        data.binary = this.binary;
-      } else {
-        this.binary = undefined;
-      }
-      this.setCompilerData(data);
     };
 
     ws.onclose = () => {
@@ -165,27 +169,43 @@ export class Compiler {
     return ws;
   }
 
-  static compile(platform: string, data: Elements) {
+  static compile(platform: string, data: Elements | string) {
     const route = `${this.base_address}main`;
     const ws: Websocket = this.connect(route);
     let compilerSettings: CompilerSettings;
-    if (platform == 'ArduinoUno') {
-      ws.send('arduino');
-      compilerSettings = {
-        compiler: 'arduino-cli',
-        filename: 'biba',
-        flags: ['-b', 'arduino:avr:uno'],
-      };
-    } else {
-      return;
+    console.log(platform);
+    switch (platform) {
+      case 'ArduinoUno':
+        ws.send('arduino');
+        this.mode = 'compile';
+        compilerSettings = {
+          compiler: 'arduino-cli',
+          filename: 'biba',
+          flags: ['-b', 'arduino:avr:uno'],
+        };
+        const obj = {
+          ...(data as Elements),
+          compilerSettings: compilerSettings,
+        };
+        ws.send(JSON.stringify(obj));
+        break;
+      case 'BearlogaDefendImport':
+        ws.send('berlogaImport');
+        ws.send(data);
+        console.log('import!');
+        this.mode = 'import';
+        break;
+      case 'BearlogaDefend':
+        ws.send('berlogaExport');
+        ws.send(JSON.stringify(data));
+        console.log('export!');
+        this.mode = 'export';
+        break;
+      default:
+        console.log('unknown platform');
+        return;
     }
 
-    const obj = {
-      ...data,
-      compilerSettings: compilerSettings,
-    };
-
-    ws.send(JSON.stringify(obj));
     this.setCompilerStatus('Идет компиляция...');
     this.timerID = setTimeout(() => {
       Compiler.setCompilerStatus('Что-то пошло не так...');

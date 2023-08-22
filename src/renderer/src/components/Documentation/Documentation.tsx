@@ -40,7 +40,7 @@ export function Documentations({ baseUrl }: { baseUrl: string }) {
   }, []);
 
   return (
-    <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-white px-1 py-4 font-Fira text-base">
+    <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-bg-secondary px-1 py-4 text-base">
       <div className="flex gap-1 py-2">
         <button
           className={twMerge(
@@ -77,7 +77,7 @@ export function Documentations({ baseUrl }: { baseUrl: string }) {
           )}
         </div>
 
-        <div className={twMerge(activeTab !== 1 && 'hidden')}>
+        <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
           <Show html={html} documentLink={documentLink} />
         </div>
       </div>

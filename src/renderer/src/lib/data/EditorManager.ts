@@ -118,9 +118,62 @@ export class EditorManager {
     Flasher.getList();
   }
 
+  parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
+    if (openData[0]) {
+      try {
+        const data = ElementsJSONCodec.toElements(importData);
+        if (!isPlatformAvailable(data.platform)) {
+          return makeLeft({
+            name: openData[1]!,
+            content: `Незнакомая платформа "${data.platform}".`,
+          });
+        }
+        this.editor?.loadData(data);
+        this.mutateState((state) => ({
+          ...state,
+          name: openData[1]!.replace('.graphml', '.json'),
+          shownName: openData[2]!.replace('.graphml', '.json'),
+          content: JSON.stringify(importData),
+          data,
+          modified: false,
+        }));
+        return makeRight(null);
+      } catch (e) {
+        let errText = 'unknown error';
+        if (typeof e === 'string') {
+          errText = e.toUpperCase();
+        } else if (e instanceof Error) {
+          errText = e.message;
+        }
+        return makeLeft({
+          name: openData[1]!,
+          content: 'Ошибка формата: ' + errText,
+        });
+      }
+    } else if (openData[1]) {
+      return makeLeft({
+        name: openData[1]!,
+        content: openData[3]!,
+      });
+    }
+    return makeLeft(null);
+  }
+
+  async import(
+    platform: string,
+    setImportData: Dispatch<[boolean, string | null, string | null, string]>
+  ) {
+    const openData: [boolean, string | null, string | null, string] =
+      await window.electron.ipcRenderer.invoke('dialog:openFile', platform);
+    if (openData[0]) {
+      Compiler.compile(`${platform}Import`, openData[3]);
+      setImportData(openData);
+    }
+  }
+
   async open(): Promise<Either<FileError | null, null>> {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile');
+      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide');
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);

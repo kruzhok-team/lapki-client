@@ -7,7 +7,14 @@
       "properties": {
         "args": {
           "additionalProperties": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/Variable"
+              }
+            ]
           },
           "type": "object"
         },
@@ -18,7 +25,33 @@
           "type": "string"
         }
       },
-      "required": ["component", "method"],
+      "required": [
+        "component",
+        "method"
+      ],
+      "type": "object"
+    },
+    "CompilerSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "compiler": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "flags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "filename",
+        "compiler",
+        "flags"
+      ],
       "type": "object"
     },
     "Component": {
@@ -34,7 +67,10 @@
           "type": "string"
         }
       },
-      "required": ["type", "parameters"],
+      "required": [
+        "type",
+        "parameters"
+      ],
       "type": "object"
     },
     "Condition": {
@@ -66,12 +102,25 @@
           ]
         }
       },
-      "required": ["type", "value"],
+      "required": [
+        "type",
+        "value"
+      ],
       "type": "object"
     },
     "Elements": {
       "additionalProperties": false,
       "properties": {
+        "compilerSettings": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CompilerSettings"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "components": {
           "additionalProperties": {
             "$ref": "#/definitions/Component"
@@ -103,7 +152,13 @@
           "type": "array"
         }
       },
-      "required": ["states", "transitions", "components", "initialState", "platform"],
+      "required": [
+        "states",
+        "transitions",
+        "components",
+        "initialState",
+        "platform"
+      ],
       "type": "object"
     },
     "Event": {
@@ -122,7 +177,10 @@
           "type": "string"
         }
       },
-      "required": ["component", "method"],
+      "required": [
+        "component",
+        "method"
+      ],
       "type": "object"
     },
     "EventData": {
@@ -138,7 +196,10 @@
           "$ref": "#/definitions/Event"
         }
       },
-      "required": ["trigger", "do"],
+      "required": [
+        "trigger",
+        "do"
+      ],
       "type": "object"
     },
     "Point": {
@@ -151,7 +212,10 @@
           "type": "number"
         }
       },
-      "required": ["x", "y"],
+      "required": [
+        "x",
+        "y"
+      ],
       "type": "object"
     },
     "Rectangle": {
@@ -170,7 +234,12 @@
           "type": "number"
         }
       },
-      "required": ["height", "width", "x", "y"],
+      "required": [
+        "height",
+        "width",
+        "x",
+        "y"
+      ],
       "type": "object"
     },
     "State": {
@@ -192,7 +261,11 @@
           "type": "string"
         }
       },
-      "required": ["name", "bounds", "events"],
+      "required": [
+        "name",
+        "bounds",
+        "events"
+      ],
       "type": "object"
     },
     "Transition": {
@@ -202,7 +275,14 @@
           "type": "string"
         },
         "condition": {
-          "$ref": "#/definitions/Condition"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Condition"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "do": {
           "items": {
@@ -223,7 +303,13 @@
           "$ref": "#/definitions/Event"
         }
       },
-      "required": ["source", "target", "color", "position", "trigger"],
+      "required": [
+        "source",
+        "target",
+        "color",
+        "position",
+        "trigger"
+      ],
       "type": "object"
     },
     "Variable": {
@@ -242,7 +328,10 @@
           "type": "string"
         }
       },
-      "required": ["component", "method"],
+      "required": [
+        "component",
+        "method"
+      ],
       "type": "object"
     }
   }

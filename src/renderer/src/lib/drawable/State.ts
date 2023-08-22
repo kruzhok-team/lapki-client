@@ -6,7 +6,9 @@ import { Events } from './Events';
 import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import { stateStyle } from '../styles';
+import theme from '@renderer/theme';
+
+const style = theme.colors.diagram.state;
 
 interface StateProps {
   container: Container;
@@ -92,15 +94,15 @@ export class State extends Draggable {
   private drawBody(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
 
-    ctx.fillStyle = stateStyle.bodyBg;
+    ctx.fillStyle = style.bodyBg;
 
     ctx.beginPath();
 
     ctx.roundRect(x, y, width, height, [
-      stateStyle.bodyBorderRadius,
-      stateStyle.bodyBorderRadius,
-      this.children.size !== 0 ? 0 : stateStyle.bodyBorderRadius,
-      this.children.size !== 0 ? 0 : stateStyle.bodyBorderRadius,
+      6,
+      6,
+      this.children.size !== 0 ? 0 : 6,
+      this.children.size !== 0 ? 0 : 6,
     ]);
     ctx.fill();
 
@@ -108,7 +110,7 @@ export class State extends Draggable {
   }
 
   get titleHeight() {
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const fontSize = 15 / this.container.scale;
     const paddingY = 10 / this.container.scale;
     return fontSize + paddingY * 2;
   }
@@ -117,27 +119,22 @@ export class State extends Draggable {
   private drawTitle(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.drawBounds;
 
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const fontSize = 15 / this.container.scale;
     const paddingY = 10 / this.container.scale;
     const paddingX = 15 / this.container.scale;
     const titleHeight = this.titleHeight;
 
-    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    ctx.textBaseline = stateStyle.titleBaseLine;
+    ctx.font = `${fontSize}px/0 Fira Sans`;
+    ctx.textBaseline = 'hanging';
 
     ctx.beginPath();
 
-    ctx.fillStyle = stateStyle.titleBg;
+    ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, y, width, titleHeight, [
-      stateStyle.bodyBorderRadius,
-      stateStyle.bodyBorderRadius,
-      0,
-      0,
-    ]);
+    ctx.roundRect(x, y, width, titleHeight, [6, 6, 0, 0]);
     ctx.fill();
 
-    ctx.fillStyle = stateStyle.titleColor;
+    ctx.fillStyle = style.titleColor;
     ctx.fillText(this.data.name, x + paddingX, y + paddingY);
 
     ctx.closePath();
@@ -148,11 +145,11 @@ export class State extends Draggable {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
     ctx.canvas.hidden;
 
-    ctx.lineWidth = stateStyle.selectedBorderWidth;
-    ctx.strokeStyle = stateStyle.selectedBorderColor;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = style.selectedBorderColor;
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, stateStyle.bodyBorderRadius);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6);
     ctx.stroke();
     ctx.closePath();
 
@@ -161,7 +158,7 @@ export class State extends Draggable {
     //Начало рисования
     ctx.beginPath();
     //Добавляет стиль заднему фону
-    ctx.fillStyle = stateStyle.bodyBg;
+    ctx.fillStyle = style.bodyBg;
     //создает указательный треугольник
     ctx.moveTo(x + 100 / this.container.scale, y - 20 / this.container.scale);
     ctx.lineTo(x + 110 / this.container.scale, y - 2 / this.container.scale);
@@ -196,16 +193,11 @@ export class State extends Draggable {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = stateStyle.bodyBg;
+    ctx.strokeStyle = style.bodyBg;
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
-      0,
-      0,
-      stateStyle.bodyBorderRadius,
-      stateStyle.bodyBorderRadius,
-    ]);
+    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [0, 0, 6, 6]);
     ctx.stroke();
 
     ctx.closePath();

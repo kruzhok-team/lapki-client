@@ -201,12 +201,25 @@ function r(name: string) {
 const typeMap: any = {
   Elements: o(
     [
+      {
+        json: 'compilerSettings',
+        js: 'compilerSettings',
+        typ: u(undefined, u(r('CompilerSettings'), null)),
+      },
       { json: 'components', js: 'components', typ: m(r('Component')) },
       { json: 'initialState', js: 'initialState', typ: '' },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m('')) },
       { json: 'platform', js: 'platform', typ: '' },
       { json: 'states', js: 'states', typ: m(r('State')) },
       { json: 'transitions', js: 'transitions', typ: a(r('Transition')) },
+    ],
+    false
+  ),
+  CompilerSettings: o(
+    [
+      { json: 'compiler', js: 'compiler', typ: '' },
+      { json: 'filename', js: 'filename', typ: '' },
+      { json: 'flags', js: 'flags', typ: a('') },
     ],
     false
   ),
@@ -244,6 +257,14 @@ const typeMap: any = {
   ),
   Action: o(
     [
+      { json: 'args', js: 'args', typ: u(undefined, m(u(r('Variable'), ''))) },
+      { json: 'component', js: 'component', typ: '' },
+      { json: 'method', js: 'method', typ: '' },
+    ],
+    false
+  ),
+  Variable: o(
+    [
       { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: '' },
       { json: 'method', js: 'method', typ: '' },
@@ -261,7 +282,7 @@ const typeMap: any = {
   Transition: o(
     [
       { json: 'color', js: 'color', typ: '' },
-      { json: 'condition', js: 'condition', typ: u(undefined, r('Condition')) },
+      { json: 'condition', js: 'condition', typ: u(undefined, u(r('Condition'), null)) },
       { json: 'do', js: 'do', typ: u(undefined, a(r('Action'))) },
       { json: 'position', js: 'position', typ: r('Point') },
       { json: 'source', js: 'source', typ: '' },
@@ -270,7 +291,7 @@ const typeMap: any = {
     ],
     false
   ),
-  Variable: o(
+  ConditionClass: o(
     [
       { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: u(undefined, '') },
@@ -279,7 +300,7 @@ const typeMap: any = {
       {
         json: 'value',
         js: 'value',
-        typ: u(undefined, u(a(r('Condition')), r('Variable'), 3.14, '')),
+        typ: u(undefined, u(a(r('Condition')), r('ConditionClass'), 3.14, '')),
       },
     ],
     false
@@ -287,7 +308,7 @@ const typeMap: any = {
   Condition: o(
     [
       { json: 'type', js: 'type', typ: '' },
-      { json: 'value', js: 'value', typ: u(a(r('Condition')), r('Variable'), 3.14, '') },
+      { json: 'value', js: 'value', typ: u(a(r('Condition')), r('ConditionClass'), 3.14, '') },
     ],
     false
   ),

@@ -40,10 +40,10 @@ export class WhoopsieScreen extends Component<WhoopsieScreenProps, WhoopsieScree
   render() {
     if (this.state.hasError) {
       // TODO: сделать более понятный экран для пользователей
-      const buttonStyle = 'font-Fira text-2xl text-white rounded-md bg-slate-600 p-1 w-[200px]';
+      const buttonStyle = 'text-2xl text-white rounded-md bg-slate-600 p-1 w-[200px]';
       return (
         <div className="loading-overlay">
-          <div className="flex select-none flex-col items-center font-Fira text-white">
+          <div className="flex select-none flex-col items-center text-white">
             <CatError />
             <p className="text-3xl italic ">Хьюстон, срочно проверьте лоток</p>
             <p className="text-sm italic">

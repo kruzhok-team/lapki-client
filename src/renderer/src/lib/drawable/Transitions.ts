@@ -41,6 +41,7 @@ export class Transitions {
   }
 
   initEvents() {
+    document.addEventListener('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
@@ -103,15 +104,18 @@ export class Transitions {
     this.container.machine.removeSelection();
 
     if (!this.ghost.source) return;
-
-    this.newCreateCallback?.(this.ghost.source, e.target);
-
+    // Переход создаётся только на другое состояние
+    // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
+    if (e.target instanceof State && e.target !== this.ghost.source) {
+      this.newCreateCallback?.(this.ghost.source, e.target);
+    }
     this.ghost.clear();
   };
 
   handleMouseUp = () => {
     if (!this.ghost.source) return;
     this.ghost.clear();
+    this.container.isDirty = true;
   };
 
   watchTransition(transition: Transition) {

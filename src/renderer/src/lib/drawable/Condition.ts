@@ -73,7 +73,7 @@ export class Condition extends Draggable {
       const ay = 0 + Math.floor(actIdx / eventRowLength);
       const aX = px + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
       const aY = py + (ay * yDx) / this.container.scale;
-      platform.drawEvent(ctx, data, aX, aY);
+      platform.drawAction(ctx, data, aX, aY);
     });
     ctx.closePath();
 

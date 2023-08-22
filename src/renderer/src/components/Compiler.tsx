@@ -11,6 +11,7 @@ export interface CompilerProps {
   handleAddStderrTab: () => void;
   handleSaveSourceIntoFolder: () => void;
   handleSaveBinaryIntoFolder: () => void;
+  handleShowSource: () => void;
 }
 
 export const Compiler: React.FC<CompilerProps> = ({
@@ -22,90 +23,76 @@ export const Compiler: React.FC<CompilerProps> = ({
   handleAddStderrTab,
   handleSaveSourceIntoFolder,
   handleSaveBinaryIntoFolder,
+  handleShowSource,
 }) => {
   const button = [
     {
+      name: 'Показать stderr',
+      handler: handleAddStderrTab,
+      disabled: compilerData?.stderr === undefined,
+    },
+    {
+      name: 'Показать stdout',
+      handler: handleAddStdoutTab,
+      disabled: compilerData?.stdout === undefined,
+    },
+    {
       name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
+      disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
     },
     {
       name: 'Сохранить код',
       handler: handleSaveSourceIntoFolder,
+      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Показать код',
-      handler: () => {
-        console.log('click');
-      },
+      handler: handleShowSource,
+      condition: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Прошить...',
       handler: () => {
         console.log('click');
       },
+      disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
     },
   ];
   const cantCompile =
     compilerStatus == 'Не подключен' || compilerStatus == 'Идет компиляция...' || !fileReady;
   const disabled = cantCompile;
-  const style = twMerge(
-    'my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white',
-    cantCompile && 'opacity-50'
-  );
 
   return (
-    <section className="flex h-full flex-col bg-[#a1c8df] font-Fira text-base">
-      <div className="w-full px-4 pt-2 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Компилятор</h1>
-      </div>
-      {
-        <button disabled={disabled} className={style} onClick={handleCompile}>
+    <section>
+      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
+        Компилятор
+      </h3>
+
+      <div className="flex flex-col px-4">
+        <button disabled={disabled} className="btn mb-4" onClick={handleCompile}>
           Скомпилировать
         </button>
-      }
-      <div>
-        Статус:{' '}
-        <a className={twMerge('text-[green]', compilerStatus === 'Не подключен' && 'text-[red]')}>
-          {compilerStatus}
-        </a>
+
+        <p>
+          Статус:{' '}
+          <span
+            className={twMerge('text-success', compilerStatus === 'Не подключен' && 'text-error')}
+          >
+            {compilerStatus}
+          </span>
+        </p>
+
+        <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
+          Результат компиляции: {compilerData ? compilerData.result : 'Нет данных'}
+        </div>
+
+        {button.map(({ name, handler, disabled }, i) => (
+          <button key={i} className="btn mb-2" onClick={handler} disabled={disabled}>
+            {name}
+          </button>
+        ))}
       </div>
-      <div className="my-2 h-full select-text overflow-y-auto break-words rounded bg-white p-2">
-        Результат компиляции: {compilerData ? compilerData.result : 'Нет данных'}
-      </div>
-      <button
-        className={twMerge(
-          'my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white',
-          compilerData?.stderr === undefined && 'opacity-50'
-        )}
-        onClick={handleAddStderrTab}
-        disabled={compilerData?.stderr === undefined}
-      >
-        Показать stderr
-      </button>
-      <button
-        className={twMerge(
-          'my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white',
-          compilerData?.stdout === undefined && 'opacity-50'
-        )}
-        disabled={compilerData?.stdout === undefined}
-        onClick={handleAddStdoutTab}
-      >
-        Показать stdout
-      </button>
-      {button.map(({ name, handler }, i) => (
-        <button
-          key={'compiler' + i}
-          className={twMerge(
-            'my-2 rounded border-2 border-[#557b91] p-2 hover:bg-[#557b91] hover:text-white',
-            (compilerData?.binary === undefined || compilerData.binary.length == 0) &&
-              'border-[#557b91] opacity-50'
-          )}
-          onClick={handler}
-          disabled={compilerData?.binary === undefined}
-        >
-          {name}
-        </button>
-      ))}
     </section>
   );
 };

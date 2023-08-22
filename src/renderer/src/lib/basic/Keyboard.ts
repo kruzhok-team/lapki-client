@@ -27,12 +27,6 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
 
       this.emit('spacedown', e);
     }
-
-    if (e.code === 'ControlLeft' && !this.ctrlPressed) {
-      this.ctrlPressed = true;
-
-      this.emit('ctrldown', e);
-    }
   };
 
   handleKeyUp = (e: KeyboardEvent) => {
@@ -40,12 +34,6 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
       this.spacePressed = false;
 
       this.emit('spaceup', e);
-    }
-
-    if (e.code === 'ControlLeft') {
-      this.ctrlPressed = false;
-
-      this.emit('ctrlup', e);
     }
   };
 }

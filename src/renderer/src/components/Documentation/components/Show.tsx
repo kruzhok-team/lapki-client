@@ -2,7 +2,7 @@ const Show = ({ html, documentLink }) => {
   return (
     <>
       {html ? (
-        <div dangerouslySetInnerHTML={{ __html: html }}></div>
+        <iframe className="h-full w-full" srcDoc={html}></iframe>
       ) : (
         <div className="bg-gray-200 p-4">
           <h2 className="mb-2 text-xl font-bold">Ссылка на материал</h2>

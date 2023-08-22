@@ -8,10 +8,15 @@ import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
  * Асинхронный диалог открытия файла схемы.
  * @returns Promise
  */
-export async function handleFileOpen() {
+
+export async function handleFileOpen(platform: string) {
+  
   return new Promise(async (resolve, _reject) => {
+    const platforms: Map<string, Array<string>> = new Map([
+      ["ide", ["json"]],
+      ["BearlogaDefend", ["graphml"]]])
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      filters: [{ name: 'json', extensions: ['json'] }],
+      filters: [{ name: 'json', extensions: platforms.get(platform)! }],
       properties: ['openFile'],
     });
     const fileName = filePaths[0];

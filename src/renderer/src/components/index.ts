@@ -9,6 +9,8 @@ export * from './Loader';
 export * from './Menu';
 export * from './SaveRemindModal';
 export * from './PlatformSelectModal';
+export * from './FlasherSelectModal';
+export * from './FlasherRemoteHostModal';
 export * from './MessageModal';
 export * from './Sidebar';
 export * from './StateContextMenu';

@@ -1,0 +1,122 @@
+{
+  "states": {
+    "n0": {
+      "name": "add",
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "interval": "5000"
+              },
+              "component": "timer",
+              "method": "start"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        },
+        {
+          "do": [
+            {
+              "args": {
+                "value": "1"
+              },
+              "component": "counter",
+              "method": "add"
+            }
+          ],
+          "trigger": {
+            "component": "timer",
+            "method": "timeout"
+          }
+        }
+      ],
+      "bounds": {
+        "height": 145,
+        "width": 450,
+        "x": 62,
+        "y": 374
+      }
+    },
+    "n1": {
+      "name": "sub",
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "value": "1"
+              },
+              "component": "counter",
+              "method": "sub"
+            }
+          ],
+          "trigger": {
+            "component": "timer",
+            "method": "timeout"
+          }
+        }
+      ],
+      "bounds": {
+        "height": 95,
+        "width": 450,
+        "x": 613,
+        "y": 240
+      }
+    }
+  },
+  "initialState": "n0",
+  "transitions": [
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "source": "n0",
+      "target": "n1",
+      "trigger": {
+        "args": {
+          "value": "10"
+        },
+        "component": "counter",
+        "method": "isEqual"
+      }
+    },
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "source": "n1",
+      "target": "n0",
+      "trigger": {
+        "args": {
+          "value": "0"
+        },
+        "component": "counter",
+        "method": "isEqual"
+      }
+    }
+  ],
+  "components": {
+    "timer": {
+      "parameters": {},
+      "type": "Timer"
+    },
+    "counter": {
+      "parameters": {},
+      "type": "Counter"
+    }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno"
+}

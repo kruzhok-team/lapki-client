@@ -1,23 +1,26 @@
+import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
 import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
-import { useEffect, useState } from 'react';
+import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { CodeEditor } from './CodeEditor';
-
+import { Documentations } from './Documentation/Documentation';
+import theme from "@renderer/theme"
 export interface TabData {
   svgIcon?: JSX.Element;
   tab?: string;
   content: JSX.Element;
-  cantClose?: boolean;
+  canClose?: boolean;
 }
 
 export interface TabDataAdd {
   type: string;
   name: string;
   code: string;
+  language: string;
 }
 
 export interface TabsProps {
@@ -32,6 +35,9 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   const isActive = (index: number) => setActiveTab(index);
   const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
   const tabs = [...props.tabsItems, ...tabsNewItems];
+
+  const [isDocOpen, setIsDocOpen] = useState(false);
+
   useEffect(() => {
     if (props.tabData !== null) {
       const trueTab = tabs.find((item) => item.tab === props.tabData?.name);
@@ -48,7 +54,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
                 <StateIcon />
               ),
             tab: props.tabData.name,
-            content: <CodeEditor value={props.tabData.code} />,
+            content: <CodeEditor language={props.tabData.language} value={props.tabData.code} />,
           },
         ]);
         isActive(tabs.length);
@@ -59,7 +65,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
         });
       }
     }
-  }, [props.tabData]);
+  }, [props.tabData, theme]);
 
   const onClose = (id: number) => {
     setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));
@@ -68,46 +74,63 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   };
   return (
     <>
-      <section
-        className={twMerge(
-          'flex gap-1 overflow-x-auto break-words px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]'
-        )}
-      >
-        {tabs.map(({ svgIcon, tab, cantClose }, id) => (
-          <div
-            key={'tab' + id}
+      <section className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]">
+        {tabs.map(({ svgIcon, tab, canClose = true }, id) => (
+          <button
+            key={id}
             className={twMerge(
-              'group/item my-1 flex items-center rounded-full bg-[#d6d6d6] hover:rounded-full hover:bg-[#a1c8df]',
-              activeTab === id && 'rounded-full bg-[#a1c8df]'
+              'group flex cursor-pointer items-center rounded p-1 px-2 transition hover:bg-bg-primary',
+              activeTab === id && 'bg-bg-primary'
             )}
+            onClick={() => isActive(id)}
           >
-            {/*Если захотите увеличить или убавить размер вкладок, то в родительском стиле +/- px-i, а у текста +/- m-i*/}
-            <div className="flex items-center px-1" role="button" onClick={() => isActive(id)}>
-              <div className="m-1">{svgIcon}</div>
-              <div className={twMerge('m-1 line-clamp-1 w-20', id === 0 && 'hidden')}>{tab}</div>
-            </div>
-            {!cantClose ? (
+            {svgIcon}
+
+            <span className={twMerge('ml-1 line-clamp-1 w-20 text-left', id === 0 && 'hidden')}>
+              {tab}
+            </span>
+
+            {canClose && (
               <button
-                onClick={() => onClose(id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose(id);
+                }}
                 className={twMerge(
-                  'hover:rounder-[1rem] invisible mr-1 rounded-full p-1 group-hover/item:visible hover:bg-[#FFF]',
-                  activeTab === id && 'visible'
+                  'rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-bg-btn',
+                  activeTab === id && 'opacity-100'
                 )}
               >
-                <CloseIcon />
+                <CloseIcon className="h-3 w-3" />
               </button>
-            ) : (
-              ''
             )}
-          </div>
+          </button>
         ))}
       </section>
+
       {tabs.map((value, id) => (
         <div
-          key={id + 'ActiveBlock'}
-          className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
+          key={id}
+          className={twMerge('relative hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
         >
           {value.content}
+
+          <div
+            className={twMerge(
+              'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
+              isDocOpen && 'translate-x-0'
+            )}
+          >
+            <button className="w-8" onClick={() => setIsDocOpen((p) => !p)}>
+              <Arrow
+                className={twMerge('rotate-180 transition-transform', isDocOpen && 'rotate-0')}
+              />
+            </button>
+
+            <div className="w-[400px]">
+              <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
+            </div>
+          </div>
         </div>
       ))}
     </>

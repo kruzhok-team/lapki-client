@@ -1,9 +1,11 @@
+import { Elements } from "@floating-ui/react-dom";
+
 export type CompilerResult = {
   result: string;
-  stdout: string;
-  stderr: string;
-  binary: Array<Binary>;
-  source: Array<SourceFile>;
+  stdout?: string;
+  stderr?: string;
+  binary?: Array<Binary>;
+  source?: Array<SourceFile>;
 };
 
 export type SourceFile = {
@@ -15,7 +17,7 @@ export type SourceFile = {
 export type Binary = {
   filename: string;
   extension: string;
-  fileContent: Blob | Buffer;
+  fileContent: Blob | Buffer | Elements;
 };
 
 export type CompilerSettings = {

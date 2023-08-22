@@ -285,7 +285,6 @@ export const App: React.FC = () => {
       });
     });
 
-    console.log(newTabs)
     setTabData(newTabs);
   };
 

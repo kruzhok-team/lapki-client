@@ -39,7 +39,6 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   const [isDocOpen, setIsDocOpen] = useState(false);
 
   useEffect(() => {
-    console.log('yes yes');
     if (props.tabData !== null) {
       const newTabs = new Array<TabData>();
       props.tabData.map((tab) => {

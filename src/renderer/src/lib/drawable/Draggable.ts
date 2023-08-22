@@ -52,6 +52,7 @@ export class Draggable extends EventEmitter {
   }
 
   bindEvents() {
+    document.addEventListener('mouseup', this.globalMouseUp);
     this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousedown', this.handleMouseDown);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
@@ -60,6 +61,7 @@ export class Draggable extends EventEmitter {
   }
 
   unbindEvents() {
+    document.removeEventListener('mouseup', this.globalMouseUp);
     this.container.app.mouse.off('mouseup', this.handleMouseUp);
     this.container.app.mouse.off('mousedown', this.handleMouseDown);
     this.container.app.mouse.off('mousemove', this.handleMouseMove);
@@ -214,12 +216,15 @@ export class Draggable extends EventEmitter {
     this.container.isDirty = true;
   };
 
-  handleMouseUp = (e: MyMouseEvent) => {
+  globalMouseUp = () => {
     this.dragging = false;
-
-    document.body.style.cursor = 'default';
-
     clearTimeout(this.mouseDownTimerId);
+    // FIXME: перенести в общее поле (чтобы не вызывать N раз
+    document.body.style.cursor = 'default';
+  };
+
+  handleMouseUp = (e: MyMouseEvent) => {
+    this.globalMouseUp();
 
     const isUnderMouse = this.isUnderMouse(e);
     if (!isUnderMouse) return;

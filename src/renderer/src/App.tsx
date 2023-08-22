@@ -77,7 +77,10 @@ export const App: React.FC = () => {
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
-  const closeFlasherModal = () => setIsFlasherModalOpen(false);
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    setIsFlasherModalOpen(false);
+  };
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -248,12 +251,9 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleHostChange = async () => {
-    if (Flasher.connecting) {
-      // вывести сообщение: Нельзя сменить хост во время подключения
-    } else {
-      openFlasherModal();
-    }
+  const handleFlasherHostChange = async () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
@@ -330,7 +330,7 @@ export const App: React.FC = () => {
     handleFlash: handleFlashBinary,
     handleLocalFlasher: handleLocalFlasher,
     handleRemoteFlasher: handleRemoteFlasher,
-    handleHostChange: handleHostChange,
+    handleHostChange: handleFlasherHostChange,
   };
 
   const compilerProps: CompilerProps = {

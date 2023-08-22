@@ -10,6 +10,11 @@ import Websocket from 'isomorphic-ws';
 import { Dispatch, SetStateAction } from 'react';
 export const FLASHER_LOCAL_PORT = 8080;
 export const FLASHER_LOCAL_HOST = 'localhost';
+export const FLASHER_CONNECTING = 'Идет подключение...';
+export const FLASHER_SWITCHING_HOST = 'Подключение к новому хосту...';
+export const FLASHER_CONNECTED = 'Подключен';
+export const FLASHER_NO_CONNECTION = 'Не подключен';
+export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
 export class Flasher {
   static port = FLASHER_LOCAL_PORT;
   static host = FLASHER_LOCAL_HOST;
@@ -32,6 +37,8 @@ export class Flasher {
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
+  // true = во время вызова таймера для переключения ничего не будет происходить.
+  static freezeReconnection = false;
 
   static changeHost(host: string, port: number) {
     this.host = host;
@@ -40,13 +47,13 @@ export class Flasher {
     console.log(`Changing host from ${this.base_address} to ${new_address}`);
     this.base_address = new_address;
     this.connection?.close();
+    this.connection = undefined;
     if (this.timerID) {
       clearTimeout(this.timerID);
       this.timerID = undefined;
     }
-    this.connection = undefined;
 
-    this.setFlasherConnectionStatus('Подключение к новому хосту...');
+    this.setFlasherConnectionStatus(FLASHER_SWITCHING_HOST);
     this.setFlasherDevices(new Map());
     this.connect(this.base_address);
   }
@@ -147,16 +154,16 @@ export class Flasher {
       ws = new Websocket(route);
     } catch (error) {
       console.log('Flasher websocket error');
-      this.setFlasherConnectionStatus('Ошибка при попытке подключиться');
+      this.setFlasherConnectionStatus(FLASHER_CONNECTION_ERROR);
       return;
     }
-    this.setFlasherConnectionStatus('Идет подключение...');
+    this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.connecting = true;
     console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
 
     ws.onopen = () => {
       console.log('Flasher: connected!');
-      this.setFlasherConnectionStatus('Подключен');
+      this.setFlasherConnectionStatus(FLASHER_CONNECTED);
 
       this.connection = ws;
       this.connecting = false;
@@ -248,14 +255,11 @@ export class Flasher {
 
     ws.onclose = () => {
       console.log(`flasher closed ${route}, ${timeout}, ${this.base_address}`);
+      this.connecting = false;
+      this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
       if (this.base_address == route) {
-        this.connecting = false;
-        this.setFlasherConnectionStatus('Не подключен');
         this.connection = undefined;
-        this.timerID = setTimeout(() => {
-          console.log(`${route} inTimer: ${timeout}`);
-          this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
-        }, timeout);
+        this.tryToReconnect(route, timeout);
       }
     };
 
@@ -299,5 +303,25 @@ export class Flasher {
   // получение адреса в виде строки
   static makeAddress(host: string, port: number): string {
     return `ws://${host}:${port}/flasher`;
+  }
+
+  static freezeReconnectionTimer(freeze: boolean) {
+    this.freezeReconnection = freeze;
+  }
+
+  static tryToReconnect(route: string, timeout: number) {
+    this.timerID = setTimeout(() => {
+      console.log(`${route} inTimer: ${timeout}`);
+      if (!this.freezeReconnection) {
+        this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
+      } else {
+        console.log('the timer is frozen');
+        if (timeout == 0) {
+          this.tryToReconnect(route, timeout + this.incTimeout);
+        } else {
+          this.tryToReconnect(route, timeout);
+        }
+      }
+    }, timeout);
   }
 }

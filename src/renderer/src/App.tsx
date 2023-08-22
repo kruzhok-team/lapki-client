@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import {
   CompilerProps,
@@ -43,6 +42,11 @@ import {
   ComponentEditModal,
   emptyCompEditData,
 } from './components/ComponentEditModal';
+import {
+  ComponentDeleteData,
+  ComponentDeleteModal,
+  emptyCompDeleteData,
+} from './components/ComponentDeleteModal';
 
 /**
  * React-компонент приложения
@@ -66,6 +70,8 @@ export const App: React.FC = () => {
   const manager = lapki.managerRef.current;
   const editorData = lapki.editorData;
 
+  // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
+
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
@@ -85,8 +91,20 @@ export const App: React.FC = () => {
 
   const [compEditModalData, setCompEditModalData] = useState<ComponentEditData>(emptyCompEditData);
   const [isCompEditModalOpen, setIsCompEditModalOpen] = useState(false);
-  const openCompEditModal = () => setIsCompEditModalOpen(true);
+  const openCompEditModal = (data: ComponentEditData) => {
+    setCompEditModalData(data);
+    setIsCompEditModalOpen(true);
+  };
   const closeCompEditModal = () => setIsCompEditModalOpen(false);
+
+  const [compDeleteModalData, setCompDeleteModalData] =
+    useState<ComponentDeleteData>(emptyCompDeleteData);
+  const [isCompDeleteModalOpen, setIsCompDeleteModalOpen] = useState(false);
+  const openCompDeleteModal = (data: ComponentDeleteData) => {
+    setCompDeleteModalData(data);
+    setIsCompDeleteModalOpen(true);
+  };
+  const closeCompDeleteModal = () => setIsCompDeleteModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -370,17 +388,30 @@ export const App: React.FC = () => {
       existingComponents.add(name);
     }
 
-    console.log(['component-edit', idx, data, proto]);
-    setCompEditModalData({ idx, data, proto, existingComponents });
-    openCompEditModal();
+    openCompEditModal({ idx, data, proto, existingComponents });
+  };
+
+  const onRequestDeleteComponent = (idx: string) => {
+    const machine = editor!.container.machine;
+    const component = machine.components.get(idx);
+    if (typeof component === 'undefined') return;
+    const data = component.data;
+    const proto = machine.platform.data.components[data.type];
+    if (typeof proto === 'undefined') {
+      console.error('non-existing %s %s', idx, data.type);
+      return;
+    }
+
+    openCompDeleteModal({ idx, type: data.type });
   };
 
   const handleEditComponent = (idx: string, data: ComponentData) => {
-    console.log(['component-edit', idx, data]);
+    console.log(['component-edit-apply', idx, data]);
   };
 
   const handleDeleteComponent = (idx: string) => {
-    console.log(['component-delete', idx]);
+    editor!.container.machine.removeComponent(idx, false);
+    closeCompEditModal();
   };
 
   const sidebarCallbacks: SidebarCallbacks = {
@@ -390,6 +421,7 @@ export const App: React.FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
     onRequestEditComponent,
+    onRequestDeleteComponent,
     onRequestImport: handleImport,
   };
 
@@ -482,6 +514,12 @@ export const App: React.FC = () => {
         data={compEditModalData}
         onClose={closeCompEditModal}
         onComponentEdit={handleEditComponent}
+        onComponentDelete={onRequestDeleteComponent}
+      />
+      <ComponentDeleteModal
+        isOpen={isCompDeleteModalOpen}
+        data={compDeleteModalData}
+        onClose={closeCompDeleteModal}
         onComponentDelete={handleDeleteComponent}
       />
     </div>

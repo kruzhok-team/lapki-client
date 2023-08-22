@@ -52,7 +52,6 @@ export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
           )}
           ref={ref}
           {...props}
-          required
         >
           {eventComponents.map((option, _key) => (
             <option

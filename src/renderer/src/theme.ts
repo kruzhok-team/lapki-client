@@ -1,17 +1,18 @@
 const dark = {
+  codeEditorTheme: 'vs-dark',
   colors: {
-    primary: '#4391BF',
+    primary: '#0C4BEE',
     error: 'red',
     success: 'lime',
+
+    primaryHover: '#225EF9',
+    primaryActive: '#2A62F4',
 
     bg: {
       primary: '#262626',
       secondary: '#121111',
-      hover: 'rgba(38,38,38,0.5)',
-      active: 'rgba(38,38,38,0.9)',
-      btn: '#4391BF',
-      btnHover: '#3594cc',
-      btnActive: '#1c93d9',
+      hover: '#434343',
+      active: '#545454',
     },
 
     border: {
@@ -20,6 +21,7 @@ const dark = {
 
     text: {
       primary: '#f2f2f2',
+      secondary: '#fff',
       inactive: '#a3a2a2',
       disabled: 'rgb(156,163,175)',
     },
@@ -37,19 +39,20 @@ const dark = {
 };
 
 const light = {
+  codeEditorTheme: 'vs-light',
   colors: {
-    primary: '#4391BF',
+    primary: '#0C4BEE',
     error: 'red',
     success: 'lime',
+
+    primaryHover: '#225EF9',
+    primaryActive: '#2A62F4',
 
     bg: {
       primary: '#e7e7e7',
       secondary: '#f2f2f2',
       hover: '#cfcfcf',
       active: '#c2c2c2',
-      btn: '#4391BF',
-      btnHover: '#3594cc',
-      btnActive: '#1c93d9',
     },
 
     border: {
@@ -57,8 +60,9 @@ const light = {
     },
 
     text: {
-      primary: 'black',
-      inactive: '#a3a2a2',
+      primary: '#000',
+      secondary: '#fff',
+      inactive: '#b3b2b2',
       disabled: 'rgb(156,163,175)',
     },
 

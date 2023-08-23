@@ -12,6 +12,7 @@ import './component-list.css';
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
   onRequestEditComponent: (idx: string) => void;
+  onRequestDeleteComponent: (idx: string) => void;
 }
 
 interface ExplorerProps {
@@ -43,6 +44,8 @@ export const Explorer: React.FC<ExplorerProps> = ({
   const onCompRightClick = (e: React.MouseEvent, key: string) => {
     e.stopPropagation();
     console.log(['component-right-click', key]);
+    // TODO: контекстное меню? клонировать, переименовать, удалить
+    // onRequestDeleteComponent(key);
   };
 
   const onAddClick = (e: React.MouseEvent) => {
@@ -61,10 +64,12 @@ export const Explorer: React.FC<ExplorerProps> = ({
           onContextMenu={(e) => onCompRightClick(e, key)}
         >
           <img
-            style={{ height: '32px' }}
+            style={{ height: '32px', width: '32px' }}
             src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon}
           />
-          <p className={twMerge('line-clamp-1', key == cursor && 'text-white')}>{key}</p>
+          <p className={twMerge('ml-2 line-clamp-1', key == cursor && 'text-white')}>
+            {key}
+          </p>
         </div>
       ),
     })
@@ -76,13 +81,13 @@ export const Explorer: React.FC<ExplorerProps> = ({
         Компоненты
       </h3>
 
-      <div className="px-4 py-2 text-center">
+      <div className="px-4 text-center">
         <button
-          className="btn flex w-full items-center gap-2"
+          className="btn-primary flex w-full items-center justify-center gap-3"
           disabled={!editorRef.editorData.content}
           onClick={onAddClick}
         >
-          <AddIcon />
+          <AddIcon className="shrink-0" />
           Добавить...
         </button>
         <ScrollableList

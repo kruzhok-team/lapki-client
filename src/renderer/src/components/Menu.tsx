@@ -49,7 +49,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   ];
 
   return (
-    <section key="SectionMenu" className="flex flex-col">
+    <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">Меню</h3>
 
       {items.map(({ text, onClick, disabled }) => (

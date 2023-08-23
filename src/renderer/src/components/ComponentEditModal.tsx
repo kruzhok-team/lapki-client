@@ -42,14 +42,15 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 }) => {
   const { reset, handleSubmit: hookHandleSubmit } = useForm<ComponentEditModalFormValues>();
 
-  const handleSubmit = hookHandleSubmit((data) => {
-    // onCreate(data.idx);
+  const handleSubmit = hookHandleSubmit((_data) => {
+    // onComponentDelete(data.idx);
     console.log('ComponentEdit onEdit');
     onRequestClose();
   });
 
   const handleDelete = () => {
-    console.log('ComponentEdit onDelete');
+    onComponentDelete(data.idx);
+    // onRequestClose();
   };
 
   const onRequestClose = () => {

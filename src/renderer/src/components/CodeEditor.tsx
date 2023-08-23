@@ -8,6 +8,8 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
+import theme from '@renderer/theme';
+
 self.MonacoEnvironment = {
   getWorker(_, label) {
     if (label === 'json') {
@@ -32,6 +34,7 @@ loader.init();
 
 interface CodeEditorProps extends EditorProps {}
 
+
 export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
-  return <Editor theme="vs-light" className="absolute h-full overflow-hidden" {...props} />;
+  return <Editor theme={theme.codeEditorTheme} className="absolute h-full overflow-hidden" {...props} />;
 };

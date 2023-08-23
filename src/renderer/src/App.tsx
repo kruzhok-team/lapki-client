@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import {
   CompilerProps,
@@ -7,7 +6,6 @@ import {
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
-  FlasherRemoteHostModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -16,6 +14,7 @@ import {
   SidebarCallbacks,
   Tabs,
   TabDataAdd,
+  Documentations,
 } from './components';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 
@@ -43,6 +42,11 @@ import {
   ComponentEditModal,
   emptyCompEditData,
 } from './components/ComponentEditModal';
+import {
+  ComponentDeleteData,
+  ComponentDeleteModal,
+  emptyCompDeleteData,
+} from './components/ComponentDeleteModal';
 
 /**
  * React-компонент приложения
@@ -66,17 +70,18 @@ export const App: React.FC = () => {
   const manager = lapki.managerRef.current;
   const editorData = lapki.editorData;
 
+  // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
+
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
-  const closeFlasherModal = () => setIsFlasherModalOpen(false);
-
-  const [isFlasherRemoteHostModalOpen, setIsFlasherRemoteHostModalOpen] = useState(false);
-  const openFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(true);
-  const closeFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(false);
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    setIsFlasherModalOpen(false);
+  };
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -85,8 +90,20 @@ export const App: React.FC = () => {
 
   const [compEditModalData, setCompEditModalData] = useState<ComponentEditData>(emptyCompEditData);
   const [isCompEditModalOpen, setIsCompEditModalOpen] = useState(false);
-  const openCompEditModal = () => setIsCompEditModalOpen(true);
+  const openCompEditModal = (data: ComponentEditData) => {
+    setCompEditModalData(data);
+    setIsCompEditModalOpen(true);
+  };
   const closeCompEditModal = () => setIsCompEditModalOpen(false);
+
+  const [compDeleteModalData, setCompDeleteModalData] =
+    useState<ComponentDeleteData>(emptyCompDeleteData);
+  const [isCompDeleteModalOpen, setIsCompDeleteModalOpen] = useState(false);
+  const openCompDeleteModal = (data: ComponentDeleteData) => {
+    setCompDeleteModalData(data);
+    setIsCompDeleteModalOpen(true);
+  };
+  const closeCompDeleteModal = () => setIsCompDeleteModalOpen(false);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -235,12 +252,9 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleHostChange = async () => {
-    if (Flasher.connecting) {
-      // вывести сообщение: Нельзя сменить хост во время подключения
-    } else {
-      openFlasherModal();
-    }
+  const handleFlasherHostChange = async () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
@@ -250,23 +264,18 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
   };
 
-  const handleRemoteFlasher = () => {
-    openFlasherRemoteHostModal();
-  };
-
-  const handleRemoteHostFlasherSubmit = (host: string, port: number) => {
+  const handleRemoteFlasher = (host: string, port: number) => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
   };
 
-  const [tabData, setTabData] = useState<TabDataAdd | null>(null);
+  const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
   const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
-    setTabData({ type, name, code, language });
+    setTabData([{ type, name, code, language }]);
   };
 
   const handleAddStdoutTab = () => {
-    console.log(compilerData!.stdout);
     onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
   };
 
@@ -275,28 +284,18 @@ export const App: React.FC = () => {
   };
 
   const handleShowSource = () => {
+    const newTabs = new Array<TabDataAdd>();
     compilerData!.source!.map((element) => {
       console.log('here!');
-      onCodeSnippet(
-        'Компилятор',
-        `${element.filename}.${element.extension}`,
-        element.fileContent,
-        'cpp'
-      );
+      newTabs.push({
+        type: 'Компилятор',
+        name: `${element.filename}.${element.extension}`,
+        code: element.fileContent,
+        language: 'cpp',
+      });
     });
-    // const source = compilerData!.source!;
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[0].filename}.${source[0].extension}`,
-    //   source[0].fileContent ?? '',
-    //   'cpp'
-    // );
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[1].filename}.${source[1].extension}`,
-    //   source[1].fileContent ?? '',
-    //   'cpp'
-    // );
+
+    setTabData(newTabs);
   };
 
   const handleImport = async (platform: string) => {
@@ -321,7 +320,7 @@ export const App: React.FC = () => {
     handleFlash: handleFlashBinary,
     handleLocalFlasher: handleLocalFlasher,
     handleRemoteFlasher: handleRemoteFlasher,
-    handleHostChange: handleHostChange,
+    handleHostChange: handleFlasherHostChange,
   };
 
   const compilerProps: CompilerProps = {
@@ -370,17 +369,30 @@ export const App: React.FC = () => {
       existingComponents.add(name);
     }
 
-    console.log(['component-edit', idx, data, proto]);
-    setCompEditModalData({ idx, data, proto, existingComponents });
-    openCompEditModal();
+    openCompEditModal({ idx, data, proto, existingComponents });
+  };
+
+  const onRequestDeleteComponent = (idx: string) => {
+    const machine = editor!.container.machine;
+    const component = machine.components.get(idx);
+    if (typeof component === 'undefined') return;
+    const data = component.data;
+    const proto = machine.platform.data.components[data.type];
+    if (typeof proto === 'undefined') {
+      console.error('non-existing %s %s', idx, data.type);
+      return;
+    }
+
+    openCompDeleteModal({ idx, type: data.type });
   };
 
   const handleEditComponent = (idx: string, data: ComponentData) => {
-    console.log(['component-edit', idx, data]);
+    console.log(['component-edit-apply', idx, data]);
   };
 
   const handleDeleteComponent = (idx: string) => {
-    console.log(['component-delete', idx]);
+    editor!.container.machine.removeComponent(idx, false);
+    closeCompEditModal();
   };
 
   const sidebarCallbacks: SidebarCallbacks = {
@@ -390,6 +402,7 @@ export const App: React.FC = () => {
     onRequestSaveAsFile: handleSaveAsFile,
     onRequestAddComponent,
     onRequestEditComponent,
+    onRequestDeleteComponent,
     onRequestImport: handleImport,
   };
 
@@ -444,12 +457,17 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <div className="w-full min-w-0 bg-bg-primary">
+        <div className="relative w-full min-w-0 bg-bg-primary">
           {editorData.content ? (
             <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
           ) : (
             <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
           )}
+
+          <Documentations
+            topOffset={!!editorData.content}
+            baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+          />
         </div>
       </div>
 
@@ -466,11 +484,6 @@ export const App: React.FC = () => {
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}
       />
-      <FlasherRemoteHostModal
-        isOpen={isFlasherRemoteHostModalOpen}
-        onSubmit={handleRemoteHostFlasherSubmit}
-        onClose={closeFlasherRemoteHostModal}
-      />
       <ComponentSelectModal
         isOpen={isCompAddModalOpen}
         data={compAddModalData}
@@ -482,6 +495,12 @@ export const App: React.FC = () => {
         data={compEditModalData}
         onClose={closeCompEditModal}
         onComponentEdit={handleEditComponent}
+        onComponentDelete={onRequestDeleteComponent}
+      />
+      <ComponentDeleteModal
+        isOpen={isCompDeleteModalOpen}
+        data={compDeleteModalData}
+        onClose={closeCompDeleteModal}
         onComponentDelete={handleDeleteComponent}
       />
     </div>

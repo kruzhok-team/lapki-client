@@ -252,7 +252,7 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleFlasherHostChange = async () => {
+  const handleFlasherHostChange = () => {
     Flasher.freezeReconnectionTimer(true);
     openFlasherModal();
   };

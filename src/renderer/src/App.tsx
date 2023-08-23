@@ -14,6 +14,7 @@ import {
   SidebarCallbacks,
   Tabs,
   TabDataAdd,
+  Documentations,
 } from './components';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 
@@ -456,12 +457,17 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <div className="w-full min-w-0 bg-bg-primary">
+        <div className="relative w-full min-w-0 bg-bg-primary">
           {editorData.content ? (
             <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
           ) : (
             <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
           )}
+
+          <Documentations
+            topOffset={!!editorData.content}
+            baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+          />
         </div>
       </div>
 

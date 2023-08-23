@@ -39,7 +39,7 @@ export const Loader: React.FC<FlasherProps> = ({
       </h3>
 
       <div className="px-4">
-        <div className="my-2 flex rounded border-2 border-[#557b91]">
+        <div className="mb-2 flex rounded border-2 border-[#557b91]">
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
@@ -48,7 +48,7 @@ export const Loader: React.FC<FlasherProps> = ({
             onClick={handleGetList}
             disabled={connectionStatus != FLASHER_CONNECTED}
           >
-            <Update width="1.5rem" height="1.5rem" className="mr-1" fill="#FFFFFF" />
+            <Update width="1.5rem" height="1.5rem" className="mr-1" />
             Обновить
           </button>
           <button
@@ -96,7 +96,7 @@ export const Loader: React.FC<FlasherProps> = ({
         </div>
 
         <button
-          className="btn mb-2"
+          className="btn-primary mb-2"
           onClick={handleFlash}
           disabled={
             compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice

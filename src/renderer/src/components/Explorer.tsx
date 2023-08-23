@@ -81,13 +81,13 @@ export const Explorer: React.FC<ExplorerProps> = ({
         Компоненты
       </h3>
 
-      <div className="px-4 py-2 text-center">
+      <div className="px-4 text-center">
         <button
-          className="btn flex w-full items-center gap-2"
+          className="btn-primary flex w-full items-center justify-center gap-3"
           disabled={!editorRef.editorData.content}
           onClick={onAddClick}
         >
-          <AddIcon />
+          <AddIcon className="shrink-0" />
           Добавить...
         </button>
         <ScrollableList

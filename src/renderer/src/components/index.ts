@@ -10,6 +10,7 @@ export * from './Menu';
 export * from './SaveRemindModal';
 export * from './PlatformSelectModal';
 export * from './FlasherSelectModal';
+export * from './FlasherFileModal';
 export * from './MessageModal';
 export * from './Sidebar';
 export * from './StateContextMenu';

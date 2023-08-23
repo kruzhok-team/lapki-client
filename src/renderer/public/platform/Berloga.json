@@ -32,7 +32,7 @@
 
           "methods": {
             "ПоискВрагаПоДистанции": {
-              "img": "",
+              "img": "bearloga/find_foe_by_distance.svg",
               "parameters": {
                 "Направление поиска": ["мин", "макс"]
               },

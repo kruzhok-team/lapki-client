@@ -24,7 +24,7 @@ export interface EventsModalFormValues {
   doComponent: string;
   doMethod: string;
   doArgs: { [key: string]: string } | undefined;
-  condition: Action[];
+  condition: Action;
 }
 
 export const CreateEventsModal: React.FC<EventsModalProps> = ({
@@ -44,7 +44,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const machine = editor!.container.machine;
   const [eventMethods, setEventMethods] = useState<string>();
 
-  const [condition, setCondition] = useState<Action[]>([]);
   // //функция для создания новых действий
   // const onCreateEvents = hookHandleSubmit((data) => {
   //   setCondition([
@@ -56,21 +55,14 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   //     },
   //   ]);
   // });
-
   const handleSubmit = hookHandleSubmit((data) => {
-    console.log(data.doComponent, data.doMethod);
-    setCondition([
-      ...condition,
-      {
-        component: data.doComponent,
-        method: data.doMethod,
-        args: data.doArgs,
-      },
-    ]);
     data.id = props.isData;
-    data.condition = condition;
-    console.log(condition);
-    onSubmit(data);
+    (data.condition = {
+      component: data.doComponent,
+      method: data.doMethod,
+      args: data.doArgs,
+    }),
+      onSubmit(data);
   });
 
   //Ниже будет реализована функция для обработки перетаскивания событий между собой, надо будет перетащить его в другую модалку

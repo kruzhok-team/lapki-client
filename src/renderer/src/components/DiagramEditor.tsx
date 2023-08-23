@@ -29,7 +29,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
   const [state, setState] = useState<{ state: State }>();
-  const [events, setEvents] = useState<Action[]>();
+  const [events, setEvents] = useState<Action[]>([]);
   const [idEvents, setIdEvents] = useState<{
     state: State;
     event: EventSelection;
@@ -50,12 +50,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    // console.log(['DiagramEditor.init', manager.state.data]);
     const editor = new CanvasEditor(containerRef.current, manager.state.data);
     const ClearUseState = () => {
       //Очищаем все старые данные
       setState(undefined);
-      setEvents(undefined);
+      setEvents([]);
       setIdEvents(undefined);
       setNameState(undefined);
       setTransition(undefined);
@@ -168,7 +167,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   const handleCreateEventsModal = (data: EventsModalFormValues) => {
     const doComponent = data.doComponent;
     const doMethod = data.doMethod;
-    setEvents(data.condition);
+    setEvents([...events, data.condition]);
     if (!isModalOpen) {
       editor?.container.machine.createEvent(data.id, doComponent, doMethod);
     }
@@ -248,7 +247,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         isData={contextMenuData}
         callbacks={contextMenuCallbacks}
       />
-      {isEventsModalOpen ? (
+      {editor !== null ? (
         <CreateEventsModal
           editor={editor}
           isOpen={isEventsModalOpen}

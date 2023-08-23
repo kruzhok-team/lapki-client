@@ -6,7 +6,6 @@ import {
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
-  FlasherRemoteHostModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -78,11 +77,10 @@ export const App: React.FC = () => {
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
-  const closeFlasherModal = () => setIsFlasherModalOpen(false);
-
-  const [isFlasherRemoteHostModalOpen, setIsFlasherRemoteHostModalOpen] = useState(false);
-  const openFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(true);
-  const closeFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(false);
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    setIsFlasherModalOpen(false);
+  };
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -253,12 +251,9 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleHostChange = async () => {
-    if (Flasher.connecting) {
-      // вывести сообщение: Нельзя сменить хост во время подключения
-    } else {
-      openFlasherModal();
-    }
+  const handleFlasherHostChange = async () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
@@ -268,11 +263,7 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
   };
 
-  const handleRemoteFlasher = () => {
-    openFlasherRemoteHostModal();
-  };
-
-  const handleRemoteHostFlasherSubmit = (host: string, port: number) => {
+  const handleRemoteFlasher = (host: string, port: number) => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
@@ -328,7 +319,7 @@ export const App: React.FC = () => {
     handleFlash: handleFlashBinary,
     handleLocalFlasher: handleLocalFlasher,
     handleRemoteFlasher: handleRemoteFlasher,
-    handleHostChange: handleHostChange,
+    handleHostChange: handleFlasherHostChange,
   };
 
   const compilerProps: CompilerProps = {
@@ -486,11 +477,6 @@ export const App: React.FC = () => {
         handleLocal={handleLocalFlasher}
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}
-      />
-      <FlasherRemoteHostModal
-        isOpen={isFlasherRemoteHostModalOpen}
-        onSubmit={handleRemoteHostFlasherSubmit}
-        onClose={closeFlasherRemoteHostModal}
       />
       <ComponentSelectModal
         isOpen={isCompAddModalOpen}

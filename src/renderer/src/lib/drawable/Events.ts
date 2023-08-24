@@ -60,7 +60,7 @@ export class Events {
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight;
+    const titleHeight = this.parent.titleHeight / this.container.scale;
 
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
@@ -131,9 +131,12 @@ export class Events {
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight;
+    const titleHeight = this.parent.titleHeight / this.container.scale;
 
-    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
+    const eventRowLength = Math.max(
+      3,
+      Math.floor((width * this.container.scale - 30) / (picto.eventWidth + 5)) - 1
+    );
 
     const px = this.bounds.x / this.container.scale;
     const py = this.bounds.y / this.container.scale;

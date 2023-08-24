@@ -95,8 +95,6 @@ export class Transition {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.condition.draw(ctx, canvas);
-
     const { sourceLine, targetLine } = getTransitionLines(
       this.source.drawBounds,
       this.target.drawBounds,
@@ -114,5 +112,7 @@ export class Transition {
     this.drawLine(ctx, targetLine);
     this.drawStart(ctx, sourceLine.start);
     this.drawEnd(ctx, targetLine.start, degrees_to_radians(targetLine.se));
+
+    this.condition.draw(ctx, canvas);
   }
 }

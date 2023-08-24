@@ -39,7 +39,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   useEffect(() => {
     if (props.tabData !== null) {
       const newTabs = new Array<TabData>();
-      props.tabData.map((tab) => {
+      props.tabData.map((tab, id) => {
         const trueTab = tabs.find((item) => item.tab === tab.name);
         if (trueTab === undefined) {
           newTabs.push({
@@ -70,12 +70,46 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
     setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));
     isActive(0);
   };
+
+  //Ниже реализовано перетаскивание вкладок между собой
+  const [dragId, setDragId] = useState();
+
+  const handleDrag = (id) => {
+    setDragId(id);
+    console.log(id);
+  };
+
+  const handleDrop = (id) => {
+    if (id !== -1) {
+      const dragBox = tabsNewItems.find((_box, index) => index === dragId);
+      const dropBox = tabsNewItems.find((_box, index) => index === id);
+
+      const dragBoxOrder = dragBox;
+      const dropBoxOrder = dropBox;
+
+      const newBoxState = tabsNewItems.map((box, index) => {
+        if (index === dragId) {
+          box = dropBoxOrder!;
+        }
+        if (index === id) {
+          box = dragBoxOrder!;
+        }
+        return box;
+      });
+      setTabsNewItems(newBoxState);
+    }
+  };
+
   return (
     <>
       <section className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]">
         {tabs.map(({ svgIcon, tab, canClose = true }, id) => (
           <button
             key={id}
+            draggable={true}
+            onDragOver={(event) => event.preventDefault()}
+            onDragStart={() => handleDrag(id - 1)}
+            onDrop={() => handleDrop(id - 1)}
             className={twMerge(
               'group flex cursor-pointer items-center rounded p-1 px-2 transition hover:bg-bg-primary',
               activeTab === id && 'bg-bg-primary'

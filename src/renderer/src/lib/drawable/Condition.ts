@@ -61,9 +61,12 @@ export class Condition extends Draggable {
     ctx.closePath();
 
     //Здесь начинается прорисовка действий и условий для связей
-    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
-    const px = x + p / this.container.scale;
-    const py = y + p / this.container.scale;
+    const eventRowLength = Math.max(
+      3,
+      Math.floor((width * this.container.scale - 30) / (picto.eventWidth + 5)) - 1
+    );
+    const px = x + p;
+    const py = y + p;
     const yDx = picto.eventHeight + 10;
 
     //Условия
@@ -78,7 +81,7 @@ export class Condition extends Draggable {
       //Если первый блок нарисован, то нарисовать операнд
       if (actIdx === 0) {
         platform.drawCondition(ctx, data, aX, aY);
-      }
+    }
     });
     ctx.closePath();
 

@@ -192,11 +192,12 @@ export class PlatformManager {
     });
   }
 
-  drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number) {
+  drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
     let leftIcon: string | undefined = undefined;
     let rightIcon = 'unknown';
     let bgColor = '#5b5f73';
     let fgColor = '#fff';
+    let opacity = alpha ?? 1.0;
 
     if (ac.component === 'System') {
       rightIcon = ac.method;
@@ -211,19 +212,22 @@ export class PlatformManager {
       fgColor,
       leftIcon,
       rightIcon,
+      opacity,
     });
   }
 
   drawCondition(
     ctx: CanvasRenderingContext2D,
-    ac: string | number | Variable | Condition,
+    ac: Condition,
     x: number,
-    y: number
+    y: number,
+    alpha?: number
   ) {
     let leftIcon: string | undefined = undefined;
     let rightIcon = 'unknown';
     let bgColor = '#5b5f73';
     let fgColor = '#fff';
+    let opacity = alpha ?? 1.0;
 
     //Здесь необходимо условие для отрисовки svg в событиях!!!
     console.log(ac);
@@ -233,6 +237,7 @@ export class PlatformManager {
       fgColor,
       leftIcon,
       rightIcon,
+      opacity,
     });
   }
 }

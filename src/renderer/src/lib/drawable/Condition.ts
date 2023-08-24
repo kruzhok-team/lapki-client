@@ -60,18 +60,34 @@ export class Condition extends Draggable {
     platform.drawEvent(ctx, trigger, x + p, y + p);
     ctx.closePath();
 
-    //Здесь начинается прорисовка действий для связей
-    //TODO Требуется доработка
+    //Здесь начинается прорисовка действий и условий для связей
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
     const px = x + p / this.container.scale;
     const py = y + p / this.container.scale;
     const yDx = picto.eventHeight + 10;
 
+    //Условия
+    //TODO: Требуется допиливание прорисовки условий
+    ctx.beginPath();
+    this.transition.data.condition?.value?.forEach((data, actIdx) => {
+      const ax = 1 + (actIdx % eventRowLength);
+      const ay = 0 + Math.floor(actIdx / eventRowLength);
+      const aX = px + (5 + (picto.eventWidth + 5) * ax) / this.container.scale;
+      const aY = py + (ay * yDx) / this.container.scale;
+      platform.drawCondition(ctx, data, aX, aY);
+      //Если первый блок нарисован, то нарисовать операнд
+      if (actIdx === 0) {
+        platform.drawCondition(ctx, data, aX, aY);
+      }
+    });
+    ctx.closePath();
+
+    //Действия
     ctx.beginPath();
     this.transition.data.do?.forEach((data, actIdx) => {
       const ax = 1 + (actIdx % eventRowLength);
-      const ay = 0 + Math.floor(actIdx / eventRowLength);
-      const aX = px + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
+      const ay = 1 + Math.floor(actIdx / eventRowLength);
+      const aX = px + (5 + (picto.eventWidth + 5) * ax) / this.container.scale;
       const aY = py + (ay * yDx) / this.container.scale;
       platform.drawAction(ctx, data, aX, aY);
     });

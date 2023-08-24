@@ -1,6 +1,6 @@
 import { Platform } from '@renderer/types/platform';
 import { icons, picto } from '../drawable/Picto';
-import { Action, Event } from '@renderer/types/diagram';
+import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
 export type ListEntry = {
@@ -205,6 +205,28 @@ export class PlatformManager {
       leftIcon = this.getComponentIcon(component);
       rightIcon = this.getActionIcon(component, ac.method);
     }
+
+    picto.drawPicto(ctx, x, y, {
+      bgColor,
+      fgColor,
+      leftIcon,
+      rightIcon,
+    });
+  }
+
+  drawCondition(
+    ctx: CanvasRenderingContext2D,
+    ac: string | number | Variable | Condition,
+    x: number,
+    y: number
+  ) {
+    let leftIcon: string | undefined = undefined;
+    let rightIcon = 'unknown';
+    let bgColor = '#5b5f73';
+    let fgColor = '#fff';
+
+    //Здесь необходимо условие для отрисовки svg в событиях!!!
+    console.log(ac);
 
     picto.drawPicto(ctx, x, y, {
       bgColor,

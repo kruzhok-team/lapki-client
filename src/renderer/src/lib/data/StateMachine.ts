@@ -1,4 +1,4 @@
-import { Action, Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import { Action, Condition, Elements, Transition as TransitionType } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
 
@@ -420,7 +420,8 @@ export class StateMachine extends EventEmitter {
     color: string,
     component: string,
     method: string,
-    condition: Action[],
+    doAction: Action[],
+    condition: Condition,
     position: Point
   ) {
     if (id !== undefined) {
@@ -437,7 +438,8 @@ export class StateMachine extends EventEmitter {
         component,
         method,
       },
-      do: condition,
+      do: doAction,
+      condition,
     };
     this.createNewTransitionFromData(source, target, transitionData, id);
   }

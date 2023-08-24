@@ -81,8 +81,6 @@ export class Flasher {
     var last = first + this.blobSize;
     if (last >= this.binary.size) {
       last = this.binary.size;
-      this.setFlasherFile(undefined);
-      this.setFlashing(false);
     }
     this.currentBlob = this.binary.slice(first, last);
     this.reader.readAsArrayBuffer(this.currentBlob);
@@ -191,10 +189,6 @@ export class Flasher {
             this.sendBlob();
             break;
           }
-          case 'flash-done': {
-            this.setFlasherLog(`Загрузка завершена!\n${response.payload}`);
-            break;
-          }
           case 'device': {
             if (this.addDevice(response.payload as Device)) {
               this.setFlasherLog('Добавлено устройство!');
@@ -215,27 +209,36 @@ export class Flasher {
             this.setFlasherLog('Не удалось распарсить json-сообщение от клиента');
             break;
           }
+          case 'flash-done': {
+            this.flashingEnd();
+            this.setFlasherLog(`Загрузка завершена!\n${response.payload}`);
+            break;
+          }
           case 'flash-blocked': {
             this.setFlasherLog('Устройство заблокировано другим пользователем для прошивки');
             break;
           }
           case 'flash-large-file': {
+            this.flashingEnd();
             this.setFlasherLog(
               'Указанный размер файла превышает максимально допустимый размер файла, установленный сервером.'
             );
             break;
           }
           case 'flash-avrdude-error': {
+            this.flashingEnd();
             this.setFlasherLog(`${response.payload}`);
             break;
           }
           case 'flash-disconnected': {
+            this.flashingEnd();
             this.setFlasherLog(
               'Не удалось выполнить операцию прошивки, так как устройство больше не подключено'
             );
             break;
           }
           case 'flash-wrong-id': {
+            this.flashingEnd();
             this.setFlasherLog(
               'Не удалось выполнить операцию прошивки, так как так устройство не подключено'
             );
@@ -277,6 +280,11 @@ export class Flasher {
     };
 
     return ws;
+  }
+  
+  static flashingEnd() {
+    this.setFlashing(false);
+    this.setFlasherFile(undefined);
   }
 
   static refresh(): void {

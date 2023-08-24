@@ -74,14 +74,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       onSubmit(data);
   });
 
-  //Ниже будет реализована функция для обработки перетаскивания событий между собой, надо будет перетащить его в другую модалку
-
-  /* const [dragId, setDragId] = useState();
-    const handleDrag = (ev) => {
-    setDragId(ev.currentTarget.id);
-    }; 
-  */
-
   return (
     <ReactModal
       {...props}
@@ -101,7 +93,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               onChange(event) {
                 setNameComponents(event.target.value);
               },
-              value: nameComponents!,
             })}
             isElse={false}
             machine={machine}
@@ -113,7 +104,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               onChange(event) {
                 setNameMethods(event.target.value);
               },
-              value: nameMethods!,
             })}
             machine={machine}
             isElse={false}

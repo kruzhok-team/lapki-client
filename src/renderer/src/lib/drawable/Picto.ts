@@ -48,6 +48,7 @@ export type PictoProps = {
   rightIcon: string;
   bgColor?: string;
   fgColor?: string;
+  opacity?: number;
   // TODO: args
 };
 
@@ -90,14 +91,18 @@ export class Picto {
     x: number,
     y: number,
     bgColor?: string,
-    fgColor?: string
+    fgColor?: string,
+    opacity?: number
   ) {
+    ctx.save();
     ctx.fillStyle = bgColor ?? '#3a426b';
     ctx.strokeStyle = fgColor ?? '#fff';
+    ctx.globalAlpha = opacity ?? 1.0;
     ctx.lineWidth = 0.5;
     ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
     ctx.fill();
     ctx.stroke();
+    ctx.restore();
   }
 
   drawCursor(ctx: CanvasRenderingContext2D, x: number, y: number) {
@@ -114,9 +119,10 @@ export class Picto {
     let rightIcon = ps.rightIcon;
     let bgColor = ps.bgColor ?? '#3a426b';
     let fgColor = ps.fgColor ?? '#fff';
+    let opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawBorder(ctx, x, y, bgColor, fgColor);
+    this.drawBorder(ctx, x, y, bgColor, fgColor, opacity);
 
     if (!rightIcon) return;
     if (!leftIcon) {

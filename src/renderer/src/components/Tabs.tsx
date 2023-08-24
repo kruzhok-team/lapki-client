@@ -8,7 +8,7 @@ import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { CodeEditor } from './CodeEditor';
 import { Documentations } from './Documentation/Documentation';
-import theme from "@renderer/theme"
+import theme from '@renderer/theme';
 export interface TabData {
   svgIcon?: JSX.Element;
   tab?: string;
@@ -86,7 +86,10 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
           >
             {svgIcon}
 
-            <span className={twMerge('ml-1 line-clamp-1 w-20 text-left', id === 0 && 'hidden')}>
+            <span
+              title={tab}
+              className={twMerge('ml-1 line-clamp-1 w-20 text-left', id === 0 && 'hidden')}
+            >
               {tab}
             </span>
 

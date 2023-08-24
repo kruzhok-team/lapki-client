@@ -68,7 +68,6 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
 
   const onClose = (id: number) => {
     setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));
-    console.log(activeTab);
     isActive(0);
   };
   return (

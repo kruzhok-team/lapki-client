@@ -17,7 +17,7 @@
             }
           },
           "parameters": {
-            "buttonPin": {
+            "pin": {
               "img": "",
               "type": "uint8_t",
               "description": "buttonPin  sets the pin that this switch is connected to"
@@ -38,7 +38,7 @@
           "img": "arduino/led.svg",
           "signals": {},
           "parameters": {
-            "ledPin": {
+            "pin": {
               "img": "",
               "type": "uint8_t",
               "description": "ledPin the pin connected to this LED"

@@ -270,7 +270,6 @@ export class PlatformManager {
       let leftIcon: string | undefined = undefined;
       let rightIcon = 'unknown';
 
-      console.log(typeof ac.value);
       // FIXME: столько проверок ради простой валидации...
       if (
         !Array.isArray(ac.value) &&

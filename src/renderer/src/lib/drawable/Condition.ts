@@ -39,6 +39,7 @@ export class Condition extends Draggable {
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     const { x, y, width, height } = this.drawBounds;
+    const eventMargin = picto.eventMargin;
     const p = 15 / this.container.scale;
     const fontSize = stateStyle.titleFontSize / this.container.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
@@ -76,10 +77,9 @@ export class Condition extends Draggable {
     if (this.transition.data.condition) {
       const ax = 1;
       const ay = 0;
-      const aX = px + (5 + (picto.eventWidth + 5) * ax) / this.container.scale;
+      const aX = px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.container.scale;
       const aY = py + (ay * yDx) / this.container.scale;
       platform.drawCondition(ctx, this.transition.data.condition, aX, aY, opacity);
-      //Если первый блок нарисован, то нарисовать операнд
     }
     ctx.closePath();
 
@@ -88,7 +88,7 @@ export class Condition extends Draggable {
     this.transition.data.do?.forEach((data, actIdx) => {
       const ax = 1 + (actIdx % eventRowLength);
       const ay = 1 + Math.floor(actIdx / eventRowLength);
-      const aX = px + (5 + (picto.eventWidth + 5) * ax) / this.container.scale;
+      const aX = px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.container.scale;
       const aY = py + (ay * yDx) / this.container.scale;
       platform.drawAction(ctx, data, aX, aY, opacity);
     });

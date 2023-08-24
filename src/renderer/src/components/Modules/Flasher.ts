@@ -15,6 +15,7 @@ export const FLASHER_SWITCHING_HOST = 'Подключение к новому х
 export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
+
 export class Flasher {
   static port = FLASHER_LOCAL_PORT;
   static host = FLASHER_LOCAL_HOST;
@@ -37,6 +38,8 @@ export class Flasher {
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
+  static setFlasherFile: Dispatch<SetStateAction<boolean>>;
+  static setFlashing: Dispatch<SetStateAction<boolean>>;
   // true = во время вызова таймера для переключения ничего не будет происходить.
   static freezeReconnection = false;
 
@@ -76,8 +79,10 @@ export class Flasher {
   static async sendBlob(): Promise<void> {
     var first = this.filePos;
     var last = first + this.blobSize;
-    if (last > this.binary.size) {
+    if (last >= this.binary.size) {
       last = this.binary.size;
+      this.setFlasherFile(false);
+      this.setFlashing(false);
     }
     this.currentBlob = this.binary.slice(first, last);
     this.reader.readAsArrayBuffer(this.currentBlob);
@@ -86,11 +91,15 @@ export class Flasher {
   static bindReact(
     setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>,
     setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
-    setFlasherLog: Dispatch<SetStateAction<string | undefined>>
+    setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
+    setFlasherFile: Dispatch<SetStateAction<boolean>>,
+    setFlashing: Dispatch<SetStateAction<boolean>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
+    this.setFlasherFile = setFlasherFile;
+    this.setFlashing = setFlashing;
   }
   /*
     Добавляет устройство в список устройств
@@ -178,6 +187,7 @@ export class Flasher {
         const response = JSON.parse(msg.data) as FlasherMessage;
         switch (response.type) {
           case 'flash-next-block': {
+            this.setFlashing(true);
             this.sendBlob();
             break;
           }
@@ -285,11 +295,42 @@ export class Flasher {
     });
   }
 
-  static flash(binaries: Array<Binary>, deviceID: string): void {
-    this.refresh();
-    this.setBinary(binaries);
-    console.log(typeof Flasher.binary);
+  static async setFile() {
+    //console.log('set file (flasher)');
+    /* 
+    openData[0] - удалось ли открыть и прочитать файл
+    openData[1] путь к файлу
+    openData[2] название файла
+    openData[3] данные из файла
+    */
+    const openData: [boolean, string | null, string | null, any] =
+      await window.electron.ipcRenderer.invoke('dialog:openBinFile');
+    if (openData[0]) {
+      let buffer: Buffer = openData[3];
+      //console.log(buffer.toString());
+      Flasher.binary = new Blob([buffer]);
+      this.setFlasherFile(true);
+    } else {
+      console.log('set file (false)');
+      this.setFlasherFile(false);
+    }
+  }
 
+  static flashCompiler(binaries: Array<Binary>, deviceID: string): void {
+    binaries.map((bin) => {
+      console.log(bin.filename);
+      if (bin.extension.endsWith('ino.hex')) {
+        console.log(bin.extension);
+        console.log(bin.fileContent);
+        Flasher.binary = bin.fileContent as Blob;
+        return;
+      }
+    });
+    this.flash(deviceID);
+  }
+
+  static flash(deviceID: string) {
+    this.refresh();
     const payload = {
       deviceID: deviceID,
       fileSize: Flasher.binary.size,

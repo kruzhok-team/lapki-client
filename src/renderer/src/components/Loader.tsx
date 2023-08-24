@@ -11,12 +11,13 @@ export interface FlasherProps {
   connectionStatus: string;
   flasherLog: string | undefined;
   compilerData: CompilerResult | undefined;
+  flasherFile: boolean;
+  flashing: boolean;
   setCurrentDevice: Dispatch<string | undefined>;
   handleGetList: () => void;
   handleFlash: () => void;
-  handleLocalFlasher: () => void;
-  handleRemoteFlasher: (host: string, port: number) => void;
   handleHostChange: () => void;
+  handleFileChoose: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
@@ -24,11 +25,14 @@ export const Loader: React.FC<FlasherProps> = ({
   devices,
   connectionStatus,
   compilerData,
+  flasherFile,
   flasherLog,
+  flashing,
   setCurrentDevice,
   handleGetList,
   handleFlash,
   handleHostChange,
+  handleFileChoose,
 }) => {
   const isActive = (id: string) => currentDevice === id;
 
@@ -99,12 +103,18 @@ export const Loader: React.FC<FlasherProps> = ({
           className="btn-primary mb-2"
           onClick={handleFlash}
           disabled={
-            compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice
+            flashing ||
+            !currentDevice ||
+            connectionStatus != FLASHER_CONNECTED ||
+            (!flasherFile &&
+              (compilerData?.binary === undefined || compilerData.binary.length == 0))
           }
         >
           Загрузить
         </button>
-
+        <button className="btn-primary mb-2" onClick={handleFileChoose} disabled={flashing}>
+          ...
+        </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}
         </div>

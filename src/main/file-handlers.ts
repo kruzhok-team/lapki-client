@@ -10,11 +10,11 @@ import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
  */
 
 export async function handleFileOpen(platform: string) {
-  
   return new Promise(async (resolve, _reject) => {
     const platforms: Map<string, Array<string>> = new Map([
-      ["ide", ["json"]],
-      ["BearlogaDefend", ["graphml"]]])
+      ['ide', ['json']],
+      ['BearlogaDefend', ['graphml']],
+    ]);
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [{ name: 'json', extensions: platforms.get(platform)! }],
       properties: ['openFile'],
@@ -117,5 +117,31 @@ export async function handleFileSaveAs(filename, data) {
         console.log(err);
         resolve([false, null, err.message]);
       });
+  });
+}
+
+/**
+ * Асинхронный диалог открытия файла прошивки.
+ * @returns Promise
+ */
+export async function handleBinFileOpen() {
+  return new Promise(async (resolve, _reject) => {
+    let validExtensions = ['hex', 'bin'];
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      filters: [{ name: 'binary files', extensions: validExtensions }],
+      properties: ['openFile'],
+    });
+    const fileName = filePaths[0];
+    if (!canceled && fileName) {
+      fs.readFile(fileName, (err, data) => {
+        if (err) {
+          resolve([false, fileName, basename(fileName), err.message]);
+        } else {
+          resolve([true, fileName, basename(fileName), data]);
+        }
+      });
+    } else {
+      resolve([false, null, null, '']);
+    }
   });
 }

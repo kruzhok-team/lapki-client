@@ -38,7 +38,7 @@ export class Flasher {
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
-  static setFlasherFile: Dispatch<SetStateAction<boolean>>;
+  static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
   static setFlashing: Dispatch<SetStateAction<boolean>>;
   // true = во время вызова таймера для переключения ничего не будет происходить.
   static freezeReconnection = false;
@@ -81,7 +81,7 @@ export class Flasher {
     var last = first + this.blobSize;
     if (last >= this.binary.size) {
       last = this.binary.size;
-      this.setFlasherFile(false);
+      this.setFlasherFile(undefined);
       this.setFlashing(false);
     }
     this.currentBlob = this.binary.slice(first, last);
@@ -92,7 +92,7 @@ export class Flasher {
     setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>,
     setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
-    setFlasherFile: Dispatch<SetStateAction<boolean>>,
+    setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
@@ -309,10 +309,10 @@ export class Flasher {
       let buffer: Buffer = openData[3];
       //console.log(buffer.toString());
       Flasher.binary = new Blob([buffer]);
-      this.setFlasherFile(true);
+      this.setFlasherFile(openData[2]);
     } else {
       console.log('set file (false)');
-      this.setFlasherFile(false);
+      this.setFlasherFile(undefined);
     }
   }
 

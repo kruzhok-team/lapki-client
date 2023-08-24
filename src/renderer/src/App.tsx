@@ -57,7 +57,7 @@ export const App: React.FC = () => {
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
-  const [flasherFile, setFlasherFile] = useState(false);
+  const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
@@ -277,8 +277,13 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherFileChoose = () => {
-    console.log('file chooser');
-    Flasher.setFile();
+    if (flasherFile){
+      console.log('cancel file choose');
+      setFlasherFile(undefined);
+    } else {
+      console.log('file chooser');
+      Flasher.setFile();
+    }
   };
 
   const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);

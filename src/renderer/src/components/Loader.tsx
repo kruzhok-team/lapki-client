@@ -11,7 +11,7 @@ export interface FlasherProps {
   connectionStatus: string;
   flasherLog: string | undefined;
   compilerData: CompilerResult | undefined;
-  flasherFile: boolean;
+  flasherFile: string | undefined | null;
   flashing: boolean;
   setCurrentDevice: Dispatch<string | undefined>;
   handleGetList: () => void;
@@ -98,7 +98,8 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-
+        Источник прошивки: {flasherFile ? flasherFile : 'компилятор'}
+        <br></br>
         <button
           className="btn-primary mb-2"
           onClick={handleFlash}
@@ -112,7 +113,7 @@ export const Loader: React.FC<FlasherProps> = ({
         >
           Загрузить
         </button>
-        <button className="btn-primary mb-2" onClick={handleFileChoose} disabled={flashing}>
+        <button className={flasherFile? "btn-primary mb-2" : "btn-primary mb-2 opacity-50"} onClick={handleFileChoose} disabled={flashing}>
           ...
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">

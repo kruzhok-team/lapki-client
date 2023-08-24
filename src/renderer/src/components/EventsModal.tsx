@@ -93,9 +93,9 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               onChange(event) {
                 setNameComponents(event.target.value);
               },
+              value: nameComponents,
             })}
             isElse={false}
-            machine={machine}
             data={eventComponents}
           />
           <TextSelect
@@ -104,6 +104,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               onChange(event) {
                 setNameMethods(event.target.value);
               },
+              value: nameMethods,
             })}
             machine={machine}
             isElse={false}

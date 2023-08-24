@@ -11,44 +11,41 @@ export interface SelectEntry {
 interface TextSelectProps extends ComponentProps<'select'> {
   label: string;
   machine: StateMachine;
-  content?: string | undefined;
+  data: SelectEntry[] | string | undefined;
   isElse: boolean;
 }
 
 export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
-  ({ label, machine, content, isElse, ...props }, ref) => {
+  ({ label, machine, data, isElse, ...props }, ref) => {
     const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
-
     useEffect(() => {
-      if (content === undefined) {
-        setEventComponents(
-          Array.from(machine.components.entries()).map(([idx, _component]) => {
-            return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
-          })
-        );
-      } else {
-        if (machine.platform.getAvailableMethods(content).length !== 0) {
-          setEventComponents(
-            machine.platform.getAvailableMethods(content).map((entry) => {
-              return { idx: entry.name, name: entry.name, img: entry.img };
-            })
-          );
+      if (data !== undefined) {
+        if (typeof data === 'string') {
+          if (machine.platform.getAvailableMethods(data).length !== 0) {
+            setEventComponents(
+              machine.platform.getAvailableMethods(data).map((entry) => {
+                return { idx: entry.name, name: entry.name, img: entry.img };
+              })
+            );
+          } else {
+            setEventComponents(
+              machine.platform.getAvailableEvents(data).map((entry) => {
+                return { idx: entry.name, name: entry.name, img: entry.img };
+              })
+            );
+          }
         } else {
-          setEventComponents(
-            machine.platform.getAvailableEvents(content).map((entry) => {
-              return { idx: entry.name, name: entry.name, img: entry.img };
-            })
-          );
+          setEventComponents(data);
         }
       }
-    }, [content]);
+    }, [data]);
 
     return (
       <label className={twMerge('mx-1 flex flex-col ', isElse && 'hidden')}>
         {label}
         <select
           className={twMerge(
-            'mb-4 h-[34px] w-[200px] max-w-[200px] rounded border bg-transparent px-2 py-1 outline-none transition-colors'
+            'mb-6 h-[34px] w-[200px] max-w-[200px] rounded border bg-transparent px-2 py-1 outline-none transition-colors'
           )}
           ref={ref}
           {...props}

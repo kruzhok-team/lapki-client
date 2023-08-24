@@ -5,10 +5,10 @@ import { useForm } from 'react-hook-form';
 import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
-import { TextSelect } from './Modal/TextSelect';
+import { SelectEntry, TextSelect } from './Modal/TextSelect';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
-import { Action } from '@renderer/types/diagram';
+import { Action, Condition } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 
@@ -30,11 +30,12 @@ export interface CreateModalFormValues {
   //Данные основного события
   triggerComponent: string;
   triggerMethod: string;
+  else: Condition;
+  //Массив вторичных событий
+  condition: Action[];
   //Данные вторичного событий
   doComponent: string;
   doMethod: string;
-  //Массив вторичных событий
-  condition: Action[];
   //Параметр события
   doArgs: { [key: string]: string } | undefined;
 
@@ -69,9 +70,56 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   //--------------------------------Работа со списком компонентов---------------------------------------
   const machine = editor!.container.machine;
+
+  //Массив первого select
+  const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
+  const [param1Components, setParam1Components] = useState<SelectEntry[]>([]);
+  const [param2Components, setParam2Components] = useState<SelectEntry[]>([]);
   const [eventMethods, setEventMethods] = useState<string>();
   const [param1Variables, setParam1Variables] = useState<string>();
   const [param2Variables, setParam2Variables] = useState<string>();
+
+  useEffect(() => {
+    if (eventMethods === undefined) {
+      setEventComponents(
+        Array.from(machine.components.entries()).map(([idx, _component]) => {
+          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
+        })
+      );
+      eventComponents.find((value, idx) => {
+        if (idx === 0) {
+          setEventMethods(value.name);
+        }
+      });
+    }
+
+    if (param1Variables === undefined) {
+      setParam1Components(
+        Array.from(machine.components.entries()).map(([idx, _component]) => {
+          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
+        })
+      );
+      param1Components.find((value, idx) => {
+        if (idx === 0) {
+          setParam1Variables(value.name);
+        }
+      });
+    }
+
+    if (param2Variables === undefined) {
+      setParam2Components(
+        Array.from(machine.components.entries()).map(([idx, _component]) => {
+          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
+        })
+      );
+      param2Components.find((value, idx) => {
+        if (idx === 0) {
+          setParam2Variables(value.name);
+        }
+      });
+    }
+  }, [props.isOpen]);
+
   //-----------------------------------------------------------------------------------------------------
 
   //-----------------------------Функция для закрытия модального окна-----------------------------------
@@ -79,31 +127,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     onClose();
     // TODO: пока кажется лишним затирать текстовые поля
     reset({ color: '#ffffff' });
-  };
-  //-----------------------------------------------------------------------------------------------------
-
-  //----------------------------------Добавление новых событий------------------------------------------
-  const condition = props.isCondition;
-
-  //-----------------------------------------------------------------------------------------------------
-
-  //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
-  const handleSubmit = hookHandleSubmit((data) => {
-    isName !== undefined
-      ? ((data.id = isName?.state.id), data.name || (data.name = 'Состояние'), (data.key = 1))
-      : isData !== undefined
-      ? ((data.id = isData?.state.id), (data.name = isData?.state.data.name), (data.key = 2))
-      : (data.key = 3);
-    onSubmit(data);
-  });
-  //-----------------------------------------------------------------------------------------------------
-
-  //----------------------Стили позиционирования для переименования состояния----------------------------
-  const inputStyle = {
-    left: isName?.position.x + 'px',
-    top: isName?.position.y + 'px',
-    width: isName?.position.width + 'px',
-    height: isName?.position.height + 'px',
   };
   //-----------------------------------------------------------------------------------------------------
 
@@ -134,7 +157,84 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
   //-----------------------------------------------------------------------------------------------------
 
-  const selectElse = ['>', '<', '=', '!=', '>=', '<='];
+  //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
+  const [type, setType] = useState<string>();
+  const handleSubmit = hookHandleSubmit((data) => {
+    isName !== undefined
+      ? ((data.id = isName?.state.id), data.name || (data.name = 'Состояние'), (data.key = 1))
+      : isData !== undefined
+      ? ((data.id = isData?.state.id), (data.name = isData?.state.data.name), (data.key = 2))
+      : (data.key = 3);
+    data.else = {
+      type: type!,
+      value: [
+        isParamOne
+          ? {
+              type: 'component',
+              value: {
+                component: data.doComponentOneElse,
+                method: data.doMethodOneElse,
+                args: {},
+              },
+            }
+          : {
+              type: 'value',
+              value: data.argsOneElse,
+            },
+        isParamOne
+          ? {
+              type: 'component',
+              value: {
+                component: data.doComponentOneElse,
+                method: data.doMethodOneElse,
+                args: {},
+              },
+            }
+          : {
+              type: 'value',
+              value: data.argsOneElse,
+            },
+      ],
+    };
+    onSubmit(data);
+  });
+  //-----------------------------------------------------------------------------------------------------
+
+  //----------------------Стили позиционирования для переименования состояния----------------------------
+  const inputStyle = {
+    left: isName?.position.x + 'px',
+    top: isName?.position.y + 'px',
+    width: isName?.position.width + 'px',
+    height: isName?.position.height + 'px',
+  };
+  //-----------------------------------------------------------------------------------------------------
+
+  const selectElse = [
+    {
+      type: 'more',
+      icon: '>',
+    },
+    {
+      type: 'less',
+      icon: '<',
+    },
+    {
+      type: 'equals',
+      icon: '=',
+    },
+    {
+      type: 'notEquals',
+      icon: '!=',
+    },
+    {
+      type: 'moreOrEqual',
+      icon: '>=',
+    },
+    {
+      type: 'lessOrEqual',
+      icon: '<=',
+    },
+  ];
   return (
     //-------------------------------------Переименование состояния-----------------------------------------
     <>
@@ -189,15 +289,16 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                     setEventMethods(event.target.value);
                   },
                 })}
-                machine={machine}
                 isElse={false}
+                machine={machine}
+                data={eventComponents}
               />
               <TextSelect
                 label="Действие:"
                 {...register('triggerMethod', {})}
-                machine={machine}
                 isElse={false}
-                content={eventMethods}
+                machine={machine}
+                data={eventMethods}
               />
             </div>
             {/*--------------------------------------Добавление условия------------------------------------------*/}
@@ -233,13 +334,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                         })}
                         machine={machine}
                         isElse={isElse}
+                        data={param1Components}
                       />
                       <TextSelect
                         label="Действие:"
                         {...register('doMethodOneElse', {})}
                         machine={machine}
                         isElse={isElse}
-                        content={param1Variables}
+                        data={param1Variables}
                       />
                     </>
                   ) : (
@@ -260,13 +362,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                     'mb-4 ml-8 w-[60px] rounded border bg-transparent px-1 py-1 text-white',
                     isElse && 'hidden'
                   )}
+                  ref={(event) => {
+                    if (event !== null) {
+                      setType(event.value);
+                    }
+                  }}
                 >
                   {selectElse.map((content) => (
                     <option
-                      key={'option' + content}
+                      key={'option' + content.type}
                       className="bg-neutral-800"
-                      value={content}
-                      label={content}
+                      value={content.type}
+                      label={content.icon}
                     ></option>
                   ))}
                 </select>
@@ -288,13 +395,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                         })}
                         machine={machine}
                         isElse={isElse}
+                        data={param2Components}
+                        value={param2Variables}
                       />
                       <TextSelect
                         label="Действие:"
                         {...register('doMethodTwoElse', {})}
                         machine={machine}
                         isElse={isElse}
-                        content={param2Variables}
+                        data={param2Variables}
                       />
                     </>
                   ) : (
@@ -316,8 +425,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             <div className="flex">
               <label className="mx-1">Делай: </label>
               <div className="ml-1 mr-2 flex h-36 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
-                {condition === undefined ||
-                  condition!.map((data, key) => (
+                {props.isCondition === undefined ||
+                  props.isCondition.map((data, key) => (
                     <div className="flex items-center">
                       <div
                         key={'newEvent' + key}

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
-import { TextSelect } from './Modal/TextSelect';
+import { SelectEntry, TextSelect } from './Modal/TextSelect';
 import { EventSelection } from '../lib/drawable/Events';
 import { useForm } from 'react-hook-form';
 import { TextInput } from './Modal/TextInput';
@@ -13,6 +13,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 interface EventsModalProps extends Props {
   editor: CanvasEditor | null;
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
+  isOpen: boolean;
   cancelLabel?: string;
   submitLabel?: string;
   onSubmit: (data: EventsModalFormValues) => void;
@@ -42,19 +43,27 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   } = useForm<EventsModalFormValues>();
 
   const machine = editor!.container.machine;
-  const [eventMethods, setEventMethods] = useState<string>();
+  //Массив первого select
+  const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
+  const [nameComponents, setNameComponents] = useState<string>();
+  const [nameMethods, setNameMethods] = useState<string>();
 
-  // //функция для создания новых действий
-  // const onCreateEvents = hookHandleSubmit((data) => {
-  //   setCondition([
-  //     ...condition,
-  //     {
-  //       component: data.doComponent,
-  //       method: data.doMethod,
-  //       args: data.doArgs,
-  //     },
-  //   ]);
-  // });
+  useEffect(() => {
+    if (nameComponents === undefined) {
+      setEventComponents(
+        Array.from(machine.components.entries()).map(([idx, _component]) => {
+          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
+        })
+      );
+      //Находим первый элемент массива для стабильной работы первого select
+      eventComponents.find((value, idx) => {
+        if (idx === 0) {
+          setNameComponents(value.name);
+        }
+      });
+    }
+  }, [props.isOpen]);
+
   const handleSubmit = hookHandleSubmit((data) => {
     data.id = props.isData;
     (data.condition = {
@@ -88,21 +97,29 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           <TextSelect
             label="Компонент(событие):"
             {...register('doComponent', {
+              //validate: (value) => value === nameComponents,
               onChange(event) {
-                setEventMethods(event.target.value);
+                setNameComponents(event.target.value);
               },
+              value: nameComponents!,
             })}
-            machine={machine}
             isElse={false}
+            machine={machine}
+            data={eventComponents}
           />
           <TextSelect
             label="Действие:"
-            {...register('doMethod', {})}
+            {...register('doMethod', {
+              onChange(event) {
+                setNameMethods(event.target.value);
+              },
+              value: nameMethods!,
+            })}
             machine={machine}
             isElse={false}
-            content={eventMethods}
+            data={nameComponents}
           />
-          <TextInput
+          {/* <TextInput
             label="Параметр:"
             placeholder="Напишите параметр"
             {...register('doArgs', {
@@ -113,7 +130,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             // FIXME: некритичная ошибка по типам
             // @ts-ignore
             errorMessage={errors.doArgs?.message ?? ''}
-          />
+          /> */}
         </div>
         <div className="flex items-center justify-end gap-2">
           <button

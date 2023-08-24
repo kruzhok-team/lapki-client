@@ -181,6 +181,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       editor?.container.machine.newPictoState(
         data.id,
         events!,
+        //data.else,
         data.triggerComponent,
         data.triggerMethod
       );
@@ -193,6 +194,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.triggerComponent,
         data.triggerMethod,
         events!,
+        data.else,
         transition?.target.bounds
       );
     } else if (newTransition) {
@@ -204,6 +206,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.triggerComponent,
         data.triggerMethod,
         events!,
+        data.else,
         newTransition?.target.bounds
       );
     }

@@ -11,12 +11,14 @@ import { TextInput } from './Modal/TextInput';
 import { Action, Condition } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
+import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 
 interface CreateModalProps {
   isOpen: boolean;
   editor: CanvasEditor | null;
   isData: { state } | undefined;
   isCondition: Action[] | undefined;
+  setIsCondition: React.Dispatch<React.SetStateAction<Action[]>>;
   isName: { state; position } | undefined;
   onOpenEventsModal: () => void;
   onClose: () => void;
@@ -235,6 +237,34 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       icon: '<=',
     },
   ];
+
+  //Ниже реализовано перетаскивание событий между собой
+  var method = props.isCondition!;
+  const [dragId, setDragId] = useState();
+  const handleDrag = (id) => {
+    setDragId(id);
+    console.log(id);
+  };
+
+  const handleDrop = (id) => {
+    const dragBox = method.find((_box, index) => index === dragId);
+    const dropBox = method.find((_box, index) => index === id);
+
+    const dragBoxOrder = dragBox;
+    const dropBoxOrder = dropBox;
+
+    const newBoxState = method.map((box, index) => {
+      if (index === dragId) {
+        box = dropBoxOrder!;
+      }
+      if (index === id) {
+        box = dragBoxOrder!;
+      }
+      return box;
+    });
+    props.setIsCondition(newBoxState);
+  };
+
   return (
     //-------------------------------------Переименование состояния-----------------------------------------
     <>
@@ -425,20 +455,47 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             <div className="flex">
               <label className="mx-1">Делай: </label>
               <div className="ml-1 mr-2 flex h-36 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
-                {props.isCondition === undefined ||
-                  props.isCondition.map((data, key) => (
-                    <div className="flex items-center">
+                {method === undefined ||
+                  method.map((data, key) => (
+                    <div
+                      className="flex"
+                      draggable={true}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDragStart={() => handleDrag(key)}
+                      onDrop={() => handleDrop(key)}
+                    >
                       <div
                         key={'newEvent' + key}
                         //draggable
                         className={twMerge(
-                          'm-2 flex min-h-[3rem] w-36 justify-around rounded-full border-2 bg-neutral-700 px-1'
+                          'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-lg border-2 bg-neutral-700 px-1'
                         )}
                       >
+                        <img
+                          style={{ height: '32px', width: '32px' }}
+                          src={
+                            editor?.container.machine.platform.getComponentIconUrl(
+                              data.component,
+                              true
+                            ) ?? UnknownIcon
+                          }
+                        />
                         <div className="h-full border-2 border-white"></div>
+                        <img
+                          style={{ height: '32px', width: '32px' }}
+                          src={
+                            editor?.container.machine.platform.getComponentIconUrl(
+                              data.method,
+                              true
+                            ) ?? UnknownIcon
+                          }
+                        />
                       </div>
-                      <div>{data.component}.</div>
-                      <div>{data.method}</div>
+                      <div className="flex items-center">
+                        <div>{data.component}.</div>
+                        <div>{data.method}</div>
+                      </div>
+
                       {data.args !== undefined || <div>{data.args}</div>}
                     </div>
                   ))}

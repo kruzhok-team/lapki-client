@@ -5,10 +5,10 @@ import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
 import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+
 import { CodeEditor } from './CodeEditor';
-import { Documentations } from './Documentation/Documentation';
 import theme from '@renderer/theme';
+
 export interface TabData {
   svgIcon?: JSX.Element;
   tab?: string;
@@ -25,8 +25,8 @@ export interface TabDataAdd {
 
 export interface TabsProps {
   tabsItems: TabData[];
-  tabData: TabDataAdd | null;
-  setTabData: React.Dispatch<React.SetStateAction<TabDataAdd | null>>;
+  tabData: TabDataAdd[] | null;
+  setTabData: React.Dispatch<React.SetStateAction<TabDataAdd[] | null>>;
 }
 
 export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
@@ -36,34 +36,33 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
   const tabs = [...props.tabsItems, ...tabsNewItems];
 
-  const [isDocOpen, setIsDocOpen] = useState(false);
-
   useEffect(() => {
     if (props.tabData !== null) {
-      const trueTab = tabs.find((item) => item.tab === props.tabData?.name);
-      if (trueTab === undefined) {
-        setTabsNewItems([
-          ...tabsNewItems,
-          {
+      const newTabs = new Array<TabData>();
+      props.tabData.map((tab) => {
+        const trueTab = tabs.find((item) => item.tab === tab.name);
+        if (trueTab === undefined) {
+          newTabs.push({
             svgIcon:
-              props.tabData.type === 'code' ? (
+              tab.type === 'code' ? (
                 <CodeIcon />
-              ) : props.tabData.type === 'transition' ? (
+              ) : tab.type === 'transition' ? (
                 <TransitionIcon />
               ) : (
                 <StateIcon />
               ),
-            tab: props.tabData.name,
-            content: <CodeEditor language={props.tabData.language} value={props.tabData.code} />,
-          },
-        ]);
-        isActive(tabs.length);
-        props.setTabData(null);
-      } else {
-        tabs.forEach((value, id) => {
-          trueTab.tab !== value.tab || isActive(id);
-        });
-      }
+            tab: tab.name,
+            content: <CodeEditor language={tab.language} value={tab.code} />,
+          });
+          isActive(tabs.length);
+        } else {
+          tabs.forEach((value, id) => {
+            trueTab.tab !== value.tab || isActive(id);
+          });
+        }
+      });
+      setTabsNewItems([...tabsNewItems, ...newTabs]);
+      props.setTabData(null);
     }
   }, [props.tabData, theme]);
 
@@ -100,7 +99,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
                   onClose(id);
                 }}
                 className={twMerge(
-                  'rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-bg-btn',
+                  'hover:bg-bg-btn rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100',
                   activeTab === id && 'opacity-100'
                 )}
               >
@@ -114,26 +113,9 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
       {tabs.map((value, id) => (
         <div
           key={id}
-          className={twMerge('relative hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
+          className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
         >
           {value.content}
-
-          <div
-            className={twMerge(
-              'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
-              isDocOpen && 'translate-x-0'
-            )}
-          >
-            <button className="w-8" onClick={() => setIsDocOpen((p) => !p)}>
-              <Arrow
-                className={twMerge('rotate-180 transition-transform', isDocOpen && 'rotate-0')}
-              />
-            </button>
-
-            <div className="w-[400px]">
-              <Documentations baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
-            </div>
-          </div>
         </div>
       ))}
     </>

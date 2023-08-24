@@ -147,10 +147,9 @@ export class Draggable extends EventEmitter {
     });
 
     result =
-      bottomChildren.bounds.y +
-      bottomChildren.bounds.height +
-      bottomChildren.childrenContainerHeight +
-      (this.childrenPadding * 2) / this.container.scale;
+      (bottomChildren.bounds.y + bottomChildren.bounds.height + this.childrenPadding * 2) /
+        this.container.scale +
+      bottomChildren.childrenContainerHeight;
 
     return result;
   }
@@ -203,6 +202,10 @@ export class Draggable extends EventEmitter {
 
   handleMouseMove = (e: MyMouseEvent) => {
     if (!this.dragging || this.container.isPan) return;
+
+    if (Math.abs(e.dx) > 1 && Math.abs(e.dy) > 1) {
+      clearTimeout(this.mouseDownTimerId);
+    }
 
     this.bounds.x += e.dx * this.container.scale;
     this.bounds.y += e.dy * this.container.scale;

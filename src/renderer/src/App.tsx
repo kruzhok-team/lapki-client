@@ -6,7 +6,6 @@ import {
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
-  FlasherRemoteHostModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -15,6 +14,7 @@ import {
   SidebarCallbacks,
   Tabs,
   TabDataAdd,
+  Documentations,
 } from './components';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 
@@ -78,11 +78,10 @@ export const App: React.FC = () => {
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
-  const closeFlasherModal = () => setIsFlasherModalOpen(false);
-
-  const [isFlasherRemoteHostModalOpen, setIsFlasherRemoteHostModalOpen] = useState(false);
-  const openFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(true);
-  const closeFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(false);
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    setIsFlasherModalOpen(false);
+  };
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -253,12 +252,9 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleHostChange = async () => {
-    if (Flasher.connecting) {
-      // вывести сообщение: Нельзя сменить хост во время подключения
-    } else {
-      openFlasherModal();
-    }
+  const handleFlasherHostChange = async () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
@@ -268,23 +264,18 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
   };
 
-  const handleRemoteFlasher = () => {
-    openFlasherRemoteHostModal();
-  };
-
-  const handleRemoteHostFlasherSubmit = (host: string, port: number) => {
+  const handleRemoteFlasher = (host: string, port: number) => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
   };
 
-  const [tabData, setTabData] = useState<TabDataAdd | null>(null);
+  const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
   const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
-    setTabData({ type, name, code, language });
+    setTabData([{ type, name, code, language }]);
   };
 
   const handleAddStdoutTab = () => {
-    console.log(compilerData!.stdout);
     onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
   };
 
@@ -293,28 +284,18 @@ export const App: React.FC = () => {
   };
 
   const handleShowSource = () => {
+    const newTabs = new Array<TabDataAdd>();
     compilerData!.source!.map((element) => {
       console.log('here!');
-      onCodeSnippet(
-        'Компилятор',
-        `${element.filename}.${element.extension}`,
-        element.fileContent,
-        'cpp'
-      );
+      newTabs.push({
+        type: 'Компилятор',
+        name: `${element.filename}.${element.extension}`,
+        code: element.fileContent,
+        language: 'cpp',
+      });
     });
-    // const source = compilerData!.source!;
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[0].filename}.${source[0].extension}`,
-    //   source[0].fileContent ?? '',
-    //   'cpp'
-    // );
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[1].filename}.${source[1].extension}`,
-    //   source[1].fileContent ?? '',
-    //   'cpp'
-    // );
+
+    setTabData(newTabs);
   };
 
   const handleImport = async (platform: string) => {
@@ -339,7 +320,7 @@ export const App: React.FC = () => {
     handleFlash: handleFlashBinary,
     handleLocalFlasher: handleLocalFlasher,
     handleRemoteFlasher: handleRemoteFlasher,
-    handleHostChange: handleHostChange,
+    handleHostChange: handleFlasherHostChange,
   };
 
   const compilerProps: CompilerProps = {
@@ -476,12 +457,17 @@ export const App: React.FC = () => {
           callbacks={sidebarCallbacks}
         />
 
-        <div className="w-full min-w-0 bg-bg-primary">
+        <div className="relative w-full min-w-0 bg-bg-primary">
           {editorData.content ? (
             <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
           ) : (
             <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
           )}
+
+          <Documentations
+            topOffset={!!editorData.content}
+            baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+          />
         </div>
       </div>
 
@@ -497,11 +483,6 @@ export const App: React.FC = () => {
         handleLocal={handleLocalFlasher}
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}
-      />
-      <FlasherRemoteHostModal
-        isOpen={isFlasherRemoteHostModalOpen}
-        onSubmit={handleRemoteHostFlasherSubmit}
-        onClose={closeFlasherRemoteHostModal}
       />
       <ComponentSelectModal
         isOpen={isCompAddModalOpen}

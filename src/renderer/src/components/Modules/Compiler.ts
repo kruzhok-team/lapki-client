@@ -10,7 +10,6 @@ import {
   SourceFile,
 } from '@renderer/types/CompilerTypes';
 
-
 export class Compiler {
   static port = 8081;
   static host = 'localhost';
@@ -90,6 +89,8 @@ export class Compiler {
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
     this.setCompilerStatus('Идет подключение...');
+    // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
+    //   асинхронную ошибку, и никто с этим ничего не может сделать.
     const ws = new WebSocket(route);
     this.connecting = true;
 
@@ -151,15 +152,19 @@ export class Compiler {
     };
 
     ws.onclose = () => {
-      console.log('closed');
+      if (this.connection) {
+        console.log('Compiler: connection closed');
+      }
       this.setCompilerStatus('Не подключен');
       this.connection = undefined;
       this.connecting = false;
       if (!this.timeoutSetted) {
         this.timeoutSetted = true;
-        timeout += 2000;
+        if (timeout < 16000) {
+          timeout += 2000;
+        }
         setTimeout(() => {
-          console.log(timeout);
+          // console.log(`Compiler: retry in ${timeout} ms`);
           this.connect(route, timeout);
           this.timeoutSetted = false;
         }, timeout);

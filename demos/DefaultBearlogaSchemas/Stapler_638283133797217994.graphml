@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:y="http://www.yworks.com/xml/graphml">
+  <graph>
+    <node id="">
+      <data>
+        <y:GenericNode configuration="com.yworks.bpmn.Event.withShadow">
+          <y:NodeLabel />
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n0">
+      <data>
+        <y:GroupNode>
+          <y:NodeLabel>Бой</y:NodeLabel>
+          <y:NodeLabel>entry/
+exit/
+</y:NodeLabel>
+          <y:Geometry x="-175.5877" y="-89.0137939" width="689.2086" height="851.3939" />
+        </y:GroupNode>
+      </data>
+      <graph>
+        <node id="n0::n1">
+          <data>
+            <y:GenericNode>
+              <y:NodeLabel>Сближение</y:NodeLabel>
+              <y:NodeLabel>entry/
+МодульДвижения.ДвигатьсяКЦели()
+exit/
+</y:NodeLabel>
+              <y:Geometry x="-86.58342" y="144.183167" width="411.2" height="157" />
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n0::n2">
+          <data>
+            <y:GenericNode>
+              <y:NodeLabel>Атака</y:NodeLabel>
+              <y:NodeLabel>entry/
+ОружиеЦелевое.АтаковатьЦель()
+МодульДвижения.Стоп()
+exit/
+</y:NodeLabel>
+              <y:Geometry x="-175.791977" y="-351.210754" width="588.800049" height="157" />
+            </y:GenericNode>
+          </data>
+        </node>
+      </graph>
+    </node>
+    <node id="n3">
+      <data>
+        <y:GenericNode>
+          <y:NodeLabel>Скан</y:NodeLabel>
+          <y:NodeLabel>entry/
+Сенсор.ПоискВрагаПоДистанции(мин)
+exit/
+Сенсор.ОстановкаПоиска()
+</y:NodeLabel>
+          <y:Geometry x="-1012.0376" y="250.268433" width="411.2" height="255" />
+        </y:GenericNode>
+      </data>
+    </node>
+    <edge source="n0" target="n3">
+      <y:EdgeLabel>АнализаторЦели.ЦельПотеряна/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n0" target="n3">
+      <y:EdgeLabel>АнализаторЦели.ЦельУничтожена/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n3" target="n0::n2">
+      <y:EdgeLabel>Сенсор.ЦельПолучена/
+[ОружиеЦелевое.ЦельВЗонеАтаки == 1]
+</y:EdgeLabel>
+    </edge>
+    <edge source="n3" target="n0::n1">
+      <y:EdgeLabel>Сенсор.ЦельПолучена/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n0::n1" target="n0::n2">
+      <y:EdgeLabel>ОружиеЦелевое.ЦельВошлаВЗонуАтаки/
+</y:EdgeLabel>
+    </edge>
+    <edge source="n0::n2" target="n0::n1">
+      <y:EdgeLabel>ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/
+</y:EdgeLabel>
+    </edge>
+    <edge source="" target="n3">
+      <y:EdgeLabel></y:EdgeLabel>
+    </edge>
+  </graph>
+</graphml>

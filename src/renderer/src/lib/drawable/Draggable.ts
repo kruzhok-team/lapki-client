@@ -147,10 +147,9 @@ export class Draggable extends EventEmitter {
     });
 
     result =
-      bottomChildren.bounds.y +
-      bottomChildren.bounds.height +
-      bottomChildren.childrenContainerHeight +
-      (this.childrenPadding * 2) / this.container.scale;
+      (bottomChildren.bounds.y + bottomChildren.bounds.height + this.childrenPadding * 2) /
+        this.container.scale +
+      bottomChildren.childrenContainerHeight;
 
     return result;
   }

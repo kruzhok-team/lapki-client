@@ -6,7 +6,6 @@ import {
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
-  FlasherFileModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -83,10 +82,6 @@ export const App: React.FC = () => {
     Flasher.freezeReconnectionTimer(false);
     setIsFlasherModalOpen(false);
   };
-
-  const [isFlasherFileModalOpen, setIsFlasherFileModalOpen] = useState(false);
-  const openFlasherFileModal = () => setIsFlasherFileModalOpen(true);
-  const closeFlasherFileModal = () => setIsFlasherFileModalOpen(false);
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -173,11 +168,10 @@ export const App: React.FC = () => {
     manager?.getList();
   };
 
-  const handleFlasherButton = async () => {
+  const handleFlashBinary = async () => {
     //Рассчет на то, что пользователь не сможет нажать кнопку загрузки,
     //если нет данных от компилятора
-    //manager?.flash(compilerData!.binary!, currentDevice!);
-    openFlasherFileModal();
+    manager?.flash(compilerData!.binary!, currentDevice!);
   };
 
   const handleSaveBinaryIntoFolder = async () => {
@@ -276,14 +270,6 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(host, port);
   };
 
-  const handleFlasherCompilerFile = () => {
-    console.log('compiler file');
-  };
-
-  const handleFlasherFileSystem = () => {
-    console.log('file system');
-  };
-
   const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
   const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
     setTabData([{ type, name, code, language }]);
@@ -331,7 +317,7 @@ export const App: React.FC = () => {
     compilerData: compilerData,
     setCurrentDevice: setCurrentDevice,
     handleGetList: handleGetList,
-    handleFlashButton: handleFlasherButton,
+    handleFlash: handleFlashBinary,
     handleLocalFlasher: handleLocalFlasher,
     handleRemoteFlasher: handleRemoteFlasher,
     handleHostChange: handleFlasherHostChange,
@@ -497,13 +483,6 @@ export const App: React.FC = () => {
         handleLocal={handleLocalFlasher}
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}
-      />
-      <FlasherFileModal
-        isOpen={isFlasherFileModalOpen}
-        handleCompiler={handleFlasherCompilerFile}
-        handleFileSystem={handleFlasherFileSystem}
-        compilerData={compilerData}
-        onClose={closeFlasherFileModal}
       />
       <ComponentSelectModal
         isOpen={isCompAddModalOpen}

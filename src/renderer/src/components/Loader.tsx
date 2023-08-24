@@ -13,7 +13,7 @@ export interface FlasherProps {
   compilerData: CompilerResult | undefined;
   setCurrentDevice: Dispatch<string | undefined>;
   handleGetList: () => void;
-  handleFlashButton: () => void;
+  handleFlash: () => void;
   handleLocalFlasher: () => void;
   handleRemoteFlasher: (host: string, port: number) => void;
   handleHostChange: () => void;
@@ -23,10 +23,11 @@ export const Loader: React.FC<FlasherProps> = ({
   currentDevice,
   devices,
   connectionStatus,
+  compilerData,
   flasherLog,
   setCurrentDevice,
   handleGetList,
-  handleFlashButton,
+  handleFlash,
   handleHostChange,
 }) => {
   const isActive = (id: string) => currentDevice === id;
@@ -96,10 +97,9 @@ export const Loader: React.FC<FlasherProps> = ({
 
         <button
           className="btn-primary mb-2"
-          onClick={handleFlashButton}
+          onClick={handleFlash}
           disabled={
-            //compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice
-            !currentDevice
+            compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice
           }
         >
           Загрузить

@@ -10,7 +10,7 @@ export interface SelectEntry {
 
 interface TextSelectProps extends ComponentProps<'select'> {
   label: string;
-  machine: StateMachine;
+  machine?: StateMachine;
   data: SelectEntry[] | string | undefined;
   isElse: boolean;
 }
@@ -19,7 +19,7 @@ export const TextSelect = forwardRef<HTMLSelectElement, TextSelectProps>(
   ({ label, machine, data, isElse, ...props }, ref) => {
     const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
     useEffect(() => {
-      if (data !== undefined) {
+      if (data && machine) {
         if (typeof data === 'string') {
           if (machine.platform.getAvailableMethods(data).length !== 0) {
             setEventComponents(

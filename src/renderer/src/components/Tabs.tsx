@@ -94,6 +94,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
         if (index === id) {
           box = dragBoxOrder!;
         }
+        isActive(id + 1);
         return box;
       });
       setTabsNewItems(newBoxState);

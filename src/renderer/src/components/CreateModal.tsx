@@ -211,7 +211,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const selectElse = [
     {
-      type: 'more',
+      type: 'greater',
       icon: '>',
     },
     {
@@ -227,7 +227,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       icon: '!=',
     },
     {
-      type: 'moreOrEqual',
+      type: 'greaterOrEqual',
       icon: '>=',
     },
     {

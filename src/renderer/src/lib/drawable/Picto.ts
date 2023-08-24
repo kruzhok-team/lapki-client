@@ -17,6 +17,15 @@ const basePicto = {
   system: '/img/arduino/action.svg',
   variable: '/img/arduino/variable-type.svg',
 
+  'op/notEquals': '/img/bearloga/compare_not_equal.svg',
+  'op/equals': '/img/bearloga/compare_equal.svg',
+  'op/greater': '/img/bearloga/compare_more.svg',
+  'op/less': '/img/bearloga/compare_less.svg',
+  'op/greaterOrEqual': '/img/bearloga/compare_more_eq.svg',
+  'op/lessOrEqual': '/img/bearloga/compare_less_eq.svg',
+  // "op/or": "/img/common/compare_or.svg",
+  // "op/and": "/img/common/compare_and.svg",
+
   onEnter: '/img/bearloga/event_enter.svg',
   onExit: '/img/bearloga/event_exit.svg',
 };
@@ -81,15 +90,18 @@ export class Picto {
 
   eventWidth = 100;
   eventHeight = 40;
+  eventMargin = 5;
   iconSize = 30;
   separatorVOffset = 4;
   iconVOffset = 5;
   iconHOffset = 10;
 
-  drawBorder(
+  drawRect(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
+    width: number,
+    height: number,
     bgColor?: string,
     fgColor?: string,
     opacity?: number
@@ -99,10 +111,21 @@ export class Picto {
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
     ctx.lineWidth = 0.5;
-    ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
+    ctx.roundRect(x, y, width / this.scale, height / this.scale, 5);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
+  }
+
+  drawBorder(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    bgColor?: string,
+    fgColor?: string,
+    opacity?: number
+  ) {
+    this.drawRect(ctx, x, y, this.eventWidth, this.eventHeight, bgColor, fgColor, opacity);
   }
 
   drawCursor(ctx: CanvasRenderingContext2D, x: number, y: number) {
@@ -112,6 +135,51 @@ export class Picto {
     ctx.lineWidth = 3 / this.scale;
     ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
     ctx.stroke();
+  }
+
+  drawMono(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+    let rightIcon = ps.rightIcon;
+    let bgColor = ps.bgColor ?? '#3a426b';
+    let fgColor = ps.fgColor ?? '#fff';
+    let opacity = ps.opacity ?? 1.0;
+
+    // Рамка
+    this.drawRect(ctx, x, y, this.eventHeight, this.eventHeight, bgColor, fgColor, opacity);
+
+    if (!rightIcon) return;
+
+    this.drawImage(ctx, rightIcon, {
+      x: x + (this.eventHeight - this.iconSize) / 2 / this.scale,
+      y: y + this.iconVOffset / this.scale,
+      width: this.iconSize,
+      height: this.iconSize,
+    });
+  }
+
+  drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+    let text = ps.rightIcon;
+    let bgColor = ps.bgColor ?? '#3a426b';
+    let fgColor = ps.fgColor ?? '#fff';
+    let opacity = ps.opacity ?? 1.0;
+
+    const baseFontSize = 24;
+    const w = 5 * 2 + text.length * 15;
+    const cy = (picto.eventHeight - baseFontSize) / this.scale;
+
+    // Рамка
+    this.drawRect(ctx, x, y, w, this.eventHeight, bgColor, fgColor, opacity);
+
+    const fontSize = baseFontSize / picto.scale;
+    ctx.save();
+    ctx.font = `${fontSize}px/0 monospace`;
+    ctx.fillStyle = fgColor;
+    ctx.strokeStyle = fgColor;
+    ctx.textBaseline = 'hanging';
+
+    const p = 5 / picto.scale;
+    ctx.fillText(text, x + p, y + cy - p);
+
+    ctx.restore();
   }
 
   drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {

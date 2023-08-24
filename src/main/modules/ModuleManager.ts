@@ -2,7 +2,6 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import {
   FLASHER_LOCAL_HOST,
   FLASHER_LOCAL_PORT,
-  Flasher,
 } from '../../renderer/src/components/Modules/Flasher';
 
 export class ModuleManager {

@@ -165,6 +165,23 @@
         "x": 16,
         "y": 175
       },
+      "condition": {
+        "type": "greater",
+        "value": [
+          {
+            "type": "component",
+            "value": {
+              "component": "diod1",
+              "method": "value",
+              "args": {}
+            }
+          },
+          {
+            "type": "value",
+            "value": "1234"
+          }
+        ]
+      },
       "source": "diod2",
       "target": "diod1",
       "trigger": {

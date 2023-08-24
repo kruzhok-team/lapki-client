@@ -110,10 +110,6 @@ export class EditorManager {
     Compiler.compile(platform, this.state.data);
   }
 
-  flash(binaries: Array<Binary>, deviceID: string): void {
-    Flasher.flash(binaries, deviceID);
-  }
-
   getList(): void {
     Flasher.getList();
   }

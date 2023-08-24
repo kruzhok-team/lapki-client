@@ -57,6 +57,8 @@ export const App: React.FC = () => {
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
+  const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
+  const [flashing, setFlashing] = useState(false);
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
@@ -171,7 +173,11 @@ export const App: React.FC = () => {
   const handleFlashBinary = async () => {
     //Рассчет на то, что пользователь не сможет нажать кнопку загрузки,
     //если нет данных от компилятора
-    manager?.flash(compilerData!.binary!, currentDevice!);
+    if (flasherFile) {
+      Flasher.flash(currentDevice!);
+    } else {
+      Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
+    }
   };
 
   const handleSaveBinaryIntoFolder = async () => {
@@ -252,7 +258,7 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleFlasherHostChange = async () => {
+  const handleFlasherHostChange = () => {
     Flasher.freezeReconnectionTimer(true);
     openFlasherModal();
   };
@@ -268,6 +274,16 @@ export const App: React.FC = () => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
+  };
+
+  const handleFlasherFileChoose = () => {
+    if (flasherFile){
+      console.log('cancel file choose');
+      setFlasherFile(undefined);
+    } else {
+      console.log('file chooser');
+      Flasher.setFile();
+    }
   };
 
   const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
@@ -315,12 +331,13 @@ export const App: React.FC = () => {
     connectionStatus: flasherConnectionStatus,
     flasherLog: flasherLog,
     compilerData: compilerData,
+    flasherFile: flasherFile,
+    flashing: flashing,
     setCurrentDevice: setCurrentDevice,
     handleGetList: handleGetList,
     handleFlash: handleFlashBinary,
-    handleLocalFlasher: handleLocalFlasher,
-    handleRemoteFlasher: handleRemoteFlasher,
     handleHostChange: handleFlasherHostChange,
+    handleFileChoose: handleFlasherFileChoose,
   };
 
   const compilerProps: CompilerProps = {
@@ -439,7 +456,13 @@ export const App: React.FC = () => {
   ];
 
   useEffect(() => {
-    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
+    Flasher.bindReact(
+      setFlasherDevices,
+      setFlasherConnectionStatus,
+      setFlasherLog,
+      setFlasherFile,
+      setFlashing
+    );
     const reader = new FileReader();
     Flasher.initReader(reader);
     console.log('CONNECTING TO FLASHER');

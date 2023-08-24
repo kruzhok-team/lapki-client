@@ -5,6 +5,7 @@ import {
   handleFileSave,
   handleFileSaveAs,
   handleSaveIntoFolder,
+  handleBinFileOpen,
 } from './file-handlers';
 import { join } from 'path';
 import { ModuleManager } from './modules/ModuleManager';
@@ -76,6 +77,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('dialog:saveAsFile', (_event, filename, data) => {
     return handleFileSaveAs(filename, data);
+  });
+
+  ipcMain.handle('dialog:openBinFile', (_event) => {
+    return handleBinFileOpen();
   });
 
   ipcMain.handle('Module:startLocalModule', (_event, module: string) => {

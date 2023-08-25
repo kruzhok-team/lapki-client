@@ -161,6 +161,13 @@ export class PlatformManager {
     }
   }
 
+  getEventIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getEventIcon(compoQuery, method);
+    // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
+  }
+
   getActionIcon(component: string, method: string) {
     const icon = this.actionToIcon.get(`${component}/${method}`);
     if (icon && icons.has(icon)) {
@@ -168,6 +175,13 @@ export class PlatformManager {
     } else {
       return 'unknown';
     }
+  }
+
+  getActionIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getActionIcon(compoQuery, method);
+    // console.log(['getActionIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
   }
 
   getVariableIcon(component: string, variable: string) {

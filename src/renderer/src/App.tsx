@@ -307,6 +307,7 @@ export const App: React.FC = () => {
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
     handleTabChange(3);
+    setFlasherFile(undefined);
   };
 
   const handleShowSource = () => {

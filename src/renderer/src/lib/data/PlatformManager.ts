@@ -231,12 +231,15 @@ export class PlatformManager {
 
     let parameter: string | undefined = undefined;
     if (ac.args) {
-      const firstParam = Object.entries(ac.args)[0][1];
-      if (typeof firstParam === 'string') {
-        parameter = firstParam;
-      } else {
-        console.log(['PlatformManager.drawAction', 'Variable!', ac]);
-        parameter = '???';
+      const args = Object.entries(ac.args);
+      if (args.length > 0) {
+        const firstParam = args[0][1];
+        if (typeof firstParam === 'string') {
+          parameter = firstParam;
+        } else {
+          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+          parameter = '???';
+        }
       }
     }
 

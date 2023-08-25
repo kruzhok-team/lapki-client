@@ -53,6 +53,11 @@ import {
  */
 export const App: React.FC = () => {
   // TODO: а если у нас будет несколько редакторов?
+
+  // для sidebar
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -277,7 +282,7 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherFileChoose = () => {
-    if (flasherFile){
+    if (flasherFile) {
       console.log('cancel file choose');
       setFlasherFile(undefined);
     } else {
@@ -299,6 +304,10 @@ export const App: React.FC = () => {
     onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '', 'txt');
   };
 
+  const handleFlashButton = () => {
+    handleTabChange(1);
+  };
+
   const handleShowSource = () => {
     const newTabs = new Array<TabDataAdd>();
     compilerData!.source!.map((element) => {
@@ -316,6 +325,17 @@ export const App: React.FC = () => {
 
   const handleImport = async (platform: string) => {
     await manager?.import(platform, setOpenData);
+  };
+
+  // смена вкладок (Sidebar.tsx)
+  const handleTabChange = (index: number) => {
+    console.log('tab changed');
+    if (index === activeTabIndex) {
+      setIsCollapsed((p) => !p);
+    } else {
+      setActiveTabIndex(index);
+      isCollapsed && setIsCollapsed(false);
+    }
   };
 
   useEffect(() => {
@@ -350,6 +370,7 @@ export const App: React.FC = () => {
     handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
     handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
     handleShowSource: handleShowSource,
+    handleFlashButton: handleFlashButton,
   };
 
   const onRequestAddComponent = () => {
@@ -474,6 +495,10 @@ export const App: React.FC = () => {
     <div className="h-screen select-none">
       <div className="flex h-full w-full flex-row overflow-hidden">
         <Sidebar
+          activeTabIndex={activeTabIndex}
+          isCollapsed={isCollapsed}
+          handleTabChange={handleTabChange}
+          setIsCollapsed={setIsCollapsed}
           editorRef={lapki}
           flasherProps={flasherProps}
           compilerProps={compilerProps}

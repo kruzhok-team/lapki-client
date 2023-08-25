@@ -194,11 +194,23 @@ export class PlatformManager {
       rightIcon = this.getEventIcon(component, ev.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ev.args) {
+      const firstParam = Object.entries(ev.args)[0][1];
+      if (typeof firstParam === 'string') {
+        parameter = firstParam;
+      } else {
+        console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
+        parameter = '???';
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
+      parameter,
     });
   }
 
@@ -217,12 +229,24 @@ export class PlatformManager {
       rightIcon = this.getActionIcon(component, ac.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ac.args) {
+      const firstParam = Object.entries(ac.args)[0][1];
+      if (typeof firstParam === 'string') {
+        parameter = firstParam;
+      } else {
+        console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+        parameter = '???';
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
       opacity,
+      parameter,
     });
   }
 
@@ -231,14 +255,7 @@ export class PlatformManager {
       return picto.eventWidth;
     }
     if (ac.type == 'value') {
-      if (typeof ac.value == 'number') {
-        console.log(['PlatformManager.measureCondition', 'number', ac.value]);
-        return picto.eventWidth;
-      }
-      if (typeof ac.value == 'string') {
-        console.log(['PlatformManager.measureCondition', 'string', ac.value]);
-        return picto.eventWidth;
-      }
+      return picto.textPadding * 2 + ac.value.toString().length * picto.pxPerChar;
     }
     if (operatorSet.has(ac.type)) {
       if (Array.isArray(ac.value)) {

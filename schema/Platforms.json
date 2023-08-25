@@ -74,7 +74,7 @@
         },
         "parameters": {
           "additionalProperties": {
-            "$ref": "#/definitions/ArgType"
+            "$ref": "#/definitions/ParameterProto"
           },
           "type": "object"
         }
@@ -149,6 +149,12 @@
         },
         "img": {
           "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterProto"
+          },
+          "type": "object"
         }
       },
       "type": "object"
@@ -161,6 +167,9 @@
         },
         "img": {
           "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ArgType"
         }
       },
       "type": "object"

@@ -93,8 +93,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               onChange(event) {
                 setNameComponents(event.target.value);
               },
-              value: nameComponents,
             })}
+            machine={machine}
             isElse={false}
             data={eventComponents}
           />
@@ -104,7 +104,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               onChange(event) {
                 setNameMethods(event.target.value);
               },
-              value: nameMethods,
             })}
             machine={machine}
             isElse={false}

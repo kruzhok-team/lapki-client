@@ -15,6 +15,7 @@ export type CompilerSettings = {
 export type Event = {
   component: string;
   method: string;
+  // FIXME: в перспективе тип должен быть string | Variable
   args?: { [key: string]: string };
 };
 

@@ -59,12 +59,15 @@ export const Loader: React.FC<FlasherProps> = ({
             className={twMerge(
               'p-1 hover:bg-[#557b91] hover:text-white',
               (connectionStatus == FLASHER_CONNECTING ||
-                connectionStatus == FLASHER_SWITCHING_HOST) &&
+                connectionStatus == FLASHER_SWITCHING_HOST ||
+                flashing) &&
                 'opacity-50'
             )}
             onClick={handleHostChange}
             disabled={
-              connectionStatus == FLASHER_CONNECTING || connectionStatus == FLASHER_SWITCHING_HOST
+              connectionStatus == FLASHER_CONNECTING ||
+              connectionStatus == FLASHER_SWITCHING_HOST ||
+              flashing
             }
           >
             <Setting width="1.5rem" height="1.5rem" />

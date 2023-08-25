@@ -55,6 +55,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     console.log(updatedState);
   };
 
+  const handleNameChange = (e) => {
+    const updatedState = { ...data };
+    updatedState.idx = e.target.value;
+    setDataState(updatedState);
+    console.log(updatedState);
+  };
+
   const handleSubmit = (ev) => {
     ev.preventDefault();
     // onComponentDelete(data.idx);
@@ -108,7 +115,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       sideLabel="Удалить"
       onSide={handleDelete}
     >
-      <p>🐈‍⬛</p>
+      <input
+        className="w-[250px] max-w-[250px] rounded bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+        maxLength={20}
+        value={dataState.idx}
+        name={dataState.idx}
+        onChange={(e) => handleNameChange(e)}
+      />
       <hr />
       {parameters}
     </Modal>

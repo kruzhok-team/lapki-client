@@ -231,14 +231,7 @@ export class PlatformManager {
       return picto.eventWidth;
     }
     if (ac.type == 'value') {
-      if (typeof ac.value == 'number') {
-        console.log(['PlatformManager.measureCondition', 'number', ac.value]);
-        return picto.eventWidth;
-      }
-      if (typeof ac.value == 'string') {
-        console.log(['PlatformManager.measureCondition', 'string', ac.value]);
-        return picto.eventWidth;
-      }
+      return picto.textPadding * 2 + ac.value.toString().length * picto.pxPerChar;
     }
     if (operatorSet.has(ac.type)) {
       if (Array.isArray(ac.value)) {
@@ -270,7 +263,6 @@ export class PlatformManager {
       let leftIcon: string | undefined = undefined;
       let rightIcon = 'unknown';
 
-      console.log(typeof ac.value);
       // FIXME: столько проверок ради простой валидации...
       if (
         !Array.isArray(ac.value) &&

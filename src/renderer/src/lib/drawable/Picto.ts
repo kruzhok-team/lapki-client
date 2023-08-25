@@ -95,6 +95,8 @@ export class Picto {
   separatorVOffset = 4;
   iconVOffset = 5;
   iconHOffset = 10;
+  pxPerChar = 15;
+  textPadding = 5;
 
   drawRect(
     ctx: CanvasRenderingContext2D,
@@ -163,7 +165,7 @@ export class Picto {
     let opacity = ps.opacity ?? 1.0;
 
     const baseFontSize = 24;
-    const w = 5 * 2 + text.length * 15;
+    const w = this.textPadding * 2 + text.length * this.pxPerChar;
     const cy = (picto.eventHeight - baseFontSize) / this.scale;
 
     // Рамка

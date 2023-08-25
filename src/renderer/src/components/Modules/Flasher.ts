@@ -173,6 +173,8 @@ export class Flasher {
 
     ws.onopen = () => {
       console.log('Flasher: connected!');
+      this.setFlashing(false);
+      this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
 
       this.connection = ws;
@@ -187,6 +189,12 @@ export class Flasher {
           case 'flash-next-block': {
             this.setFlashing(true);
             this.sendBlob();
+            break;
+          }
+          case 'flash-not-supported': {
+            this.setFlasherLog(
+              `Устройство ${response.payload} не поддерживается для прошивки в данной версии IDE`
+            );
             break;
           }
           case 'device': {
@@ -281,7 +289,7 @@ export class Flasher {
 
     return ws;
   }
-  
+
   static flashingEnd() {
     this.setFlashing(false);
     this.setFlasherFile(undefined);

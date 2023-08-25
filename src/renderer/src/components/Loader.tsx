@@ -101,26 +101,28 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-        <button
-          className="btn-primary mb-2"
-          onClick={handleFlash}
-          disabled={
-            flashing ||
-            !currentDevice ||
-            connectionStatus != FLASHER_CONNECTED ||
-            (!flasherFile &&
-              (compilerData?.binary === undefined || compilerData.binary.length == 0))
-          }
-        >
-          Загрузить
-        </button>
-        <button
-          className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
-          onClick={handleFileChoose}
-          disabled={flashing}
-        >
-          {flasherFile ? '✖' : '…'}
-        </button>
+        <div className='flex'>
+          <button
+            className="btn-primary mb-2"
+            onClick={handleFlash}
+            disabled={
+              flashing ||
+              !currentDevice ||
+              connectionStatus != FLASHER_CONNECTED ||
+              (!flasherFile &&
+                (compilerData?.binary === undefined || compilerData.binary.length == 0))
+            }
+          >
+            Загрузить
+          </button>
+          <button
+            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+            onClick={handleFileChoose}
+            disabled={flashing}
+          >
+            {flasherFile ? '✖' : '…'}
+          </button>
+        </div>
         {flasherFile ? (
           <p className="mb-2 rounded bg-primaryActive text-white">
             из файла <span className="font-medium">{flasherFile}</span>

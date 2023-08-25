@@ -208,11 +208,23 @@ export class PlatformManager {
       rightIcon = this.getEventIcon(component, ev.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ev.args) {
+      const firstParam = Object.entries(ev.args)[0][1];
+      if (typeof firstParam === 'string') {
+        parameter = firstParam;
+      } else {
+        console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
+        parameter = '???';
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
+      parameter,
     });
   }
 
@@ -231,12 +243,27 @@ export class PlatformManager {
       rightIcon = this.getActionIcon(component, ac.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ac.args) {
+      const args = Object.entries(ac.args);
+      if (args.length > 0) {
+        const firstParam = args[0][1];
+        if (typeof firstParam === 'string') {
+          parameter = firstParam;
+        } else {
+          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+          parameter = '???';
+        }
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
       opacity,
+      parameter,
     });
   }
 

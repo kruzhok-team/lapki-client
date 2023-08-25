@@ -228,11 +228,11 @@
           "description": "Класс-надстройка над Serial. Вызывает сигналы при получении данных.",
           "img": "",
           "signals": {
-            "SERIAL_NO_DATA_RECEIVED": {
+            "noByteReceived": {
               "img": "",
               "description": "Был вызван read, но данные не были получены"
             },
-            "SERIAL_RECEIVED_BYTE": {
+            "byteReceived": {
               "img": "",
               "description": "Были получены данные"
             }

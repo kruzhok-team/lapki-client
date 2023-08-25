@@ -58,6 +58,7 @@ export type PictoProps = {
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
+  parameter?: string;
   // TODO: args
 };
 
@@ -227,6 +228,24 @@ export class Picto {
         width: this.iconSize,
         height: this.iconSize,
       });
+    }
+    if (ps.parameter) {
+      const baseFontSize = 12;
+      const cy = (picto.eventHeight - baseFontSize) / this.scale;
+      const cx = (this.eventWidth - 5) / this.scale;
+      const fontSize = baseFontSize / picto.scale;
+      ctx.save();
+      ctx.font = `${fontSize}px/0 monospace`;
+      ctx.fillStyle = fgColor;
+      ctx.strokeStyle = bgColor;
+      ctx.textBaseline = 'hanging';
+      ctx.textAlign = 'end';
+      ctx.lineWidth = 0.5 / this.scale;
+
+      ctx.strokeText(ps.parameter, x + cx, y + cy);
+      ctx.fillText(ps.parameter, x + cx, y + cy);
+
+      ctx.restore();
     }
   }
 }

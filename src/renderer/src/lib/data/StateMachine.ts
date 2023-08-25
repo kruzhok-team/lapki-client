@@ -73,9 +73,9 @@ export class StateMachine extends EventEmitter {
       this.container.states.unwatchState(value);
     });
     this.initialState = '';
+    this.states.clear();
     this.components.clear();
     this.transitions.clear();
-    this.states.clear();
     this.parameters.clear();
     this.platformIdx = '';
     // FIXME: platform не обнуляется
@@ -199,7 +199,7 @@ export class StateMachine extends EventEmitter {
         {
           do: events,
           trigger: {
-            args: undefined,
+            args: {},
             component: triggerComponent,
             method: triggerMethod,
           },
@@ -458,7 +458,7 @@ export class StateMachine extends EventEmitter {
   deleteEvent(id: string, eventId: EventSelection) {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
-    console.log(eventId.actionIdx, eventId.eventIdx);
+
     if (eventId.actionIdx === null) {
       state.eventBox.data.splice(eventId.eventIdx, 1);
     } else {

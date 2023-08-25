@@ -279,9 +279,9 @@ export class Flasher {
 
     ws.onclose = () => {
       console.log(`flasher closed ${route}, ${timeout}, ${this.base_address}`);
-      this.connecting = false;
-      this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
       if (this.base_address == route) {
+        this.connecting = false;
+        this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
         this.connection = undefined;
         this.tryToReconnect(route, timeout);
       }

@@ -70,8 +70,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const [components, setComponents] = useState(options[0]);
 
   const optionsMethods =
-    machine.platform.getAvailableMethods(components.value).length !== 0
-      ? machine.platform.getAvailableMethods(components.value).map((entry) => {
+    [...machine.platform.getAvailableMethods(components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -84,8 +83,9 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               </div>
             ),
           };
-        })
-      : machine.platform.getAvailableEvents(components.value).map((entry) => {
+        }),
+      ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+          console.log(entry.name)
           return {
             value: entry.name,
             label: (
@@ -98,7 +98,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
               </div>
             ),
           };
-        });
+        })];
+  
 
   const [methods, setMethods] = useState(optionsMethods[0]);
   useEffect(() => {

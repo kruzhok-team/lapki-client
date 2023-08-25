@@ -117,8 +117,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [param2Components, setParam2Components] = useState(optionsParam1Components[0]);
 
   const optionsMethods =
-    machine.platform.getAvailableMethods(components.value).length !== 0
-      ? machine.platform.getAvailableMethods(components.value).map((entry) => {
+      [...machine.platform.getAvailableMethods(components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -131,8 +130,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
             ),
           };
-        })
-      : machine.platform.getAvailableEvents(components.value).map((entry) => {
+        }),
+      ...machine.platform.getAvailableEvents(components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -145,10 +144,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
             ),
           };
-        });
+        })];
   const optionsParam1Methods =
-    machine.platform.getAvailableMethods(param1Components.value).length !== 0
-      ? machine.platform.getAvailableMethods(param1Components.value).map((entry) => {
+      [...machine.platform.getAvailableMethods(param1Components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -161,8 +159,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
             ),
           };
-        })
-      : machine.platform.getAvailableEvents(param1Components.value).map((entry) => {
+        }),
+      ...machine.platform.getAvailableEvents(param1Components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -175,10 +173,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
             ),
           };
-        });
+        })];
   const optionsParam2Methods =
-    machine.platform.getAvailableMethods(param2Components.value).length !== 0
-      ? machine.platform.getAvailableMethods(param2Components.value).map((entry) => {
+      [...machine.platform.getAvailableMethods(param2Components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -191,8 +188,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
             ),
           };
-        })
-      : machine.platform.getAvailableEvents(param2Components.value).map((entry) => {
+        }),
+      ...machine.platform.getAvailableEvents(param2Components.value).map((entry) => {
           return {
             value: entry.name,
             label: (
@@ -205,7 +202,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               </div>
             ),
           };
-        });
+        })];
   const [methods, setMethods] = useState(optionsMethods[0]);
   const [param1Methods, setParam1Methods] = useState(optionsParam1Methods[0]);
   const [param2Methods, setParam2Methods] = useState(optionsParam2Methods[0]);

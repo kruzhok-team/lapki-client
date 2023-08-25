@@ -61,6 +61,19 @@
         "component": "btn",
         "method": "clicked"
       }
+    },
+    {
+      "source": "diod2",
+      "target": "diod1",
+      "color": "#ffffff",
+      "position": {
+        "x": 99.875,
+        "y": 187.625
+      },
+      "trigger": {
+        "component": "btn",
+        "method": "clicked"
+      }
     }
   ],
   "components": {

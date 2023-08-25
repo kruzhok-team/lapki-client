@@ -98,8 +98,6 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-        Источник прошивки: {flasherFile ? flasherFile : 'компилятор'}
-        <br></br>
         <button
           className="btn-primary mb-2"
           onClick={handleFlash}
@@ -113,9 +111,20 @@ export const Loader: React.FC<FlasherProps> = ({
         >
           Загрузить
         </button>
-        <button className={flasherFile? "btn-primary mb-2" : "btn-primary mb-2 opacity-50"} onClick={handleFileChoose} disabled={flashing}>
-          ...
+        <button
+          className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+          onClick={handleFileChoose}
+          disabled={flashing}
+        >
+          {flasherFile ? '✖' : '…'}
         </button>
+        {flasherFile ? (
+          <p className="mb-2 rounded bg-primaryActive text-white">
+            из файла <span className="font-medium">{flasherFile}</span>
+          </p>
+        ) : (
+          ''
+        )}
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}
         </div>

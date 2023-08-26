@@ -28,6 +28,7 @@ export class Compiler {
   //мы считаем, что произошла ошибка.
   static timeOutTime = 100000;
   static timeoutSetted = false;
+  static filename: string;
 
   static setDefaultStatus() {
     this.setCompilerStatus('Не подключен');
@@ -140,7 +141,7 @@ export class Compiler {
             binary: [],
             source: [
               {
-                filename: 'Autoborder_638264648325956870',
+                filename: this.filename,
                 extension: 'graphml',
                 fileContent: data,
               },

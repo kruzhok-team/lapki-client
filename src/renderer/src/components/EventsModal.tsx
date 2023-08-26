@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
-import { SelectEntry, TextSelect } from './Modal/TextSelect';
 import { EventSelection } from '../lib/drawable/Events';
-import { useForm } from 'react-hook-form';
 import { TextInput } from './Modal/TextInput';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import Select from 'react-select';
+
+export interface SelectEntry {
+  value: string;
+  label: JSX.Element | string;
+}
 
 interface EventsModalProps extends Props {
   editor: CanvasEditor | null;
@@ -36,43 +40,87 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   editor,
   ...props
 }) => {
-  const {
-    register,
-    handleSubmit: hookHandleSubmit,
-    formState: { errors },
-  } = useForm<EventsModalFormValues>();
-
   const machine = editor!.container.machine;
-  //Массив первого select
-  const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
-  const [nameComponents, setNameComponents] = useState<string>();
-  const [nameMethods, setNameMethods] = useState<string>();
 
-  useEffect(() => {
-    if (nameComponents === undefined) {
-      setEventComponents(
-        Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
-        })
-      );
-      //Находим первый элемент массива для стабильной работы первого select
-      eventComponents.find((value, idx) => {
-        if (idx === 0) {
-          setNameComponents(value.name);
-        }
-      });
-    }
-  }, [props.isOpen]);
-
-  const handleSubmit = hookHandleSubmit((data) => {
-    data.id = props.isData;
-    (data.condition = {
-      component: data.doComponent,
-      method: data.doMethod,
-      args: data.doArgs,
+  const options = [
+    {
+      value: 'System',
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getComponentIconUrl('System', true)}
+            className="mr-1 h-7 w-7"
+          />
+          {'System'}
+        </div>
+      ),
+    },
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+      return {
+        value: idx,
+        label: (
+          <div className="flex items-center">
+            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+            {idx}
+          </div>
+        ),
+      };
     }),
-      onSubmit(data);
-  });
+  ];
+  const [components, setComponents] = useState(options[0]);
+
+  const optionsMethods =
+    [...machine.platform.getAvailableMethods(components.value).map((entry) => {
+          return {
+            value: entry.name,
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {entry.name}
+              </div>
+            ),
+          };
+        }),
+      ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+          console.log(entry.name)
+          return {
+            value: entry.name,
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {entry.name}
+              </div>
+            ),
+          };
+        })];
+  
+
+  const [methods, setMethods] = useState(optionsMethods[0]);
+  useEffect(() => {
+    setMethods(optionsMethods[0]);
+  }, [components]);
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
+
+    const data = {
+      id: props.isData,
+      doComponent: components.value,
+      doMethod: methods.value,
+      doArgs: {},
+      condition: {
+        component: components.value,
+        method: methods.value,
+        args: {},
+      },
+    };
+    onSubmit(data);
+  };
 
   return (
     <ReactModal
@@ -86,28 +134,19 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       </div>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col items-center">
-          <TextSelect
-            label="Компонент(событие):"
-            {...register('doComponent', {
-              //validate: (value) => value === nameComponents,
-              onChange(event) {
-                setNameComponents(event.target.value);
-              },
-            })}
-            machine={machine}
-            isElse={false}
-            data={eventComponents}
+          <Select
+            className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
+            options={options}
+            onChange={(event) => setComponents(event!)}
+            value={components}
+            isSearchable={false}
           />
-          <TextSelect
-            label="Действие:"
-            {...register('doMethod', {
-              onChange(event) {
-                setNameMethods(event.target.value);
-              },
-            })}
-            machine={machine}
-            isElse={false}
-            data={nameComponents}
+          <Select
+            className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
+            options={optionsMethods}
+            onChange={(event) => setMethods(event!)}
+            value={methods}
+            isSearchable={false}
           />
           {/* <TextInput
             label="Параметр:"

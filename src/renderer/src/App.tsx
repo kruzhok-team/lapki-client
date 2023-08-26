@@ -47,11 +47,12 @@ import {
   ComponentDeleteModal,
   emptyCompDeleteData,
 } from './components/ComponentDeleteModal';
-
+import DocumentTitle from 'react-document-title';
 /**
  * React-компонент приложения
  */
 export const App: React.FC = () => {
+  const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -73,7 +74,9 @@ export const App: React.FC = () => {
   const editorData = lapki.editorData;
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
-
+  useEffect(() => {
+    manager?.bindReact(setTitle);
+  });
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
@@ -229,6 +232,7 @@ export const App: React.FC = () => {
   };
 
   const handleCompile = async () => {
+    Compiler.filename = title.split(" ")[0].split(".")[0]
     manager?.compile(editor!.container.machine.platformIdx);
   };
 
@@ -277,7 +281,7 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherFileChoose = () => {
-    if (flasherFile){
+    if (flasherFile) {
       console.log('cancel file choose');
       setFlasherFile(undefined);
     } else {
@@ -471,61 +475,65 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-screen select-none">
-      <div className="flex h-full w-full flex-row overflow-hidden">
-        <Sidebar
-          editorRef={lapki}
-          flasherProps={flasherProps}
-          compilerProps={compilerProps}
-          callbacks={sidebarCallbacks}
-        />
-
-        <div className="relative w-full min-w-0 bg-bg-primary">
-          {editorData.content ? (
-            <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
-          ) : (
-            <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
-          )}
-
-          <Documentations
-            topOffset={!!editorData.content}
-            baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+    <DocumentTitle title={title}>
+      <div className="h-screen select-none">
+        <div className="flex h-full w-full flex-row overflow-hidden">
+          <Sidebar
+            editorRef={lapki}
+            flasherProps={flasherProps}
+            compilerProps={compilerProps}
+            callbacks={sidebarCallbacks}
           />
-        </div>
-      </div>
 
-      <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
-      <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
-      <PlatformSelectModal
-        isOpen={isPlatformModalOpen}
-        onCreate={performNewFile}
-        onClose={closePlatformModal}
-      />
-      <FlasherSelectModal
-        isOpen={isFlasherModalOpen}
-        handleLocal={handleLocalFlasher}
-        handleRemote={handleRemoteFlasher}
-        onClose={closeFlasherModal}
-      />
-      <ComponentSelectModal
-        isOpen={isCompAddModalOpen}
-        data={compAddModalData}
-        onClose={closeCompAddModal}
-        onSubmit={handleAddComponent}
-      />
-      <ComponentEditModal
-        isOpen={isCompEditModalOpen}
-        data={compEditModalData}
-        onClose={closeCompEditModal}
-        onComponentEdit={handleEditComponent}
-        onComponentDelete={onRequestDeleteComponent}
-      />
-      <ComponentDeleteModal
-        isOpen={isCompDeleteModalOpen}
-        data={compDeleteModalData}
-        onClose={closeCompDeleteModal}
-        onComponentDelete={handleDeleteComponent}
-      />
-    </div>
+          <div className="relative w-full min-w-0 bg-bg-primary">
+            {editorData.content ? (
+              <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+            ) : (
+              <p className="pt-24 text-center text-base">
+                Откройте файл или перенесите его сюда...
+              </p>
+            )}
+
+            <Documentations
+              topOffset={!!editorData.content}
+              baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+            />
+          </div>
+        </div>
+
+        <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
+        <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
+        <PlatformSelectModal
+          isOpen={isPlatformModalOpen}
+          onCreate={performNewFile}
+          onClose={closePlatformModal}
+        />
+        <FlasherSelectModal
+          isOpen={isFlasherModalOpen}
+          handleLocal={handleLocalFlasher}
+          handleRemote={handleRemoteFlasher}
+          onClose={closeFlasherModal}
+        />
+        <ComponentSelectModal
+          isOpen={isCompAddModalOpen}
+          data={compAddModalData}
+          onClose={closeCompAddModal}
+          onSubmit={handleAddComponent}
+        />
+        <ComponentEditModal
+          isOpen={isCompEditModalOpen}
+          data={compEditModalData}
+          onClose={closeCompEditModal}
+          onComponentEdit={handleEditComponent}
+          onComponentDelete={onRequestDeleteComponent}
+        />
+        <ComponentDeleteModal
+          isOpen={isCompDeleteModalOpen}
+          data={compDeleteModalData}
+          onClose={closeCompDeleteModal}
+          onComponentDelete={handleDeleteComponent}
+        />
+      </div>
+    </DocumentTitle>
   );
 };

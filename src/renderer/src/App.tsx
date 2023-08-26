@@ -232,6 +232,7 @@ export const App: React.FC = () => {
   };
 
   const handleCompile = async () => {
+    Compiler.filename = title.split(" ")[0].split(".")[0]
     manager?.compile(editor!.container.machine.platformIdx);
   };
 

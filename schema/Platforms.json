@@ -15,6 +15,27 @@
         }
       ]
     },
+    "ArgumentProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ArgType"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
     "ComponentProto": {
       "additionalProperties": false,
       "properties": {
@@ -74,7 +95,7 @@
         },
         "parameters": {
           "items": {
-            "$ref": "#/definitions/ParameterProto"
+            "$ref": "#/definitions/ArgumentProto"
           },
           "type": "array"
         }
@@ -152,7 +173,7 @@
         },
         "parameters": {
           "items": {
-            "$ref": "#/definitions/ParameterProto"
+            "$ref": "#/definitions/ArgumentProto"
           },
           "type": "array"
         }

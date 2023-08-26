@@ -291,24 +291,10 @@ const typeMap: any = {
     ],
     false
   ),
-  ConditionClass: o(
-    [
-      { json: 'args', js: 'args', typ: u(undefined, m('')) },
-      { json: 'component', js: 'component', typ: u(undefined, '') },
-      { json: 'method', js: 'method', typ: u(undefined, '') },
-      { json: 'type', js: 'type', typ: u(undefined, '') },
-      {
-        json: 'value',
-        js: 'value',
-        typ: u(undefined, u(a(r('Condition')), r('ConditionClass'), 3.14, '')),
-      },
-    ],
-    false
-  ),
   Condition: o(
     [
       { json: 'type', js: 'type', typ: '' },
-      { json: 'value', js: 'value', typ: u(a(r('Condition')), r('ConditionClass'), 3.14, '') },
+      { json: 'value', js: 'value', typ: u(a(r('Condition')), r('Variable'), 3.14, '') },
     ],
     false
   ),

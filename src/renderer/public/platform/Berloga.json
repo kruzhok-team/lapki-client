@@ -698,7 +698,7 @@
           "parameters": {},
           "methods": {
             "Взорвать": {
-              "img": "bealoga/explode.svg",
+              "img": "bearloga/explode.svg",
               "description": "Выполняет самоуничтожение юнита с уроном по площади."
             }
           },

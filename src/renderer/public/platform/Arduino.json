@@ -5,32 +5,30 @@
       "components": {
         "Button": {
           "description": "Hardware Abstraction for Buttons. It provides an easy way of handling buttons.",
-          "img": "arduino/switch.svg",
+          "img": "arduino/button.svg",
           "signals": {
             "isPressed": {
-              "img": "arduino/button-1.svg",
+              "img": "arduino/isPressed.svg",
               "description": "Return true if the button has been pressed"
             },
             "clicked": {
-              "img": "arduino/button.svg",
+              "img": "arduino/clicked.svg",
               "description": "Return > 0 if the button is clicked, or 0 if not."
             }
           },
           "parameters": {
             "pin": {
-              "img": "",
               "type": "uint8_t",
               "description": "sets the pin that this switch is connected to"
             },
             "buttonMode": {
-              "img": "",
               "type": "uint8_t",
               "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor"
             }
           },
           "variables": {
             "value": {
-              "img": "",
+              "img": "common/value.svg",
               "type": "int",
               "description": "Текущее значение на пине"
             }
@@ -45,14 +43,13 @@
           "signals": {},
           "parameters": {
             "pin": {
-              "img": "",
               "type": "uint8_t",
               "description": "pin - the pin connected to this LED"
             }
           },
           "variables": {
             "value": {
-              "img": "",
+              "img": "common/value.svg",
               "type": "int",
               "description": "Текущее значение на пине"
             }
@@ -67,35 +64,24 @@
               "description": "Set this LED off"
             },
             "toggle": {
-              "img": "arduino/switch.svg",
+              "img": "arduino/toggle.svg",
               "description": "It will change state from on to off, or off to on"
             },
             "blink": {
-              "img": "",
+              "img": "arduino/blink.svg",
               "parameters": [
                 {
-                  "name": "time",
-                  "type": "unsigned int",
-                  "description": "the time each blink will take"
+                  "name": "times",
+                  "type": "byte",
+                  "description": "times the number of blinks"
                 },
                 {
                   "name": "interval",
-                  "type": "byte",
-                  "description": "times the number of blinks"
+                  "type": "unsigned int",
+                  "description": "the time each blink will take"
                 }
               ],
               "description": "Bling this led a number of times, with the duration of time each blink"
-            },
-            "setValue": {
-              "img": "",
-              "parameters": [
-                {
-                  "name": "val",
-                  "type": "byte",
-                  "description": "val the value to set the LED to [0,255]"
-                }
-              ],
-              "description": "analogWrites the pin if PWM, else it either turn it on or off"
             }
           },
           "singletone": false
@@ -150,7 +136,7 @@
           "img": "arduino/counter.svg",
           "signals": {
             "isEqual": {
-              "img": "",
+              "img": "arduino/isEqual.svg",
               "description": "Издать сигнал, если значение счетчика равно value",
               "parameters": [
                 {
@@ -160,7 +146,7 @@
               ]
             },
             "isLess": {
-              "img": "",
+              "img": "arduino/isLess.svg",
               "description": "Издать сигнал, если значение счетчика меньше value",
               "parameters": [
                 {
@@ -170,7 +156,7 @@
               ]
             },
             "isGreater": {
-              "img": "",
+              "img": "arduino/isGreater.svg",
               "description": "Издать сигнал, если значение счетчика больше value",
               "parameters": [
                 {
@@ -183,7 +169,7 @@
           "parameters": {},
           "methods": {
             "add": {
-              "img": "",
+              "img": "arduino/add.svg",
               "description": "Добавить value к значению счетчика",
               "parameters": [
                 {
@@ -193,7 +179,7 @@
               ]
             },
             "sub": {
-              "img": "",
+              "img": "arduino/sub.svg",
               "description": "Вычесть value к значению счетчика",
               "parameters": [
                 {
@@ -203,13 +189,13 @@
               ]
             },
             "reset": {
-              "img": "",
+              "img": "arduino/reset.svg",
               "description": "Обнулить значение счетчика."
             }
           },
           "variables": {
             "value": {
-              "img": "",
+              "img": "common/value.svg",
               "description": "Текущее значение счетчика",
               "type": "int"
             }
@@ -219,27 +205,26 @@
         },
         "QHsmSerial": {
           "description": "Класс-надстройка над Serial. Вызывает сигналы при получении данных.",
-          "img": "",
+          "img": "arduino/serial.svg",
           "signals": {
             "noByteReceived": {
-              "img": "",
+              "img": "arduino/noByteReceived.svg",
               "description": "Был вызван read, но данные не были получены"
             },
             "byteReceived": {
-              "img": "",
+              "img": "arduino/byteReceived.svg",
               "description": "Были получены данные"
             }
           },
           "parameters": {
             "baud": {
-              "img": "",
               "description": "Установить частоту работы Serial",
               "type": "unsigned long"
             }
           },
           "methods": {
             "println": {
-              "img": "",
+              "img": "arduino/println.svg",
               "description": "Вывести данные в Serial монитор с добавлением \\n в конце",
               "parameters": [
                 {
@@ -249,7 +234,7 @@
               ]
             },
             "print": {
-              "img": "",
+              "img": "arduino/print.svg",
               "description": "Вывести данные в Serial монитор с добавлением.",
               "parameters": [
                 {
@@ -259,32 +244,32 @@
               ]
             },
             "read": {
-              "img": "",
+              "img": "arduino/read.svg",
               "description": "Запросить данные из Serial."
             }
           },
           "variables": {
             "lastByte": {
+              "type": "int",
               "description": "Последний прочитанный байт.",
-              "type": "int"
+              "img": "common/value.svg"
             }
           },
           "singletone": true
         },
         "PWM": {
           "description": "Класс, реализующий ШИМ",
-          "img": "",
+          "img": "arduino/pwm.svg",
           "signals": {},
           "parameters": {
             "pin": {
-              "img": "",
               "type": "uint8_t",
               "description": "Пин, на котором будет установлен ШИМ"
             }
           },
           "methods": {
             "write": {
-              "img": "",
+              "img": "arduino/write.svg",
               "parameters": [
                 {
                   "name": "Значение",
@@ -300,41 +285,45 @@
 
         "DigitalOut": {
           "description": "Класс для подачи LOW, HIGH на пин",
-          "img": "",
+          "img": "arduino/digitalOut.svg",
           "signals": {},
           "parameters": {
             "pin": {
-              "img": "",
               "type": "uint8_t",
               "description": "Пин, на который будет подаваться сигнал."
             }
           },
           "methods": {
             "low": {
-              "img": "",
+              "img": "arduino/switch-off.svg",
               "description": "Подать LOW на пин."
             },
             "high": {
-              "img": "",
+              "img": "arduino/switch-on.svg",
               "description": "Подать HIGH на пин."
             }
           },
-          "variables": {},
+          "variables": {
+            "value": {
+              "img": "common/value.svg",
+              "type": "int",
+              "description": "Текущее значение на пине."
+            }
+          },
           "singletone": false
         },
 
         "DigitalIn": {
           "description": "Класс для считывания сигнала с пина",
-          "img": "",
+          "img": "arduino/digitalIn.svg",
           "signals": {
             "isChanged": {
-              "img": "",
+              "img": "arduino/toggle.svg",
               "description": "Сигнал вызывается, когда меняется значение на пине."
             }
           },
           "parameters": {
             "pin": {
-              "img": "",
               "type": "uint8_t",
               "description": "Пин, с которого будут считываться данные."
             }
@@ -342,7 +331,7 @@
           "methods": {},
           "variables": {
             "value": {
-              "img": "",
+              "img": "common/value.svg",
               "type": "int",
               "description": "Текущее значение на пине."
             }
@@ -352,11 +341,11 @@
 
         "AnalogOut": {
           "description": "Класс для установки значения на аналоговые пины",
-          "img": "",
+          "img": "arduino/analogOut.svg",
           "signals": {},
           "methods": {
             "write": {
-              "img": "",
+              "img": "arduino/write.svg",
               "parameters": [
                 {
                   "name": "Значение",
@@ -367,18 +356,23 @@
             }
           },
           "parameters": {},
-          "variables": {},
+          "variables": {
+            "value": {
+              "img": "common/value.svg",
+              "type": "int",
+              "description": "Текущее значение на пине."
+            }
+          },
           "singletone": false
         },
 
         "AnalogIn": {
           "description": "Класс для получения значения с аналогового пина",
-          "img": "",
+          "img": "arduino/analogIn.svg",
           "signals": {},
           "methods": {},
           "parameters": {
             "pin": {
-              "img": "",
               "type": "uint8_t",
               "description": "Пин, с которого будут считываться данные."
             }
@@ -394,11 +388,11 @@
 
         "ShiftRegister": {
           "description": "Класс вывода байта информации на порт вход/выхода последовательно (побитно).",
-          "img": "",
+          "img": "arduino/shiftRegister.svg",
           "signals": {},
           "methods": {
             "shift": {
-              "img": "",
+              "img": "arduino/shift.svg",
               "description": "Выводит байт информации на порт вход/выхода последовательно (побитно).\nВывод может осуществляться как с первого (левого), так и с последнего (правого) бита. \nКаждый бит последовательно подается на заданный порт, после чего подается сигнал на синхронизирующий порт вход/выход, информируя о доступности к считыванию бита.",
               "parameters": [
                 {
@@ -410,17 +404,14 @@
           },
           "parameters": {
             "dataPin": {
-              "img": "",
               "type": "uint8_t",
               "description": "Пин вход/выхода, на который выводятся биты"
             },
             "clockPin": {
-              "img": "",
               "type": "uint8_t",
               "description": "Пин по которому производится синхронизация "
             },
             "bitOrder": {
-              "img": "",
               "type": "uint8_t",
               "description": "Порядок битов. MSBFIRST - первый бит самый значимый, LSBFIRST - последний"
             }

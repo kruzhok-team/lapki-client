@@ -10,20 +10,20 @@ export type ParameterProto = {
 export type SignalProto = {
   img?: string;
   description?: string;
-  parameters?: { [name: string]: ParameterProto };
+  parameters?: ParameterProto[];
 };
 
 export type VariableProto = {
   img?: string;
   type?: ArgType;
   description?: string;
-  // TODO: parameters?: { [name: string]: ParameterProto };
+  // TODO: parameters?: ParameterProto[];
 };
 
 export type MethodProto = {
   img?: string;
   description?: string;
-  parameters?: { [name: string]: ParameterProto };
+  parameters?: ParameterProto[];
 };
 
 export type ComponentProto = {

@@ -60,44 +60,41 @@
           "methods": {
             "on": {
               "img": "arduino/switch-on.svg",
-              "parameters": {},
               "description": "Set this LED on"
             },
             "off": {
               "img": "arduino/switch-off.svg",
-              "parameters": {},
               "description": "Set this LED off"
             },
             "toggle": {
               "img": "arduino/switch.svg",
-              "parameters": {},
               "description": "It will change state from on to off, or off to on"
             },
             "blink": {
               "img": "",
-              "parameters": {
-                "time": {
-                  "img": "",
+              "parameters": [
+                {
+                  "name": "time",
                   "type": "unsigned int",
                   "description": "the time each blink will take"
                 },
-                "times": {
-                  "img": "",
+                {
+                  "name": "interval",
                   "type": "byte",
                   "description": "times the number of blinks"
                 }
-              },
+              ],
               "description": "Bling this led a number of times, with the duration of time each blink"
             },
             "setValue": {
               "img": "",
-              "parameters": {
-                "val": {
-                  "img": "",
+              "parameters": [
+                {
+                  "name": "val",
                   "type": "byte",
                   "description": "val the value to set the LED to [0,255]"
                 }
-              },
+              ],
               "description": "analogWrites the pin if PWM, else it either turn it on or off"
             }
           },
@@ -117,28 +114,25 @@
           "methods": {
             "reset": {
               "img": "arduino/reset.svg",
-              "parameters": {},
               "description": "Сбросить таймер, отчет начнется сначала"
             },
             "disable": {
               "img": "arduino/timer-stop.svg",
-              "parameters": {},
               "description": "Отключить таймер."
             },
             "enable": {
               "img": "arduino/timer-start.svg",
-              "parameters": {},
               "description": "Включить таймер."
             },
             "start": {
               "img": "arduino/start.svg",
-              "parameters": {
-                "interval": {
-                  "img": "",
+              "parameters": [
+                {
+                  "name": "interval",
                   "type": "unsigned long",
                   "description": "Интервал срабатывания."
                 }
-              },
+              ],
               "description": "Запустить таймер. Будет сигнал раз в интервал."
             }
           },
@@ -158,32 +152,32 @@
             "isEqual": {
               "img": "",
               "description": "Издать сигнал, если значение счетчика равно value",
-              "parameters": {
-                "value": {
-                  "type": "int",
-                  "description": "Опорное значение для сравнения"
+              "parameters": [
+                {
+                  "name": "Опорное значение",
+                  "type": "int"
                 }
-              }
+              ]
             },
             "isLess": {
               "img": "",
               "description": "Издать сигнал, если значение счетчика меньше value",
-              "parameters": {
-                "value": {
-                  "type": "int",
-                  "description": "Опорное значение для сравнения"
+              "parameters": [
+                {
+                  "name": "Опорное значение",
+                  "type": "int"
                 }
-              }
+              ]
             },
             "isGreater": {
               "img": "",
               "description": "Издать сигнал, если значение счетчика больше value",
-              "parameters": {
-                "value": {
-                  "type": "int",
-                  "description": "Опорное значение для сравнения"
+              "parameters": [
+                {
+                  "name": "Опорное значение",
+                  "type": "int"
                 }
-              }
+              ]
             }
           },
           "parameters": {},
@@ -191,27 +185,26 @@
             "add": {
               "img": "",
               "description": "Добавить value к значению счетчика",
-              "parameters": {
-                "value": {
-                  "type": "int",
-                  "description": "Прибавляемое значение"
+              "parameters": [
+                {
+                  "name": "N",
+                  "type": "int"
                 }
-              }
+              ]
             },
             "sub": {
               "img": "",
               "description": "Вычесть value к значению счетчика",
-              "parameters": {
-                "value": {
-                  "type": "int",
-                  "description": "Вычитаемое значение"
+              "parameters": [
+                {
+                  "name": "N",
+                  "type": "int"
                 }
-              }
+              ]
             },
             "reset": {
               "img": "",
-              "description": "Обнулить значение счетчика.",
-              "parameters": {}
+              "description": "Обнулить значение счетчика."
             }
           },
           "variables": {
@@ -248,29 +241,26 @@
             "println": {
               "img": "",
               "description": "Вывести данные в Serial монитор с добавлением \\n в конце",
-              "parameters": {
-                "value": {
-                  "img": "",
-                  "description": "Данные для вывода",
+              "parameters": [
+                {
+                  "name": "Данные для вывода",
                   "type": "int | char[]"
                 }
-              }
+              ]
             },
             "print": {
               "img": "",
               "description": "Вывести данные в Serial монитор с добавлением.",
-              "parameters": {
-                "value": {
-                  "img": "",
-                  "description": "Данные для вывода",
+              "parameters": [
+                {
+                  "name": "Данные для вывода",
                   "type": "int | char[]"
                 }
-              }
+              ]
             },
             "read": {
               "img": "",
-              "description": "Прочитать данные из Serial.",
-              "parameters": {}
+              "description": "Запросить данные из Serial."
             }
           },
           "variables": {
@@ -295,13 +285,12 @@
           "methods": {
             "write": {
               "img": "",
-              "parameters": {
-                "value": {
-                  "img": "",
-                  "type": "int",
-                  "description": "Значение, которое будет установлено на ШИМ."
+              "parameters": [
+                {
+                  "name": "Значение",
+                  "type": "int"
                 }
-              },
+              ],
               "description": "Установить значение на ШИМ"
             }
           },
@@ -323,12 +312,10 @@
           "methods": {
             "low": {
               "img": "",
-              "parameters": {},
               "description": "Подать LOW на пин."
             },
             "high": {
               "img": "",
-              "parameters": {},
               "description": "Подать HIGH на пин."
             }
           },
@@ -370,14 +357,13 @@
           "methods": {
             "write": {
               "img": "",
-              "parameters": {
-                "value": {
-                  "img": "",
-                  "type": "int",
-                  "description": "Значение, которое будет установлено на аналоговые пин."
+              "parameters": [
+                {
+                  "name": "Значение",
+                  "type": "int"
                 }
-              },
-              "description": "Установить значения на аналоговый пин"
+              ],
+              "description": "Установить значение на аналоговый пин"
             }
           },
           "parameters": {},
@@ -414,13 +400,12 @@
             "shift": {
               "img": "",
               "description": "Выводит байт информации на порт вход/выхода последовательно (побитно).\nВывод может осуществляться как с первого (левого), так и с последнего (правого) бита. \nКаждый бит последовательно подается на заданный порт, после чего подается сигнал на синхронизирующий порт вход/выход, информируя о доступности к считыванию бита.",
-              "parameters": {
-                "value": {
-                  "type": "int",
-                  "img": "",
-                  "description": "Значение, которое будет выведено."
+              "parameters": [
+                {
+                  "name": "Выводимое значение",
+                  "type": "int"
                 }
-              }
+              ]
             }
           },
           "parameters": {

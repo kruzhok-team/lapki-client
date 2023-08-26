@@ -224,7 +224,7 @@ const typeMap: any = {
     [
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
-      { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ParameterProto'))) },
     ],
     false
   ),
@@ -241,7 +241,7 @@ const typeMap: any = {
     [
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
-      { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ParameterProto'))) },
     ],
     false
   ),

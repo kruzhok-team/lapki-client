@@ -1,5 +1,5 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import { Rectangle } from '@renderer/types/graphics';
 

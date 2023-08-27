@@ -1,0 +1,31 @@
+.CustomSelect__control {
+  @apply bg-bg-secondary shadow-none;
+}
+
+.CustomSelect__control--is-focused {
+  @apply border-border-primary;
+}
+
+.CustomSelect__single-value {
+  @apply text-text-primary;
+}
+
+.CustomSelect__menu {
+  @apply rounded;
+}
+
+.CustomSelect__menu-list {
+  @apply rounded bg-bg-primary;
+}
+
+.CustomSelect__option--is-focused {
+  @apply bg-bg-hover;
+}
+
+.CustomSelect__option--is-focused:active {
+  @apply bg-bg-active;
+}
+
+.CustomSelect__option--is-selected {
+  @apply bg-primary;
+}

@@ -52,6 +52,8 @@ import {
 import { getColor } from '@renderer/theme';
 
 import DocumentTitle from 'react-document-title';
+import { ThemeContext } from './store/ThemeContext';
+import { Theme } from './types/theme';
 /**
  * React-компонент приложения
  */
@@ -72,7 +74,7 @@ export const App: React.FC = () => {
   >(undefined);
   const [importData, setImportData] = useState<string | undefined>(undefined);
 
-  const [_, forceUpdate] = useReducer((p) => p + 1, 0);
+  const [theme, setTheme] = useState<Theme>('dark');
 
   const lapki = useEditorManager();
   const editor = lapki.editor;
@@ -328,20 +330,16 @@ export const App: React.FC = () => {
     await manager?.import(platform, setOpenData);
   };
 
-  const handleSwitchTheme = () => {
-    const previousTheme = document.documentElement.dataset.theme;
+  const handleChangeTheme = (theme: Theme) => {
+    setTheme(theme);
 
-    document.documentElement.dataset.theme =
-      previousTheme === 'dark' || previousTheme === undefined ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
 
-    console.log(getColor('codeEditorTheme'));
-    monaco.editor.setTheme(getColor('codeEditorTheme'));
+    monaco.editor.setTheme(getColor('codeEditorTheme').trim());
 
     if (editor) {
       editor.container.isDirty = true;
     }
-
-    forceUpdate();
   };
 
   useEffect(() => {
@@ -447,7 +445,6 @@ export const App: React.FC = () => {
     onRequestEditComponent,
     onRequestDeleteComponent,
     onRequestImport: handleImport,
-    onSwitchTheme: handleSwitchTheme,
   };
 
   useEffect(() => {
@@ -499,64 +496,70 @@ export const App: React.FC = () => {
 
   return (
     <DocumentTitle title={title}>
-      <div className="h-screen select-none">
-        <div className="flex h-full w-full flex-row overflow-hidden">
-          <Sidebar
-            editorRef={lapki}
-            flasherProps={flasherProps}
-            compilerProps={compilerProps}
-            callbacks={sidebarCallbacks}
-          />
-
-          <div className="relative w-full min-w-0 bg-bg-primary">
-            {editorData.content ? (
-              <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
-            ) : (
-              <p className="pt-24 text-center text-base">
-                Откройте файл или перенесите его сюда...
-              </p>
-            )}
-
-            <Documentations
-              topOffset={!!editorData.content}
-              baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+      <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
+        <div className="h-screen select-none">
+          <div className="flex h-full w-full flex-row overflow-hidden">
+            <Sidebar
+              editorRef={lapki}
+              flasherProps={flasherProps}
+              compilerProps={compilerProps}
+              callbacks={sidebarCallbacks}
             />
-          </div>
-        </div>
 
-        <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
-        <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
-        <PlatformSelectModal
-          isOpen={isPlatformModalOpen}
-          onCreate={performNewFile}
-          onClose={closePlatformModal}
-        />
-        <FlasherSelectModal
-          isOpen={isFlasherModalOpen}
-          handleLocal={handleLocalFlasher}
-          handleRemote={handleRemoteFlasher}
-          onClose={closeFlasherModal}
-        />
-        <ComponentSelectModal
-          isOpen={isCompAddModalOpen}
-          data={compAddModalData}
-          onClose={closeCompAddModal}
-          onSubmit={handleAddComponent}
-        />
-        <ComponentEditModal
-          isOpen={isCompEditModalOpen}
-          data={compEditModalData}
-          onClose={closeCompEditModal}
-          onComponentEdit={handleEditComponent}
-          onComponentDelete={onRequestDeleteComponent}
-        />
-        <ComponentDeleteModal
-          isOpen={isCompDeleteModalOpen}
-          data={compDeleteModalData}
-          onClose={closeCompDeleteModal}
-          onComponentDelete={handleDeleteComponent}
-        />
-      </div>
+            <div className="relative w-full min-w-0 bg-bg-primary">
+              {editorData.content ? (
+                <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+              ) : (
+                <p className="pt-24 text-center text-base">
+                  Откройте файл или перенесите его сюда...
+                </p>
+              )}
+
+              <Documentations
+                topOffset={!!editorData.content}
+                baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+              />
+            </div>
+          </div>
+
+          <SaveRemindModal
+            isOpen={isSaveModalOpen}
+            isData={saveModalData}
+            onClose={closeSaveModal}
+          />
+          <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
+          <PlatformSelectModal
+            isOpen={isPlatformModalOpen}
+            onCreate={performNewFile}
+            onClose={closePlatformModal}
+          />
+          <FlasherSelectModal
+            isOpen={isFlasherModalOpen}
+            handleLocal={handleLocalFlasher}
+            handleRemote={handleRemoteFlasher}
+            onClose={closeFlasherModal}
+          />
+          <ComponentSelectModal
+            isOpen={isCompAddModalOpen}
+            data={compAddModalData}
+            onClose={closeCompAddModal}
+            onSubmit={handleAddComponent}
+          />
+          <ComponentEditModal
+            isOpen={isCompEditModalOpen}
+            data={compEditModalData}
+            onClose={closeCompEditModal}
+            onComponentEdit={handleEditComponent}
+            onComponentDelete={onRequestDeleteComponent}
+          />
+          <ComponentDeleteModal
+            isOpen={isCompDeleteModalOpen}
+            data={compDeleteModalData}
+            onClose={closeCompDeleteModal}
+            onComponentDelete={handleDeleteComponent}
+          />
+        </div>
+      </ThemeContext.Provider>
     </DocumentTitle>
   );
 };

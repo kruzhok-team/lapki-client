@@ -6,5 +6,6 @@ out
 # custom
 build
 package-lock.json
+pnpm-lock.yaml
 *.tsbuildinfo
 qt-temp.ts

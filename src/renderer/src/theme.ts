@@ -1,4 +1,4 @@
-const colors = {
+const colorNames = {
   codeEditorTheme: '--c-e-t',
   primary: '--p',
   error: '--e',
@@ -21,17 +21,19 @@ const colors = {
 };
 
 // Это метод для того чтобы достать цвет из джаваскрипта
-export const getColor = (colorName: keyof typeof colors) => {
-  return getComputedStyle(document.documentElement).getPropertyValue(colors[colorName]);
+export const getColor = (colorName: keyof typeof colorNames) => {
+  return getComputedStyle(document.documentElement).getPropertyValue(colorNames[colorName]);
 };
 
-const makeVariables = (colors: Record<string, string>) => {
-  return Object.fromEntries(Object.entries(colors).map(([name, value]) => [name, `var(${value})`]));
+const getVariables = () => {
+  return Object.fromEntries(
+    Object.entries(colorNames).map(([name, value]) => [name, `var(${value})`])
+  );
 };
 
 export default {
   colors: {
-    ...makeVariables(colors),
+    ...getVariables(),
 
     diagram: {
       state: {

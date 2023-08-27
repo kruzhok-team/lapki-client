@@ -37,10 +37,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
   return (
     <Editor
       className="absolute h-full overflow-hidden"
-      theme="vs-light"
-      defaultLanguage="json"
+      // theme="vs-light"
+      // defaultLanguage="json"
       // theme={getColor('codeEditorTheme')}
-      // theme="vs-dark"
+      theme="vs-dark"
       {...props}
     />
   );

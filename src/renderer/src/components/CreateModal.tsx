@@ -10,7 +10,6 @@ import { TextInput } from './Modal/TextInput';
 import { Action, Condition } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { Select } from '@renderer/components/UI';
 
 interface CreateModalProps {

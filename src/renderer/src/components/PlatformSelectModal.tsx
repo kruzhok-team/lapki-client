@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { useForm } from 'react-hook-form';
-
 import { Modal } from './Modal/Modal';
 
 interface PlatformSelectModalProps {
@@ -19,12 +17,12 @@ export const PlatformSelectModal: React.FC<PlatformSelectModalProps> = ({
   onCreate,
   ...props
 }) => {
-  const { reset, handleSubmit: hookHandleSubmit } = useForm<PlatformSelectModalFormValues>();
-
+  /*
   const handleSubmit = hookHandleSubmit((data) => {
     onCreate(data.idx);
     onRequestClose();
   });
+  */
 
   const justSubmit = (idx: string) => {
     onCreate(idx);
@@ -33,7 +31,6 @@ export const PlatformSelectModal: React.FC<PlatformSelectModalProps> = ({
 
   const onRequestClose = () => {
     onClose();
-    reset();
   };
 
   return (

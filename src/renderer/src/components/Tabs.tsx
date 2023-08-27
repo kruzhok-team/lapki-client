@@ -39,7 +39,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   useEffect(() => {
     if (props.tabData !== null) {
       const newTabs = new Array<TabData>();
-      props.tabData.map((tab, id) => {
+      props.tabData.map((tab, _id) => {
         const trueTab = tabs.find((item) => item.tab === tab.name);
         if (trueTab === undefined) {
           newTabs.push({

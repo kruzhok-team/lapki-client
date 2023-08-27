@@ -373,30 +373,30 @@ export const App: React.FC = () => {
 
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
-    currentDevice: currentDevice,
+    currentDevice,
     connectionStatus: flasherConnectionStatus,
-    flasherLog: flasherLog,
-    compilerData: compilerData,
-    flasherFile: flasherFile,
-    flashing: flashing,
-    setCurrentDevice: setCurrentDevice,
-    handleGetList: handleGetList,
+    flasherLog,
+    compilerData,
+    flasherFile,
+    flashing,
+    setCurrentDevice,
+    handleGetList,
     handleFlash: handleFlashBinary,
     handleHostChange: handleFlasherHostChange,
     handleFileChoose: handleFlasherFileChoose,
   };
 
   const compilerProps: CompilerProps = {
-    compilerData: compilerData,
-    compilerStatus: compilerStatus,
+    compilerData,
+    compilerStatus,
     fileReady: editor !== null,
-    handleAddStdoutTab: handleAddStdoutTab,
-    handleAddStderrTab: handleAddStderrTab,
-    handleCompile: handleCompile,
-    handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
-    handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
-    handleShowSource: handleShowSource,
-    handleFlashButton: handleFlashButton,
+    handleAddStdoutTab,
+    handleAddStderrTab,
+    handleCompile,
+    handleSaveSourceIntoFolder,
+    handleSaveBinaryIntoFolder,
+    handleShowSource,
+    handleFlashButton,
   };
 
   const onRequestAddComponent = () => {

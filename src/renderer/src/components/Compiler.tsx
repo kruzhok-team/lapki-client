@@ -51,7 +51,7 @@ export const Compiler: React.FC<CompilerProps> = ({
     {
       name: 'Показать код',
       handler: handleShowSource,
-      condition: compilerData?.source == undefined || compilerData?.source.length == 0,
+      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Прошить...',

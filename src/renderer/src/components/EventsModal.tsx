@@ -3,7 +3,6 @@ import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
 import { EventSelection } from '../lib/drawable/Events';
-import { TextInput } from './Modal/TextInput';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';

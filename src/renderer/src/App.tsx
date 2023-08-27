@@ -25,7 +25,7 @@ import {
 import { preloadPicto } from './lib/drawable/Picto';
 import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
-import { FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT, Flasher } from './components/Modules/Flasher';
+import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import { Component as ComponentData } from './types/diagram';
 import useEditorManager from './components/utils/useEditorManager';
@@ -58,6 +58,11 @@ import { CodeTab, Tab } from './types/tabs';
 export const App: React.FC = () => {
   const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
+
+  // для sidebar
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -274,7 +279,7 @@ export const App: React.FC = () => {
     console.log('local');
     await manager?.startLocalModule('lapki-flasher');
     //Стандартный порт
-    manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
+    manager?.changeFlasherLocal();
   };
 
   const handleRemoteFlasher = (host: string, port: number) => {
@@ -351,6 +356,12 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleFlashButton = () => {
+    // TODO: индекс должен браться из какой-то переменной
+    handleTabChange(3);
+    setFlasherFile(undefined);
+  };
+
   const handleShowSource = () => {
     compilerData!.source!.forEach((element) => {
       onCodeSnippet({
@@ -378,31 +389,50 @@ export const App: React.FC = () => {
     }
   };
 
+  // смена вкладок (Sidebar.tsx)
+  const handleTabChange = (index: number) => {
+    console.log('tab changed');
+    if (index === activeTabIndex) {
+      setIsCollapsed((p) => !p);
+    } else {
+      setActiveTabIndex(index);
+      isCollapsed && setIsCollapsed(false);
+    }
+  };
+
+  useEffect(() => {
+    if (importData && openData) {
+      manager?.parseImportData(importData, openData!);
+      setImportData(undefined);
+    }
+  }, [importData]);
+
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
-    currentDevice: currentDevice,
+    currentDevice,
     connectionStatus: flasherConnectionStatus,
-    flasherLog: flasherLog,
-    compilerData: compilerData,
-    flasherFile: flasherFile,
-    flashing: flashing,
-    setCurrentDevice: setCurrentDevice,
-    handleGetList: handleGetList,
+    flasherLog,
+    compilerData,
+    flasherFile,
+    flashing,
+    setCurrentDevice,
+    handleGetList,
     handleFlash: handleFlashBinary,
     handleHostChange: handleFlasherHostChange,
     handleFileChoose: handleFlasherFileChoose,
   };
 
   const compilerProps: CompilerProps = {
-    compilerData: compilerData,
-    compilerStatus: compilerStatus,
+    compilerData,
+    compilerStatus,
     fileReady: editor !== null,
-    handleAddStdoutTab: handleAddStdoutTab,
-    handleAddStderrTab: handleAddStderrTab,
-    handleCompile: handleCompile,
-    handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
-    handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
-    handleShowSource: handleShowSource,
+    handleAddStdoutTab,
+    handleAddStderrTab,
+    handleCompile,
+    handleSaveSourceIntoFolder,
+    handleSaveBinaryIntoFolder,
+    handleShowSource,
+    handleFlashButton,
   };
 
   const onRequestAddComponent = () => {
@@ -524,6 +554,10 @@ export const App: React.FC = () => {
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
             <Sidebar
+              activeTabIndex={activeTabIndex}
+              isCollapsed={isCollapsed}
+              handleTabChange={handleTabChange}
+              setIsCollapsed={setIsCollapsed}
               editorRef={lapki}
               flasherProps={flasherProps}
               compilerProps={compilerProps}

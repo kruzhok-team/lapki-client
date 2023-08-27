@@ -63,6 +63,8 @@ export class PlatformManager {
 
     if (!this.data.components['System']) {
       this.componentToIcon.set('System', systemComponent.img!);
+      this.eventToIcon.set('System/onEnter', 'onEnterAlt');
+      this.eventToIcon.set('System/onExit', 'onExitAlt');
       // this.data.components['System'] = systemComponent;
     }
 

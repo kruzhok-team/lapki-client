@@ -60,6 +60,11 @@ import { Theme } from './types/theme';
 export const App: React.FC = () => {
   const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
+
+  // для sidebar
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -311,6 +316,12 @@ export const App: React.FC = () => {
     onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '', 'txt');
   };
 
+  const handleFlashButton = () => {
+    // TODO: индекс должен браться из какой-то переменной
+    handleTabChange(3);
+    setFlasherFile(undefined);
+  };
+
   const handleShowSource = () => {
     const newTabs = new Array<TabDataAdd>();
     compilerData!.source!.map((element) => {
@@ -339,6 +350,17 @@ export const App: React.FC = () => {
 
     if (editor) {
       editor.container.isDirty = true;
+    }
+  };
+
+  // смена вкладок (Sidebar.tsx)
+  const handleTabChange = (index: number) => {
+    console.log('tab changed');
+    if (index === activeTabIndex) {
+      setIsCollapsed((p) => !p);
+    } else {
+      setActiveTabIndex(index);
+      isCollapsed && setIsCollapsed(false);
     }
   };
 
@@ -374,6 +396,7 @@ export const App: React.FC = () => {
     handleSaveSourceIntoFolder: handleSaveSourceIntoFolder,
     handleSaveBinaryIntoFolder: handleSaveBinaryIntoFolder,
     handleShowSource: handleShowSource,
+    handleFlashButton: handleFlashButton,
   };
 
   const onRequestAddComponent = () => {
@@ -500,6 +523,10 @@ export const App: React.FC = () => {
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
             <Sidebar
+              activeTabIndex={activeTabIndex}
+              isCollapsed={isCollapsed}
+              handleTabChange={handleTabChange}
+              setIsCollapsed={setIsCollapsed}
               editorRef={lapki}
               flasherProps={flasherProps}
               compilerProps={compilerProps}

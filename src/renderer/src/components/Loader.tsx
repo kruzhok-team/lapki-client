@@ -59,12 +59,15 @@ export const Loader: React.FC<FlasherProps> = ({
             className={twMerge(
               'p-1 hover:bg-[#557b91] hover:text-white',
               (connectionStatus == FLASHER_CONNECTING ||
-                connectionStatus == FLASHER_SWITCHING_HOST) &&
+                connectionStatus == FLASHER_SWITCHING_HOST ||
+                flashing) &&
                 'opacity-50'
             )}
             onClick={handleHostChange}
             disabled={
-              connectionStatus == FLASHER_CONNECTING || connectionStatus == FLASHER_SWITCHING_HOST
+              connectionStatus == FLASHER_CONNECTING ||
+              connectionStatus == FLASHER_SWITCHING_HOST ||
+              flashing
             }
           >
             <Setting width="1.5rem" height="1.5rem" />
@@ -98,26 +101,28 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-        <button
-          className="btn-primary mb-2"
-          onClick={handleFlash}
-          disabled={
-            flashing ||
-            !currentDevice ||
-            connectionStatus != FLASHER_CONNECTED ||
-            (!flasherFile &&
-              (compilerData?.binary === undefined || compilerData.binary.length == 0))
-          }
-        >
-          Загрузить
-        </button>
-        <button
-          className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
-          onClick={handleFileChoose}
-          disabled={flashing}
-        >
-          {flasherFile ? '✖' : '…'}
-        </button>
+        <div className='flex'>
+          <button
+            className="btn-primary mb-2"
+            onClick={handleFlash}
+            disabled={
+              flashing ||
+              !currentDevice ||
+              connectionStatus != FLASHER_CONNECTED ||
+              (!flasherFile &&
+                (compilerData?.binary === undefined || compilerData.binary.length == 0))
+            }
+          >
+            Загрузить
+          </button>
+          <button
+            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+            onClick={handleFileChoose}
+            disabled={flashing}
+          >
+            {flasherFile ? '✖' : '…'}
+          </button>
+        </div>
         {flasherFile ? (
           <p className="mb-2 rounded bg-primaryActive text-white">
             из файла <span className="font-medium">{flasherFile}</span>

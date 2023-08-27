@@ -25,9 +25,11 @@ export class ModuleManager {
               максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
           -updateList int
               количество секунд между автоматическими обновлениями (default 15)
+          -verbose
+              выводить в консоль подробную информацию
       */
       var flasherArgs: string[] = [
-        '-updateList=10',
+        '-updateList=1',
         '-listCooldown=0',
         `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
       ];

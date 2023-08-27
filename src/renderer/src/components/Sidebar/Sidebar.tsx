@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { Dispatch, SetStateAction, useMemo} from 'react';
 
 import {
   Explorer,
@@ -40,9 +40,15 @@ interface SidebarProps {
   callbacks: SidebarCallbacks;
   compilerProps: CompilerProps;
   flasherProps: FlasherProps;
+  activeTabIndex: number;
+  isCollapsed: boolean;
+  setIsCollapsed: Dispatch<SetStateAction<boolean>>;
+  handleTabChange: (index: number) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
+  activeTabIndex,
+  isCollapsed,
   flasherProps,
   compilerProps,
   editorRef,
@@ -56,19 +62,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestDeleteComponent,
     onRequestImport,
   },
+  setIsCollapsed,
+  handleTabChange,
 }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const handleTabChange = (index: number) => {
-    if (index === activeTabIndex) {
-      setIsCollapsed((p) => !p);
-    } else {
-      setActiveTabIndex(index);
-      isCollapsed && setIsCollapsed(false);
-    }
-  };
-
   const tabLabels = useMemo(
     () => [
       {

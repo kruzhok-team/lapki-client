@@ -1,11 +1,22 @@
 import React from 'react';
 
-export const Setting: React.FC = () => {
+interface SettingProps {
+  onSwitchTheme: () => void;
+}
+
+export const Setting: React.FC<SettingProps> = ({ onSwitchTheme }) => {
   return (
-    <section className="flex h-full flex-col justify-between text-base">
-      <div className="w-full px-4 pt-2 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Настройки</h1>
-        <div>В РАЗРАБОТКЕ</div>
+    <section className="flex flex-col">
+      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
+        Настройки
+      </h3>
+
+      <div className="px-4">
+        <label>
+          <button className="btn-primary" onClick={onSwitchTheme}>
+            Тема
+          </button>
+        </label>
       </div>
     </section>
   );

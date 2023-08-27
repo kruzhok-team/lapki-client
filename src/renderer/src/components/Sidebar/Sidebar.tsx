@@ -33,6 +33,8 @@ export interface SidebarCallbacks {
   onRequestEditComponent: (idx: string) => void;
   onRequestImport: (platform: string) => void;
   onRequestDeleteComponent: (name: string) => void;
+
+  onSwitchTheme: () => void;
 }
 
 interface SidebarProps {
@@ -55,6 +57,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestEditComponent,
     onRequestDeleteComponent,
     onRequestImport,
+
+    onSwitchTheme,
   },
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -119,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Explorer editorRef={editorRef} callbacks={explorerCallbacks} />,
       <Compiler {...compilerProps} />,
       <Loader {...flasherProps} />,
-      <Setting />,
+      <Setting onSwitchTheme={onSwitchTheme} />,
     ],
     [editorRef.editorData, compilerProps, flasherProps]
   );

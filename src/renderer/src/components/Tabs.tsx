@@ -54,6 +54,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
             content: <CodeEditor language={props.tabData.language} value={props.tabData.code} />,
           },
         ]);
+
         isActive(tabs.length);
         props.setTabData(null);
       } else {

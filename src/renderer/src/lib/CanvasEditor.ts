@@ -7,7 +7,6 @@ import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
 import { preloadPicto } from './drawable/Picto';
 import { DataUpdateCallback } from './data/StateMachine';
-import theme from '@renderer/theme';
 
 /**
  * Редактор машин состояний.
@@ -23,7 +22,7 @@ export class CanvasEditor {
 
   constructor(container: HTMLDivElement, elements?: Elements) {
     this.root = container;
-    this.canvas = new Canvas(this, theme.colors.bg.primary);
+    this.canvas = new Canvas(this);
     this.mouse = new Mouse(this.canvas.element);
     this.keyboard = new Keyboard();
     this.render = new Render();

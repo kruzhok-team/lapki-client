@@ -1,4 +1,5 @@
 import { CanvasEditor } from '../CanvasEditor';
+import { getColor } from '@renderer/theme';
 
 /**
  * Класс-прослойка для взаимодействия с JS Canvas API.
@@ -15,15 +16,12 @@ export class Canvas {
 
   resizeObserver!: ResizeObserver;
 
-  background!: string;
-
   // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
   onResize: (() => void) | undefined;
   toDataURL: any;
 
-  constructor(app: CanvasEditor, background: string) {
+  constructor(app: CanvasEditor) {
     this.app = app;
-    this.background = background;
 
     window.addEventListener('resize', this.resize);
 
@@ -36,13 +34,12 @@ export class Canvas {
   clear() {
     const {
       context,
-      background,
       element: { width, height },
     } = this;
 
     context.beginPath();
     context.rect(0, 0, width, height);
-    context.fillStyle = background;
+    context.fillStyle = getColor('bg-primary');
     context.fill();
     context.closePath();
   }

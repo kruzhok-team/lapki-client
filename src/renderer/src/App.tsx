@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
+import * as monaco from 'monaco-editor';
 
 import {
   CompilerProps,
@@ -49,6 +50,8 @@ import {
   emptyCompDeleteData,
 } from './components/ComponentDeleteModal';
 
+import { getColor } from '@renderer/theme';
+
 /**
  * React-компонент приложения
  */
@@ -65,6 +68,8 @@ export const App: React.FC = () => {
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
   const [importData, setImportData] = useState<string | undefined>(undefined);
+
+  const [_, forceUpdate] = useReducer((p) => p + 1, 0);
 
   const lapki = useEditorManager();
   const editor = lapki.editor;
@@ -322,6 +327,22 @@ export const App: React.FC = () => {
     await manager?.import(platform, setOpenData);
   };
 
+  const handleSwitchTheme = () => {
+    const previousTheme = document.documentElement.dataset.theme;
+
+    document.documentElement.dataset.theme =
+      previousTheme === 'dark' || previousTheme === undefined ? 'light' : 'dark';
+
+    console.log(getColor('codeEditorTheme'));
+    monaco.editor.setTheme(getColor('codeEditorTheme'));
+
+    if (editor) {
+      editor.container.isDirty = true;
+    }
+
+    forceUpdate();
+  };
+
   useEffect(() => {
     if (importData && openData) {
       manager?.parseImportData(importData, openData!);
@@ -424,6 +445,7 @@ export const App: React.FC = () => {
     onRequestEditComponent,
     onRequestDeleteComponent,
     onRequestImport: handleImport,
+    onSwitchTheme: handleSwitchTheme,
   };
 
   useEffect(() => {

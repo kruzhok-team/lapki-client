@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { useForm } from 'react-hook-form';
+// import { useForm } from 'react-hook-form';
 import { Modal } from './Modal/Modal';
 
 import { ComponentProto } from '@renderer/types/platform';
@@ -40,33 +40,61 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onComponentDelete,
   ...props
 }) => {
-  const { reset, handleSubmit: hookHandleSubmit } = useForm<ComponentEditModalFormValues>();
+  // const { reset, handleSubmit: hookHandleSubmit } = useForm<ComponentEditModalFormValues>();
 
-  const handleSubmit = hookHandleSubmit((_data) => {
+  const [dataState, setDataState] = useState(data);
+
+  useEffect(() => {
+    setDataState(data);
+  }, [data]);
+
+  const handleInputChange = (e) => {
+    const updatedState = { ...data };
+    updatedState.data.parameters[e.target.name] = e.target.value;
+    setDataState(updatedState);
+    console.log(updatedState);
+  };
+
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
     // onComponentDelete(data.idx);
     console.log('ComponentEdit onEdit');
+    const submitData = { type: dataState.data.type, parameters: dataState.data.parameters };
+    console.log(submitData);
+
+    onComponentEdit(dataState.idx, submitData);
     onRequestClose();
-  });
+  };
 
   const handleDelete = () => {
     onComponentDelete(data.idx);
-    // onRequestClose();
+    onRequestClose();
   };
 
   const onRequestClose = () => {
     onClose();
-    reset();
   };
 
   const componentType = data.proto.name ?? data.data.type;
   const componentName = data.proto.singletone ? componentType : `${componentType} ${data.idx}`;
 
-  const parameters = Object.entries(data.proto.parameters ?? {}).map(([idx, param]) => {
+  const parameters = Object.entries(dataState.proto.parameters ?? {}).map(([idx, param]) => {
     const name = param.name ?? idx;
+    const data = dataState.data.parameters[name];
     return (
-      <p>
-        {name} = {data.data.parameters[name]}
-      </p>
+      <>
+        <label className="mx-1 flex flex-col">
+          {name}
+          <input
+            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            {...props}
+            maxLength={20}
+            value={data}
+            name={name}
+            onChange={(e) => handleInputChange(e)}
+          />
+        </label>
+      </>
     );
   });
 

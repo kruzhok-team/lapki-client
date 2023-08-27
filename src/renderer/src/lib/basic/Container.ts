@@ -58,6 +58,7 @@ export class Container {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
 
+    document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
@@ -102,14 +103,18 @@ export class Container {
     this.app.canvas.element.style.cursor = 'grabbing';
   };
 
-  handleMouseUp = (e: MyMouseEvent) => {
+  globalMouseUp = () => {
     this.isPan = false;
+    this.app.canvas.element.style.cursor = 'default';
+  };
+
+  handleMouseUp = (e: MyMouseEvent) => {
     this.machine.removeSelection();
     if (e.button != Button.right) {
       this.closeContextMenu();
     }
 
-    this.app.canvas.element.style.cursor = 'default';
+    this.globalMouseUp();
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

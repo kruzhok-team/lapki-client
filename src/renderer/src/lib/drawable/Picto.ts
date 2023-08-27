@@ -1,5 +1,5 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
@@ -14,11 +14,22 @@ const basePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
-  system: '/img/arduino/action.svg',
-  variable: '/img/arduino/variable-type.svg',
+  system: '/img/common/system.svg',
+  variable: '/img/common/variable.svg',
 
-  onEnter: '/img/bearloga/event_enter.svg',
-  onExit: '/img/bearloga/event_exit.svg',
+  'op/notEquals': '/img/bearloga/compare_not_equal.svg',
+  'op/equals': '/img/bearloga/compare_equal.svg',
+  'op/greater': '/img/bearloga/compare_more.svg',
+  'op/less': '/img/bearloga/compare_less.svg',
+  'op/greaterOrEqual': '/img/bearloga/compare_more_eq.svg',
+  'op/lessOrEqual': '/img/bearloga/compare_less_eq.svg',
+  // "op/or": "/img/common/compare_or.svg",
+  // "op/and": "/img/common/compare_and.svg",
+
+  // onEnter: '/img/bearloga/event_enter.svg',
+  // onExit: '/img/bearloga/event_exit.svg',
+  onEnter: '/img/common/onEnterAlt.svg',
+  onExit: '/img/common/onExitAlt.svg',
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {
@@ -48,6 +59,8 @@ export type PictoProps = {
   rightIcon: string;
   bgColor?: string;
   fgColor?: string;
+  opacity?: number;
+  parameter?: string;
   // TODO: args
 };
 
@@ -80,24 +93,44 @@ export class Picto {
 
   eventWidth = 100;
   eventHeight = 40;
+  eventMargin = 5;
   iconSize = 30;
   separatorVOffset = 4;
   iconVOffset = 5;
   iconHOffset = 10;
+  pxPerChar = 15;
+  textPadding = 5;
+
+  drawRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    bgColor?: string,
+    fgColor?: string,
+    opacity?: number
+  ) {
+    ctx.save();
+    ctx.fillStyle = bgColor ?? '#3a426b';
+    ctx.strokeStyle = fgColor ?? '#fff';
+    ctx.globalAlpha = opacity ?? 1.0;
+    ctx.lineWidth = 0.5;
+    ctx.roundRect(x, y, width / this.scale, height / this.scale, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
 
   drawBorder(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     bgColor?: string,
-    fgColor?: string
+    fgColor?: string,
+    opacity?: number
   ) {
-    ctx.fillStyle = bgColor ?? '#3a426b';
-    ctx.strokeStyle = fgColor ?? '#fff';
-    ctx.lineWidth = 0.5;
-    ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
-    ctx.fill();
-    ctx.stroke();
+    this.drawRect(ctx, x, y, this.eventWidth, this.eventHeight, bgColor, fgColor, opacity);
   }
 
   drawCursor(ctx: CanvasRenderingContext2D, x: number, y: number) {
@@ -109,14 +142,60 @@ export class Picto {
     ctx.stroke();
   }
 
+  drawMono(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+    let rightIcon = ps.rightIcon;
+    let bgColor = ps.bgColor ?? '#3a426b';
+    let fgColor = ps.fgColor ?? '#fff';
+    let opacity = ps.opacity ?? 1.0;
+
+    // Рамка
+    this.drawRect(ctx, x, y, this.eventHeight, this.eventHeight, bgColor, fgColor, opacity);
+
+    if (!rightIcon) return;
+
+    this.drawImage(ctx, rightIcon, {
+      x: x + (this.eventHeight - this.iconSize) / 2 / this.scale,
+      y: y + this.iconVOffset / this.scale,
+      width: this.iconSize,
+      height: this.iconSize,
+    });
+  }
+
+  drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+    let text = ps.rightIcon;
+    let bgColor = ps.bgColor ?? '#3a426b';
+    let fgColor = ps.fgColor ?? '#fff';
+    let opacity = ps.opacity ?? 1.0;
+
+    const baseFontSize = 24;
+    const w = this.textPadding * 2 + text.length * this.pxPerChar;
+    const cy = (picto.eventHeight - baseFontSize) / this.scale;
+
+    // Рамка
+    this.drawRect(ctx, x, y, w, this.eventHeight, bgColor, fgColor, opacity);
+
+    const fontSize = baseFontSize / picto.scale;
+    ctx.save();
+    ctx.font = `${fontSize}px/0 monospace`;
+    ctx.fillStyle = fgColor;
+    ctx.strokeStyle = fgColor;
+    ctx.textBaseline = 'hanging';
+
+    const p = 5 / picto.scale;
+    ctx.fillText(text, x + p, y + cy - p);
+
+    ctx.restore();
+  }
+
   drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
     let leftIcon = ps.leftIcon;
     let rightIcon = ps.rightIcon;
     let bgColor = ps.bgColor ?? '#3a426b';
     let fgColor = ps.fgColor ?? '#fff';
+    let opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawBorder(ctx, x, y, bgColor, fgColor);
+    this.drawBorder(ctx, x, y, bgColor, fgColor, opacity);
 
     if (!rightIcon) return;
     if (!leftIcon) {
@@ -151,6 +230,24 @@ export class Picto {
         width: this.iconSize,
         height: this.iconSize,
       });
+    }
+    if (ps.parameter) {
+      const baseFontSize = 12;
+      const cy = (picto.eventHeight - baseFontSize) / this.scale;
+      const cx = (this.eventWidth - 5) / this.scale;
+      const fontSize = baseFontSize / picto.scale;
+      ctx.save();
+      ctx.font = `${fontSize}px/0 monospace`;
+      ctx.fillStyle = fgColor;
+      ctx.strokeStyle = bgColor;
+      ctx.textBaseline = 'hanging';
+      ctx.textAlign = 'end';
+      ctx.lineWidth = 0.5 / this.scale;
+
+      ctx.strokeText(ps.parameter, x + cx, y + cy);
+      ctx.fillText(ps.parameter, x + cx, y + cy);
+
+      ctx.restore();
     }
   }
 }

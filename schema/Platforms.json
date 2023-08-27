@@ -15,6 +15,27 @@
         }
       ]
     },
+    "ArgumentProto": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "img": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ArgType"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
     "ComponentProto": {
       "additionalProperties": false,
       "properties": {
@@ -73,10 +94,10 @@
           "type": "string"
         },
         "parameters": {
-          "additionalProperties": {
-            "$ref": "#/definitions/ArgType"
+          "items": {
+            "$ref": "#/definitions/ArgumentProto"
           },
-          "type": "object"
+          "type": "array"
         }
       },
       "type": "object"
@@ -149,6 +170,12 @@
         },
         "img": {
           "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/definitions/ArgumentProto"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -161,6 +188,9 @@
         },
         "img": {
           "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ArgType"
         }
       },
       "type": "object"

@@ -39,8 +39,10 @@ export class Condition extends Draggable {
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     const { x, y, width, height } = this.drawBounds;
+    const eventMargin = picto.eventMargin;
     const p = 15 / this.container.scale;
     const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const opacity = this.isSelected ? 1.0 : 0.7;
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
@@ -60,20 +62,35 @@ export class Condition extends Draggable {
     platform.drawEvent(ctx, trigger, x + p, y + p);
     ctx.closePath();
 
-    //Здесь начинается прорисовка действий для связей
-    //TODO Требуется доработка
-    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
-    const px = x + p / this.container.scale;
-    const py = y + p / this.container.scale;
+    //Здесь начинается прорисовка действий и условий для связей
+    const eventRowLength = Math.max(
+      3,
+      Math.floor((width * this.container.scale - 30) / (picto.eventWidth + 5)) - 1
+    );
+    const px = x + p;
+    const py = y + p;
     const yDx = picto.eventHeight + 10;
 
+    //Условия
+    //TODO: Требуется допиливание прорисовки условий
+    ctx.beginPath();
+    if (this.transition.data.condition) {
+      const ax = 1;
+      const ay = 0;
+      const aX = px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.container.scale;
+      const aY = py + (ay * yDx) / this.container.scale;
+      platform.drawCondition(ctx, this.transition.data.condition, aX, aY, opacity);
+    }
+    ctx.closePath();
+
+    //Действия
     ctx.beginPath();
     this.transition.data.do?.forEach((data, actIdx) => {
       const ax = 1 + (actIdx % eventRowLength);
-      const ay = 0 + Math.floor(actIdx / eventRowLength);
-      const aX = px + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
+      const ay = 1 + Math.floor(actIdx / eventRowLength);
+      const aX = px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.container.scale;
       const aY = py + (ay * yDx) / this.container.scale;
-      platform.drawAction(ctx, data, aX, aY);
+      platform.drawAction(ctx, data, aX, aY, opacity);
     });
     ctx.closePath();
 

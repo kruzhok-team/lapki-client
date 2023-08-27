@@ -7,7 +7,6 @@ import {
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
-  FlasherRemoteHostModal,
   SaveModalData,
   SaveRemindModal,
   MessageModal,
@@ -52,15 +51,19 @@ import {
 
 import { getColor } from '@renderer/theme';
 
+import DocumentTitle from 'react-document-title';
 /**
  * React-компонент приложения
  */
 export const App: React.FC = () => {
+  const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [flasherDevices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
+  const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
+  const [flashing, setFlashing] = useState(false);
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
@@ -77,18 +80,19 @@ export const App: React.FC = () => {
   const editorData = lapki.editorData;
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
-
+  useEffect(() => {
+    manager?.bindReact(setTitle);
+  });
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
-  const closeFlasherModal = () => setIsFlasherModalOpen(false);
-
-  const [isFlasherRemoteHostModalOpen, setIsFlasherRemoteHostModalOpen] = useState(false);
-  const openFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(true);
-  const closeFlasherRemoteHostModal = () => setIsFlasherRemoteHostModalOpen(false);
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    setIsFlasherModalOpen(false);
+  };
 
   const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
   const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
@@ -178,7 +182,11 @@ export const App: React.FC = () => {
   const handleFlashBinary = async () => {
     //Рассчет на то, что пользователь не сможет нажать кнопку загрузки,
     //если нет данных от компилятора
-    manager?.flash(compilerData!.binary!, currentDevice!);
+    if (flasherFile) {
+      Flasher.flash(currentDevice!);
+    } else {
+      Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
+    }
   };
 
   const handleSaveBinaryIntoFolder = async () => {
@@ -230,6 +238,7 @@ export const App: React.FC = () => {
   };
 
   const handleCompile = async () => {
+    Compiler.filename = title.split(' ')[0].split('.')[0];
     manager?.compile(editor!.container.machine.platformIdx);
   };
 
@@ -259,12 +268,9 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleHostChange = async () => {
-    if (Flasher.connecting) {
-      // вывести сообщение: Нельзя сменить хост во время подключения
-    } else {
-      openFlasherModal();
-    }
+  const handleFlasherHostChange = () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
@@ -274,23 +280,28 @@ export const App: React.FC = () => {
     manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
   };
 
-  const handleRemoteFlasher = () => {
-    openFlasherRemoteHostModal();
-  };
-
-  const handleRemoteHostFlasherSubmit = (host: string, port: number) => {
+  const handleRemoteFlasher = (host: string, port: number) => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
   };
 
-  const [tabData, setTabData] = useState<TabDataAdd | null>(null);
+  const handleFlasherFileChoose = () => {
+    if (flasherFile) {
+      console.log('cancel file choose');
+      setFlasherFile(undefined);
+    } else {
+      console.log('file chooser');
+      Flasher.setFile();
+    }
+  };
+
+  const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
   const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
-    setTabData({ type, name, code, language });
+    setTabData([{ type, name, code, language }]);
   };
 
   const handleAddStdoutTab = () => {
-    console.log(compilerData!.stdout);
     onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
   };
 
@@ -299,28 +310,18 @@ export const App: React.FC = () => {
   };
 
   const handleShowSource = () => {
+    const newTabs = new Array<TabDataAdd>();
     compilerData!.source!.map((element) => {
       console.log('here!');
-      onCodeSnippet(
-        'Компилятор',
-        `${element.filename}.${element.extension}`,
-        element.fileContent,
-        'cpp'
-      );
+      newTabs.push({
+        type: 'Компилятор',
+        name: `${element.filename}.${element.extension}`,
+        code: element.fileContent,
+        language: 'cpp',
+      });
     });
-    // const source = compilerData!.source!;
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[0].filename}.${source[0].extension}`,
-    //   source[0].fileContent ?? '',
-    //   'cpp'
-    // );
-    // onCodeSnippet(
-    //   'Компилятор',
-    //   `${source[1].filename}.${source[1].extension}`,
-    //   source[1].fileContent ?? '',
-    //   'cpp'
-    // );
+
+    setTabData(newTabs);
   };
 
   const handleImport = async (platform: string) => {
@@ -356,12 +357,13 @@ export const App: React.FC = () => {
     connectionStatus: flasherConnectionStatus,
     flasherLog: flasherLog,
     compilerData: compilerData,
+    flasherFile: flasherFile,
+    flashing: flashing,
     setCurrentDevice: setCurrentDevice,
     handleGetList: handleGetList,
     handleFlash: handleFlashBinary,
-    handleLocalFlasher: handleLocalFlasher,
-    handleRemoteFlasher: handleRemoteFlasher,
-    handleHostChange: handleHostChange,
+    handleHostChange: handleFlasherHostChange,
+    handleFileChoose: handleFlasherFileChoose,
   };
 
   const compilerProps: CompilerProps = {
@@ -481,7 +483,13 @@ export const App: React.FC = () => {
   ];
 
   useEffect(() => {
-    Flasher.bindReact(setFlasherDevices, setFlasherConnectionStatus, setFlasherLog);
+    Flasher.bindReact(
+      setFlasherDevices,
+      setFlasherConnectionStatus,
+      setFlasherLog,
+      setFlasherFile,
+      setFlashing
+    );
     const reader = new FileReader();
     Flasher.initReader(reader);
     console.log('CONNECTING TO FLASHER');
@@ -490,66 +498,65 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-screen select-none">
-      <div className="flex h-full w-full flex-row overflow-hidden">
-        <Sidebar
-          editorRef={lapki}
-          flasherProps={flasherProps}
-          compilerProps={compilerProps}
-          callbacks={sidebarCallbacks}
-        />
-
-        <div className="relative w-full min-w-0 bg-bg-primary">
-          {editorData.content ? (
-            <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
-          ) : (
-            <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
-          )}
-
-          <Documentations
-            topOffset={!!editorData.content}
-            baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+    <DocumentTitle title={title}>
+      <div className="h-screen select-none">
+        <div className="flex h-full w-full flex-row overflow-hidden">
+          <Sidebar
+            editorRef={lapki}
+            flasherProps={flasherProps}
+            compilerProps={compilerProps}
+            callbacks={sidebarCallbacks}
           />
-        </div>
-      </div>
 
-      <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
-      <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
-      <PlatformSelectModal
-        isOpen={isPlatformModalOpen}
-        onCreate={performNewFile}
-        onClose={closePlatformModal}
-      />
-      <FlasherSelectModal
-        isOpen={isFlasherModalOpen}
-        handleLocal={handleLocalFlasher}
-        handleRemote={handleRemoteFlasher}
-        onClose={closeFlasherModal}
-      />
-      <FlasherRemoteHostModal
-        isOpen={isFlasherRemoteHostModalOpen}
-        onSubmit={handleRemoteHostFlasherSubmit}
-        onClose={closeFlasherRemoteHostModal}
-      />
-      <ComponentSelectModal
-        isOpen={isCompAddModalOpen}
-        data={compAddModalData}
-        onClose={closeCompAddModal}
-        onSubmit={handleAddComponent}
-      />
-      <ComponentEditModal
-        isOpen={isCompEditModalOpen}
-        data={compEditModalData}
-        onClose={closeCompEditModal}
-        onComponentEdit={handleEditComponent}
-        onComponentDelete={onRequestDeleteComponent}
-      />
-      <ComponentDeleteModal
-        isOpen={isCompDeleteModalOpen}
-        data={compDeleteModalData}
-        onClose={closeCompDeleteModal}
-        onComponentDelete={handleDeleteComponent}
-      />
-    </div>
+          <div className="relative w-full min-w-0 bg-bg-primary">
+            {editorData.content ? (
+              <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+            ) : (
+              <p className="pt-24 text-center text-base">
+                Откройте файл или перенесите его сюда...
+              </p>
+            )}
+
+            <Documentations
+              topOffset={!!editorData.content}
+              baseUrl={'https://lapki-doc.polyus-nt.ru/'}
+            />
+          </div>
+        </div>
+
+        <SaveRemindModal isOpen={isSaveModalOpen} isData={saveModalData} onClose={closeSaveModal} />
+        <MessageModal isOpen={isMsgModalOpen} isData={msgModalData} onClose={closeMsgModal} />
+        <PlatformSelectModal
+          isOpen={isPlatformModalOpen}
+          onCreate={performNewFile}
+          onClose={closePlatformModal}
+        />
+        <FlasherSelectModal
+          isOpen={isFlasherModalOpen}
+          handleLocal={handleLocalFlasher}
+          handleRemote={handleRemoteFlasher}
+          onClose={closeFlasherModal}
+        />
+        <ComponentSelectModal
+          isOpen={isCompAddModalOpen}
+          data={compAddModalData}
+          onClose={closeCompAddModal}
+          onSubmit={handleAddComponent}
+        />
+        <ComponentEditModal
+          isOpen={isCompEditModalOpen}
+          data={compEditModalData}
+          onClose={closeCompEditModal}
+          onComponentEdit={handleEditComponent}
+          onComponentDelete={onRequestDeleteComponent}
+        />
+        <ComponentDeleteModal
+          isOpen={isCompDeleteModalOpen}
+          data={compDeleteModalData}
+          onClose={closeCompDeleteModal}
+          onComponentDelete={handleDeleteComponent}
+        />
+      </div>
+    </DocumentTitle>
   );
 };

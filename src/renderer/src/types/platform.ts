@@ -1,21 +1,10 @@
 export type ArgType = string | string[];
 
-export type SignalProto = {
+export type ArgumentProto = {
+  name: string;
   img?: string;
   description?: string;
-  // TODO: parameters?: { [name: string]: ArgType };
-};
-
-export type VariableProto = {
-  img?: string;
-  description?: string;
-  // TODO: parameters?: { [name: string]: ArgType };
-};
-
-export type MethodProto = {
-  img?: string;
-  description?: string;
-  parameters?: { [name: string]: ArgType };
+  type?: ArgType;
 };
 
 export type ParameterProto = {
@@ -23,6 +12,25 @@ export type ParameterProto = {
   img?: string;
   description?: string;
   type?: ArgType;
+};
+
+export type SignalProto = {
+  img?: string;
+  description?: string;
+  parameters?: ArgumentProto[];
+};
+
+export type VariableProto = {
+  img?: string;
+  type?: ArgType;
+  description?: string;
+  // TODO: parameters?: ArgumentProto[];
+};
+
+export type MethodProto = {
+  img?: string;
+  description?: string;
+  parameters?: ArgumentProto[];
 };
 
 export type ComponentProto = {

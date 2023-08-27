@@ -62,7 +62,7 @@ export function Documentations({ baseUrl, topOffset = false }: DocumentationsPro
       </button>
 
       <div className="w-[400px]">
-        <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-bg-secondary px-1 py-4 text-base">
+        <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-bg-secondary px-1 py-4 text-base ">
           <div className="flex gap-1 py-2">
             <button
               className={twMerge(
@@ -90,7 +90,7 @@ export function Documentations({ baseUrl, topOffset = false }: DocumentationsPro
         className="mb-2 border border-[#4391BF] px-4 py-2 outline-none"
       /> */}
 
-          <div className="h-full overflow-y-auto">
+          <div className="h-full overflow-y-auto scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500">
             <div className={twMerge(activeTab !== 0 && 'hidden')}>
               {data ? (
                 <Tree root={data.body} borderWidth={0} onItemClicked={onItemClicked} />

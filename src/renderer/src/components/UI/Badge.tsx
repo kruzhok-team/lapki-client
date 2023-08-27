@@ -6,6 +6,9 @@ interface BadgeProps {
   show: boolean;
 }
 
+/**
+ * Обёртка для отображения маркера (кружок основного цвета) в углу.
+ */
 export const Badge: React.FC<BadgeProps> = ({ children, show }) => {
   return (
     <div

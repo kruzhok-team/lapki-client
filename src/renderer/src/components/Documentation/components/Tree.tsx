@@ -30,7 +30,7 @@ export const Tree = ({
             return <Directory key={item.name} item={item} onItemClicked={onItemClicked} />;
           return (
             <Item key={item.name} onClick={(event) => onItemClicked(event, item)}>
-              <span className="block max-w-[310px] truncate whitespace-normal p-2 pl-0 transition hover:bg-gray-100">
+              <span className="block max-w-[310px] truncate whitespace-normal p-2 pl-0 transition hover:bg-[#4391bf] hover:bg-opacity-50">
                 <FileIcon />
                 {item.name}
               </span>

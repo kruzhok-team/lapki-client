@@ -15,12 +15,7 @@ export type CompilerSettings = {
 export type Event = {
   component: string;
   method: string;
-  args?: { [key: string]: string };
-};
-
-export type Variable = {
-  component: string;
-  method: string;
+  // FIXME: в перспективе тип должен быть string | Variable
   args?: { [key: string]: string };
 };
 
@@ -37,9 +32,15 @@ export type State = {
   events: EventData[];
 };
 
+export type Variable = {
+  component: string;
+  method: string;
+  args?: { [key: string]: string };
+};
+
 export type Condition = {
   type: string;
-  value: Variable | Condition[] | Condition | number | string;
+  value: Condition[] | Variable | number | string;
 };
 
 export type Transition = {

@@ -10,7 +10,7 @@ pkgs.mkShell {
           pkg-config
           git openssh nano
           typescript
-          libusb
+          libusb avrdude
         ]
       ))
     )

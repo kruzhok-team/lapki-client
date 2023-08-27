@@ -4,19 +4,20 @@ import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
 import { Device } from '@renderer/types/FlasherTypes';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-
+import { FLASHER_CONNECTED, FLASHER_CONNECTING, FLASHER_SWITCHING_HOST } from './Modules/Flasher';
 export interface FlasherProps {
   devices: Map<string, Device>;
   currentDevice: string | undefined;
   connectionStatus: string;
   flasherLog: string | undefined;
   compilerData: CompilerResult | undefined;
+  flasherFile: string | undefined | null;
+  flashing: boolean;
   setCurrentDevice: Dispatch<string | undefined>;
   handleGetList: () => void;
   handleFlash: () => void;
-  handleLocalFlasher: () => void;
-  handleRemoteFlasher: () => void;
   handleHostChange: () => void;
+  handleFileChoose: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
@@ -24,13 +25,14 @@ export const Loader: React.FC<FlasherProps> = ({
   devices,
   connectionStatus,
   compilerData,
+  flasherFile,
   flasherLog,
+  flashing,
   setCurrentDevice,
   handleGetList,
   handleFlash,
-  handleLocalFlasher,
-  handleRemoteFlasher,
   handleHostChange,
+  handleFileChoose,
 }) => {
   const isActive = (id: string) => currentDevice === id;
 
@@ -45,15 +47,26 @@ export const Loader: React.FC<FlasherProps> = ({
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              connectionStatus != 'Подключен' && 'opacity-50'
+              connectionStatus != FLASHER_CONNECTED && 'opacity-50'
             )}
             onClick={handleGetList}
-            disabled={connectionStatus != 'Подключен'}
+            disabled={connectionStatus != FLASHER_CONNECTED}
           >
             <Update width="1.5rem" height="1.5rem" className="mr-1" />
             Обновить
           </button>
-          <button className="p-1 hover:bg-[#557b91] hover:text-white" onClick={handleHostChange}>
+          <button
+            className={twMerge(
+              'p-1 hover:bg-[#557b91] hover:text-white',
+              (connectionStatus == FLASHER_CONNECTING ||
+                connectionStatus == FLASHER_SWITCHING_HOST) &&
+                'opacity-50'
+            )}
+            onClick={handleHostChange}
+            disabled={
+              connectionStatus == FLASHER_CONNECTING || connectionStatus == FLASHER_SWITCHING_HOST
+            }
+          >
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
@@ -85,17 +98,33 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-
         <button
           className="btn-primary mb-2"
           onClick={handleFlash}
           disabled={
-            compilerData?.binary === undefined || compilerData.binary.length == 0 || !currentDevice
+            flashing ||
+            !currentDevice ||
+            connectionStatus != FLASHER_CONNECTED ||
+            (!flasherFile &&
+              (compilerData?.binary === undefined || compilerData.binary.length == 0))
           }
         >
           Загрузить
         </button>
-
+        <button
+          className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+          onClick={handleFileChoose}
+          disabled={flashing}
+        >
+          {flasherFile ? '✖' : '…'}
+        </button>
+        {flasherFile ? (
+          <p className="mb-2 rounded bg-primaryActive text-white">
+            из файла <span className="font-medium">{flasherFile}</span>
+          </p>
+        ) : (
+          ''
+        )}
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}
         </div>

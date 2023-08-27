@@ -1,7 +1,8 @@
 import { Platform } from '@renderer/types/platform';
 import { icons, picto } from '../drawable/Picto';
-import { Action, Event } from '@renderer/types/diagram';
+import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
+import { stateStyle } from '../styles';
 
 export type ListEntry = {
   name: string;
@@ -16,6 +17,15 @@ export type ComponentEntry = {
   img?: string;
   singletone: boolean;
 };
+
+export const operatorSet = new Set([
+  'notEquals',
+  'equals',
+  'greater',
+  'less',
+  'greaterOrEqual',
+  'lessOrEqual',
+]);
 
 export const systemComponent: ComponentProto = {
   name: 'Система',
@@ -151,6 +161,13 @@ export class PlatformManager {
     }
   }
 
+  getEventIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getEventIcon(compoQuery, method);
+    // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
+  }
+
   getActionIcon(component: string, method: string) {
     const icon = this.actionToIcon.get(`${component}/${method}`);
     if (icon && icons.has(icon)) {
@@ -158,6 +175,13 @@ export class PlatformManager {
     } else {
       return 'unknown';
     }
+  }
+
+  getActionIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getActionIcon(compoQuery, method);
+    // console.log(['getActionIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
   }
 
   getVariableIcon(component: string, variable: string) {
@@ -184,19 +208,32 @@ export class PlatformManager {
       rightIcon = this.getEventIcon(component, ev.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ev.args) {
+      const firstParam = Object.entries(ev.args)[0][1];
+      if (typeof firstParam === 'string') {
+        parameter = firstParam;
+      } else {
+        console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
+        parameter = '???';
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
+      parameter,
     });
   }
 
-  drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number) {
+  drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
     let leftIcon: string | undefined = undefined;
     let rightIcon = 'unknown';
     let bgColor = '#5b5f73';
     let fgColor = '#fff';
+    let opacity = alpha ?? 1.0;
 
     if (ac.component === 'System') {
       rightIcon = ac.method;
@@ -206,12 +243,140 @@ export class PlatformManager {
       rightIcon = this.getActionIcon(component, ac.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ac.args) {
+      const args = Object.entries(ac.args);
+      if (args.length > 0) {
+        const firstParam = args[0][1];
+        if (typeof firstParam === 'string') {
+          parameter = firstParam;
+        } else {
+          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+          parameter = '???';
+        }
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
+      opacity,
+      parameter,
     });
+  }
+
+  measureCondition(ac: Condition): number {
+    if (ac.type == 'component') {
+      return picto.eventWidth;
+    }
+    if (ac.type == 'value') {
+      return picto.textPadding * 2 + ac.value.toString().length * picto.pxPerChar;
+    }
+    if (operatorSet.has(ac.type)) {
+      if (Array.isArray(ac.value)) {
+        let w = 0;
+        for (const x of ac.value) {
+          w += this.measureCondition(x);
+        }
+        return w + picto.eventHeight + picto.eventMargin * (ac.value.length - 1);
+      }
+      console.log(['PlatformManager.measureCondition', 'non-array operator', ac]);
+      return picto.eventHeight;
+    }
+    console.log(['PlatformManager.measureCondition', 'wtf', ac]);
+    return picto.eventWidth;
+  }
+
+  drawCondition(
+    ctx: CanvasRenderingContext2D,
+    ac: Condition,
+    x: number,
+    y: number,
+    alpha?: number
+  ) {
+    let bgColor = '#5b7173';
+    let fgColor = '#fff';
+    let opacity = alpha ?? 1.0;
+
+    if (ac.type == 'component') {
+      let leftIcon: string | undefined = undefined;
+      let rightIcon = 'unknown';
+
+      // FIXME: столько проверок ради простой валидации...
+      if (
+        !Array.isArray(ac.value) &&
+        typeof ac.value !== 'string' &&
+        typeof ac.value !== 'number'
+      ) {
+        const vr: Variable = ac.value;
+        if (vr.component === 'System') {
+          rightIcon = vr.method;
+        } else {
+          const component = this.resolveComponent(vr.component);
+          leftIcon = this.getComponentIcon(component);
+          rightIcon = this.getVariableIcon(component, vr.method);
+        }
+      }
+
+      picto.drawPicto(ctx, x, y, {
+        bgColor,
+        fgColor,
+        leftIcon,
+        rightIcon,
+        opacity,
+      });
+      return;
+    }
+    // бинарные операторы (сравнения)
+    if (operatorSet.has(ac.type)) {
+      // TODO: менять цвет с заходом в глубину
+      if (!(Array.isArray(ac.value) && ac.value.length == 2)) {
+        console.error(['PlatformManager.drawCondition', 'non-binary not implemented yet', ac]);
+        picto.drawBorder(ctx, x, y, 'red');
+        return;
+      }
+
+      const mr = picto.eventMargin;
+      const icoW = (picto.eventHeight + picto.eventMargin) / picto.scale;
+      let leftW = (this.measureCondition(ac.value[0]) + mr) / picto.scale;
+
+      this.drawCondition(ctx, ac.value[0], x, y, alpha);
+      picto.drawMono(ctx, x + leftW, y, {
+        bgColor,
+        fgColor,
+        rightIcon: `op/${ac.type}`,
+        opacity,
+      });
+      this.drawCondition(ctx, ac.value[1], x + leftW + icoW, y, alpha);
+
+      return;
+    }
+    if (ac.type == 'value') {
+      picto.drawText(ctx, x, y, {
+        rightIcon: ac.value.toString(),
+        bgColor,
+        fgColor,
+        opacity,
+      });
+      return;
+    }
+
+    const fontSize = 8 / picto.scale;
+    ctx.save();
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
+
+    console.log(ac);
+
+    picto.drawBorder(ctx, x, y, '#880000');
+    const p = 5 / picto.scale;
+    ctx.fillText(ac.type, x + p, y + p);
+    // ctx.fillText(JSON.stringify(ac.value), x + p, y + fontSize + p);
+
+    ctx.restore();
   }
 }
 

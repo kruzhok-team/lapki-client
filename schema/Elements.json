@@ -82,16 +82,13 @@
         "value": {
           "anyOf": [
             {
-              "$ref": "#/definitions/Variable"
-            },
-            {
               "items": {
                 "$ref": "#/definitions/Condition"
               },
               "type": "array"
             },
             {
-              "$ref": "#/definitions/Condition"
+              "$ref": "#/definitions/Variable"
             },
             {
               "type": "number"

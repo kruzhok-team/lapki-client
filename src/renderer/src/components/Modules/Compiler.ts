@@ -10,7 +10,6 @@ import {
   SourceFile,
 } from '@renderer/types/CompilerTypes';
 
-
 export class Compiler {
   static port = 8081;
   static host = 'localhost';
@@ -29,6 +28,7 @@ export class Compiler {
   //мы считаем, что произошла ошибка.
   static timeOutTime = 100000;
   static timeoutSetted = false;
+  static filename: string;
 
   static setDefaultStatus() {
     this.setCompilerStatus('Не подключен');
@@ -90,6 +90,8 @@ export class Compiler {
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
     this.setCompilerStatus('Идет подключение...');
+    // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
+    //   асинхронную ошибку, и никто с этим ничего не может сделать.
     const ws = new WebSocket(route);
     this.connecting = true;
 
@@ -139,7 +141,7 @@ export class Compiler {
             binary: [],
             source: [
               {
-                filename: 'Autoborder_638264648325956870',
+                filename: this.filename,
                 extension: 'graphml',
                 fileContent: data,
               },
@@ -151,15 +153,19 @@ export class Compiler {
     };
 
     ws.onclose = () => {
-      console.log('closed');
+      if (this.connection) {
+        console.log('Compiler: connection closed');
+      }
       this.setCompilerStatus('Не подключен');
       this.connection = undefined;
       this.connecting = false;
       if (!this.timeoutSetted) {
         this.timeoutSetted = true;
-        timeout += 2000;
+        if (timeout < 16000) {
+          timeout += 2000;
+        }
         setTimeout(() => {
-          console.log(timeout);
+          // console.log(`Compiler: retry in ${timeout} ms`);
           this.connect(route, timeout);
           this.timeoutSetted = false;
         }, timeout);

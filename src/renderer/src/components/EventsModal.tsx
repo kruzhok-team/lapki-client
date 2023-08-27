@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
-import { TextSelect } from './Modal/TextSelect';
 import { EventSelection } from '../lib/drawable/Events';
-import { useForm } from 'react-hook-form';
 import { TextInput } from './Modal/TextInput';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import Select from 'react-select';
+
+export interface SelectEntry {
+  value: string;
+  label: JSX.Element | string;
+}
 
 interface EventsModalProps extends Props {
   editor: CanvasEditor | null;
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
+  isOpen: boolean;
   cancelLabel?: string;
   submitLabel?: string;
   onSubmit: (data: EventsModalFormValues) => void;
@@ -24,7 +29,7 @@ export interface EventsModalFormValues {
   doComponent: string;
   doMethod: string;
   doArgs: { [key: string]: string } | undefined;
-  condition: Action[];
+  condition: Action;
 }
 
 export const CreateEventsModal: React.FC<EventsModalProps> = ({
@@ -32,55 +37,90 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   submitLabel,
   onSubmit,
   onClose,
+  editor,
   ...props
 }) => {
-  const {
-    register,
-    handleSubmit: hookHandleSubmit,
-    formState: { errors },
-  } = useForm<EventsModalFormValues>();
+  const machine = editor!.container.machine;
 
-  const components = props.editor?.container.machine.components;
-  const methods = props.editor?.container.machine.platform.getAvailableEvents('Button');
-  console.log(components, methods);
+  const options = [
+    {
+      value: 'System',
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getComponentIconUrl('System', true)}
+            className="mr-1 h-7 w-7"
+          />
+          {'System'}
+        </div>
+      ),
+    },
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+      return {
+        value: idx,
+        label: (
+          <div className="flex items-center">
+            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+            {idx}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const [components, setComponents] = useState(options[0]);
 
-  const [condition, setCondition] = useState<
-    { component: string; method: string; args?: { [key: string]: string } }[]
-  >([]);
+  const optionsMethods =
+    [...machine.platform.getAvailableMethods(components.value).map((entry) => {
+          return {
+            value: entry.name,
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {entry.name}
+              </div>
+            ),
+          };
+        }),
+      ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+          console.log(entry.name)
+          return {
+            value: entry.name,
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {entry.name}
+              </div>
+            ),
+          };
+        })];
+  
 
-  // //функция для создания новых действий
-  // const onCreateEvents = hookHandleSubmit((data) => {
-  //   setCondition([
-  //     ...condition,
-  //     {
-  //       component: data.doComponent,
-  //       method: data.doMethod,
-  //       args: data.doArgs,
-  //     },
-  //   ]);
-  // });
+  const [methods, setMethods] = useState(optionsMethods[0]);
+  useEffect(() => {
+    setMethods(optionsMethods[0]);
+  }, [components]);
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
 
-  const handleSubmit = hookHandleSubmit((data) => {
-    setCondition([
-      ...condition,
-      {
-        component: data.doComponent,
-        method: data.doMethod,
-        args: data.doArgs,
+    const data = {
+      id: props.isData,
+      doComponent: components.value,
+      doMethod: methods.value,
+      doArgs: {},
+      condition: {
+        component: components.value,
+        method: methods.value,
+        args: {},
       },
-    ]);
-    data.id = props.isData;
-    data.condition = condition;
+    };
     onSubmit(data);
-  });
-
-  //Ниже будет реализована функция для обработки перетаскивания событий между собой, надо будет перетащить его в другую модалку
-
-  /* const [dragId, setDragId] = useState();
-    const handleDrag = (ev) => {
-    setDragId(ev.currentTarget.id);
-    }; 
-  */
+  };
 
   return (
     <ReactModal
@@ -94,25 +134,21 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       </div>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col items-center">
-          <TextSelect
-            label="Компонент(событие):"
-            {...register('doComponent', {
-              required: 'Это поле обязательно к заполнению!',
-            })}
-            isElse={false}
-            error={!!errors.doComponent}
-            errorMessage={errors.doComponent?.message ?? ''}
+          <Select
+            className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
+            options={options}
+            onChange={(event) => setComponents(event!)}
+            value={components}
+            isSearchable={false}
           />
-          <TextSelect
-            label="Действие:"
-            {...register('doMethod', {
-              required: 'Это поле обязательно к заполнению!',
-            })}
-            isElse={false}
-            error={!!errors.doMethod}
-            errorMessage={errors.doMethod?.message ?? ''}
+          <Select
+            className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
+            options={optionsMethods}
+            onChange={(event) => setMethods(event!)}
+            value={methods}
+            isSearchable={false}
           />
-          <TextInput
+          {/* <TextInput
             label="Параметр:"
             placeholder="Напишите параметр"
             {...register('doArgs', {
@@ -123,36 +159,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             // FIXME: некритичная ошибка по типам
             // @ts-ignore
             errorMessage={errors.doArgs?.message ?? ''}
-          />
+          /> */}
         </div>
-        {/* {!props.isData?.click && (
-            <button
-              type="button"
-              className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-              onClick={onCreateEvents}
-            >
-              Добавить
-            </button>
-          )}
-        
-        {!props.isData?.click && (
-          <div className="m-2 flex h-48 max-w-lg flex-col items-center overflow-y-auto break-words rounded bg-neutral-700">
-            {condition.map((data, key) => (
-              <div
-                key={'newEvent' + key}
-                draggable
-                className={twMerge(
-                  'm-2 flex min-h-[3.5rem] w-40 items-center justify-around rounded border-2 bg-neutral-700 px-1' key && 'order-'+{key}
-                )}
-              >
-                <div>{data.component}</div>
-                <div className="h-full border-2 border-white"></div>
-                <div>{data.method}</div>
-                {data.args !== undefined || <div>{data.args}</div>}
-              </div>
-            ))}
-          </div>
-        )} */}
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"

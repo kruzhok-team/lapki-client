@@ -110,8 +110,8 @@ export class State extends Draggable {
   }
 
   get titleHeight() {
-    const fontSize = 15 / this.container.scale;
-    const paddingY = 10 / this.container.scale;
+    const fontSize = 15;
+    const paddingY = 10;
     return fontSize + paddingY * 2;
   }
 
@@ -122,7 +122,7 @@ export class State extends Draggable {
     const fontSize = 15 / this.container.scale;
     const paddingY = 10 / this.container.scale;
     const paddingX = 15 / this.container.scale;
-    const titleHeight = this.titleHeight;
+    const titleHeight = this.titleHeight / this.container.scale;
 
     ctx.font = `${fontSize}px/0 Fira Sans`;
     ctx.textBaseline = 'hanging';

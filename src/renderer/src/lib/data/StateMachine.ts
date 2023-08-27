@@ -1,4 +1,4 @@
-import { Action, Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import { Action, Condition, Elements, Transition as TransitionType } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
 
@@ -73,9 +73,9 @@ export class StateMachine extends EventEmitter {
       this.container.states.unwatchState(value);
     });
     this.initialState = '';
+    this.states.clear();
     this.components.clear();
     this.transitions.clear();
-    this.states.clear();
     this.parameters.clear();
     this.platformIdx = '';
     // FIXME: platform не обнуляется
@@ -199,7 +199,7 @@ export class StateMachine extends EventEmitter {
         {
           do: events,
           trigger: {
-            args: undefined,
+            args: {},
             component: triggerComponent,
             method: triggerMethod,
           },
@@ -420,7 +420,8 @@ export class StateMachine extends EventEmitter {
     color: string,
     component: string,
     method: string,
-    condition: Action[],
+    doAction: Action[],
+    condition: Condition,
     position: Point
   ) {
     if (id !== undefined) {
@@ -437,7 +438,8 @@ export class StateMachine extends EventEmitter {
         component,
         method,
       },
-      do: condition,
+      do: doAction,
+      condition,
     };
     this.createNewTransitionFromData(source, target, transitionData, id);
   }
@@ -456,7 +458,7 @@ export class StateMachine extends EventEmitter {
   deleteEvent(id: string, eventId: EventSelection) {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
-    console.log(eventId.actionIdx, eventId.eventIdx);
+
     if (eventId.actionIdx === null) {
       state.eventBox.data.splice(eventId.eventIdx, 1);
     } else {

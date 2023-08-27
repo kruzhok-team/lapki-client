@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -22,6 +22,7 @@ interface CreateModalProps {
   onOpenEventsModal: () => void;
   onClose: () => void;
   onSubmit: (data: CreateModalFormValues) => void;
+  onRename: (idx: string, name: string) => void;
 }
 
 export interface CreateModalFormValues {
@@ -42,6 +43,7 @@ export interface CreateModalFormValues {
 
 export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
+  onRename,
   onOpenEventsModal,
   onClose,
   isData,
@@ -52,6 +54,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const {
     register,
     formState: { errors },
+    handleSubmit: hookHandleSubmit,
   } = useForm<CreateModalFormValues>();
 
   //--------------------------------Работа со списком компонентов---------------------------------------
@@ -257,13 +260,16 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   var method = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [type, setType] = useState<string>();
-  const handleSubmit = (ev) => {
-    ev.preventDefault();
+  const handleSubmit = hookHandleSubmit((formData) => {
+    if (isName) {
+      onRename(isName?.state.id, formData.name);
+    }
 
-    const data = {
-      id: isName ? isName?.state.id : isData !== undefined && isData?.state.id,
-      name: isName ? 'Состояние' : isData !== undefined && isData?.state.data.name,
-      key: isName ? 1 : isData ? 2 : 3,
+    // FIXME: ВЫХОДНЫЕ ДАННЫЕ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМ ТИПОМ
+    const data: CreateModalFormValues = {
+      id: isData !== undefined && isData?.state.id,
+      name: isData !== undefined && isData?.state.data.name,
+      key: isData ? 2 : 3,
       triggerComponent: components.value,
       triggerMethod: methods.value,
       else: {
@@ -277,7 +283,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   method: param1Methods.value,
                   args: {},
                 }
-              : { argsOneElse: '5' },
+              : formData.argsOneElse,
           },
           {
             type: isParamTwo ? 'component' : 'value',
@@ -287,18 +293,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   method: param2Methods.value,
                   args: {},
                 }
-              : { argsTwoElse: '5' },
+              : formData.argsTwoElse,
           },
         ],
       },
       condition: method,
-      argsOneElse: { args: '5' },
-      argsTwoElse: { args: '5' },
+      argsOneElse: formData.argsOneElse,
+      argsTwoElse: formData.argsTwoElse,
       color: 'FFFFFF',
     };
-    //Это ошибка требуется большого внимания, но вглядываться в типы я пока не стал, пока и без этого работает
     onSubmit(data);
-  };
+  });
   //-----------------------------------------------------------------------------------------------------
 
   //----------------------Стили позиционирования для переименования состояния----------------------------
@@ -375,7 +380,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             onKeyUp={(e) => {
               var keyCode = e.keyCode;
               if (e.key === 'Enter') {
-                handleSubmit;
+                handleSubmit();
               } else if (keyCode === 27) {
                 onRequestClose();
               }

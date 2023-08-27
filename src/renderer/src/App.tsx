@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 
 import {
@@ -28,7 +28,7 @@ import {
 import { preloadPicto } from './lib/drawable/Picto';
 import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
-import { FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT, Flasher } from './components/Modules/Flasher';
+import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import { Component as ComponentData } from './types/diagram';
 import useEditorManager from './components/utils/useEditorManager';
@@ -284,7 +284,7 @@ export const App: React.FC = () => {
     console.log('local');
     await manager?.startLocalModule('lapki-flasher');
     //Стандартный порт
-    manager?.changeFlasherHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
+    manager?.changeFlasherLocal();
   };
 
   const handleRemoteFlasher = (host: string, port: number) => {

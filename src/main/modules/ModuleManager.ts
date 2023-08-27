@@ -1,8 +1,8 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import {
-  FLASHER_LOCAL_HOST,
-  FLASHER_LOCAL_PORT,
-} from '../../renderer/src/components/Modules/Flasher';
+
+export const FLASHER_LOCAL_HOST = 'localhost';
+// FIXME: порт должен назначаться автоматически
+export const FLASHER_LOCAL_PORT = 13808;
 
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();

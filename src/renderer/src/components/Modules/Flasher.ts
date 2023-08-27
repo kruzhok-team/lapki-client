@@ -8,13 +8,13 @@ import {
 } from '@renderer/types/FlasherTypes';
 import Websocket from 'isomorphic-ws';
 import { Dispatch, SetStateAction } from 'react';
-export const FLASHER_LOCAL_PORT = 8080;
-export const FLASHER_LOCAL_HOST = 'localhost';
 export const FLASHER_CONNECTING = 'Идет подключение...';
 export const FLASHER_SWITCHING_HOST = 'Подключение к новому хосту...';
 export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
+export const FLASHER_LOCAL_HOST = window.api.FLASHER_LOCAL_HOST;
+export const FLASHER_LOCAL_PORT = window.api.FLASHER_LOCAL_PORT;
 
 export class Flasher {
   static port = FLASHER_LOCAL_PORT;
@@ -42,6 +42,10 @@ export class Flasher {
   static setFlashing: Dispatch<SetStateAction<boolean>>;
   // true = во время вызова таймера для переключения ничего не будет происходить.
   static freezeReconnection = false;
+
+  static changeLocal() {
+    Flasher.changeHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
+  }
 
   static changeHost(host: string, port: number) {
     this.host = host;

@@ -32,7 +32,7 @@ export interface CreateModalFormValues {
   //Данные основного события
   triggerComponent: string;
   triggerMethod: string;
-  else: Condition;
+  else?: Condition;
   //Массив вторичных событий
   condition: Action[];
 
@@ -223,6 +223,34 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       onRename(isName?.state.id, formData.name);
     }
 
+    const cond = isElse
+      ? undefined
+      : {
+          type: type!,
+          value: [
+            {
+              type: isParamOne ? 'component' : 'value',
+              value: isParamOne
+                ? {
+                    component: param1Components.value,
+                    method: param1Methods.value,
+                    args: {},
+                  }
+                : formData.argsOneElse,
+            },
+            {
+              type: isParamTwo ? 'component' : 'value',
+              value: isParamTwo
+                ? {
+                    component: param2Components.value,
+                    method: param2Methods.value,
+                    args: {},
+                  }
+                : formData.argsTwoElse,
+            },
+          ],
+        };
+
     // FIXME: ВЫХОДНЫЕ ДАННЫЕ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМ ТИПОМ
     const data: CreateModalFormValues = {
       id: isData !== undefined && isData?.state.id,
@@ -230,31 +258,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       key: isData ? 2 : 3,
       triggerComponent: components.value,
       triggerMethod: methods.value,
-      else: {
-        type: type!,
-        value: [
-          {
-            type: isParamOne ? 'component' : 'value',
-            value: isParamOne
-              ? {
-                  component: param1Components.value,
-                  method: param1Methods.value,
-                  args: {},
-                }
-              : formData.argsOneElse,
-          },
-          {
-            type: isParamTwo ? 'component' : 'value',
-            value: isParamTwo
-              ? {
-                  component: param2Components.value,
-                  method: param2Methods.value,
-                  args: {},
-                }
-              : formData.argsTwoElse,
-          },
-        ],
-      },
+      else: cond,
       condition: method,
       argsOneElse: formData.argsOneElse,
       argsTwoElse: formData.argsTwoElse,

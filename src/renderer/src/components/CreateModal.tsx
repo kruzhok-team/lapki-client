@@ -171,15 +171,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [param2Methods, setParam2Methods] = useState(optionsParam2Methods[0]);
 
   useEffect(() => {
-    setMethods(optionsMethods[0]);
+    setMethods(optionsMethods[0] ?? null);
   }, [components]);
 
   useEffect(() => {
-    setParam1Methods(optionsParam1Methods[0]);
+    setParam1Methods(optionsParam1Methods[0] ?? null);
   }, [param1Components]);
 
   useEffect(() => {
-    setParam2Methods(optionsParam2Methods[0]);
+    setParam2Methods(optionsParam2Methods[0] ?? null);
   }, [param2Components]);
   //-----------------------------------------------------------------------------------------------------
 

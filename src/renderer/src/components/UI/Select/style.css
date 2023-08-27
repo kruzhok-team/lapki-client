@@ -1,13 +1,17 @@
 .CustomSelect__control {
-  @apply bg-bg-secondary shadow-none;
+  @apply bg-bg-secondary shadow-none !important;
 }
 
 .CustomSelect__control--is-focused {
-  @apply border-border-primary;
+  @apply border-border-primary !important;
 }
 
 .CustomSelect__single-value {
-  @apply text-text-primary;
+  @apply text-text-primary !important;
+}
+
+.CustomSelect__indicator-separator {
+  @apply bg-border-primary !important;
 }
 
 .CustomSelect__menu {
@@ -19,13 +23,13 @@
 }
 
 .CustomSelect__option--is-focused {
-  @apply bg-bg-hover;
+  @apply bg-bg-hover !important;
 }
 
 .CustomSelect__option--is-focused:active {
-  @apply bg-bg-active;
+  @apply bg-bg-active !important;
 }
 
 .CustomSelect__option--is-selected {
-  @apply bg-primary;
+  @apply bg-primary !important;
 }

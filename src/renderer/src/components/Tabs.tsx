@@ -1,140 +1,85 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
-import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
+import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
+import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 
 import { CodeEditor } from './CodeEditor';
-import theme from '@renderer/theme';
+import { DiagramEditor, DiagramEditorProps } from './DiagramEditor';
+import { Tab } from '@renderer/types/tabs';
 
-export interface TabData {
-  svgIcon?: JSX.Element;
-  tab?: string;
-  content: JSX.Element;
-  canClose?: boolean;
-}
-
-export interface TabDataAdd {
-  type: string;
-  name: string;
-  code: string;
-  language: string;
-}
+const TabIcon = {
+  editor: <EditorIcon />,
+  code: <CodeIcon />,
+  transition: <TransitionIcon />,
+  state: <StateIcon />,
+};
 
 export interface TabsProps {
-  tabsItems: TabData[];
-  tabData: TabDataAdd[] | null;
-  setTabData: React.Dispatch<React.SetStateAction<TabDataAdd[] | null>>;
+  editorProps: DiagramEditorProps;
+  items: Tab[];
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  onClose: (tabName: string) => void;
+  onSwapTabs: (a: string, b: string) => void;
 }
 
-export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
-  /** Функция выбора вкладки (машина состояний, код) */
-  const [activeTab, setActiveTab] = useState<number | 0>(0);
-  const isActive = (index: number) => setActiveTab(index);
-  const [tabsNewItems, setTabsNewItems] = useState<TabData[]>([]);
-  const tabs = [...props.tabsItems, ...tabsNewItems];
+export const Tabs: React.FC<TabsProps> = ({
+  editorProps,
+  items,
+  activeTab,
+  setActiveTab,
+  onClose,
+  onSwapTabs,
+}: TabsProps) => {
+  const [dragId, setDragId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (props.tabData !== null) {
-      const newTabs = new Array<TabData>();
-      props.tabData.map((tab, id) => {
-        const trueTab = tabs.find((item) => item.tab === tab.name);
-        if (trueTab === undefined) {
-          newTabs.push({
-            svgIcon:
-              tab.type === 'code' ? (
-                <CodeIcon />
-              ) : tab.type === 'transition' ? (
-                <TransitionIcon />
-              ) : (
-                <StateIcon />
-              ),
-            tab: tab.name,
-            content: <CodeEditor language={tab.language} value={tab.code} />,
-          });
-          isActive(tabs.length);
-        } else {
-          tabs.forEach((value, id) => {
-            trueTab.tab !== value.tab || isActive(id);
-          });
-        }
-      });
-      setTabsNewItems([...tabsNewItems, ...newTabs]);
-      props.setTabData(null);
-    }
-  }, [props.tabData, theme]);
-
-  const onClose = (id: number) => {
-    setTabsNewItems(tabsNewItems.filter((_value, index) => index !== id - 1));
-    isActive(0);
+  const handleDrag = (tabName: string) => {
+    setDragId(tabName);
   };
 
-  //Ниже реализовано перетаскивание вкладок между собой
-  const [dragId, setDragId] = useState();
+  const handleDrop = (tabName: string) => {
+    if (tabName === 'editor' || !dragId) return;
 
-  const handleDrag = (id) => {
-    setDragId(id);
-    console.log(id);
-  };
-
-  const handleDrop = (id) => {
-    if (id !== -1) {
-      const dragBox = tabsNewItems.find((_box, index) => index === dragId);
-      const dropBox = tabsNewItems.find((_box, index) => index === id);
-
-      const dragBoxOrder = dragBox;
-      const dropBoxOrder = dropBox;
-
-      const newBoxState = tabsNewItems.map((box, index) => {
-        if (index === dragId) {
-          box = dropBoxOrder!;
-        }
-        if (index === id) {
-          box = dragBoxOrder!;
-        }
-        isActive(id + 1);
-        return box;
-      });
-      setTabsNewItems(newBoxState);
-    }
+    onSwapTabs(dragId, tabName);
   };
 
   return (
     <>
       <section className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]">
-        {tabs.map(({ svgIcon, tab, canClose = true }, id) => (
+        {items.map(({ name, type }) => (
           <button
-            key={id}
+            key={name}
             draggable={true}
             onDragOver={(event) => event.preventDefault()}
-            onDragStart={() => handleDrag(id - 1)}
-            onDrop={() => handleDrop(id - 1)}
+            onDragStart={() => handleDrag(name)}
+            onDrop={() => handleDrop(name)}
             className={twMerge(
               'group flex cursor-pointer items-center rounded p-1 px-2 transition hover:bg-bg-primary',
-              activeTab === id && 'bg-bg-primary'
+              activeTab === name && 'bg-bg-primary'
             )}
-            onClick={() => isActive(id)}
+            onMouseDown={() => setActiveTab(name)}
           >
-            {svgIcon}
+            {TabIcon[type]}
 
-            <span
-              title={tab}
-              className={twMerge('ml-1 line-clamp-1 w-20 text-left', id === 0 && 'hidden')}
-            >
-              {tab}
-            </span>
+            {type !== 'editor' && (
+              <span title={name} className="ml-1 line-clamp-1 w-20 text-left">
+                {name}
+              </span>
+            )}
 
-            {canClose && (
+            {type !== 'editor' && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onClose(id);
+                  onClose(name);
                 }}
                 className={twMerge(
                   'hover:bg-bg-btn rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100',
-                  activeTab === id && 'opacity-100'
+                  activeTab === name && 'opacity-100'
                 )}
               >
                 <CloseIcon className="h-3 w-3" />
@@ -144,12 +89,16 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
         ))}
       </section>
 
-      {tabs.map((value, id) => (
+      {items.map((item) => (
         <div
-          key={id}
-          className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === id && 'block')}
+          key={item.name}
+          className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === item.name && 'block')}
         >
-          {value.content}
+          {item.type === 'editor' ? (
+            <DiagramEditor {...editorProps} />
+          ) : (
+            <CodeEditor language={item.language} value={item.code} />
+          )}
         </div>
       ))}
     </>

@@ -3,6 +3,7 @@ import { Condition } from '@renderer/lib/drawable/Condition';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
+import { CodeTab } from '@renderer/types/tabs';
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
@@ -31,7 +32,7 @@ interface StateContextMenuProps {
 
 export interface ContextMenuForm {
   name: string;
-  type: string;
+  type: CodeTab['type'];
   eventId: EventSelection;
   content: string;
 }

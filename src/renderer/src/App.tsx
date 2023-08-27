@@ -1,9 +1,8 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 
 import {
   CompilerProps,
-  DiagramEditor,
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
@@ -14,10 +13,8 @@ import {
   Sidebar,
   SidebarCallbacks,
   Tabs,
-  TabDataAdd,
   Documentations,
 } from './components';
-import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 
 import { isLeft, unwrapEither } from './types/Either';
 import {
@@ -54,6 +51,7 @@ import { getColor } from '@renderer/theme';
 import DocumentTitle from 'react-document-title';
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
+import { CodeTab, Tab } from './types/tabs';
 /**
  * React-компонент приложения
  */
@@ -82,9 +80,6 @@ export const App: React.FC = () => {
   const editorData = lapki.editorData;
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
-  useEffect(() => {
-    manager?.bindReact(setTitle);
-  });
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
@@ -298,32 +293,73 @@ export const App: React.FC = () => {
     }
   };
 
-  const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
-  const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
-    setTabData([{ type, name, code, language }]);
+  const [tabItems, setTabItems] = useState<Tab[]>([{ type: 'editor', name: 'editor' }]);
+  const [activeTab, setActiveTab] = useState('editor');
+
+  const onCodeSnippet = (data: CodeTab) => {
+    // Если пытаемся открыть одну и ту же вкладку
+    if (tabItems.find((tab) => tab.name === data.name)) {
+      return setActiveTab(data.name);
+    }
+
+    setTabItems((p) => [...p, data]);
+    setActiveTab(data.name);
+  };
+
+  const handleCloseTab = (tabName: string) => {
+    const closedTabIndex = tabItems.findIndex((tab) => tab.name === tabName);
+    const activeTabIndex = tabItems.findIndex((tab) => tab.name === activeTab);
+
+    // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
+    if (closedTabIndex === activeTabIndex) {
+      setActiveTab(tabItems[activeTabIndex - 1].name);
+    }
+
+    setTabItems((p) => p.filter((tab) => tab.name !== tabName));
+  };
+
+  const handleSwapTabs = (a: string, b: string) => {
+    setTabItems((p) => {
+      const data = [...p];
+
+      const aIndex = data.findIndex(({ name }) => name === a);
+      const bIndex = data.findIndex(({ name }) => name === b);
+
+      const temp = data[aIndex];
+      data[aIndex] = data[bIndex];
+      data[bIndex] = temp;
+
+      return data;
+    });
   };
 
   const handleAddStdoutTab = () => {
-    onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
+    onCodeSnippet({
+      type: 'code',
+      name: 'stdout',
+      code: compilerData!.stdout ?? '',
+      language: 'txt',
+    });
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '', 'txt');
+    onCodeSnippet({
+      type: 'code',
+      name: 'stderr',
+      code: compilerData!.stderr ?? '',
+      language: 'txt',
+    });
   };
 
   const handleShowSource = () => {
-    const newTabs = new Array<TabDataAdd>();
-    compilerData!.source!.map((element) => {
-      console.log('here!');
-      newTabs.push({
-        type: 'Компилятор',
+    compilerData!.source!.forEach((element) => {
+      onCodeSnippet({
+        type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
         language: 'cpp',
       });
     });
-
-    setTabData(newTabs);
   };
 
   const handleImport = async (platform: string) => {
@@ -341,13 +377,6 @@ export const App: React.FC = () => {
       editor.container.isDirty = true;
     }
   };
-
-  useEffect(() => {
-    if (importData && openData) {
-      manager?.parseImportData(importData, openData!);
-      setImportData(undefined);
-    }
-  }, [importData]);
 
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
@@ -448,6 +477,17 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    manager?.bindReact(setTitle);
+  });
+
+  useEffect(() => {
+    if (importData && openData) {
+      manager?.parseImportData(importData, openData!);
+      setImportData(undefined);
+    }
+  }, [importData]);
+
+  useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
     console.log('CONNECTING TO COMPILER');
     Compiler.connect(`${Compiler.base_address}main`);
@@ -462,22 +502,6 @@ export const App: React.FC = () => {
       }
     });
   }, []);
-
-  const tabsItems = [
-    {
-      svgIcon: <EditorIcon />,
-      //tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
-      canClose: false,
-      content: (
-        <DiagramEditor
-          manager={manager!}
-          editor={editor}
-          setEditor={lapki.setEditor}
-          onCodeSnippet={onCodeSnippet}
-        />
-      ),
-    },
-  ];
 
   useEffect(() => {
     Flasher.bindReact(
@@ -508,7 +532,19 @@ export const App: React.FC = () => {
 
             <div className="relative w-full min-w-0 bg-bg-primary">
               {editorData.content ? (
-                <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+                <Tabs
+                  editorProps={{
+                    manager: manager!,
+                    editor,
+                    setEditor: lapki.setEditor,
+                    onCodeSnippet: onCodeSnippet,
+                  }}
+                  items={tabItems}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  onClose={handleCloseTab}
+                  onSwapTabs={handleSwapTabs}
+                />
               ) : (
                 <p className="pt-24 text-center text-base">
                   Откройте файл или перенесите его сюда...

@@ -119,20 +119,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [param2Components, setParam2Components] = useState(optionsParam1Components[0]);
 
   const optionsMethods = [
-    ...machine.platform.getAvailableMethods(components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
     ...machine.platform.getAvailableEvents(components.value).map((entry) => {
       return {
         value: entry.name,
@@ -149,27 +135,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }),
   ];
   const optionsParam1Methods = [
-    ...machine.platform.getAvailableMethods(param1Components.value).map((entry) => {
+    ...machine.platform.getAvailableVariables(param1Components.value).map((entry) => {
       return {
         value: entry.name,
         label: (
           <div className="flex items-center">
             <img
-              src={machine.platform.getActionIconUrl(param1Components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-    ...machine.platform.getAvailableEvents(param1Components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getEventIconUrl(param1Components.value, entry.name, true)}
+              src={machine.platform.getVariableIconUrl(param1Components.value, entry.name, true)}
               className="mr-1 h-7 w-7"
             />
             {entry.name}
@@ -179,27 +151,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }),
   ];
   const optionsParam2Methods = [
-    ...machine.platform.getAvailableMethods(param2Components.value).map((entry) => {
+    ...machine.platform.getAvailableVariables(param2Components.value).map((entry) => {
       return {
         value: entry.name,
         label: (
           <div className="flex items-center">
             <img
-              src={machine.platform.getActionIconUrl(param2Components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-    ...machine.platform.getAvailableEvents(param2Components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getEventIconUrl(param2Components.value, entry.name, true)}
+              src={machine.platform.getVariableIconUrl(param2Components.value, entry.name, true)}
               className="mr-1 h-7 w-7"
             />
             {entry.name}

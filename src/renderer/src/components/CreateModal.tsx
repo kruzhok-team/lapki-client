@@ -11,7 +11,7 @@ import { Action, Condition } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
-import Select from 'react-select';
+import { Select } from '@renderer/components/UI';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -116,93 +116,96 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [param1Components, setParam1Components] = useState(optionsParam1Components[0]);
   const [param2Components, setParam2Components] = useState(optionsParam1Components[0]);
 
-  const optionsMethods =
-      [...machine.platform.getAvailableMethods(components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        }),
-      ...machine.platform.getAvailableEvents(components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })];
-  const optionsParam1Methods =
-      [...machine.platform.getAvailableMethods(param1Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(param1Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        }),
-      ...machine.platform.getAvailableEvents(param1Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(param1Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })];
-  const optionsParam2Methods =
-      [...machine.platform.getAvailableMethods(param2Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(param2Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        }),
-      ...machine.platform.getAvailableEvents(param2Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(param2Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })];
+  const optionsMethods = [
+    ...machine.platform.getAvailableMethods(components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const optionsParam1Methods = [
+    ...machine.platform.getAvailableMethods(param1Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getActionIconUrl(param1Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+    ...machine.platform.getAvailableEvents(param1Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getEventIconUrl(param1Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const optionsParam2Methods = [
+    ...machine.platform.getAvailableMethods(param2Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getActionIconUrl(param2Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+    ...machine.platform.getAvailableEvents(param2Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getEventIconUrl(param2Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
   const [methods, setMethods] = useState(optionsMethods[0]);
   const [param1Methods, setParam1Methods] = useState(optionsParam1Methods[0]);
   const [param2Methods, setParam2Methods] = useState(optionsParam2Methods[0]);

@@ -112,7 +112,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
             onDragStart={() => handleDrag(id - 1)}
             onDrop={() => handleDrop(id - 1)}
             className={twMerge(
-              'group flex cursor-pointer items-center rounded border-x border-border-primary p-1 px-2 transition hover:bg-bg-primary',
+              'group flex cursor-pointer items-center rounded p-1 px-2 transition hover:bg-bg-primary',
               activeTab === id && 'bg-bg-primary'
             )}
             onClick={() => isActive(id)}

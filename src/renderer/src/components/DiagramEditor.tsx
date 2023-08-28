@@ -290,6 +290,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
           isOpen={isModalOpen}
           onOpenEventsModal={openEventsModal}
           isData={state}
+          isTransition={transition}
           onClose={closeModal}
           onSubmit={handleCreateModal}
         />

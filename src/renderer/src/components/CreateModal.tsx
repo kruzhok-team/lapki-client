@@ -7,15 +7,23 @@ import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
-import { Action, Condition, Event as StateEvent } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition as ConditionData,
+  State as StateData,
+  Event as StateEvent,
+} from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Select, SelectOption } from '@renderer/components/UI';
+import { Condition } from '@renderer/lib/drawable/Condition';
+import { State } from '@renderer/lib/drawable/State';
 
 interface CreateModalProps {
   isOpen: boolean;
   editor: CanvasEditor | null;
-  isData: { state } | undefined;
+  isData: { state: State } | undefined;
+  isTransition: { target: Condition } | undefined;
   isCondition: Action[] | undefined;
   setIsCondition: React.Dispatch<React.SetStateAction<Action[]>>;
   onOpenEventsModal: () => void;
@@ -40,7 +48,7 @@ export interface CreateModalResult {
   id: string;
   key: number;
   trigger: StateEvent;
-  condition?: Condition;
+  condition?: ConditionData;
   do: Action[];
   color?: string;
 }
@@ -241,7 +249,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
   //-----------------------------------------------------------------------------------------------------
-  var method = props.isCondition!;
+  var method: Action[] =
+    props.isTransition?.target.transition.data.do !== undefined
+      ? [...props.isTransition?.target.transition.data.do!, ...props.isCondition!]
+      : props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [type, setType] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
@@ -390,129 +401,133 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           isSearchable={false}
         />
       </div>
-      {/*--------------------------------------Добавление условия------------------------------------------*/}
-      <div className="flex items-start">
-        <div className="my-3 flex items-center">
-          <label className="mx-1">Если: </label>
-          <label
-            className={twMerge(
-              'my-2 ml-3 select-none rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-500',
-              !isElse && 'bg-neutral-500'
-            )}
-          >
-            <input type="checkbox" onChange={handleIsElse} className="h-0 w-0 opacity-0" />
-            <span>Условие</span>
-          </label>
-        </div>
 
-        <div className="flex flex-col">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              onChange={handleParamOne}
-              className={twMerge('mx-2', isElse && 'hidden')}
-            />
-            {isParamOne ? (
-              <>
-                <Select
-                  className={twMerge(
-                    'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
-                    isElse && 'hidden'
-                  )}
-                  options={optionsParam1Components}
-                  onChange={onSelect(setParam1Components)}
-                  value={param1Components}
-                  isSearchable={false}
-                />
-                <Select
-                  className={twMerge(
-                    'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
-                    isElse && 'hidden'
-                  )}
-                  options={optionsParam1Methods}
-                  onChange={onSelect(setParam1Methods)}
-                  value={param1Methods}
-                  isSearchable={false}
-                />
-              </>
-            ) : (
-              <TextInput
-                label="Параметр:"
-                placeholder="Напишите параметр"
-                {...register('argsOneElse', {
-                  required: 'Это поле обязательно к заполнению!',
-                })}
-                isElse={isElse}
-                error={!!errors.argsOneElse}
-                errorMessage={errors.argsOneElse?.message ?? ''}
-              />
-            )}
+      {/*--------------------------------------Добавление условия------------------------------------------*/}
+      {isData !== undefined || (
+        <div className="flex items-start">
+          <div className="my-3 flex items-center">
+            <label className="mx-1">Если: </label>
+            <label
+              className={twMerge(
+                'my-2 ml-3 select-none rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-500',
+                !isElse && 'bg-neutral-500'
+              )}
+            >
+              <input type="checkbox" onChange={handleIsElse} className="h-0 w-0 opacity-0" />
+              <span>Условие</span>
+            </label>
           </div>
-          <select
-            className={twMerge(
-              'mb-4 ml-8 w-[60px] rounded border bg-transparent px-1 py-1 text-white',
-              isElse && 'hidden'
-            )}
-            ref={(event) => {
-              if (event !== null) {
-                setType(event.value);
-              }
-            }}
-          >
-            {selectElse.map((content) => (
-              <option
-                key={'option' + content.type}
-                className="bg-neutral-800"
-                value={content.type}
-                label={content.icon}
-              ></option>
-            ))}
-          </select>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              disabled={isElse}
-              onChange={handleParamTwo}
-              className={twMerge('mx-2', isElse && 'hidden')}
-            />
-            {isParamTwo ? (
-              <>
-                <Select
-                  className={twMerge(
-                    'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
-                    isElse && 'hidden'
-                  )}
-                  options={optionsParam2Components}
-                  onChange={onSelect(setParam2Components)}
-                  value={param2Components}
-                  isSearchable={false}
-                />
-                <Select
-                  className={twMerge(
-                    'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
-                    isElse && 'hidden'
-                  )}
-                  options={optionsParam2Methods}
-                  onChange={onSelect(setParam2Methods)}
-                  value={param2Methods}
-                  isSearchable={false}
-                />
-              </>
-            ) : (
-              <TextInput
-                label="Параметр:"
-                placeholder="Напишите параметр"
-                {...register('argsTwoElse', {
-                  required: 'Это поле обязательно к заполнению!',
-                })}
-                isElse={isElse}
-                error={!!errors.argsTwoElse}
-                errorMessage={errors.argsTwoElse?.message ?? ''}
+
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                onChange={handleParamOne}
+                className={twMerge('mx-2', isElse && 'hidden')}
               />
-            )}
+              {isParamOne ? (
+                <>
+                  <Select
+                    className={twMerge(
+                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      isElse && 'hidden'
+                    )}
+                    options={optionsParam1Components}
+                    onChange={onSelect(setParam1Components)}
+                    value={param1Components}
+                    isSearchable={false}
+                  />
+                  <Select
+                    className={twMerge(
+                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      isElse && 'hidden'
+                    )}
+                    options={optionsParam1Methods}
+                    onChange={onSelect(setParam1Methods)}
+                    value={param1Methods}
+                    isSearchable={false}
+                  />
+                </>
+              ) : (
+                <TextInput
+                  label="Параметр:"
+                  placeholder="Напишите параметр"
+                  {...register('argsOneElse', {
+                    required: 'Это поле обязательно к заполнению!',
+                  })}
+                  isElse={isElse}
+                  error={!!errors.argsOneElse}
+                  errorMessage={errors.argsOneElse?.message ?? ''}
+                />
+              )}
+            </div>
+            <select
+              className={twMerge(
+                'mb-4 ml-8 w-[60px] rounded border bg-transparent px-1 py-1 text-white',
+                isElse && 'hidden'
+              )}
+              ref={(event) => {
+                if (event !== null) {
+                  setType(event.value);
+                }
+              }}
+            >
+              {selectElse.map((content) => (
+                <option
+                  key={'option' + content.type}
+                  className="bg-neutral-800"
+                  value={content.type}
+                  label={content.icon}
+                ></option>
+              ))}
+            </select>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                disabled={isElse}
+                onChange={handleParamTwo}
+                className={twMerge('mx-2', isElse && 'hidden')}
+              />
+              {isParamTwo ? (
+                <>
+                  <Select
+                    className={twMerge(
+                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      isElse && 'hidden'
+                    )}
+                    options={optionsParam2Components}
+                    onChange={onSelect(setParam2Components)}
+                    value={param2Components}
+                    isSearchable={false}
+                  />
+                  <Select
+                    className={twMerge(
+                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      isElse && 'hidden'
+                    )}
+                    options={optionsParam2Methods}
+                    onChange={onSelect(setParam2Methods)}
+                    value={param2Methods}
+                    isSearchable={false}
+                  />
+                </>
+              ) : (
+                <TextInput
+                  label="Параметр:"
+                  placeholder="Напишите параметр"
+                  {...register('argsTwoElse', {
+                    required: 'Это поле обязательно к заполнению!',
+                  })}
+                  isElse={isElse}
+                  error={!!errors.argsTwoElse}
+                  errorMessage={errors.argsTwoElse?.message ?? ''}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
       <div className="flex">
         <label className="mx-1">Делай: </label>
@@ -577,6 +592,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
+            value={props.isTransition?.target.transition.data.color}
           />
         </>
       )}

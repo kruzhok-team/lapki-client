@@ -426,7 +426,7 @@ export class StateMachine extends EventEmitter {
     component: string,
     method: string,
     doAction: Action[],
-    condition: Condition,
+    condition: Condition | undefined,
     position: Point
   ) {
     if (id !== undefined) {

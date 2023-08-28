@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import ReactSelect, { Props } from 'react-select';
 
 import './style.css';
+
+export interface SelectOption {
+  value: string;
+  label: ReactNode;
+}
 
 interface SelectProps extends Props {}
 

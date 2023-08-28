@@ -6,7 +6,7 @@ import { EventSelection } from '../lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { Select } from '@renderer/components/UI';
+import { Select, SelectOption } from '@renderer/components/UI';
 
 export interface SelectEntry {
   value: string;
@@ -121,6 +121,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     onSubmit(data);
   };
 
+  const onSelect = (fn) => (value) => {
+    fn(value as SelectOption);
+  };
+
   return (
     <ReactModal
       {...props}
@@ -136,14 +140,14 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           <Select
             className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
             options={options}
-            onChange={(event) => setComponents(event!)}
+            onChange={onSelect(setComponents)}
             value={components}
             isSearchable={false}
           />
           <Select
             className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
             options={optionsMethods}
-            onChange={(event) => setMethods(event!)}
+            onChange={onSelect(setMethods)}
             value={methods}
             isSearchable={false}
           />

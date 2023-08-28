@@ -45,18 +45,19 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const [dataState, setDataState] = useState(data);
 
   useEffect(() => {
+    console.log(data);
     setDataState(data);
   }, [data]);
 
   const handleInputChange = (e) => {
-    const updatedState = { ...data };
+    const updatedState = structuredClone(dataState);
     updatedState.data.parameters[e.target.name] = e.target.value;
     setDataState(updatedState);
     console.log(updatedState);
   };
 
   const handleNameChange = (e) => {
-    const updatedState = { ...data };
+    const updatedState = structuredClone(dataState);
     updatedState.idx = e.target.value;
     setDataState(updatedState);
     console.log(updatedState);

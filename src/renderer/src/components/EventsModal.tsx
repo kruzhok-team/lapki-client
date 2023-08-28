@@ -7,6 +7,17 @@ import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Select, SelectOption } from '@renderer/components/UI';
+import { ArgumentProto } from '@renderer/types/platform';
+
+type ArgSet = { [k: string]: string };
+type ArgForm = { name: string; description?: string }[];
+
+interface FormPreset {
+  compo: SelectOption;
+  event: SelectOption;
+  argSet: ArgSet;
+  argForm: ArgForm;
+}
 
 interface EventsModalProps extends Props {
   editor: CanvasEditor | null;
@@ -79,22 +90,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     };
   };
 
-  const sysCompoOption = isEditingEvent
-    ? [
-        {
-          value: 'System',
-          label: (
-            <div className="flex items-center">
-              <img
-                src={machine.platform.getComponentIconUrl('System', true)}
-                className="mr-1 h-7 w-7"
-              />
-              {'System'}
-            </div>
-          ),
-        },
-      ]
-    : [];
+  const sysCompoOption = isEditingEvent ? [compoEntry('System')] : [];
 
   const options = [
     ...sysCompoOption,
@@ -108,26 +104,69 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
 
   const [methods, setMethods] = useState<SelectOption>(optionsMethods[0]);
+
   useEffect(() => {
     if (!isChanged) return;
     setMethods(optionsMethods[0]);
   }, [components]);
 
-  const tryGetData = () => {
+  const [argSet, setArgSet] = useState<ArgSet>({});
+  const [argForm, setArgForm] = useState<ArgForm>([]);
+
+  const retrieveArgForm = (compo: string, method: string) => {
+    const component = machine.platform.data.components[compo];
+    if (!component) return [];
+
+    const argList: ArgumentProto[] | undefined = isEditingEvent
+      ? component.signals[method]?.parameters
+      : component.methods[method]?.parameters;
+
+    if (!argList) return [];
+    const argForm: ArgForm = argList.map((arg) => {
+      return { name: arg.name, description: arg.description };
+    });
+    return argForm;
+  };
+
+  useEffect(() => {
+    if (!isChanged) return;
+    setArgSet({});
+    setArgForm(retrieveArgForm(components.value, methods.value));
+  }, [methods]);
+
+  const handleInputChange = (e) => {
+    const newSet = { ...argSet };
+    newSet[e.target.name] = e.target.value;
+    setArgSet(newSet);
+    // console.log(newSet);
+  };
+
+  const tryGetData: () => FormPreset | undefined = () => {
     if (props.isData) {
       const d = props.isData;
       if (d.event.eventIdx >= 0) {
         const evs = d.state.eventBox.data[d.event.eventIdx];
         if (evs) {
           if (d.event.actionIdx === null) {
-            return [
-              compoEntry(evs.trigger.component),
-              eventEntry(evs.trigger.method, evs.trigger.component),
-            ];
+            const compoName = evs.trigger.component;
+            const methodName = evs.trigger.method;
+            return {
+              compo: compoEntry(compoName),
+              event: eventEntry(methodName, compoName),
+              argSet: evs.trigger.args ?? {},
+              argForm: retrieveArgForm(compoName, methodName),
+            };
           } else {
             const ac = evs.do[d.event.actionIdx];
             if (ac) {
-              return [compoEntry(ac.component), actionEntry(ac.method, ac.component)];
+              const compoName = ac.component;
+              const methodName = ac.method;
+              return {
+                compo: compoEntry(compoName),
+                event: eventEntry(methodName, compoName),
+                argSet: ac.args ?? {},
+                argForm: retrieveArgForm(compoName, methodName),
+              };
             }
           }
         }
@@ -140,10 +179,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const [wasOpen, setWasOpen] = useState(false);
   useEffect(() => {
     if (!wasOpen && props.isOpen) {
-      const d: SelectOption[] | undefined = tryGetData();
+      const d: FormPreset | undefined = tryGetData();
       if (d) {
-        setComponents(d[0]);
-        setMethods(d[1]);
+        setComponents(d.compo);
+        setMethods(d.event);
       } else {
         setComponents(components[0]);
       }
@@ -154,7 +193,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 
   const handleSubmit = (ev) => {
     ev.preventDefault();
-
+    // FIXME: очень некорректное дублирование, его нужно снять
     const data = {
       id: props.isData,
       doComponent: components.value,

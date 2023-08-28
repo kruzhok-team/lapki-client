@@ -3,7 +3,8 @@ import { Point, Rectangle } from './graphics';
 export type Action = {
   component: string;
   method: string;
-  args?: { [key: string]: string | Variable };
+  // FIXME: в перспективе тип должен быть string | Variable
+  args?: { [key: string]: string };
 };
 
 export type CompilerSettings = {

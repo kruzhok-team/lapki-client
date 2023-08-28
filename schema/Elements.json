@@ -7,14 +7,7 @@
       "properties": {
         "args": {
           "additionalProperties": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "$ref": "#/definitions/Variable"
-              }
-            ]
+            "type": "string"
           },
           "type": "object"
         },

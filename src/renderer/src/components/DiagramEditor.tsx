@@ -6,7 +6,7 @@ import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
-import { CreateModal, CreateModalFormValues } from './CreateModal';
+import { CreateModal, CreateModalResult } from './CreateModal';
 import { CreateEventsModal, EventsModalFormValues } from './EventsModal';
 
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
@@ -178,26 +178,24 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor?.container.machine.updateState(idx, name);
   };
 
-  const handleCreateModal = (data: CreateModalFormValues) => {
-    if (data.key === 1) {
-      editor?.container.machine.updateState(data.id, data.name);
-    } else if (data.key === 2) {
+  const handleCreateModal = (data: CreateModalResult) => {
+    if (data.key === 2) {
       editor?.container.machine.newPictoState(
         data.id,
         events!,
-        data.triggerComponent,
-        data.triggerMethod
+        data.trigger.component,
+        data.trigger.method
       );
     } else if (transition && data.key === 3) {
       editor?.container.machine.createNewTransition(
         transition?.target.id,
         transition?.target.transition.source,
         transition?.target.transition.target,
-        data.color,
-        data.triggerComponent,
-        data.triggerMethod,
+        data.color ?? '#FFFFFF',
+        data.trigger.component,
+        data.trigger.method,
         events!,
-        data.else,
+        data.condition,
         transition?.target.bounds
       );
     } else if (newTransition) {
@@ -205,11 +203,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         undefined,
         newTransition?.source,
         newTransition?.target,
-        data.color,
-        data.triggerComponent,
-        data.triggerMethod,
+        data.color ?? '#FFFFFF',
+        data.trigger.component,
+        data.trigger.method,
         events!,
-        data.else,
+        data.condition,
         newTransition?.target.bounds
       );
     }

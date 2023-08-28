@@ -199,15 +199,17 @@ export class StateMachine extends EventEmitter {
         {
           do: events,
           trigger: {
-            args: {},
             component: triggerComponent,
             method: triggerMethod,
+            //args: {},
           },
         },
       ];
     } else {
-      trueTab.do = [...trueTab.do, events[0]];
+      trueTab.do = [...trueTab.do, ...events];
     }
+
+    state.eventBox.recalculate();
     this.dataTrigger();
   }
 
@@ -474,6 +476,8 @@ export class StateMachine extends EventEmitter {
       state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].component = component;
       state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].method = method;
     }
+
+    state.eventBox.recalculate();
     this.dataTrigger();
   }
 

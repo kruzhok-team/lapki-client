@@ -371,6 +371,44 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  deleteSelected() {
+    let removed = false;
+
+    const killList: string[] = [];
+    this.states.forEach((state) => {
+      if (state.isSelected) {
+        if (state.eventBox.selection) {
+          this.deleteEvent(state.id!, state.eventBox.selection);
+          state.eventBox.selection = undefined;
+          removed = true;
+          return;
+        } else {
+          killList.push(state.id!);
+        }
+      }
+    });
+    for (const k of killList) {
+      this.deleteState(k);
+      removed = true;
+    }
+
+    killList.length = 0;
+
+    this.transitions.forEach((value) => {
+      if (value.condition.isSelected) {
+        killList.push(value.id!);
+      }
+    });
+    for (const k of killList) {
+      this.deleteTransition(k);
+      removed = true;
+    }
+
+    if (removed) {
+      this.dataTrigger();
+    }
+  }
+
   // Изменение начального состояния
   changeInitialState(idState: string) {
     const newInitial = this.states.get(idState);
@@ -533,6 +571,11 @@ export class StateMachine extends EventEmitter {
     this.platform.nameToComponent.delete(name);
 
     this.dataTrigger();
+  }
+
+  undo() {
+    // FIXME: очень нужно
+    console.warn('😿 🔙 not implemened yet');
   }
 
   /**

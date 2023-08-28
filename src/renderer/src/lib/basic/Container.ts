@@ -57,6 +57,8 @@ export class Container {
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
+    this.app.keyboard.on('delete', this.handleDelete);
+    this.app.keyboard.on('ctrlz', this.handleUndo);
 
     document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -106,6 +108,14 @@ export class Container {
   globalMouseUp = () => {
     this.isPan = false;
     this.app.canvas.element.style.cursor = 'default';
+  };
+
+  handleDelete = () => {
+    this.machine.deleteSelected();
+  };
+
+  handleUndo = () => {
+    this.machine.undo();
   };
 
   handleMouseUp = (e: MyMouseEvent) => {

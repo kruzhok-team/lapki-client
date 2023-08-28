@@ -186,7 +186,7 @@ export class StateMachine extends EventEmitter {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
 
-    const trueTab = state.data.events.find(
+    const trueTab = state.eventBox.data.find(
       (value) =>
         triggerComponent === value.trigger.component &&
         triggerMethod === value.trigger.method &&
@@ -194,8 +194,8 @@ export class StateMachine extends EventEmitter {
     );
 
     if (trueTab === undefined) {
-      state.data.events = [
-        ...state.data.events,
+      state.eventBox.data = [
+        ...state.eventBox.data,
         {
           do: events,
           trigger: {
@@ -426,7 +426,7 @@ export class StateMachine extends EventEmitter {
     component: string,
     method: string,
     doAction: Action[],
-    condition: Condition,
+    condition: Condition | undefined,
     position: Point
   ) {
     if (id !== undefined) {
@@ -450,11 +450,30 @@ export class StateMachine extends EventEmitter {
   }
 
   // Редактирование события в состояниях
-  createEvent(data: { state; event } | undefined, component, method) {
+  createEvent(data: { state; event } | undefined, component: string, method: string) {
     const state = this.states.get(data?.state.id);
     if (typeof state === 'undefined') return;
-    state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].component = component;
-    state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].method = method;
+    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
+    if (data?.event.actionIdx === null) {
+      const trueTab = state.eventBox.data.find(
+        (value, id) =>
+          data?.event.eventIdx !== id &&
+          component === value.trigger.component &&
+          method === value.trigger.method &&
+          undefined === value.trigger.args // FIXME: сравнение по args может не работать
+      );
+
+      if (trueTab === undefined) {
+        state.eventBox.data[data?.event.eventIdx].trigger.component = component;
+        state.eventBox.data[data?.event.eventIdx].trigger.method = method;
+      } else {
+        trueTab.do = [...trueTab.do, ...state.eventBox.data[data?.event.eventIdx].do];
+        state.eventBox.data.splice(data?.event.eventIdx, 1);
+      }
+    } else {
+      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].component = component;
+      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].method = method;
+    }
     this.dataTrigger();
   }
 

@@ -41,31 +41,56 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 }) => {
   const machine = editor!.container.machine;
 
-  const options = [
-    {
-      value: 'System',
-      label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getComponentIconUrl('System', true)}
-            className="mr-1 h-7 w-7"
-          />
-          {'System'}
-        </div>
-      ),
-    },
-    ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-      return {
-        value: idx,
-        label: (
-          <div className="flex items-center">
-            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
-            {idx}
-          </div>
-        ),
-      };
-    }),
-  ];
+  useEffect(() => {
+    setComponents(options[0]);
+  }, [props.isOpen]);
+
+  const options =
+    props.isData?.event.actionIdx === null
+      ? [
+          {
+            value: 'System',
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getComponentIconUrl('System', true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {'System'}
+              </div>
+            ),
+          },
+          ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+            return {
+              value: idx,
+              label: (
+                <div className="flex items-center">
+                  <img
+                    src={machine.platform.getComponentIconUrl(idx, true)}
+                    className="mr-1 h-7 w-7"
+                  />
+                  {idx}
+                </div>
+              ),
+            };
+          }),
+        ]
+      : [
+          ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+            return {
+              value: idx,
+              label: (
+                <div className="flex items-center">
+                  <img
+                    src={machine.platform.getComponentIconUrl(idx, true)}
+                    className="mr-1 h-7 w-7"
+                  />
+                  {idx}
+                </div>
+              ),
+            };
+          }),
+        ];
   const [components, setComponents] = useState(options[0]);
 
   const optionsMethods = [
@@ -84,7 +109,6 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       };
     }),
     ...machine.platform.getAvailableEvents(components.value).map((entry) => {
-      console.log(entry.name);
       return {
         value: entry.name,
         label: (

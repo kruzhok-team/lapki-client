@@ -12,6 +12,7 @@ import { CreateEventsModal, EventsModalFormValues } from './EventsModal';
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
+import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 
 interface DiagramEditorProps {
   manager: EditorManager;
@@ -41,6 +42,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const [isCreateNameModalOpen, setIsCreateNameModalOpen] = useState(false);
+  const openCreateNameModal = () => setIsCreateNameModalOpen(true);
+  const closeCreateNameModal = () => setIsCreateNameModalOpen(false);
+
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
   const openEventsModal = () => setIsEventsModalOpen(true);
   const closeEventsModal = () => setIsEventsModalOpen(false);
@@ -79,7 +85,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       editor?.container.machine.createNewState('Состояние', position);
     });
 
-    //Здесь мы открываем модальное окно редактирования ноды
+    //Здесь мы открываем модальное окно редактирования имени ноды
     editor.container.states.onStateNameCreate((state: State) => {
       const globalOffset = state.container.app.mouse.getOffset();
       const statePos = state.computedPosition;
@@ -87,11 +93,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         x: statePos.x + globalOffset.x,
         y: statePos.y + globalOffset.y,
         width: state.computedWidth,
-        height: state.titleHeight,
+        height: state.titleHeight, // editor.container.scale, Вот тут можно настроить высоту блока переименования
       };
       ClearUseState();
       setNameState({ state, position });
-      openModal();
+      openCreateNameModal();
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
@@ -174,8 +180,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     closeEventsModal();
   };
 
-  const handleRename = (idx: string, name: string) => {
-    editor?.container.machine.updateState(idx, name);
+  const handleRename = (data: StateNameModalFormValues) => {
+    editor?.container.machine.updateState(data.id, data.name);
+    closeCreateNameModal();
   };
 
   const handleCreateModal = (data: CreateModalResult) => {
@@ -251,6 +258,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         isData={contextMenuData}
         callbacks={contextMenuCallbacks}
       />
+
+      {isCreateNameModalOpen ? (
+        <StateNameModal
+          isOpen={isCreateNameModalOpen}
+          isName={nameState}
+          onClose={closeCreateNameModal}
+          onRename={handleRename}
+        />
+      ) : (
+        ''
+      )}
+
       {editor !== null ? (
         <CreateEventsModal
           editor={editor}
@@ -271,10 +290,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
           isOpen={isModalOpen}
           onOpenEventsModal={openEventsModal}
           isData={state}
-          isName={nameState}
           onClose={closeModal}
           onSubmit={handleCreateModal}
-          onRename={handleRename}
         />
       ) : (
         ''

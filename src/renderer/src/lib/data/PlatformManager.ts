@@ -63,6 +63,8 @@ export class PlatformManager {
 
     if (!this.data.components['System']) {
       this.componentToIcon.set('System', systemComponent.img!);
+      this.eventToIcon.set('System/onEnter', 'onEnterAlt');
+      this.eventToIcon.set('System/onExit', 'onExitAlt');
       // this.data.components['System'] = systemComponent;
     }
 
@@ -135,6 +137,21 @@ export class PlatformManager {
     return outs;
   }
 
+  getAvailableVariables(name: string, isType?: boolean): ListEntry[] {
+    const outs: ListEntry[] = [];
+    const component = this.getComponent(name, isType);
+    if (!component) return outs;
+    const variables = component.variables;
+    for (const vName in variables) {
+      outs.push({
+        name: vName,
+        description: variables[vName].description,
+        img: variables[vName].img,
+      });
+    }
+    return outs;
+  }
+
   getComponentIcon(name: string, isName?: boolean) {
     const query = isName ? this.resolveComponent(name) : name;
     const icon = this.componentToIcon.get(query);
@@ -191,6 +208,13 @@ export class PlatformManager {
     } else {
       return 'variable';
     }
+  }
+
+  getVariableIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getVariableIcon(compoQuery, method);
+    // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
   }
 
   drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {

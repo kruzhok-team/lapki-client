@@ -26,10 +26,10 @@ const basePicto = {
   // "op/or": "/img/common/compare_or.svg",
   // "op/and": "/img/common/compare_and.svg",
 
-  // onEnter: '/img/bearloga/event_enter.svg',
-  // onExit: '/img/bearloga/event_exit.svg',
   onEnter: '/img/common/onEnterAlt.svg',
   onExit: '/img/common/onExitAlt.svg',
+  onEnterAlt: '/img/common/onEnter.svg',
+  onExitAlt: '/img/common/onExit.svg',
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {

@@ -175,6 +175,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     closeEventsModal();
   };
 
+  const handleRename = (idx: string, name: string) => {
+    editor?.container.machine.updateState(idx, name);
+  };
+
   const handleCreateModal = (data: CreateModalFormValues) => {
     if (data.key === 1) {
       editor?.container.machine.updateState(data.id, data.name);
@@ -274,6 +278,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
           isName={nameState}
           onClose={closeModal}
           onSubmit={handleCreateModal}
+          onRename={handleRename}
         />
       ) : (
         ''

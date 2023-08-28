@@ -331,6 +331,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     props.setIsCondition(newBoxState);
   };
 
+  const onSelect = (fn) => (value) => {
+    fn(value as SelectOption);
+  };
+
   return (
     //-------------------------------------Переименование состояния-----------------------------------------
     <>
@@ -381,14 +385,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <Select
                 className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
                 options={optionsComponents}
-                onChange={(event) => setComponents(event!)}
+                onChange={onSelect(setComponents)}
                 value={components}
                 isSearchable={false}
               />
               <Select
                 className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
                 options={optionsMethods}
-                onChange={(event) => setMethods(event!)}
+                onChange={onSelect(setMethods)}
                 value={methods}
                 isSearchable={false}
               />
@@ -423,7 +427,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam1Components}
-                        onChange={(event) => setParam1Components(event!)}
+                        onChange={onSelect(setParam1Components)}
                         value={param1Components}
                         isSearchable={false}
                       />
@@ -433,7 +437,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam1Methods}
-                        onChange={(event) => setParam1Methods(event!)}
+                        onChange={onSelect(setParam1Methods)}
                         value={param1Methods}
                         isSearchable={false}
                       />
@@ -486,7 +490,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam2Components}
-                        onChange={(event) => setParam2Components(event!)}
+                        onChange={onSelect(setParam2Components)}
                         value={param2Components}
                         isSearchable={false}
                       />
@@ -496,7 +500,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam2Methods}
-                        onChange={(event) => setParam2Methods(event!)}
+                        onChange={onSelect(setParam2Methods)}
                         value={param2Methods}
                         isSearchable={false}
                       />

@@ -98,7 +98,9 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 
   const [components, setComponents] = useState<SelectOption>(options[0]);
 
-  const optionsMethods = isEditingEvent
+  const optionsMethods = !components
+    ? []
+    : isEditingEvent
     ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
     : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
 

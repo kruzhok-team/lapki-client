@@ -9,8 +9,7 @@ import {
 } from './file-handlers';
 import { join } from 'path';
 import { ModuleManager } from './modules/ModuleManager';
-
-//import icon from '../../resources/icon.png?asset';
+import icon from '../../resources/icon.png?asset';
 
 /**
  * Создание главного окна редактора.
@@ -23,7 +22,7 @@ function createWindow(): void {
     minHeight: 600,
     minWidth: 1000,
     autoHideMenuBar: true,
-    //...(process.platform === 'win32' ? { icon } : {}),
+    ...(process.platform === 'win32' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

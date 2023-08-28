@@ -286,7 +286,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         };
 
     const data: CreateModalResult = {
-      id: isData !== undefined && isData?.state.id,
+      id: isData !== undefined ? isData.state.id! : '',
       key: isData ? 2 : 3,
       trigger: {
         component: components.value,

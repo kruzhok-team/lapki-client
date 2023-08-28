@@ -406,6 +406,11 @@ export class StateMachine extends EventEmitter {
       id: newId,
     });
 
+    // FIXME: по-хорошему, должно быть редактированием, но пока перестрахуемся
+    if (this.transitions.has(newId)) {
+      this.container.transitions.unwatchTransition(this.transitions.get(newId)!);
+    }
+
     this.transitions.set(newId, transition);
 
     this.container.transitions.watchTransition(transition);

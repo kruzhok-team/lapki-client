@@ -1,8 +1,8 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import {
-  FLASHER_LOCAL_HOST,
-  FLASHER_LOCAL_PORT,
-} from '../../renderer/src/components/Modules/Flasher';
+
+export const FLASHER_LOCAL_HOST = 'localhost';
+// FIXME: порт должен назначаться автоматически
+export const FLASHER_LOCAL_PORT = 13808;
 
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
@@ -25,9 +25,11 @@ export class ModuleManager {
               максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
           -updateList int
               количество секунд между автоматическими обновлениями (default 15)
+          -verbose
+              выводить в консоль подробную информацию
       */
       var flasherArgs: string[] = [
-        '-updateList=10',
+        '-updateList=1',
         '-listCooldown=0',
         `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
       ];

@@ -39,7 +39,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
   useEffect(() => {
     if (props.tabData !== null) {
       const newTabs = new Array<TabData>();
-      props.tabData.map((tab, id) => {
+      props.tabData.map((tab, _id) => {
         const trueTab = tabs.find((item) => item.tab === tab.name);
         if (trueTab === undefined) {
           newTabs.push({
@@ -112,7 +112,7 @@ export const Tabs: React.FC<TabsProps> = (props: TabsProps) => {
             onDragStart={() => handleDrag(id - 1)}
             onDrop={() => handleDrop(id - 1)}
             className={twMerge(
-              'group flex cursor-pointer items-center rounded border-x border-border-primary p-1 px-2 transition hover:bg-bg-primary',
+              'group flex cursor-pointer items-center rounded p-1 px-2 transition hover:bg-bg-primary',
               activeTab === id && 'bg-bg-primary'
             )}
             onClick={() => isActive(id)}

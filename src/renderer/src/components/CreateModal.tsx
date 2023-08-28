@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -10,8 +10,7 @@ import { TextInput } from './Modal/TextInput';
 import { Action, Condition } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
-import Select from 'react-select';
+import { Select } from '@renderer/components/UI';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -23,6 +22,7 @@ interface CreateModalProps {
   onOpenEventsModal: () => void;
   onClose: () => void;
   onSubmit: (data: CreateModalFormValues) => void;
+  onRename: (idx: string, name: string) => void;
 }
 
 export interface CreateModalFormValues {
@@ -32,7 +32,7 @@ export interface CreateModalFormValues {
   //Данные основного события
   triggerComponent: string;
   triggerMethod: string;
-  else: Condition;
+  else?: Condition;
   //Массив вторичных событий
   condition: Action[];
 
@@ -43,6 +43,7 @@ export interface CreateModalFormValues {
 
 export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
+  onRename,
   onOpenEventsModal,
   onClose,
   isData,
@@ -53,6 +54,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const {
     register,
     formState: { errors },
+    handleSubmit: hookHandleSubmit,
   } = useForm<CreateModalFormValues>();
 
   //--------------------------------Работа со списком компонентов---------------------------------------
@@ -116,110 +118,68 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [param1Components, setParam1Components] = useState(optionsParam1Components[0]);
   const [param2Components, setParam2Components] = useState(optionsParam1Components[0]);
 
-  const optionsMethods =
-    machine.platform.getAvailableMethods(components.value).length !== 0
-      ? machine.platform.getAvailableMethods(components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })
-      : machine.platform.getAvailableEvents(components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        });
-  const optionsParam1Methods =
-    machine.platform.getAvailableMethods(param1Components.value).length !== 0
-      ? machine.platform.getAvailableMethods(param1Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(param1Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })
-      : machine.platform.getAvailableEvents(param1Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(param1Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        });
-  const optionsParam2Methods =
-    machine.platform.getAvailableMethods(param2Components.value).length !== 0
-      ? machine.platform.getAvailableMethods(param2Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(param2Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })
-      : machine.platform.getAvailableEvents(param2Components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(param2Components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        });
+  const optionsMethods = [
+    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const optionsParam1Methods = [
+    ...machine.platform.getAvailableVariables(param1Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getVariableIconUrl(param1Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const optionsParam2Methods = [
+    ...machine.platform.getAvailableVariables(param2Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getVariableIconUrl(param2Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
   const [methods, setMethods] = useState(optionsMethods[0]);
   const [param1Methods, setParam1Methods] = useState(optionsParam1Methods[0]);
   const [param2Methods, setParam2Methods] = useState(optionsParam2Methods[0]);
 
   useEffect(() => {
-    setMethods(optionsMethods[0]);
+    setMethods(optionsMethods[0] ?? null);
   }, [components]);
 
   useEffect(() => {
-    setParam1Methods(optionsParam1Methods[0]);
+    setParam1Methods(optionsParam1Methods[0] ?? null);
   }, [param1Components]);
 
   useEffect(() => {
-    setParam2Methods(optionsParam2Methods[0]);
+    setParam2Methods(optionsParam2Methods[0] ?? null);
   }, [param2Components]);
   //-----------------------------------------------------------------------------------------------------
 
@@ -258,48 +218,54 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   var method = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [type, setType] = useState<string>();
-  const handleSubmit = (ev) => {
-    ev.preventDefault();
+  const handleSubmit = hookHandleSubmit((formData) => {
+    if (isName) {
+      onRename(isName?.state.id, formData.name);
+    }
 
-    const data = {
-      id: isName ? isName?.state.id : isData !== undefined && isData?.state.id,
-      name: isName ? 'Состояние' : isData !== undefined && isData?.state.data.name,
-      key: isName ? 1 : isData ? 2 : 3,
+    const cond = isElse
+      ? undefined
+      : {
+          type: type!,
+          value: [
+            {
+              type: isParamOne ? 'component' : 'value',
+              value: isParamOne
+                ? {
+                    component: param1Components.value,
+                    method: param1Methods.value,
+                    args: {},
+                  }
+                : formData.argsOneElse,
+            },
+            {
+              type: isParamTwo ? 'component' : 'value',
+              value: isParamTwo
+                ? {
+                    component: param2Components.value,
+                    method: param2Methods.value,
+                    args: {},
+                  }
+                : formData.argsTwoElse,
+            },
+          ],
+        };
+
+    // FIXME: ВЫХОДНЫЕ ДАННЫЕ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМ ТИПОМ
+    const data: CreateModalFormValues = {
+      id: isData !== undefined && isData?.state.id,
+      name: isData !== undefined && isData?.state.data.name,
+      key: isData ? 2 : 3,
       triggerComponent: components.value,
       triggerMethod: methods.value,
-      else: {
-        type: type!,
-        value: [
-          {
-            type: isParamOne ? 'component' : 'value',
-            value: isParamOne
-              ? {
-                  component: param1Components.value,
-                  method: param1Methods.value,
-                  args: {},
-                }
-              : { argsOneElse: '5' },
-          },
-          {
-            type: isParamTwo ? 'component' : 'value',
-            value: isParamTwo
-              ? {
-                  component: param2Components.value,
-                  method: param2Methods.value,
-                  args: {},
-                }
-              : { argsTwoElse: '5' },
-          },
-        ],
-      },
+      else: cond,
       condition: method,
-      argsOneElse: { args: '5' },
-      argsTwoElse: { args: '5' },
+      argsOneElse: formData.argsOneElse,
+      argsTwoElse: formData.argsTwoElse,
       color: 'FFFFFF',
     };
-    //Это ошибка требуется большого внимания, но вглядываться в типы я пока не стал, пока и без этого работает
     onSubmit(data);
-  };
+  });
   //-----------------------------------------------------------------------------------------------------
 
   //----------------------Стили позиционирования для переименования состояния----------------------------
@@ -376,7 +342,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             onKeyUp={(e) => {
               var keyCode = e.keyCode;
               if (e.key === 'Enter') {
-                handleSubmit;
+                handleSubmit();
               } else if (keyCode === 27) {
                 onRequestClose();
               }

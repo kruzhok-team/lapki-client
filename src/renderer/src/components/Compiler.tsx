@@ -12,6 +12,7 @@ export interface CompilerProps {
   handleSaveSourceIntoFolder: () => void;
   handleSaveBinaryIntoFolder: () => void;
   handleShowSource: () => void;
+  handleFlashButton: () => void;
 }
 
 export const Compiler: React.FC<CompilerProps> = ({
@@ -24,6 +25,7 @@ export const Compiler: React.FC<CompilerProps> = ({
   handleSaveSourceIntoFolder,
   handleSaveBinaryIntoFolder,
   handleShowSource,
+  handleFlashButton,
 }) => {
   const button = [
     {
@@ -49,13 +51,11 @@ export const Compiler: React.FC<CompilerProps> = ({
     {
       name: 'Показать код',
       handler: handleShowSource,
-      condition: compilerData?.source == undefined || compilerData?.source.length == 0,
+      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
     },
     {
       name: 'Прошить...',
-      handler: () => {
-        console.log('click');
-      },
+      handler: handleFlashButton,
       disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
     },
   ];

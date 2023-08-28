@@ -3,11 +3,10 @@ import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
 import { EventSelection } from '../lib/drawable/Events';
-import { TextInput } from './Modal/TextInput';
 import { Action } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import Select from 'react-select';
+import { Select } from '@renderer/components/UI';
 
 export interface SelectEntry {
   value: string;
@@ -69,36 +68,37 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   ];
   const [components, setComponents] = useState(options[0]);
 
-  const optionsMethods =
-    machine.platform.getAvailableMethods(components.value).length !== 0
-      ? machine.platform.getAvailableMethods(components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        })
-      : machine.platform.getAvailableEvents(components.value).map((entry) => {
-          return {
-            value: entry.name,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {entry.name}
-              </div>
-            ),
-          };
-        });
+  const optionsMethods = [
+    ...machine.platform.getAvailableMethods(components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+      console.log(entry.name);
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
 
   const [methods, setMethods] = useState(optionsMethods[0]);
   useEffect(() => {

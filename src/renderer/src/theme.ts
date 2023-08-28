@@ -1,30 +1,39 @@
-const dark = {
-  codeEditorTheme: 'vs-dark',
+const colorNames = {
+  codeEditorTheme: '--c-e-t',
+  primary: '--p',
+  error: '--e',
+  success: '--s',
+
+  primaryHover: '--p-h',
+  primaryActive: '--p-a',
+
+  'bg-primary': '--bg-p',
+  'bg-secondary': '--bg-s',
+  'bg-hover': '--bg-h',
+  'bg-active': '--bg-a',
+
+  'border-primary': '--b-p',
+
+  'text-primary': '--t-p',
+  'text-secondary': '--t-s',
+  'text-inactive': '--t-i',
+  'text-disabled': '--t-d',
+};
+
+// Это метод для того чтобы достать цвет из джаваскрипта
+export const getColor = (colorName: keyof typeof colorNames) => {
+  return getComputedStyle(document.documentElement).getPropertyValue(colorNames[colorName]);
+};
+
+const getVariables = () => {
+  return Object.fromEntries(
+    Object.entries(colorNames).map(([name, value]) => [name, `var(${value})`])
+  );
+};
+
+export default {
   colors: {
-    primary: '#0C4BEE',
-    error: 'red',
-    success: 'lime',
-
-    primaryHover: '#225EF9',
-    primaryActive: '#2A62F4',
-
-    bg: {
-      primary: '#262626',
-      secondary: '#121111',
-      hover: '#434343',
-      active: '#545454',
-    },
-
-    border: {
-      primary: '#666666',
-    },
-
-    text: {
-      primary: '#f2f2f2',
-      secondary: '#fff',
-      inactive: '#a3a2a2',
-      disabled: 'rgb(156,163,175)',
-    },
+    ...getVariables(),
 
     diagram: {
       state: {
@@ -36,52 +45,5 @@ const dark = {
       },
     },
   },
+  getColor,
 };
-
-const light = {
-  codeEditorTheme: 'vs-light',
-  colors: {
-    primary: '#0C4BEE',
-    error: 'red',
-    success: 'lime',
-
-    primaryHover: '#225EF9',
-    primaryActive: '#2A62F4',
-
-    bg: {
-      primary: '#e7e7e7',
-      secondary: '#f2f2f2',
-      hover: '#cfcfcf',
-      active: '#c2c2c2',
-    },
-
-    border: {
-      primary: '#c2c2c2',
-    },
-
-    text: {
-      primary: '#000',
-      secondary: '#fff',
-      inactive: '#b3b2b2',
-      disabled: 'rgb(156,163,175)',
-    },
-
-    diagram: {
-      state: {
-        bodyBg: '#404040',
-        titleColor: '#FFF',
-        titleBg: '#525252',
-        eventColor: '#FFF',
-        selectedBorderColor: '#FFF',
-      },
-    },
-  },
-};
-
-const getTheme = () => {
-  //TODO Тут нужно откуда-нибудь достать тему
-
-  return dark;
-};
-
-export default getTheme();

@@ -3,14 +3,15 @@ import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
 import { EventSelection } from '../lib/drawable/Events';
-import { Action } from '@renderer/types/diagram';
+import { Action, Event } from '@renderer/types/diagram';
 import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Select, SelectOption } from '@renderer/components/UI';
 import { ArgumentProto } from '@renderer/types/platform';
 
 type ArgSet = { [k: string]: string };
-type ArgForm = { name: string; description?: string }[];
+type ArgFormEntry = { name: string; description?: string };
+type ArgForm = ArgFormEntry[];
 
 interface FormPreset {
   compo: SelectOption;
@@ -25,16 +26,14 @@ interface EventsModalProps extends Props {
   isOpen: boolean;
   cancelLabel?: string;
   submitLabel?: string;
-  onSubmit: (data: EventsModalFormValues) => void;
+  onSubmit: (data: EventsModalResult) => void;
   onClose: () => void;
 }
 
-export interface EventsModalFormValues {
+export interface EventsModalResult {
   id: { state; event: EventSelection } | undefined;
-  doComponent: string;
-  doMethod: string;
-  doArgs: { [key: string]: string } | undefined;
-  condition: Action;
+  trigger: Event;
+  action: Action;
 }
 
 export const CreateEventsModal: React.FC<EventsModalProps> = ({
@@ -103,18 +102,23 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
     : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
 
-  const [methods, setMethods] = useState<SelectOption>(optionsMethods[0]);
+  const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
 
   useEffect(() => {
     if (!isChanged) return;
-    setMethods(optionsMethods[0]);
+    if (optionsMethods.length > 0) {
+      setMethods(optionsMethods[0]);
+    } else {
+      setMethods(null);
+    }
   }, [components]);
 
   const [argSet, setArgSet] = useState<ArgSet>({});
   const [argForm, setArgForm] = useState<ArgForm>([]);
 
   const retrieveArgForm = (compo: string, method: string) => {
-    const component = machine.platform.data.components[compo];
+    const compoType = machine.platform.resolveComponent(compo);
+    const component = machine.platform.data.components[compoType];
     if (!component) return [];
 
     const argList: ArgumentProto[] | undefined = isEditingEvent
@@ -131,15 +135,12 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   useEffect(() => {
     if (!isChanged) return;
     setArgSet({});
-    setArgForm(retrieveArgForm(components.value, methods.value));
+    if (methods) {
+      setArgForm(retrieveArgForm(components.value, methods.value));
+    } else {
+      setArgForm([]);
+    }
   }, [methods]);
-
-  const handleInputChange = (e) => {
-    const newSet = { ...argSet };
-    newSet[e.target.name] = e.target.value;
-    setArgSet(newSet);
-    // console.log(newSet);
-  };
 
   const tryGetData: () => FormPreset | undefined = () => {
     if (props.isData) {
@@ -161,11 +162,12 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             if (ac) {
               const compoName = ac.component;
               const methodName = ac.method;
+              const form = retrieveArgForm(compoName, methodName);
               return {
                 compo: compoEntry(compoName),
-                event: eventEntry(methodName, compoName),
+                event: actionEntry(methodName, compoName),
                 argSet: ac.args ?? {},
-                argForm: retrieveArgForm(compoName, methodName),
+                argForm: form,
               };
             }
           }
@@ -173,6 +175,30 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       }
     }
     return undefined;
+  };
+
+  const parameters = argForm.map((entry) => {
+    const name = entry.name;
+    const data = argSet[entry.name] ?? '';
+    return (
+      <>
+        <label className="mx-1 flex flex-col">
+          {name}
+          <input
+            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            value={data}
+            name={name}
+            onChange={(e) => handleInputChange(e)}
+          />
+        </label>
+      </>
+    );
+  });
+
+  const handleInputChange = (e) => {
+    const newSet = { ...argSet };
+    newSet[e.target.name] = e.target.value;
+    setArgSet(newSet);
   };
 
   const [isChanged, setIsChanged] = useState(false);
@@ -183,6 +209,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       if (d) {
         setComponents(d.compo);
         setMethods(d.event);
+        setArgSet(d.argSet);
+        setArgForm(d.argForm);
       } else {
         setComponents(components[0]);
       }
@@ -193,16 +221,23 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 
   const handleSubmit = (ev) => {
     ev.preventDefault();
+
+    if (!methods) {
+      return;
+    }
+
     // FIXME: очень некорректное дублирование, его нужно снять
     const data = {
       id: props.isData,
-      doComponent: components.value,
-      doMethod: methods.value,
-      doArgs: {},
-      condition: {
+      trigger: {
         component: components.value,
         method: methods.value,
-        args: {},
+        args: argSet,
+      },
+      action: {
+        component: components.value,
+        method: methods.value,
+        args: argSet,
       },
     };
     onSubmit(data);
@@ -221,7 +256,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       onRequestClose={onClose}
     >
       <div className="relative mb-3 justify-between border-b border-neutral-400 pb-1">
-        <h1 className="text-2xl font-bold">Редактирование события</h1>
+        <h1 className="text-2xl font-bold">Выберите {isEditingEvent ? 'событие' : 'действие'}</h1>
       </div>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col items-center">
@@ -239,18 +274,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
             value={methods}
             isSearchable={false}
           />
-          {/* <TextInput
-            label="Параметр:"
-            placeholder="Напишите параметр"
-            {...register('doArgs', {
-              required: 'Это поле обязательно к заполнению!',
-            })}
-            isElse={false}
-            error={!!errors.doArgs}
-            // FIXME: некритичная ошибка по типам
-            // @ts-ignore
-            errorMessage={errors.doArgs?.message ?? ''}
-          /> */}
+          {parameters?.length > 0 ? <div className="mb-6">{parameters}</div> : ''}
         </div>
         <div className="flex items-center justify-end gap-2">
           <button
@@ -262,8 +286,9 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           </button>
           <button
             type="submit"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:enabled:bg-neutral-600"
             hidden={!onSubmit}
+            disabled={!methods}
           >
             {submitLabel ?? 'Сохранить'}
           </button>

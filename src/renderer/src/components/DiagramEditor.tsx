@@ -7,7 +7,7 @@ import { State } from '@renderer/lib/drawable/State';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
-import { CreateEventsModal, EventsModalFormValues } from './EventsModal';
+import { CreateEventsModal, EventsModalResult } from './EventsModal';
 
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
@@ -170,12 +170,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     // }, [ containerRef.current ]);
   }, []);
 
-  const handleCreateEventsModal = (data: EventsModalFormValues) => {
-    const doComponent = data.doComponent;
-    const doMethod = data.doMethod;
-    setEvents([...events, data.condition]);
+  const handleCreateEventsModal = (data: EventsModalResult) => {
+    setEvents([...events, data.action]);
     if (!isModalOpen) {
-      editor?.container.machine.createEvent(data.id, doComponent, doMethod);
+      editor?.container.machine.createEvent(data.id, data.trigger);
     }
     closeEventsModal();
   };

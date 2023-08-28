@@ -1,4 +1,10 @@
-import { Action, Condition, Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition,
+  Elements,
+  Event,
+  Transition as TransitionType,
+} from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
 
@@ -452,7 +458,7 @@ export class StateMachine extends EventEmitter {
   }
 
   // Редактирование события в состояниях
-  createEvent(data: { state; event } | undefined, component: string, method: string) {
+  createEvent(data: { state; event } | undefined, newValue: Event | Action) {
     const state = this.states.get(data?.state.id);
     if (typeof state === 'undefined') return;
     //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
@@ -460,21 +466,19 @@ export class StateMachine extends EventEmitter {
       const trueTab = state.eventBox.data.find(
         (value, id) =>
           data?.event.eventIdx !== id &&
-          component === value.trigger.component &&
-          method === value.trigger.method &&
+          newValue.component === value.trigger.component &&
+          newValue.method === value.trigger.method &&
           undefined === value.trigger.args // FIXME: сравнение по args может не работать
       );
 
       if (trueTab === undefined) {
-        state.eventBox.data[data?.event.eventIdx].trigger.component = component;
-        state.eventBox.data[data?.event.eventIdx].trigger.method = method;
+        state.eventBox.data[data?.event.eventIdx].trigger = newValue;
       } else {
         trueTab.do = [...trueTab.do, ...state.eventBox.data[data?.event.eventIdx].do];
         state.eventBox.data.splice(data?.event.eventIdx, 1);
       }
     } else {
-      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].component = component;
-      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].method = method;
+      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx] = newValue;
     }
 
     state.eventBox.recalculate();

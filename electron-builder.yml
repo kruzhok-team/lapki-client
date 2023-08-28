@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: clien
+productName: lapki-ide
 directories:
   buildResources: build
 files:
@@ -11,9 +11,9 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
-afterSign: build/notarize.js
+# TODO: afterSign: build/notarize.js
 win:
-  executableName: clien
+  executableName: lapki-ide
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

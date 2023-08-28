@@ -7,10 +7,10 @@ import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
-import { Action, Condition } from '@renderer/types/diagram';
+import { Action, Condition, Event as StateEvent } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { Select } from '@renderer/components/UI';
+import { Select, SelectOption } from '@renderer/components/UI';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ interface CreateModalProps {
   isName: { state; position } | undefined;
   onOpenEventsModal: () => void;
   onClose: () => void;
-  onSubmit: (data: CreateModalFormValues) => void;
+  onSubmit: (data: CreateModalResult) => void;
   onRename: (idx: string, name: string) => void;
 }
 
@@ -39,6 +39,15 @@ export interface CreateModalFormValues {
   argsOneElse: string;
   argsTwoElse: string;
   color: string;
+}
+
+export interface CreateModalResult {
+  id: string;
+  key: number;
+  trigger: StateEvent;
+  condition?: Condition;
+  do: Action[];
+  color?: string;
 }
 
 export const CreateModal: React.FC<CreateModalProps> = ({
@@ -114,9 +123,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   );
 
-  const [components, setComponents] = useState(optionsComponents[0]);
-  const [param1Components, setParam1Components] = useState(optionsParam1Components[0]);
-  const [param2Components, setParam2Components] = useState(optionsParam1Components[0]);
+  const [components, setComponents] = useState<SelectOption>(optionsComponents[0]);
+  const [param1Components, setParam1Components] = useState<SelectOption>(
+    optionsParam1Components[0]
+  );
+  const [param2Components, setParam2Components] = useState<SelectOption>(
+    optionsParam1Components[0]
+  );
 
   const optionsMethods = [
     ...machine.platform.getAvailableEvents(components.value).map((entry) => {
@@ -166,9 +179,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       };
     }),
   ];
-  const [methods, setMethods] = useState(optionsMethods[0]);
-  const [param1Methods, setParam1Methods] = useState(optionsParam1Methods[0]);
-  const [param2Methods, setParam2Methods] = useState(optionsParam2Methods[0]);
+  const [methods, setMethods] = useState<SelectOption>(optionsMethods[0]);
+  const [param1Methods, setParam1Methods] = useState<SelectOption>(optionsParam1Methods[0]);
+  const [param2Methods, setParam2Methods] = useState<SelectOption>(optionsParam2Methods[0]);
 
   useEffect(() => {
     setMethods(optionsMethods[0] ?? null);
@@ -223,6 +236,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       onRename(isName?.state.id, formData.name);
     }
 
+    if (!isElse) {
+      if (isParamOne && param1Methods.value == null) {
+        return;
+      }
+      if (isParamTwo && param2Methods.value == null) {
+        return;
+      }
+    }
+    if (methods.value == null) {
+      return;
+    }
+
     const cond = isElse
       ? undefined
       : {
@@ -251,19 +276,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           ],
         };
 
-    // FIXME: ВЫХОДНЫЕ ДАННЫЕ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМ ТИПОМ
-    const data: CreateModalFormValues = {
+    const data: CreateModalResult = {
       id: isData !== undefined && isData?.state.id,
-      name: isData !== undefined && isData?.state.data.name,
       key: isData ? 2 : 3,
-      triggerComponent: components.value,
-      triggerMethod: methods.value,
-      else: cond,
-      condition: method,
-      argsOneElse: formData.argsOneElse,
-      argsTwoElse: formData.argsTwoElse,
-      color: 'FFFFFF',
+      trigger: {
+        component: components.value,
+        method: methods.value,
+      },
+      condition: cond,
+      do: method,
+      color: formData.color,
     };
+
     onSubmit(data);
   });
   //-----------------------------------------------------------------------------------------------------
@@ -331,6 +355,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     props.setIsCondition(newBoxState);
   };
 
+  const onSelect = (fn) => (value) => {
+    fn(value as SelectOption);
+  };
+
   return (
     //-------------------------------------Переименование состояния-----------------------------------------
     <>
@@ -381,14 +409,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <Select
                 className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
                 options={optionsComponents}
-                onChange={(event) => setComponents(event!)}
+                onChange={onSelect(setComponents)}
                 value={components}
                 isSearchable={false}
               />
               <Select
                 className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
                 options={optionsMethods}
-                onChange={(event) => setMethods(event!)}
+                onChange={onSelect(setMethods)}
                 value={methods}
                 isSearchable={false}
               />
@@ -423,7 +451,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam1Components}
-                        onChange={(event) => setParam1Components(event!)}
+                        onChange={onSelect(setParam1Components)}
                         value={param1Components}
                         isSearchable={false}
                       />
@@ -433,7 +461,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam1Methods}
-                        onChange={(event) => setParam1Methods(event!)}
+                        onChange={onSelect(setParam1Methods)}
                         value={param1Methods}
                         isSearchable={false}
                       />
@@ -486,7 +514,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam2Components}
-                        onChange={(event) => setParam2Components(event!)}
+                        onChange={onSelect(setParam2Components)}
                         value={param2Components}
                         isSearchable={false}
                       />
@@ -496,7 +524,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                           isElse && 'hidden'
                         )}
                         options={optionsParam2Methods}
-                        onChange={(event) => setParam2Methods(event!)}
+                        onChange={onSelect(setParam2Methods)}
                         value={param2Methods}
                         isSearchable={false}
                       />
@@ -543,11 +571,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                         <div className="h-full border-2 border-white"></div>
                         <img
                           style={{ height: '32px', width: '32px' }}
-                          src={
-                            machine.platform.getAvailableMethods(data.component).length !== 0
-                              ? machine.platform.getActionIconUrl(data.component, data.method, true)
-                              : machine.platform.getEventIconUrl(data.component, data.method, true)
-                          }
+                          src={machine.platform.getActionIconUrl(data.component, data.method, true)}
                         />
                       </div>
                       <div className="flex items-center">

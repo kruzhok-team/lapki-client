@@ -8,11 +8,6 @@ import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Select, SelectOption } from '@renderer/components/UI';
 
-export interface SelectEntry {
-  value: string;
-  label: JSX.Element | string;
-}
-
 interface EventsModalProps extends Props {
   editor: CanvasEditor | null;
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
@@ -40,94 +35,123 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   ...props
 }) => {
   const machine = editor!.container.machine;
+  const isEditingEvent = props.isData?.event.actionIdx === null;
 
-  useEffect(() => {
-    setComponents(options[0]);
-  }, [props.isOpen]);
+  const compoEntry = (idx: string) => {
+    return {
+      value: idx,
+      label: (
+        <div className="flex items-center">
+          <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+          {idx}
+        </div>
+      ),
+    };
+  };
 
-  const options =
-    props.isData?.event.actionIdx === null
-      ? [
-          {
-            value: 'System',
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getComponentIconUrl('System', true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {'System'}
-              </div>
-            ),
-          },
-          ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-            return {
-              value: idx,
-              label: (
-                <div className="flex items-center">
-                  <img
-                    src={machine.platform.getComponentIconUrl(idx, true)}
-                    className="mr-1 h-7 w-7"
-                  />
-                  {idx}
-                </div>
-              ),
-            };
-          }),
-        ]
-      : [
-          ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-            return {
-              value: idx,
-              label: (
-                <div className="flex items-center">
-                  <img
-                    src={machine.platform.getComponentIconUrl(idx, true)}
-                    className="mr-1 h-7 w-7"
-                  />
-                  {idx}
-                </div>
-              ),
-            };
-          }),
-        ];
-  const [components, setComponents] = useState(options[0]);
+  const eventEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
 
-  const optionsMethods = [
-    ...machine.platform.getAvailableMethods(components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getActionIconUrl(components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
+  const actionEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const sysCompoOption = isEditingEvent
+    ? [
+        {
+          value: 'System',
+          label: (
+            <div className="flex items-center">
+              <img
+                src={machine.platform.getComponentIconUrl('System', true)}
+                className="mr-1 h-7 w-7"
+              />
+              {'System'}
+            </div>
+          ),
+        },
+      ]
+    : [];
+
+  const options = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
   ];
 
-  const [methods, setMethods] = useState(optionsMethods[0]);
+  const [components, setComponents] = useState<SelectOption>(options[0]);
+
+  const optionsMethods = isEditingEvent
+    ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
+    : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
+
+  const [methods, setMethods] = useState<SelectOption>(optionsMethods[0]);
   useEffect(() => {
+    if (!isChanged) return;
     setMethods(optionsMethods[0]);
   }, [components]);
+
+  const tryGetData = () => {
+    if (props.isData) {
+      const d = props.isData;
+      if (d.event.eventIdx >= 0) {
+        const evs = d.state.eventBox.data[d.event.eventIdx];
+        if (evs) {
+          if (d.event.actionIdx === null) {
+            return [
+              compoEntry(evs.trigger.component),
+              eventEntry(evs.trigger.method, evs.trigger.component),
+            ];
+          } else {
+            const ac = evs.do[d.event.actionIdx];
+            if (ac) {
+              return [compoEntry(ac.component), actionEntry(ac.method, ac.component)];
+            }
+          }
+        }
+      }
+    }
+    return undefined;
+  };
+
+  const [isChanged, setIsChanged] = useState(false);
+  const [wasOpen, setWasOpen] = useState(false);
+  useEffect(() => {
+    if (!wasOpen && props.isOpen) {
+      const d: SelectOption[] | undefined = tryGetData();
+      if (d) {
+        setComponents(d[0]);
+        setMethods(d[1]);
+      } else {
+        setComponents(components[0]);
+      }
+      setIsChanged(false);
+    }
+    setWasOpen(props.isOpen);
+  }, [props.isOpen]);
+
   const handleSubmit = (ev) => {
     ev.preventDefault();
 
@@ -146,6 +170,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   };
 
   const onSelect = (fn) => (value) => {
+    setIsChanged(true);
     fn(value as SelectOption);
   };
 

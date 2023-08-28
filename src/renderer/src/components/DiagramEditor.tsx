@@ -75,8 +75,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.onFieldContextMenu((pos) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
+      const canvasPos = editor.container.relativeMousePos(pos);
 
-      setContextMenuData({ data: null, canvasPos: pos, position, event: undefined });
+      setContextMenuData({ data: null, canvasPos, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 
@@ -112,7 +113,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.states.onStateContextMenu((state: State, pos) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, canvasPos: pos, position, event: undefined });
+      const canvasPos = editor.container.relativeMousePos(pos);
+      setContextMenuData({ data: state, canvasPos, position, event: undefined });
       setIsContextMenuOpen(true);
       // manager.triggerDataUpdate();
     });
@@ -126,7 +128,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.states.onEventContextMenu((state, pos, event) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, canvasPos: pos, position, event });
+      const canvasPos = editor.container.relativeMousePos(pos);
+      setContextMenuData({ data: state, canvasPos, position, event });
       setIsContextMenuOpen(true);
     });
 
@@ -152,7 +155,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
 
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: condition, canvasPos: pos, position, event: undefined });
+      const canvasPos = editor.container.relativeMousePos(pos);
+      setContextMenuData({ data: condition, canvasPos, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 

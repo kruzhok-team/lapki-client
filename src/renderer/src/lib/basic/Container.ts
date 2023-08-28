@@ -169,14 +169,16 @@ export class Container {
   handleMouseDoubleClick = (e: MyMouseEvent) => {
     e.stopPropagation();
 
-    const rect = this.app.canvas.element.getBoundingClientRect();
-    const position = {
-      x: (e.nativeEvent.x - rect.left) * this.scale - this.offset.x,
-      y: (e.nativeEvent.y - rect.top) * this.scale - this.offset.y,
+    this.dropCallback?.(this.relativeMousePos({ x: e.x, y: e.y }));
     };
 
-    this.dropCallback?.(position);
+  relativeMousePos(e: Point): Point {
+    // const rect = this.app.canvas.element.getBoundingClientRect();
+    return {
+      x: e.x * this.scale - this.offset.x,
+      y: e.y * this.scale - this.offset.y,
   };
+  }
 
   get graphData() {
     return this.machine.graphData();

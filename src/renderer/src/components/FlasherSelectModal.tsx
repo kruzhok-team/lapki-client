@@ -7,7 +7,6 @@ import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
 
 import { SELECT_LOCAL, SELECT_REMOTE, TextSelectFlasher } from './Modal/TextSelectFlasher';
-import { Position } from 'monaco-editor';
 
 const localStorageHost = 'host';
 const localStoragePort = 'port';

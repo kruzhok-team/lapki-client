@@ -1,5 +1,5 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
@@ -14,8 +14,8 @@ const basePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
-  system: '/img/arduino/action.svg',
-  variable: '/img/arduino/variable-type.svg',
+  system: '/img/common/system.svg',
+  variable: '/img/common/variable.svg',
 
   'op/notEquals': '/img/bearloga/compare_not_equal.svg',
   'op/equals': '/img/bearloga/compare_equal.svg',
@@ -26,8 +26,10 @@ const basePicto = {
   // "op/or": "/img/common/compare_or.svg",
   // "op/and": "/img/common/compare_and.svg",
 
-  onEnter: '/img/bearloga/event_enter.svg',
-  onExit: '/img/bearloga/event_exit.svg',
+  onEnter: '/img/common/onEnterAlt.svg',
+  onExit: '/img/common/onExitAlt.svg',
+  onEnterAlt: '/img/common/onEnter.svg',
+  onExitAlt: '/img/common/onExit.svg',
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {
@@ -58,6 +60,7 @@ export type PictoProps = {
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
+  parameter?: string;
   // TODO: args
 };
 
@@ -95,6 +98,8 @@ export class Picto {
   separatorVOffset = 4;
   iconVOffset = 5;
   iconHOffset = 10;
+  pxPerChar = 15;
+  textPadding = 5;
 
   drawRect(
     ctx: CanvasRenderingContext2D,
@@ -163,7 +168,7 @@ export class Picto {
     let opacity = ps.opacity ?? 1.0;
 
     const baseFontSize = 24;
-    const w = 5 * 2 + text.length * 15;
+    const w = this.textPadding * 2 + text.length * this.pxPerChar;
     const cy = (picto.eventHeight - baseFontSize) / this.scale;
 
     // Рамка
@@ -225,6 +230,24 @@ export class Picto {
         width: this.iconSize,
         height: this.iconSize,
       });
+    }
+    if (ps.parameter) {
+      const baseFontSize = 12;
+      const cy = (picto.eventHeight - baseFontSize) / this.scale;
+      const cx = (this.eventWidth - 5) / this.scale;
+      const fontSize = baseFontSize / picto.scale;
+      ctx.save();
+      ctx.font = `${fontSize}px/0 monospace`;
+      ctx.fillStyle = fgColor;
+      ctx.strokeStyle = bgColor;
+      ctx.textBaseline = 'hanging';
+      ctx.textAlign = 'end';
+      ctx.lineWidth = 0.5 / this.scale;
+
+      ctx.strokeText(ps.parameter, x + cx, y + cy);
+      ctx.fillText(ps.parameter, x + cx, y + cy);
+
+      ctx.restore();
     }
   }
 }

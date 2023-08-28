@@ -63,6 +63,8 @@ export class PlatformManager {
 
     if (!this.data.components['System']) {
       this.componentToIcon.set('System', systemComponent.img!);
+      this.eventToIcon.set('System/onEnter', 'onEnterAlt');
+      this.eventToIcon.set('System/onExit', 'onExitAlt');
       // this.data.components['System'] = systemComponent;
     }
 
@@ -135,6 +137,21 @@ export class PlatformManager {
     return outs;
   }
 
+  getAvailableVariables(name: string, isType?: boolean): ListEntry[] {
+    const outs: ListEntry[] = [];
+    const component = this.getComponent(name, isType);
+    if (!component) return outs;
+    const variables = component.variables;
+    for (const vName in variables) {
+      outs.push({
+        name: vName,
+        description: variables[vName].description,
+        img: variables[vName].img,
+      });
+    }
+    return outs;
+  }
+
   getComponentIcon(name: string, isName?: boolean) {
     const query = isName ? this.resolveComponent(name) : name;
     const icon = this.componentToIcon.get(query);
@@ -161,6 +178,13 @@ export class PlatformManager {
     }
   }
 
+  getEventIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getEventIcon(compoQuery, method);
+    // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
+  }
+
   getActionIcon(component: string, method: string) {
     const icon = this.actionToIcon.get(`${component}/${method}`);
     if (icon && icons.has(icon)) {
@@ -170,6 +194,13 @@ export class PlatformManager {
     }
   }
 
+  getActionIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getActionIcon(compoQuery, method);
+    // console.log(['getActionIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
+  }
+
   getVariableIcon(component: string, variable: string) {
     const icon = this.variableToIcon.get(`${component}/${variable}`);
     if (icon && icons.has(icon)) {
@@ -177,6 +208,13 @@ export class PlatformManager {
     } else {
       return 'variable';
     }
+  }
+
+  getVariableIconUrl(component: string, method: string, isName?: boolean) {
+    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const query = this.getVariableIcon(compoQuery, method);
+    // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
+    return icons.get(query)!.src;
   }
 
   drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {
@@ -194,11 +232,23 @@ export class PlatformManager {
       rightIcon = this.getEventIcon(component, ev.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ev.args) {
+      const firstParam = Object.entries(ev.args)[0][1];
+      if (typeof firstParam === 'string') {
+        parameter = firstParam;
+      } else {
+        console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
+        parameter = '???';
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
+      parameter,
     });
   }
 
@@ -217,12 +267,27 @@ export class PlatformManager {
       rightIcon = this.getActionIcon(component, ac.method);
     }
 
+    let parameter: string | undefined = undefined;
+    if (ac.args) {
+      const args = Object.entries(ac.args);
+      if (args.length > 0) {
+        const firstParam = args[0][1];
+        if (typeof firstParam === 'string') {
+          parameter = firstParam;
+        } else {
+          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+          parameter = '???';
+        }
+      }
+    }
+
     picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
       rightIcon,
       opacity,
+      parameter,
     });
   }
 
@@ -231,14 +296,7 @@ export class PlatformManager {
       return picto.eventWidth;
     }
     if (ac.type == 'value') {
-      if (typeof ac.value == 'number') {
-        console.log(['PlatformManager.measureCondition', 'number', ac.value]);
-        return picto.eventWidth;
-      }
-      if (typeof ac.value == 'string') {
-        console.log(['PlatformManager.measureCondition', 'string', ac.value]);
-        return picto.eventWidth;
-      }
+      return picto.textPadding * 2 + ac.value.toString().length * picto.pxPerChar;
     }
     if (operatorSet.has(ac.type)) {
       if (Array.isArray(ac.value)) {

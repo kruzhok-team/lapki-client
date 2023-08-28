@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
 import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
-import { SelectEntry, TextSelect } from './Modal/TextSelect';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
 import { Action, Condition } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import { Select } from '@renderer/components/UI';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -23,6 +22,7 @@ interface CreateModalProps {
   onOpenEventsModal: () => void;
   onClose: () => void;
   onSubmit: (data: CreateModalFormValues) => void;
+  onRename: (idx: string, name: string) => void;
 }
 
 export interface CreateModalFormValues {
@@ -32,19 +32,10 @@ export interface CreateModalFormValues {
   //Данные основного события
   triggerComponent: string;
   triggerMethod: string;
-  else: Condition;
+  else?: Condition;
   //Массив вторичных событий
   condition: Action[];
-  //Данные вторичного событий
-  doComponent: string;
-  doMethod: string;
-  //Параметр события
-  doArgs: { [key: string]: string } | undefined;
 
-  doComponentOneElse: string;
-  doMethodOneElse: string;
-  doComponentTwoElse: string;
-  doMethodTwoElse: string;
   argsOneElse: string;
   argsTwoElse: string;
   color: string;
@@ -52,6 +43,7 @@ export interface CreateModalFormValues {
 
 export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
+  onRename,
   onOpenEventsModal,
   onClose,
   isData,
@@ -61,74 +53,139 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 }) => {
   const {
     register,
-    reset,
-    handleSubmit: hookHandleSubmit,
     formState: { errors },
-  } = useForm<CreateModalFormValues>({
-    defaultValues: {
-      color: '#ffffff',
-    },
-  });
+    handleSubmit: hookHandleSubmit,
+  } = useForm<CreateModalFormValues>();
 
   //--------------------------------Работа со списком компонентов---------------------------------------
   const machine = editor!.container.machine;
 
-  //Массив первого select
-  const [eventComponents, setEventComponents] = useState<SelectEntry[]>([]);
-  const [param1Components, setParam1Components] = useState<SelectEntry[]>([]);
-  const [param2Components, setParam2Components] = useState<SelectEntry[]>([]);
-  const [eventMethods, setEventMethods] = useState<string>();
-  const [param1Variables, setParam1Variables] = useState<string>();
-  const [param2Variables, setParam2Variables] = useState<string>();
+  const optionsComponents = [
+    {
+      value: 'System',
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getComponentIconUrl('System', true)}
+            className="mr-1 h-7 w-7"
+          />
+          {'System'}
+        </div>
+      ),
+    },
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+      return {
+        value: idx,
+        label: (
+          <div className="flex items-center">
+            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+            {idx}
+          </div>
+        ),
+      };
+    }),
+  ];
+
+  const optionsParam1Components = Array.from(machine.components.entries()).map(
+    ([idx, _component]) => {
+      return {
+        value: idx,
+        label: (
+          <div className="flex items-center">
+            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+            {idx}
+          </div>
+        ),
+      };
+    }
+  );
+
+  const optionsParam2Components = Array.from(machine.components.entries()).map(
+    ([idx, _component]) => {
+      return {
+        value: idx,
+        label: (
+          <div className="flex items-center">
+            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+            {idx}
+          </div>
+        ),
+      };
+    }
+  );
+
+  const [components, setComponents] = useState(optionsComponents[0]);
+  const [param1Components, setParam1Components] = useState(optionsParam1Components[0]);
+  const [param2Components, setParam2Components] = useState(optionsParam1Components[0]);
+
+  const optionsMethods = [
+    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const optionsParam1Methods = [
+    ...machine.platform.getAvailableVariables(param1Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getVariableIconUrl(param1Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const optionsParam2Methods = [
+    ...machine.platform.getAvailableVariables(param2Components.value).map((entry) => {
+      return {
+        value: entry.name,
+        label: (
+          <div className="flex items-center">
+            <img
+              src={machine.platform.getVariableIconUrl(param2Components.value, entry.name, true)}
+              className="mr-1 h-7 w-7"
+            />
+            {entry.name}
+          </div>
+        ),
+      };
+    }),
+  ];
+  const [methods, setMethods] = useState(optionsMethods[0]);
+  const [param1Methods, setParam1Methods] = useState(optionsParam1Methods[0]);
+  const [param2Methods, setParam2Methods] = useState(optionsParam2Methods[0]);
 
   useEffect(() => {
-    if (eventMethods === undefined) {
-      setEventComponents(
-        Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
-        })
-      );
-      eventComponents.find((value, idx) => {
-        if (idx === 0) {
-          setEventMethods(value.name);
-        }
-      });
-    }
+    setMethods(optionsMethods[0] ?? null);
+  }, [components]);
 
-    if (param1Variables === undefined) {
-      setParam1Components(
-        Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
-        })
-      );
-      param1Components.find((value, idx) => {
-        if (idx === 0) {
-          setParam1Variables(value.name);
-        }
-      });
-    }
+  useEffect(() => {
+    setParam1Methods(optionsParam1Methods[0] ?? null);
+  }, [param1Components]);
 
-    if (param2Variables === undefined) {
-      setParam2Components(
-        Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return { idx, name: idx, img: machine.platform.getComponentIconUrl(idx) };
-        })
-      );
-      param2Components.find((value, idx) => {
-        if (idx === 0) {
-          setParam2Variables(value.name);
-        }
-      });
-    }
-  }, [props.isOpen]);
-
+  useEffect(() => {
+    setParam2Methods(optionsParam2Methods[0] ?? null);
+  }, [param2Components]);
   //-----------------------------------------------------------------------------------------------------
 
   //-----------------------------Функция для закрытия модального окна-----------------------------------
   const onRequestClose = () => {
     onClose();
-    // TODO: пока кажется лишним затирать текстовые поля
-    reset({ color: '#ffffff' });
   };
   //-----------------------------------------------------------------------------------------------------
 
@@ -158,45 +215,54 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
   //-----------------------------------------------------------------------------------------------------
-
+  var method = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [type, setType] = useState<string>();
-  const handleSubmit = hookHandleSubmit((data) => {
-    isName !== undefined
-      ? ((data.id = isName?.state.id), data.name || (data.name = 'Состояние'), (data.key = 1))
-      : isData !== undefined
-      ? ((data.id = isData?.state.id), (data.name = isData?.state.data.name), (data.key = 2))
-      : (data.key = 3);
-    data.else = {
-      type: type!,
-      value: [
-        isParamOne
-          ? {
-              type: 'component',
-              value: {
-                component: data.doComponentOneElse,
-                method: data.doMethodOneElse,
-                args: {},
-              },
-            }
-          : {
-              type: 'value',
-              value: data.argsOneElse,
+  const handleSubmit = hookHandleSubmit((formData) => {
+    if (isName) {
+      onRename(isName?.state.id, formData.name);
+    }
+
+    const cond = isElse
+      ? undefined
+      : {
+          type: type!,
+          value: [
+            {
+              type: isParamOne ? 'component' : 'value',
+              value: isParamOne
+                ? {
+                    component: param1Components.value,
+                    method: param1Methods.value,
+                    args: {},
+                  }
+                : formData.argsOneElse,
             },
-        isParamOne
-          ? {
-              type: 'component',
-              value: {
-                component: data.doComponentOneElse,
-                method: data.doMethodOneElse,
-                args: {},
-              },
-            }
-          : {
-              type: 'value',
-              value: data.argsOneElse,
+            {
+              type: isParamTwo ? 'component' : 'value',
+              value: isParamTwo
+                ? {
+                    component: param2Components.value,
+                    method: param2Methods.value,
+                    args: {},
+                  }
+                : formData.argsTwoElse,
             },
-      ],
+          ],
+        };
+
+    // FIXME: ВЫХОДНЫЕ ДАННЫЕ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМ ТИПОМ
+    const data: CreateModalFormValues = {
+      id: isData !== undefined && isData?.state.id,
+      name: isData !== undefined && isData?.state.data.name,
+      key: isData ? 2 : 3,
+      triggerComponent: components.value,
+      triggerMethod: methods.value,
+      else: cond,
+      condition: method,
+      argsOneElse: formData.argsOneElse,
+      argsTwoElse: formData.argsTwoElse,
+      color: 'FFFFFF',
     };
     onSubmit(data);
   });
@@ -239,7 +305,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   ];
 
   //Ниже реализовано перетаскивание событий между собой
-  var method = props.isCondition!;
+
   const [dragId, setDragId] = useState();
   const handleDrag = (id) => {
     setDragId(id);
@@ -312,23 +378,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {/*---------------------------------Добавление основного события-------------------------------------*/}
             <div className="flex items-center">
               <label className="mx-1">Когда: </label>
-              <TextSelect
-                label="Компонент(событие):"
-                {...register('triggerComponent', {
-                  onChange(event) {
-                    setEventMethods(event.target.value);
-                  },
-                })}
-                isElse={false}
-                machine={machine}
-                data={eventComponents}
+              <Select
+                className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
+                options={optionsComponents}
+                onChange={(event) => setComponents(event!)}
+                value={components}
+                isSearchable={false}
               />
-              <TextSelect
-                label="Действие:"
-                {...register('triggerMethod', {})}
-                isElse={false}
-                machine={machine}
-                data={eventMethods}
+              <Select
+                className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
+                options={optionsMethods}
+                onChange={(event) => setMethods(event!)}
+                value={methods}
+                isSearchable={false}
               />
             </div>
             {/*--------------------------------------Добавление условия------------------------------------------*/}
@@ -355,23 +417,25 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   />
                   {isParamOne ? (
                     <>
-                      <TextSelect
-                        label="Компонент(событие):"
-                        {...register('doComponentOneElse', {
-                          onChange(event) {
-                            setParam1Variables(event.target.value);
-                          },
-                        })}
-                        machine={machine}
-                        isElse={isElse}
-                        data={param1Components}
+                      <Select
+                        className={twMerge(
+                          'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                          isElse && 'hidden'
+                        )}
+                        options={optionsParam1Components}
+                        onChange={(event) => setParam1Components(event!)}
+                        value={param1Components}
+                        isSearchable={false}
                       />
-                      <TextSelect
-                        label="Действие:"
-                        {...register('doMethodOneElse', {})}
-                        machine={machine}
-                        isElse={isElse}
-                        data={param1Variables}
+                      <Select
+                        className={twMerge(
+                          'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                          isElse && 'hidden'
+                        )}
+                        options={optionsParam1Methods}
+                        onChange={(event) => setParam1Methods(event!)}
+                        value={param1Methods}
+                        isSearchable={false}
                       />
                     </>
                   ) : (
@@ -416,24 +480,25 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   />
                   {isParamTwo ? (
                     <>
-                      <TextSelect
-                        label="Компонент(событие):"
-                        {...register('doComponentTwoElse', {
-                          onChange(event) {
-                            setParam2Variables(event.target.value);
-                          },
-                        })}
-                        machine={machine}
-                        isElse={isElse}
-                        data={param2Components}
-                        value={param2Variables}
+                      <Select
+                        className={twMerge(
+                          'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                          isElse && 'hidden'
+                        )}
+                        options={optionsParam2Components}
+                        onChange={(event) => setParam2Components(event!)}
+                        value={param2Components}
+                        isSearchable={false}
                       />
-                      <TextSelect
-                        label="Действие:"
-                        {...register('doMethodTwoElse', {})}
-                        machine={machine}
-                        isElse={isElse}
-                        data={param2Variables}
+                      <Select
+                        className={twMerge(
+                          'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                          isElse && 'hidden'
+                        )}
+                        options={optionsParam2Methods}
+                        onChange={(event) => setParam2Methods(event!)}
+                        value={param2Methods}
+                        isSearchable={false}
                       />
                     </>
                   ) : (
@@ -473,21 +538,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                       >
                         <img
                           style={{ height: '32px', width: '32px' }}
-                          src={
-                            editor?.container.machine.platform.getComponentIconUrl(
-                              data.component,
-                              true
-                            ) ?? UnknownIcon
-                          }
+                          src={machine.platform.getComponentIconUrl(data.component, true)}
                         />
                         <div className="h-full border-2 border-white"></div>
                         <img
                           style={{ height: '32px', width: '32px' }}
                           src={
-                            editor?.container.machine.platform.getComponentIconUrl(
-                              data.method,
-                              true
-                            ) ?? UnknownIcon
+                            machine.platform.getAvailableMethods(data.component).length !== 0
+                              ? machine.platform.getActionIconUrl(data.component, data.method, true)
+                              : machine.platform.getEventIconUrl(data.component, data.method, true)
                           }
                         />
                       </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 
+// import Editor, { EditorProps } from '@monaco-editor/react';
 import Editor, { loader, EditorProps } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
@@ -8,9 +9,7 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
-import theme from '@renderer/theme';
-
-self.MonacoEnvironment = {
+(self.MonacoEnvironment as any) = {
   getWorker(_, label) {
     if (label === 'json') {
       return new jsonWorker();
@@ -34,7 +33,15 @@ loader.init();
 
 interface CodeEditorProps extends EditorProps {}
 
-
 export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
-  return <Editor theme={theme.codeEditorTheme} className="absolute h-full overflow-hidden" {...props} />;
+  return (
+    <Editor
+      className="absolute h-full overflow-hidden"
+      // theme="vs-light"
+      // defaultLanguage="json"
+      // theme={getColor('codeEditorTheme')}
+      theme="vs-dark"
+      {...props}
+    />
+  );
 };

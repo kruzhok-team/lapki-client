@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -32,9 +32,6 @@ export interface CreateModalFormValues {
   //Данные основного события
   triggerComponent: string;
   triggerMethod: string;
-  else?: Condition;
-  //Массив вторичных событий
-  condition: Action[];
 
   argsOneElse: string;
   argsTwoElse: string;

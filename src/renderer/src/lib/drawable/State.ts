@@ -38,7 +38,7 @@ export class State extends Draggable {
     return {
       parent: this.data.parent,
       name: this.data.name,
-      events: this.data.events,
+      events: this.eventBox.toJSON(),
       bounds: this.bounds, // FIXME: должны учитывать дочерний контейнер?
     };
   }

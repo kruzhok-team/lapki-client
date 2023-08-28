@@ -11,11 +11,13 @@ pkgs.mkShell {
           git openssh nano
           typescript
           libusb avrdude
+          libgcrypt fpm
         ]
       ))
     )
   ];
   shellHook = ''
+    export USE_SYSTEM_FPM=true
     code .
   '';
 }

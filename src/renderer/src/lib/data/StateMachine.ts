@@ -1,4 +1,10 @@
-import { Action, Condition, Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition,
+  Elements,
+  Component as ComponentType,
+  Transition as TransitionType,
+} from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
 
@@ -495,24 +501,57 @@ export class StateMachine extends EventEmitter {
   }
 
   // Меняет только параметры, без имени
-  editComponent(name: string, newData) {
-    console.log(name);
+  editComponent(idx: string, newData: ComponentType, newName?: string) {
+    const component = this.components.get(idx);
+    if (typeof component === 'undefined') return;
+
+    console.log(idx);
     console.log(newData);
+    console.log(newName);
 
-    if (this.components.has(name)) {
-      const component = new Component({
-        type: newData.type,
-        parameters: newData.parameters,
-      });
+    // type присутствует, но мы его умышленно не трогаем
+    component.data.parameters = newData.parameters;
 
-      this.components.set(name, component);
-      this.platform.nameToComponent.set(name, newData.type);
-    } else {
-      console.error('component Not Found');
-      return;
+    if (newName) {
+      this.renameComponentRaw(idx, newName);
     }
 
     this.dataTrigger();
+  }
+
+  private renameComponentRaw(idx: string, newName: string) {
+    const component = this.components.get(idx);
+    if (typeof component === 'undefined') return;
+
+    this.components.set(newName, component);
+    this.components.delete(idx);
+
+    this.platform.nameToComponent.set(newName, component.data.type);
+    this.platform.nameToComponent.delete(idx);
+
+    // А сейчас будет занимательное путешествие по схеме с заменой всего
+    this.states.forEach((state) => {
+      for (const ev of state.eventBox.data) {
+        // заменяем в триггере
+        if (ev.trigger.component == idx) {
+          ev.trigger.component = newName;
+        }
+        for (const act of ev.do) {
+          // заменяем в действии
+          if (act.component == idx) {
+            act.component = newName;
+          }
+        }
+      }
+    });
+
+    this.transitions.forEach((value) => {
+      if (value.data.trigger.component == idx) {
+        value.data.trigger.component = newName;
+      }
+      // condition
+      // do
+    });
   }
 
   removeComponent(name: string, purge?: boolean) {

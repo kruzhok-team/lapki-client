@@ -25,7 +25,7 @@ interface ComponentEditModalProps {
   isOpen: boolean;
   data: ComponentEditData;
   onClose: () => void;
-  onComponentEdit: (idx: string, data: ComponentData) => void;
+  onComponentEdit: (idx: string, data: ComponentData, newName?: string) => void;
   onComponentDelete: (idx: string) => void;
 }
 
@@ -69,8 +69,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     console.log('ComponentEdit onEdit');
     const submitData = { type: dataState.data.type, parameters: dataState.data.parameters };
     console.log(submitData);
-
-    onComponentEdit(dataState.idx, submitData);
+    const newName = dataState.idx === data.idx ? dataState.idx : undefined;
+    onComponentEdit(data.idx, submitData, newName);
     onRequestClose();
   };
 

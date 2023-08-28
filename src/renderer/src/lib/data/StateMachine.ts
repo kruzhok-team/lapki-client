@@ -494,6 +494,27 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  // Меняет только параметры, без имени
+  editComponent(name: string, newData) {
+    console.log(name);
+    console.log(newData);
+
+    if (this.components.has(name)) {
+      const component = new Component({
+        type: newData.type,
+        parameters: newData.parameters,
+      });
+
+      this.components.set(name, component);
+      this.platform.nameToComponent.set(name, newData.type);
+    } else {
+      console.error('component Not Found');
+      return;
+    }
+
+    this.dataTrigger();
+  }
+
   removeComponent(name: string, purge?: boolean) {
     if (!this.components.has(name)) return;
 

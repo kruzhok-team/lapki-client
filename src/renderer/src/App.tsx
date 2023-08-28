@@ -452,6 +452,7 @@ export const App: React.FC = () => {
 
   const handleEditComponent = (idx: string, data: ComponentData) => {
     console.log(['component-edit-apply', idx, data]);
+    editor!.container.machine.editComponent(idx, data);
   };
 
   const handleDeleteComponent = (idx: string) => {

@@ -222,6 +222,7 @@ export class PlatformManager {
     let rightIcon = 'unknown';
     let bgColor = '#3a426b';
     let fgColor = '#fff';
+    let argQuery: string = '';
 
     if (ev.component === 'System') {
       // ev.method === 'onEnter' || ev.method === 'onExit'
@@ -230,14 +231,22 @@ export class PlatformManager {
       const component = this.resolveComponent(ev.component);
       leftIcon = this.getComponentIcon(component);
       rightIcon = this.getEventIcon(component, ev.method);
+
+      const parameterList = this.data.components[component]?.signals[ev.method]?.parameters;
+      if (parameterList && parameterList.length > 0) {
+        argQuery = parameterList[0].name;
+      }
     }
 
     let parameter: string | undefined = undefined;
-    if (ev.args) {
-      const firstParam = Object.entries(ev.args)[0][1];
-      if (typeof firstParam === 'string') {
-        parameter = firstParam;
+    if (argQuery && ev.args) {
+      const paramValue = ev.args[argQuery];
+      if (typeof paramValue === 'undefined') {
+        parameter = '?!';
+      } else if (typeof paramValue === 'string') {
+        parameter = paramValue;
       } else {
+        // FIXME
         console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
         parameter = '???';
       }
@@ -258,6 +267,7 @@ export class PlatformManager {
     let bgColor = '#5b5f73';
     let fgColor = '#fff';
     let opacity = alpha ?? 1.0;
+    let argQuery: string = '';
 
     if (ac.component === 'System') {
       rightIcon = ac.method;
@@ -265,19 +275,24 @@ export class PlatformManager {
       const component = this.resolveComponent(ac.component);
       leftIcon = this.getComponentIcon(component);
       rightIcon = this.getActionIcon(component, ac.method);
+
+      const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
+      if (parameterList && parameterList.length > 0) {
+        argQuery = parameterList[0].name;
+      }
     }
 
     let parameter: string | undefined = undefined;
-    if (ac.args) {
-      const args = Object.entries(ac.args);
-      if (args.length > 0) {
-        const firstParam = args[0][1];
-        if (typeof firstParam === 'string') {
-          parameter = firstParam;
-        } else {
-          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
-          parameter = '???';
-        }
+    if (argQuery && ac.args) {
+      const paramValue = ac.args[argQuery];
+      if (typeof paramValue === 'undefined') {
+        parameter = '?!';
+      } else if (typeof paramValue === 'string') {
+        parameter = paramValue;
+      } else {
+        // FIXME
+        console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+        parameter = '???';
       }
     }
 

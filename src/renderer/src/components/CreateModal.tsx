@@ -7,15 +7,23 @@ import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
-import { Action, Condition, Event as StateEvent } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition as ConditionData,
+  State as StateData,
+  Event as StateEvent,
+} from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Select, SelectOption } from '@renderer/components/UI';
+import { Condition } from '@renderer/lib/drawable/Condition';
+import { State } from '@renderer/lib/drawable/State';
 
 interface CreateModalProps {
   isOpen: boolean;
   editor: CanvasEditor | null;
-  isData: { state } | undefined;
+  isData: { state: State } | undefined;
+  isTransition: { target: Condition } | undefined;
   isCondition: Action[] | undefined;
   setIsCondition: React.Dispatch<React.SetStateAction<Action[]>>;
   onOpenEventsModal: () => void;
@@ -40,7 +48,7 @@ export interface CreateModalResult {
   id: string;
   key: number;
   trigger: StateEvent;
-  condition?: Condition;
+  condition?: ConditionData;
   do: Action[];
   color?: string;
 }
@@ -241,7 +249,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
   //-----------------------------------------------------------------------------------------------------
-  var method = props.isCondition!;
+  var method: Action[] =
+    props.isTransition?.target.transition.data.do !== undefined
+      ? [...props.isTransition?.target.transition.data.do!, ...props.isCondition!]
+      : props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [type, setType] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
@@ -286,7 +297,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         };
 
     const data: CreateModalResult = {
-      id: isData !== undefined && isData?.state.id,
+      id: isData !== undefined ? isData?.state.id! : '',
       key: isData ? 2 : 3,
       trigger: {
         component: components.value,
@@ -581,6 +592,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
+            value={props.isTransition?.target.transition.data.color}
           />
         </>
       )}

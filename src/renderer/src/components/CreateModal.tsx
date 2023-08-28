@@ -56,31 +56,51 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   //--------------------------------Работа со списком компонентов---------------------------------------
   const machine = editor!.container.machine;
 
-  const optionsComponents = [
-    {
-      value: 'System',
-      label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getComponentIconUrl('System', true)}
-            className="mr-1 h-7 w-7"
-          />
-          {'System'}
-        </div>
-      ),
-    },
-    ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-      return {
-        value: idx,
-        label: (
-          <div className="flex items-center">
-            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
-            {idx}
-          </div>
-        ),
-      };
-    }),
-  ];
+  const optionsComponents = isData
+    ? [
+        {
+          value: 'System',
+          label: (
+            <div className="flex items-center">
+              <img
+                src={machine.platform.getComponentIconUrl('System', true)}
+                className="mr-1 h-7 w-7"
+              />
+              {'System'}
+            </div>
+          ),
+        },
+        ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+          return {
+            value: idx,
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getComponentIconUrl(idx, true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {idx}
+              </div>
+            ),
+          };
+        }),
+      ]
+    : [
+        ...Array.from(machine.components.entries()).map(([idx, _component]) => {
+          return {
+            value: idx,
+            label: (
+              <div className="flex items-center">
+                <img
+                  src={machine.platform.getComponentIconUrl(idx, true)}
+                  className="mr-1 h-7 w-7"
+                />
+                {idx}
+              </div>
+            ),
+          };
+        }),
+      ];
 
   const optionsParam1Components = Array.from(machine.components.entries()).map(
     ([idx, _component]) => {

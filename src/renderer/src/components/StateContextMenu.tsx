@@ -1,11 +1,13 @@
+import { useEffect } from 'react';
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
+import { useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
+
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
 import { CodeTab } from '@renderer/types/tabs';
-import { useForm } from 'react-hook-form';
-import { twMerge } from 'tailwind-merge';
 
 export interface StateContextMenuData {
   data: State | Condition | null;
@@ -168,6 +170,24 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
       style: !isData?.data && 'hidden',
     },
   ];
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!isOpen) return;
+
+      const ref = refs.floating;
+
+      if (ref.current && !ref.current.contains(e.target as HTMLElement)) {
+        onCloseMe();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, refs.floating, onCloseMe]);
 
   return (
     <>

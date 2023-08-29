@@ -486,8 +486,9 @@ export const App: React.FC = () => {
     openCompDeleteModal({ idx, type: data.type });
   };
 
-  const handleEditComponent = (idx: string, data: ComponentData) => {
-    console.log(['component-edit-apply', idx, data]);
+  const handleEditComponent = (idx: string, data: ComponentData, newName?: string) => {
+    console.log(['component-edit-apply', idx, data, newName]);
+    editor!.container.machine.editComponent(idx, data, newName);
   };
 
   const handleDeleteComponent = (idx: string) => {

@@ -10,14 +10,34 @@ import { TextInput } from './Modal/TextInput';
 import {
   Action,
   Condition as ConditionData,
-  State as StateData,
   Event as StateEvent,
+  Variable as VariableData,
 } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Select, SelectOption } from '@renderer/components/UI';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
+import { ArgumentProto } from '@renderer/types/platform';
+import { operatorSet } from '@renderer/lib/data/PlatformManager';
+
+type ArgSet = { [k: string]: string };
+type ArgFormEntry = { name: string; description?: string };
+type ArgForm = ArgFormEntry[];
+
+interface FormPreset {
+  compo: SelectOption;
+  event: SelectOption;
+  argSet: ArgSet;
+  argForm: ArgForm;
+}
+
+// FIXME: пока только совместимое с Берлогой
+interface ConditionPreset {
+  operator: string;
+  eventVar1: [SelectOption, SelectOption] | string | number;
+  eventVar2: [SelectOption, SelectOption] | string | number;
+}
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -63,6 +83,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 }) => {
   const {
     register,
+    reset: resetForm,
+    setValue: setFormValue,
     formState: { errors },
     handleSubmit: hookHandleSubmit,
   } = useForm<CreateModalFormValues>();
@@ -70,151 +92,337 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   //--------------------------------Работа со списком компонентов---------------------------------------
   const machine = editor!.container.machine;
 
-  const optionsComponents = isData
-    ? [
-        {
-          value: 'System',
-          label: (
-            <div className="flex items-center">
-              <img
-                src={machine.platform.getComponentIconUrl('System', true)}
-                className="mr-1 h-7 w-7"
-              />
-              {'System'}
-            </div>
-          ),
-        },
-        ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return {
-            value: idx,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getComponentIconUrl(idx, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {idx}
-              </div>
-            ),
-          };
-        }),
-      ]
-    : [
-        ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return {
-            value: idx,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getComponentIconUrl(idx, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {idx}
-              </div>
-            ),
-          };
-        }),
-      ];
+  const isEditingEvent = isData === undefined;
 
-  const optionsParam1Components = Array.from(machine.components.entries()).map(
-    ([idx, _component]) => {
-      return {
-        value: idx,
-        label: (
-          <div className="flex items-center">
-            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
-            {idx}
-          </div>
-        ),
-      };
-    }
-  );
+  const compoEntry = (idx: string) => {
+    return {
+      value: idx,
+      label: (
+        <div className="flex items-center">
+          <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+          {idx}
+        </div>
+      ),
+    };
+  };
 
-  const optionsParam2Components = Array.from(machine.components.entries()).map(
-    ([idx, _component]) => {
-      return {
-        value: idx,
-        label: (
-          <div className="flex items-center">
-            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
-            {idx}
-          </div>
-        ),
-      };
-    }
-  );
+  const eventEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const actionEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const conditionEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getVariableIconUrl(
+              compo ? param1Components.value : param2Components.value,
+              name,
+              true
+            )}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const sysCompoOption = !isEditingEvent ? [compoEntry('System')] : [];
+
+  const optionsComponents = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+  ];
+
+  const optionsParam1Components = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+  ];
+
+  const optionsParam2Components = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+  ];
 
   const [components, setComponents] = useState<SelectOption>(optionsComponents[0]);
   const [param1Components, setParam1Components] = useState<SelectOption>(
     optionsParam1Components[0]
   );
   const [param2Components, setParam2Components] = useState<SelectOption>(
-    optionsParam1Components[0]
+    optionsParam2Components[0]
   );
 
-  const optionsMethods = [
-    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-  ];
-  const optionsParam1Methods = [
-    ...machine.platform.getAvailableVariables(param1Components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getVariableIconUrl(param1Components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-  ];
-  const optionsParam2Methods = [
-    ...machine.platform.getAvailableVariables(param2Components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getVariableIconUrl(param2Components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-  ];
-  const [methods, setMethods] = useState<SelectOption>(optionsMethods[0]);
-  const [param1Methods, setParam1Methods] = useState<SelectOption>(optionsParam1Methods[0]);
-  const [param2Methods, setParam2Methods] = useState<SelectOption>(optionsParam2Methods[0]);
+  const optionsMethods = !components
+    ? []
+    : machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name));
+
+  const optionsParam1Methods = !components
+    ? []
+    : machine.platform
+        .getAvailableVariables(param1Components.value)
+        .map(({ name }) => conditionEntry(name, param1Components.value));
+
+  const optionsParam2Methods = !components
+    ? []
+    : machine.platform
+        .getAvailableVariables(param2Components.value)
+        .map(({ name }) => conditionEntry(name, param2Components.value));
+
+  const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
+  const [param1Methods, setParam1Methods] = useState<SelectOption | null>(optionsParam1Methods[0]);
+  const [param2Methods, setParam2Methods] = useState<SelectOption | null>(optionsParam2Methods[0]);
 
   useEffect(() => {
-    setMethods(optionsMethods[0] ?? null);
+    if (isChanged) return;
+    if (optionsMethods.length > 0) {
+      setMethods(optionsMethods[0]);
+    } else {
+      setMethods(null);
+    }
   }, [components]);
 
   useEffect(() => {
-    setParam1Methods(optionsParam1Methods[0] ?? null);
+    if (isChanged) return;
+    if (optionsParam1Methods.length > 0) {
+      setParam1Methods(optionsParam1Methods[0]);
+    } else {
+      setParam1Methods(null);
+    }
   }, [param1Components]);
 
   useEffect(() => {
-    setParam2Methods(optionsParam2Methods[0] ?? null);
+    if (isChanged) return;
+    if (optionsParam2Methods.length > 0) {
+      setParam2Methods(optionsParam2Methods[0]);
+    } else {
+      setParam2Methods(null);
+    }
   }, [param2Components]);
+
+  const [argSet, setArgSet] = useState<ArgSet>({});
+  const [argForm, setArgForm] = useState<ArgForm>([]);
+
+  const retrieveArgForm = (compo: string, method: string) => {
+    const compoType = machine.platform.resolveComponent(compo);
+    const component = machine.platform.data.components[compoType];
+    if (!component) return [];
+
+    const argList: ArgumentProto[] | undefined = isEditingEvent
+      ? component.signals[method]?.parameters
+      : component.methods[method]?.parameters;
+
+    if (!argList) return [];
+    const argForm: ArgForm = argList.map((arg) => {
+      return { name: arg.name, description: arg.description };
+    });
+    return argForm;
+  };
+
+  useEffect(() => {
+    if (!isChanged) return;
+    setArgSet({});
+    if (methods) {
+      setArgForm(retrieveArgForm(components.value, methods.value));
+    } else {
+      setArgForm([]);
+    }
+  }, [methods]);
+
+  const tryGetData: () => FormPreset | undefined = () => {
+    if (isData) {
+      const d = isData;
+      if (d.state.eventBox.data.length >= 0) {
+        const evs = d.state.eventBox.data[0];
+        if (evs) {
+          if (d.state.eventBox.data !== null) {
+            const compoName = evs.trigger.component;
+            const methodName = evs.trigger.method;
+            return {
+              compo: compoEntry(compoName),
+              event: eventEntry(methodName, compoName),
+              argSet: evs.trigger.args ?? {},
+              argForm: retrieveArgForm(compoName, methodName),
+            };
+          } else {
+            const ac = evs.trigger;
+            if (ac) {
+              const compoName = ac.component;
+              const methodName = ac.method;
+              const form = retrieveArgForm(compoName, methodName);
+              return {
+                compo: compoEntry(compoName),
+                event: actionEntry(methodName, compoName),
+                argSet: ac.args ?? {},
+                argForm: form,
+              };
+            }
+          }
+        }
+      }
+    } else if (props.isTransition) {
+      const d = props.isTransition.target.transition.data;
+      const compoName = d.trigger.component;
+      const methodName = d.trigger.method;
+      return {
+        compo: compoEntry(compoName),
+        event: eventEntry(methodName, compoName),
+        argSet: d.trigger.args ?? {},
+        argForm: retrieveArgForm(compoName, methodName),
+      };
+    }
+    return undefined;
+  };
+
+  const tryGetCondition: () => ConditionPreset | undefined = () => {
+    if (props.isTransition) {
+      const c = props.isTransition.target.transition.data.condition;
+      if (!c) return undefined;
+      const operator = c.type;
+      if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
+        console.warn('👽 got condition from future (not comparsion)', c);
+        return undefined;
+      }
+      const param1 = c.value[0];
+      const param2 = c.value[1];
+      if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
+        console.warn('👽 got condition from future (non-value operands)', c);
+        return undefined;
+      }
+
+      let eventVar1: [SelectOption, SelectOption] | string | number = '';
+      let eventVar2: [SelectOption, SelectOption] | string | number = '';
+
+      if (
+        param1.type == 'value' &&
+        (typeof param1.value === 'string' || typeof param1.value === 'number')
+      ) {
+        eventVar1 = param1.value;
+      } else if (param1.type == 'component') {
+        const compoName = (param1.value as VariableData).component;
+        const methodName = (param1.value as VariableData).method;
+        eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
+      } else {
+        console.warn('👽 got condition from future (strange operand 1)', c);
+        return undefined;
+      }
+
+      if (
+        param2.type == 'value' &&
+        (typeof param2.value === 'string' || typeof param2.value === 'number')
+      ) {
+        eventVar2 = param2.value;
+      } else if (param2.type == 'component') {
+        const compoName = (param2.value as VariableData).component;
+        const methodName = (param2.value as VariableData).method;
+        eventVar2 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
+      } else {
+        console.warn('👽 got condition from future (strange operand 2)', c);
+        return undefined;
+      }
+
+      return {
+        operator,
+        eventVar1,
+        eventVar2,
+      };
+    }
+    return undefined;
+  };
+
+  const parameters = argForm.map((entry) => {
+    const name = entry.name;
+    const data = argSet[entry.name] ?? '';
+    return (
+      <>
+        <label className="mx-1 flex flex-col">
+          {name}
+          <input
+            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            value={data}
+            name={name}
+            onChange={(e) => handleInputChange(e)}
+          />
+        </label>
+      </>
+    );
+  });
+
+  const handleInputChange = (e) => {
+    const newSet = { ...argSet };
+    newSet[e.target.name] = e.target.value;
+    setArgSet(newSet);
+  };
+
+  const [isChanged, setIsChanged] = useState(false);
+  const [wasOpen, setWasOpen] = useState(false);
+  useEffect(() => {
+    if (!wasOpen && props.isOpen) {
+      setIsChanged(false);
+      const d: FormPreset | undefined = tryGetData();
+      if (d) {
+        setComponents(d.compo);
+        setMethods(d.event);
+        setArgSet(d.argSet);
+        setArgForm(d.argForm);
+      } else {
+        setComponents(components);
+      }
+      const c: ConditionPreset | undefined = tryGetCondition();
+      if (c) {
+        setIsElse(false);
+        setCondOperator(c.operator);
+        if (typeof c.eventVar1 === 'string' || typeof c.eventVar1 === 'number') {
+          setIsParamOne(false);
+          setFormValue('argsOneElse', c.eventVar1.toString());
+        } else {
+          setIsParamOne(true);
+          setParam1Components(c.eventVar1[0]);
+          setParam1Methods(c.eventVar1[1]);
+        }
+        if (typeof c.eventVar2 === 'string' || typeof c.eventVar2 === 'number') {
+          setIsParamTwo(false);
+          setFormValue('argsTwoElse', c.eventVar2.toString());
+        } else {
+          setIsParamTwo(true);
+          setParam2Components(c.eventVar2[0]);
+          setParam2Methods(c.eventVar2[1]);
+        }
+      } else {
+        setIsElse(true);
+        resetForm();
+      }
+    }
+    setWasOpen(props.isOpen);
+  }, [props.isOpen]);
+
   //-----------------------------------------------------------------------------------------------------
 
   //-----------------------------Функция для закрытия модального окна-----------------------------------
@@ -251,34 +459,34 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   //-----------------------------------------------------------------------------------------------------
   var method: Action[] =
     props.isTransition?.target.transition.data.do !== undefined
-      ? [...props.isTransition?.target.transition.data.do!, ...props.isCondition!]
+      ? [...props.isTransition?.target.transition.data.do, ...props.isCondition!]
       : props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
-  const [type, setType] = useState<string>();
+  const [condOperator, setCondOperator] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
     if (!isElse) {
-      if (isParamOne && param1Methods.value == null) {
+      if (isParamOne && param1Methods?.value == null) {
         return;
       }
-      if (isParamTwo && param2Methods.value == null) {
+      if (isParamTwo && param2Methods?.value == null) {
         return;
       }
     }
-    if (methods.value == null) {
+    if (methods?.value == null) {
       return;
     }
 
     const cond = isElse
       ? undefined
       : {
-          type: type!,
+          type: condOperator!,
           value: [
             {
               type: isParamOne ? 'component' : 'value',
               value: isParamOne
                 ? {
                     component: param1Components.value,
-                    method: param1Methods.value,
+                    method: param1Methods!.value,
                     args: {},
                   }
                 : formData.argsOneElse,
@@ -288,7 +496,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               value: isParamTwo
                 ? {
                     component: param2Components.value,
-                    method: param2Methods.value,
+                    method: param2Methods!.value,
                     args: {},
                   }
                 : formData.argsTwoElse,
@@ -376,7 +584,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       {...props}
       onRequestClose={onRequestClose}
       title={
-        isData?.state.id !== undefined
+        isData !== undefined
           ? 'Редактирование состояния: ' + JSON.stringify(isData?.state.data.name)
           : 'Редактор соединения'
       }
@@ -400,6 +608,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           value={methods}
           isSearchable={false}
         />
+        {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
       {/*--------------------------------------Добавление условия------------------------------------------*/}
@@ -423,6 +632,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <input
                 type="checkbox"
                 onChange={handleParamOne}
+                checked={!isParamOne}
                 className={twMerge('mx-2', isElse && 'hidden')}
               />
               {isParamOne ? (
@@ -468,7 +678,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               )}
               ref={(event) => {
                 if (event !== null) {
-                  setType(event.value);
+                  setCondOperator(event.value);
                 }
               }}
             >
@@ -485,6 +695,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <input
                 type="checkbox"
                 disabled={isElse}
+                checked={!isParamTwo}
                 onChange={handleParamTwo}
                 className={twMerge('mx-2', isElse && 'hidden')}
               />
@@ -535,6 +746,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           {method === undefined ||
             method.map((data, key) => (
               <div
+                key={'Methods' + key}
                 className="flex"
                 draggable={true}
                 onDragOver={(event) => event.preventDefault()}
@@ -578,7 +790,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           <button
             type="button"
             className="my-2 rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={onOpenEventsModal}
+            onClick={onOpenEventsModal /*() => onDeleteEventsModal(activeEvents)*/}
           >
             <SubtractIcon />
           </button>
@@ -592,7 +804,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
-            value={props.isTransition?.target.transition.data.color}
+            defaultValue={props.isTransition?.target.transition.data.color}
           />
         </>
       )}

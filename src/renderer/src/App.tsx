@@ -54,6 +54,7 @@ import { getColor } from '@renderer/theme';
 import DocumentTitle from 'react-document-title';
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
+import { Settings } from './components/Modules/Settings';
 /**
  * React-компонент приложения
  */
@@ -473,8 +474,11 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
-    console.log('CONNECTING TO COMPILER');
-    Compiler.connect(`${Compiler.base_address}main`);
+    Settings.getCompilerSettings().then((compiler) => {
+      console.log('CONNECTING TO COMPILER');
+      Compiler.connect(compiler.host, compiler.port);
+    });
+
     preloadPlatforms(() => {
       preparePreloadImages();
       preloadPicto(() => void {});

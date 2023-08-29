@@ -535,6 +535,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           {method === undefined ||
             method.map((data, key) => (
               <div
+                key={'Methods' + key}
                 className="flex"
                 draggable={true}
                 onDragOver={(event) => event.preventDefault()}

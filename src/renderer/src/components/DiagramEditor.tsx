@@ -66,10 +66,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       setTransition(undefined);
       setNewTransition(undefined);
     };
-    // Закрытие контекстного меню
-    editor.container.onContextMenuClose(() => {
-      setIsContextMenuOpen(false);
-    });
 
     //Обработка правой кнопки на пустом поле
     editor.container.onFieldContextMenu((pos) => {

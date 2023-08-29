@@ -169,9 +169,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const optionsMethods = !components
     ? []
-    : !isEditingEvent
-    ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
-    : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
+    : machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name));
 
   const optionsParam1Methods = !components
     ? []

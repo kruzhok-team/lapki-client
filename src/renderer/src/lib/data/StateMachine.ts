@@ -1,4 +1,10 @@
-import { Action, Condition, Elements, Transition as TransitionType } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition,
+  Elements,
+  Event,
+  Transition as TransitionType,
+} from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
 
@@ -186,7 +192,7 @@ export class StateMachine extends EventEmitter {
     const state = this.states.get(id);
     if (typeof state === 'undefined') return;
 
-    const trueTab = state.data.events.find(
+    const trueTab = state.eventBox.data.find(
       (value) =>
         triggerComponent === value.trigger.component &&
         triggerMethod === value.trigger.method &&
@@ -194,20 +200,22 @@ export class StateMachine extends EventEmitter {
     );
 
     if (trueTab === undefined) {
-      state.data.events = [
-        ...state.data.events,
+      state.eventBox.data = [
+        ...state.eventBox.data,
         {
           do: events,
           trigger: {
-            args: {},
             component: triggerComponent,
             method: triggerMethod,
+            //args: {},
           },
         },
       ];
     } else {
-      trueTab.do = [...trueTab.do, events[0]];
+      trueTab.do = [...trueTab.do, ...events];
     }
+
+    state.eventBox.recalculate();
     this.dataTrigger();
   }
 
@@ -363,6 +371,44 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  deleteSelected() {
+    let removed = false;
+
+    const killList: string[] = [];
+    this.states.forEach((state) => {
+      if (state.isSelected) {
+        if (state.eventBox.selection) {
+          this.deleteEvent(state.id!, state.eventBox.selection);
+          state.eventBox.selection = undefined;
+          removed = true;
+          return;
+        } else {
+          killList.push(state.id!);
+        }
+      }
+    });
+    for (const k of killList) {
+      this.deleteState(k);
+      removed = true;
+    }
+
+    killList.length = 0;
+
+    this.transitions.forEach((value) => {
+      if (value.condition.isSelected) {
+        killList.push(value.id!);
+      }
+    });
+    for (const k of killList) {
+      this.deleteTransition(k);
+      removed = true;
+    }
+
+    if (removed) {
+      this.dataTrigger();
+    }
+  }
+
   // Изменение начального состояния
   changeInitialState(idState: string) {
     const newInitial = this.states.get(idState);
@@ -426,7 +472,7 @@ export class StateMachine extends EventEmitter {
     component: string,
     method: string,
     doAction: Action[],
-    condition: Condition,
+    condition: Condition | undefined,
     position: Point
   ) {
     if (id !== undefined) {
@@ -450,11 +496,30 @@ export class StateMachine extends EventEmitter {
   }
 
   // Редактирование события в состояниях
-  createEvent(data: { state; event } | undefined, component, method) {
+  createEvent(data: { state; event } | undefined, newValue: Event | Action) {
     const state = this.states.get(data?.state.id);
     if (typeof state === 'undefined') return;
-    state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].component = component;
-    state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx].method = method;
+    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
+    if (data?.event.actionIdx === null) {
+      const trueTab = state.eventBox.data.find(
+        (value, id) =>
+          data?.event.eventIdx !== id &&
+          newValue.component === value.trigger.component &&
+          newValue.method === value.trigger.method &&
+          undefined === value.trigger.args // FIXME: сравнение по args может не работать
+      );
+
+      if (trueTab === undefined) {
+        state.eventBox.data[data?.event.eventIdx].trigger = newValue;
+      } else {
+        trueTab.do = [...trueTab.do, ...state.eventBox.data[data?.event.eventIdx].do];
+        state.eventBox.data.splice(data?.event.eventIdx, 1);
+      }
+    } else {
+      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx] = newValue;
+    }
+
+    state.eventBox.recalculate();
     this.dataTrigger();
   }
 
@@ -506,6 +571,11 @@ export class StateMachine extends EventEmitter {
     this.platform.nameToComponent.delete(name);
 
     this.dataTrigger();
+  }
+
+  undo() {
+    // FIXME: очень нужно
+    console.warn('😿 🔙 not implemened yet');
   }
 
   /**

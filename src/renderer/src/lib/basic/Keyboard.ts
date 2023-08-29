@@ -24,16 +24,27 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
   handleKeyDown = (e: KeyboardEvent) => {
     if (e.code === 'Space' && !this.spacePressed) {
       this.spacePressed = true;
-
       this.emit('spacedown', e);
+      return;
     }
   };
 
   handleKeyUp = (e: KeyboardEvent) => {
+    // console.log(e.code, e);
     if (e.code === 'Space') {
       this.spacePressed = false;
-
       this.emit('spaceup', e);
+      return;
+    }
+    if (e.code === 'Delete') {
+      this.emit('delete', e);
+      return;
+    }
+    if (e.ctrlKey) {
+      if (e.code === 'KeyZ') {
+        this.emit('ctrlz', e);
+        return;
+      }
     }
   };
 }

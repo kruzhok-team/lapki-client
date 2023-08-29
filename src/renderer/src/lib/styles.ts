@@ -2,7 +2,7 @@
  * Стиль нод редактора машин состояний
  */
 export const stateStyle = {
-  width: 250,
+  width: 450,
   height: 100,
   bodyBg: '#404040',
   bodyBorderRadius: 6,

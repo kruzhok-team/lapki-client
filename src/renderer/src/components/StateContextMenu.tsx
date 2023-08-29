@@ -123,8 +123,8 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
   const virtualEl = {
     getBoundingClientRect() {
       return {
-        width: 20,
-        height: 20,
+        width: 0,
+        height: 0,
         x: 0,
         y: 0,
         top: y,
@@ -148,7 +148,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     {
       text: 'Вставить состояние',
       onClick: handleNewState,
-      style: (!(isData?.data instanceof State) || isData!.event) && 'hidden',
+      style: (isData?.data instanceof Condition || isData?.event) && 'hidden',
     },
     {
       text: 'Назначить начальным',

@@ -7,12 +7,13 @@ import { State } from '@renderer/lib/drawable/State';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
-import { CreateEventsModal, EventsModalFormValues } from './EventsModal';
+import { CreateEventsModal, EventsModalResult } from './EventsModal';
 
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
 import { CodeTab } from '@renderer/types/tabs';
+import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -42,6 +43,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const [isCreateNameModalOpen, setIsCreateNameModalOpen] = useState(false);
+  const openCreateNameModal = () => setIsCreateNameModalOpen(true);
+  const closeCreateNameModal = () => setIsCreateNameModalOpen(false);
+
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
   const openEventsModal = () => setIsEventsModalOpen(true);
   const closeEventsModal = () => setIsEventsModalOpen(false);
@@ -70,8 +76,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.onFieldContextMenu((pos) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
+      const canvasPos = editor.container.relativeMousePos(pos);
 
-      setContextMenuData({ data: null, canvasPos: pos, position, event: undefined });
+      setContextMenuData({ data: null, canvasPos, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 
@@ -80,7 +87,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       editor?.container.machine.createNewState('Состояние', position);
     });
 
-    //Здесь мы открываем модальное окно редактирования ноды
+    //Здесь мы открываем модальное окно редактирования имени ноды
     editor.container.states.onStateNameCreate((state: State) => {
       const globalOffset = state.container.app.mouse.getOffset();
       const statePos = state.computedPosition;
@@ -88,11 +95,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         x: statePos.x + globalOffset.x,
         y: statePos.y + globalOffset.y,
         width: state.computedWidth,
-        height: state.titleHeight,
+        height: state.titleHeight, // editor.container.scale, Вот тут можно настроить высоту блока переименования
       };
       ClearUseState();
       setNameState({ state, position });
-      openModal();
+      openCreateNameModal();
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
@@ -107,7 +114,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.states.onStateContextMenu((state: State, pos) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, canvasPos: pos, position, event: undefined });
+      const canvasPos = editor.container.relativeMousePos(pos);
+      setContextMenuData({ data: state, canvasPos, position, event: undefined });
       setIsContextMenuOpen(true);
       // manager.triggerDataUpdate();
     });
@@ -121,7 +129,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     editor.container.states.onEventContextMenu((state, pos, event) => {
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: state, canvasPos: pos, position, event });
+      const canvasPos = editor.container.relativeMousePos(pos);
+      setContextMenuData({ data: state, canvasPos, position, event });
       setIsContextMenuOpen(true);
     });
 
@@ -147,7 +156,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
 
       const offset = editor.mouse.getOffset();
       const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      setContextMenuData({ data: condition, canvasPos: pos, position, event: undefined });
+      const canvasPos = editor.container.relativeMousePos(pos);
+      setContextMenuData({ data: condition, canvasPos, position, event: undefined });
       setIsContextMenuOpen(true);
     });
 
@@ -165,18 +175,17 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     // }, [ containerRef.current ]);
   }, []);
 
-  const handleCreateEventsModal = (data: EventsModalFormValues) => {
-    const doComponent = data.doComponent;
-    const doMethod = data.doMethod;
-    setEvents([...events, data.condition]);
+  const handleCreateEventsModal = (data: EventsModalResult) => {
+    setEvents([...events, data.action]);
     if (!isModalOpen) {
-      editor?.container.machine.createEvent(data.id, doComponent, doMethod);
+      editor?.container.machine.createEvent(data.id, data.trigger);
     }
     closeEventsModal();
   };
 
-  const handleRename = (idx: string, name: string) => {
-    editor?.container.machine.updateState(idx, name);
+  const handleRename = (data: StateNameModalFormValues) => {
+    editor?.container.machine.updateState(data.id, data.name);
+    closeCreateNameModal();
   };
 
   const handleCreateModal = (data: CreateModalResult) => {
@@ -253,6 +262,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         isData={contextMenuData}
         callbacks={contextMenuCallbacks}
       />
+
+      {isCreateNameModalOpen ? (
+        <StateNameModal
+          isOpen={isCreateNameModalOpen}
+          isName={nameState}
+          onClose={closeCreateNameModal}
+          onRename={handleRename}
+        />
+      ) : (
+        ''
+      )}
+
       {editor !== null ? (
         <CreateEventsModal
           editor={editor}
@@ -273,10 +294,9 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
           isOpen={isModalOpen}
           onOpenEventsModal={openEventsModal}
           isData={state}
-          isName={nameState}
+          isTransition={transition}
           onClose={closeModal}
           onSubmit={handleCreateModal}
-          onRename={handleRename}
         />
       ) : (
         ''

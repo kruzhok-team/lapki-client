@@ -38,6 +38,7 @@
     "blob-util": "^2.0.2",
     "buffer": "^6.0.3",
     "curved-arrows": "^0.1.0",
+    "find-free-port": "^2.0.0",
     "isomorphic-ws": "^5.0.0",
     "monaco-editor": "^0.39.0",
     "monaco-editor-webpack-plugin": "^7.1.0",

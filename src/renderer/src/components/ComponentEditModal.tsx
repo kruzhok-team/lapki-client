@@ -69,7 +69,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     console.log('ComponentEdit onEdit');
     const submitData = { type: dataState.data.type, parameters: dataState.data.parameters };
     console.log(submitData);
-    const newName = dataState.idx === data.idx ? dataState.idx : undefined;
+    const newName = dataState.idx === data.idx ? undefined : dataState.idx;
     onComponentEdit(data.idx, submitData, newName);
     onRequestClose();
   };

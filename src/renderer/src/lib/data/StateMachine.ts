@@ -3,6 +3,7 @@ import {
   Condition,
   Elements,
   Event,
+  Component as ComponentType,
   Transition as TransitionType,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
@@ -14,7 +15,7 @@ import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 import { stateStyle } from '../styles';
-import { ComponentEntry, PlatformManager } from './PlatformManager';
+import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
 
@@ -608,9 +609,40 @@ export class StateMachine extends EventEmitter {
       if (value.data.trigger.component == idx) {
         value.data.trigger.component = newName;
       }
-      // condition
       // do
+      if (value.data.do) {
+        for (const act of value.data.do) {
+          if (act.component == idx) {
+            act.component = newName;
+          }
+        }
+      }
+      // condition
+      if (value.data.condition) {
+        this.renameCondition(value.data.condition, idx, newName);
+      }
     });
+  }
+
+  renameCondition(ac: Condition, oldName: string, newName: string) {
+    if (ac.type == 'value') {
+      return;
+    }
+    if (ac.type == 'component') {
+      if (ac.value.component === oldName) {
+        ac.value.component = newName;
+      }
+      return;
+    }
+    if (operatorSet.has(ac.type)) {
+      if (Array.isArray(ac.value)) {
+        for (const x of ac.value) {
+          this.renameCondition(x, oldName, newName);
+        }
+        return;
+      }
+      return;
+    }
   }
 
   removeComponent(name: string, purge?: boolean) {

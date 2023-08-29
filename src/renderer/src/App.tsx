@@ -330,9 +330,7 @@ export const App: React.FC = () => {
       const aIndex = data.findIndex(({ name }) => name === a);
       const bIndex = data.findIndex(({ name }) => name === b);
 
-      const temp = data[aIndex];
-      data[aIndex] = data[bIndex];
-      data[bIndex] = temp;
+      data.splice(bIndex, 0, data.splice(aIndex, 1)[0]);
 
       return data;
     });

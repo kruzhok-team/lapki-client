@@ -229,7 +229,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     },
     onClickShowCode: (data: ContextMenuForm) => {
       if (data.name === 'FullCode') {
-        data.name = manager.state.shownName!;
+        data.name = manager.state.shownName ?? 'Безымянная';
         data.content = manager.state.content!;
       }
 

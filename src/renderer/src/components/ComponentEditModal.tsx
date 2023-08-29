@@ -95,8 +95,6 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
           {name}
           <input
             className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
-            {...props}
-            maxLength={20}
             value={data}
             name={name}
             onChange={(e) => handleInputChange(e)}

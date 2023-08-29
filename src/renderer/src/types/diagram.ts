@@ -1,9 +1,12 @@
 import { Point, Rectangle } from './graphics';
 
+// FIXME: в перспективе тип должен быть string | Variable
+type ArgList = { [key: string]: string };
+
 export type Action = {
   component: string;
   method: string;
-  args?: { [key: string]: string | Variable };
+  args?: ArgList;
 };
 
 export type CompilerSettings = {
@@ -15,8 +18,7 @@ export type CompilerSettings = {
 export type Event = {
   component: string;
   method: string;
-  // FIXME: в перспективе тип должен быть string | Variable
-  args?: { [key: string]: string };
+  args?: ArgList;
 };
 
 export type EventData = {

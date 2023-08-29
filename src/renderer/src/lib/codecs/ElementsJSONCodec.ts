@@ -257,14 +257,6 @@ const typeMap: any = {
   ),
   Action: o(
     [
-      { json: 'args', js: 'args', typ: u(undefined, m(u(r('Variable'), ''))) },
-      { json: 'component', js: 'component', typ: '' },
-      { json: 'method', js: 'method', typ: '' },
-    ],
-    false
-  ),
-  Variable: o(
-    [
       { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: '' },
       { json: 'method', js: 'method', typ: '' },
@@ -295,6 +287,14 @@ const typeMap: any = {
     [
       { json: 'type', js: 'type', typ: '' },
       { json: 'value', js: 'value', typ: u(a(r('Condition')), r('Variable'), 3.14, '') },
+    ],
+    false
+  ),
+  Variable: o(
+    [
+      { json: 'args', js: 'args', typ: u(undefined, m('')) },
+      { json: 'component', js: 'component', typ: '' },
+      { json: 'method', js: 'method', typ: '' },
     ],
     false
   ),

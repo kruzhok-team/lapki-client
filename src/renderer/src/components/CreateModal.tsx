@@ -7,17 +7,26 @@ import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
-import {
-  Action,
-  Condition as ConditionData,
-  State as StateData,
-  Event as StateEvent,
-} from '@renderer/types/diagram';
+import { Action, Condition as ConditionData, Event as StateEvent } from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Select, SelectOption } from '@renderer/components/UI';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
+import { ArgumentProto } from '@renderer/types/platform';
+
+type ArgSet = { [k: string]: string };
+type ArgFormEntry = { name: string; description?: string };
+type ArgForm = ArgFormEntry[];
+
+interface FormPreset {
+  compo: SelectOption;
+  event: SelectOption;
+  eventParam1: SelectOption;
+  eventParam2: SelectOption;
+  argSet: ArgSet;
+  argForm: ArgForm;
+}
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -70,151 +79,270 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   //--------------------------------Работа со списком компонентов---------------------------------------
   const machine = editor!.container.machine;
 
-  const optionsComponents = isData
-    ? [
-        {
-          value: 'System',
-          label: (
-            <div className="flex items-center">
-              <img
-                src={machine.platform.getComponentIconUrl('System', true)}
-                className="mr-1 h-7 w-7"
-              />
-              {'System'}
-            </div>
-          ),
-        },
-        ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return {
-            value: idx,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getComponentIconUrl(idx, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {idx}
-              </div>
-            ),
-          };
-        }),
-      ]
-    : [
-        ...Array.from(machine.components.entries()).map(([idx, _component]) => {
-          return {
-            value: idx,
-            label: (
-              <div className="flex items-center">
-                <img
-                  src={machine.platform.getComponentIconUrl(idx, true)}
-                  className="mr-1 h-7 w-7"
-                />
-                {idx}
-              </div>
-            ),
-          };
-        }),
-      ];
+  const isEditingEvent = isData === undefined;
 
-  const optionsParam1Components = Array.from(machine.components.entries()).map(
-    ([idx, _component]) => {
-      return {
-        value: idx,
-        label: (
-          <div className="flex items-center">
-            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
-            {idx}
-          </div>
-        ),
-      };
-    }
-  );
+  const compoEntry = (idx: string) => {
+    return {
+      value: idx,
+      label: (
+        <div className="flex items-center">
+          <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+          {idx}
+        </div>
+      ),
+    };
+  };
 
-  const optionsParam2Components = Array.from(machine.components.entries()).map(
-    ([idx, _component]) => {
-      return {
-        value: idx,
-        label: (
-          <div className="flex items-center">
-            <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
-            {idx}
-          </div>
-        ),
-      };
-    }
-  );
+  const eventEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const actionEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const conditionEntry = (name: string, compo?: string) => {
+    return {
+      value: name,
+      label: (
+        <div className="flex items-center">
+          <img
+            src={machine.platform.getVariableIconUrl(
+              compo ? param1Components.value : param2Components.value,
+              name,
+              true
+            )}
+            className="mr-1 h-7 w-7"
+          />
+          {name}
+        </div>
+      ),
+    };
+  };
+
+  const sysCompoOption = !isEditingEvent ? [compoEntry('System')] : [];
+
+  const optionsComponents = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+  ];
+
+  const optionsParam1Components = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+  ];
+
+  const optionsParam2Components = [
+    ...sysCompoOption,
+    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+  ];
 
   const [components, setComponents] = useState<SelectOption>(optionsComponents[0]);
   const [param1Components, setParam1Components] = useState<SelectOption>(
     optionsParam1Components[0]
   );
   const [param2Components, setParam2Components] = useState<SelectOption>(
-    optionsParam1Components[0]
+    optionsParam2Components[0]
   );
 
-  const optionsMethods = [
-    ...machine.platform.getAvailableEvents(components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getEventIconUrl(components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-  ];
-  const optionsParam1Methods = [
-    ...machine.platform.getAvailableVariables(param1Components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getVariableIconUrl(param1Components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-  ];
-  const optionsParam2Methods = [
-    ...machine.platform.getAvailableVariables(param2Components.value).map((entry) => {
-      return {
-        value: entry.name,
-        label: (
-          <div className="flex items-center">
-            <img
-              src={machine.platform.getVariableIconUrl(param2Components.value, entry.name, true)}
-              className="mr-1 h-7 w-7"
-            />
-            {entry.name}
-          </div>
-        ),
-      };
-    }),
-  ];
-  const [methods, setMethods] = useState<SelectOption>(optionsMethods[0]);
-  const [param1Methods, setParam1Methods] = useState<SelectOption>(optionsParam1Methods[0]);
-  const [param2Methods, setParam2Methods] = useState<SelectOption>(optionsParam2Methods[0]);
+  const optionsMethods = !components
+    ? []
+    : !isEditingEvent
+    ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
+    : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
+
+  const optionsParam1Methods = !components
+    ? []
+    : machine.platform
+        .getAvailableVariables(param1Components.value)
+        .map(({ name }) => conditionEntry(name, param1Components.value));
+
+  const optionsParam2Methods = !components
+    ? []
+    : machine.platform
+        .getAvailableVariables(param2Components.value)
+        .map(({ name }) => conditionEntry(name, param2Components.value));
+
+  const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
+  const [param1Methods, setParam1Methods] = useState<SelectOption | null>(optionsParam1Methods[0]);
+  const [param2Methods, setParam2Methods] = useState<SelectOption | null>(optionsParam2Methods[0]);
 
   useEffect(() => {
-    setMethods(optionsMethods[0] ?? null);
+    if (isChanged) return;
+    if (optionsMethods.length > 0) {
+      setMethods(optionsMethods[0]);
+    } else {
+      setMethods(null);
+    }
   }, [components]);
 
   useEffect(() => {
-    setParam1Methods(optionsParam1Methods[0] ?? null);
+    if (isChanged) return;
+    if (optionsParam1Methods.length > 0) {
+      setParam1Methods(optionsParam1Methods[0]);
+    } else {
+      setParam1Methods(null);
+    }
   }, [param1Components]);
 
   useEffect(() => {
-    setParam2Methods(optionsParam2Methods[0] ?? null);
+    if (isChanged) return;
+    if (optionsParam2Methods.length > 0) {
+      setParam2Methods(optionsParam2Methods[0]);
+    } else {
+      setParam2Methods(null);
+    }
   }, [param2Components]);
+
+  const [argSet, setArgSet] = useState<ArgSet>({});
+  const [argForm, setArgForm] = useState<ArgForm>([]);
+
+  const retrieveArgForm = (compo: string, method: string) => {
+    const compoType = machine.platform.resolveComponent(compo);
+    const component = machine.platform.data.components[compoType];
+    if (!component) return [];
+
+    const argList: ArgumentProto[] | undefined = isEditingEvent
+      ? component.signals[method]?.parameters
+      : component.methods[method]?.parameters;
+
+    if (!argList) return [];
+    const argForm: ArgForm = argList.map((arg) => {
+      return { name: arg.name, description: arg.description };
+    });
+    return argForm;
+  };
+
+  useEffect(() => {
+    if (!isChanged) return;
+    setArgSet({});
+    if (methods) {
+      setArgForm(retrieveArgForm(components.value, methods.value));
+    } else {
+      setArgForm([]);
+    }
+  }, [methods]);
+
+  const tryGetData: () => FormPreset | undefined = () => {
+    if (isData) {
+      const d = isData;
+      if (d.state.eventBox.data.length >= 0) {
+        const evs = d.state.eventBox.data[0];
+        if (evs) {
+          if (d.state.eventBox.data !== null) {
+            const compoName = evs.trigger.component;
+            const methodName = evs.trigger.method;
+            return {
+              compo: compoEntry(compoName),
+              event: eventEntry(methodName, compoName),
+              eventParam1: conditionEntry(methodName, compoName),
+              eventParam2: conditionEntry(methodName, compoName),
+              argSet: evs.trigger.args ?? {},
+              argForm: retrieveArgForm(compoName, methodName),
+            };
+          } else {
+            const ac = evs.trigger;
+            if (ac) {
+              const compoName = ac.component;
+              const methodName = ac.method;
+              const form = retrieveArgForm(compoName, methodName);
+              return {
+                compo: compoEntry(compoName),
+                event: actionEntry(methodName, compoName),
+                eventParam1: conditionEntry(methodName, compoName),
+                eventParam2: conditionEntry(methodName, compoName),
+                argSet: ac.args ?? {},
+                argForm: form,
+              };
+            }
+          }
+        }
+      }
+    } else if (props.isTransition) {
+      const d = props.isTransition.target.transition.data;
+      const compoName = d.trigger.component;
+      const methodName = d.trigger.method;
+      if (d.condition) {
+        return {
+          compo: compoEntry(compoName),
+          event: eventEntry(methodName, compoName),
+          //TODO: необходимо доделать вывод уже имеющегося условия
+          eventParam1: conditionEntry(methodName, compoName),
+          eventParam2: conditionEntry(methodName, compoName),
+          argSet: d.trigger.args ?? {},
+          argForm: retrieveArgForm(compoName, methodName),
+        };
+      }
+    }
+    return undefined;
+  };
+
+  const parameters = argForm.map((entry) => {
+    const name = entry.name;
+    const data = argSet[entry.name] ?? '';
+    return (
+      <>
+        <label className="mx-1 flex flex-col">
+          {name}
+          <input
+            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            value={data}
+            name={name}
+            onChange={(e) => handleInputChange(e)}
+          />
+        </label>
+      </>
+    );
+  });
+
+  const handleInputChange = (e) => {
+    const newSet = { ...argSet };
+    newSet[e.target.name] = e.target.value;
+    setArgSet(newSet);
+  };
+
+  const [isChanged, setIsChanged] = useState(false);
+  const [wasOpen, setWasOpen] = useState(false);
+  useEffect(() => {
+    if (!wasOpen && props.isOpen) {
+      const d: FormPreset | undefined = tryGetData();
+      if (d) {
+        setComponents(d.compo);
+        setMethods(d.event);
+        setParam1Methods(d.eventParam1);
+        setParam2Methods(d.eventParam2);
+        setArgSet(d.argSet);
+        setArgForm(d.argForm);
+      } else {
+        setComponents(components);
+      }
+      setIsChanged(false);
+    }
+    setWasOpen(props.isOpen);
+  }, [props.isOpen]);
+
   //-----------------------------------------------------------------------------------------------------
 
   //-----------------------------Функция для закрытия модального окна-----------------------------------
@@ -251,20 +379,20 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   //-----------------------------------------------------------------------------------------------------
   var method: Action[] =
     props.isTransition?.target.transition.data.do !== undefined
-      ? [...props.isTransition?.target.transition.data.do!, ...props.isCondition!]
+      ? [...props.isTransition?.target.transition.data.do, ...props.isCondition!]
       : props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [type, setType] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
     if (!isElse) {
-      if (isParamOne && param1Methods.value == null) {
+      if (isParamOne && param1Methods?.value == null) {
         return;
       }
-      if (isParamTwo && param2Methods.value == null) {
+      if (isParamTwo && param2Methods?.value == null) {
         return;
       }
     }
-    if (methods.value == null) {
+    if (methods?.value == null) {
       return;
     }
 
@@ -278,7 +406,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               value: isParamOne
                 ? {
                     component: param1Components.value,
-                    method: param1Methods.value,
+                    method: param1Methods!.value,
                     args: {},
                   }
                 : formData.argsOneElse,
@@ -288,7 +416,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               value: isParamTwo
                 ? {
                     component: param2Components.value,
-                    method: param2Methods.value,
+                    method: param2Methods!.value,
                     args: {},
                   }
                 : formData.argsTwoElse,
@@ -376,7 +504,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       {...props}
       onRequestClose={onRequestClose}
       title={
-        isData?.state.id !== undefined
+        isData !== undefined
           ? 'Редактирование состояния: ' + JSON.stringify(isData?.state.data.name)
           : 'Редактор соединения'
       }
@@ -400,6 +528,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           value={methods}
           isSearchable={false}
         />
+        {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
       {/*--------------------------------------Добавление условия------------------------------------------*/}
@@ -579,7 +708,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           <button
             type="button"
             className="my-2 rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={onOpenEventsModal}
+            onClick={onOpenEventsModal /*() => onDeleteEventsModal(activeEvents)*/}
           >
             <SubtractIcon />
           </button>
@@ -593,7 +722,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
-            value={props.isTransition?.target.transition.data.color}
+            defaultValue={props.isTransition?.target.transition.data.color}
           />
         </>
       )}

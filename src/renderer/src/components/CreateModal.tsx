@@ -7,13 +7,19 @@ import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { TextInput } from './Modal/TextInput';
-import { Action, Condition as ConditionData, Event as StateEvent } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition as ConditionData,
+  Event as StateEvent,
+  Variable as VariableData,
+} from '@renderer/types/diagram';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Select, SelectOption } from '@renderer/components/UI';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
 import { ArgumentProto } from '@renderer/types/platform';
+import { operatorSet } from '@renderer/lib/data/PlatformManager';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -22,10 +28,15 @@ type ArgForm = ArgFormEntry[];
 interface FormPreset {
   compo: SelectOption;
   event: SelectOption;
-  eventParam1: SelectOption;
-  eventParam2: SelectOption;
   argSet: ArgSet;
   argForm: ArgForm;
+}
+
+// FIXME: пока только совместимое с Берлогой
+interface ConditionPreset {
+  operator: string;
+  eventVar1: [SelectOption, SelectOption] | string | number;
+  eventVar2: [SelectOption, SelectOption] | string | number;
 }
 
 interface CreateModalProps {
@@ -72,6 +83,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 }) => {
   const {
     register,
+    reset: resetForm,
+    setValue: setFormValue,
     formState: { errors },
     handleSubmit: hookHandleSubmit,
   } = useForm<CreateModalFormValues>();
@@ -255,8 +268,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             return {
               compo: compoEntry(compoName),
               event: eventEntry(methodName, compoName),
-              eventParam1: conditionEntry(methodName, compoName),
-              eventParam2: conditionEntry(methodName, compoName),
               argSet: evs.trigger.args ?? {},
               argForm: retrieveArgForm(compoName, methodName),
             };
@@ -269,8 +280,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               return {
                 compo: compoEntry(compoName),
                 event: actionEntry(methodName, compoName),
-                eventParam1: conditionEntry(methodName, compoName),
-                eventParam2: conditionEntry(methodName, compoName),
                 argSet: ac.args ?? {},
                 argForm: form,
               };
@@ -282,17 +291,68 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       const d = props.isTransition.target.transition.data;
       const compoName = d.trigger.component;
       const methodName = d.trigger.method;
-      if (d.condition) {
-        return {
-          compo: compoEntry(compoName),
-          event: eventEntry(methodName, compoName),
-          //TODO: необходимо доделать вывод уже имеющегося условия
-          eventParam1: conditionEntry(methodName, compoName),
-          eventParam2: conditionEntry(methodName, compoName),
-          argSet: d.trigger.args ?? {},
-          argForm: retrieveArgForm(compoName, methodName),
-        };
+      return {
+        compo: compoEntry(compoName),
+        event: eventEntry(methodName, compoName),
+        argSet: d.trigger.args ?? {},
+        argForm: retrieveArgForm(compoName, methodName),
+      };
+    }
+    return undefined;
+  };
+
+  const tryGetCondition: () => ConditionPreset | undefined = () => {
+    if (props.isTransition) {
+      const c = props.isTransition.target.transition.data.condition;
+      if (!c) return undefined;
+      const operator = c.type;
+      if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
+        console.warn('👽 got condition from future (not comparsion)', c);
+        return undefined;
       }
+      const param1 = c.value[0];
+      const param2 = c.value[1];
+      if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
+        console.warn('👽 got condition from future (non-value operands)', c);
+        return undefined;
+      }
+
+      let eventVar1: [SelectOption, SelectOption] | string | number = '';
+      let eventVar2: [SelectOption, SelectOption] | string | number = '';
+
+      if (
+        param1.type == 'value' &&
+        (typeof param1.value === 'string' || typeof param1.value === 'number')
+      ) {
+        eventVar1 = param1.value;
+      } else if (param1.type == 'component') {
+        const compoName = (param1.value as VariableData).component;
+        const methodName = (param1.value as VariableData).method;
+        eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
+      } else {
+        console.warn('👽 got condition from future (strange operand 1)', c);
+        return undefined;
+      }
+
+      if (
+        param2.type == 'value' &&
+        (typeof param2.value === 'string' || typeof param2.value === 'number')
+      ) {
+        eventVar2 = param2.value;
+      } else if (param2.type == 'component') {
+        const compoName = (param2.value as VariableData).component;
+        const methodName = (param2.value as VariableData).method;
+        eventVar2 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
+      } else {
+        console.warn('👽 got condition from future (strange operand 2)', c);
+        return undefined;
+      }
+
+      return {
+        operator,
+        eventVar1,
+        eventVar2,
+      };
     }
     return undefined;
   };
@@ -325,18 +385,40 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [wasOpen, setWasOpen] = useState(false);
   useEffect(() => {
     if (!wasOpen && props.isOpen) {
+      setIsChanged(false);
       const d: FormPreset | undefined = tryGetData();
       if (d) {
         setComponents(d.compo);
         setMethods(d.event);
-        setParam1Methods(d.eventParam1);
-        setParam2Methods(d.eventParam2);
         setArgSet(d.argSet);
         setArgForm(d.argForm);
       } else {
         setComponents(components);
       }
-      setIsChanged(false);
+      const c: ConditionPreset | undefined = tryGetCondition();
+      if (c) {
+        setIsElse(false);
+        setCondOperator(c.operator);
+        if (typeof c.eventVar1 === 'string' || typeof c.eventVar1 === 'number') {
+          setIsParamOne(false);
+          setFormValue('argsOneElse', c.eventVar1.toString());
+        } else {
+          setIsParamOne(true);
+          setParam1Components(c.eventVar1[0]);
+          setParam1Methods(c.eventVar1[1]);
+        }
+        if (typeof c.eventVar2 === 'string' || typeof c.eventVar2 === 'number') {
+          setIsParamTwo(false);
+          setFormValue('argsTwoElse', c.eventVar2.toString());
+        } else {
+          setIsParamTwo(true);
+          setParam2Components(c.eventVar2[0]);
+          setParam2Methods(c.eventVar2[1]);
+        }
+      } else {
+        setIsElse(true);
+        resetForm();
+      }
     }
     setWasOpen(props.isOpen);
   }, [props.isOpen]);
@@ -380,7 +462,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       ? [...props.isTransition?.target.transition.data.do, ...props.isCondition!]
       : props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
-  const [type, setType] = useState<string>();
+  const [condOperator, setCondOperator] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
     if (!isElse) {
       if (isParamOne && param1Methods?.value == null) {
@@ -397,7 +479,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     const cond = isElse
       ? undefined
       : {
-          type: type!,
+          type: condOperator!,
           value: [
             {
               type: isParamOne ? 'component' : 'value',
@@ -550,6 +632,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <input
                 type="checkbox"
                 onChange={handleParamOne}
+                checked={!isParamOne}
                 className={twMerge('mx-2', isElse && 'hidden')}
               />
               {isParamOne ? (
@@ -595,7 +678,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               )}
               ref={(event) => {
                 if (event !== null) {
-                  setType(event.value);
+                  setCondOperator(event.value);
                 }
               }}
             >
@@ -612,6 +695,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <input
                 type="checkbox"
                 disabled={isElse}
+                checked={!isParamTwo}
                 onChange={handleParamTwo}
                 className={twMerge('mx-2', isElse && 'hidden')}
               />

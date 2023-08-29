@@ -214,7 +214,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
         setArgSet(d.argSet);
         setArgForm(d.argForm);
       } else {
-        setComponents(components);
+        setComponents(components ? components[0] : null);
       }
       setIsChanged(false);
     }

@@ -1,71 +1,60 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { twMerge } from 'tailwind-merge';
+
+import { ChangeNameState } from '@renderer/types/other';
 
 interface StateNameModalProps {
   isOpen: boolean;
-  isName: { state; position } | undefined;
+  initial?: ChangeNameState;
   onClose: () => void;
   onRename: (data: StateNameModalFormValues) => void;
 }
 
 export interface StateNameModalFormValues {
-  id: string;
   name: string;
 }
 
-export const StateNameModal: React.FC<StateNameModalProps> = ({ onClose, onRename, isName }) => {
-  const { register, handleSubmit: hookHandleSubmit } = useForm<StateNameModalFormValues>();
+export const StateNameModal: React.FC<StateNameModalProps> = ({
+  isOpen,
+  onClose,
+  onRename,
+  initial,
+}) => {
+  const { register, handleSubmit } = useForm<StateNameModalFormValues>();
 
-  const onRequestClose = () => {
-    onClose();
-  };
-
-  const handleSubmit = hookHandleSubmit((formData) => {
-    console.log(formData.name);
-    const data: StateNameModalFormValues = {
-      id: isName?.state.id,
-      name: formData.name !== '' ? formData.name : 'Состояние',
-    };
-    onRename(data);
+  const onSubmit = handleSubmit(({ name }) => {
+    onRename({ name: name || 'Состояние' });
   });
 
-  const inputStyle = {
-    left: isName?.position.x + 'px',
-    top: isName?.position.y + 'px',
-    width: isName?.position.width + 'px',
-    height: isName?.position.height + 'px',
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') return onSubmit();
+    if (e.key === 'Escape') return onClose();
   };
 
+  const inputStyle = {
+    left: initial?.position.x + 'px',
+    top: initial?.position.y + 'px',
+    width: initial?.sizes.width + 'px',
+    height: initial?.sizes.height + 'px',
+    fontSize: initial?.sizes.fontSize + 'px',
+    paddingLeft: initial?.sizes.paddingX + 'px',
+    paddingRight: initial?.sizes.paddingX + 'px',
+  };
+
+  if (!isOpen || !initial) return null;
+
   return (
-    <>
-      {isName !== undefined && (
-        <input
-          style={inputStyle}
-          autoFocus
-          onKeyUp={(e) => {
-            var keyCode = e.keyCode;
-            if (e.key === 'Enter') {
-              handleSubmit();
-            } else if (keyCode === 27) {
-              onRequestClose();
-            }
-          }}
-          className={twMerge(
-            'fixed rounded-t-[6px] border-2 border-solid bg-[#525252] px-3 font-Fira text-white focus:outline-none'
-          )}
-          placeholder="Придумайте название"
-          maxLength={20}
-          {...register('name', {
-            onBlur() {
-              onRequestClose();
-            },
-            minLength: { value: 2, message: 'Минимум 2 символа!' },
-            value: isName.state.data.name,
-          })}
-        />
-      )}
-      ,
-    </>
+    <input
+      style={inputStyle}
+      autoFocus
+      className="fixed rounded-t-[6px] bg-[#525252] text-white outline outline-2 outline-white"
+      placeholder="Придумайте название"
+      maxLength={20}
+      onKeyUp={handleKeyUp}
+      {...register('name', {
+        onBlur: onClose,
+        value: initial.state.data.name,
+      })}
+    />
   );
 };

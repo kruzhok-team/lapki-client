@@ -115,14 +115,21 @@ export class State extends Draggable {
     return fontSize + paddingY * 2;
   }
 
+  get computedTitleSizes() {
+    return {
+      height: this.titleHeight / this.container.scale,
+      width: this.drawBounds.width,
+      fontSize: 15 / this.container.scale,
+      paddingX: 15 / this.container.scale,
+      paddingY: 10 / this.container.scale,
+    };
+  }
+
   //Прорисовка заголовка блока состояния
   private drawTitle(ctx: CanvasRenderingContext2D) {
-    const { x, y, width } = this.drawBounds;
+    const { x, y } = this.drawBounds;
 
-    const fontSize = 15 / this.container.scale;
-    const paddingY = 10 / this.container.scale;
-    const paddingX = 15 / this.container.scale;
-    const titleHeight = this.titleHeight / this.container.scale;
+    const { height, width, fontSize, paddingX, paddingY } = this.computedTitleSizes;
 
     ctx.font = `${fontSize}px/0 Fira Sans`;
     ctx.textBaseline = 'hanging';
@@ -131,7 +138,7 @@ export class State extends Draggable {
 
     ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, y, width, titleHeight, [6, 6, 0, 0]);
+    ctx.roundRect(x, y, width, height, [6, 6, 0, 0]);
     ctx.fill();
 
     ctx.fillStyle = style.titleColor;

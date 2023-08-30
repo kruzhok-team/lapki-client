@@ -4,7 +4,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
-import { Point, Rectangle } from '@renderer/types/graphics';
+import { Point } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
 import { CreateEventsModal, EventsModalResult } from './EventsModal';
@@ -14,6 +14,7 @@ import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
 import { CodeTab } from '@renderer/types/tabs';
 import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
+import { ChangeNameState } from '@renderer/types/other';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -29,7 +30,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   onCodeSnippet,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [nameState, setNameState] = useState<{ state: State; position: Rectangle }>();
+  const [changeNameState, setChangeNameState] = useState<ChangeNameState | undefined>();
   const [state, setState] = useState<{ state: State }>();
   const [events, setEvents] = useState<Action[]>([]);
   const [idEvents, setIdEvents] = useState<{
@@ -63,7 +64,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       setState(undefined);
       setEvents([]);
       setIdEvents(undefined);
-      setNameState(undefined);
+      setChangeNameState(undefined);
       setTransition(undefined);
       setNewTransition(undefined);
     };
@@ -90,11 +91,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
       const position = {
         x: statePos.x + globalOffset.x,
         y: statePos.y + globalOffset.y,
-        width: state.computedWidth,
-        height: state.titleHeight, // editor.container.scale, Вот тут можно настроить высоту блока переименования
       };
       ClearUseState();
-      setNameState({ state, position });
+      setChangeNameState({
+        state,
+        position,
+        sizes: state.computedTitleSizes,
+      });
       openCreateNameModal();
     });
 
@@ -181,7 +184,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
   };
 
   const handleRename = (data: StateNameModalFormValues) => {
-    editor?.container.machine.updateState(data.id, data.name);
+    const stateId = changeNameState?.state.id;
+    if (!stateId) return;
+
+    editor?.container.machine.updateState(stateId, data.name);
     closeCreateNameModal();
   };
 
@@ -260,16 +266,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         callbacks={contextMenuCallbacks}
       />
 
-      {isCreateNameModalOpen ? (
-        <StateNameModal
-          isOpen={isCreateNameModalOpen}
-          isName={nameState}
-          onClose={closeCreateNameModal}
-          onRename={handleRename}
-        />
-      ) : (
-        ''
-      )}
+      <StateNameModal
+        isOpen={isCreateNameModalOpen}
+        initial={changeNameState}
+        onClose={closeCreateNameModal}
+        onRename={handleRename}
+      />
 
       {editor !== null ? (
         <CreateEventsModal

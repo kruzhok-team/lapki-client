@@ -245,6 +245,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     onCloseMe: () => {
       setIsContextMenuOpen(false);
     },
+    onViewCentering: () => {
+      setIsContextMenuOpen(false);
+      editor?.container.viewCentering();
+    },
   };
 
   return (

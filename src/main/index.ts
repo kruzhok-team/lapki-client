@@ -8,7 +8,8 @@ import {
   handleBinFileOpen,
 } from './file-handlers';
 import { join } from 'path';
-import { ModuleManager } from './modules/ModuleManager';
+import { FLASHER_LOCAL_PORT, ModuleManager } from './modules/ModuleManager';
+
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
 
@@ -101,6 +102,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
     return ModuleManager.stopModule(module);
+  });
+  ipcMain.handle('Flasher:getPort', (_event) => {
+    return FLASHER_LOCAL_PORT;
   });
 
   // main process

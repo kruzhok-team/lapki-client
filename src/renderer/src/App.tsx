@@ -390,7 +390,7 @@ export const App: React.FC = () => {
 
   // смена вкладок (Sidebar.tsx)
   const handleTabChange = (index: number) => {
-    console.log('tab changed');
+    //console.log('tab changed');
     if (index === activeTabIndex) {
       setIsCollapsed((p) => !p);
     } else {
@@ -547,7 +547,7 @@ export const App: React.FC = () => {
     const reader = new FileReader();
     Flasher.initReader(reader);
     console.log('CONNECTING TO FLASHER');
-    Flasher.connect(Flasher.base_address);
+    Flasher.connect();
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 

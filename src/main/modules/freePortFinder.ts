@@ -1,6 +1,7 @@
 // нахождение незанятого порта для запуска модуля
 
 import { error } from 'console';
+import { start } from 'repl';
 
 // список небезопасных портов для хрома. Источник:https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 const unsafeChromePorts: number[] = [
@@ -85,19 +86,24 @@ const unsafeChromePorts: number[] = [
   6697, // IRC + TLS
   10080, // Amanda
 ];
-
+// порт с которого начинаются порты для которых не требуется специальное разрешение
+const linux_unpriviliged_port = 1024;
 /* 
 нахождение незанятого порта и безопасного (для хрома) порта на локальном хосте
-@param {number} startPort - порт с которого начнётся поиск
+@param {number} startPort - порт с которого начнётся поиск (по-умолчанию указан порт 1024, для подключения к порту значение которого меньше 1024 требуется специальное разрешение на Linux)
 @param {Function} action(freep) - действие, которое нужно совершить с найденным портом freep
 @param {string} host - хост на котором следует искать свободные порты, по-умолчанию указан адрес локального хоста
 @throws {Error} - ошибка из find-free-port
 */
 export async function findFreePort(
   action: Function,
-  startPort: number = 2,
+  startPort: number = linux_unpriviliged_port,
   host: string = '127.0.0.1'
 ) {
+  const platform = process.platform;
+  if (startPort < linux_unpriviliged_port && platform == 'linux') {
+    startPort = linux_unpriviliged_port;
+  }
   if (startPort >= 65536) {
     throw error('no free and safe port is found');
   }

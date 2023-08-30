@@ -558,9 +558,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       icon: '<=',
     },
   ];
+  //Срабатывания клика по элементу списка действий и удаление выбранного действия
+  const [clickList, setClickList] = useState<number>(0);
+
+  const deleteMethod = () => {
+    const delMethod = method.filter((_value, index) => clickList !== index);
+    props.setIsCondition(delMethod);
+  };
 
   //Ниже реализовано перетаскивание событий между собой
-
   const [dragId, setDragId] = useState();
   const handleDrag = (id) => {
     setDragId(id);
@@ -765,7 +771,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             method.map((data, key) => (
               <div
                 key={'Methods' + key}
-                className="flex"
+                className={twMerge('flex hover:bg-primary', clickList === key && 'bg-primary')}
+                onClick={() => setClickList(key)}
                 draggable={true}
                 onDragOver={(event) => event.preventDefault()}
                 onDragStart={() => handleDrag(key)}
@@ -806,7 +813,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           <button
             type="button"
             className="my-2 rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={onOpenEventsModal /*() => onDeleteEventsModal(activeEvents)*/}
+            onClick={deleteMethod}
           >
             <SubtractIcon />
           </button>

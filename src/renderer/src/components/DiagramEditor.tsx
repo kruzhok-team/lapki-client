@@ -12,13 +12,14 @@ import { CreateEventsModal, EventsModalResult } from './EventsModal';
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
+import { CodeTab } from '@renderer/types/tabs';
 import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 
-interface DiagramEditorProps {
+export interface DiagramEditorProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
-  onCodeSnippet: (type: string, name: string, code: string, language: string) => void;
+  onCodeSnippet: (data: CodeTab) => void;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({
@@ -229,10 +230,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     },
     onClickShowCode: (data: ContextMenuForm) => {
       if (data.name === 'FullCode') {
-        data.name = manager.state.shownName!;
+        data.name = manager.state.shownName ?? 'Безымянная';
         data.content = manager.state.content!;
       }
-      onCodeSnippet(data.type, data.name, data.content, 'json');
+
+      onCodeSnippet({ type: data.type, name: data.name, code: data.content, language: 'json' });
     },
     onClickDelState: (data: ContextMenuForm) => {
       editor?.container.machine.deleteState(data.name);

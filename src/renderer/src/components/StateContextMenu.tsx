@@ -7,6 +7,7 @@ import { Condition } from '@renderer/lib/drawable/Condition';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
+import { CodeTab } from '@renderer/types/tabs';
 
 export interface StateContextMenuData {
   data: State | Condition | null;
@@ -33,7 +34,7 @@ interface StateContextMenuProps {
 
 export interface ContextMenuForm {
   name: string;
-  type: string;
+  type: CodeTab['type'];
   eventId: EventSelection;
   content: string;
 }

@@ -31,17 +31,16 @@ export const StateNameModal: React.FC<StateNameModalProps> = ({
     if (e.key === 'Escape') return onClose();
   };
 
-  const inputStyle = {
-    left: initial?.position.x + 'px',
-    top: initial?.position.y + 'px',
-    width: initial?.sizes.width + 'px',
-    height: initial?.sizes.height + 'px',
-    fontSize: initial?.sizes.fontSize + 'px',
-    paddingLeft: initial?.sizes.paddingX + 'px',
-    paddingRight: initial?.sizes.paddingX + 'px',
-  };
-
   if (!isOpen || !initial) return null;
+
+  const inputStyle = {
+    left: initial.position.x + 'px',
+    top: initial.position.y + 'px',
+    width: initial.sizes.width + 'px',
+    height: initial.sizes.height + 'px',
+    fontSize: Math.max(initial.sizes.fontSize, 15) + 'px',
+    padding: `${0}px ${Math.max(initial.sizes.paddingX, 15)}px`,
+  };
 
   return (
     <input

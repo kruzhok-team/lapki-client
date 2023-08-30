@@ -86,7 +86,14 @@ export class Compiler {
     return result;
   }
 
-  static connect(route: string, timeout: number = 0): Websocket {
+  static connect(host: string, port: number, timeout = 0) {
+    this.host = host;
+    this.port = port;
+    this.base_address = `ws://${this.host}:${this.port}/main`;
+    Compiler.connectRoute(this.base_address, timeout);
+  }
+
+  static connectRoute(route: string, timeout: number = 0): Websocket {
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
     this.setCompilerStatus('Идет подключение...');
@@ -166,7 +173,7 @@ export class Compiler {
         }
         setTimeout(() => {
           // console.log(`Compiler: retry in ${timeout} ms`);
-          this.connect(route, timeout);
+          this.connectRoute(route, timeout);
           this.timeoutSetted = false;
         }, timeout);
       }
@@ -177,7 +184,7 @@ export class Compiler {
 
   static compile(platform: string, data: Elements | string) {
     const route = `${this.base_address}main`;
-    const ws: Websocket = this.connect(route);
+    const ws: Websocket = this.connectRoute(route);
     let compilerSettings: CompilerSettings;
     console.log(platform);
     switch (platform) {

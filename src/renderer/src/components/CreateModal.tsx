@@ -457,10 +457,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
   //-----------------------------------------------------------------------------------------------------
-  var method: Action[] =
-    props.isTransition?.target.transition.data.do !== undefined
-      ? [...props.isTransition?.target.transition.data.do, ...props.isCondition!]
-      : props.isCondition!;
+  var method: Action[] = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [condOperator, setCondOperator] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
@@ -754,8 +751,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 onDrop={() => handleDrop(key)}
               >
                 <div
-                  key={'newEvent' + key}
-                  //draggable
                   className={twMerge(
                     'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-lg border-2 bg-neutral-700 px-1'
                   )}

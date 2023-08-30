@@ -132,6 +132,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     //Здесь мы открываем модальное окно редактирования созданной связи
     editor.container.transitions.onTransitionCreate((target) => {
       ClearUseState();
+      setEvents(target.transition.data.do!);
       setTransition({ target });
       openModal();
       // manager.triggerDataUpdate();
@@ -187,7 +188,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     if (data.key === 2) {
       editor?.container.machine.newPictoState(
         data.id,
-        events!,
+        data.do,
         data.trigger.component,
         data.trigger.method
       );
@@ -199,7 +200,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.color ?? '#FFFFFF',
         data.trigger.component,
         data.trigger.method,
-        events!,
+        data.do,
         data.condition,
         transition?.target.bounds
       );
@@ -211,7 +212,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.color ?? '#FFFFFF',
         data.trigger.component,
         data.trigger.method,
-        events!,
+        data.do,
         data.condition,
         newTransition?.target.bounds
       );

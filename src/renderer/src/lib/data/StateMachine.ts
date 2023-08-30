@@ -3,6 +3,7 @@ import {
   Condition,
   Elements,
   Event,
+  Component as ComponentType,
   Transition as TransitionType,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
@@ -14,7 +15,7 @@ import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 import { stateStyle } from '../styles';
-import { ComponentEntry, PlatformManager } from './PlatformManager';
+import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
 
@@ -557,6 +558,91 @@ export class StateMachine extends EventEmitter {
     this.platform.nameToComponent.set(name, type);
 
     this.dataTrigger();
+  }
+
+  // Меняет только параметры, без имени
+  editComponent(idx: string, newData: ComponentType, newName?: string) {
+    const component = this.components.get(idx);
+    if (typeof component === 'undefined') return;
+
+    console.log(idx);
+    console.log(newData);
+    console.log(newName);
+
+    // type присутствует, но мы его умышленно не трогаем
+    component.data.parameters = newData.parameters;
+
+    if (newName) {
+      this.renameComponentRaw(idx, newName);
+    }
+
+    this.dataTrigger();
+  }
+
+  private renameComponentRaw(idx: string, newName: string) {
+    const component = this.components.get(idx);
+    if (typeof component === 'undefined') return;
+
+    this.components.set(newName, component);
+    this.components.delete(idx);
+
+    this.platform.nameToComponent.set(newName, component.data.type);
+    this.platform.nameToComponent.delete(idx);
+
+    // А сейчас будет занимательное путешествие по схеме с заменой всего
+    this.states.forEach((state) => {
+      for (const ev of state.eventBox.data) {
+        // заменяем в триггере
+        if (ev.trigger.component == idx) {
+          ev.trigger.component = newName;
+        }
+        for (const act of ev.do) {
+          // заменяем в действии
+          if (act.component == idx) {
+            act.component = newName;
+          }
+        }
+      }
+    });
+
+    this.transitions.forEach((value) => {
+      if (value.data.trigger.component == idx) {
+        value.data.trigger.component = newName;
+      }
+      // do
+      if (value.data.do) {
+        for (const act of value.data.do) {
+          if (act.component == idx) {
+            act.component = newName;
+          }
+        }
+      }
+      // condition
+      if (value.data.condition) {
+        this.renameCondition(value.data.condition, idx, newName);
+      }
+    });
+  }
+
+  renameCondition(ac: Condition, oldName: string, newName: string) {
+    if (ac.type == 'value') {
+      return;
+    }
+    if (ac.type == 'component') {
+      if (ac.value.component === oldName) {
+        ac.value.component = newName;
+      }
+      return;
+    }
+    if (operatorSet.has(ac.type)) {
+      if (Array.isArray(ac.value)) {
+        for (const x of ac.value) {
+          this.renameCondition(x, oldName, newName);
+        }
+        return;
+      }
+      return;
+    }
   }
 
   removeComponent(name: string, purge?: boolean) {

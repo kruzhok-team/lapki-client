@@ -25,7 +25,7 @@ interface ComponentEditModalProps {
   isOpen: boolean;
   data: ComponentEditData;
   onClose: () => void;
-  onComponentEdit: (idx: string, data: ComponentData) => void;
+  onComponentEdit: (idx: string, data: ComponentData, newName?: string) => void;
   onComponentDelete: (idx: string) => void;
 }
 
@@ -45,12 +45,20 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const [dataState, setDataState] = useState(data);
 
   useEffect(() => {
+    console.log(data);
     setDataState(data);
   }, [data]);
 
   const handleInputChange = (e) => {
-    const updatedState = { ...data };
+    const updatedState = structuredClone(dataState);
     updatedState.data.parameters[e.target.name] = e.target.value;
+    setDataState(updatedState);
+    console.log(updatedState);
+  };
+
+  const handleNameChange = (e) => {
+    const updatedState = structuredClone(dataState);
+    updatedState.idx = e.target.value;
     setDataState(updatedState);
     console.log(updatedState);
   };
@@ -61,8 +69,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     console.log('ComponentEdit onEdit');
     const submitData = { type: dataState.data.type, parameters: dataState.data.parameters };
     console.log(submitData);
-
-    onComponentEdit(dataState.idx, submitData);
+    const newName = dataState.idx === data.idx ? undefined : dataState.idx;
+    onComponentEdit(data.idx, submitData, newName);
     onRequestClose();
   };
 
@@ -106,7 +114,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       sideLabel="Удалить"
       onSide={handleDelete}
     >
-      <p>🐈‍⬛</p>
+      <input
+        className="w-[250px] max-w-[250px] rounded bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+        maxLength={20}
+        value={dataState.idx}
+        name={dataState.idx}
+        onChange={(e) => handleNameChange(e)}
+      />
       <hr />
       {parameters}
     </Modal>

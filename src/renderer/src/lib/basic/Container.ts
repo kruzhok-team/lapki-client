@@ -31,7 +31,6 @@ export class Container {
 
   dropCallback?: (position: Point) => void;
   contextMenuOpenCallback?: (position: Point) => void;
-  contextMenuCloseCallback?: () => void;
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -89,15 +88,6 @@ export class Container {
     this.contextMenuOpenCallback = callback;
   };
 
-  onContextMenuClose = (callback: () => void) => {
-    this.contextMenuCloseCallback = callback;
-  };
-
-  closeContextMenu = () => {
-    this.contextMenuCloseCallback?.();
-    // console.log(['closeContextMenu']);
-  };
-
   handleMouseDown = (e: MyMouseEvent) => {
     this.isPan = true;
     if (!this.isPan || !e.left) return;
@@ -118,11 +108,8 @@ export class Container {
     this.machine.undo();
   };
 
-  handleMouseUp = (e: MyMouseEvent) => {
+  handleMouseUp = () => {
     this.machine.removeSelection();
-    if (e.button != Button.right) {
-      this.closeContextMenu();
-    }
 
     this.globalMouseUp();
   };
@@ -170,14 +157,14 @@ export class Container {
     e.stopPropagation();
 
     this.dropCallback?.(this.relativeMousePos({ x: e.x, y: e.y }));
-    };
+  };
 
   relativeMousePos(e: Point): Point {
     // const rect = this.app.canvas.element.getBoundingClientRect();
     return {
       x: e.x * this.scale - this.offset.x,
       y: e.y * this.scale - this.offset.y,
-  };
+    };
   }
 
   get graphData() {

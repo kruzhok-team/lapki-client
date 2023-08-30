@@ -179,12 +179,6 @@ export class Draggable extends EventEmitter {
     // для того что-бы не хватать несколько элементов
     e.stopPropagation();
 
-    // А это чтобы закрыть ненужное контекстное меню.
-    // Если контекстное меню начнёт закрываться само по себе,
-    // вы нарушили вселенский порядок событий, и эта строка
-    // вызывается позже, чем открывается новое меню.
-    this.container.closeContextMenu();
-
     this.dragging = true;
 
     this.isMouseDown = true;

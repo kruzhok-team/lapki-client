@@ -11,6 +11,7 @@ import { join } from 'path';
 import { FLASHER_LOCAL_PORT, ModuleManager } from './modules/ModuleManager';
 
 import icon from '../../resources/icon.png?asset';
+import settings from 'electron-settings';
 
 /**
  * Создание главного окна редактора.
@@ -60,8 +61,20 @@ function createWindow(): void {
   mainWindow.webContents.openDevTools();
 }
 
+function initSettings(): void {
+  console.log('getting settings from', settings.file());
+  if (!settings.hasSync('compiler')) {
+    settings.setSync('compiler', {
+      host: 'lapki.polyus-nt.ru',
+      port: 8081,
+    });
+  }
+}
+
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
+  initSettings();
+
   // IPC из отрисовщика, в основном диалоговые окна
   ipcMain.handle('dialog:saveIntoFolder', (_event, data) => {
     return handleSaveIntoFolder(data);
@@ -92,6 +105,11 @@ app.whenReady().then(() => {
   });
   ipcMain.handle('Flasher:getPort', (_event) => {
     return FLASHER_LOCAL_PORT;
+  });
+
+  // main process
+  ipcMain.handle('settings:get', (_event, key) => {
+    return settings.get(key);
   });
 
   // Горячие клавиши для режима разрабочика:

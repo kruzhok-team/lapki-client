@@ -463,11 +463,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       components.value === value.trigger.component && methods?.value === value.trigger.method
   );
   useEffect(() => {
-    if (isData && dataDo) {
-      props.setIsCondition(dataDo.do);
-    } else {
-      props.setIsCondition([]);
+    if (!props.isTransition) {
+      if (isData && dataDo) {
+        props.setIsCondition(dataDo.do);
+      } else {
+        props.setIsCondition([]);
+      }
     }
+
     console.log(props.isCondition);
   }, [dataDo]);
 

@@ -1,7 +1,6 @@
 // нахождение незанятого порта для запуска модуля
 
 import { error } from 'console';
-import { start } from 'repl';
 
 // список небезопасных портов для хрома. Источник:https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 const unsafeChromePorts: number[] = [

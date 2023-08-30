@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
+import DocumentTitle from 'react-document-title';
 
 import {
   CompilerProps,
@@ -16,7 +17,7 @@ import {
   Documentations,
 } from './components';
 
-import { isLeft, unwrapEither } from './types/Either';
+import { isLeft, isRight, unwrapEither } from './types/Either';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -48,11 +49,10 @@ import {
 
 import { getColor } from '@renderer/theme';
 
-import DocumentTitle from 'react-document-title';
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
-import { CodeTab, Tab } from './types/tabs';
 import { Settings } from './components/Modules/Settings';
+import { useTabs } from './hooks/useTabs';
 /**
  * React-компонент приложения
  */
@@ -63,6 +63,16 @@ export const App: React.FC = () => {
   // для sidebar
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const {
+    tabItems,
+    activeTab,
+    setActiveTab,
+    onCodeSnippet,
+    handleCloseTab,
+    handleSwapTabs,
+    clearTabs,
+  } = useTabs();
 
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -214,11 +224,16 @@ export const App: React.FC = () => {
 
   const performOpenFile = async () => {
     const result = await manager?.open();
+
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
         openLoadError(cause);
       }
+    }
+
+    if (result && isRight(result)) {
+      clearTabs();
     }
   };
   //Создание нового файла
@@ -238,6 +253,7 @@ export const App: React.FC = () => {
 
   const performNewFile = (idx: string) => {
     manager?.newFile(idx);
+    clearTabs();
   };
 
   const handleCompile = async () => {
@@ -297,44 +313,6 @@ export const App: React.FC = () => {
       console.log('file chooser');
       Flasher.setFile();
     }
-  };
-
-  const [tabItems, setTabItems] = useState<Tab[]>([{ type: 'editor', name: 'editor' }]);
-  const [activeTab, setActiveTab] = useState('editor');
-
-  const onCodeSnippet = (data: CodeTab) => {
-    // Если пытаемся открыть одну и ту же вкладку
-    if (tabItems.find((tab) => tab.name === data.name)) {
-      return setActiveTab(data.name);
-    }
-
-    setTabItems((p) => [...p, data]);
-    setActiveTab(data.name);
-  };
-
-  const handleCloseTab = (tabName: string) => {
-    const closedTabIndex = tabItems.findIndex((tab) => tab.name === tabName);
-    const activeTabIndex = tabItems.findIndex((tab) => tab.name === activeTab);
-
-    // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
-    if (closedTabIndex === activeTabIndex) {
-      setActiveTab(tabItems[activeTabIndex - 1].name);
-    }
-
-    setTabItems((p) => p.filter((tab) => tab.name !== tabName));
-  };
-
-  const handleSwapTabs = (a: string, b: string) => {
-    setTabItems((p) => {
-      const data = [...p];
-
-      const aIndex = data.findIndex(({ name }) => name === a);
-      const bIndex = data.findIndex(({ name }) => name === b);
-
-      data.splice(bIndex, 0, data.splice(aIndex, 1)[0]);
-
-      return data;
-    });
   };
 
   const handleAddStdoutTab = () => {

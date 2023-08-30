@@ -458,7 +458,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
   //-----------------------------------------------------------------------------------------------------
   //Делаем проверку на наличие событий в состояниях
-  const dataDo = isData?.state.data.events.find(
+  const dataDo = isData?.state.eventBox.data.find(
     (value) =>
       components.value === value.trigger.component && methods?.value === value.trigger.method
   );
@@ -470,8 +470,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         props.setIsCondition([]);
       }
     }
-
-    console.log(props.isCondition);
   }, [dataDo]);
 
   var method: Action[] = props.isCondition!;
@@ -622,6 +620,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           value={methods}
           isSearchable={false}
         />
+        {isData &&
+          (dataDo ? (
+            <p className="text-success">Событие существует!</p>
+          ) : (
+            <p className="text-error">Событие отсутствует!</p>
+          ))}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
@@ -756,7 +760,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
       <div className="flex">
         <label className="mx-1">Делай: </label>
-        <div className="ml-1 mr-2 flex h-36 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
+        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
           {method === undefined ||
             method.map((data, key) => (
               <div

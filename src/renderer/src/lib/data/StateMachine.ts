@@ -213,7 +213,7 @@ export class StateMachine extends EventEmitter {
         },
       ];
     } else {
-      trueTab.do = [...trueTab.do, ...events];
+      trueTab.do = [...events];
     }
 
     state.eventBox.recalculate();

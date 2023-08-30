@@ -457,6 +457,20 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
   //-----------------------------------------------------------------------------------------------------
+  //Делаем проверку на наличие событий в состояниях
+  const dataDo = isData?.state.data.events.find(
+    (value) =>
+      components.value === value.trigger.component && methods?.value === value.trigger.method
+  );
+  useEffect(() => {
+    if (isData && dataDo) {
+      props.setIsCondition(dataDo.do);
+    } else {
+      props.setIsCondition([]);
+    }
+    console.log(props.isCondition);
+  }, [dataDo]);
+
   var method: Action[] = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [condOperator, setCondOperator] = useState<string>();

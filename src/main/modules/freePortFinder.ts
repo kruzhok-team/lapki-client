@@ -2,7 +2,6 @@
 
 import { error } from 'console';
 
-const LAST_UNSAFE_PORT = 10080;
 // список небезопасных портов для хрома. Источник:https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 const UNSAFE_CHROME_PORTS: number[] = [
   1719, // h323gatestat
@@ -21,12 +20,13 @@ const UNSAFE_CHROME_PORTS: number[] = [
   6668, // Alternate IRC [Apple addition]
   6669, // Alternate IRC [Apple addition]
   6697, // IRC + TLS
-  LAST_UNSAFE_PORT, // Amanda
+  10080, // Amanda
 ];
+const LAST_UNSAFE_PORT: number = UNSAFE_CHROME_PORTS.slice(-1)[0];
 // порт с которого начинаются пользовательские порты
-const USER_PORTS = 1024;
+const USER_PORTS: number = 1024;
 // порт с которого начинаются динамические порты
-const DYNAMIC_PORTS = 49152;
+const DYNAMIC_PORTS: number = 49152;
 /* 
 нахождение незанятого порта и безопасного (для хрома) порта на локальном хосте
 @param {number} startPort - порт с которого начнётся поиск (по-умолчанию начинает поиск в диапозоне динамических портов, не разрешается искать порт в системных портах)
@@ -45,6 +45,7 @@ export async function findFreePort(
   if (startPort >= 65536) {
     throw error('no free and safe port is found');
   }
+
   const freePortFinder = require('find-free-port');
   await freePortFinder(startPort, host)
     .then(async ([freep]) => {

@@ -73,7 +73,7 @@ export const Tab: React.FC<TabProps> = (props) => {
   };
 
   return (
-    <button
+    <div
       draggable={draggable}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -108,6 +108,6 @@ export const Tab: React.FC<TabProps> = (props) => {
           <CloseIcon className="h-3 w-3" />
         </button>
       )}
-    </button>
+    </div>
   );
 };

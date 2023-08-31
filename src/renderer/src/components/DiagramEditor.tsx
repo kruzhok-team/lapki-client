@@ -133,7 +133,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     //Здесь мы открываем модальное окно редактирования созданной связи
     editor.container.transitions.onTransitionCreate((target) => {
       ClearUseState();
-      setEvents(target.transition.data.do!);
+      setEvents(target.transition.data.do ?? []);
       setTransition({ target });
       openModal();
       // manager.triggerDataUpdate();

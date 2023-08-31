@@ -558,9 +558,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       icon: '<=',
     },
   ];
+  //Срабатывания клика по элементу списка действий и удаление выбранного действия
+  const [clickList, setClickList] = useState<number>(0);
+
+  const deleteMethod = () => {
+    const delMethod = method.filter((_value, index) => clickList !== index);
+    props.setIsCondition(delMethod);
+  };
 
   //Ниже реализовано перетаскивание событий между собой
-
   const [dragId, setDragId] = useState();
   const handleDrag = (id) => {
     setDragId(id);
@@ -607,14 +613,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       <div className="flex items-center">
         <label className="mx-1">Когда: </label>
         <Select
-          className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
+          className="mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]"
           options={optionsComponents}
           onChange={onSelect(setComponents)}
           value={components}
           isSearchable={false}
         />
         <Select
-          className="mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1"
+          className="mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]"
           options={optionsMethods}
           onChange={onSelect(setMethods)}
           value={methods}
@@ -636,7 +642,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             <label className="mx-1">Если: </label>
             <label
               className={twMerge(
-                'my-2 ml-3 select-none rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-500',
+                'my-2 ml-3 select-none rounded bg-neutral-700 px-3 py-2 transition-colors hover:bg-neutral-500',
                 !isElse && 'bg-neutral-500'
               )}
             >
@@ -651,13 +657,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 type="checkbox"
                 onChange={handleParamOne}
                 checked={!isParamOne}
-                className={twMerge('mx-2', isElse && 'hidden')}
+                className={twMerge('mx-4', isElse && 'hidden')}
               />
               {isParamOne ? (
                 <>
                   <Select
                     className={twMerge(
-                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      'mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]',
                       isElse && 'hidden'
                     )}
                     options={optionsParam1Components}
@@ -667,7 +673,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   />
                   <Select
                     className={twMerge(
-                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      'mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]',
                       isElse && 'hidden'
                     )}
                     options={optionsParam1Methods}
@@ -715,13 +721,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 disabled={isElse}
                 checked={!isParamTwo}
                 onChange={handleParamTwo}
-                className={twMerge('mx-2', isElse && 'hidden')}
+                className={twMerge('mx-4', isElse && 'hidden')}
               />
               {isParamTwo ? (
                 <>
                   <Select
                     className={twMerge(
-                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      'mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]',
                       isElse && 'hidden'
                     )}
                     options={optionsParam2Components}
@@ -731,7 +737,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   />
                   <Select
                     className={twMerge(
-                      'mb-6 h-[34px] w-[200px] max-w-[200px] px-2 py-1',
+                      'mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]',
                       isElse && 'hidden'
                     )}
                     options={optionsParam2Methods}
@@ -765,7 +771,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             method.map((data, key) => (
               <div
                 key={'Methods' + key}
-                className="flex"
+                className={twMerge('flex hover:bg-primary', clickList === key && 'bg-primary')}
+                onClick={() => setClickList(key)}
                 draggable={true}
                 onDragOver={(event) => event.preventDefault()}
                 onDragStart={() => handleDrag(key)}
@@ -806,7 +813,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           <button
             type="button"
             className="my-2 rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={onOpenEventsModal /*() => onDeleteEventsModal(activeEvents)*/}
+            onClick={deleteMethod}
           >
             <SubtractIcon />
           </button>

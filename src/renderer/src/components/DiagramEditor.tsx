@@ -200,6 +200,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.trigger.method
       );
     } else if (transition && data.key === 3) {
+      const { x, y } = transition?.target.bounds;
       editor?.container.machine.createNewTransition(
         transition?.target.id,
         transition?.target.transition.source,
@@ -209,9 +210,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.trigger.method,
         events,
         data.condition,
-        transition?.target.bounds
+        { x, y }
       );
     } else if (newTransition) {
+      const { x, y } = newTransition?.target.bounds;
       editor?.container.machine.createNewTransition(
         undefined,
         newTransition?.source,
@@ -221,7 +223,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.trigger.method,
         events,
         data.condition,
-        newTransition?.target.bounds
+        { x, y }
       );
     }
     closeModal();

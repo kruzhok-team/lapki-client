@@ -2,12 +2,12 @@ import { Platform, PlatformInfo, Platforms } from '@renderer/types/platform';
 import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
 import { PlatformManager } from './PlatformManager';
-import { extendPreloadPicto } from '../drawable/Picto';
+import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 
 // TODO? выдача стандартного файла для платформы
 
 // TODO: забирать пути динамически или дать пользователям их редактировать
-const platformPaths = ['/platform/Berloga.json', '/platform/Arduino.json'];
+const platformPaths = ['./platform/Berloga.json', './platform/Arduino.json'];
 
 let platformsLoaded = false;
 
@@ -101,8 +101,6 @@ export function loadPlatform(idx: string): PlatformManager | undefined {
 }
 
 export function preparePreloadImages() {
-  // FIXME: только относительные пути в папке img
-  const resolveImg = (p: string) => '/img/' + p;
   const newImgs: { [k: string]: string } = {};
   platforms.forEach((platform) => {
     // TODO: забирать картинки из platform.parameters

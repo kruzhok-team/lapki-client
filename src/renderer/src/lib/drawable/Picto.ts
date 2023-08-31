@@ -10,26 +10,33 @@ let imagesLoaded = false;
 export const icons: Map<string, HTMLImageElement> = new Map();
 // TODO? export const iconsPaths: Map<string, string> = new Map();
 
+export const imgBaseDir = './img/';
+
+export function resolveImg(p: string): string {
+  // FIXME: только относительные пути в папке img
+  return imgBaseDir + p;
+}
+
 const basePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
-  system: '/img/common/system.svg',
-  variable: '/img/common/variable.svg',
+  system: resolveImg('common/system.svg'),
+  variable: resolveImg('common/variable.svg'),
 
-  'op/notEquals': '/img/bearloga/compare_not_equal.svg',
-  'op/equals': '/img/bearloga/compare_equal.svg',
-  'op/greater': '/img/bearloga/compare_more.svg',
-  'op/less': '/img/bearloga/compare_less.svg',
-  'op/greaterOrEqual': '/img/bearloga/compare_more_eq.svg',
-  'op/lessOrEqual': '/img/bearloga/compare_less_eq.svg',
-  // "op/or": "/img/common/compare_or.svg",
-  // "op/and": "/img/common/compare_and.svg",
+  'op/notEquals': resolveImg('bearloga/compare_not_equal.svg'),
+  'op/equals': resolveImg('bearloga/compare_equal.svg'),
+  'op/greater': resolveImg('bearloga/compare_more.svg'),
+  'op/less': resolveImg('bearloga/compare_less.svg'),
+  'op/greaterOrEqual': resolveImg('bearloga/compare_more_eq.svg'),
+  'op/lessOrEqual': resolveImg('bearloga/compare_less_eq.svg'),
+  // "op/or": resolveImg('common/compare_or.svg'),
+  // "op/and": resolveImg('common/compare_and.svg'),
 
-  onEnter: '/img/common/onEnterAlt.svg',
-  onExit: '/img/common/onExitAlt.svg',
-  onEnterAlt: '/img/common/onEnter.svg',
-  onExitAlt: '/img/common/onExit.svg',
+  onEnter: resolveImg('common/onEnterAlt.svg'),
+  onExit: resolveImg('common/onExitAlt.svg'),
+  onEnterAlt: resolveImg('common/onEnter.svg'),
+  onExitAlt: resolveImg('common/onExit.svg'),
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {

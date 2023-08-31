@@ -1,7 +1,7 @@
 {
-  "name": "lapki-client",
-  "version": "1.0.0",
-  "description": "Client part of Lapki IDE",
+  "name": "lapki-ide",
+  "version": "0.1.0",
+  "description": "Statemachine-based IDE for cyber-physical systems",
   "main": "./out/main/index.js",
   "author": "Kruzhok Association, Polyus-NT",
   "homepage": "https://github.com/kruzhok-team/lapki-client",

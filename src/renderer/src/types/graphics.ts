@@ -7,6 +7,7 @@ export interface TransitionLine {
   mid: Point | null;
   end: Point;
   se: number;
+  ee: number;
 }
 
 export type HSector = 'center' | 'left' | 'right';

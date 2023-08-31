@@ -1,12 +1,12 @@
 import { Transition as TransitionType } from '@renderer/types/diagram';
-import { Point, TransitionLine } from '@renderer/types/graphics';
 
 import { Condition } from './Condition';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
-import { degrees_to_radians, getTransitionLines, rotatePoint } from '../utils';
+import { degrees_to_radians, getTransitionLines } from '../utils';
+import { BaseTransition } from './BaseTransition';
 
 interface TransitionProps {
   container: Container;
@@ -20,9 +20,7 @@ interface TransitionProps {
  * Выполняет отрисовку стрелки между тремя движущимися блоками:
  * источник, назначение, а также {@link Condition|условие} перехода.
  */
-export class Transition {
-  container!: Container;
-
+export class Transition extends BaseTransition {
   data!: TransitionType;
   source!: State;
   target!: State;
@@ -30,7 +28,8 @@ export class Transition {
   id!: string;
 
   constructor({ container, source, target, data, id }: TransitionProps) {
-    this.container = container;
+    super(container);
+
     this.data = data;
     this.id = id;
 
@@ -42,56 +41,6 @@ export class Transition {
 
   toJSON(): TransitionType {
     return this.data;
-  }
-
-  private drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {
-    const { start, mid, end } = line;
-
-    ctx.beginPath();
-
-    ctx.moveTo(start.x, start.y);
-    if (mid) {
-      ctx.lineTo(mid.x, mid.y);
-    }
-    ctx.lineTo(end.x, end.y);
-
-    ctx.stroke();
-
-    ctx.closePath();
-  }
-
-  private drawStart(ctx: CanvasRenderingContext2D, position: Point) {
-    ctx.beginPath();
-
-    ctx.arc(
-      position.x,
-      position.y,
-      transitionStyle.startSize / this.container.scale,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
-
-    ctx.closePath();
-  }
-
-  private drawEnd(ctx: CanvasRenderingContext2D, position: Point, angle: number) {
-    const width = 10 / this.container.scale;
-    const height = 10 / this.container.scale;
-
-    const p1 = rotatePoint({ x: position.x - width, y: position.y - height / 2 }, position, angle);
-    const p2 = rotatePoint({ x: position.x - width, y: position.y + height / 2 }, position, angle);
-
-    ctx.beginPath();
-
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(position.x, position.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.lineTo(p1.x, p1.y);
-
-    ctx.fill();
-
-    ctx.closePath();
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

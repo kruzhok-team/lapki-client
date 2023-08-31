@@ -1,7 +1,8 @@
+import { useState, useRef, useEffect, MutableRefObject, Dispatch, SetStateAction } from 'react';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorData, EditorManager, emptyEditorData } from '@renderer/lib/data/EditorManager';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
-import { useState, useRef, useEffect, MutableRefObject, Dispatch, SetStateAction } from 'react';
 
 export interface EditorRef {
   editor: CanvasEditor | null;

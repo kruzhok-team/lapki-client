@@ -29,7 +29,7 @@ import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import { Component as ComponentData } from './types/diagram';
-import useEditorManager from './components/utils/useEditorManager';
+import useEditorManager from '@renderer/hooks/useEditorManager';
 import {
   ComponentSelectData,
   ComponentSelectModal,

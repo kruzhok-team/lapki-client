@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import { ScrollableList } from './ScrollableList';
+
+import { EditorRef } from '@renderer/hooks/useEditorManager';
+
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-
-import { EditorRef } from './utils/useEditorManager';
-import ScrollableList, { ScrollableListItem } from './utils/ScrollableList';
-
-import './component-list.css';
 
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
@@ -31,18 +30,15 @@ export const Explorer: React.FC<ExplorerProps> = ({
     setCursor(null);
   };
 
-  const onCompClick = (e: React.MouseEvent, key: string) => {
-    e.stopPropagation();
+  const onCompClick = (key: string) => {
     setCursor(key);
   };
 
-  const onCompDblClick = (e: React.MouseEvent, key: string) => {
-    e.stopPropagation();
+  const onCompDblClick = (key: string) => {
     onRequestEditComponent(key);
   };
 
-  const onCompRightClick = (e: React.MouseEvent, key: string) => {
-    e.stopPropagation();
+  const onCompRightClick = (key: string) => {
     console.log(['component-right-click', key]);
     // TODO: контекстное меню? клонировать, переименовать, удалить
     // onRequestDeleteComponent(key);
@@ -53,28 +49,6 @@ export const Explorer: React.FC<ExplorerProps> = ({
     onRequestAddComponent();
   };
 
-  const content: ScrollableListItem[] = Object.entries(editorData?.data.components).map(
-    ([key, _component]) => ({
-      id: key,
-      content: (
-        <div
-          className={twMerge(key == cursor && 'bg-primary', 'flex items-center pb-1 pt-1')}
-          onClick={(e) => onCompClick(e, key)}
-          onDoubleClick={(e) => onCompDblClick(e, key)}
-          onContextMenu={(e) => onCompRightClick(e, key)}
-        >
-          <img
-            style={{ height: '32px', width: '32px' }}
-            src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon}
-          />
-          <p className={twMerge('ml-2 line-clamp-1', key == cursor && 'text-white')}>
-            {key}
-          </p>
-        </div>
-      ),
-    })
-  );
-
   return (
     <section className="flex flex-col" onClick={onUnClick}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -83,18 +57,34 @@ export const Explorer: React.FC<ExplorerProps> = ({
 
       <div className="px-4 text-center">
         <button
-          className="btn-primary flex w-full items-center justify-center gap-3"
+          className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
           disabled={!editorRef.editorData.content}
           onClick={onAddClick}
         >
           <AddIcon className="shrink-0" />
           Добавить...
         </button>
+
         <ScrollableList
-          listItems={content ?? []}
+          className="max-h-[350px]"
+          containerProps={{ onClick: (e) => e.stopPropagation() }}
+          listItems={Object.keys(editorData?.data.components) ?? []}
           heightOfItem={10}
           maxItemsToRender={50}
-          className="component-list"
+          renderItem={(key) => (
+            <div
+              className={twMerge('flex items-center p-1', key == cursor && 'bg-bg-active')}
+              onClick={() => onCompClick(key)}
+              onDoubleClick={() => onCompDblClick(key)}
+              onContextMenu={() => onCompRightClick(key)}
+            >
+              <img
+                className="h-8"
+                src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon}
+              />
+              <p className="ml-2 line-clamp-1">{key}</p>
+            </div>
+          )}
         />
       </div>
 

@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
 import { Modal } from './Modal/Modal';
-import ScrollableList, { ScrollableListItem } from './utils/ScrollableList';
+import { ScrollableList } from '@renderer/components/ScrollableList';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
-import { twMerge } from 'tailwind-merge';
 import { icons } from '@renderer/lib/drawable/Picto';
-import './modal-list.css';
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 
@@ -44,18 +42,6 @@ export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
   const [compoName, setCompoName] = useState('');
   const [nameChanged, setNameChanged] = useState(false);
   const [isNameConflict, setIsNameConflict] = useState(false);
-  const [wasOpen, setWasOpen] = useState(false);
-
-  useEffect(() => {
-    if (!wasOpen) {
-      // console.log('compo add modal open');
-      setCursor(null);
-      setCompoName('');
-      setIsNameConflict(false);
-      setNameChanged(false);
-    }
-    setWasOpen(props.isOpen);
-  }, [props.isOpen]);
 
   const handleSubmit = hookHandleSubmit(() => {
     if (!cursor) return;
@@ -64,21 +50,29 @@ export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
     onRequestClose();
   });
 
-  const onNameChange = (e) => {
+  const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
+
     setCompoName(name);
     setIsNameConflict(existingComponents.has(name));
     setNameChanged(true);
   };
 
-  const onRequestClose = onClose;
+  const onRequestClose = () => {
+    onClose();
+
+    setCursor(null);
+    setCompoName('');
+    setIsNameConflict(false);
+    setNameChanged(false);
+  };
 
   // TODO: double click
   // TODO: arrow up, arrow down
 
-  const onCompClick = (e: React.MouseEvent, entry: ComponentEntry) => {
-    e.stopPropagation();
+  const onCompClick = (entry: ComponentEntry) => {
     setCursor(entry);
+
     if (!nameChanged || compoName.length == 0) {
       var idx = 1;
       while (existingComponents.has(entry.idx + idx.toString())) {
@@ -88,24 +82,6 @@ export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
       setNameChanged(false);
     }
   };
-
-  const content: ScrollableListItem[] = vacantComponents.map((entry) => ({
-    id: entry.idx,
-    content: (
-      <div
-        className={twMerge(entry.name == cursor?.idx && 'bg-slate-600', 'flex items-center py-1')}
-        onClick={(e) => onCompClick(e, entry)}
-      >
-        <img
-          style={{ height: '32px' }}
-          src={icons.get(entry.img ?? 'unknown')?.src ?? UnknownIcon}
-        />
-        <p className={twMerge('line-clamp-1', entry.idx == cursor?.idx && 'text-white')}>
-          {entry.name}
-        </p>
-      </div>
-    ),
-  }));
 
   const descriptionElement = stringToHTML('<div>' + (cursor?.description ?? '') + '</div>');
   const description = descriptionElement.childNodes
@@ -121,28 +97,43 @@ export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
     <Modal
       {...props}
       onRequestClose={onRequestClose}
-      title={'Выберите компонент'}
+      title="Выберите компонент"
       submitLabel="Добавить"
       onSubmit={handleSubmit}
       submitDisabled={addIsBlocked}
     >
-      <div className="flex flex-row">
-        <div className="flex-[50%]">
-          <ScrollableList
-            listItems={content ?? []}
-            heightOfItem={10}
-            maxItemsToRender={50}
-            className="modal-list"
-          />
-        </div>
-        <div className="flex-[50%]">{description}</div>
+      <div className="grid grid-cols-2">
+        <ScrollableList
+          className="max-h-[40vh]"
+          listItems={vacantComponents}
+          heightOfItem={10}
+          maxItemsToRender={50}
+          renderItem={(entry) => (
+            <div
+              key={entry.idx}
+              className={twMerge(
+                'flex items-center gap-2 p-1',
+                entry.name == cursor?.idx && 'bg-bg-active'
+              )}
+              onClick={() => onCompClick(entry)}
+            >
+              <img
+                style={{ height: '32px' }}
+                src={icons.get(entry.img ?? 'unknown')?.src ?? UnknownIcon}
+              />
+              <p className="line-clamp-1">{entry.name}</p>
+            </div>
+          )}
+        />
+        <div className="pl-4">{description}</div>
       </div>
-      {cursor && !cursor.singletone ? (
-        <div className="mt-2 flex flex-row items-center">
-          <label className="flex-[1%]">Название:</label>
+
+      {cursor && !cursor.singletone && (
+        <div className="mt-4 flex items-center gap-2">
+          <label>Название:</label>
           <input
             className={twMerge(
-              'flex-[70%] rounded border bg-transparent px-2 py-[0.23rem] outline-none transition-colors placeholder:font-normal',
+              'w-full rounded border bg-transparent px-2 py-[0.23rem] outline-none transition-colors placeholder:font-normal',
               addIsBlocked && 'border-red-500 placeholder:text-red-500',
               !addIsBlocked && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
             )}
@@ -151,8 +142,6 @@ export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
             maxLength={20}
           />
         </div>
-      ) : (
-        ''
       )}
     </Modal>
   );

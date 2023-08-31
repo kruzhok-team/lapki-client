@@ -85,7 +85,7 @@ export class States extends EventEmitter {
     e.event.stopPropagation();
 
     const targetPos = e.target.computedPosition;
-    const titleHeight = e.target.titleHeight;
+    const titleHeight = e.target.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
     if (y <= titleHeight) {
       this.createNameCallback?.(e.target);

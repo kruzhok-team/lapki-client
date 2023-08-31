@@ -73,6 +73,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
           maxItemsToRender={50}
           renderItem={(key) => (
             <div
+              key={key}
               className={twMerge('flex items-center p-1', key == cursor && 'bg-bg-active')}
               onClick={() => onCompClick(key)}
               onDoubleClick={() => onCompDblClick(key)}

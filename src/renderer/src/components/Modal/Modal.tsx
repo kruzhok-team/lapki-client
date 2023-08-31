@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-12 w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
+      className="absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
       overlayClassName="bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-0"
       closeTimeoutMS={100}
     >

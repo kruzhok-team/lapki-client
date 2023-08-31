@@ -37,6 +37,9 @@ export default {
           '--t-d': 'rgb(156,163,175)',
 
           '--c-e-t': 'vs-dark',
+
+          '--s-tr': 'rgba(162,162,162, 0.5)',
+          '--s-th': 'rgba(162,162,162, 0.7)',
         },
         ':root[data-theme="light"]': {
           '--p': '#0C4BEE',
@@ -58,6 +61,9 @@ export default {
           '--t-d': 'rgb(156,163,175)',
 
           '--c-e-t': 'vs-light',
+
+          '--s-tr': 'rgba(162,162,162, 0.5)',
+          '--s-th': 'rgba(162,162,162, 0.7)',
         },
       };
 

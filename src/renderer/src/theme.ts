@@ -18,6 +18,9 @@ const colorNames = {
   'text-secondary': '--t-s',
   'text-inactive': '--t-i',
   'text-disabled': '--t-d',
+
+  'scrollbar-track': '--s-tr',
+  'scrollbar-thumb': '--s-th',
 };
 
 // Это метод для того чтобы достать цвет из джаваскрипта

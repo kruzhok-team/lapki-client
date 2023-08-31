@@ -40,6 +40,7 @@ export const Tabs: React.FC<TabsProps> = ({
       <section className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]">
         {items.map(({ type, name }) => (
           <Tab
+            key={name}
             isActive={activeTab === name}
             isDragging={dragId === name}
             draggable={type !== 'editor'}

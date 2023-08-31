@@ -101,7 +101,7 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-        <div className='flex'>
+        <div>
           <button
             className="btn-primary mb-2"
             onClick={handleFlash}

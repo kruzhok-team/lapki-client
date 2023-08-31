@@ -195,7 +195,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     if (data.key === 2) {
       editor?.container.machine.newPictoState(
         data.id,
-        data.do,
+        events,
         data.trigger.component,
         data.trigger.method
       );
@@ -207,7 +207,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.color ?? '#FFFFFF',
         data.trigger.component,
         data.trigger.method,
-        data.do,
+        events,
         data.condition,
         transition?.target.bounds
       );
@@ -219,7 +219,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.color ?? '#FFFFFF',
         data.trigger.component,
         data.trigger.method,
-        data.do,
+        events,
         data.condition,
         newTransition?.target.bounds
       );
@@ -253,6 +253,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
     },
     onCloseMe: () => {
       setIsContextMenuOpen(false);
+    },
+    onViewCentering: () => {
+      setIsContextMenuOpen(false);
+      editor?.container.viewCentering();
     },
   };
 

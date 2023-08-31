@@ -457,6 +457,21 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
   //-----------------------------------------------------------------------------------------------------
+  //Делаем проверку на наличие событий в состояниях
+  const dataDo = isData?.state.eventBox.data.find(
+    (value) =>
+      components.value === value.trigger.component && methods?.value === value.trigger.method
+  );
+  useEffect(() => {
+    if (!props.isTransition) {
+      if (isData && dataDo) {
+        props.setIsCondition(dataDo.do);
+      } else {
+        props.setIsCondition([]);
+      }
+    }
+  }, [dataDo]);
+
   var method: Action[] = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [condOperator, setCondOperator] = useState<string>();
@@ -605,6 +620,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           value={methods}
           isSearchable={false}
         />
+        {isData &&
+          (dataDo ? (
+            <p className="text-success">Событие существует!</p>
+          ) : (
+            <p className="text-error">Событие отсутствует!</p>
+          ))}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
@@ -739,7 +760,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
       <div className="flex">
         <label className="mx-1">Делай: </label>
-        <div className="ml-1 mr-2 flex h-36 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
+        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
           {method === undefined ||
             method.map((data, key) => (
               <div

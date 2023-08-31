@@ -5,6 +5,7 @@ import {
   Event,
   Component as ComponentType,
   Transition as TransitionType,
+  Variable,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { customAlphabet, nanoid } from 'nanoid';
@@ -213,7 +214,7 @@ export class StateMachine extends EventEmitter {
         },
       ];
     } else {
-      trueTab.do = [...trueTab.do, ...events];
+      trueTab.do = [...events];
     }
 
     state.eventBox.recalculate();
@@ -629,8 +630,8 @@ export class StateMachine extends EventEmitter {
       return;
     }
     if (ac.type == 'component') {
-      if (ac.value.component === oldName) {
-        ac.value.component = newName;
+      if ((ac.value as Variable).component === oldName) {
+        (ac.value as Variable).component = newName;
       }
       return;
     }

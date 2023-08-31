@@ -24,6 +24,7 @@ export interface StateContextMenuCallbacks {
   onClickDelEvent: (data: ContextMenuForm) => void;
   onClickShowCode: (data: ContextMenuForm) => void;
   onCloseMe: () => void;
+  onViewCentering: () => void;
 }
 
 interface StateContextMenuProps {
@@ -50,6 +51,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     onClickDelEvent,
     onClickShowCode,
     onCloseMe,
+    onViewCentering,
   },
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenuForm>();
@@ -168,6 +170,11 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
       text: 'Удалить',
       onClick: handleDeleteClick,
       style: !isData?.data && 'hidden',
+    },
+    {
+      text: 'Центрировать камеру',
+      onClick: onViewCentering,
+      style: !(isData?.event === undefined) && 'hidden',
     },
   ];
 

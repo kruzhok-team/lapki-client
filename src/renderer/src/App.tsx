@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
+import DocumentTitle from 'react-document-title';
 
 import {
   CompilerProps,
-  DiagramEditor,
   FlasherProps,
   PlatformSelectModal,
   FlasherSelectModal,
@@ -14,12 +14,10 @@ import {
   Sidebar,
   SidebarCallbacks,
   Tabs,
-  TabDataAdd,
   Documentations,
 } from './components';
-import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
 
-import { isLeft, unwrapEither } from './types/Either';
+import { isLeft, isRight, unwrapEither } from './types/Either';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -51,10 +49,10 @@ import {
 
 import { getColor } from '@renderer/theme';
 
-import DocumentTitle from 'react-document-title';
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
 import { Settings } from './components/Modules/Settings';
+import { useTabs } from './hooks/useTabs';
 /**
  * React-компонент приложения
  */
@@ -65,6 +63,16 @@ export const App: React.FC = () => {
   // для sidebar
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const {
+    tabItems,
+    activeTab,
+    setActiveTab,
+    onCodeSnippet,
+    handleCloseTab,
+    handleSwapTabs,
+    clearTabs,
+  } = useTabs();
 
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -88,9 +96,6 @@ export const App: React.FC = () => {
   const editorData = lapki.editorData;
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
-  useEffect(() => {
-    manager?.bindReact(setTitle);
-  });
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
@@ -219,11 +224,16 @@ export const App: React.FC = () => {
 
   const performOpenFile = async () => {
     const result = await manager?.open();
+
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
         openLoadError(cause);
       }
+    }
+
+    if (result && isRight(result)) {
+      clearTabs();
     }
   };
   //Создание нового файла
@@ -243,6 +253,7 @@ export const App: React.FC = () => {
 
   const performNewFile = (idx: string) => {
     manager?.newFile(idx);
+    clearTabs();
   };
 
   const handleCompile = async () => {
@@ -304,17 +315,22 @@ export const App: React.FC = () => {
     }
   };
 
-  const [tabData, setTabData] = useState<TabDataAdd[] | null>(null);
-  const onCodeSnippet = (type: string, name: string, code: string, language: string) => {
-    setTabData([{ type, name, code, language }]);
-  };
-
   const handleAddStdoutTab = () => {
-    onCodeSnippet('Компилятор', 'stdout', compilerData!.stdout ?? '', 'txt');
+    onCodeSnippet({
+      type: 'code',
+      name: 'stdout',
+      code: compilerData!.stdout ?? '',
+      language: 'txt',
+    });
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet('Компилятор', 'stderr', compilerData!.stderr ?? '', 'txt');
+    onCodeSnippet({
+      type: 'code',
+      name: 'stderr',
+      code: compilerData!.stderr ?? '',
+      language: 'txt',
+    });
   };
 
   const handleFlashButton = () => {
@@ -324,18 +340,14 @@ export const App: React.FC = () => {
   };
 
   const handleShowSource = () => {
-    const newTabs = new Array<TabDataAdd>();
-    compilerData!.source!.map((element) => {
-      console.log('here!');
-      newTabs.push({
-        type: 'Компилятор',
+    compilerData!.source!.forEach((element) => {
+      onCodeSnippet({
+        type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
         language: 'cpp',
       });
     });
-
-    setTabData(newTabs);
   };
 
   const handleImport = async (platform: string) => {
@@ -356,7 +368,7 @@ export const App: React.FC = () => {
 
   // смена вкладок (Sidebar.tsx)
   const handleTabChange = (index: number) => {
-    console.log('tab changed');
+    //console.log('tab changed');
     if (index === activeTabIndex) {
       setIsCollapsed((p) => !p);
     } else {
@@ -473,6 +485,17 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    manager?.bindReact(setTitle);
+  });
+
+  useEffect(() => {
+    if (importData && openData) {
+      manager?.parseImportData(importData, openData!);
+      setImportData(undefined);
+    }
+  }, [importData]);
+
+  useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
     Settings.getCompilerSettings().then((compiler) => {
       console.log('CONNECTING TO COMPILER');
@@ -491,22 +514,6 @@ export const App: React.FC = () => {
     });
   }, []);
 
-  const tabsItems = [
-    {
-      svgIcon: <EditorIcon />,
-      //tab: editorData.shownName ? 'SM: ' + editorData.shownName : 'SM: unnamed',
-      canClose: false,
-      content: (
-        <DiagramEditor
-          manager={manager!}
-          editor={editor}
-          setEditor={lapki.setEditor}
-          onCodeSnippet={onCodeSnippet}
-        />
-      ),
-    },
-  ];
-
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,
@@ -518,7 +525,7 @@ export const App: React.FC = () => {
     const reader = new FileReader();
     Flasher.initReader(reader);
     console.log('CONNECTING TO FLASHER');
-    Flasher.connect(Flasher.base_address);
+    Flasher.connect();
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 
@@ -540,7 +547,19 @@ export const App: React.FC = () => {
 
             <div className="relative w-full min-w-0 bg-bg-primary">
               {editorData.content ? (
-                <Tabs tabsItems={tabsItems} tabData={tabData} setTabData={setTabData} />
+                <Tabs
+                  editorProps={{
+                    manager: manager!,
+                    editor,
+                    setEditor: lapki.setEditor,
+                    onCodeSnippet: onCodeSnippet,
+                  }}
+                  items={tabItems}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  onClose={handleCloseTab}
+                  onSwapTabs={handleSwapTabs}
+                />
               ) : (
                 <p className="pt-24 text-center text-base">
                   Откройте файл или перенесите его сюда...

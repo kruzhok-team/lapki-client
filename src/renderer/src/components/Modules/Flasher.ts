@@ -13,13 +13,12 @@ export const FLASHER_SWITCHING_HOST = 'Подключение к новому х
 export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
-export const FLASHER_LOCAL_HOST = window.api.FLASHER_LOCAL_HOST;
-export const FLASHER_LOCAL_PORT = window.api.FLASHER_LOCAL_PORT;
-
+const FLASHER_LOCAL_HOST = window.api.FLASHER_LOCAL_HOST;
+//export const FLASHER_LOCAL_PORT = window.electron.ipcRenderer.invoke;
 export class Flasher {
-  static port = FLASHER_LOCAL_PORT;
+  static port;
   static host = FLASHER_LOCAL_HOST;
-  static base_address = this.makeAddress(this.host, this.port);
+  static base_address;
   static connection: Websocket | undefined;
   static connecting: boolean = false;
   static timerID: NodeJS.Timeout | undefined;
@@ -43,10 +42,17 @@ export class Flasher {
   // true = во время вызова таймера для переключения ничего не будет происходить.
   static freezeReconnection = false;
 
-  static changeLocal() {
-    Flasher.changeHost(FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT);
+  static async changeLocal() {
+    await this.setLocal();
+    Flasher.changeHost(FLASHER_LOCAL_HOST, this.port);
   }
-
+  static async setLocal() {
+    await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (port) {
+      Flasher.port = port;
+    });
+    this.host = FLASHER_LOCAL_HOST;
+    // this.base_address = this.makeAddress(this.host, this.port);
+  }
   static changeHost(host: string, port: number) {
     this.host = host;
     this.port = port;
@@ -160,21 +166,27 @@ export class Flasher {
     return this.connection !== undefined;
   }
 
-  static connect(route: string, timeout: number = 0): Websocket {
+  static async connect(route: string | undefined = undefined, timeout: number = 0): Websocket {
+    if (route == undefined) {
+      await this.setLocal();
+      this.base_address = this.makeAddress(this.host, this.port);
+      this.connect(this.base_address, timeout);
+      console.log('LOCAL', this.base_address);
+      return;
+    }
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
     var ws;
     try {
       ws = new Websocket(route);
     } catch (error) {
-      console.log('Flasher websocket error');
+      console.log('Flasher websocket error', error);
       this.setFlasherConnectionStatus(FLASHER_CONNECTION_ERROR);
       return;
     }
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.connecting = true;
     console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
-
     ws.onopen = () => {
       console.log('Flasher: connected!');
       this.setFlashing(false);
@@ -287,7 +299,7 @@ export class Flasher {
         this.connecting = false;
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
         this.connection = undefined;
-        this.tryToReconnect(route, timeout);
+        this.tryToReconnect(route!, timeout);
       }
     };
 

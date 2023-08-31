@@ -1,14 +1,17 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-
-export const FLASHER_LOCAL_HOST = 'localhost';
+import { findFreePort } from './freePortFinder';
+export var FLASHER_LOCAL_HOST = 'localhost';
 // FIXME: порт должен назначаться автоматически
-export const FLASHER_LOCAL_PORT = 13808;
+export var FLASHER_LOCAL_PORT;
 
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
 
-  static startLocalModule(module: string) {
+  static async startLocalModule(module: string) {
     if (!this.localProccesses.has(module)) {
+      await findFreePort((port) => {
+        FLASHER_LOCAL_PORT = port;
+      });
       const platform = process.platform;
       var chprocess;
       /*

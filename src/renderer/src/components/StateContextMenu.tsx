@@ -7,6 +7,7 @@ import { Condition } from '@renderer/lib/drawable/Condition';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
+import { CodeTab } from '@renderer/types/tabs';
 
 export interface StateContextMenuData {
   data: State | Condition | null;
@@ -23,6 +24,7 @@ export interface StateContextMenuCallbacks {
   onClickDelEvent: (data: ContextMenuForm) => void;
   onClickShowCode: (data: ContextMenuForm) => void;
   onCloseMe: () => void;
+  onViewCentering: () => void;
 }
 
 interface StateContextMenuProps {
@@ -33,7 +35,7 @@ interface StateContextMenuProps {
 
 export interface ContextMenuForm {
   name: string;
-  type: string;
+  type: CodeTab['type'];
   eventId: EventSelection;
   content: string;
 }
@@ -49,6 +51,7 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     onClickDelEvent,
     onClickShowCode,
     onCloseMe,
+    onViewCentering,
   },
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm<ContextMenuForm>();
@@ -167,6 +170,11 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
       text: 'Удалить',
       onClick: handleDeleteClick,
       style: !isData?.data && 'hidden',
+    },
+    {
+      text: 'Центрировать камеру',
+      onClick: onViewCentering,
+      style: !(isData?.event === undefined) && 'hidden',
     },
   ];
 

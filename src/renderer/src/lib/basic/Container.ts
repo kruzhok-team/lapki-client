@@ -2,7 +2,7 @@ import { Elements } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
 import { CanvasEditor } from '../CanvasEditor';
-import { Button, MyMouseEvent } from '../common/MouseEventEmitter';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { StateMachine } from '../data/StateMachine';
 import { picto } from '../drawable/Picto';
 import { States } from '../drawable/States';
@@ -165,6 +165,26 @@ export class Container {
       x: e.x * this.scale - this.offset.x,
       y: e.y * this.scale - this.offset.y,
     };
+  }
+
+  viewCentering() {
+    const arrX: number[] = [];
+    const arrY: number[] = [];
+
+    this.machine.states.forEach((state) => {
+      arrX.push(state.bounds.x);
+      arrY.push(state.bounds.y);
+    });
+
+    this.machine.transitions.forEach((transition) => {
+      arrX.push(transition.condition.bounds.x);
+      arrY.push(transition.condition.bounds.y);
+    });
+
+    this.scale = 1;
+    this.offset = { x: -Math.min(...arrX), y: -Math.min(...arrY) };
+
+    this.isDirty = true;
   }
 
   get graphData() {

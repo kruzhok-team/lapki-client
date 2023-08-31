@@ -75,19 +75,15 @@ const getSectors = (
   return { sectorH, sectorV };
 };
 
-const getArrowAngle = (rect: Rectangle, point: Point) => {
-  if (point.y === rect.y) {
-    return 90;
-  } else if (point.y === rect.y + rect.height) {
-    return 270;
-  } else if (point.x === rect.x) {
-    return 0;
-  } else {
-    return 180;
+const getArrowAngle = (start: Point, end: Point) => {
+  if (start.x === end.x) {
+    return start.y >= end.y ? 90 : 270;
   }
+
+  return start.x >= end.x ? 0 : 180;
 };
 
-const getLine = (
+export const getLine = (
   rect1: Rectangle,
   rect2: Rectangle,
   rectPadding: number,
@@ -127,6 +123,7 @@ const getLine = (
       y: 0,
     },
     se: 0,
+    ee: 0,
   };
 
   // get straight lines
@@ -136,7 +133,8 @@ const getLine = (
     result.end.x = sectorH === 'left' ? rect2Left : rect2Right;
     result.end.y = result.start.y;
 
-    result.se = getArrowAngle(rect1, result.start);
+    result.se = getArrowAngle(result.start, result.end);
+    result.ee = getArrowAngle(result.end, result.start);
 
     return result;
   }
@@ -147,7 +145,8 @@ const getLine = (
     result.end.x = result.start.x;
     result.end.y = sectorV === 'top' ? rect2Top : rect2Bottom;
 
-    result.se = getArrowAngle(rect1, result.start);
+    result.se = getArrowAngle(result.start, result.end);
+    result.ee = getArrowAngle(result.end, result.start);
 
     return result;
   }
@@ -208,7 +207,8 @@ const getLine = (
     y: result.start.y,
   };
 
-  result.se = getArrowAngle(rect1, result.start);
+  result.se = getArrowAngle(result.start, result.mid);
+  result.ee = getArrowAngle(result.end, result.mid);
 
   return result;
 };

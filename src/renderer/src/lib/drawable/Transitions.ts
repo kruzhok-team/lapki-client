@@ -30,7 +30,7 @@ type MenuCallback = (target: Condition, pos: Point) => void;
 export class Transitions {
   container!: Container;
 
-  ghost = new GhostTransition();
+  ghost!: GhostTransition;
 
   createCallback?: TransitionCreateCallback;
   newCreateCallback?: TransitionNewCreateCallback;
@@ -38,6 +38,7 @@ export class Transitions {
 
   constructor(container: Container) {
     this.container = container;
+    this.ghost = new GhostTransition(container);
   }
 
   initEvents() {

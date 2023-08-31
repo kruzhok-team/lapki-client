@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useMemo} from 'react';
+import React, { Dispatch, SetStateAction, useMemo } from 'react';
 
 import {
   Explorer,
@@ -18,7 +18,7 @@ import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 //import { ReactComponent as ChipIcon } from '@renderer/assets/icons/chip.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { Setting } from '../Setting';
-import { EditorRef } from '../utils/useEditorManager';
+import { EditorRef } from '@renderer/hooks/useEditorManager';
 
 import { Labels } from './Labels';
 import { Menus } from './Menus';

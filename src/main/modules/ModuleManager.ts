@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { findFreePort } from './freePortFinder';
+import path from 'path';
 export var FLASHER_LOCAL_HOST = 'localhost';
 // FIXME: порт должен назначаться автоматически
 export var FLASHER_LOCAL_PORT;
@@ -13,6 +14,9 @@ export class ModuleManager {
         FLASHER_LOCAL_PORT = port;
       });
       const platform = process.platform;
+      const basePath = path
+        .join(__dirname, '../../resources')
+        .replace('app.asar', 'app.asar.unpacked'); // process.resourcesPath;
       var chprocess;
       /*
         параметры локального загрузчика:
@@ -36,15 +40,24 @@ export class ModuleManager {
         '-listCooldown=0',
         `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
       ];
+      let modulePath: string = '';
       switch (platform) {
         case 'linux':
-          chprocess = spawn(`./src/main/modules/src/${platform}/${module}`, flasherArgs);
+          modulePath = `${basePath}/modules/${platform}/${module}`;
           break;
         case 'win32':
-          chprocess = spawn(`src/main/modules/src/${platform}/${module}.exe`, flasherArgs);
+          modulePath = `${basePath}/modules/${platform}/${module}.exe`;
           break;
         default:
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
+      }
+      if (modulePath) {
+        console.log(modulePath);
+        chprocess = spawn(modulePath, flasherArgs);
+        chprocess.on('error', function (err) {
+          // FIXME: выводить ошибку в интерфейсе
+          console.error(`${module} spawn error: ` + err);
+        });
       }
       if (chprocess !== undefined) {
         this.localProccesses.set(module, chprocess);

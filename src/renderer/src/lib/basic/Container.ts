@@ -1,3 +1,4 @@
+import { getColor } from '@renderer/theme';
 import { Elements } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
@@ -46,8 +47,36 @@ export class Container {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    this.drawGrid(ctx, canvas);
     this.states.draw(ctx, canvas);
     this.transitions.draw(ctx, canvas);
+  }
+
+  private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    const { width, height } = canvas;
+
+    let size = 30;
+    const top = (this.offset.y % size) / this.scale;
+    const left = (this.offset.x % size) / this.scale;
+    size /= this.scale;
+
+    ctx.strokeStyle = getColor('grid');
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+
+    for (let x = left; x < width; x += size) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+    }
+    for (let y = top; y < height; y += size) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+    }
+
+    ctx.stroke();
+
+    ctx.closePath();
   }
 
   private initEvents() {

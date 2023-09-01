@@ -21,6 +21,8 @@ const colorNames = {
 
   'scrollbar-track': '--s-tr',
   'scrollbar-thumb': '--s-th',
+
+  grid: '--g',
 };
 
 // Это метод для того чтобы достать цвет из джаваскрипта

@@ -232,6 +232,9 @@ export class Draggable extends EventEmitter {
 
     this.emit('mouseup', { event: e, target: this });
 
+    // Перетаскивания тоже считаются изменением.
+    this.container.machine.dataTrigger();
+
     if (this.isMouseDown) {
       this.isMouseDown = false;
       this.emit('click', { event: e, target: this });

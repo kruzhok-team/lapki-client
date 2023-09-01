@@ -53,8 +53,8 @@
       "bounds": {
         "height": 145,
         "width": 450,
-        "x": 343,
-        "y": -150
+        "x": 550.625,
+        "y": 206.5
       }
     },
     "n2": {
@@ -85,8 +85,8 @@
       "bounds": {
         "height": 145,
         "width": 450,
-        "x": 176,
-        "y": -148
+        "x": 34.875,
+        "y": 9.375
       }
     },
     "n3": {
@@ -110,21 +110,6 @@
         {
           "do": [
             {
-              "args": {
-                "N": "34"
-              },
-              "component": "МодульДвижения",
-              "method": "ЗадатьКоординатуВверх"
-            }
-          ],
-          "trigger": {
-            "component": "Сенсор",
-            "method": "ЦельПолучена"
-          }
-        },
-        {
-          "do": [
-            {
               "args": {},
               "component": "Сенсор",
               "method": "ОстановкаПоиска"
@@ -137,47 +122,21 @@
         }
       ],
       "bounds": {
-        "height": 195,
-        "width": 450,
-        "x": 435,
-        "y": -1182
-      }
-    },
-    "n4": {
-      "name": "Состояние",
-      "events": [
-        {
-          "do": [],
-          "trigger": {
-            "component": "System",
-            "method": "onEnter"
-          }
-        },
-        {
-          "do": [],
-          "trigger": {
-            "component": "System",
-            "method": "onExit"
-          }
-        }
-      ],
-      "bounds": {
         "height": 145,
         "width": 450,
-        "x": 253,
-        "y": -577
+        "x": 462.75,
+        "y": -489.5
       }
     }
   },
   "initialState": "n3",
   "transitions": [
     {
-      "color": "#22a4f5",
-      "condition": null,
+      "color": "#be4b8e",
       "do": [],
       "position": {
-        "x": 615,
-        "y": -283
+        "x": 551.875,
+        "y": -246.75
       },
       "source": "n0",
       "target": "n3",
@@ -187,56 +146,11 @@
       }
     },
     {
-      "color": "#22a4f5",
-      "condition": {
-        "type": "less",
-        "value": [
-          {
-            "type": "component",
-            "value": {
-              "args": {},
-              "component": "Таймер",
-              "method": "ТекущееЗначениеТаймера"
-            }
-          },
-          {
-            "type": "value",
-            "value": "123"
-          }
-        ]
-      },
-      "do": [
-        {
-          "args": {
-            "N": "231"
-          },
-          "component": "Счётчик",
-          "method": "Прибавить"
-        },
-        {
-          "args": {},
-          "component": "ОружиеЦелевое",
-          "method": "АтаковатьЦель"
-        }
-      ],
-      "position": {
-        "x": 715,
-        "y": -183
-      },
-      "source": "n0",
-      "target": "n3",
-      "trigger": {
-        "component": "АнализаторЦели",
-        "method": "ЦельУничтожена"
-      }
-    },
-    {
-      "color": "#22a4f5",
-      "condition": null,
+      "color": "#fb1aff",
       "do": [],
       "position": {
-        "x": 605,
-        "y": -283
+        "x": 1048.375,
+        "y": -225.75
       },
       "source": "n3",
       "target": "n1",
@@ -247,32 +161,30 @@
     },
     {
       "color": "#22a4f5",
-      "condition": null,
       "do": [],
       "position": {
-        "x": 424,
-        "y": 234
+        "x": 549.125,
+        "y": 206.375
       },
       "source": "n1",
       "target": "n2",
       "trigger": {
         "component": "ОружиеЦелевое",
-        "method": "ЦельВошлаВЗонуАтаки"
+        "method": "Атаковали"
       }
     },
     {
       "color": "#22a4f5",
-      "condition": null,
       "do": [],
       "position": {
-        "x": 257,
+        "x": 253.75,
         "y": 234
       },
       "source": "n2",
       "target": "n1",
       "trigger": {
         "component": "ОружиеЦелевое",
-        "method": "ЦельВышлаИзЗоныАтаки"
+        "method": "Атаковали"
       }
     }
   ],

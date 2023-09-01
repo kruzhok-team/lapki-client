@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Resizable } from 're-resizable';
 import { twMerge } from 'tailwind-merge';
+import { useSidebar } from '@renderer/store/useSidebar';
 
 interface MenusProps {
   items: React.ReactNode[];
-  activeTabIndex: number;
-  isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
 }
 
-export const Menus: React.FC<MenusProps> = ({
-  items,
-  activeTabIndex,
-  isCollapsed,
-  setIsCollapsed,
-}) => {
+export const Menus: React.FC<MenusProps> = ({ items }) => {
+  const [activeTab, isCollapsed, setIsCollapsed] = useSidebar((state) => [
+    state.activeTab,
+    state.isCollapsed,
+    state.setIsCollapsed,
+  ]);
+
   const [width, setWidth] = useState(260);
   const [minWidth, setMinWidth] = useState(200);
   const [maxWidth, setMaxWidth] = useState('80vw');
@@ -55,7 +54,7 @@ export const Menus: React.FC<MenusProps> = ({
     >
       <div className={twMerge('h-full w-full', isCollapsed && 'opacity-0')}>
         {items.map((Element, i) => (
-          <div key={i} className={twMerge('hidden h-full', i === activeTabIndex && 'block')}>
+          <div key={i} className={twMerge('hidden h-full', i === activeTab && 'block')}>
             {Element}
           </div>
         ))}

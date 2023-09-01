@@ -52,7 +52,8 @@ import { getColor } from '@renderer/theme';
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
 import { Settings } from './components/Modules/Settings';
-import { useTabs } from './hooks/useTabs';
+import { useTabs } from './store/useTabs';
+import { useSidebar } from './store/useSidebar';
 /**
  * React-компонент приложения
  */
@@ -60,19 +61,8 @@ export const App: React.FC = () => {
   const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
 
-  // для sidebar
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const {
-    tabItems,
-    activeTab,
-    setActiveTab,
-    onCodeSnippet,
-    handleCloseTab,
-    handleSwapTabs,
-    clearTabs,
-  } = useTabs();
+  const changeSidebarTab = useSidebar((state) => state.changeTab);
+  const [openTab, clearTabs] = useTabs((state) => [state.openTab, state.clearTabs]);
 
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -316,7 +306,7 @@ export const App: React.FC = () => {
   };
 
   const handleAddStdoutTab = () => {
-    onCodeSnippet({
+    openTab({
       type: 'code',
       name: 'stdout',
       code: compilerData!.stdout ?? '',
@@ -325,7 +315,7 @@ export const App: React.FC = () => {
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet({
+    openTab({
       type: 'code',
       name: 'stderr',
       code: compilerData!.stderr ?? '',
@@ -335,13 +325,13 @@ export const App: React.FC = () => {
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
-    handleTabChange(3);
+    changeSidebarTab(3);
     setFlasherFile(undefined);
   };
 
   const handleShowSource = () => {
     compilerData!.source!.forEach((element) => {
-      onCodeSnippet({
+      openTab({
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
@@ -365,24 +355,6 @@ export const App: React.FC = () => {
       editor.container.isDirty = true;
     }
   };
-
-  // смена вкладок (Sidebar.tsx)
-  const handleTabChange = (index: number) => {
-    //console.log('tab changed');
-    if (index === activeTabIndex) {
-      setIsCollapsed((p) => !p);
-    } else {
-      setActiveTabIndex(index);
-      isCollapsed && setIsCollapsed(false);
-    }
-  };
-
-  useEffect(() => {
-    if (importData && openData) {
-      manager?.parseImportData(importData, openData!);
-      setImportData(undefined);
-    }
-  }, [importData]);
 
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
@@ -535,10 +507,6 @@ export const App: React.FC = () => {
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
             <Sidebar
-              activeTabIndex={activeTabIndex}
-              isCollapsed={isCollapsed}
-              handleTabChange={handleTabChange}
-              setIsCollapsed={setIsCollapsed}
               editorRef={lapki}
               flasherProps={flasherProps}
               compilerProps={compilerProps}
@@ -547,19 +515,7 @@ export const App: React.FC = () => {
 
             <div className="relative w-full min-w-0 bg-bg-primary">
               {editorData.content ? (
-                <Tabs
-                  editorProps={{
-                    manager: manager!,
-                    editor,
-                    setEditor: lapki.setEditor,
-                    onCodeSnippet: onCodeSnippet,
-                  }}
-                  items={tabItems}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  onClose={handleCloseTab}
-                  onSwapTabs={handleSwapTabs}
-                />
+                <Tabs manager={manager!} editor={editor} setEditor={lapki.setEditor} />
               ) : (
                 <p className="pt-24 text-center text-base">
                   Откройте файл или перенесите его сюда...

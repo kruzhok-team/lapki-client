@@ -1,11 +1,11 @@
 import React from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useDoc } from '@renderer/store/useDoc';
 
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
-import { twMerge } from 'tailwind-merge';
 
 interface ScaleProps {
   editor: CanvasEditor;
@@ -46,7 +46,7 @@ export const Scale: React.FC<ScaleProps> = ({ editor }) => {
         className="flex w-16 justify-center py-2 outline-none hover:bg-bg-hover active:bg-bg-active"
         onClick={handleReset}
       >
-        {scale.toFixed(2)}
+        {Math.floor((scale / 1) * 100)}%
       </button>
 
       <button

@@ -9,6 +9,7 @@ import { picto } from '../drawable/Picto';
 import { States } from '../drawable/States';
 import { Transitions } from '../drawable/Transitions';
 import { clamp } from '../utils';
+import { useSyncExternalStore } from 'react';
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
@@ -32,6 +33,8 @@ export class Container {
 
   dropCallback?: (position: Point) => void;
   contextMenuOpenCallback?: (position: Point) => void;
+
+  scaleListeners: (() => void)[] = [];
 
   constructor(app: CanvasEditor, elements: Elements) {
     this.app = app;
@@ -95,6 +98,16 @@ export class Container {
     this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel as any);
+  }
+
+  setScale(value: number) {
+    this.scale = value;
+
+    picto.scale = value;
+
+    this.isDirty = true;
+
+    this.scaleListeners.forEach((listener) => listener());
   }
 
   handleDrop = (e: DragEvent) => {
@@ -176,10 +189,7 @@ export class Container {
     this.offset.x -= e.x * this.scale - e.x * newScale;
     this.offset.y -= e.y * this.scale - e.y * newScale;
 
-    this.scale = newScale;
-    picto.scale = newScale;
-
-    this.isDirty = true;
+    this.setScale(newScale);
   };
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {
@@ -214,6 +224,29 @@ export class Container {
     this.offset = { x: -Math.min(...arrX), y: -Math.min(...arrY) };
 
     this.isDirty = true;
+  }
+
+  changeScale(delta: number, replace?: boolean) {
+    const x = this.app.canvas.width / 2;
+    const y = this.app.canvas.height / 2;
+
+    const newScale = clamp(replace ? delta : this.scale + delta, 0.5, 2);
+    this.offset.x -= x * this.scale - x * newScale;
+    this.offset.y -= y * this.scale - y * newScale;
+
+    this.setScale(newScale);
+  }
+
+  subscribeToScale = (listener: () => void) => {
+    this.scaleListeners.push(listener);
+
+    return () => {
+      this.scaleListeners = this.scaleListeners.filter((l) => l !== listener);
+    };
+  };
+
+  useScale() {
+    return useSyncExternalStore(this.subscribeToScale, () => this.scale);
   }
 
   get graphData() {

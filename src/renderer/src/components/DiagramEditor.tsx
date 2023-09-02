@@ -15,6 +15,7 @@ import { Action } from '@renderer/types/diagram';
 import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 import { ChangeNameState } from '@renderer/types/other';
 import { useTabs } from '@renderer/store/useTabs';
+import { Scale } from './Scale';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -302,6 +303,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       ) : (
         ''
       )}
+
+      {editor && <Scale editor={editor} />}
     </>
   );
 };

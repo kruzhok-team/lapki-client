@@ -4,17 +4,14 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
-import { Point } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
 import { CreateEventsModal, EventsModalResult } from './EventsModal';
 
-import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
 import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 import { ChangeNameState } from '@renderer/types/other';
-import { useTabs } from '@renderer/store/useTabs';
 import { DiagramContextMenu } from './DiagramContextMenu';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 
@@ -25,8 +22,6 @@ export interface DiagramEditorProps {
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, setEditor }) => {
-  const openTab = useTabs((state) => state.openTab);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const [changeNameState, setChangeNameState] = useState<ChangeNameState | undefined>();
   const [state, setState] = useState<{ state: State }>();

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
@@ -8,6 +7,7 @@ import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
 import { CodeTab } from '@renderer/types/tabs';
+import { useClickOutside } from '@renderer/hooks/useClickOutside';
 
 export interface StateContextMenuData {
   data: State | Condition | null;
@@ -147,6 +147,8 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
 
+  useClickOutside(refs.floating.current, onCloseMe, !isOpen);
+
   //Массив кнопок
   const button = [
     {
@@ -178,45 +180,25 @@ export const StateContextMenu: React.FC<StateContextMenuProps> = ({
     },
   ];
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!isOpen) return;
-
-      const ref = refs.floating;
-
-      if (ref.current && !ref.current.contains(e.target as HTMLElement)) {
-        onCloseMe();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, refs.floating, onCloseMe]);
-
   return (
-    <>
-      <div
-        ref={refs.setFloating}
-        style={floatingStyles}
-        className={twMerge('z-50 w-56 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
-      >
-        {button.map(({ text, onClick, style, disabled }, i) => (
-          <button
-            onClick={onClick}
-            key={'ContextMenu' + i}
-            disabled={disabled}
-            className={twMerge(
-              'w-full rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
-              style
-            )}
-          >
-            {text}
-          </button>
-        ))}
-      </div>
-    </>
+    <div
+      ref={refs.setFloating}
+      style={floatingStyles}
+      className={twMerge('z-50 w-56 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
+    >
+      {button.map(({ text, onClick, style, disabled }, i) => (
+        <button
+          onClick={onClick}
+          key={'ContextMenu' + i}
+          disabled={disabled}
+          className={twMerge(
+            'w-full rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+            style
+          )}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
   );
 };

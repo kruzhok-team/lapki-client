@@ -15,6 +15,8 @@ import { Action } from '@renderer/types/diagram';
 import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 import { ChangeNameState } from '@renderer/types/other';
 import { useTabs } from '@renderer/store/useTabs';
+import { DiagramContextMenu } from './DiagramContextMenu';
+import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -48,9 +50,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
   const openEventsModal = () => setIsEventsModalOpen(true);
   const closeEventsModal = () => setIsEventsModalOpen(false);
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
-  const [contextMenuData, setContextMenuData] = useState<StateContextMenuData>();
+  const contextMenu = useDiagramContextMenu(editor, manager);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -64,16 +65,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setTransition(undefined);
       setNewTransition(undefined);
     };
-
-    //Обработка правой кнопки на пустом поле
-    editor.container.onFieldContextMenu((pos) => {
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      const canvasPos = editor.container.relativeMousePos(pos);
-
-      setContextMenuData({ data: null, canvasPos, position, event: undefined });
-      setIsContextMenuOpen(true);
-    });
 
     //Перетаскиваем компонент в редактор
     editor.container.onStateDrop((position) => {
@@ -105,28 +96,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       // manager.triggerDataUpdate();
     });
 
-    //Здесь мы открываем контекстное меню для состояния
-    editor.container.states.onStateContextMenu((state: State, pos) => {
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      const canvasPos = editor.container.relativeMousePos(pos);
-      setContextMenuData({ data: state, canvasPos, position, event: undefined });
-      setIsContextMenuOpen(true);
-      // manager.triggerDataUpdate();
-    });
-
     editor.container.states.onStateEventCreate((state, event, click) => {
       ClearUseState();
       setIdEvents({ state, event, click });
       openEventsModal();
-    });
-
-    editor.container.states.onEventContextMenu((state, pos, event) => {
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      const canvasPos = editor.container.relativeMousePos(pos);
-      setContextMenuData({ data: state, canvasPos, position, event });
-      setIsContextMenuOpen(true);
     });
 
     //Здесь мы открываем модальное окно редактирования созданной связи
@@ -144,17 +117,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setNewTransition({ source, target });
       openModal();
       // manager.triggerDataUpdate();
-    });
-
-    //Здесь мы открываем контекстное меню для связи
-    editor.container.transitions.onTransitionContextMenu((condition: Condition, pos: Point) => {
-      console.log(['handleContextMenu', condition]);
-
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-      const canvasPos = editor.container.relativeMousePos(pos);
-      setContextMenuData({ data: condition, canvasPos, position, event: undefined });
-      setIsContextMenuOpen(true);
     });
 
     setEditor(editor);
@@ -225,48 +187,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     closeModal();
   };
 
-  const contextMenuCallbacks = {
-    onClickNewState: (pos: Point) => {
-      editor?.container.machine.createNewState('Состояние', pos);
-    },
-    onClickInitial: (data: ContextMenuForm) => {
-      editor?.container.machine.changeInitialState(data.name);
-    },
-    onClickShowCode: (data: ContextMenuForm) => {
-      if (data.name === 'FullCode') {
-        data.name = manager.state.shownName ?? 'Безымянная';
-        data.content = manager.state.content!;
-      }
-
-      openTab({ type: data.type, name: data.name, code: data.content, language: 'json' });
-    },
-    onClickDelState: (data: ContextMenuForm) => {
-      editor?.container.machine.deleteState(data.name);
-    },
-    onClickDelTran: (data: ContextMenuForm) => {
-      editor?.container.machine.deleteTransition(data.name);
-    },
-    onClickDelEvent: (data: ContextMenuForm) => {
-      editor?.container.machine.deleteEvent(data.name, data.eventId);
-    },
-    onCloseMe: () => {
-      setIsContextMenuOpen(false);
-    },
-    onViewCentering: () => {
-      setIsContextMenuOpen(false);
-      editor?.container.viewCentering();
-    },
-  };
-
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
 
-      <StateContextMenu
-        isOpen={isContextMenuOpen}
-        isData={contextMenuData}
-        callbacks={contextMenuCallbacks}
-      />
+      <DiagramContextMenu {...contextMenu} />
 
       <StateNameModal
         isOpen={isCreateNameModalOpen}

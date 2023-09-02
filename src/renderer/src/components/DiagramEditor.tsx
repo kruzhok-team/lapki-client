@@ -12,23 +12,19 @@ import { CreateEventsModal, EventsModalResult } from './EventsModal';
 import { ContextMenuForm, StateContextMenu, StateContextMenuData } from './StateContextMenu';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
-import { CodeTab } from '@renderer/types/tabs';
 import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
 import { ChangeNameState } from '@renderer/types/other';
+import { useTabs } from '@renderer/store/useTabs';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
-  onCodeSnippet: (data: CodeTab) => void;
 }
 
-export const DiagramEditor: React.FC<DiagramEditorProps> = ({
-  manager,
-  editor,
-  setEditor,
-  onCodeSnippet,
-}) => {
+export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, setEditor }) => {
+  const openTab = useTabs((state) => state.openTab);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [changeNameState, setChangeNameState] = useState<ChangeNameState | undefined>();
   const [state, setState] = useState<{ state: State }>();
@@ -242,7 +238,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
         data.content = manager.state.content!;
       }
 
-      onCodeSnippet({ type: data.type, name: data.name, code: data.content, language: 'json' });
+      openTab({ type: data.type, name: data.name, code: data.content, language: 'json' });
     },
     onClickDelState: (data: ContextMenuForm) => {
       editor?.container.machine.deleteState(data.name);

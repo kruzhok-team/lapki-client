@@ -40,15 +40,9 @@ interface SidebarProps {
   callbacks: SidebarCallbacks;
   compilerProps: CompilerProps;
   flasherProps: FlasherProps;
-  activeTabIndex: number;
-  isCollapsed: boolean;
-  setIsCollapsed: Dispatch<SetStateAction<boolean>>;
-  handleTabChange: (index: number) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  activeTabIndex,
-  isCollapsed,
   flasherProps,
   compilerProps,
   editorRef,
@@ -62,8 +56,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestDeleteComponent,
     onRequestImport,
   },
-  setIsCollapsed,
-  handleTabChange,
 }) => {
   const tabLabels = useMemo(
     () => [
@@ -122,14 +114,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className="flex">
-      <Labels items={tabLabels} activeTabIndex={activeTabIndex} onChange={handleTabChange} />
-
-      <Menus
-        items={menus}
-        activeTabIndex={activeTabIndex}
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
-      />
+      <Labels items={tabLabels} />
+      <Menus items={menus} />
     </div>
   );
 };

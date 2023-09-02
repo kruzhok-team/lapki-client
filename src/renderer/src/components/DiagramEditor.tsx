@@ -10,10 +10,10 @@ import { CreateEventsModal, EventsModalResult } from './EventsModal';
 
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
-import { StateNameModal, StateNameModalFormValues } from './CreateNameModal';
-import { ChangeNameState } from '@renderer/types/other';
+import { StateNameModal } from './StateNameModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
+import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -23,7 +23,6 @@ export interface DiagramEditorProps {
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, setEditor }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [changeNameState, setChangeNameState] = useState<ChangeNameState | undefined>();
   const [state, setState] = useState<{ state: State }>();
   const [events, setEvents] = useState<Action[]>([]);
   const [idEvents, setIdEvents] = useState<{
@@ -38,15 +37,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const [isCreateNameModalOpen, setIsCreateNameModalOpen] = useState(false);
-  const openCreateNameModal = () => setIsCreateNameModalOpen(true);
-  const closeCreateNameModal = () => setIsCreateNameModalOpen(false);
-
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
   const openEventsModal = () => setIsEventsModalOpen(true);
   const closeEventsModal = () => setIsEventsModalOpen(false);
 
   const contextMenu = useDiagramContextMenu(editor, manager);
+  const stateName = useDiagramStateName(editor);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -56,7 +52,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setState(undefined);
       setEvents([]);
       setIdEvents(undefined);
-      setChangeNameState(undefined);
       setTransition(undefined);
       setNewTransition(undefined);
     };
@@ -64,23 +59,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     //Перетаскиваем компонент в редактор
     editor.container.onStateDrop((position) => {
       editor?.container.machine.createNewState('Состояние', position);
-    });
-
-    //Здесь мы открываем модальное окно редактирования имени ноды
-    editor.container.states.onStateNameCreate((state: State) => {
-      const globalOffset = state.container.app.mouse.getOffset();
-      const statePos = state.computedPosition;
-      const position = {
-        x: statePos.x + globalOffset.x,
-        y: statePos.y + globalOffset.y,
-      };
-      ClearUseState();
-      setChangeNameState({
-        state,
-        position,
-        sizes: state.computedTitleSizes,
-      });
-      openCreateNameModal();
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
@@ -136,14 +114,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     closeEventsModal();
   };
 
-  const handleRename = (data: StateNameModalFormValues) => {
-    const stateId = changeNameState?.state.id;
-    if (!stateId) return;
-
-    editor?.container.machine.updateState(stateId, data.name);
-    closeCreateNameModal();
-  };
-
   const handleCreateModal = (data: CreateModalResult) => {
     if (data.key === 2) {
       editor?.container.machine.newPictoState(
@@ -187,13 +157,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
 
       <DiagramContextMenu {...contextMenu} />
-
-      <StateNameModal
-        isOpen={isCreateNameModalOpen}
-        initial={changeNameState}
-        onClose={closeCreateNameModal}
-        onRename={handleRename}
-      />
+      <StateNameModal {...stateName} />
 
       {editor !== null ? (
         <CreateEventsModal

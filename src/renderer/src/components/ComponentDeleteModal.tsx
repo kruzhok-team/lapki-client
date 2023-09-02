@@ -1,54 +1,36 @@
 import React from 'react';
 
-import { useForm } from 'react-hook-form';
 import { Modal } from './Modal/Modal';
-
-export interface ComponentDeleteData {
-  idx: string;
-  type: string;
-}
-
-export const emptyCompDeleteData: ComponentDeleteData = {
-  idx: '',
-  type: '',
-};
 
 interface ComponentDeleteModalProps {
   isOpen: boolean;
-  data: ComponentDeleteData;
-  onClose: () => void;
-  onComponentDelete: (idx: string) => void;
-}
-
-export interface ComponentDeleteModalFormValues {
   idx: string;
+  type: string;
+  onClose: () => void;
+  onSubmit: (idx: string) => void;
 }
 
 export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
-  data,
+  idx,
+  type,
   onClose,
-  onComponentDelete,
+  onSubmit,
   ...props
 }) => {
-  const { reset, handleSubmit: hookHandleSubmit } = useForm<ComponentDeleteModalFormValues>();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = hookHandleSubmit((_data) => {
-    onComponentDelete(data.idx);
-    onRequestClose();
-  });
-
-  const onRequestClose = () => {
+    onSubmit(idx);
     onClose();
-    reset();
   };
 
-  const compoLabel = data.type ? `${data.type} ${data.idx}` : data.idx;
+  const compoLabel = type ? `${type} ${idx}` : idx;
 
   return (
     <Modal
       {...props}
-      onRequestClose={onRequestClose}
-      title={`Удаление компонента`}
+      onRequestClose={onClose}
+      title="Удаление компонента"
       submitLabel="Удалить"
       onSubmit={handleSubmit}
     >

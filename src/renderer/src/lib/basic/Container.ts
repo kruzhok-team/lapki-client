@@ -11,8 +11,8 @@ import { Transitions } from '../drawable/Transitions';
 import { clamp } from '../utils';
 import { useSyncExternalStore } from 'react';
 
-export const MAX_SCALE = 4;
-export const MIN_SCALE = 0.1;
+export const MAX_SCALE = 10;
+export const MIN_SCALE = 0.2;
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,

@@ -28,24 +28,11 @@ import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
-import { Component as ComponentData } from './types/diagram';
 import useEditorManager from '@renderer/hooks/useEditorManager';
-import {
-  ComponentSelectData,
-  ComponentSelectModal,
-  emptyCompData,
-} from './components/ComponentSelectModal';
 import { hideLoadingOverlay } from './components/utils/OverlayControl';
-import {
-  ComponentEditData,
-  ComponentEditModal,
-  emptyCompEditData,
-} from './components/ComponentEditModal';
-import {
-  ComponentDeleteData,
-  ComponentDeleteModal,
-  emptyCompDeleteData,
-} from './components/ComponentDeleteModal';
+import { ComponentAddModal } from './components/ComponentAddModal';
+import { ComponentEditModal } from './components/ComponentEditModal';
+import { ComponentDeleteModal } from './components/ComponentDeleteModal';
 
 import { getColor } from '@renderer/theme';
 
@@ -54,7 +41,10 @@ import { Theme } from './types/theme';
 import { Settings } from './components/Modules/Settings';
 import { useTabs } from './store/useTabs';
 import { useSidebar } from './store/useSidebar';
-import { file } from 'electron-settings';
+import { useAddComponent } from './hooks/useAddComponent';
+import { useEditComponent } from './hooks/useEditComponent';
+import { useDeleteComponent } from './hooks/useDeleteComponent';
+
 /**
  * React-компонент приложения
  */
@@ -98,27 +88,9 @@ export const App: React.FC = () => {
     setIsFlasherModalOpen(false);
   };
 
-  const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
-  const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
-  const openCompAddModal = () => setIsCompAddModalOpen(true);
-  const closeCompAddModal = () => setIsCompAddModalOpen(false);
-
-  const [compEditModalData, setCompEditModalData] = useState<ComponentEditData>(emptyCompEditData);
-  const [isCompEditModalOpen, setIsCompEditModalOpen] = useState(false);
-  const openCompEditModal = (data: ComponentEditData) => {
-    setCompEditModalData(data);
-    setIsCompEditModalOpen(true);
-  };
-  const closeCompEditModal = () => setIsCompEditModalOpen(false);
-
-  const [compDeleteModalData, setCompDeleteModalData] =
-    useState<ComponentDeleteData>(emptyCompDeleteData);
-  const [isCompDeleteModalOpen, setIsCompDeleteModalOpen] = useState(false);
-  const openCompDeleteModal = (data: ComponentDeleteData) => {
-    setCompDeleteModalData(data);
-    setIsCompDeleteModalOpen(true);
-  };
-  const closeCompDeleteModal = () => setIsCompDeleteModalOpen(false);
+  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor);
+  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor);
+  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -385,67 +357,6 @@ export const App: React.FC = () => {
     handleFlashButton,
   };
 
-  const onRequestAddComponent = () => {
-    const machine = editor!.container.machine;
-    const vacantComponents = machine.getVacantComponents();
-    const existingComponents = new Set<string>();
-    for (const name of machine.components.keys()) {
-      existingComponents.add(name);
-    }
-    setCompAddModalData({ vacantComponents, existingComponents });
-    openCompAddModal();
-  };
-
-  const handleAddComponent = (idx: string, name?: string) => {
-    const realName = name ?? idx;
-    editor!.container.machine.addNewComponent(realName, idx);
-    // console.log(['handleAddComponent', idx, name]);
-  };
-
-  const onRequestEditComponent = (idx: string) => {
-    const machine = editor!.container.machine;
-    const component = machine.components.get(idx);
-    if (typeof component === 'undefined') return;
-    const data = component.data;
-    const proto = machine.platform.data.components[data.type];
-    if (typeof proto === 'undefined') {
-      console.error('non-existing %s %s', idx, data.type);
-      return;
-    }
-
-    const existingComponents = new Set<string>();
-    for (const name of machine.components.keys()) {
-      if (name == idx) continue;
-      existingComponents.add(name);
-    }
-
-    openCompEditModal({ idx, data, proto, existingComponents });
-  };
-
-  const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor!.container.machine;
-    const component = machine.components.get(idx);
-    if (typeof component === 'undefined') return;
-    const data = component.data;
-    const proto = machine.platform.data.components[data.type];
-    if (typeof proto === 'undefined') {
-      console.error('non-existing %s %s', idx, data.type);
-      return;
-    }
-
-    openCompDeleteModal({ idx, type: data.type });
-  };
-
-  const handleEditComponent = (idx: string, data: ComponentData, newName?: string) => {
-    console.log(['component-edit-apply', idx, data, newName]);
-    editor!.container.machine.editComponent(idx, data, newName);
-  };
-
-  const handleDeleteComponent = (idx: string) => {
-    editor!.container.machine.removeComponent(idx, false);
-    closeCompEditModal();
-  };
-
   const sidebarCallbacks: SidebarCallbacks = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
@@ -553,25 +464,10 @@ export const App: React.FC = () => {
             handleRemote={handleRemoteFlasher}
             onClose={closeFlasherModal}
           />
-          <ComponentSelectModal
-            isOpen={isCompAddModalOpen}
-            data={compAddModalData}
-            onClose={closeCompAddModal}
-            onSubmit={handleAddComponent}
-          />
-          <ComponentEditModal
-            isOpen={isCompEditModalOpen}
-            data={compEditModalData}
-            onClose={closeCompEditModal}
-            onComponentEdit={handleEditComponent}
-            onComponentDelete={onRequestDeleteComponent}
-          />
-          <ComponentDeleteModal
-            isOpen={isCompDeleteModalOpen}
-            data={compDeleteModalData}
-            onClose={closeCompDeleteModal}
-            onComponentDelete={handleDeleteComponent}
-          />
+
+          <ComponentAddModal {...addComponent} />
+          <ComponentEditModal {...editComponent} />
+          <ComponentDeleteModal {...deleteComponent} />
         </div>
       </ThemeContext.Provider>
     </DocumentTitle>

@@ -5,6 +5,7 @@ import { Tree } from './components/Tree';
 import Show from './components/Show';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+import { useDoc } from '@renderer/store/useDoc';
 
 /*Загрузка документации*/
 
@@ -19,7 +20,7 @@ export function Documentations({ baseUrl, topOffset = false }: DocumentationsPro
   const [html, setHtml] = useState('');
   const [documentLink, setDocumentLink] = useState('');
 
-  const [isDocOpen, setIsDocOpen] = useState(false);
+  const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
   const getData = () => {
     fetch(baseUrl)
@@ -53,12 +54,12 @@ export function Documentations({ baseUrl, topOffset = false }: DocumentationsPro
     <div
       className={twMerge(
         'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
-        isDocOpen && 'translate-x-0',
+        isOpen && 'translate-x-0',
         topOffset && 'top-11'
       )}
     >
-      <button className="w-8" onClick={() => setIsDocOpen((p) => !p)}>
-        <Arrow className={twMerge('rotate-180 transition-transform', isDocOpen && 'rotate-0')} />
+      <button className="w-8" onClick={toggle}>
+        <Arrow className={twMerge('rotate-180 transition-transform', isOpen && 'rotate-0')} />
       </button>
 
       <div className="w-[400px]">

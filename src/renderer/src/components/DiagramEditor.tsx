@@ -11,6 +11,7 @@ import { CreateEventsModal, EventsModalResult } from './EventsModal';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { Action } from '@renderer/types/diagram';
 import { StateNameModal } from './StateNameModal';
+import { Scale } from './Scale';
 import { DiagramContextMenu } from './DiagramContextMenu';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
@@ -186,6 +187,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       ) : (
         ''
       )}
+
+      {editor && <Scale editor={editor} />}
     </>
   );
 };

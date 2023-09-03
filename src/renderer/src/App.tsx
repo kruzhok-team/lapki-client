@@ -59,8 +59,6 @@ import { file } from 'electron-settings';
  * React-компонент приложения
  */
 export const App: React.FC = () => {
-  // Конкретно название файла, меняется при открытии/сохранении файла/импорте
-  const [filename, setFilename] = useState<string>("");
   // Заголовок с названием файла,платформой и - Lapki IDE в конце
   const [title, setTitle] = useState<string>("Lapki IDE");
   // TODO: а если у нас будет несколько редакторов?
@@ -250,7 +248,7 @@ export const App: React.FC = () => {
   };
 
   const handleCompile = async () => {
-    Compiler.filename = filename;
+    Compiler.filename = editorData.shownName!;
     manager?.compile(editor!.container.machine.platformIdx);
   };
 
@@ -460,10 +458,6 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    manager?.bindReact(setFilename);
-  });
-
-  useEffect(() => {
     if (importData && openData) {
       manager?.parseImportData(importData, openData!);
       setImportData(undefined);
@@ -492,12 +486,12 @@ export const App: React.FC = () => {
   // Переименование вынес сюда из EditorManager.
   useEffect(() => {
     const platform = editor?.container.machine.platformIdx
-    ? ` [${editor!.container.machine.platformIdx}]`
-    : '';
-    if(filename){
-      setTitle(`${filename}${platform} – Lapki IDE`);
+      ? ` [${editor!.container.machine.platformIdx}]`
+      : '';
+    if (editorData.shownName) {
+      setTitle(`${editorData.shownName}${platform} – Lapki IDE`);
     }
-  }, [filename, editor?.container.machine.platformIdx]);
+  }, [editorData.shownName, editor?.container.machine.platformIdx]);
 
   useEffect(() => {
     Flasher.bindReact(
@@ -515,7 +509,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <DocumentTitle title={`${title}`}>
+    <DocumentTitle title={title}>
       <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">

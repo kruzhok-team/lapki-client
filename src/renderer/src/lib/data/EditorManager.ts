@@ -43,8 +43,6 @@ export class EditorManager {
 
   updateInterval?: ReturnType<typeof setInterval>;
 
-  setFilename?: Dispatch<SetStateAction<string>>;
-
   constructor(
     editor: CanvasEditor | null,
     initState: EditorData | undefined,
@@ -54,10 +52,6 @@ export class EditorManager {
     this.editor = editor;
     this.state = initState ?? emptyEditorData();
     this.updateState = updateState;
-  }
-
-  bindReact(setFilename: Dispatch<SetStateAction<string>>) {
-    this.setFilename = setFilename;
   }
 
   mutateState(fn: (state: EditorData) => EditorData) {
@@ -102,11 +96,10 @@ export class EditorManager {
     }
     const data = { ...emptyElements(), platform: platformIdx };
     this.editor?.loadData(data);
-    this.setFilename!(`Без названия`);
     this.mutateState((state) => ({
       ...state,
       name: null,
-      shownName: null,
+      shownName: 'Без названия',
       content: JSON.stringify(data),
       data,
       modified: false,
@@ -132,7 +125,6 @@ export class EditorManager {
           });
         }
         this.editor?.loadData(data);
-        this.setFilename!(`${openData[2]!.replace('.graphml', '.json')}`);
         this.mutateState((state) => ({
           ...state,
           name: openData[1]!.replace('.graphml', '.json'),
@@ -179,7 +171,6 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide');
     if (openData[0]) {
-      this.setFilename!(`${openData[2]!}`);
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);
         if (!isPlatformAvailable(data.platform)) {
@@ -271,7 +262,6 @@ export class EditorManager {
     const saveData: [boolean, string | null, string | null] =
       await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.state.name, data);
     if (saveData[0]) {
-      this.setFilename!(`${saveData[2]!.replace('.graphml', '.json')}`);
       this.mutateState((state) => ({
         ...state,
         name: saveData[1],

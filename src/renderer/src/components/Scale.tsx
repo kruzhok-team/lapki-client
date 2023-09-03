@@ -46,7 +46,7 @@ export const Scale: React.FC<ScaleProps> = ({ editor }) => {
         className="flex w-16 justify-center py-2 outline-none hover:bg-bg-hover active:bg-bg-active"
         onClick={handleReset}
       >
-        {Math.floor((scale / 1) * 100)}%
+        {Math.floor((1 / scale) * 100)}%
       </button>
 
       <button

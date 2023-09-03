@@ -59,7 +59,9 @@ import { file } from 'electron-settings';
  * React-компонент приложения
  */
 export const App: React.FC = () => {
+  // Конкретно название файла, меняется при открытии/сохранении файла/импорте
   const [filename, setFilename] = useState<string>("");
+  // Заголовок с названием файла,платформой и - Lapki IDE в конце
   const [title, setTitle] = useState<string>("Lapki IDE");
   // TODO: а если у нас будет несколько редакторов?
   const changeSidebarTab = useSidebar((state) => state.changeTab);
@@ -487,6 +489,7 @@ export const App: React.FC = () => {
     });
   }, []);
   
+  // Переименование вынес сюда из EditorManager.
   useEffect(() => {
     const platform = editor?.container.machine.platformIdx
     ? ` [${editor!.container.machine.platformIdx}]`

@@ -44,13 +44,14 @@ import { useSidebar } from './store/useSidebar';
 import { useAddComponent } from './hooks/useAddComponent';
 import { useEditComponent } from './hooks/useEditComponent';
 import { useDeleteComponent } from './hooks/useDeleteComponent';
+
 /**
  * React-компонент приложения
  */
 export const App: React.FC = () => {
-  const [title, setTitle] = useState<string>('Lapki IDE');
+  // Заголовок с названием файла,платформой и - Lapki IDE в конце
+  const [title, setTitle] = useState<string>("Lapki IDE");
   // TODO: а если у нас будет несколько редакторов?
-
   const changeSidebarTab = useSidebar((state) => state.changeTab);
   const [openTab, clearTabs] = useTabs((state) => [state.openTab, state.clearTabs]);
 
@@ -219,7 +220,7 @@ export const App: React.FC = () => {
   };
 
   const handleCompile = async () => {
-    Compiler.filename = title.split(' ')[0].split('.')[0];
+    Compiler.filename = editorData.shownName!;
     manager?.compile(editor!.container.machine.platformIdx);
   };
 
@@ -368,10 +369,6 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    manager?.bindReact(setTitle);
-  });
-
-  useEffect(() => {
     if (importData && openData) {
       manager?.parseImportData(importData, openData!);
       setImportData(undefined);
@@ -396,6 +393,16 @@ export const App: React.FC = () => {
       }
     });
   }, []);
+  
+  // Переименование вынес сюда из EditorManager.
+  useEffect(() => {
+    const platform = editor?.container.machine.platformIdx
+      ? ` [${editor!.container.machine.platformIdx}]`
+      : '';
+    if (editorData.shownName) {
+      setTitle(`${editorData.shownName}${platform} – Lapki IDE`);
+    }
+  }, [editorData.shownName, editor?.container.machine.platformIdx]);
 
   useEffect(() => {
     Flasher.bindReact(

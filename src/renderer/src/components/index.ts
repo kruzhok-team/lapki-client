@@ -12,5 +12,4 @@ export * from './PlatformSelectModal';
 export * from './FlasherSelectModal';
 export * from './MessageModal';
 export * from './Sidebar';
-export * from './StateContextMenu';
 export * from './Tabs';

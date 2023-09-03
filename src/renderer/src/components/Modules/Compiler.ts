@@ -67,7 +67,8 @@ export class Compiler {
   static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>> {
     const newArray = Object.assign([], binaries) as Binary[];
     for (const bin of newArray) {
-      bin.fileContent = Buffer.from(await (bin.fileContent as Blob).arrayBuffer());
+      const blob = new Blob([bin.fileContent as Uint8Array]);
+      bin.fileContent = Buffer.from(await blob.arrayBuffer());
     }
 
     return newArray;

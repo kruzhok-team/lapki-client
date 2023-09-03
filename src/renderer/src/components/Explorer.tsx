@@ -21,7 +21,7 @@ interface ExplorerProps {
 
 export const Explorer: React.FC<ExplorerProps> = ({
   editorRef,
-  callbacks: { onRequestAddComponent, onRequestEditComponent },
+  callbacks: { onRequestAddComponent, onRequestEditComponent, onRequestDeleteComponent },
 }) => {
   const editorData = editorRef.editorData;
   const [cursor, setCursor] = useState<string | null>(null);
@@ -38,10 +38,9 @@ export const Explorer: React.FC<ExplorerProps> = ({
     onRequestEditComponent(key);
   };
 
+  // TODO: контекстное меню? клонировать, переименовать, удалить
   const onCompRightClick = (key: string) => {
-    console.log(['component-right-click', key]);
-    // TODO: контекстное меню? клонировать, переименовать, удалить
-    // onRequestDeleteComponent(key);
+    onRequestDeleteComponent(key);
   };
 
   const onAddClick = (e: React.MouseEvent) => {

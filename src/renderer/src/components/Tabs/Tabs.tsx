@@ -2,27 +2,21 @@ import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor, DiagramEditorProps } from '@renderer/components';
-import { Tab as TabType } from '@renderer/types/tabs';
+import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
 
-export interface TabsProps {
-  editorProps: DiagramEditorProps;
-  items: TabType[];
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  onClose: (tabName: string) => void;
-  onSwapTabs: (a: string, b: string) => void;
-}
+export interface TabsProps extends DiagramEditorProps {}
 
-export const Tabs: React.FC<TabsProps> = ({
-  editorProps,
-  items,
-  activeTab,
-  setActiveTab,
-  onClose,
-  onSwapTabs,
-}: TabsProps) => {
+export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
+  const [items, activeTab, setActiveTab, swapTabs, closeTab] = useTabs((state) => [
+    state.items,
+    state.activeTab,
+    state.setActiveTab,
+    state.swapTabs,
+    state.closeTab,
+  ]);
+
   const [dragId, setDragId] = useState<string | null>(null);
 
   const handleDrag = (tabName: string) => {
@@ -32,7 +26,7 @@ export const Tabs: React.FC<TabsProps> = ({
   const handleDrop = (tabName: string) => {
     if (tabName === 'editor' || !dragId) return;
 
-    onSwapTabs(dragId, tabName);
+    swapTabs(dragId, tabName);
   };
 
   return (
@@ -51,7 +45,7 @@ export const Tabs: React.FC<TabsProps> = ({
             onDragStart={() => handleDrag(name)}
             onDrop={() => handleDrop(name)}
             onMouseDown={() => setActiveTab(name)}
-            onClose={() => onClose(name)}
+            onClose={() => closeTab(name)}
           />
         ))}
       </section>

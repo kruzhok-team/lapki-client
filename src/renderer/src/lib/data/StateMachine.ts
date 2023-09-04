@@ -254,7 +254,7 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  createNewState(name: string, position: Point) {
+  createNewState(name: string, position: Point, parentId?: string) {
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
@@ -282,7 +282,11 @@ export class StateMachine extends EventEmitter {
     this.states.set(state.id!, state);
 
     // вкладываем состояние, если оно создано над другим
-    this.linkStateByPoint(state, position);
+    if (parentId) {
+      this.linkState(parentId, newId);
+    } else {
+      this.linkStateByPoint(state, position);
+    }
 
     this.container.states.watchState(state);
     this.dataTrigger();

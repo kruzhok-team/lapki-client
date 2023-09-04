@@ -10,34 +10,27 @@ import { icons } from '@renderer/lib/drawable/Picto';
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 
-export interface ComponentSelectData {
+interface ComponentAddModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+
   vacantComponents: ComponentEntry[];
   existingComponents: Set<string>;
-}
-
-export const emptyCompData: ComponentSelectData = {
-  vacantComponents: [],
-  existingComponents: new Set(),
-};
-
-interface ComponentSelectModalProps {
-  isOpen: boolean;
-  data: ComponentSelectData;
-  onClose: () => void;
   onSubmit: (compo: string, name?: string) => void;
 }
 
-export interface ComponentSelectModalFormValues {
+export interface ComponentAddModalFormValues {
   compo: string;
 }
 
-export const ComponentSelectModal: React.FC<ComponentSelectModalProps> = ({
+export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   onClose,
   onSubmit,
-  data: { vacantComponents, existingComponents },
+  vacantComponents,
+  existingComponents,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm<ComponentSelectModalFormValues>();
+  const { handleSubmit: hookHandleSubmit } = useForm<ComponentAddModalFormValues>();
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
   const [compoName, setCompoName] = useState('');
   const [nameChanged, setNameChanged] = useState(false);

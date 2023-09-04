@@ -1,45 +1,44 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { ChangeNameState } from '@renderer/types/other';
+import { State } from '@renderer/lib/drawable/State';
+import { Point } from '@renderer/types/graphics';
 
 interface StateNameModalProps {
   isOpen: boolean;
-  initial?: ChangeNameState;
   onClose: () => void;
-  onRename: (data: StateNameModalFormValues) => void;
+
+  state: State;
+  position: Point;
+  sizes: State['computedTitleSizes'];
+  onRename: (name: string) => void;
 }
 
 export interface StateNameModalFormValues {
   name: string;
 }
 
-export const StateNameModal: React.FC<StateNameModalProps> = ({
-  isOpen,
-  onClose,
-  onRename,
-  initial,
-}) => {
+export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
+  const { isOpen, onClose, state, position, sizes, onRename } = props;
+
   const { register, handleSubmit } = useForm<StateNameModalFormValues>();
 
-  const onSubmit = handleSubmit(({ name }) => {
-    onRename({ name: name || 'Состояние' });
-  });
+  const onSubmit = handleSubmit(({ name }) => onRename(name));
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return onSubmit();
     if (e.key === 'Escape') return onClose();
   };
 
-  if (!isOpen || !initial) return null;
+  if (!isOpen) return null;
 
   const inputStyle = {
-    left: initial.position.x + 'px',
-    top: initial.position.y + 'px',
-    width: initial.sizes.width + 'px',
-    height: initial.sizes.height + 'px',
-    fontSize: Math.max(initial.sizes.fontSize, 15) + 'px',
-    padding: `${0}px ${Math.max(initial.sizes.paddingX, 15)}px`,
+    left: position.x + 'px',
+    top: position.y + 'px',
+    width: sizes.width + 'px',
+    height: sizes.height + 'px',
+    fontSize: Math.max(sizes.fontSize, 15) + 'px',
+    padding: `${0}px ${Math.max(sizes.paddingX, 15)}px`,
   };
 
   return (
@@ -52,7 +51,7 @@ export const StateNameModal: React.FC<StateNameModalProps> = ({
       onKeyUp={handleKeyUp}
       {...register('name', {
         onBlur: onClose,
-        value: initial.state.data.name,
+        value: state.data.name,
       })}
     />
   );

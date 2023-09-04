@@ -12,12 +12,22 @@ export class BaseTransition {
 
   protected drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {
     const { start, mid, end } = line;
+    const rounded = 10; // нет защиты на максимальный радиус, так что просто его не ставь!
 
     ctx.beginPath();
 
     ctx.moveTo(start.x, start.y);
+
+    // просто отступаем на радиус в обе стороны и рисуем дугу между этими двумя точками
     if (mid) {
-      ctx.lineTo(mid.x, mid.y);
+      const p1x = mid.x - (start.x < mid.x ? rounded : -rounded);
+      const p1y = mid.y;
+      const p2x = mid.x;
+      const p2y = mid.y - (end.y < mid.y ? rounded : -rounded);
+
+      ctx.lineTo(p1x, p1y);
+
+      ctx.bezierCurveTo(p1x, p1y, mid.x, mid.y, p2x, p2y);
     }
     ctx.lineTo(end.x, end.y);
 

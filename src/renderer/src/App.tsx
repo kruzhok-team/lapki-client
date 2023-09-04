@@ -28,51 +28,32 @@ import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
 import { Flasher } from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
-import { Component as ComponentData } from './types/diagram';
 import useEditorManager from '@renderer/hooks/useEditorManager';
-import {
-  ComponentSelectData,
-  ComponentSelectModal,
-  emptyCompData,
-} from './components/ComponentSelectModal';
 import { hideLoadingOverlay } from './components/utils/OverlayControl';
-import {
-  ComponentEditData,
-  ComponentEditModal,
-  emptyCompEditData,
-} from './components/ComponentEditModal';
-import {
-  ComponentDeleteData,
-  ComponentDeleteModal,
-  emptyCompDeleteData,
-} from './components/ComponentDeleteModal';
+import { ComponentAddModal } from './components/ComponentAddModal';
+import { ComponentEditModal } from './components/ComponentEditModal';
+import { ComponentDeleteModal } from './components/ComponentDeleteModal';
 
 import { getColor } from '@renderer/theme';
 
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
 import { Settings } from './components/Modules/Settings';
-import { useTabs } from './hooks/useTabs';
+import { useTabs } from './store/useTabs';
+import { useSidebar } from './store/useSidebar';
+import { useAddComponent } from './hooks/useAddComponent';
+import { useEditComponent } from './hooks/useEditComponent';
+import { useDeleteComponent } from './hooks/useDeleteComponent';
+
 /**
  * React-компонент приложения
  */
 export const App: React.FC = () => {
-  const [title, setTitle] = useState<string>('Lapki IDE');
+  // Заголовок с названием файла,платформой и - Lapki IDE в конце
+  const [title, setTitle] = useState<string>("Lapki IDE");
   // TODO: а если у нас будет несколько редакторов?
-
-  // для sidebar
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const {
-    tabItems,
-    activeTab,
-    setActiveTab,
-    onCodeSnippet,
-    handleCloseTab,
-    handleSwapTabs,
-    clearTabs,
-  } = useTabs();
+  const changeSidebarTab = useSidebar((state) => state.changeTab);
+  const [openTab, clearTabs] = useTabs((state) => [state.openTab, state.clearTabs]);
 
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherConnectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -107,27 +88,9 @@ export const App: React.FC = () => {
     setIsFlasherModalOpen(false);
   };
 
-  const [compAddModalData, setCompAddModalData] = useState<ComponentSelectData>(emptyCompData);
-  const [isCompAddModalOpen, setIsCompAddModalOpen] = useState(false);
-  const openCompAddModal = () => setIsCompAddModalOpen(true);
-  const closeCompAddModal = () => setIsCompAddModalOpen(false);
-
-  const [compEditModalData, setCompEditModalData] = useState<ComponentEditData>(emptyCompEditData);
-  const [isCompEditModalOpen, setIsCompEditModalOpen] = useState(false);
-  const openCompEditModal = (data: ComponentEditData) => {
-    setCompEditModalData(data);
-    setIsCompEditModalOpen(true);
-  };
-  const closeCompEditModal = () => setIsCompEditModalOpen(false);
-
-  const [compDeleteModalData, setCompDeleteModalData] =
-    useState<ComponentDeleteData>(emptyCompDeleteData);
-  const [isCompDeleteModalOpen, setIsCompDeleteModalOpen] = useState(false);
-  const openCompDeleteModal = (data: ComponentDeleteData) => {
-    setCompDeleteModalData(data);
-    setIsCompDeleteModalOpen(true);
-  };
-  const closeCompDeleteModal = () => setIsCompDeleteModalOpen(false);
+  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor);
+  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor);
+  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor);
 
   const [saveModalData, setSaveModalData] = useState<SaveModalData>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -255,7 +218,7 @@ export const App: React.FC = () => {
   };
 
   const handleCompile = async () => {
-    Compiler.filename = title.split(' ')[0].split('.')[0];
+    Compiler.filename = editorData.shownName!;
     manager?.compile(editor!.container.machine.platformIdx);
   };
 
@@ -314,7 +277,7 @@ export const App: React.FC = () => {
   };
 
   const handleAddStdoutTab = () => {
-    onCodeSnippet({
+    openTab({
       type: 'code',
       name: 'stdout',
       code: compilerData!.stdout ?? '',
@@ -323,7 +286,7 @@ export const App: React.FC = () => {
   };
 
   const handleAddStderrTab = () => {
-    onCodeSnippet({
+    openTab({
       type: 'code',
       name: 'stderr',
       code: compilerData!.stderr ?? '',
@@ -333,13 +296,13 @@ export const App: React.FC = () => {
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
-    handleTabChange(3);
+    changeSidebarTab(3);
     setFlasherFile(undefined);
   };
 
   const handleShowSource = () => {
     compilerData!.source!.forEach((element) => {
-      onCodeSnippet({
+      openTab({
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
@@ -363,24 +326,6 @@ export const App: React.FC = () => {
       editor.container.isDirty = true;
     }
   };
-
-  // смена вкладок (Sidebar.tsx)
-  const handleTabChange = (index: number) => {
-    //console.log('tab changed');
-    if (index === activeTabIndex) {
-      setIsCollapsed((p) => !p);
-    } else {
-      setActiveTabIndex(index);
-      isCollapsed && setIsCollapsed(false);
-    }
-  };
-
-  useEffect(() => {
-    if (importData && openData) {
-      manager?.parseImportData(importData, openData!);
-      setImportData(undefined);
-    }
-  }, [importData]);
 
   const flasherProps: FlasherProps = {
     devices: flasherDevices,
@@ -410,67 +355,6 @@ export const App: React.FC = () => {
     handleFlashButton,
   };
 
-  const onRequestAddComponent = () => {
-    const machine = editor!.container.machine;
-    const vacantComponents = machine.getVacantComponents();
-    const existingComponents = new Set<string>();
-    for (const name of machine.components.keys()) {
-      existingComponents.add(name);
-    }
-    setCompAddModalData({ vacantComponents, existingComponents });
-    openCompAddModal();
-  };
-
-  const handleAddComponent = (idx: string, name?: string) => {
-    const realName = name ?? idx;
-    editor!.container.machine.addNewComponent(realName, idx);
-    // console.log(['handleAddComponent', idx, name]);
-  };
-
-  const onRequestEditComponent = (idx: string) => {
-    const machine = editor!.container.machine;
-    const component = machine.components.get(idx);
-    if (typeof component === 'undefined') return;
-    const data = component.data;
-    const proto = machine.platform.data.components[data.type];
-    if (typeof proto === 'undefined') {
-      console.error('non-existing %s %s', idx, data.type);
-      return;
-    }
-
-    const existingComponents = new Set<string>();
-    for (const name of machine.components.keys()) {
-      if (name == idx) continue;
-      existingComponents.add(name);
-    }
-
-    openCompEditModal({ idx, data, proto, existingComponents });
-  };
-
-  const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor!.container.machine;
-    const component = machine.components.get(idx);
-    if (typeof component === 'undefined') return;
-    const data = component.data;
-    const proto = machine.platform.data.components[data.type];
-    if (typeof proto === 'undefined') {
-      console.error('non-existing %s %s', idx, data.type);
-      return;
-    }
-
-    openCompDeleteModal({ idx, type: data.type });
-  };
-
-  const handleEditComponent = (idx: string, data: ComponentData, newName?: string) => {
-    console.log(['component-edit-apply', idx, data, newName]);
-    editor!.container.machine.editComponent(idx, data, newName);
-  };
-
-  const handleDeleteComponent = (idx: string) => {
-    editor!.container.machine.removeComponent(idx, false);
-    closeCompEditModal();
-  };
-
   const sidebarCallbacks: SidebarCallbacks = {
     onRequestNewFile: handleNewFile,
     onRequestOpenFile: handleOpenFile,
@@ -481,10 +365,6 @@ export const App: React.FC = () => {
     onRequestDeleteComponent,
     onRequestImport: handleImport,
   };
-
-  useEffect(() => {
-    manager?.bindReact(setTitle);
-  });
 
   useEffect(() => {
     if (importData && openData) {
@@ -511,6 +391,16 @@ export const App: React.FC = () => {
       }
     });
   }, []);
+  
+  // Переименование вынес сюда из EditorManager.
+  useEffect(() => {
+    const platform = editor?.container.machine.platformIdx
+      ? ` [${editor!.container.machine.platformIdx}]`
+      : '';
+    if (editorData.shownName) {
+      setTitle(`${editorData.shownName}${platform} – Lapki IDE`);
+    }
+  }, [editorData.shownName, editor?.container.machine.platformIdx]);
 
   useEffect(() => {
     Flasher.bindReact(
@@ -533,10 +423,6 @@ export const App: React.FC = () => {
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
             <Sidebar
-              activeTabIndex={activeTabIndex}
-              isCollapsed={isCollapsed}
-              handleTabChange={handleTabChange}
-              setIsCollapsed={setIsCollapsed}
               editorRef={lapki}
               flasherProps={flasherProps}
               compilerProps={compilerProps}
@@ -545,19 +431,7 @@ export const App: React.FC = () => {
 
             <div className="relative w-full min-w-0 bg-bg-primary">
               {editorData.content ? (
-                <Tabs
-                  editorProps={{
-                    manager: manager!,
-                    editor,
-                    setEditor: lapki.setEditor,
-                    onCodeSnippet: onCodeSnippet,
-                  }}
-                  items={tabItems}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  onClose={handleCloseTab}
-                  onSwapTabs={handleSwapTabs}
-                />
+                <Tabs manager={manager!} editor={editor} setEditor={lapki.setEditor} />
               ) : (
                 <p className="pt-24 text-center text-base">
                   Откройте файл или перенесите его сюда...
@@ -588,25 +462,10 @@ export const App: React.FC = () => {
             handleRemote={handleRemoteFlasher}
             onClose={closeFlasherModal}
           />
-          <ComponentSelectModal
-            isOpen={isCompAddModalOpen}
-            data={compAddModalData}
-            onClose={closeCompAddModal}
-            onSubmit={handleAddComponent}
-          />
-          <ComponentEditModal
-            isOpen={isCompEditModalOpen}
-            data={compEditModalData}
-            onClose={closeCompEditModal}
-            onComponentEdit={handleEditComponent}
-            onComponentDelete={onRequestDeleteComponent}
-          />
-          <ComponentDeleteModal
-            isOpen={isCompDeleteModalOpen}
-            data={compDeleteModalData}
-            onClose={closeCompDeleteModal}
-            onComponentDelete={handleDeleteComponent}
-          />
+
+          <ComponentAddModal {...addComponent} />
+          <ComponentEditModal {...editComponent} />
+          <ComponentDeleteModal {...deleteComponent} />
         </div>
       </ThemeContext.Provider>
     </DocumentTitle>

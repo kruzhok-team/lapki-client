@@ -156,8 +156,6 @@ export const App: React.FC = () => {
   };
 
   const handleFlashBinary = async () => {
-    //Рассчет на то, что пользователь не сможет нажать кнопку загрузки,
-    //если нет данных от компилятора
     if (flasherFile) {
       Flasher.flash(currentDevice!);
     } else {

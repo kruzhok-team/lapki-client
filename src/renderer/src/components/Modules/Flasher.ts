@@ -118,7 +118,7 @@ export class Flasher {
   static addDevice(device: Device): boolean {
     let isNew: boolean = false;
     this.setFlasherDevices((oldValue) => {
-      console.log(device);
+      //console.log(device);
       if (!oldValue.has(device.deviceID)) {
         isNew = true;
       }
@@ -140,10 +140,10 @@ export class Flasher {
   static updatePort(port: FlashUpdatePort): void {
     this.setFlasherDevices((oldValue) => {
       const newValue = new Map(oldValue);
-      console.log(port.deviceID);
+      /*console.log(port.deviceID);
       console.log(oldValue);
       console.log(newValue.get(port.deviceID));
-      console.log(oldValue.get(port.deviceID));
+      console.log(oldValue.get(port.deviceID));*/
       const device = newValue.get(port.deviceID)!;
       device.portName = port.portName;
       newValue.set(port.deviceID, device);
@@ -171,7 +171,7 @@ export class Flasher {
       await this.setLocal();
       this.base_address = this.makeAddress(this.host, this.port);
       this.connect(this.base_address, timeout);
-      console.log('LOCAL', this.base_address);
+      //console.log('LOCAL', this.base_address);
       return;
     }
     if (this.checkConnection()) return this.connection!;
@@ -186,7 +186,7 @@ export class Flasher {
     }
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.connecting = true;
-    console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
+    //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
     ws.onopen = () => {
       console.log('Flasher: connected!');
       this.setFlashing(false);
@@ -199,7 +199,7 @@ export class Flasher {
       timeout = 0;
 
       ws.onmessage = (msg: MessageEvent) => {
-        console.log(msg.data);
+        //console.log(msg.data);
         const response = JSON.parse(msg.data) as FlasherMessage;
         switch (response.type) {
           case 'flash-next-block': {
@@ -317,10 +317,10 @@ export class Flasher {
 
   static async setBinary(binaries: Array<Binary>) {
     binaries.map((bin) => {
-      console.log(bin.filename);
+      //console.log(bin.filename);
       if (bin.extension.endsWith('ino.hex')) {
-        console.log(bin.extension);
-        console.log(bin.fileContent);
+        //console.log(bin.extension);
+        //console.log(bin.fileContent);
         Flasher.binary = bin.fileContent as Blob;
         return;
       }
@@ -343,18 +343,19 @@ export class Flasher {
       Flasher.binary = new Blob([buffer]);
       this.setFlasherFile(openData[2]);
     } else {
-      console.log('set file (false)');
+      //console.log('set file (false)');
       this.setFlasherFile(undefined);
     }
   }
 
   static flashCompiler(binaries: Array<Binary>, deviceID: string): void {
     binaries.map((bin) => {
-      console.log(bin.filename);
+      //console.log(bin.filename);
       if (bin.extension.endsWith('ino.hex')) {
-        console.log(bin.extension);
-        console.log(bin.fileContent);
-        Flasher.binary = bin.fileContent as Blob;
+        //console.log(bin.extension);
+        //console.log(bin.fileContent);
+        Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
+        //console.log(Flasher.binary);
         return;
       }
     });
@@ -371,7 +372,7 @@ export class Flasher {
       type: 'flash-start',
       payload: payload,
     } as FlasherMessage;
-    console.log(request);
+    //console.log(request);
     this.connection.send(JSON.stringify(request));
     this.setFlasherLog('Идет загрузка...');
   }

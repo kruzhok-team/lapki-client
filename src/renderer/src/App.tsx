@@ -50,7 +50,7 @@ import { useDeleteComponent } from './hooks/useDeleteComponent';
  */
 export const App: React.FC = () => {
   // Заголовок с названием файла,платформой и - Lapki IDE в конце
-  const [title, setTitle] = useState<string>("Lapki IDE");
+  const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
   const changeSidebarTab = useSidebar((state) => state.changeTab);
   const [openTab, clearTabs] = useTabs((state) => [state.openTab, state.clearTabs]);
@@ -268,10 +268,8 @@ export const App: React.FC = () => {
 
   const handleFlasherFileChoose = () => {
     if (flasherFile) {
-      console.log('cancel file choose');
       setFlasherFile(undefined);
     } else {
-      console.log('file chooser');
       Flasher.setFile();
     }
   };
@@ -391,7 +389,7 @@ export const App: React.FC = () => {
       }
     });
   }, []);
-  
+
   // Переименование вынес сюда из EditorManager.
   useEffect(() => {
     const platform = editor?.container.machine.platformIdx

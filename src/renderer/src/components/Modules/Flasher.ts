@@ -354,7 +354,8 @@ export class Flasher {
       if (bin.extension.endsWith('ino.hex')) {
         console.log(bin.extension);
         console.log(bin.fileContent);
-        Flasher.binary = bin.fileContent as Blob;
+        Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
+        console.log(Flasher.binary);
         return;
       }
     });

@@ -13,6 +13,7 @@ export interface CompilerProps {
   handleSaveBinaryIntoFolder: () => void;
   handleShowSource: () => void;
   handleFlashButton: () => void;
+  handleReconnect: () => void;
 }
 
 export const Compiler: React.FC<CompilerProps> = ({
@@ -26,6 +27,7 @@ export const Compiler: React.FC<CompilerProps> = ({
   handleSaveBinaryIntoFolder,
   handleShowSource,
   handleFlashButton,
+  handleReconnect,
 }) => {
   const button = [
     {
@@ -62,6 +64,7 @@ export const Compiler: React.FC<CompilerProps> = ({
   const cantCompile =
     compilerStatus == 'Не подключен' || compilerStatus == 'Идет компиляция...' || !fileReady;
   const disabled = cantCompile;
+  const connecting = compilerStatus == 'Идет подключение...';
 
   return (
     <section>
@@ -70,8 +73,12 @@ export const Compiler: React.FC<CompilerProps> = ({
       </h3>
 
       <div className="flex flex-col px-4">
-        <button disabled={disabled} className="btn-primary mb-4" onClick={handleCompile}>
-          Скомпилировать
+        <button
+          disabled={compilerStatus != 'Не подключен' ? disabled : connecting}
+          className="btn-primary mb-4"
+          onClick={compilerStatus != 'Не подключен' ? handleCompile : handleReconnect}
+        >
+          {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
         </button>
 
         <p>

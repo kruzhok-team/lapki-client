@@ -221,6 +221,13 @@ export const App: React.FC = () => {
     manager?.compile(editor!.container.machine.platformIdx);
   };
 
+  const handleCompileReconnect = () => {
+    Settings.getCompilerSettings().then((compiler) => {
+      console.log('CONNECTING TO COMPILER');
+      Compiler.connect(compiler.host, compiler.port);
+    });
+  };
+
   const handleSaveSourceIntoFolder = async () => {
     await manager?.saveIntoFolder(compilerData!.source!);
   };
@@ -353,6 +360,7 @@ export const App: React.FC = () => {
     handleSaveBinaryIntoFolder,
     handleShowSource,
     handleFlashButton,
+    handleReconnect: handleCompileReconnect,
   };
 
   const sidebarCallbacks: SidebarCallbacks = {

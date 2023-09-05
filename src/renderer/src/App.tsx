@@ -84,7 +84,6 @@ export const App: React.FC = () => {
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
   const closeFlasherModal = () => {
-    Flasher.freezeReconnectionTimer(false);
     setIsFlasherModalOpen(false);
   };
 
@@ -249,21 +248,19 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherHostChange = () => {
-    Flasher.freezeReconnectionTimer(true);
     openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
     console.log('local');
     await manager?.startLocalModule('lapki-flasher');
-    //Стандартный порт
-    manager?.changeFlasherLocal();
+    await Flasher.connect();
   };
 
-  const handleRemoteFlasher = (host: string, port: number) => {
+  const handleRemoteFlasher = async (host: string, port: number) => {
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
-    manager?.changeFlasherHost(host, port);
+    await Flasher.connect(host, port);
   };
 
   const handleFlasherFileChoose = () => {
@@ -272,6 +269,10 @@ export const App: React.FC = () => {
     } else {
       Flasher.setFile();
     }
+  };
+
+  const handeFlasherReconnect = () => {
+    Flasher.reconnect();
   };
 
   const handleAddStdoutTab = () => {
@@ -338,6 +339,7 @@ export const App: React.FC = () => {
     handleFlash: handleFlashBinary,
     handleHostChange: handleFlasherHostChange,
     handleFileChoose: handleFlasherFileChoose,
+    handleReconnect: handeFlasherReconnect,
   };
 
   const compilerProps: CompilerProps = {

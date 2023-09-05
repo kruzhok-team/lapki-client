@@ -18,6 +18,7 @@ export interface FlasherProps {
   handleFlash: () => void;
   handleHostChange: () => void;
   handleFileChoose: () => void;
+  handleReconnect: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
@@ -33,6 +34,7 @@ export const Loader: React.FC<FlasherProps> = ({
   handleFlash,
   handleHostChange,
   handleFileChoose,
+  handleReconnect,
 }) => {
   const isActive = (id: string) => currentDevice === id;
 
@@ -47,13 +49,13 @@ export const Loader: React.FC<FlasherProps> = ({
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              connectionStatus != FLASHER_CONNECTED && 'opacity-50'
+              connectionStatus == FLASHER_CONNECTING && 'opacity-50'
             )}
-            onClick={handleGetList}
-            disabled={connectionStatus != FLASHER_CONNECTED}
+            onClick={connectionStatus == FLASHER_CONNECTED ? handleGetList : handleReconnect}
+            disabled={connectionStatus == FLASHER_CONNECTING}
           >
             <Update width="1.5rem" height="1.5rem" className="mr-1" />
-            Обновить
+            {connectionStatus == FLASHER_CONNECTED ? 'Обновить' : 'Переподключиться'}
           </button>
           <button
             className={twMerge(

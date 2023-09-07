@@ -39,6 +39,8 @@ export class Flasher {
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
   static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
   static setFlashing: Dispatch<SetStateAction<boolean>>;
+  // сообщение об ошибке, undefined означает, что ошибки нет
+  static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
   // true = во время вызова таймера для переключения ничего не будет происходить.
   static freezeReconnection = false;
 
@@ -101,13 +103,15 @@ export class Flasher {
     setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
-    setFlashing: Dispatch<SetStateAction<boolean>>
+    setFlashing: Dispatch<SetStateAction<boolean>>,
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
+    this.setErrorMessage = setErrorMessage;
   }
   /*
     Добавляет устройство в список устройств
@@ -179,7 +183,9 @@ export class Flasher {
     var ws;
     try {
       ws = new Websocket(route);
+      this.setErrorMessage(undefined);
     } catch (error) {
+      this.setErrorMessage(`${error}`);
       console.log('Flasher websocket error', error);
       this.setFlasherConnectionStatus(FLASHER_CONNECTION_ERROR);
       return;
@@ -189,6 +195,7 @@ export class Flasher {
     //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
     ws.onopen = () => {
       console.log('Flasher: connected!');
+      this.setErrorMessage(undefined);
       this.setFlashing(false);
       this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
@@ -293,13 +300,24 @@ export class Flasher {
       };
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      if (!event.wasClean) {
+        if (this.connecting) {
+          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}`);
+        } else {
+          this.setErrorMessage(
+            `Соедиение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере`
+          );
+        }
+        //код всегда равен 1006 для вебсокетов
+        //console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+      }
       console.log(`flasher closed ${route}, ${timeout}, ${this.base_address}`);
       if (this.base_address == route) {
         this.connecting = false;
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
         this.connection = undefined;
-        this.tryToReconnect(route!, timeout);
+        //this.tryToReconnect(route!, timeout);
       }
     };
 
@@ -401,4 +419,9 @@ export class Flasher {
       }
     }, timeout);
   }
+
+  /*static async getLocalStatus() {
+    if (this.wsMessage) {
+    }
+  }*/
 }

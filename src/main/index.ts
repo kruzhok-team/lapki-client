@@ -102,8 +102,13 @@ app.whenReady().then(() => {
   ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
     return ModuleManager.stopModule(module);
   });
+
   ipcMain.handle('Flasher:getPort', (_event) => {
     return FLASHER_LOCAL_PORT;
+  });
+
+  ipcMain.handle('Module:getStatus', (_event, module: string) => {
+    return ModuleManager.getLocalStatus(module);
   });
 
   // main process

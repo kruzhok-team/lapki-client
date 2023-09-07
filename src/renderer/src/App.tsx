@@ -44,13 +44,14 @@ import { useSidebar } from './store/useSidebar';
 import { useAddComponent } from './hooks/useAddComponent';
 import { useEditComponent } from './hooks/useEditComponent';
 import { useDeleteComponent } from './hooks/useDeleteComponent';
+import { text } from 'stream/consumers';
 
 /**
  * React-компонент приложения
  */
 export const App: React.FC = () => {
   // Заголовок с названием файла,платформой и - Lapki IDE в конце
-  const [title, setTitle] = useState<string>("Lapki IDE");
+  const [title, setTitle] = useState<string>('Lapki IDE');
   // TODO: а если у нас будет несколько редакторов?
   const changeSidebarTab = useSidebar((state) => state.changeTab);
   const [openTab, clearTabs] = useTabs((state) => [state.openTab, state.clearTabs]);
@@ -61,6 +62,7 @@ export const App: React.FC = () => {
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
+  const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
@@ -276,6 +278,15 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleFlasherErrorMessage = (error: string | undefined) => {
+    const element = <p> {error} </p>;
+    const msg: MessageModalData = {
+      text: element,
+      caption: 'Ошибка',
+    };
+    openMsgModal(msg);
+  };
+
   const handleAddStdoutTab = () => {
     openTab({
       type: 'code',
@@ -335,11 +346,13 @@ export const App: React.FC = () => {
     compilerData,
     flasherFile,
     flashing,
+    flasherError,
     setCurrentDevice,
     handleGetList,
     handleFlash: handleFlashBinary,
     handleHostChange: handleFlasherHostChange,
     handleFileChoose: handleFlasherFileChoose,
+    handleErrorMessage: handleFlasherErrorMessage,
   };
 
   const compilerProps: CompilerProps = {
@@ -391,7 +404,7 @@ export const App: React.FC = () => {
       }
     });
   }, []);
-  
+
   // Переименование вынес сюда из EditorManager.
   useEffect(() => {
     const platform = editor?.container.machine.platformIdx
@@ -408,7 +421,8 @@ export const App: React.FC = () => {
       setFlasherConnectionStatus,
       setFlasherLog,
       setFlasherFile,
-      setFlashing
+      setFlashing,
+      setFlasherError
     );
     const reader = new FileReader();
     Flasher.initReader(reader);

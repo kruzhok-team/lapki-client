@@ -2,13 +2,31 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { findFreePort } from './freePortFinder';
 import path from 'path';
 export var FLASHER_LOCAL_HOST = 'localhost';
-// FIXME: порт должен назначаться автоматически
 export var FLASHER_LOCAL_PORT;
+
+class ModuleStatus {
+  /* 
+  статус локального модуля
+    0 - не работает
+    1 - работает
+    2 - не смог запуститься
+    3 - перестал работать из-за ошибки
+    4 - платформа не поддерживается
+  */
+  code: number;
+  // сообщение об ошибке
+  message: string;
+  constructor(code: number = 0, message: string = '') {
+    this.code = code;
+    this.message = message;
+  }
+}
 
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
-
+  static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: string) {
+    this.moduleStatus[module] = new ModuleStatus();
     if (!this.localProccesses.has(module)) {
       await findFreePort((port) => {
         FLASHER_LOCAL_PORT = port;
@@ -51,6 +69,10 @@ export class ModuleManager {
           modulePath = `${basePath}/modules/${platform}/${module}.exe`;
           break;
         default:
+          this.moduleStatus[module] = new ModuleStatus(
+            4,
+            `Платформа ${platform} не поддерживается`
+          );
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
       if (modulePath) {
@@ -58,19 +80,23 @@ export class ModuleManager {
         chprocess = spawn(modulePath, flasherArgs);
         chprocess.on('error', function (err) {
           // FIXME: выводить ошибку в интерфейсе
+          ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${module} spawn error: ${err}`);
           console.error(`${module} spawn error: ` + err);
         });
       }
       if (chprocess !== undefined) {
+        ModuleManager.moduleStatus[module] = new ModuleStatus(1);
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {
           console.log(`${module}-stdout: ${data}`);
         });
         chprocess.stderr.on('data', (data) => {
+          ModuleManager.moduleStatus[module].message = data;
           console.log(`${module}-stderr: ${data}`);
         });
 
         chprocess.on('exit', () => {
+          ModuleManager.moduleStatus[module].code = 3;
           console.log(`${module}-exit!`);
         });
       }
@@ -84,5 +110,9 @@ export class ModuleManager {
       this.localProccesses.get(module)!.kill();
       this.localProccesses.delete(module);
     }
+  }
+
+  static getLocalStatus(module: string): ModuleStatus {
+    return this.moduleStatus[module];
   }
 }

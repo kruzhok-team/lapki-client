@@ -15,18 +15,15 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Создать...',
       onClick: props.onRequestNewFile,
-      disabled: false,
     },
     {
       text: 'Открыть...',
       onClick: props.onRequestOpenFile,
-      disabled: false,
     },
     {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
       // TODO: disabled: !props.isModified,
-      disabled: false,
     },
     {
       text: 'Сохранить как...',
@@ -40,19 +37,17 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       },
       disabled: props.compilerStatus !== 'Подключен',
     },
-    /*
-    {
-      text: 'Примеры',
-      // TODO: модальное окно с выбором примера
-    },
-    */
+    // {
+    //   text: 'Примеры',
+    //   TODO: модальное окно с выбором примера
+    // },
   ];
 
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">Меню</h3>
 
-      {items.map(({ text, onClick, disabled }) => (
+      {items.map(({ text, onClick, disabled = false }) => (
         <button
           key={text}
           className="px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled"

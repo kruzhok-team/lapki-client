@@ -37,7 +37,7 @@ export function emptyEditorData(): EditorData {
  * Класс-прослойка, обеспечивающий взаимодействие с React.
  */
 export class EditorManager {
-  editor: CanvasEditor | null;
+  editor: CanvasEditor | null = null;
   state!: EditorData;
   updateState!: Dispatch<SetStateAction<EditorData>>;
 
@@ -48,7 +48,6 @@ export class EditorManager {
     initState: EditorData | undefined,
     updateState: Dispatch<SetStateAction<EditorData>>
   ) {
-    // console.log(['EditorManager constructor']);
     this.editor = editor;
     this.state = initState ?? emptyEditorData();
     this.updateState = updateState;

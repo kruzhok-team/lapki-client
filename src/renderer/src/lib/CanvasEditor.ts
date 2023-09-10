@@ -20,7 +20,7 @@ export class CanvasEditor {
 
   container!: Container;
 
-  constructor(container: HTMLDivElement, elements?: Elements) {
+  constructor(container: HTMLDivElement, elements = emptyElements()) {
     this.root = container;
     this.canvas = new Canvas(this);
     this.mouse = new Mouse(this.canvas.element);
@@ -30,8 +30,7 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    const contElements = typeof elements !== 'undefined' ? elements : emptyElements();
-    this.container = new Container(this, contElements);
+    this.container = new Container(this, elements);
     this.canvas.onResize = () => {
       this.mouse.setOffset();
       this.container.isDirty = true;
@@ -56,7 +55,6 @@ export class CanvasEditor {
     this.container.machine.clear();
     this.container.machine.loadData(elements);
     this.container.isDirty = true;
-    console.log('loaded!');
   }
 
   getData(): string {

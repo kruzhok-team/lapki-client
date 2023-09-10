@@ -46,7 +46,7 @@ export const App: React.FC = () => {
 
   const lapki = useEditorManager();
   const editor = lapki.editor;
-  const manager = lapki.managerRef.current;
+  const manager = lapki.manager;
   const editorData = lapki.editorData;
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...

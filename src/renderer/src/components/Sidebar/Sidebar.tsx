@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
   const handleImport = async (platform: string) => {
-    await editorRef.managerRef.current?.import(platform, setOpenData);
+    await editorRef.manager?.import(platform, setOpenData);
   };
 
   const menus = useMemo(
@@ -71,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }}
       />,
       <CompilerTab
-        manager={editorRef.managerRef.current}
+        manager={editorRef.manager}
         editor={editorRef.editor}
         editorData={editorRef.editorData}
         openData={openData}
@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         compilerStatus={compilerStatus}
         setCompilerStatus={setCompilerStatus}
       />,
-      <Loader manager={editorRef.managerRef.current} compilerData={compilerData} />,
+      <Loader manager={editorRef.manager} compilerData={compilerData} />,
       <Setting />,
     ],
     [editorRef]

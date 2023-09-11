@@ -1,78 +1,54 @@
-import { useState, useRef, useEffect, MutableRefObject, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorData, EditorManager, emptyEditorData } from '@renderer/lib/data/EditorManager';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 
-export interface EditorRef {
-  editor: CanvasEditor | null;
-  setEditor: Dispatch<SetStateAction<CanvasEditor | null>>;
-  platform: PlatformManager | null;
-  editorData: EditorData;
-  manager: EditorManager | null;
-  // mutateLapki: (fn: ManagerMutator, forceTrigger?: boolean) => void;
-  // FIXME: очень хотелось бы избавиться от этого поля,
-  // потому что не все изменения через него запускают перерисовку
-  // managerRef: MutableRefObject<EditorManager | null>;
-}
-
-type ManagerMutator = (manager: EditorManager, forceTrigger?: boolean) => void;
-
-export default function useEditorManager(): EditorRef {
+export default function useEditorManager() {
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [platform, setPlatform] = useState<PlatformManager | null>(null);
-  const [editorData, setEditorData] = useState<EditorData>(emptyEditorData);
-  const [manager, setManager] = useState<EditorManager | null>(null);
 
-  // const managerRef = useRef<EditorManager | null>(null);
-  const myPlatformIdx = useRef<string | null>(null);
+  const { current: manager } = useRef(new EditorManager(editor));
 
-  const platformUpdate = (name: string) => {
-    myPlatformIdx.current = name;
-    if (name) {
-      setPlatform(editor?.container.machine.platform ?? null);
-    } else {
-      setPlatform(null);
-    }
-  };
+  // const [manager, setManager] = useState(() => new EditorManager(editor));
 
-  useEffect(() => {
-    if (manager) return;
+  // const myPlatformIdx = useRef<string | null>(null);
 
-    setManager(new EditorManager(editor, editorData, setEditorData));
-  }, [editor]);
+  // const platformUpdate = (name: string) => {
+  //   myPlatformIdx.current = name;
+  //   if (name) {
+  //     setPlatform(editor?.container.machine.platform ?? null);
+  //   } else {
+  //     setPlatform(null);
+  //   }
+  // };
 
   useEffect(() => {
-    manager?.unwatchEditor();
+    setPlatform(editor?.container.machine.platform ?? null);
+  }, [editor?.container.machine.platform]);
 
-    if (!editor) return;
+  // useEffect(() => {
+  //   manager?.unwatchEditor();
 
-    manager?.watchEditor(editor);
-    platformUpdate(editor.container.machine.platformIdx);
-  }, [editor]);
+  //   if (!editor) return;
+
+  //   manager?.watchEditor(editor);
+  //   platformUpdate(editor.container.machine.platformIdx);
+  // }, [editor]);
 
   // FIXME: убрать проверку на каждом изменении?
   // подписки в Manager должно быть достаточно
-  useEffect(() => {
-    if (!editor) return;
-    if (myPlatformIdx.current == editorData.data.platform) return;
+  // useEffect(() => {
+  //   if (!editor) return;
+  //   if (myPlatformIdx.current == editorData.data.platform) return;
 
-    platformUpdate(editorData.data.platform);
-  }, [editorData]);
-
-  // const mutateLapki = (fn: ManagerMutator, forceTrigger?: boolean) => {
-  //   if (!managerRef.current) return;
-  //   fn(managerRef.current);
-  //   if (forceTrigger) managerRef.current.triggerDataUpdate();
-  // };
+  //   platformUpdate(editorData.data.platform);
+  // }, [editorData]);
 
   return {
     editor,
     setEditor,
     platform,
-    editorData,
     manager,
-    // mutateLapki,
-    // managerRef,
   };
 }

@@ -1,6 +1,6 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, useSyncExternalStore } from 'react';
 
-import { Elements, emptyElements } from '@renderer/types/diagram';
+import { emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -10,26 +10,25 @@ import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 
-export type EditorData = {
-  name: string | null;
-  shownName: string | null;
-  content: string | null;
-  data: Elements;
-  modified: boolean;
-};
-
 export type FileError = {
   name: string;
   content: string;
 };
 
-export function emptyEditorData(): EditorData {
-  return {
-    name: null,
-    shownName: null,
-    content: null,
-    data: emptyElements(),
-    modified: false,
+const emptyEditorData = {
+  isInitialized: false,
+  isStale: false,
+  basename: null as string | null,
+  name: null as string | null,
+  elements: emptyElements(),
+};
+
+type EditorData = typeof emptyEditorData;
+type EditorDataPropertyName = keyof EditorData;
+
+function emptyDataListeners() {
+  return Object.fromEntries(Object.entries(emptyEditorData).map(([k]) => [k, []])) as any as {
+    [key in EditorDataPropertyName]: (() => void)[];
   };
 }
 
@@ -38,75 +37,95 @@ export function emptyEditorData(): EditorData {
  */
 export class EditorManager {
   editor: CanvasEditor | null = null;
-  state!: EditorData;
-  updateState!: Dispatch<SetStateAction<EditorData>>;
 
-  updateInterval?: ReturnType<typeof setInterval>;
+  // updateInterval?: ReturnType<typeof setInterval>;
 
-  constructor(
-    editor: CanvasEditor | null,
-    initState: EditorData | undefined,
-    updateState: Dispatch<SetStateAction<EditorData>>
-  ) {
+  data = emptyEditorData;
+  dataListeners = emptyDataListeners();
+
+  constructor(editor: CanvasEditor | null) {
     this.editor = editor;
-    this.state = initState ?? emptyEditorData();
-    this.updateState = updateState;
+
+    const self = this;
+    this.data = new Proxy(this.data, {
+      set(target, prop, val, receiver) {
+        const result = Reflect.set(target, prop, val, receiver);
+
+        self.dataListeners[prop].forEach((listener) => listener());
+
+        return result;
+      },
+    });
   }
 
-  mutateState(fn: (state: EditorData) => EditorData) {
-    this.state = fn(this.state);
-    this.updateState(this.state);
-  }
+  subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
+    this.dataListeners[propertyName].push(listener);
 
-  onDataUpdate(that: EditorManager) {
-    return (data: Elements, modified: boolean) => {
-      // console.log(['onDataUpdate-pre', that.state, data, modified]);
-      that.mutateState((state) => ({
-        ...state,
-        data,
-        content: JSON.stringify(data, null, 2),
-        modified: modified || this.state.modified,
-      }));
-      console.log(['onDataUpdate-post', that.state]);
+    return () => {
+      this.dataListeners[propertyName] = this.dataListeners[propertyName].filter(
+        (l) => l !== listener
+      );
     };
+  };
+
+  useData<T extends EditorDataPropertyName>(propertyName: T): EditorData[T] {
+    return useSyncExternalStore(this.subscribe(propertyName), () => this.data[propertyName]);
   }
 
-  watchEditor(editor: CanvasEditor) {
-    this.editor = editor;
-    editor.onDataUpdate(this.onDataUpdate(this));
+  // mutateState(fn: (state: EditorData) => EditorData) {
+  //   this.state = fn(this.state);
+  //   this.updateState(this.state);
+  // }
 
-    //Таймер для сохранения изменений сделанных в редакторе
-    this.updateInterval = setInterval(() => {
-      this.triggerDataUpdate();
-    }, 5000);
-  }
+  // onDataUpdate(that: EditorManager) {
+  //   return (data: Elements, modified: boolean) => {
+  //     // console.log(['onDataUpdate-pre', that.state, data, modified]);
+  //     that.mutateState((state) => ({
+  //       ...state,
+  //       data,
+  //       content: JSON.stringify(data, null, 2),
+  //       modified: modified || this.state.modified,
+  //     }));
+  //     console.log(['onDataUpdate-post', that.state]);
+  //   };
+  // }
 
-  unwatchEditor() {
-    clearInterval(this.updateInterval);
-  }
+  // watchEditor(editor: CanvasEditor) {
+  //   this.editor = editor;
+  //   editor.onDataUpdate(this.onDataUpdate(this));
 
-  triggerDataUpdate() {
-    this.editor?.container.machine.dataTrigger(true);
-  }
+  //   //Таймер для сохранения изменений сделанных в редакторе
+  //   this.updateInterval = setInterval(() => {
+  //     this.triggerDataUpdate();
+  //   }, 5000);
+  // }
+
+  // unwatchEditor() {
+  //   clearInterval(this.updateInterval);
+  // }
+
+  // triggerDataUpdate() {
+  //   this.editor?.container.machine.dataTrigger(true);
+  // }
 
   newFile(platformIdx: string) {
     if (!isPlatformAvailable(platformIdx)) {
       throw Error('unknown platform ' + platformIdx);
     }
     const data = { ...emptyElements(), platform: platformIdx };
-    this.editor?.loadData(data);
-    this.mutateState((state) => ({
-      ...state,
-      name: null,
-      shownName: 'Без названия',
-      content: JSON.stringify(data),
-      data,
-      modified: false,
-    }));
+    // this.editor?.loadData(data);
+    // this.mutateState((state) => ({
+    //   ...state,
+    //   name: null,
+    //   shownName: 'Без названия',
+    //   content: JSON.stringify(data),
+    //   data,
+    //   modified: false,
+    // }));
   }
 
   compile(platform: string): void {
-    Compiler.compile(platform, this.state.data);
+    Compiler.compile(platform, this.data.elements);
   }
 
   getList(): void {
@@ -123,15 +142,15 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
-        this.editor?.loadData(data);
-        this.mutateState((state) => ({
-          ...state,
-          name: openData[1]!.replace('.graphml', '.json'),
-          shownName: openData[2]!.replace('.graphml', '.json'),
-          content: JSON.stringify(importData),
-          data,
-          modified: false,
-        }));
+        // this.editor?.loadData(data);
+        // this.mutateState((state) => ({
+        //   ...state,
+        //   name: openData[1]!.replace('.graphml', '.json'),
+        //   shownName: openData[2]!.replace('.graphml', '.json'),
+        //   content: JSON.stringify(importData),
+        //   data,
+        //   modified: false,
+        // }));
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -178,15 +197,20 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
-        this.editor?.loadData(data);
-        this.mutateState((state) => ({
-          ...state,
-          name: openData[1],
-          shownName: openData[2],
-          content: openData[3],
-          data,
-          modified: false,
-        }));
+        // this.editor?.loadData(data);
+        this.data.basename = openData[1];
+        this.data.name = openData[2];
+        this.data.elements = data;
+        this.data.isInitialized = true;
+
+        // this.mutateState((state) => ({
+        //   ...state,
+        //   name: openData[1],
+        //   shownName: openData[2],
+        //   content: openData[3],
+        //   data,
+        //   modified: false,
+        // }));
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -231,21 +255,21 @@ export class EditorManager {
 
   async save(): Promise<Either<FileError | null, null>> {
     if (!this.editor) return makeLeft(null);
-    if (!this.state.name) {
+    if (!this.data.basename) {
       return await this.saveAs();
     }
     const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
       'dialog:saveFile',
-      this.state.name,
+      this.data.basename,
       this.editor!.getData()
     );
     if (saveData[0]) {
-      this.mutateState((state) => ({
-        ...state,
-        name: saveData[1],
-        shownName: saveData[2],
-        modified: false,
-      }));
+      // this.mutateState((state) => ({
+      //   ...state,
+      //   name: saveData[1],
+      //   shownName: saveData[2],
+      //   modified: false,
+      // }));
       return makeRight(null);
     } else {
       return makeLeft({
@@ -259,14 +283,14 @@ export class EditorManager {
     if (!this.editor) return makeLeft(null);
     const data = this.editor!.getData();
     const saveData: [boolean, string | null, string | null] =
-      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.state.name, data);
+      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
     if (saveData[0]) {
-      this.mutateState((state) => ({
-        ...state,
-        name: saveData[1],
-        shownName: saveData[2],
-        modified: false,
-      }));
+      // this.mutateState((state) => ({
+      //   ...state,
+      //   name: saveData[1],
+      //   shownName: saveData[2],
+      //   modified: false,
+      // }));
       return makeRight(null);
     } else if (saveData[1]) {
       return makeLeft({

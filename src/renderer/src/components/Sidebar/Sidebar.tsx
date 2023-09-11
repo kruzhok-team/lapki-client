@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-import { Explorer, Menu, CompilerTab, Loader, ExplorerCallbacks } from '../../components';
+import { Explorer, Menu, CompilerTab, Loader } from '../../components';
 
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
@@ -8,12 +8,14 @@ import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.
 import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { Setting } from '../Setting';
-import { EditorRef } from '@renderer/hooks/useEditorManager';
 
 import { Labels } from './Labels';
 import { Menus } from './Menus';
 import { Badge } from '../UI';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 
 export interface SidebarCallbacks {
   onRequestNewFile: () => void;
@@ -26,12 +28,16 @@ export interface SidebarCallbacks {
 }
 
 interface SidebarProps {
-  editorRef: EditorRef;
+  editor: CanvasEditor | null;
+  manager: EditorManager;
+  platform: PlatformManager | null;
   callbacks: SidebarCallbacks;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  editorRef,
+  editor,
+  manager,
+  platform,
   callbacks: {
     onRequestNewFile,
     onRequestOpenFile,
@@ -48,8 +54,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
+  const isEditorDataStale = manager.useData('isStale');
+
   const handleImport = async (platform: string) => {
-    await editorRef.manager?.import(platform, setOpenData);
+    await manager.import(platform, setOpenData);
   };
 
   const menus = useMemo(
@@ -63,7 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         compilerStatus={compilerStatus}
       />,
       <Explorer
-        editorRef={editorRef}
+        manager={manager}
+        platform={platform}
         callbacks={{
           onRequestAddComponent,
           onRequestEditComponent,
@@ -71,26 +80,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }}
       />,
       <CompilerTab
-        manager={editorRef.manager}
-        editor={editorRef.editor}
-        editorData={editorRef.editorData}
+        manager={manager}
+        editor={editor}
         openData={openData}
         compilerData={compilerData}
         setCompilerData={setCompilerData}
         compilerStatus={compilerStatus}
         setCompilerStatus={setCompilerStatus}
       />,
-      <Loader manager={editorRef.manager} compilerData={compilerData} />,
+      <Loader manager={manager} compilerData={compilerData} />,
       <Setting />,
     ],
-    [editorRef]
+    [platform, manager, editor]
   );
 
   const tabLabels = useMemo(
     () => [
       {
         Icon: (
-          <Badge show={editorRef.editorData.modified}>
+          <Badge show={isEditorDataStale}>
             <MenuIcon />
           </Badge>
         ),
@@ -109,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         bottom: true,
       },
     ],
-    [editorRef.editorData]
+    [isEditorDataStale]
   );
 
   return (

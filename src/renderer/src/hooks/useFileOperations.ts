@@ -1,20 +1,22 @@
 import { useState } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { EditorData, EditorManager } from '@renderer/lib/data/EditorManager';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 import { useTabs } from '@renderer/store/useTabs';
 
 interface useFileOperationsArgs {
-  manager: EditorManager | null;
-  editorData: EditorData;
+  manager: EditorManager;
   openLoadError: (cause: any) => void;
   openSaveError: (cause: any) => void;
   openPlatformModal: () => void;
 }
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
-  const { manager, editorData, openLoadError, openSaveError, openPlatformModal } = args;
+  const { manager, openLoadError, openSaveError, openPlatformModal } = args;
+
+  const isStale = manager.useData('isStale');
+  const name = manager.useData('name');
 
   const clearTabs = useTabs((state) => state.clearTabs);
 
@@ -25,9 +27,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   /*Открытие файла*/
   const handleOpenFile = async () => {
-    if (editorData.content && editorData.modified) {
+    if (isStale) {
       setData({
-        shownName: editorData.shownName,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
         onConfirm: performOpenFile,
         onSave: handleSaveFile,
@@ -54,9 +56,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
   //Создание нового файла
   const handleNewFile = async () => {
-    if (editorData.content && editorData.modified) {
+    if (isStale) {
       setData({
-        shownName: editorData.shownName,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
         onConfirm: openPlatformModal,
         onSave: handleSaveFile,

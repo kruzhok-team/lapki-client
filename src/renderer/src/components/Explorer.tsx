@@ -7,6 +7,8 @@ import { EditorRef } from '@renderer/hooks/useEditorManager';
 
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
@@ -15,15 +17,19 @@ export interface ExplorerCallbacks {
 }
 
 interface ExplorerProps {
-  editorRef: EditorRef;
+  manager: EditorManager;
+  platform: PlatformManager | null;
   callbacks: ExplorerCallbacks;
 }
 
 export const Explorer: React.FC<ExplorerProps> = ({
-  editorRef,
+  manager,
+  platform,
   callbacks: { onRequestAddComponent, onRequestEditComponent, onRequestDeleteComponent },
 }) => {
-  const editorData = editorRef.editorData;
+  const isInitialized = manager.useData('isInitialized');
+  const elements = manager.useData('elements');
+
   const [cursor, setCursor] = useState<string | null>(null);
 
   const onUnClick = (_e: React.MouseEvent) => {
@@ -57,7 +63,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
       <div className="px-4 text-center">
         <button
           className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-          disabled={!editorRef.editorData.content}
+          disabled={!isInitialized}
           onClick={onAddClick}
         >
           <AddIcon className="shrink-0" />
@@ -67,7 +73,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
         <ScrollableList
           className="max-h-[350px]"
           containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={Object.keys(editorData?.data.components) ?? []}
+          listItems={elements ? Object.keys(elements.components) : []}
           heightOfItem={10}
           maxItemsToRender={50}
           renderItem={(key) => (
@@ -78,10 +84,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
               onDoubleClick={() => onCompDblClick(key)}
               onContextMenu={() => onCompRightClick(key)}
             >
-              <img
-                className="h-8"
-                src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon}
-              />
+              <img className="h-8" src={platform?.getComponentIconUrl(key, true) ?? UnknownIcon} />
               <p className="ml-2 line-clamp-1">{key}</p>
             </div>
           )}

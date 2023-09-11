@@ -45,9 +45,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
   const contextMenu = useDiagramContextMenu(editor, manager);
   const stateName = useDiagramStateName(editor);
 
+  const elementsData = manager.useData('elements');
+
   useEffect(() => {
-    if (!containerRef.current) return;
-    const editor = new CanvasEditor(containerRef.current, manager.state.data);
+    if (!containerRef.current || !elementsData) return;
+
+    const editor = new CanvasEditor(containerRef.current, elementsData);
+
     const ClearUseState = () => {
       //Очищаем все старые данные
       setState(undefined);
@@ -105,7 +109,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, []);
+  }, [elementsData]);
 
   const handleCreateEventsModal = (data: EventsModalResult) => {
     setEvents([...events, data.action]);

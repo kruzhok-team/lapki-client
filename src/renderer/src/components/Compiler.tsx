@@ -7,13 +7,12 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Compiler } from '../components/Modules/Compiler';
 import { Settings } from '../components/Modules/Settings';
 import { useTabs } from '@renderer/store/useTabs';
-import { EditorData, EditorManager } from '@renderer/lib/data/EditorManager';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 export interface CompilerProps {
-  manager: EditorManager | null;
+  manager: EditorManager;
   editor: CanvasEditor | null;
-  editorData: EditorData;
 
   openData: [boolean, string | null, string | null, string] | undefined;
   compilerData: CompilerResult | undefined;
@@ -25,7 +24,6 @@ export interface CompilerProps {
 export const CompilerTab: React.FC<CompilerProps> = ({
   manager,
   editor,
-  editorData,
   openData,
   compilerData,
   setCompilerData,
@@ -34,6 +32,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 }) => {
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
+
+  const name = manager.useData('name');
+  const isInitialized = manager.useData('isInitialized');
 
   const [importData, setImportData] = useState<string | undefined>(undefined);
 
@@ -44,16 +45,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    manager?.saveIntoFolder(preparedData);
+    manager.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
-    Compiler.filename = editorData.shownName!;
-    manager?.compile(editor!.container.machine.platformIdx);
+    if (!name) return;
+
+    Compiler.filename = name;
+    manager.compile(editor!.container.machine.platformIdx);
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager?.saveIntoFolder(compilerData!.source!);
+    await manager.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -87,7 +90,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      manager?.parseImportData(importData, openData!);
+      manager.parseImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);
@@ -99,8 +102,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       Compiler.connect(compiler.host, compiler.port);
     });
   }, []);
-
-  const fileReady = !!editor;
 
   const button = [
     {
@@ -135,7 +136,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     },
   ];
   const cantCompile =
-    compilerStatus == 'Не подключен' || compilerStatus == 'Идет компиляция...' || !fileReady;
+    compilerStatus == 'Не подключен' || compilerStatus == 'Идет компиляция...' || !isInitialized;
   const disabled = cantCompile;
 
   return (

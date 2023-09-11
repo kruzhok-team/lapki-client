@@ -40,8 +40,8 @@ export class Condition extends Draggable {
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     const { x, y, width, height } = this.drawBounds;
     const eventMargin = picto.eventMargin;
-    const p = 15 / this.container.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.scale;
+    const p = 15 / this.container.app.manager.data.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.app.manager.data.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
@@ -65,7 +65,7 @@ export class Condition extends Draggable {
     //Здесь начинается прорисовка действий и условий для связей
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.container.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.container.app.manager.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
     const px = x + p;
     const py = y + p;
@@ -77,8 +77,11 @@ export class Condition extends Draggable {
     if (this.transition.data.condition) {
       const ax = 1;
       const ay = 0;
-      const aX = px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.container.scale;
-      const aY = py + (ay * yDx) / this.container.scale;
+      const aX =
+        px +
+        (eventMargin + (picto.eventWidth + eventMargin) * ax) /
+          this.container.app.manager.data.scale;
+      const aY = py + (ay * yDx) / this.container.app.manager.data.scale;
       platform.drawCondition(ctx, this.transition.data.condition, aX, aY, opacity);
     }
     ctx.closePath();
@@ -88,8 +91,11 @@ export class Condition extends Draggable {
     this.transition.data.do?.forEach((data, actIdx) => {
       const ax = 1 + (actIdx % eventRowLength);
       const ay = 1 + Math.floor(actIdx / eventRowLength);
-      const aX = px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.container.scale;
-      const aY = py + (ay * yDx) / this.container.scale;
+      const aX =
+        px +
+        (eventMargin + (picto.eventWidth + eventMargin) * ax) /
+          this.container.app.manager.data.scale;
+      const aY = py + (ay * yDx) / this.container.app.manager.data.scale;
       platform.drawAction(ctx, data, aX, aY, opacity);
     });
     ctx.closePath();

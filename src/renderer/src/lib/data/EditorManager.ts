@@ -21,6 +21,9 @@ const emptyEditorData = {
   basename: null as string | null,
   name: null as string | null,
   elements: emptyElements(),
+
+  offset: { x: 0, y: 0 },
+  scale: 1,
 };
 
 type EditorData = typeof emptyEditorData;

@@ -117,11 +117,11 @@ export class State extends Draggable {
 
   get computedTitleSizes() {
     return {
-      height: this.titleHeight / this.container.scale,
+      height: this.titleHeight / this.container.app.manager.data.scale,
       width: this.drawBounds.width,
-      fontSize: 15 / this.container.scale,
-      paddingX: 15 / this.container.scale,
-      paddingY: 10 / this.container.scale,
+      fontSize: 15 / this.container.app.manager.data.scale,
+      paddingX: 15 / this.container.app.manager.data.scale,
+      paddingY: 10 / this.container.app.manager.data.scale,
     };
   }
 
@@ -167,15 +167,15 @@ export class State extends Draggable {
     //Добавляет стиль заднему фону
     ctx.fillStyle = style.bodyBg;
     //создает указательный треугольник
-    ctx.moveTo(x + 100 / this.container.scale, y - 20 / this.container.scale);
-    ctx.lineTo(x + 110 / this.container.scale, y - 2 / this.container.scale);
-    ctx.lineTo(x + 120 / this.container.scale, y - 20 / this.container.scale);
+    ctx.moveTo(x + 100 / this.container.app.manager.data.scale, y - 20 / this.container.app.manager.data.scale);
+    ctx.lineTo(x + 110 / this.container.app.manager.data.scale, y - 2 / this.container.app.manager.data.scale);
+    ctx.lineTo(x + 120 / this.container.app.manager.data.scale, y - 20 / this.container.app.manager.data.scale);
     //Строит прямоугольник
     ctx.roundRect(
       x,
-      y - 120 / this.container.scale,
+      y - 120 / this.container.app.manager.data.scale,
       width,
-      100 / this.container.scale,
+      100 / this.container.app.manager.data.scale,
       transitionStyle.startSize
     );
     //Добавляет задний фон объекту канвы
@@ -186,7 +186,7 @@ export class State extends Draggable {
     ctx.beginPath();
     //Добавляет стиль тексту
     ctx.fillStyle = transitionStyle.bgColor;
-    ctx.fillText(this.isState, x, y - 80 / this.container.scale);
+    ctx.fillText(this.isState, x, y - 80 / this.container.app.manager.data.scale);
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
@@ -217,7 +217,7 @@ export class State extends Draggable {
 
     ctx.beginPath();
     picto.drawImage(ctx, 'InitialIcon', {
-      x: x - 30 / this.container.scale,
+      x: x - 30 / this.container.app.manager.data.scale,
       y,
       width: 25,
       height: 25,

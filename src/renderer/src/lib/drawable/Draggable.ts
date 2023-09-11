@@ -88,13 +88,13 @@ export class Draggable extends EventEmitter {
     const { x, y } = this.compoundPosition;
 
     return {
-      x: (x + this.container.offset.x) / this.container.scale,
-      y: (y + this.container.offset.y) / this.container.scale,
+      x: (x + this.container.app.manager.data.offset.x) / this.container.app.manager.data.scale,
+      y: (y + this.container.app.manager.data.offset.y) / this.container.app.manager.data.scale,
     };
   }
 
   get computedWidth() {
-    let width = this.bounds.width / this.container.scale;
+    let width = this.bounds.width / this.container.app.manager.data.scale;
     if (this.children.size > 0) {
       let rightChildren = this.children.values().next().value as Draggable;
 
@@ -115,7 +115,7 @@ export class Draggable extends EventEmitter {
         cx +
           rightChildren.computedDimensions.width -
           x +
-          this.childrenPadding / this.container.scale
+          this.childrenPadding / this.container.app.manager.data.scale
       );
     }
 
@@ -123,7 +123,7 @@ export class Draggable extends EventEmitter {
   }
 
   get computedHeight() {
-    return this.bounds.height / this.container.scale;
+    return this.bounds.height / this.container.app.manager.data.scale;
   }
 
   get childrenContainerHeight() {
@@ -148,7 +148,7 @@ export class Draggable extends EventEmitter {
 
     result =
       (bottomChildren.bounds.y + bottomChildren.bounds.height + this.childrenPadding * 2) /
-        this.container.scale +
+        this.container.app.manager.data.scale +
       bottomChildren.childrenContainerHeight;
 
     return result;
@@ -201,8 +201,8 @@ export class Draggable extends EventEmitter {
       clearTimeout(this.mouseDownTimerId);
     }
 
-    this.bounds.x += e.dx * this.container.scale;
-    this.bounds.y += e.dy * this.container.scale;
+    this.bounds.x += e.dx * this.container.app.manager.data.scale;
+    this.bounds.y += e.dy * this.container.app.manager.data.scale;
 
     if (this.parent) {
       this.bounds.x = Math.max(0, this.bounds.x);

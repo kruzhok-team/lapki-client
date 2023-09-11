@@ -19,7 +19,7 @@ export const MIN_SCALE = 0.2;
  * управление камерой, обработка событий и сериализация.
  */
 export class Container {
-  [x: string]: any;
+  // [x: string]: any;
   app!: CanvasEditor;
 
   isDirty = true;
@@ -29,17 +29,17 @@ export class Container {
   states!: States;
   transitions!: Transitions;
 
-  offset = { x: 0, y: 0 };
-  scale = 1;
+  // offset = { x: 0, y: 0 };
+  // scale = 1;
 
   isPan = false;
 
   dropCallback?: (position: Point) => void;
   contextMenuOpenCallback?: (position: Point) => void;
 
-  scaleListeners: (() => void)[] = [];
+  // scaleListeners: (() => void)[] = [];
 
-  constructor(app: CanvasEditor, elements: Elements) {
+  constructor(app: CanvasEditor) {
     this.app = app;
     this.machine = new StateMachine(this);
     this.states = new States(this);
@@ -49,7 +49,7 @@ export class Container {
 
     this.initEvents();
     this.transitions.initEvents();
-    this.machine.loadData(elements);
+    this.machine.loadData(this.app.manager.data.elements);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -61,10 +61,13 @@ export class Container {
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
 
+    const scale = this.app.manager.data.scale;
+    const offset = this.app.manager.data.offset;
+
     let size = 30;
-    const top = (this.offset.y % size) / this.scale;
-    const left = (this.offset.x % size) / this.scale;
-    size /= this.scale;
+    const top = (offset.y % size) / scale;
+    const left = (offset.x % size) / scale;
+    size /= scale;
 
     ctx.strokeStyle = getColor('grid');
     ctx.lineWidth = 1;
@@ -104,22 +107,24 @@ export class Container {
   }
 
   setScale(value: number) {
-    this.scale = value;
+    this.app.manager.data.scale = value;
 
     picto.scale = value;
 
     this.isDirty = true;
 
-    this.scaleListeners.forEach((listener) => listener());
+    // this.scaleListeners.forEach((listener) => listener());
   }
 
   handleDrop = (e: DragEvent) => {
     e.preventDefault();
 
     const rect = this.app.canvas.element.getBoundingClientRect();
+    const scale = this.app.manager.data.scale;
+    const offset = this.app.manager.data.offset;
     const position = {
-      x: (e.clientX - rect.left) * this.scale - this.offset.x,
-      y: (e.clientY - rect.top) * this.scale - this.offset.y,
+      x: (e.clientX - rect.left) * scale - offset.x,
+      y: (e.clientY - rect.top) * scale - offset.y,
     };
 
     this.dropCallback?.(position);
@@ -163,8 +168,8 @@ export class Container {
     if (!this.isPan || !e.left) return;
 
     // TODO Много раз такие операции повторяются, нужно переделать на функции
-    this.offset.x += e.dx * this.scale;
-    this.offset.y += e.dy * this.scale;
+    this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
+    this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
 
     this.isDirty = true;
   };
@@ -188,11 +193,12 @@ export class Container {
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
     e.nativeEvent.preventDefault();
 
+    const prevScale = this.app.manager.data.scale;
     const newScale = Number(
-      clamp(this.scale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
+      clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.offset.x -= e.x * this.scale - e.x * newScale;
-    this.offset.y -= e.y * this.scale - e.y * newScale;
+    this.app.manager.data.offset.x -= e.x * prevScale - e.x * newScale;
+    this.app.manager.data.offset.y -= e.y * prevScale - e.y * newScale;
 
     this.setScale(newScale);
   };
@@ -205,9 +211,11 @@ export class Container {
 
   relativeMousePos(e: Point): Point {
     // const rect = this.app.canvas.element.getBoundingClientRect();
+    const scale = this.app.manager.data.scale;
+    const offset = this.app.manager.data.offset;
     return {
-      x: e.x * this.scale - this.offset.x,
-      y: e.y * this.scale - this.offset.y,
+      x: e.x * scale - offset.x,
+      y: e.y * scale - offset.y,
     };
   }
 
@@ -225,8 +233,8 @@ export class Container {
       arrY.push(transition.condition.bounds.y);
     });
 
-    this.scale = 1;
-    this.offset = { x: -Math.min(...arrX), y: -Math.min(...arrY) };
+    this.app.manager.data.scale = 1;
+    this.app.manager.data.offset = { x: -Math.min(...arrX), y: -Math.min(...arrY) };
 
     this.isDirty = true;
   }
@@ -235,26 +243,27 @@ export class Container {
     const x = this.app.canvas.width / 2;
     const y = this.app.canvas.height / 2;
 
+    const prevScale = this.app.manager.data.scale;
     const newScale = Number(
-      clamp(replace ? delta : this.scale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
+      clamp(replace ? delta : prevScale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.offset.x -= x * this.scale - x * newScale;
-    this.offset.y -= y * this.scale - y * newScale;
+    this.app.manager.data.offset.x -= x * prevScale - x * newScale;
+    this.app.manager.data.offset.y -= y * prevScale - y * newScale;
 
     this.setScale(newScale);
   }
 
-  subscribeToScale = (listener: () => void) => {
-    this.scaleListeners.push(listener);
+  // subscribeToScale = (listener: () => void) => {
+  //   this.scaleListeners.push(listener);
 
-    return () => {
-      this.scaleListeners = this.scaleListeners.filter((l) => l !== listener);
-    };
-  };
+  //   return () => {
+  //     this.scaleListeners = this.scaleListeners.filter((l) => l !== listener);
+  //   };
+  // };
 
-  useScale() {
-    return useSyncExternalStore(this.subscribeToScale, () => this.scale);
-  }
+  // useScale() {
+  //   return useSyncExternalStore(this.subscribeToScale, () => this.scale);
+  // }
 
   get graphData() {
     return this.machine.graphData();

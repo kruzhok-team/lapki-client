@@ -13,3 +13,7 @@ export * from './FlasherSelectModal';
 export * from './ErrorModal';
 export * from './Sidebar';
 export * from './Tabs';
+export * from './MainContainer';
+export * from './ComponentAddModal';
+export * from './ComponentEditModal';
+export * from './ComponentDeleteModal';

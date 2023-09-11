@@ -4,11 +4,11 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 
-export default function useEditorManager() {
+export const useEditorManager = () => {
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
   const [platform, setPlatform] = useState<PlatformManager | null>(null);
 
-  const { current: manager } = useRef(new EditorManager(editor));
+  const managerRef = useRef(new EditorManager(editor));
 
   // const [manager, setManager] = useState(() => new EditorManager(editor));
 
@@ -49,6 +49,6 @@ export default function useEditorManager() {
     editor,
     setEditor,
     platform,
-    manager,
+    manager: managerRef.current,
   };
-}
+};

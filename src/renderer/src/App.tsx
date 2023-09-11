@@ -8,19 +8,21 @@ import {
   ErrorModal,
   Sidebar,
   SidebarCallbacks,
-} from './components';
-import { MainContainer } from './components/MainContainer';
-import { ComponentAddModal } from './components/ComponentAddModal';
-import { ComponentEditModal } from './components/ComponentEditModal';
-import { ComponentDeleteModal } from './components/ComponentDeleteModal';
-import { hideLoadingOverlay } from './components/utils/OverlayControl';
+  MainContainer,
+  ComponentAddModal,
+  ComponentEditModal,
+  ComponentDeleteModal,
+} from '@renderer/components';
+import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 
-import useEditorManager from '@renderer/hooks/useEditorManager';
-import { useAddComponent } from '@renderer/hooks/useAddComponent';
-import { useEditComponent } from '@renderer/hooks/useEditComponent';
-import { useDeleteComponent } from '@renderer/hooks/useDeleteComponent';
-import { useErrorModal } from '@renderer/hooks/useErrorModal';
-import { useFileOperations } from '@renderer/hooks/useFileOperations';
+import {
+  useEditorManager,
+  useAddComponent,
+  useEditComponent,
+  useDeleteComponent,
+  useErrorModal,
+  useFileOperations,
+} from '@renderer/hooks';
 
 import { getColor } from '@renderer/theme';
 

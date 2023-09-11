@@ -173,7 +173,10 @@ export class Flasher {
     return this.connection !== undefined;
   }
 
-  static async connect(route: string | undefined = undefined, timeout: number = 0): Websocket {
+  static async connect(
+    route: string | undefined = undefined,
+    timeout: number = this.incTimeout
+  ): Websocket {
     if (route == undefined) {
       await this.setLocal();
       this.base_address = this.makeAddress(this.host, this.port);
@@ -318,7 +321,7 @@ export class Flasher {
         this.connecting = false;
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
         this.connection = undefined;
-        //this.tryToReconnect(route!, timeout);
+        this.tryToReconnect(route!, timeout);
       }
     };
 

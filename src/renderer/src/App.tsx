@@ -26,7 +26,11 @@ import {
 import { preloadPicto } from './lib/drawable/Picto';
 import { Compiler } from './components/Modules/Compiler';
 import { CompilerResult } from './types/CompilerTypes';
-import { Flasher } from './components/Modules/Flasher';
+import {
+  FLASHER_CONNECTION_ERROR,
+  FLASHER_NO_CONNECTION,
+  Flasher,
+} from './components/Modules/Flasher';
 import { Device } from './types/FlasherTypes';
 import useEditorManager from '@renderer/hooks/useEditorManager';
 import { hideLoadingOverlay } from './components/utils/OverlayControl';
@@ -63,6 +67,7 @@ export const App: React.FC = () => {
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
+  const [flasherIsLocal, setFlasherIslocal] = useState<boolean>(true);
 
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
@@ -251,12 +256,14 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherHostChange = () => {
+    setFlasherIslocal(false);
     Flasher.freezeReconnectionTimer(true);
     openFlasherModal();
   };
 
   const handleLocalFlasher = async () => {
     console.log('local');
+    setFlasherIslocal(true);
     await manager?.startLocalModule('lapki-flasher');
     //Стандартный порт
     manager?.changeFlasherLocal();
@@ -278,8 +285,34 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleFlasherErrorMessage = (error: string | undefined) => {
-    const element = <p> {error} </p>;
+  const handleFlasherErrorMessageDisplay = async () => {
+    var errorDetails: string | undefined;
+    if (flasherIsLocal) {
+      await window.electron.ipcRenderer
+        .invoke('Module:getStatus', 'lapki-flasher')
+        .then(function (obj) {
+          errorDetails = obj.message;
+          // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
+          if (obj.code == 1) {
+            switch (flasherConnectionStatus) {
+              case FLASHER_CONNECTION_ERROR:
+                errorDetails = `Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки: ${flasherError}`;
+                break;
+              case FLASHER_NO_CONNECTION:
+                errorDetails = `Локальный загрузчик работает, но IDE не может установить с ним соединение по неизвестной причине`;
+                break;
+            }
+          }
+          setFlasherError(obj.message);
+        });
+    } else {
+      if (flasherConnectionStatus == FLASHER_CONNECTION_ERROR) {
+        errorDetails = `Ошибка соединения: ${flasherError}`;
+      } else {
+        errorDetails = flasherError;
+      }
+    }
+    const element = <p> {errorDetails} </p>;
     const msg: MessageModalData = {
       text: element,
       caption: 'Ошибка',
@@ -346,13 +379,12 @@ export const App: React.FC = () => {
     compilerData,
     flasherFile,
     flashing,
-    flasherError,
     setCurrentDevice,
     handleGetList,
     handleFlash: handleFlashBinary,
     handleHostChange: handleFlasherHostChange,
     handleFileChoose: handleFlasherFileChoose,
-    handleErrorMessage: handleFlasherErrorMessage,
+    handleErrorMessageDisplay: handleFlasherErrorMessageDisplay,
   };
 
   const compilerProps: CompilerProps = {
@@ -422,7 +454,8 @@ export const App: React.FC = () => {
       setFlasherLog,
       setFlasherFile,
       setFlashing,
-      setFlasherError
+      setFlasherError,
+      setFlasherIslocal
     );
     const reader = new FileReader();
     Flasher.initReader(reader);

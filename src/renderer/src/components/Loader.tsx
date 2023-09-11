@@ -9,6 +9,7 @@ import {
   FLASHER_CONNECTING,
   FLASHER_SWITCHING_HOST,
   FLASHER_NO_CONNECTION,
+  FLASHER_CONNECTION_ERROR,
 } from './Modules/Flasher';
 export interface FlasherProps {
   devices: Map<string, Device>;
@@ -18,13 +19,12 @@ export interface FlasherProps {
   compilerData: CompilerResult | undefined;
   flasherFile: string | undefined | null;
   flashing: boolean;
-  flasherError: string | undefined;
   setCurrentDevice: Dispatch<string | undefined>;
   handleGetList: () => void;
   handleFlash: () => void;
   handleHostChange: () => void;
   handleFileChoose: () => void;
-  handleErrorMessage: (error: string | undefined) => void;
+  handleErrorMessageDisplay: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
@@ -35,13 +35,12 @@ export const Loader: React.FC<FlasherProps> = ({
   flasherFile,
   flasherLog,
   flashing,
-  flasherError,
   setCurrentDevice,
   handleGetList,
   handleFlash,
   handleHostChange,
   handleFileChoose,
-  handleErrorMessage,
+  handleErrorMessageDisplay: handleErrorMessageDisplay,
 }) => {
   const isActive = (id: string) => currentDevice === id;
 
@@ -88,10 +87,13 @@ export const Loader: React.FC<FlasherProps> = ({
           <br></br>
           <button
             className="btn-primary mb-2"
-            onClick={() => handleErrorMessage(flasherError)}
+            onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
-                flasherError && connectionStatus != FLASHER_CONNECTING ? 'inline-block' : 'none',
+                connectionStatus == FLASHER_NO_CONNECTION ||
+                connectionStatus == FLASHER_CONNECTION_ERROR
+                  ? 'inline-block'
+                  : 'none',
             }}
           >
             Подробнее

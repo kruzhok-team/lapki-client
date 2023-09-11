@@ -8,7 +8,7 @@ import {
   handleBinFileOpen,
 } from './file-handlers';
 import { join } from 'path';
-import { FLASHER_LOCAL_PORT, ModuleManager } from './modules/ModuleManager';
+import { FLASHER_LOCAL_PORT, ModuleManager, ModuleStatus } from './modules/ModuleManager';
 
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
@@ -108,7 +108,14 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('Module:getStatus', (_event, module: string) => {
-    return ModuleManager.getLocalStatus(module);
+    let status: ModuleStatus = ModuleManager.getLocalStatus(module);
+    console.log(status.message, typeof status.message);
+    return status;
+    /*const obj = {
+      code: status.code,
+      message: status.message,
+    };
+    return obj;*/
   });
 
   // main process

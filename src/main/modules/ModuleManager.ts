@@ -4,7 +4,7 @@ import path from 'path';
 export var FLASHER_LOCAL_HOST = 'localhost';
 export var FLASHER_LOCAL_PORT;
 
-class ModuleStatus {
+export class ModuleStatus {
   /* 
   статус локального модуля
     0 - не работает
@@ -16,7 +16,7 @@ class ModuleStatus {
   code: number;
   // сообщение об ошибке
   message: string;
-  constructor(code: number = 0, message: string = '') {
+  constructor(code: number = 0, message: string = 'Локальный загрузчик не запущён') {
     this.code = code;
     this.message = message;
   }
@@ -80,7 +80,10 @@ export class ModuleManager {
         chprocess = spawn(modulePath, flasherArgs);
         chprocess.on('error', function (err) {
           // FIXME: выводить ошибку в интерфейсе
-          ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${module} spawn error: ${err}`);
+          ModuleManager.moduleStatus[module] = new ModuleStatus(
+            2,
+            `Локальный загрузчик не смог запуститься: ${err}`
+          );
           console.error(`${module} spawn error: ` + err);
         });
       }
@@ -91,12 +94,14 @@ export class ModuleManager {
           console.log(`${module}-stdout: ${data}`);
         });
         chprocess.stderr.on('data', (data) => {
-          ModuleManager.moduleStatus[module].message = data;
           console.log(`${module}-stderr: ${data}`);
         });
 
         chprocess.on('exit', () => {
-          ModuleManager.moduleStatus[module].code = 3;
+          ModuleManager.moduleStatus[module] = new ModuleStatus(
+            3,
+            'Работа локального загрузчика была неожиданно прервана'
+          );
           console.log(`${module}-exit!`);
         });
       }
@@ -112,7 +117,7 @@ export class ModuleManager {
     }
   }
 
-  static getLocalStatus(module: string): ModuleStatus {
+  static getLocalStatus(module: string) {
     return this.moduleStatus[module];
   }
 }

@@ -34,6 +34,8 @@ export class Flasher {
   static currentBlob: Blob;
   static filePos: number = 0;
   static blobSize: number = 1024;
+  // true = во время вызова таймера для переключения ничего не будет происходить.
+  static freezeReconnection = false;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
@@ -41,8 +43,7 @@ export class Flasher {
   static setFlashing: Dispatch<SetStateAction<boolean>>;
   // сообщение об ошибке, undefined означает, что ошибки нет
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
-  // true = во время вызова таймера для переключения ничего не будет происходить.
-  static freezeReconnection = false;
+  static setIsLocal: Dispatch<SetStateAction<boolean>>;
 
   static async changeLocal() {
     await this.setLocal();
@@ -104,7 +105,8 @@ export class Flasher {
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>,
-    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
+    setIsLocal: Dispatch<SetStateAction<boolean>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -112,6 +114,7 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
+    this.setIsLocal = setIsLocal;
   }
   /*
     Добавляет устройство в список устройств
@@ -300,7 +303,7 @@ export class Flasher {
       };
     };
 
-    ws.onclose = (event) => {
+    ws.onclose = async (event) => {
       if (!event.wasClean) {
         if (this.connecting) {
           this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}`);
@@ -309,8 +312,6 @@ export class Flasher {
             `Соедиение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере`
           );
         }
-        //код всегда равен 1006 для вебсокетов
-        //console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
       }
       console.log(`flasher closed ${route}, ${timeout}, ${this.base_address}`);
       if (this.base_address == route) {
@@ -419,9 +420,4 @@ export class Flasher {
       }
     }, timeout);
   }
-
-  /*static async getLocalStatus() {
-    if (this.wsMessage) {
-    }
-  }*/
 }

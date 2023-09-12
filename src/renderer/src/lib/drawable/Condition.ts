@@ -18,16 +18,7 @@ export class Condition extends Draggable {
   isSelected = false;
 
   constructor(container: Container, transition: Transition, id: string) {
-    super(
-      container,
-      {
-        x: transition.data.position.x,
-        y: transition.data.position.y,
-        width: 130,
-        height: 70,
-      },
-      id
-    );
+    super(container, id);
 
     this.transition = transition;
     // this.contextmenu = new ContextMenu(container, this);
@@ -40,7 +31,6 @@ export class Condition extends Draggable {
   set bounds(value) {
     this.transition.data.position.x = value.x;
     this.transition.data.position.y = value.y;
-    // this.data.bounds = value;
   }
 
   toJSON() {

@@ -13,9 +13,7 @@ const style = theme.colors.diagram.state;
 interface StateProps {
   container: Container;
   id: string;
-  data: StateType;
   parent?: State;
-  initial?: boolean;
 }
 
 /**
@@ -34,8 +32,6 @@ export class State extends Draggable {
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
 
-  id: string;
-
   toJSON(): StateType {
     return {
       parent: this.data.parent,
@@ -45,20 +41,13 @@ export class State extends Draggable {
     };
   }
 
-  constructor({ id, container, data, parent }: StateProps) {
-    super(container, { ...data.bounds, width: 230, height: 100 }, id, parent);
-    this.id = id;
-    // this.data = data;
+  constructor({ id, container, parent }: StateProps) {
+    super(container, id, parent);
     this.container = container;
 
     this.eventBox = new Events(this.container, this, this.data.events);
     this.updateEventBox();
     this.edgeHandlers = new EdgeHandlers(container.app, this);
-
-    // if (initial) {
-    //   this.isInitial = true;
-    //   this.container.isDirty = true;
-    // }
   }
 
   get data() {

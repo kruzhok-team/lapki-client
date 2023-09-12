@@ -57,7 +57,7 @@ export class StateMachine extends EventEmitter {
   }
 
   loadData(elements: Elements) {
-    this.initStates(elements.states, elements.initialState);
+    this.initStates();
     this.initTransitions(elements.transitions);
     this.initPlatform(elements.platform, elements.parameters);
     this.initComponents(elements.components);
@@ -120,17 +120,15 @@ export class StateMachine extends EventEmitter {
     return outData;
   }
 
-  initStates(items: Elements['states'], initialState: string) {
-    // this.initialState = initialState;
+  initStates() {
+    const items = this.container.app.manager.data.elements.states;
 
     for (const id in items) {
       const parent = this.states.get(items[id].parent ?? '');
       const state = new State({
         container: this.container,
         id,
-        data: items[id],
         parent,
-        // initial: id === initialState,
       });
 
       state.parent?.children.set(id, state);
@@ -158,7 +156,6 @@ export class StateMachine extends EventEmitter {
         container: this.container,
         source: sourceState,
         target: targetState,
-        data: data,
         id: id,
       });
 
@@ -256,41 +253,26 @@ export class StateMachine extends EventEmitter {
   }
 
   createNewState(name: string, position: Point, parentId?: string) {
-    const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
-    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-    let newId = nanoid();
-    while (this.states.has(newId)) {
-      newId = nanoid();
-    }
+    const newStateId = this.container.app.manager.createState(name, position, parentId);
+
     const state = new State({
       container: this.container,
-      id: newId,
-      data: {
-        name: name,
-        bounds: { x, y, width, height },
-        events: [],
-      },
+      id: newStateId,
     });
 
-    // если у нас не было начального состояния, им станет новое
-    if (this.container.app.manager.data.elements.initialState === '') {
-      this.container.app.manager.data.elements.initialState = state.id!;
-    }
-
-    // кладём состояние в список
     this.states.set(state.id!, state);
 
     // вкладываем состояние, если оно создано над другим
     if (parentId) {
-      this.linkState(parentId, newId);
+      this.linkState(parentId, newStateId);
     } else {
       this.linkStateByPoint(state, position);
     }
 
     this.container.states.watchState(state);
-    this.dataTrigger();
+    // this.dataTrigger();
+
+    this.container.isDirty = true;
   }
 
   linkState(parentId: string, childId: string) {
@@ -416,17 +398,9 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  // Изменение начального состояния
   changeInitialState(idState: string) {
     const newInitial = this.states.get(idState);
     if (typeof newInitial === 'undefined') return;
-
-    // const preInitial = this.states.get(this.initialState);
-    // if (typeof preInitial !== 'undefined') {
-    //   preInitial.isInitial = false;
-    // }
-
-    // newInitial.isInitial = true;
 
     this.container.app.manager.data.elements.initialState = idState;
 
@@ -455,7 +429,7 @@ export class StateMachine extends EventEmitter {
       container: this.container,
       source: source,
       target: target,
-      data: transitionData,
+      // data: transitionData,
       id: newId,
     });
 

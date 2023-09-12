@@ -12,7 +12,6 @@ interface TransitionProps {
   container: Container;
   source: State;
   target: State;
-  data: TransitionType;
   id: string;
 }
 /**
@@ -27,10 +26,9 @@ export class Transition extends BaseTransition {
   condition!: Condition;
   id!: string;
 
-  constructor({ container, source, target, data, id }: TransitionProps) {
+  constructor({ container, source, target, id }: TransitionProps) {
     super(container);
 
-    // this.data = data;
     this.id = id;
 
     this.source = source;

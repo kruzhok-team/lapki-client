@@ -27,7 +27,7 @@ export abstract class Draggable extends EventEmitter {
   container!: Container;
   statusevents!: Events;
   // bounds!: Rectangle;
-  id: string | undefined;
+  id!: string;
   parent?: Draggable;
   children: Map<string, Draggable> = new Map();
 
@@ -40,26 +40,16 @@ export abstract class Draggable extends EventEmitter {
 
   childrenPadding = 15;
 
-  constructor(container: Container, bounds: Rectangle, id?: string, parent?: Draggable) {
+  constructor(container: Container, id: string, parent?: Draggable) {
     super();
 
     this.container = container;
-    // this.bounds = bounds;
     this.id = id;
     this.parent = parent;
 
     this.bindEvents();
   }
 
-  // get bounds() {
-  //   return this.data.bounds;
-  // }
-
-  // set bounds(value: Rectangle) {
-  //   this.data.bounds = value;
-  // }
-
-  // abstract get data(): { bounds: Rectangle };
   abstract get bounds(): Rectangle;
   abstract set bounds(bounds: Rectangle);
 

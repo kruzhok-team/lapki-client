@@ -1,4 +1,5 @@
 import { Dispatch, useSyncExternalStore } from 'react';
+import { customAlphabet } from 'nanoid';
 
 import { emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
@@ -9,6 +10,8 @@ import { isPlatformAvailable } from './PlatformLoader';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Flasher } from '@renderer/components/Modules/Flasher';
+import { Point } from '@renderer/types/graphics';
+import { stateStyle } from '../styles';
 
 export type FileError = {
   name: string;
@@ -41,8 +44,6 @@ function emptyDataListeners() {
 export class EditorManager {
   editor: CanvasEditor | null = null;
 
-  // updateInterval?: ReturnType<typeof setInterval>;
-
   data = emptyEditorData;
   dataListeners = emptyDataListeners();
 
@@ -60,6 +61,7 @@ export class EditorManager {
       },
     });
 
+    // ? Тут непонятно нужно ли реагировать
     // this.data.elements = new Proxy(this.data.elements, {
     //   set(target, prop, val, receiver) {
     //     const result = Reflect.set(target, prop, val, receiver);
@@ -85,47 +87,16 @@ export class EditorManager {
     return useSyncExternalStore(this.subscribe(propertyName), () => this.data[propertyName]);
   }
 
-  // mutateState(fn: (state: EditorData) => EditorData) {
-  //   this.state = fn(this.state);
-  //   this.updateState(this.state);
-  // }
-
-  // onDataUpdate(that: EditorManager) {
-  //   return (data: Elements, modified: boolean) => {
-  //     // console.log(['onDataUpdate-pre', that.state, data, modified]);
-  //     that.mutateState((state) => ({
-  //       ...state,
-  //       data,
-  //       content: JSON.stringify(data, null, 2),
-  //       modified: modified || this.state.modified,
-  //     }));
-  //     console.log(['onDataUpdate-post', that.state]);
-  //   };
-  // }
-
-  // watchEditor(editor: CanvasEditor) {
-  //   this.editor = editor;
-  //   editor.onDataUpdate(this.onDataUpdate(this));
-
-  //   //Таймер для сохранения изменений сделанных в редакторе
-  //   this.updateInterval = setInterval(() => {
-  //     this.triggerDataUpdate();
-  //   }, 5000);
-  // }
-
-  // unwatchEditor() {
-  //   clearInterval(this.updateInterval);
-  // }
-
-  // triggerDataUpdate() {
-  //   this.editor?.container.machine.dataTrigger(true);
-  // }
-
   newFile(platformIdx: string) {
     if (!isPlatformAvailable(platformIdx)) {
       throw Error('unknown platform ' + platformIdx);
     }
-    const data = { ...emptyElements(), platform: platformIdx };
+
+    this.data.isInitialized = true;
+    this.data.basename = null;
+    this.data.name = 'Без названия';
+    this.data.elements = { ...emptyElements(), platform: platformIdx };
+
     // this.editor?.loadData(data);
     // this.mutateState((state) => ({
     //   ...state,
@@ -155,6 +126,11 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
+        this.data.basename = openData[1]!.replace('.graphml', '.json');
+        this.data.name = openData[2]!.replace('.graphml', '.json');
+        this.data.elements = data;
+        this.data.isInitialized = true;
+
         // this.editor?.loadData(data);
         // this.mutateState((state) => ({
         //   ...state,
@@ -277,6 +253,9 @@ export class EditorManager {
       this.editor!.getData()
     );
     if (saveData[0]) {
+      this.data.basename = saveData[1];
+      this.data.name = saveData[2];
+
       // this.mutateState((state) => ({
       //   ...state,
       //   name: saveData[1],
@@ -298,6 +277,9 @@ export class EditorManager {
     const saveData: [boolean, string | null, string | null] =
       await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
     if (saveData[0]) {
+      this.data.basename = saveData[1];
+      this.data.name = saveData[2];
+
       // this.mutateState((state) => ({
       //   ...state,
       //   name: saveData[1],
@@ -312,5 +294,31 @@ export class EditorManager {
       });
     }
     return makeLeft(null);
+  }
+
+  createState(name: string, position: Point, parentId?: string) {
+    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+    const { width, height } = stateStyle;
+    const x = position.x - width / 2;
+    const y = position.y - height / 2;
+    let id = nanoid();
+    while (this.data.elements.states.hasOwnProperty(id)) {
+      id = nanoid();
+    }
+
+    this.data.elements.states[id] = {
+      bounds: { x, y, width, height },
+      events: [],
+      name,
+      parent: parentId,
+    };
+
+    // если у нас не было начального состояния, им станет новое
+    if (this.data.elements.initialState === '') {
+      this.data.elements.initialState = id;
+    }
+
+    return id;
   }
 }

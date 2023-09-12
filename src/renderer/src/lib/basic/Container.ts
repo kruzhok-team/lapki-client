@@ -1,5 +1,4 @@
 import { getColor } from '@renderer/theme';
-import { Elements } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -9,7 +8,6 @@ import { picto } from '../drawable/Picto';
 import { States } from '../drawable/States';
 import { Transitions } from '../drawable/Transitions';
 import { clamp } from '../utils';
-import { useSyncExternalStore } from 'react';
 
 export const MAX_SCALE = 10;
 export const MIN_SCALE = 0.2;
@@ -19,7 +17,6 @@ export const MIN_SCALE = 0.2;
  * управление камерой, обработка событий и сериализация.
  */
 export class Container {
-  // [x: string]: any;
   app!: CanvasEditor;
 
   isDirty = true;
@@ -29,15 +26,10 @@ export class Container {
   states!: States;
   transitions!: Transitions;
 
-  // offset = { x: 0, y: 0 };
-  // scale = 1;
-
   isPan = false;
 
   dropCallback?: (position: Point) => void;
   contextMenuOpenCallback?: (position: Point) => void;
-
-  // scaleListeners: (() => void)[] = [];
 
   constructor(app: CanvasEditor) {
     this.app = app;
@@ -112,8 +104,6 @@ export class Container {
     picto.scale = value;
 
     this.isDirty = true;
-
-    // this.scaleListeners.forEach((listener) => listener());
   }
 
   handleDrop = (e: DragEvent) => {
@@ -252,18 +242,6 @@ export class Container {
 
     this.setScale(newScale);
   }
-
-  // subscribeToScale = (listener: () => void) => {
-  //   this.scaleListeners.push(listener);
-
-  //   return () => {
-  //     this.scaleListeners = this.scaleListeners.filter((l) => l !== listener);
-  //   };
-  // };
-
-  // useScale() {
-  //   return useSyncExternalStore(this.subscribeToScale, () => this.scale);
-  // }
 
   get graphData() {
     return this.machine.graphData();

@@ -21,7 +21,7 @@ interface TransitionProps {
  * источник, назначение, а также {@link Condition|условие} перехода.
  */
 export class Transition extends BaseTransition {
-  data!: TransitionType;
+  // data!: TransitionType;
   source!: State;
   target!: State;
   condition!: Condition;
@@ -30,13 +30,17 @@ export class Transition extends BaseTransition {
   constructor({ container, source, target, data, id }: TransitionProps) {
     super(container);
 
-    this.data = data;
+    // this.data = data;
     this.id = id;
 
     this.source = source;
     this.target = target;
 
     this.condition = new Condition(this.container, this, id);
+  }
+
+  get data(): TransitionType {
+    return this.container.app.manager.data.elements.transitions[this.id];
   }
 
   toJSON(): TransitionType {

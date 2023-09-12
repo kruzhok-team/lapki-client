@@ -40,7 +40,7 @@ export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 export class StateMachine extends EventEmitter {
   container!: Container;
 
-  initialState = '';
+  // initialState = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
   components: Map<string, Component> = new Map();
@@ -80,7 +80,7 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((value) => {
       this.container.states.unwatchState(value);
     });
-    this.initialState = '';
+    // this.initialState = '';
     this.states.clear();
     this.components.clear();
     this.transitions.clear();
@@ -109,7 +109,8 @@ export class StateMachine extends EventEmitter {
 
     const outData = {
       states,
-      initialState: this.initialState,
+      // initialState: this.initialState,
+      initialState: '',
       transitions,
       components,
       parameters,
@@ -120,7 +121,7 @@ export class StateMachine extends EventEmitter {
   }
 
   initStates(items: Elements['states'], initialState: string) {
-    this.initialState = initialState;
+    // this.initialState = initialState;
 
     for (const id in items) {
       const parent = this.states.get(items[id].parent ?? '');
@@ -129,7 +130,7 @@ export class StateMachine extends EventEmitter {
         id,
         data: items[id],
         parent,
-        initial: id === initialState,
+        // initial: id === initialState,
       });
 
       state.parent?.children.set(id, state);
@@ -274,8 +275,8 @@ export class StateMachine extends EventEmitter {
     });
 
     // если у нас не было начального состояния, им станет новое
-    if (this.initialState === '') {
-      this.initialState = state.id!;
+    if (this.container.app.manager.data.elements.initialState === '') {
+      this.container.app.manager.data.elements.initialState = state.id!;
     }
 
     // кладём состояние в список
@@ -368,7 +369,7 @@ export class StateMachine extends EventEmitter {
 
     // Если удаляемое состояние было начальным, стираем текущее значение
     if (state.isInitial) {
-      this.initialState = '';
+      this.container.app.manager.data.elements.initialState = '';
     }
 
     this.container.states.unwatchState(state);
@@ -420,14 +421,14 @@ export class StateMachine extends EventEmitter {
     const newInitial = this.states.get(idState);
     if (typeof newInitial === 'undefined') return;
 
-    const preInitial = this.states.get(this.initialState);
-    if (typeof preInitial !== 'undefined') {
-      preInitial.isInitial = false;
-    }
+    // const preInitial = this.states.get(this.initialState);
+    // if (typeof preInitial !== 'undefined') {
+    //   preInitial.isInitial = false;
+    // }
 
-    newInitial.isInitial = true;
+    // newInitial.isInitial = true;
 
-    this.initialState = idState;
+    this.container.app.manager.data.elements.initialState = idState;
 
     this.dataTrigger();
   }

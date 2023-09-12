@@ -24,8 +24,8 @@ interface StateProps {
  * управление собственным выделением и отображение «хваталок».
  */
 export class State extends Draggable {
-  data!: StateType;
-  isInitial = false;
+  // data!: StateType;
+  // isInitial = false;
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -33,6 +33,8 @@ export class State extends Draggable {
   onExit?: HTMLImageElement;
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
+
+  id: string;
 
   toJSON(): StateType {
     return {
@@ -43,19 +45,36 @@ export class State extends Draggable {
     };
   }
 
-  constructor({ id, container, data, parent, initial = false }: StateProps) {
+  constructor({ id, container, data, parent }: StateProps) {
     super(container, { ...data.bounds, width: 230, height: 100 }, id, parent);
-    this.data = data;
+    this.id = id;
+    // this.data = data;
     this.container = container;
 
     this.eventBox = new Events(this.container, this, this.data.events);
     this.updateEventBox();
     this.edgeHandlers = new EdgeHandlers(container.app, this);
 
-    if (initial) {
-      this.isInitial = true;
-      this.container.isDirty = true;
-    }
+    // if (initial) {
+    //   this.isInitial = true;
+    //   this.container.isDirty = true;
+    // }
+  }
+
+  get data() {
+    return this.container.app.manager.data.elements.states[this.id];
+  }
+
+  get isInitial() {
+    return this.container.app.manager.data.elements.initialState === this.id;
+  }
+
+  get bounds() {
+    return this.data.bounds;
+  }
+
+  set bounds(value) {
+    this.data.bounds = value;
   }
 
   updateEventBox() {

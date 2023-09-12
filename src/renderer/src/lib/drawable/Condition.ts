@@ -33,6 +33,16 @@ export class Condition extends Draggable {
     // this.contextmenu = new ContextMenu(container, this);
   }
 
+  get bounds() {
+    return { ...this.transition.data.position, width: 130, height: 70 };
+  }
+
+  set bounds(value) {
+    this.transition.data.position.x = value.x;
+    this.transition.data.position.y = value.y;
+    // this.data.bounds = value;
+  }
+
   toJSON() {
     return this.transition.data;
   }

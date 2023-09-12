@@ -23,11 +23,11 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-export class Draggable extends EventEmitter {
+export abstract class Draggable extends EventEmitter {
   container!: Container;
   statusevents!: Events;
-  bounds!: Rectangle;
-  id?: string;
+  // bounds!: Rectangle;
+  id: string | undefined;
   parent?: Draggable;
   children: Map<string, Draggable> = new Map();
 
@@ -44,12 +44,24 @@ export class Draggable extends EventEmitter {
     super();
 
     this.container = container;
-    this.bounds = bounds;
+    // this.bounds = bounds;
     this.id = id;
     this.parent = parent;
 
     this.bindEvents();
   }
+
+  // get bounds() {
+  //   return this.data.bounds;
+  // }
+
+  // set bounds(value: Rectangle) {
+  //   this.data.bounds = value;
+  // }
+
+  // abstract get data(): { bounds: Rectangle };
+  abstract get bounds(): Rectangle;
+  abstract set bounds(bounds: Rectangle);
 
   bindEvents() {
     document.addEventListener('mouseup', this.globalMouseUp);
@@ -201,12 +213,26 @@ export class Draggable extends EventEmitter {
       clearTimeout(this.mouseDownTimerId);
     }
 
-    this.bounds.x += e.dx * this.container.app.manager.data.scale;
-    this.bounds.y += e.dy * this.container.app.manager.data.scale;
+    this.bounds = {
+      width: this.bounds.width,
+      height: this.bounds.height,
+      x: this.bounds.x + e.dx * this.container.app.manager.data.scale,
+      y: this.bounds.y + e.dy * this.container.app.manager.data.scale,
+    };
+
+    // this.bounds.x += e.dx * this.container.app.manager.data.scale;
+    // this.bounds.y += e.dy * this.container.app.manager.data.scale;
 
     if (this.parent) {
-      this.bounds.x = Math.max(0, this.bounds.x);
-      this.bounds.y = Math.max(0, this.bounds.y);
+      this.bounds = {
+        width: this.bounds.width,
+        height: this.bounds.height,
+        x: Math.max(0, this.bounds.x),
+        y: Math.max(0, this.bounds.y),
+      };
+
+      // this.bounds.x = Math.max(0, this.bounds.x);
+      // this.bounds.y = Math.max(0, this.bounds.y);
     }
 
     document.body.style.cursor = 'grabbing';

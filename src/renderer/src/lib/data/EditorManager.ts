@@ -59,6 +59,16 @@ export class EditorManager {
         return result;
       },
     });
+
+    // this.data.elements = new Proxy(this.data.elements, {
+    //   set(target, prop, val, receiver) {
+    //     const result = Reflect.set(target, prop, val, receiver);
+
+    //     // self.dataListeners[prop].forEach((listener) => listener());
+
+    //     return result;
+    //   },
+    // });
   }
 
   subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {

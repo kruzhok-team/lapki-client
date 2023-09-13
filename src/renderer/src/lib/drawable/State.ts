@@ -41,7 +41,7 @@ export class State extends Draggable {
     };
   }
 
-  constructor({ id, container, parent }: StateProps) {
+  constructor(container: Container, id: string, parent?: Draggable) {
     super(container, id, parent);
     this.container = container;
 

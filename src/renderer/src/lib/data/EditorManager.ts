@@ -10,7 +10,7 @@ import { isPlatformAvailable } from './PlatformLoader';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Flasher } from '@renderer/components/Modules/Flasher';
-import { Point } from '@renderer/types/graphics';
+import { Point, Rectangle } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
 
 export type FileError = {
@@ -320,5 +320,48 @@ export class EditorManager {
     }
 
     return id;
+  }
+
+  changeStateName(id: string, name: string) {
+    if (!this.data.elements.states.hasOwnProperty(id)) return false;
+
+    this.data.elements.states[id].name = name;
+
+    return true;
+  }
+
+  changeStateBounds(id: string, bounds: Rectangle) {
+    const state = this.data.elements.states[id];
+
+    if (!state) return false;
+
+    state.bounds = bounds;
+
+    return true;
+  }
+
+  linkState(parentId: string, childId: string) {
+    const parent = this.data.elements.states[parentId];
+    const child = this.data.elements.states[childId];
+
+    if (!parent || !child) return false;
+
+    child.parent = parentId;
+
+    return true;
+  }
+
+  unlinkState(id: string) {
+    const state = this.data.elements.states[id];
+
+    if (!state || !state.parent) return false;
+
+    const parent = this.data.elements.states[state.parent];
+
+    if (!parent) return false;
+
+    delete state.parent;
+
+    return true;
   }
 }

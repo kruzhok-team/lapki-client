@@ -125,23 +125,11 @@ export class StateMachine extends EventEmitter {
 
     for (const id in items) {
       const parent = this.states.get(items[id].parent ?? '');
-      const state = new State({
-        container: this.container,
-        id,
-        parent,
-      });
+      const state = new State(this.container, id, parent);
 
       state.parent?.children.set(id, state);
       this.container.states.watchState(state);
       this.states.set(id, state);
-    }
-  }
-
-  initComponents(items: Elements['components']) {
-    for (const name in items) {
-      const component = items[name];
-      this.components.set(name, new Component(component));
-      this.platform.nameToComponent.set(name, component.type);
     }
   }
 
@@ -165,6 +153,14 @@ export class StateMachine extends EventEmitter {
     }
   }
 
+  initComponents(items: Elements['components']) {
+    for (const name in items) {
+      const component = items[name];
+      this.components.set(name, new Component(component));
+      this.platform.nameToComponent.set(name, component.type);
+    }
+  }
+
   initPlatform(platformIdx: string, parameters: Elements['parameters']) {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     const platform = loadPlatform(platformIdx);
@@ -177,15 +173,6 @@ export class StateMachine extends EventEmitter {
       this.parameters.set(paramName, parameters[paramName]);
     }
     // TODO: валидировать список параметров?
-  }
-
-  updateState(id: string, name: string) {
-    const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
-
-    state.data.name = name;
-
-    this.dataTrigger();
   }
 
   newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
@@ -219,6 +206,60 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
+  createState(name: string, position: Point, parentId?: string) {
+    // Создание данных
+    const newStateId = this.container.app.manager.createState(name, position, parentId);
+    // Создание модельки
+    const state = new State(this.container, newStateId);
+
+    this.states.set(state.id, state);
+
+    // вкладываем состояние, если оно создано над другим
+    if (parentId) {
+      this.linkState(parentId, newStateId);
+    } else {
+      this.linkStateByPoint(state, position);
+    }
+
+    this.container.states.watchState(state);
+
+    this.container.isDirty = true;
+  }
+
+  changeStateName(id: string, name: string) {
+    this.container.app.manager.changeStateName(id, name);
+
+    this.container.isDirty = true;
+  }
+
+  linkState(parentId: string, childId: string) {
+    const parent = this.states.get(parentId);
+    const child = this.states.get(childId);
+
+    if (!parent || !child) return;
+
+    if (child.data.parent) {
+      this.unlinkState(childId);
+    }
+
+    // Вычисляем новую координату внутри контейнера
+    const parentPos = parent.compoundPosition;
+    const childPos = child.compoundPosition;
+    const newBounds = {
+      ...child.bounds,
+      x: Math.max(0, childPos.x - parentPos.x),
+      y: Math.max(0, childPos.y - parentPos.y - parent.bounds.height),
+    };
+
+    this.container.app.manager.linkState(parentId, childId);
+    this.container.app.manager.changeStateBounds(childId, newBounds);
+
+    child.parent = parent;
+    parent.children.set(childId, child);
+
+    this.container.isDirty = true;
+  }
+
   linkStateByPoint(state: State, position: Point) {
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | undefined = undefined;
@@ -247,83 +288,30 @@ export class StateMachine extends EventEmitter {
       }
     }
 
-    if (possibleParent !== state && typeof possibleParent !== 'undefined') {
-      this.linkState(possibleParent.id!, state.id!);
+    if (possibleParent !== state && possibleParent) {
+      this.linkState(possibleParent.id, state.id);
     }
   }
 
-  createNewState(name: string, position: Point, parentId?: string) {
-    const newStateId = this.container.app.manager.createState(name, position, parentId);
+  unlinkState(id: string) {
+    this.container.app.manager.unlinkState(id);
 
-    const state = new State({
-      container: this.container,
-      id: newStateId,
-    });
+    const state = this.states.get(id);
+    if (!state || !state.parent) return;
 
-    this.states.set(state.id!, state);
+    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
+    const newBounds = { ...state.bounds, ...state.compoundPosition };
+    this.container.app.manager.changeStateBounds(id, newBounds);
 
-    // вкладываем состояние, если оно создано над другим
-    if (parentId) {
-      this.linkState(parentId, newStateId);
-    } else {
-      this.linkStateByPoint(state, position);
-    }
-
-    this.container.states.watchState(state);
-    // this.dataTrigger();
+    state.parent.children.delete(id);
+    state.parent = undefined;
 
     this.container.isDirty = true;
   }
 
-  linkState(parentId: string, childId: string) {
-    const parent = this.states.get(parentId);
-    if (typeof parent === 'undefined') return;
-    const child = this.states.get(childId);
-    if (typeof child === 'undefined') return;
-
-    if (typeof child.parent !== 'undefined') {
-      this.unlinkState(childId);
-    }
-
-    // Вычисляем новую координату внутри контейнера
-    const parentPos = parent.compoundPosition;
-    const childPos = child.compoundPosition;
-    const newBound = {
-      ...child.bounds,
-      x: Math.max(0, childPos.x - parentPos.x),
-      y: Math.max(0, childPos.y - parentPos.y - parent.bounds.height),
-    };
-
-    child.parent = parent;
-    child.data.parent = parentId;
-    parent?.children.set(child.id!, child);
-
-    child.bounds = newBound;
-
-    this.dataTrigger();
-  }
-
-  unlinkState(id: string) {
-    const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
-    if (typeof state.parent === 'undefined') return;
-
-    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
-    const newBound = { ...state.bounds, ...state.compoundPosition };
-
-    state.parent?.children.delete(id);
-    state.parent = undefined;
-    delete state.data.parent;
-
-    state.bounds = newBound;
-
-    this.dataTrigger();
-  }
-
-  //Удаление состояния
   deleteState(idState: string) {
     const state = this.states.get(idState);
-    if (typeof state === 'undefined') return;
+    if (!state) return;
 
     //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
     this.transitions.forEach((data, id) => {
@@ -346,7 +334,7 @@ export class StateMachine extends EventEmitter {
 
     // Отсоединяемся от родительского состояния, если такое есть
     if (state.data.parent) {
-      this.unlinkState(state.id!);
+      this.unlinkState(state.id);
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
@@ -399,23 +387,21 @@ export class StateMachine extends EventEmitter {
   }
 
   changeInitialState(idState: string) {
-    const newInitial = this.states.get(idState);
-    if (typeof newInitial === 'undefined') return;
-
     this.container.app.manager.data.elements.initialState = idState;
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  // Удаление связи
   deleteTransition(id: string) {
     const transition = this.transitions.get(id);
-    if (typeof transition === 'undefined') return;
 
+    if (!transition) return;
+
+    // this.container.app.manager.deleteTransition(id);
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
 
-    this.dataTrigger();
+    // this.dataTrigger();
   }
 
   createNewTransitionFromData(

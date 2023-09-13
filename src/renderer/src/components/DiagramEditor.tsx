@@ -61,7 +61,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
 
     //Перетаскиваем компонент в редактор
     editor.container.onStateDrop((position) => {
-      editor?.container.machine.createNewState('Состояние', position);
+      editor?.container.machine.createState('Состояние', position);
     });
 
     //Здесь мы открываем модальное окно редактирования ноды

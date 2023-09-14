@@ -107,10 +107,10 @@ export class State extends Draggable {
     ctx.beginPath();
 
     ctx.roundRect(x, y, width, height, [
-      6,
-      6,
-      this.children.size !== 0 ? 0 : 6,
-      this.children.size !== 0 ? 0 : 6,
+      6 / this.container.app.manager.data.scale,
+      6 / this.container.app.manager.data.scale,
+      (this.children.size !== 0 ? 0 : 6) / this.container.app.manager.data.scale,
+      (this.children.size !== 0 ? 0 : 6) / this.container.app.manager.data.scale,
     ]);
     ctx.fill();
 
@@ -146,7 +146,12 @@ export class State extends Draggable {
 
     ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, y, width, height, [6, 6, 0, 0]);
+    ctx.roundRect(x, y, width, height, [
+      6 / this.container.app.manager.data.scale,
+      6 / this.container.app.manager.data.scale,
+      0,
+      0,
+    ]);
     ctx.fill();
 
     ctx.fillStyle = style.titleColor;
@@ -164,7 +169,7 @@ export class State extends Draggable {
     ctx.strokeStyle = style.selectedBorderColor;
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);
     ctx.stroke();
     ctx.closePath();
 
@@ -212,7 +217,12 @@ export class State extends Draggable {
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [0, 0, 6, 6]);
+    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+      0,
+      0,
+      6 / this.container.app.manager.data.scale,
+      6 / this.container.app.manager.data.scale,
+    ]);
     ctx.stroke();
 
     ctx.closePath();

@@ -6,19 +6,27 @@ export var FLASHER_LOCAL_PORT;
 
 export class ModuleStatus {
   /* 
-  статус локального модуля
+  Статус локального модуля
     0 - не работает
     1 - работает
     2 - не смог запуститься
-    3 - перестал работать из-за ошибки
+    3 - перестал работать
     4 - платформа не поддерживается
   */
   code: number;
-  // сообщение об ошибке
-  message: string;
-  constructor(code: number = 0, message: string = 'Локальный загрузчик не запущён') {
+  /* 
+  Детали об ошибке, например консольный вывод (undefined, если отсутствует).
+  Содержание в зависимости от кода (code):
+    0: undefined
+    1: undefined
+    2: консольный вывод
+    3: undefined
+    4: платформа
+  */
+  details: string | undefined;
+  constructor(code: number = 0, details: string | undefined = undefined) {
     this.code = code;
-    this.message = message;
+    this.details = details;
   }
 }
 
@@ -69,21 +77,14 @@ export class ModuleManager {
           modulePath = `${basePath}/modules/${platform}/${module}.exe`;
           break;
         default:
-          this.moduleStatus[module] = new ModuleStatus(
-            4,
-            `Платформа ${platform} не поддерживается`
-          );
+          this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
       if (modulePath) {
         console.log(modulePath);
         chprocess = spawn(modulePath, flasherArgs);
         chprocess.on('error', function (err) {
-          // FIXME: выводить ошибку в интерфейсе
-          ModuleManager.moduleStatus[module] = new ModuleStatus(
-            2,
-            `Локальный загрузчик не смог запуститься: ${err}`
-          );
+          ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
           console.error(`${module} spawn error: ` + err);
         });
       }
@@ -98,10 +99,7 @@ export class ModuleManager {
         });
 
         chprocess.on('exit', () => {
-          ModuleManager.moduleStatus[module] = new ModuleStatus(
-            3,
-            'Работа локального загрузчика была неожиданно прервана'
-          );
+          ModuleManager.moduleStatus[module] = new ModuleStatus(3);
           console.log(`${module}-exit!`);
         });
       }

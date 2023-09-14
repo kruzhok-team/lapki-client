@@ -286,35 +286,71 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherErrorMessageDisplay = async () => {
-    var errorDetails: string | undefined;
+    // выводимое для пользователя сообщение
+    var errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
     if (flasherIsLocal) {
       await window.electron.ipcRenderer
         .invoke('Module:getStatus', 'lapki-flasher')
         .then(function (obj) {
-          errorDetails = obj.message;
-          // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
-          if (obj.code == 1) {
-            switch (flasherConnectionStatus) {
-              case FLASHER_CONNECTION_ERROR:
-                errorDetails = `Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки: ${flasherError}`;
-                break;
-              case FLASHER_NO_CONNECTION:
-                errorDetails = `Локальный загрузчик работает, но IDE не может установить с ним соединение по неизвестной причине`;
-                break;
-            }
+          let errorDetails = obj.details;
+          switch (obj.code) {
+            // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
+            case 0:
+              errorMsg = <p>{'Загрузчик не был запущен по неизвестной причине.'}</p>;
+              break;
+            // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
+            case 1:
+              switch (flasherConnectionStatus) {
+                case FLASHER_CONNECTION_ERROR:
+                  errorMsg = (
+                    <p>
+                      {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
+                      <br></br>
+                      {flasherError}
+                    </p>
+                  );
+                  break;
+                default:
+                  errorMsg = (
+                    <p>
+                      {`Локальный загрузчик работает, но IDE не может установить с ним соединение.`}
+                    </p>
+                  );
+                  break;
+              }
+              break;
+            case 2:
+              errorMsg = (
+                <p>
+                  {`Локальный загрузчик не смог запуститься из-за ошибки.`}
+                  <br></br>
+                  {errorDetails}
+                </p>
+              );
+              break;
+            case 3:
+              errorMsg = <p>{`Прервана работа локального загрузчика.`}</p>;
+              break;
+            case 4:
+              errorMsg = <p>{`Платформа ${errorDetails} не поддерживается.`}</p>;
+              break;
           }
-          setFlasherError(obj.message);
         });
     } else {
       if (flasherConnectionStatus == FLASHER_CONNECTION_ERROR) {
-        errorDetails = `Ошибка соединения: ${flasherError}`;
+        errorMsg = (
+          <p>
+            {`Ошибка соединения.`}
+            <br></br>
+            {flasherError}
+          </p>
+        );
       } else {
-        errorDetails = flasherError;
+        errorMsg = <p>{flasherError}</p>;
       }
     }
-    const element = <p> {errorDetails} </p>;
     const msg: MessageModalData = {
-      text: element,
+      text: errorMsg,
       caption: 'Ошибка',
     };
     openMsgModal(msg);

@@ -109,7 +109,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('Module:getStatus', (_event, module: string) => {
     let status: ModuleStatus = ModuleManager.getLocalStatus(module);
-    console.log(status.message, typeof status.message);
+    console.log(status.details, typeof status.details);
     return status;
     /*const obj = {
       code: status.code,

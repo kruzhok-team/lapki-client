@@ -364,4 +364,27 @@ export class EditorManager {
 
     return true;
   }
+
+  deleteState(id: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    // Если удаляемое состояние было начальным, стираем текущее значение
+    if (this.data.elements.initialState === id) {
+      this.data.elements.initialState = '';
+    }
+
+    delete this.data.elements.states[id];
+
+    return true;
+  }
+
+  deleteTransition(id: string) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return false;
+
+    delete this.data.elements.transitions[id];
+
+    return true;
+  }
 }

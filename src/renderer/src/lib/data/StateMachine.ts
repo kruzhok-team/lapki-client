@@ -8,14 +8,13 @@ import {
   Variable,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
-import { customAlphabet, nanoid } from 'nanoid';
+import { nanoid } from 'nanoid';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-import { stateStyle } from '../styles';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
@@ -40,7 +39,6 @@ export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 export class StateMachine extends EventEmitter {
   container!: Container;
 
-  // initialState = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
   components: Map<string, Component> = new Map();
@@ -58,7 +56,7 @@ export class StateMachine extends EventEmitter {
 
   loadData(elements: Elements) {
     this.initStates();
-    this.initTransitions(elements.transitions);
+    this.initTransitions();
     this.initPlatform(elements.platform, elements.parameters);
     this.initComponents(elements.components);
   }
@@ -133,7 +131,9 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  initTransitions(items: Elements['transitions']) {
+  initTransitions() {
+    const items = this.container.app.manager.data.elements.transitions;
+
     for (const id in items) {
       const data = items[id];
 
@@ -309,43 +309,40 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteState(idState: string) {
-    const state = this.states.get(idState);
+  deleteState(id: string) {
+    const state = this.states.get(id);
     if (!state) return;
 
-    //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
+    // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.transitions.forEach((data, id) => {
-      if (data.source.id === idState || data.target.id === idState) {
+      if (data.source.id === id || data.target.id === id) {
         this.deleteTransition(id);
       }
     });
 
-    // Ищем дочерние состояния и отвязываем их от текущего
+    // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
     this.states.forEach((childState) => {
-      if (childState.data.parent === idState) {
+      if (childState.data.parent === id) {
         // Если есть родительское, перепривязываем к нему
         if (state.data.parent) {
-          this.linkState(state.data.parent, childState.id!);
+          this.linkState(state.data.parent, childState.id);
         } else {
-          this.unlinkState(childState.id!);
+          this.unlinkState(childState.id);
         }
       }
     });
 
-    // Отсоединяемся от родительского состояния, если такое есть
+    // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
     if (state.data.parent) {
       this.unlinkState(state.id);
     }
 
-    // Если удаляемое состояние было начальным, стираем текущее значение
-    if (state.isInitial) {
-      this.container.app.manager.data.elements.initialState = '';
-    }
+    this.container.app.manager.deleteState(id);
 
     this.container.states.unwatchState(state);
+    this.states.delete(id);
 
-    this.states.delete(idState);
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
   deleteSelected() {
@@ -394,14 +391,14 @@ export class StateMachine extends EventEmitter {
 
   deleteTransition(id: string) {
     const transition = this.transitions.get(id);
-
     if (!transition) return;
 
-    // this.container.app.manager.deleteTransition(id);
+    this.container.app.manager.deleteTransition(id);
+
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
 
-    // this.dataTrigger();
+    this.container.isDirty = true;
   }
 
   createNewTransitionFromData(

@@ -17,7 +17,7 @@ export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const isDocOpen = useDoc((state) => state.isOpen);
 
   const scale = manager.useData('scale');
-  // const elements = manager.useData('elements');
+  const elements = manager.useData('elements');
 
   const handleZoomOut = () => {
     editor.container.changeScale(0.1);

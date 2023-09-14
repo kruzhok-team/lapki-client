@@ -294,10 +294,10 @@ export class StateMachine extends EventEmitter {
   }
 
   unlinkState(id: string) {
-    this.container.app.manager.unlinkState(id);
-
     const state = this.states.get(id);
     if (!state || !state.parent) return;
+
+    this.container.app.manager.unlinkState(id);
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBounds = { ...state.bounds, ...state.compoundPosition };
@@ -345,6 +345,12 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
+  changeInitialState(idState: string) {
+    this.container.app.manager.data.elements.initialState = idState;
+
+    this.container.isDirty = true;
+  }
+
   deleteSelected() {
     let removed = false;
 
@@ -383,12 +389,6 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  changeInitialState(idState: string) {
-    this.container.app.manager.data.elements.initialState = idState;
-
-    this.container.isDirty = true;
-  }
-
   deleteTransition(id: string) {
     const transition = this.transitions.get(id);
     if (!transition) return;
@@ -425,6 +425,22 @@ export class StateMachine extends EventEmitter {
 
     this.container.transitions.watchTransition(transition);
     this.dataTrigger();
+  }
+
+  changeTransition(
+    id: string,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.container.app.manager.changeTransition(id, color, component, method, doAction, condition);
+
+    this.container.isDirty = true;
   }
 
   // Создание новой связи между состояниями и редактирование уже созданных

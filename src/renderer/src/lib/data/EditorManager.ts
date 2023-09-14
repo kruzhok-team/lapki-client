@@ -1,7 +1,7 @@
 import { Dispatch, useSyncExternalStore } from 'react';
 import { customAlphabet } from 'nanoid';
 
-import { emptyElements } from '@renderer/types/diagram';
+import { emptyElements, Action, Condition, Transition } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -32,11 +32,11 @@ const emptyEditorData = {
 type EditorData = typeof emptyEditorData;
 type EditorDataPropertyName = keyof EditorData;
 
-function emptyDataListeners() {
-  return Object.fromEntries(Object.entries(emptyEditorData).map(([k]) => [k, []])) as any as {
-    [key in EditorDataPropertyName]: (() => void)[];
-  };
-}
+const emptyDataListeners = Object.fromEntries(
+  Object.entries(emptyEditorData).map(([k]) => [k, []])
+) as any as {
+  [key in EditorDataPropertyName]: (() => void)[];
+};
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
@@ -45,7 +45,7 @@ export class EditorManager {
   editor: CanvasEditor | null = null;
 
   data = emptyEditorData;
-  dataListeners = emptyDataListeners();
+  dataListeners = emptyDataListeners;
 
   constructor(editor: CanvasEditor | null) {
     this.editor = editor;
@@ -384,6 +384,26 @@ export class EditorManager {
     if (!transition) return false;
 
     delete this.data.elements.transitions[id];
+
+    return true;
+  }
+
+  changeTransition(
+    id: string,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const transition = this.data.elements.transitions[id] as Transition;
+    if (!transition) return false;
+
+    transition.color = color;
+    transition.trigger.component = component;
+    transition.trigger.method = method;
+    transition.do = doAction;
+    transition.condition = condition;
 
     return true;
   }

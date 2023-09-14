@@ -10,7 +10,7 @@ import { Point } from '@renderer/types/graphics';
 /**
  * Функция, обрабатывающая запрос на создание перехода.
  */
-type TransitionCreateCallback = (target: Condition) => void;
+type TransitionEditCallback = (transition: Transition) => void;
 
 /**
  * Функция, обрабатывающая запрос на MouseUpState.
@@ -32,7 +32,7 @@ export class Transitions {
 
   ghost!: GhostTransition;
 
-  createCallback?: TransitionCreateCallback;
+  editCallback?: TransitionEditCallback;
   newCreateCallback?: TransitionNewCreateCallback;
   menuCallback?: MenuCallback;
 
@@ -60,8 +60,8 @@ export class Transitions {
     }
   }
 
-  onTransitionCreate = (callback: TransitionCreateCallback) => {
-    this.createCallback = callback;
+  onTransitionEdit = (callback: TransitionEditCallback) => {
+    this.editCallback = callback;
   };
 
   onNewTransitionCreate = (callback: TransitionNewCreateCallback) => {
@@ -84,7 +84,7 @@ export class Transitions {
 
   handleConditionDoubleClick = (e: { target: Condition; event: MyMouseEvent }) => {
     e.event.stopPropagation();
-    this.createCallback?.(e.target);
+    this.editCallback?.(e.target.transition);
   };
 
   handleContextMenu = (e: { target: Condition; event: MyMouseEvent }) => {

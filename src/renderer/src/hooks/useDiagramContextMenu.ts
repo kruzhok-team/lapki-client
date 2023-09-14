@@ -47,7 +47,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           action: () => {
             openTab({
               type: 'code',
-              name: manager.state.shownName ?? 'Безымянная',
+              name: manager.data.name ?? 'Безымянная',
               code: manager.state.content!,
               language: 'json',
             });

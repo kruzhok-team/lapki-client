@@ -15,6 +15,7 @@ import { Scale } from './Scale';
 import { DiagramContextMenu } from './DiagramContextMenu';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
+import { Transition } from '@renderer/lib/drawable/Transition';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -31,7 +32,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     event: EventSelection;
     click: boolean;
   }>();
-  const [transition, setTransition] = useState<{ target: Condition }>();
+  const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,7 +56,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setState(undefined);
       setEvents([]);
       setIdEvents(undefined);
-      setTransition(undefined);
+      setTransition(null);
       setNewTransition(undefined);
     };
 
@@ -79,10 +80,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     });
 
     //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.container.transitions.onTransitionCreate((target) => {
+    editor.container.transitions.onTransitionEdit((target) => {
       ClearUseState();
-      setEvents(target.transition.data.do ?? []);
-      setTransition({ target });
+      setEvents(target.data.do ?? []);
+      setTransition(target);
       openModal();
       // manager.triggerDataUpdate();
     });
@@ -126,17 +127,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
         data.trigger.method
       );
     } else if (transition && data.key === 3) {
-      const { x, y } = transition?.target.bounds;
-      editor?.container.machine.createNewTransition(
-        transition?.target.id,
-        transition?.target.transition.source,
-        transition?.target.transition.target,
+      editor?.container.machine.changeTransition(
+        transition.id,
         data.color ?? '#FFFFFF',
         data.trigger.component,
         data.trigger.method,
         events,
-        data.condition,
-        { x, y }
+        data.condition
       );
     } else if (newTransition) {
       const { x, y } = newTransition?.target.bounds;
@@ -182,7 +179,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
           isOpen={isModalOpen}
           onOpenEventsModal={openEventsModal}
           isData={state}
-          isTransition={transition}
+          isTransition={transition ? { target: transition.condition } : undefined}
           onClose={closeModal}
           onSubmit={handleCreateModal}
         />

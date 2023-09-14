@@ -74,7 +74,7 @@ export class ModuleManager {
           modulePath = `${basePath}/modules/${platform}/${module}`;
           break;
         case 'win32':
-          modulePath = `${basePath}/modules/${platform}/${module}.exe`;
+          modulePath = `${basePath}\\modules\\${platform}\\${module}.exe`;
           break;
         default:
           this.moduleStatus[module] = new ModuleStatus(4, platform);
@@ -84,7 +84,14 @@ export class ModuleManager {
         console.log(modulePath);
         chprocess = spawn(modulePath, flasherArgs);
         chprocess.on('error', function (err) {
-          ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
+          if (err.code == 'ENOENT') {
+            ModuleManager.moduleStatus[module] = new ModuleStatus(
+              2,
+              `Файл ${modulePath} не найден.`
+            );
+          } else {
+            ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
+          }
           console.error(`${module} spawn error: ` + err);
         });
       }

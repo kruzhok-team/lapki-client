@@ -142,16 +142,17 @@ export class Compiler {
           this.setImportData(JSON.stringify(data.source[0].fileContent));
           break;
         case 'export':
-          data = msg.data;
-          console.log(data);
+          data = JSON.parse(msg.data) as SourceFile;
           this.setCompilerData({
             result: 'OK',
             binary: [],
+            //В данный момент название файла, которое приходит от компилятора
+            //Выглядит так: Robot_время.
             source: [
               {
-                filename: this.filename,
-                extension: 'graphml',
-                fileContent: data,
+                filename: data.filename,
+                extension: data.extension,
+                fileContent: data.fileContent,
               },
             ],
           });
@@ -212,6 +213,7 @@ export class Compiler {
       case 'BearlogaDefend':
         ws.send('berlogaExport');
         ws.send(JSON.stringify(data));
+        ws.send(this.filename);
         console.log('export!');
         this.mode = 'export';
         break;

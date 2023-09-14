@@ -351,6 +351,59 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
+  createTransition(
+    source: State,
+    target: State,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    // Создание данных
+    const id = this.container.app.manager.createTransition(
+      source.id,
+      target.id,
+      color,
+      {
+        x: (source.bounds.x + target.bounds.x) / 2,
+        y: (source.bounds.y + target.bounds.y) / 2,
+      },
+      component,
+      method,
+      doAction,
+      condition
+    );
+    // Создание модельки
+    const transition = new Transition({
+      container: this.container,
+      source: source,
+      target: target,
+      id,
+    });
+
+    this.transitions.set(id, transition);
+    this.container.transitions.watchTransition(transition);
+
+    this.container.isDirty = true;
+  }
+
+  changeTransition(
+    id: string,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.container.app.manager.changeTransition(id, color, component, method, doAction, condition);
+
+    this.container.isDirty = true;
+  }
+
   deleteSelected() {
     let removed = false;
 
@@ -399,80 +452,6 @@ export class StateMachine extends EventEmitter {
     this.transitions.delete(id);
 
     this.container.isDirty = true;
-  }
-
-  createNewTransitionFromData(
-    source: State,
-    target: State,
-    transitionData: TransitionType,
-    id?: string
-  ) {
-    const newId = typeof id !== 'undefined' ? id : nanoid();
-    const transition = new Transition({
-      container: this.container,
-      source: source,
-      target: target,
-      // data: transitionData,
-      id: newId,
-    });
-
-    // FIXME: по-хорошему, должно быть редактированием, но пока перестрахуемся
-    if (this.transitions.has(newId)) {
-      this.container.transitions.unwatchTransition(this.transitions.get(newId)!);
-    }
-
-    this.transitions.set(newId, transition);
-
-    this.container.transitions.watchTransition(transition);
-    this.dataTrigger();
-  }
-
-  changeTransition(
-    id: string,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
-  ) {
-    const transition = this.transitions.get(id);
-    if (!transition) return;
-
-    this.container.app.manager.changeTransition(id, color, component, method, doAction, condition);
-
-    this.container.isDirty = true;
-  }
-
-  // Создание новой связи между состояниями и редактирование уже созданных
-  createNewTransition(
-    id: string | undefined,
-    source: State,
-    target: State,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined,
-    position: Point
-  ) {
-    if (id !== undefined) {
-      const transition = this.transitions.get(id);
-      if (typeof transition === 'undefined') return;
-    }
-
-    const transitionData = {
-      source: source.id!,
-      target: target.id!,
-      color,
-      position,
-      trigger: {
-        component,
-        method,
-      },
-      do: doAction,
-      condition,
-    };
-    this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
   // Редактирование события в состояниях

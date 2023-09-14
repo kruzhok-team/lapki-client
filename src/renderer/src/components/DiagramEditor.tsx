@@ -136,17 +136,14 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
         data.condition
       );
     } else if (newTransition) {
-      const { x, y } = newTransition?.target.bounds;
-      editor?.container.machine.createNewTransition(
-        undefined,
-        newTransition?.source,
+      editor?.container.machine.createTransition(
+        newTransition.source,
         newTransition?.target,
         data.color ?? '#FFFFFF',
         data.trigger.component,
         data.trigger.method,
         events,
-        data.condition,
-        { x, y }
+        data.condition
       );
     }
     closeModal();

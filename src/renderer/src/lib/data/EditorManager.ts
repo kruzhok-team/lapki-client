@@ -1,5 +1,5 @@
 import { Dispatch, useSyncExternalStore } from 'react';
-import { customAlphabet } from 'nanoid';
+import { customAlphabet, nanoid } from 'nanoid';
 
 import { emptyElements, Action, Condition, Transition } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
@@ -379,13 +379,32 @@ export class EditorManager {
     return true;
   }
 
-  deleteTransition(id: string) {
-    const transition = this.data.elements.transitions[id];
-    if (!transition) return false;
+  createTransition(
+    source: string,
+    target: string,
+    color: string,
+    position: Point,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const id = nanoid();
 
-    delete this.data.elements.transitions[id];
+    this.data.elements.transitions[id] = {
+      source,
+      target,
+      color,
+      position,
+      trigger: {
+        component,
+        method,
+      },
+      do: doAction,
+      condition,
+    };
 
-    return true;
+    return id;
   }
 
   changeTransition(
@@ -404,6 +423,15 @@ export class EditorManager {
     transition.trigger.method = method;
     transition.do = doAction;
     transition.condition = condition;
+
+    return true;
+  }
+
+  deleteTransition(id: string) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return false;
+
+    delete this.data.elements.transitions[id];
 
     return true;
   }

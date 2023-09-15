@@ -36,7 +36,9 @@ export class Flasher {
   static filePos: number = 0;
   static blobSize: number = 1024;
   // true = во время вызова таймера для переключения ничего не будет происходить.
-  static freezeReconnection = false;
+  private static freezeReconnection: boolean = false;
+  // true = пытаться переподключиться автоматически
+  private static reconnection: boolean = false;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
@@ -44,7 +46,6 @@ export class Flasher {
   static setFlashing: Dispatch<SetStateAction<boolean>>;
   // сообщение об ошибке, undefined означает, что ошибки нет
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
-  static setIsLocal: Dispatch<SetStateAction<boolean>>;
 
   //Когда прочитывает блоб - отправляет его
   static initReader(reader): void {
@@ -74,8 +75,7 @@ export class Flasher {
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>,
-    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    setIsLocal: Dispatch<SetStateAction<boolean>>
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -83,7 +83,6 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
-    this.setIsLocal = setIsLocal;
   }
   /*
     Добавляет устройство в список устройств
@@ -145,7 +144,9 @@ export class Flasher {
   static reconnect() {
     this.connect(this.host, this.port);
   }
-  // подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
+  /*
+   подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
+  */
   static async connect(
     host: string | undefined = undefined,
     port: number | undefined = undefined
@@ -153,10 +154,7 @@ export class Flasher {
     if (this.connecting) return;
     this.connecting = true;
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
-    if (this.timerID) {
-      clearTimeout(this.timerID);
-      this.timerID = undefined;
-    }
+    this.clearTimer();
     if (host == undefined && port == undefined) {
       Flasher.host = FLASHER_LOCAL_HOST;
       await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
@@ -304,11 +302,12 @@ export class Flasher {
           );
         }
       }
-
       if (host == Flasher.host && port == Flasher.port) {
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
         this.end();
-        this.tryToReconnect();
+        if (this.reconnection) {
+          this.tryToReconnect();
+        }
       }
     };
 
@@ -328,6 +327,21 @@ export class Flasher {
 
   static refresh(): void {
     this.filePos = 0;
+  }
+
+  static setAutoReconnect(reconnect: boolean) {
+    if (!reconnect) {
+      this.clearTimer();
+    }
+    this.reconnection = reconnect;
+  }
+
+  // безопасное отключение таймера для переподключения
+  private static clearTimer() {
+    if (this.timerID) {
+      clearTimeout(this.timerID);
+      this.timerID = undefined;
+    }
   }
 
   static async setBinary(binaries: Array<Binary>) {

@@ -19,6 +19,7 @@ export interface FlasherProps {
   compilerData: CompilerResult | undefined;
   flasherFile: string | undefined | null;
   flashing: boolean;
+  isLocal: boolean;
   setCurrentDevice: Dispatch<string | undefined>;
   handleGetList: () => void;
   handleFlash: () => void;
@@ -36,16 +37,27 @@ export const Loader: React.FC<FlasherProps> = ({
   flasherFile,
   flasherLog,
   flashing,
+  isLocal,
   setCurrentDevice,
   handleGetList,
   handleFlash,
   handleHostChange,
   handleFileChoose,
-  handleErrorMessageDisplay: handleErrorMessageDisplay,
+  handleErrorMessageDisplay,
   handleReconnect,
 }) => {
   const isActive = (id: string) => currentDevice === id;
-
+  const display = () => {
+    if (connectionStatus == FLASHER_CONNECTED) {
+      return 'Обновить';
+    } else {
+      if (isLocal) {
+        return 'Перезапустить';
+      } else {
+        return 'Переподключиться';
+      }
+    }
+  };
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -63,7 +75,7 @@ export const Loader: React.FC<FlasherProps> = ({
             disabled={connectionStatus == FLASHER_CONNECTING}
           >
             <Update width="1.5rem" height="1.5rem" className="mr-1" />
-            {connectionStatus == FLASHER_CONNECTED ? 'Обновить' : 'Переподключиться'}
+            {display()}
           </button>
           <button
             className={twMerge(

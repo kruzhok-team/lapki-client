@@ -263,7 +263,6 @@ export const App: React.FC = () => {
   };
 
   const handleFlasherHostChange = () => {
-    setFlasherIslocal(false);
     Flasher.freezeReconnectionTimer(true);
     openFlasherModal();
   };
@@ -271,13 +270,15 @@ export const App: React.FC = () => {
   const handleLocalFlasher = async () => {
     console.log('local');
     setFlasherIslocal(true);
-    await manager?.startLocalModule('lapki-flasher');
+    Flasher.setAutoReconnect(false);
+    //await manager?.startLocalModule('lapki-flasher');
     await Flasher.connect();
   };
 
   const handleRemoteFlasher = async (host: string, port: number) => {
     console.log('remote');
     setFlasherIslocal(false);
+    Flasher.setAutoReconnect(true);
     // await manager?.stopLocalModule('lapki-flasher');
     await Flasher.connect(host, port);
   };
@@ -290,7 +291,13 @@ export const App: React.FC = () => {
     }
   };
   const handeFlasherReconnect = () => {
-    Flasher.reconnect();
+    if (flasherIsLocal) {
+      window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
+        Flasher.reconnect();
+      });
+    } else {
+      Flasher.reconnect();
+    }
   };
 
   const handleFlasherErrorMessageDisplay = async () => {
@@ -423,6 +430,7 @@ export const App: React.FC = () => {
     compilerData,
     flasherFile,
     flashing,
+    isLocal: flasherIsLocal,
     setCurrentDevice,
     handleGetList,
     handleFlash: handleFlashBinary,
@@ -500,12 +508,12 @@ export const App: React.FC = () => {
       setFlasherLog,
       setFlasherFile,
       setFlashing,
-      setFlasherError,
-      setFlasherIslocal
+      setFlasherError
     );
     const reader = new FileReader();
     Flasher.initReader(reader);
     console.log('CONNECTING TO FLASHER');
+    Flasher.setAutoReconnect(false);
     Flasher.connect();
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);

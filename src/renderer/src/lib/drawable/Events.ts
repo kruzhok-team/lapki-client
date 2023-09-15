@@ -1,4 +1,3 @@
-import { EventData } from '@renderer/types/diagram';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { Container } from '../basic/Container';
@@ -19,7 +18,6 @@ export type EventSelection = {
 export class Events {
   container!: Container;
   parent!: State;
-  data!: EventData[];
   bounds!: Rectangle;
 
   selection?: EventSelection;
@@ -31,10 +29,9 @@ export class Events {
   minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
   minHeight = picto.eventHeight;
 
-  constructor(container: Container, parent: State, data: EventData[]) {
+  constructor(container: Container, parent: State) {
     this.container = container;
     this.parent = parent;
-    this.data = data;
     this.bounds = {
       x: 15,
       y: 10,
@@ -44,6 +41,10 @@ export class Events {
 
     this.buttonMap = new Map();
     this.recalculate();
+  }
+
+  get data() {
+    return this.parent.data.events;
   }
 
   recalculate() {
@@ -176,9 +177,5 @@ export class Events {
     });
 
     ctx.closePath();
-  }
-
-  toJSON() {
-    return this.data;
   }
 }

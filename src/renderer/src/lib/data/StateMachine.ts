@@ -4,14 +4,12 @@ import {
   Elements,
   Event,
   Component as ComponentType,
-  Transition as TransitionType,
   Variable,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
-import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
@@ -43,8 +41,6 @@ export class StateMachine extends EventEmitter {
 
   platform!: PlatformManager;
 
-  dataUpdateCallback?: DataUpdateCallback;
-
   constructor(container: Container) {
     super();
     this.container = container;
@@ -57,59 +53,9 @@ export class StateMachine extends EventEmitter {
     this.initComponents();
   }
 
-  onDataUpdate(fn?: DataUpdateCallback) {
-    this.dataUpdateCallback = fn;
-  }
-
   dataTrigger(silent?: boolean) {
     this.container.isDirty = true;
-    this.dataUpdateCallback?.(this.graphData(), !silent);
-  }
-
-  clear() {
-    this.transitions.forEach((value) => {
-      this.container.transitions.unwatchTransition(value);
-    });
-
-    this.states.forEach((value) => {
-      this.container.states.unwatchState(value);
-    });
-    // this.initialState = '';
-    this.states.clear();
-    // this.components.clear();
-    this.transitions.clear();
-    // this.parameters.clear();
-    // FIXME: platform не обнуляется
-  }
-
-  graphData(): any {
-    const states = {};
-    const transitions: TransitionType[] = [];
-    const components = {};
-    const parameters = {};
-    this.states.forEach((state, id) => {
-      states[id] = state.toJSON();
-    });
-    // this.components.forEach((component, id) => {
-    //   components[id] = component.toJSON();
-    // });
-    this.transitions.forEach((transition) => {
-      transitions.push(transition.toJSON());
-    });
-    // this.parameters.forEach((parameter, id) => {
-    //   parameters[id] = parameter;
-    // });
-
-    const outData = {
-      states,
-      // initialState: this.initialState,
-      initialState: '',
-      transitions,
-      components,
-      parameters,
-    };
-
-    return outData;
+    // this.dataUpdateCallback?.(this.graphData(), !silent);
   }
 
   initStates() {
@@ -171,33 +117,13 @@ export class StateMachine extends EventEmitter {
 
   newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
     const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
+    if (!state) return;
 
-    const trueTab = state.eventBox.data.find(
-      (value) =>
-        triggerComponent === value.trigger.component &&
-        triggerMethod === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-
-    if (trueTab === undefined) {
-      state.eventBox.data = [
-        ...state.eventBox.data,
-        {
-          do: events,
-          trigger: {
-            component: triggerComponent,
-            method: triggerMethod,
-            //args: {},
-          },
-        },
-      ];
-    } else {
-      trueTab.do = [...events];
-    }
+    this.container.app.manager.newPictoState(id, events, triggerComponent, triggerMethod);
 
     state.eventBox.recalculate();
-    this.dataTrigger();
+
+    this.container.isDirty = true;
   }
 
   createState(name: string, position: Point, parentId?: string) {
@@ -339,8 +265,8 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  changeInitialState(idState: string) {
-    this.container.app.manager.data.elements.initialState = idState;
+  changeInitialState(id: string) {
+    this.container.app.manager.changeInitialState(id);
 
     this.container.isDirty = true;
   }

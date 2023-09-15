@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
 
 import { CreateModal, CreateModalResult } from './CreateModal';

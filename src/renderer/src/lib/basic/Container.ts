@@ -242,8 +242,4 @@ export class Container {
 
     this.setScale(newScale);
   }
-
-  get graphData() {
-    return this.machine.graphData();
-  }
 }

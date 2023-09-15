@@ -317,6 +317,36 @@ export class EditorManager {
     return id;
   }
 
+  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    const trueTab = state.events.find(
+      (value) =>
+        triggerComponent === value.trigger.component &&
+        triggerMethod === value.trigger.method &&
+        undefined === value.trigger.args // FIXME: сравнение по args может не работать
+    );
+
+    if (trueTab === undefined) {
+      state.events = [
+        ...state.events,
+        {
+          do: events,
+          trigger: {
+            component: triggerComponent,
+            method: triggerMethod,
+            //args: {},
+          },
+        },
+      ];
+    } else {
+      trueTab.do = [...events];
+    }
+
+    return true;
+  }
+
   changeStateName(id: string, name: string) {
     if (!this.data.elements.states.hasOwnProperty(id)) return false;
 
@@ -327,7 +357,6 @@ export class EditorManager {
 
   changeStateBounds(id: string, bounds: Rectangle) {
     const state = this.data.elements.states[id];
-
     if (!state) return false;
 
     state.bounds = bounds;
@@ -370,6 +399,15 @@ export class EditorManager {
     }
 
     delete this.data.elements.states[id];
+
+    return true;
+  }
+
+  changeInitialState(id: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    this.data.elements.initialState = id;
 
     return true;
   }

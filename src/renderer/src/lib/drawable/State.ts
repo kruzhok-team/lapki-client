@@ -10,20 +10,12 @@ import theme from '@renderer/theme';
 
 const style = theme.colors.diagram.state;
 
-interface StateProps {
-  container: Container;
-  id: string;
-  parent?: State;
-}
-
 /**
  * Нода машины состояний.
  * Класс выполняет отрисовку, обработку событий (за счёт {@link Draggable}),
  * управление собственным выделением и отображение «хваталок».
  */
 export class State extends Draggable {
-  // data!: StateType;
-  // isInitial = false;
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -32,20 +24,11 @@ export class State extends Draggable {
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
 
-  toJSON(): StateType {
-    return {
-      parent: this.data.parent,
-      name: this.data.name,
-      events: this.eventBox.toJSON(),
-      bounds: this.bounds, // FIXME: должны учитывать дочерний контейнер?
-    };
-  }
-
   constructor(container: Container, id: string, parent?: Draggable) {
     super(container, id, parent);
     this.container = container;
 
-    this.eventBox = new Events(this.container, this, this.data.events);
+    this.eventBox = new Events(this.container, this);
     this.updateEventBox();
     this.edgeHandlers = new EdgeHandlers(container.app, this);
   }

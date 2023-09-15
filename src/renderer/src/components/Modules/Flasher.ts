@@ -26,6 +26,7 @@ export class Flasher {
   static incTimeout: number = 5000;
   // максимальное количество мс, через которое клиент будет пытаться переподключиться
   static maxTimeout: number = 60000;
+  static timeout: number = 5000;
   static devices: Map<string, Device>;
 
   // Переменные, связанные с отправкой бинарных данных
@@ -152,6 +153,10 @@ export class Flasher {
     if (this.connecting) return;
     this.connecting = true;
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
+    if (this.timerID) {
+      clearTimeout(this.timerID);
+      this.timerID = undefined;
+    }
     if (host == undefined && port == undefined) {
       Flasher.host = FLASHER_LOCAL_HOST;
       await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
@@ -189,6 +194,7 @@ export class Flasher {
       this.setFlashing(false);
       this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
+      this.timeout = this.incTimeout;
 
       this.connection = ws;
       this.connecting = false;
@@ -298,10 +304,11 @@ export class Flasher {
           );
         }
       }
-      // если переменные отличаются, то это значат, что происходит смена хоста и эти действия могут помешать новому соединению
+
       if (host == Flasher.host && port == Flasher.port) {
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
         this.end();
+        this.tryToReconnect();
       }
     };
 
@@ -394,19 +401,21 @@ export class Flasher {
     this.freezeReconnection = freeze;
   }
 
-  static tryToReconnect(route: string, timeout: number) {
+  private static tryToReconnect() {
     this.timerID = setTimeout(() => {
-      console.log(`${route} inTimer: ${timeout}`);
+      console.log(`${this.base_address} inTimer: ${this.timeout}`);
       if (!this.freezeReconnection) {
-        this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
+        this.reconnect();
+        this.timeout = Math.min(this.timeout + this.incTimeout, this.maxTimeout);
       } else {
         console.log('the timer is frozen');
-        if (timeout == 0) {
-          this.tryToReconnect(route, timeout + this.incTimeout);
+        if (this.timeout == 0) {
+          this.timeout = Math.min(this.incTimeout, this.maxTimeout);
+          this.tryToReconnect();
         } else {
-          this.tryToReconnect(route, timeout);
+          this.tryToReconnect();
         }
       }
-    }, timeout);
+    }, this.timeout);
   }
 }

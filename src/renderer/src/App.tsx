@@ -92,6 +92,7 @@ export const App: React.FC = () => {
   const openFlasherModal = () => setIsFlasherModalOpen(true);
   const closeFlasherModal = () => {
     setIsFlasherModalOpen(false);
+    Flasher.freezeReconnectionTimer(false);
   };
 
   const { onRequestAddComponent, ...addComponent } = useAddComponent(editor);

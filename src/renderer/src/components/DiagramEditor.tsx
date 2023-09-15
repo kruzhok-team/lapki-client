@@ -159,6 +159,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       {editor !== null ? (
         <CreateEventsModal
           editor={editor}
+          manager={manager}
           isOpen={isEventsModalOpen}
           isData={idEvents}
           onClose={closeEventsModal}
@@ -171,6 +172,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       {isModalOpen ? (
         <CreateModal
           editor={editor}
+          manager={manager}
           isCondition={events}
           setIsCondition={setEvents}
           isOpen={isModalOpen}

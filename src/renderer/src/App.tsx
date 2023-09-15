@@ -57,9 +57,9 @@ export const App: React.FC = () => {
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
 
-  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor);
-  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor);
-  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor);
+  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
+  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor, manager);
+  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor, manager);
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError } = useErrorModal();
   const { saveModalProps, operations, performNewFile } = useFileOperations({

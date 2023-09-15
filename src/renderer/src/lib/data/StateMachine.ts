@@ -40,7 +40,6 @@ export class StateMachine extends EventEmitter {
 
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-  components: Map<string, Component> = new Map();
 
   platform!: PlatformManager;
 
@@ -51,11 +50,11 @@ export class StateMachine extends EventEmitter {
     this.container = container;
   }
 
-  loadData(elements: Elements) {
+  loadData() {
     this.initStates();
     this.initTransitions();
     this.initPlatform();
-    this.initComponents(elements.components);
+    this.initComponents();
   }
 
   onDataUpdate(fn?: DataUpdateCallback) {
@@ -77,7 +76,7 @@ export class StateMachine extends EventEmitter {
     });
     // this.initialState = '';
     this.states.clear();
-    this.components.clear();
+    // this.components.clear();
     this.transitions.clear();
     // this.parameters.clear();
     // FIXME: platform не обнуляется
@@ -91,9 +90,9 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((state, id) => {
       states[id] = state.toJSON();
     });
-    this.components.forEach((component, id) => {
-      components[id] = component.toJSON();
-    });
+    // this.components.forEach((component, id) => {
+    //   components[id] = component.toJSON();
+    // });
     this.transitions.forEach((transition) => {
       transitions.push(transition.toJSON());
     });
@@ -148,10 +147,12 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  initComponents(items: Elements['components']) {
+  initComponents() {
+    const items = this.container.app.manager.data.elements.components;
+
     for (const name in items) {
       const component = items[name];
-      this.components.set(name, new Component(component));
+      // this.components.set(name, new Component(component));
       this.platform.nameToComponent.set(name, component.type);
     }
   }
@@ -494,62 +495,41 @@ export class StateMachine extends EventEmitter {
     this.dataTrigger();
   }
 
-  addNewComponent(name: string, type: string) {
-    if (this.components.has(name)) {
-      console.log(['bad new component', name, type]);
-      return;
-    }
+  addComponent(name: string, type: string) {
+    this.container.app.manager.addComponent(name, type);
 
-    const component = new Component({
-      type,
-      parameters: {},
-    });
-
-    this.components.set(name, component);
     this.platform.nameToComponent.set(name, type);
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  // Меняет только параметры, без имени
-  editComponent(idx: string, newData: ComponentType, newName?: string) {
-    const component = this.components.get(idx);
-    if (typeof component === 'undefined') return;
-
-    console.log(idx);
-    console.log(newData);
-    console.log(newName);
-
-    // type присутствует, но мы его умышленно не трогаем
-    component.data.parameters = newData.parameters;
+  editComponent(name: string, parameters: ComponentType['parameters'], newName?: string) {
+    this.container.app.manager.editComponent(name, parameters);
 
     if (newName) {
-      this.renameComponentRaw(idx, newName);
+      this.renameComponent(name, newName);
     }
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  private renameComponentRaw(idx: string, newName: string) {
-    const component = this.components.get(idx);
-    if (typeof component === 'undefined') return;
+  private renameComponent(name: string, newName: string) {
+    this.container.app.manager.renameComponent(name, newName);
+    const component = this.container.app.manager.data.elements.components[newName];
 
-    this.components.set(newName, component);
-    this.components.delete(idx);
-
-    this.platform.nameToComponent.set(newName, component.data.type);
-    this.platform.nameToComponent.delete(idx);
+    this.platform.nameToComponent.set(newName, component.type);
+    this.platform.nameToComponent.delete(name);
 
     // А сейчас будет занимательное путешествие по схеме с заменой всего
     this.states.forEach((state) => {
       for (const ev of state.eventBox.data) {
         // заменяем в триггере
-        if (ev.trigger.component == idx) {
+        if (ev.trigger.component == name) {
           ev.trigger.component = newName;
         }
         for (const act of ev.do) {
           // заменяем в действии
-          if (act.component == idx) {
+          if (act.component == name) {
             act.component = newName;
           }
         }
@@ -557,22 +537,24 @@ export class StateMachine extends EventEmitter {
     });
 
     this.transitions.forEach((value) => {
-      if (value.data.trigger.component == idx) {
+      if (value.data.trigger.component == name) {
         value.data.trigger.component = newName;
       }
       // do
       if (value.data.do) {
         for (const act of value.data.do) {
-          if (act.component == idx) {
+          if (act.component == name) {
             act.component = newName;
           }
         }
       }
       // condition
       if (value.data.condition) {
-        this.renameCondition(value.data.condition, idx, newName);
+        this.renameCondition(value.data.condition, name, newName);
       }
     });
+
+    this.container.isDirty = true;
   }
 
   renameCondition(ac: Condition, oldName: string, newName: string) {
@@ -597,17 +579,16 @@ export class StateMachine extends EventEmitter {
   }
 
   removeComponent(name: string, purge?: boolean) {
-    if (!this.components.has(name)) return;
+    this.container.app.manager.removeComponent(name);
 
     if (purge) {
       // TODO: «вымарывание» компонента из машины
       console.error('removeComponent purge not implemented yet');
     }
 
-    this.components.delete(name);
     this.platform.nameToComponent.delete(name);
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
   undo() {
@@ -638,10 +619,11 @@ export class StateMachine extends EventEmitter {
   }
 
   getVacantComponents(): ComponentEntry[] {
+    const components = this.container.app.manager.data.elements.components;
     const vacant: ComponentEntry[] = [];
     for (const idx in this.platform.data.components) {
       const compo = this.platform.data.components[idx];
-      if (compo.singletone && this.components.has(idx)) continue;
+      if (compo.singletone && components.hasOwnProperty(idx)) continue;
       vacant.push({
         idx,
         name: compo.name ?? idx,

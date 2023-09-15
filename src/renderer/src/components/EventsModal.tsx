@@ -8,6 +8,7 @@ import { State } from '@renderer/lib/drawable/State';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Select, SelectOption } from '@renderer/components/UI';
 import { ArgumentProto } from '@renderer/types/platform';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -22,6 +23,7 @@ interface FormPreset {
 
 interface EventsModalProps extends Props {
   editor: CanvasEditor | null;
+  manager: EditorManager;
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
   isOpen: boolean;
   cancelLabel?: string;
@@ -42,8 +44,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   onSubmit,
   onClose,
   editor,
+  manager,
   ...props
 }) => {
+  const componentsData = manager.useData('elements.components');
   const machine = editor!.container.machine;
   const isEditingEvent = props.isData?.event.actionIdx === null;
 
@@ -93,7 +97,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 
   const options = [
     ...sysCompoOption,
-    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
   ];
 
   const [components, setComponents] = useState<SelectOption>(options[0]);

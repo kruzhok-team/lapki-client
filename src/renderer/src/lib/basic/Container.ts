@@ -41,7 +41,7 @@ export class Container {
 
     this.initEvents();
     this.transitions.initEvents();
-    this.machine.loadData(this.app.manager.data.elements);
+    this.machine.loadData();
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

@@ -1,7 +1,7 @@
 import { Dispatch, useSyncExternalStore } from 'react';
 import { customAlphabet, nanoid } from 'nanoid';
 
-import { emptyElements, Action, Condition, Transition } from '@renderer/types/diagram';
+import { emptyElements, Action, Condition, Transition, Component } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -453,6 +453,49 @@ export class EditorManager {
     if (!transition) return false;
 
     delete this.data.elements.transitions[id];
+
+    return true;
+  }
+
+  addComponent(name: string, type: string) {
+    if (this.data.elements.components.hasOwnProperty(name)) {
+      console.log(['bad new component', name, type]);
+      return false;
+    }
+
+    this.data.elements.components[name] = {
+      type,
+      parameters: {},
+    };
+
+    return true;
+  }
+
+  editComponent(name: string, parameters: Component['parameters']) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    component.parameters = parameters;
+
+    return true;
+  }
+
+  renameComponent(name: string, newName: string) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    this.data.elements.components[newName] = component;
+
+    delete this.data.elements.components[name];
+
+    return true;
+  }
+
+  removeComponent(name: string) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    delete this.data.elements.components[name];
 
     return true;
   }

@@ -46,11 +46,27 @@ export class StateMachine extends EventEmitter {
     this.container = container;
   }
 
+  reset() {
+    this.transitions.forEach((value) => {
+      this.container.transitions.unwatchTransition(value);
+    });
+
+    this.states.forEach((value) => {
+      this.container.states.unwatchState(value);
+    });
+    this.states.clear();
+    this.transitions.clear();
+  }
+
   loadData() {
+    this.reset();
+
     this.initStates();
     this.initTransitions();
     this.initPlatform();
     this.initComponents();
+
+    this.container.isDirty = true;
   }
 
   initStates() {

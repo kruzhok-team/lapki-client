@@ -59,6 +59,8 @@ export class EditorManager {
   data = emptyEditorData;
   dataListeners = emptyDataListeners;
 
+  resetEditor?: () => void;
+
   constructor() {
     const self = this;
     this.data = new Proxy(this.data, {
@@ -120,6 +122,8 @@ export class EditorManager {
     this.data.name = 'Без названия';
     this.data.elements = emptyElements();
     this.data.elements.platform = platformIdx;
+
+    this.resetEditor?.();
   }
 
   compile() {
@@ -144,6 +148,8 @@ export class EditorManager {
         this.data.name = openData[2]!.replace('.graphml', '.json');
         this.data.elements = data;
         this.data.isInitialized = true;
+
+        this.resetEditor?.();
 
         return makeRight(null);
       } catch (e) {
@@ -191,10 +197,13 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
+
         this.data.basename = openData[1];
         this.data.name = openData[2];
         this.data.elements = data;
         this.data.isInitialized = true;
+
+        this.resetEditor?.();
 
         return makeRight(null);
       } catch (e) {

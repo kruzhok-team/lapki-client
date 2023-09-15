@@ -47,7 +47,7 @@ export const App: React.FC = () => {
 
   const [theme, setTheme] = useState<Theme>('dark');
 
-  const { editor, manager, platform, setEditor } = useEditorManager();
+  const { editor, manager, setEditor } = useEditorManager();
 
   const name = manager.useData('name');
   const platformName = manager.useData('elements.platform');
@@ -113,12 +113,7 @@ export const App: React.FC = () => {
       <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
-            <Sidebar
-              manager={manager}
-              editor={editor}
-              platform={platform}
-              callbacks={sidebarCallbacks}
-            />
+            <Sidebar manager={manager} editor={editor} callbacks={sidebarCallbacks} />
 
             <MainContainer manager={manager} editor={editor} setEditor={setEditor} />
           </div>

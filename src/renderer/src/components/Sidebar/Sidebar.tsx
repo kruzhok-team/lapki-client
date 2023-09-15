@@ -15,7 +15,6 @@ import { Badge } from '../UI';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 
 export interface SidebarCallbacks {
   onRequestNewFile: () => void;
@@ -30,14 +29,12 @@ export interface SidebarCallbacks {
 interface SidebarProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
-  platform: PlatformManager | null;
   callbacks: SidebarCallbacks;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   editor,
   manager,
-  platform,
   callbacks: {
     onRequestNewFile,
     onRequestOpenFile,
@@ -71,8 +68,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         compilerStatus={compilerStatus}
       />,
       <Explorer
+        editor={editor}
         manager={manager}
-        platform={platform}
         callbacks={{
           onRequestAddComponent,
           onRequestEditComponent,
@@ -91,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Loader manager={manager} compilerData={compilerData} />,
       <Setting />,
     ],
-    [platform, manager, editor]
+    [manager, editor]
   );
 
   const tabLabels = useMemo(

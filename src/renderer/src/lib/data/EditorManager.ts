@@ -4,7 +4,6 @@ import { customAlphabet, nanoid } from 'nanoid';
 import { emptyElements, Action, Condition, Transition, Component } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
-import { CanvasEditor } from '../CanvasEditor';
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
 import { isPlatformAvailable } from './PlatformLoader';
 import { Compiler } from '@renderer/components/Modules/Compiler';
@@ -50,14 +49,10 @@ const emptyDataListeners = Object.fromEntries([
  * Класс-прослойка, обеспечивающий взаимодействие с React.
  */
 export class EditorManager {
-  editor: CanvasEditor | null = null;
-
   data = emptyEditorData;
   dataListeners = emptyDataListeners;
 
-  constructor(editor: CanvasEditor | null) {
-    this.editor = editor;
-
+  constructor() {
     const self = this;
     this.data = new Proxy(this.data, {
       set(target, prop, val, receiver) {
@@ -259,19 +254,37 @@ export class EditorManager {
     Flasher.changeHost(host, port);
   }
 
+  getDataSerialized() {
+    return JSON.stringify(this.data.elements, undefined, 2);
+  }
+
+  getStateSerialized(id: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return null;
+
+    return JSON.stringify(state, undefined, 2);
+  }
+
+  getTransitionSerialized(id: string) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return null;
+
+    return JSON.stringify(transition, undefined, 2);
+  }
+
   async stopLocalModule(module: string) {
     await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
   }
 
   async save(): Promise<Either<FileError | null, null>> {
-    if (!this.editor) return makeLeft(null);
+    if (!this.data.isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
     }
     const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
       'dialog:saveFile',
       this.data.basename,
-      this.editor!.getData()
+      this.getDataSerialized()
     );
     if (saveData[0]) {
       this.data.basename = saveData[1];
@@ -293,8 +306,8 @@ export class EditorManager {
   }
 
   async saveAs(): Promise<Either<FileError | null, null>> {
-    if (!this.editor) return makeLeft(null);
-    const data = this.editor!.getData();
+    if (!this.data.isInitialized) return makeLeft(null);
+    const data = this.getDataSerialized();
     const saveData: [boolean, string | null, string | null] =
       await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
     if (saveData[0]) {

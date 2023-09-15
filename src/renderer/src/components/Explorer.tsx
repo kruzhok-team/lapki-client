@@ -6,7 +6,7 @@ import { ScrollableList } from './ScrollableList';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { PlatformManager } from '@renderer/lib/data/PlatformManager';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 export interface ExplorerCallbacks {
   onRequestAddComponent: () => void;
@@ -15,14 +15,14 @@ export interface ExplorerCallbacks {
 }
 
 interface ExplorerProps {
+  editor: CanvasEditor | null;
   manager: EditorManager;
-  platform: PlatformManager | null;
   callbacks: ExplorerCallbacks;
 }
 
 export const Explorer: React.FC<ExplorerProps> = ({
+  editor,
   manager,
-  platform,
   callbacks: { onRequestAddComponent, onRequestEditComponent, onRequestDeleteComponent },
 }) => {
   const isInitialized = manager.useData('isInitialized');
@@ -82,7 +82,12 @@ export const Explorer: React.FC<ExplorerProps> = ({
               onDoubleClick={() => onCompDblClick(key)}
               onContextMenu={() => onCompRightClick(key)}
             >
-              <img className="h-8" src={platform?.getComponentIconUrl(key, true) ?? UnknownIcon} />
+              <img
+                className="h-8"
+                src={
+                  editor?.container.machine.platform?.getComponentIconUrl(key, true) ?? UnknownIcon
+                }
+              />
               <p className="ml-2 line-clamp-1">{key}</p>
             </div>
           )}

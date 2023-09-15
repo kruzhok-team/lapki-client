@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
@@ -29,16 +29,6 @@ export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const handleReset = () => {
     editor.container.changeScale(1, true);
   };
-
-  // useEffect(() => {
-  //   const id = setInterval(() => {
-  //     console.log(Object.entries(manager.data));
-  //   }, 2000);
-
-  //   return () => {
-  //     clearInterval(id);
-  //   };
-  // }, []);
 
   return (
     <div

@@ -5,7 +5,6 @@ import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 export const useEditorManager = () => {
   const [editor, setEditor] = useState<CanvasEditor | null>(null);
-
   const managerRef = useRef(new EditorManager());
 
   useEffect(() => {

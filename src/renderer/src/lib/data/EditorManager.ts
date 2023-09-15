@@ -24,7 +24,7 @@ export type FileError = {
   content: string;
 };
 
-const emptyEditorData = {
+const emptyEditorData = () => ({
   isInitialized: false,
   isStale: false,
   basename: null as string | null,
@@ -34,9 +34,9 @@ const emptyEditorData = {
 
   offset: { x: 0, y: 0 },
   scale: 1,
-};
+});
 
-type EditorData = typeof emptyEditorData;
+type EditorData = ReturnType<typeof emptyEditorData>;
 type EditorDataPropertyName = keyof EditorData | `elements.${keyof EditorData['elements']}`;
 type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']
@@ -48,20 +48,26 @@ type EditorDataReturn<T> = T extends `elements.${infer V}`
 type EditorDataListeners = { [key in EditorDataPropertyName]: (() => void)[] };
 
 const emptyDataListeners = Object.fromEntries([
-  ...Object.entries(emptyEditorData).map(([k]) => [k, []]),
-  ...Object.entries(emptyEditorData.elements).map(([k]) => [`elements.${k}`, []]),
+  ...Object.entries(emptyEditorData()).map(([k]) => [k, []]),
+  ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
 ]) as any as EditorDataListeners;
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
  */
 export class EditorManager {
-  data = emptyEditorData;
-  dataListeners = emptyDataListeners;
+  data!: EditorData;
+  dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
 
   resetEditor?: () => void;
 
   constructor() {
+    this.init();
+  }
+
+  init() {
+    this.data = emptyEditorData();
+
     const self = this;
     this.data = new Proxy(this.data, {
       set(target, prop, val, receiver) {
@@ -117,6 +123,8 @@ export class EditorManager {
       throw Error('unknown platform ' + platformIdx);
     }
 
+    this.init();
+
     this.data.isInitialized = true;
     this.data.basename = null;
     this.data.name = 'Без названия';
@@ -144,6 +152,8 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
+        this.init();
+
         this.data.basename = openData[1]!.replace('.graphml', '.json');
         this.data.name = openData[2]!.replace('.graphml', '.json');
         this.data.elements = data;
@@ -197,6 +207,8 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
+
+        this.init();
 
         this.data.basename = openData[1];
         this.data.name = openData[2];

@@ -1,7 +1,14 @@
 import { Dispatch, useSyncExternalStore } from 'react';
 import { customAlphabet, nanoid } from 'nanoid';
 
-import { emptyElements, Action, Condition, Transition, Component } from '@renderer/types/diagram';
+import {
+  emptyElements,
+  Event,
+  Action,
+  Condition,
+  Transition,
+  Component,
+} from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
@@ -408,6 +415,50 @@ export class EditorManager {
     if (!state) return false;
 
     this.data.elements.initialState = id;
+
+    return true;
+  }
+
+  changeEvent(stateId: string, event: any, newValue: Event | Action) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
+    if (event.actionIdx === null) {
+      const trueTab = state.events.find(
+        (value, id) =>
+          event.eventIdx !== id &&
+          newValue.component === value.trigger.component &&
+          newValue.method === value.trigger.method &&
+          undefined === value.trigger.args // FIXME: сравнение по args может не работать
+      );
+
+      if (trueTab === undefined) {
+        state.events[event.eventIdx].trigger = newValue;
+      } else {
+        trueTab.do = [...trueTab.do, ...state.events[event.eventIdx].do];
+        state.events.splice(event.eventIdx, 1);
+      }
+    } else {
+      state.events[event.eventIdx].do[event.actionIdx] = newValue;
+    }
+
+    return true;
+  }
+
+  deleteEvent(stateId: string, eventIdx: number, actionIdx: number | null) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    if (actionIdx !== null) {
+      state.events[eventIdx].do.splice(actionIdx!, 1);
+      // Проверяем, есть ли действия в событие, если нет, то удалять его
+      if (state.events[eventIdx].do.length === 0) {
+        state.events.splice(eventIdx, 1);
+      }
+    } else {
+      state.events.splice(eventIdx, 1);
+    }
 
     return true;
   }

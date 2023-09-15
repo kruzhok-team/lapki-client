@@ -112,7 +112,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
   const handleCreateEventsModal = (data: EventsModalResult) => {
     setEvents([...events, data.action]);
     if (!isModalOpen) {
-      editor?.container.machine.createEvent(data.id, data.trigger);
+      editor?.container.machine.changeEvent(data.id, data.trigger);
     }
     closeEventsModal();
   };

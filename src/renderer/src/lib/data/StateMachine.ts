@@ -53,11 +53,6 @@ export class StateMachine extends EventEmitter {
     this.initComponents();
   }
 
-  dataTrigger(silent?: boolean) {
-    this.container.isDirty = true;
-    // this.dataUpdateCallback?.(this.graphData(), !silent);
-  }
-
   initStates() {
     const items = this.container.app.manager.data.elements.states;
 
@@ -370,55 +365,31 @@ export class StateMachine extends EventEmitter {
     }
 
     if (removed) {
-      this.dataTrigger();
+      this.container.isDirty = true;
     }
   }
 
   // Редактирование события в состояниях
-  createEvent(data: { state; event } | undefined, newValue: Event | Action) {
+  changeEvent(data: { state; event } | undefined, newValue: Event | Action) {
     const state = this.states.get(data?.state.id);
-    if (typeof state === 'undefined') return;
-    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
-    if (data?.event.actionIdx === null) {
-      const trueTab = state.eventBox.data.find(
-        (value, id) =>
-          data?.event.eventIdx !== id &&
-          newValue.component === value.trigger.component &&
-          newValue.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
+    if (!state) return;
 
-      if (trueTab === undefined) {
-        state.eventBox.data[data?.event.eventIdx].trigger = newValue;
-      } else {
-        trueTab.do = [...trueTab.do, ...state.eventBox.data[data?.event.eventIdx].do];
-        state.eventBox.data.splice(data?.event.eventIdx, 1);
-      }
-    } else {
-      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx] = newValue;
-    }
+    this.container.app.manager.changeEvent(state.id, data?.event, newValue);
 
     state.eventBox.recalculate();
-    this.dataTrigger();
+
+    this.container.isDirty = true;
   }
 
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в в состоянии(модалка)
   deleteEvent(id: string, eventId: EventSelection) {
     const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
+    if (!state) return;
 
-    if (eventId.actionIdx === null) {
-      state.eventBox.data.splice(eventId.eventIdx, 1);
-    } else {
-      state.eventBox.data[eventId.eventIdx].do.splice(eventId.actionIdx!, 1);
-      // Проверяем, есть ли действия в событие, если нет, то удалять его
-      if (state.eventBox.data[eventId.eventIdx].do.length === 0) {
-        state.eventBox.data.splice(eventId.eventIdx, 1);
-      }
-    }
+    this.container.app.manager.deleteEvent(id, eventId.eventIdx, eventId.actionIdx);
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
   addComponent(name: string, type: string) {

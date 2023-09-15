@@ -112,16 +112,7 @@ export class EditorManager {
     this.data.basename = null;
     this.data.name = 'Без названия';
     this.data.elements = emptyElements();
-
-    // this.editor?.loadData(data);
-    // this.mutateState((state) => ({
-    //   ...state,
-    //   name: null,
-    //   shownName: 'Без названия',
-    //   content: JSON.stringify(data),
-    //   data,
-    //   modified: false,
-    // }));
+    this.data.elements.platform = platformIdx;
   }
 
   compile() {
@@ -147,15 +138,6 @@ export class EditorManager {
         this.data.elements = data;
         this.data.isInitialized = true;
 
-        // this.editor?.loadData(data);
-        // this.mutateState((state) => ({
-        //   ...state,
-        //   name: openData[1]!.replace('.graphml', '.json'),
-        //   shownName: openData[2]!.replace('.graphml', '.json'),
-        //   content: JSON.stringify(importData),
-        //   data,
-        //   modified: false,
-        // }));
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -202,20 +184,11 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
-        // this.editor?.loadData(data);
         this.data.basename = openData[1];
         this.data.name = openData[2];
         this.data.elements = data;
         this.data.isInitialized = true;
 
-        // this.mutateState((state) => ({
-        //   ...state,
-        //   name: openData[1],
-        //   shownName: openData[2],
-        //   content: openData[3],
-        //   data,
-        //   modified: false,
-        // }));
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -290,12 +263,6 @@ export class EditorManager {
       this.data.basename = saveData[1];
       this.data.name = saveData[2];
 
-      // this.mutateState((state) => ({
-      //   ...state,
-      //   name: saveData[1],
-      //   shownName: saveData[2],
-      //   modified: false,
-      // }));
       return makeRight(null);
     } else {
       return makeLeft({
@@ -314,12 +281,6 @@ export class EditorManager {
       this.data.basename = saveData[1];
       this.data.name = saveData[2];
 
-      // this.mutateState((state) => ({
-      //   ...state,
-      //   name: saveData[1],
-      //   shownName: saveData[2],
-      //   modified: false,
-      // }));
       return makeRight(null);
     } else if (saveData[1]) {
       return makeLeft({

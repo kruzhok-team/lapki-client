@@ -50,7 +50,7 @@ export const App: React.FC = () => {
   const { editor, manager, platform, setEditor } = useEditorManager();
 
   const name = manager.useData('name');
-  const platformIdx = editor?.container.machine.platformIdx;
+  const platformName = manager.useData('platform');
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
@@ -91,10 +91,10 @@ export const App: React.FC = () => {
 
   // Переименование вынес сюда из EditorManager.
   useEffect(() => {
-    if (!name || !platformIdx) return;
+    if (!name || !platformName) return;
 
-    setTitle(`${name} [${platformIdx}] – Lapki IDE`);
-  }, [name, platformIdx]);
+    setTitle(`${name} [${platformName}] – Lapki IDE`);
+  }, [name, platformName]);
 
   const handleChangeTheme = (theme: Theme) => {
     setTheme(theme);

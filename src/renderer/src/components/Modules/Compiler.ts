@@ -183,7 +183,7 @@ export class Compiler {
     return ws;
   }
 
-  static compile(platform: string, data: Elements | string) {
+  static compile(platform: string, data: Omit<Elements, 'platform'> | string) {
     const route = `${this.base_address}main`;
     const ws: Websocket = this.connectRoute(route);
     let compilerSettings: CompilerSettings;
@@ -199,19 +199,20 @@ export class Compiler {
         };
         const obj = {
           ...(data as Elements),
+          platform,
           compilerSettings: compilerSettings,
         };
         ws.send(JSON.stringify(obj));
         break;
       case 'BearlogaDefendImport':
         ws.send('berlogaImport');
-        ws.send(data);
+        ws.send({ ...(data as Elements), platform });
         console.log('import!');
         this.mode = 'import';
         break;
       case 'BearlogaDefend':
         ws.send('berlogaExport');
-        ws.send(JSON.stringify(data));
+        ws.send(JSON.stringify({ ...(data as Elements), platform }));
         console.log('export!');
         this.mode = 'export';
         break;

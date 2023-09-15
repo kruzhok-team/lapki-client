@@ -73,14 +73,13 @@ export type Elements = {
   compilerSettings?: CompilerSettings | null;
 };
 
-export function emptyElements(): Elements {
+export function emptyElements(): Omit<Elements, 'platform'> {
   return {
     states: {},
     transitions: [],
     components: {},
     initialState: '',
 
-    platform: '',
     parameters: {},
     compilerSettings: null,
   };

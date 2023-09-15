@@ -8,7 +8,6 @@ import {
   Variable,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
-import { nanoid } from 'nanoid';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
@@ -44,8 +43,6 @@ export class StateMachine extends EventEmitter {
   components: Map<string, Component> = new Map();
 
   platform!: PlatformManager;
-  platformIdx!: string;
-  parameters: Map<string, string> = new Map();
 
   dataUpdateCallback?: DataUpdateCallback;
 
@@ -57,7 +54,7 @@ export class StateMachine extends EventEmitter {
   loadData(elements: Elements) {
     this.initStates();
     this.initTransitions();
-    this.initPlatform(elements.platform, elements.parameters);
+    this.initPlatform();
     this.initComponents(elements.components);
   }
 
@@ -82,12 +79,11 @@ export class StateMachine extends EventEmitter {
     this.states.clear();
     this.components.clear();
     this.transitions.clear();
-    this.parameters.clear();
-    this.platformIdx = '';
+    // this.parameters.clear();
     // FIXME: platform не обнуляется
   }
 
-  graphData(): Elements {
+  graphData(): any {
     const states = {};
     const transitions: TransitionType[] = [];
     const components = {};
@@ -101,9 +97,9 @@ export class StateMachine extends EventEmitter {
     this.transitions.forEach((transition) => {
       transitions.push(transition.toJSON());
     });
-    this.parameters.forEach((parameter, id) => {
-      parameters[id] = parameter;
-    });
+    // this.parameters.forEach((parameter, id) => {
+    //   parameters[id] = parameter;
+    // });
 
     const outData = {
       states,
@@ -112,7 +108,6 @@ export class StateMachine extends EventEmitter {
       transitions,
       components,
       parameters,
-      platform: this.platformIdx,
     };
 
     return outData;
@@ -161,18 +156,16 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  initPlatform(platformIdx: string, parameters: Elements['parameters']) {
+  initPlatform() {
+    const platformName = this.container.app.manager.data.platform;
+
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformIdx);
+    const platform = loadPlatform(platformName);
     if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformIdx);
+      throw Error("couldn't init platform " + platformName);
     }
+
     this.platform = platform;
-    this.platformIdx = platformIdx;
-    for (const paramName in parameters) {
-      this.parameters.set(paramName, parameters[paramName]);
-    }
-    // TODO: валидировать список параметров?
   }
 
   newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
@@ -404,6 +397,18 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
+  deleteTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.container.app.manager.deleteTransition(id);
+
+    this.container.transitions.unwatchTransition(transition);
+    this.transitions.delete(id);
+
+    this.container.isDirty = true;
+  }
+
   deleteSelected() {
     let removed = false;
 
@@ -440,18 +445,6 @@ export class StateMachine extends EventEmitter {
     if (removed) {
       this.dataTrigger();
     }
-  }
-
-  deleteTransition(id: string) {
-    const transition = this.transitions.get(id);
-    if (!transition) return;
-
-    this.container.app.manager.deleteTransition(id);
-
-    this.container.transitions.unwatchTransition(transition);
-    this.transitions.delete(id);
-
-    this.container.isDirty = true;
   }
 
   // Редактирование события в состояниях

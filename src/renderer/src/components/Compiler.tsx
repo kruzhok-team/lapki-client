@@ -52,7 +52,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     if (!name) return;
 
     Compiler.filename = name;
-    manager.compile(editor!.container.machine.platformIdx);
+    manager.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {

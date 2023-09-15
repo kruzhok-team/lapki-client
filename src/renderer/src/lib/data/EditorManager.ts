@@ -23,7 +23,9 @@ const emptyEditorData = {
   isStale: false,
   basename: null as string | null,
   name: null as string | null,
+
   elements: emptyElements(),
+  platform: '',
 
   offset: { x: 0, y: 0 },
   scale: 1,
@@ -95,7 +97,8 @@ export class EditorManager {
     this.data.isInitialized = true;
     this.data.basename = null;
     this.data.name = 'Без названия';
-    this.data.elements = { ...emptyElements(), platform: platformIdx };
+    this.data.elements = emptyElements();
+    this.data.platform = platformIdx;
 
     // this.editor?.loadData(data);
     // this.mutateState((state) => ({
@@ -108,8 +111,8 @@ export class EditorManager {
     // }));
   }
 
-  compile(platform: string): void {
-    Compiler.compile(platform, this.data.elements);
+  compile() {
+    Compiler.compile(this.data.platform, this.data.elements);
   }
 
   getList(): void {
@@ -130,6 +133,7 @@ export class EditorManager {
         this.data.name = openData[2]!.replace('.graphml', '.json');
         this.data.elements = data;
         this.data.isInitialized = true;
+        this.data.platform = data.platform;
 
         // this.editor?.loadData(data);
         // this.mutateState((state) => ({
@@ -190,6 +194,7 @@ export class EditorManager {
         this.data.basename = openData[1];
         this.data.name = openData[2];
         this.data.elements = data;
+        this.data.platform = data.platform;
         this.data.isInitialized = true;
 
         // this.mutateState((state) => ({

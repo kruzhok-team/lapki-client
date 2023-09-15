@@ -17,7 +17,6 @@ export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const isDocOpen = useDoc((state) => state.isOpen);
 
   const scale = manager.useData('scale');
-  const elements = manager.useData('elements');
 
   const handleZoomOut = () => {
     editor.container.changeScale(0.1);
@@ -33,7 +32,7 @@ export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
 
   // useEffect(() => {
   //   const id = setInterval(() => {
-  //     console.log(elements);
+  //     console.log(Object.entries(manager.data));
   //   }, 2000);
 
   //   return () => {

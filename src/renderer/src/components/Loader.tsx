@@ -4,7 +4,13 @@ import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
 import { Device } from '@renderer/types/FlasherTypes';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { FLASHER_CONNECTED, FLASHER_CONNECTING, FLASHER_SWITCHING_HOST } from './Modules/Flasher';
+import {
+  FLASHER_CONNECTED,
+  FLASHER_CONNECTING,
+  FLASHER_SWITCHING_HOST,
+  FLASHER_NO_CONNECTION,
+  FLASHER_CONNECTION_ERROR,
+} from './Modules/Flasher';
 export interface FlasherProps {
   devices: Map<string, Device>;
   currentDevice: string | undefined;
@@ -18,6 +24,7 @@ export interface FlasherProps {
   handleFlash: () => void;
   handleHostChange: () => void;
   handleFileChoose: () => void;
+  handleErrorMessageDisplay: () => void;
   handleReconnect: () => void;
 }
 
@@ -34,6 +41,7 @@ export const Loader: React.FC<FlasherProps> = ({
   handleFlash,
   handleHostChange,
   handleFileChoose,
+  handleErrorMessageDisplay: handleErrorMessageDisplay,
   handleReconnect,
 }) => {
   const isActive = (id: string) => currentDevice === id;
@@ -78,6 +86,20 @@ export const Loader: React.FC<FlasherProps> = ({
 
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <p>{connectionStatus}</p>
+          <br></br>
+          <button
+            className="btn-primary mb-2"
+            onClick={() => handleErrorMessageDisplay()}
+            style={{
+              display:
+                connectionStatus == FLASHER_NO_CONNECTION ||
+                connectionStatus == FLASHER_CONNECTION_ERROR
+                  ? 'inline-block'
+                  : 'none',
+            }}
+          >
+            Подробнее
+          </button>
           {[...devices.keys()].map((key) => (
             <button
               key={key}

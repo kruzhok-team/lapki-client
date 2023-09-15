@@ -21,6 +21,11 @@ export class Flasher {
   static base_address;
   static connection: Websocket | undefined;
   static connecting: boolean = false;
+  static timerID: NodeJS.Timeout | undefined;
+  // на сколько мс увеличивается время перед новой попыткой подключения
+  static incTimeout: number = 5000;
+  // максимальное количество мс, через которое клиент будет пытаться переподключиться
+  static maxTimeout: number = 60000;
   static devices: Map<string, Device>;
 
   // Переменные, связанные с отправкой бинарных данных
@@ -29,13 +34,16 @@ export class Flasher {
   static currentBlob: Blob;
   static filePos: number = 0;
   static blobSize: number = 1024;
+  // true = во время вызова таймера для переключения ничего не будет происходить.
+  static freezeReconnection = false;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
   static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
   static setFlashing: Dispatch<SetStateAction<boolean>>;
-  // true = во время вызова таймера для переключения ничего не будет происходить.
-  static freezeReconnection = false;
+  // сообщение об ошибке, undefined означает, что ошибки нет
+  static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
+  static setIsLocal: Dispatch<SetStateAction<boolean>>;
 
   //Когда прочитывает блоб - отправляет его
   static initReader(reader): void {
@@ -64,13 +72,17 @@ export class Flasher {
     setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
-    setFlashing: Dispatch<SetStateAction<boolean>>
+    setFlashing: Dispatch<SetStateAction<boolean>>,
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
+    setIsLocal: Dispatch<SetStateAction<boolean>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
+    this.setErrorMessage = setErrorMessage;
+    this.setIsLocal = setIsLocal;
   }
   /*
     Добавляет устройство в список устройств
@@ -162,7 +174,9 @@ export class Flasher {
     var ws: Websocket;
     try {
       ws = new Websocket(this.base_address);
+      this.setErrorMessage(undefined);
     } catch (error) {
+      this.setErrorMessage(`${error}`);
       console.log('Flasher websocket error', error);
       this.setFlasherConnectionStatus(FLASHER_CONNECTION_ERROR);
       this.end();
@@ -171,6 +185,7 @@ export class Flasher {
     //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
     ws.onopen = () => {
       console.log(`Flasher: connected to ${Flasher.host}:${Flasher.port}!`);
+      this.setErrorMessage(undefined);
       this.setFlashing(false);
       this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
@@ -273,7 +288,16 @@ export class Flasher {
       };
     };
 
-    ws.onclose = () => {
+    ws.onclose = async (event) => {
+      if (!event.wasClean) {
+        if (this.connecting) {
+          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}`);
+        } else {
+          this.setErrorMessage(
+            `Соедиение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере`
+          );
+        }
+      }
       // если переменные отличаются, то это значат, что происходит смена хоста и эти действия могут помешать новому соединению
       if (host == Flasher.host && port == Flasher.port) {
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
@@ -364,5 +388,25 @@ export class Flasher {
   // получение адреса в виде строки
   static makeAddress(host: string, port: number): string {
     return `ws://${host}:${port}/flasher`;
+  }
+
+  static freezeReconnectionTimer(freeze: boolean) {
+    this.freezeReconnection = freeze;
+  }
+
+  static tryToReconnect(route: string, timeout: number) {
+    this.timerID = setTimeout(() => {
+      console.log(`${route} inTimer: ${timeout}`);
+      if (!this.freezeReconnection) {
+        this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
+      } else {
+        console.log('the timer is frozen');
+        if (timeout == 0) {
+          this.tryToReconnect(route, timeout + this.incTimeout);
+        } else {
+          this.tryToReconnect(route, timeout);
+        }
+      }
+    }, timeout);
   }
 }

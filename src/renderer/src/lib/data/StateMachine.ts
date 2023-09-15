@@ -157,7 +157,7 @@ export class StateMachine extends EventEmitter {
   }
 
   initPlatform() {
-    const platformName = this.container.app.manager.data.platform;
+    const platformName = this.container.app.manager.data.elements.platform;
 
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     const platform = loadPlatform(platformName);

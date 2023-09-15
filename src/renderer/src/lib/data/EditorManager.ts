@@ -25,20 +25,26 @@ const emptyEditorData = {
   name: null as string | null,
 
   elements: emptyElements(),
-  platform: '',
 
   offset: { x: 0, y: 0 },
   scale: 1,
 };
 
 type EditorData = typeof emptyEditorData;
-type EditorDataPropertyName = keyof EditorData;
+type EditorDataPropertyName = keyof EditorData | `elements.${keyof EditorData['elements']}`;
+type EditorDataReturn<T> = T extends `elements.${infer V}`
+  ? V extends keyof EditorData['elements']
+    ? EditorData['elements'][V]
+    : never
+  : T extends keyof EditorData
+  ? EditorData[T]
+  : never;
+type EditorDataListeners = { [key in EditorDataPropertyName]: (() => void)[] };
 
-const emptyDataListeners = Object.fromEntries(
-  Object.entries(emptyEditorData).map(([k]) => [k, []])
-) as any as {
-  [key in EditorDataPropertyName]: (() => void)[];
-};
+const emptyDataListeners = Object.fromEntries([
+  ...Object.entries(emptyEditorData).map(([k]) => [k, []]),
+  ...Object.entries(emptyEditorData.elements).map(([k]) => [`elements.${k}`, []]),
+]) as any as EditorDataListeners;
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
@@ -63,16 +69,15 @@ export class EditorManager {
       },
     });
 
-    // ? Тут непонятно нужно ли реагировать
-    // this.data.elements = new Proxy(this.data.elements, {
-    //   set(target, prop, val, receiver) {
-    //     const result = Reflect.set(target, prop, val, receiver);
+    this.data.elements = new Proxy(this.data.elements, {
+      set(target, prop, val, receiver) {
+        const result = Reflect.set(target, prop, val, receiver);
 
-    //     // self.dataListeners[prop].forEach((listener) => listener());
+        self.dataListeners[`elements.${String(prop)}`].forEach((listener) => listener());
 
-    //     return result;
-    //   },
-    // });
+        return result;
+      },
+    });
   }
 
   subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
@@ -85,8 +90,22 @@ export class EditorManager {
     };
   };
 
-  useData<T extends EditorDataPropertyName>(propertyName: T): EditorData[T] {
-    return useSyncExternalStore(this.subscribe(propertyName), () => this.data[propertyName]);
+  useData<T extends EditorDataPropertyName>(propertyName: T): EditorDataReturn<T> {
+    const isShallow = (propertyName: string): propertyName is keyof EditorData => {
+      return !propertyName.startsWith('elements.');
+    };
+
+    const getSnapshot = () => {
+      if (isShallow(propertyName)) {
+        return this.data[propertyName];
+      }
+
+      if (propertyName.startsWith('elements.')) {
+        return this.data['elements'][propertyName.split('.')[1]];
+      }
+    };
+
+    return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
   newFile(platformIdx: string) {
@@ -98,7 +117,6 @@ export class EditorManager {
     this.data.basename = null;
     this.data.name = 'Без названия';
     this.data.elements = emptyElements();
-    this.data.platform = platformIdx;
 
     // this.editor?.loadData(data);
     // this.mutateState((state) => ({
@@ -112,7 +130,7 @@ export class EditorManager {
   }
 
   compile() {
-    Compiler.compile(this.data.platform, this.data.elements);
+    Compiler.compile(this.data.elements.platform, this.data.elements);
   }
 
   getList(): void {
@@ -133,7 +151,6 @@ export class EditorManager {
         this.data.name = openData[2]!.replace('.graphml', '.json');
         this.data.elements = data;
         this.data.isInitialized = true;
-        this.data.platform = data.platform;
 
         // this.editor?.loadData(data);
         // this.mutateState((state) => ({
@@ -194,7 +211,6 @@ export class EditorManager {
         this.data.basename = openData[1];
         this.data.name = openData[2];
         this.data.elements = data;
-        this.data.platform = data.platform;
         this.data.isInitialized = true;
 
         // this.mutateState((state) => ({

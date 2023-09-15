@@ -3,8 +3,6 @@ import { twMerge } from 'tailwind-merge';
 
 import { ScrollableList } from './ScrollableList';
 
-import { EditorRef } from '@renderer/hooks/useEditorManager';
-
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -28,7 +26,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
   callbacks: { onRequestAddComponent, onRequestEditComponent, onRequestDeleteComponent },
 }) => {
   const isInitialized = manager.useData('isInitialized');
-  const elements = manager.useData('elements');
+  const components = manager.useData('elements.components');
 
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -73,7 +71,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
         <ScrollableList
           className="max-h-[350px]"
           containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={elements ? Object.keys(elements.components) : []}
+          listItems={Object.keys(components)}
           heightOfItem={10}
           maxItemsToRender={50}
           renderItem={(key) => (

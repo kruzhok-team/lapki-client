@@ -50,7 +50,7 @@ export const App: React.FC = () => {
   const { editor, manager, platform, setEditor } = useEditorManager();
 
   const name = manager.useData('name');
-  const platformName = manager.useData('platform');
+  const platformName = manager.useData('elements.platform');
 
   // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
   const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);

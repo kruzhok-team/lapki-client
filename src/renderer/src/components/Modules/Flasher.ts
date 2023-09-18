@@ -22,11 +22,20 @@ export class Flasher {
   static connection: Websocket | undefined;
   static connecting: boolean = false;
   static timerID: NodeJS.Timeout | undefined;
+  // первоначальное значение timeout
+  private static initialTimeout: number = 5000;
   // на сколько мс увеличивается время перед новой попыткой подключения
-  static incTimeout: number = 5000;
+  private static incTimeout: number = this.initialTimeout;
+  /*  
+    максимальное количество автоматических попыток переподключения
+    значение меньше нуля означает, что ограничения на попытки отсутствует
+  */
+  static maxReconnectAttempts: number = 3;
+  // количество совершённых попыток переподключения, сбрасывается при удачном подключении или при смене хоста
+  private static curReconnectAttemps: number = 0;
   // максимальное количество мс, через которое клиент будет пытаться переподключиться
-  static maxTimeout: number = 60000;
-  static timeout: number = 5000;
+  static maxTimeout: number = this.incTimeout * this.maxReconnectAttempts;
+  private static timeout: number = this.initialTimeout;
   static devices: Map<string, Device>;
 
   // Переменные, связанные с отправкой бинарных данных
@@ -168,7 +177,13 @@ export class Flasher {
         Flasher.port = port;
       }
     }
-    Flasher.base_address = Flasher.makeAddress(Flasher.host, Flasher.port);
+    let new_address = Flasher.makeAddress(Flasher.host, Flasher.port);
+    // означает, что хост должен смениться
+    if (new_address != Flasher.base_address) {
+      Flasher.curReconnectAttemps = 1;
+      Flasher.base_address = new_address;
+      Flasher.timeout = Flasher.initialTimeout;
+    }
     host = Flasher.host;
     port = Flasher.port;
     this.connection?.close();
@@ -187,12 +202,12 @@ export class Flasher {
     }
     //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
     ws.onopen = () => {
+      Flasher.curReconnectAttemps = 0;
       console.log(`Flasher: connected to ${Flasher.host}:${Flasher.port}!`);
       this.setErrorMessage(undefined);
       this.setFlashing(false);
       this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
-      this.timeout = this.incTimeout;
 
       this.connection = ws;
       this.connecting = false;
@@ -416,11 +431,15 @@ export class Flasher {
   }
 
   private static tryToReconnect() {
+    if (this.maxReconnectAttempts >= 0 && this.curReconnectAttemps >= this.maxReconnectAttempts) {
+      return;
+    }
     this.timerID = setTimeout(() => {
       console.log(`${this.base_address} inTimer: ${this.timeout}`);
       if (!this.freezeReconnection) {
-        this.reconnect();
         this.timeout = Math.min(this.timeout + this.incTimeout, this.maxTimeout);
+        this.curReconnectAttemps++;
+        this.reconnect();
       } else {
         console.log('the timer is frozen');
         if (this.timeout == 0) {

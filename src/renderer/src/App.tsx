@@ -57,10 +57,6 @@ export const App: React.FC = () => {
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
 
-  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
-  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor, manager);
-  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor, manager);
-
   const { errorModalProps, openLoadError, openPlatformError, openSaveError } = useErrorModal();
   const { saveModalProps, operations, performNewFile } = useFileOperations({
     manager,
@@ -71,9 +67,6 @@ export const App: React.FC = () => {
 
   const sidebarCallbacks: SidebarCallbacks = {
     ...operations,
-    onRequestAddComponent,
-    onRequestEditComponent,
-    onRequestDeleteComponent,
   };
 
   useEffect(() => {
@@ -125,10 +118,6 @@ export const App: React.FC = () => {
             onCreate={performNewFile}
             onClose={closePlatformModal}
           />
-
-          <ComponentAddModal {...addComponent} />
-          <ComponentEditModal {...editComponent} />
-          <ComponentDeleteModal {...deleteComponent} />
         </div>
       </ThemeContext.Provider>
     </DocumentTitle>

@@ -8,6 +8,7 @@ import {
   Condition,
   Transition,
   Component,
+  Elements,
 } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
@@ -56,16 +57,14 @@ const emptyDataListeners = Object.fromEntries([
  * Класс-прослойка, обеспечивающий взаимодействие с React.
  */
 export class EditorManager {
-  data!: EditorData;
+  data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
 
   resetEditor?: () => void;
 
-  constructor() {
-    this.init();
-  }
+  constructor() {}
 
-  init() {
+  init(basename: string | null, name: string, elements: Elements) {
     this.data = emptyEditorData();
 
     const self = this;
@@ -79,15 +78,22 @@ export class EditorManager {
       },
     });
 
-    this.data.elements = new Proxy(this.data.elements, {
-      set(target, prop, val, receiver) {
-        const result = Reflect.set(target, prop, val, receiver);
+    this.data.basename = basename;
+    this.data.name = name;
+    this.data.elements = elements;
+    this.data.isInitialized = true;
 
-        self.dataListeners[`elements.${String(prop)}`].forEach((listener) => listener());
+    this.data.elements = new Proxy(this.data.elements, {
+      set(target, key, val, receiver) {
+        const result = Reflect.set(target, key, val, receiver);
+
+        self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
 
         return result;
       },
     });
+
+    this.resetEditor?.();
   }
 
   subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
@@ -110,9 +116,7 @@ export class EditorManager {
         return this.data[propertyName];
       }
 
-      if (propertyName.startsWith('elements.')) {
-        return this.data['elements'][propertyName.split('.')[1]];
-      }
+      return this.data['elements'][propertyName.split('.')[1]];
     };
 
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
@@ -123,15 +127,9 @@ export class EditorManager {
       throw Error('unknown platform ' + platformIdx);
     }
 
-    this.init();
-
-    this.data.isInitialized = true;
-    this.data.basename = null;
-    this.data.name = 'Без названия';
-    this.data.elements = emptyElements();
-    this.data.elements.platform = platformIdx;
-
-    this.resetEditor?.();
+    const elements = emptyElements();
+    elements.platform = platformIdx;
+    this.init(null, 'Без названия', elements);
   }
 
   compile() {
@@ -152,14 +150,11 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
-        this.init();
-
-        this.data.basename = openData[1]!.replace('.graphml', '.json');
-        this.data.name = openData[2]!.replace('.graphml', '.json');
-        this.data.elements = data;
-        this.data.isInitialized = true;
-
-        this.resetEditor?.();
+        this.init(
+          openData[1]!.replace('.graphml', '.json'),
+          openData[2]!.replace('.graphml', '.json'),
+          data
+        );
 
         return makeRight(null);
       } catch (e) {
@@ -208,14 +203,7 @@ export class EditorManager {
           });
         }
 
-        this.init();
-
-        this.data.basename = openData[1];
-        this.data.name = openData[2];
-        this.data.elements = data;
-        this.data.isInitialized = true;
-
-        this.resetEditor?.();
+        this.init(openData[1] ?? '', openData[2] ?? '', data);
 
         return makeRight(null);
       } catch (e) {
@@ -561,6 +549,9 @@ export class EditorManager {
 
     component.parameters = parameters;
 
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
+
     return true;
   }
 
@@ -572,6 +563,9 @@ export class EditorManager {
 
     delete this.data.elements.components[name];
 
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
+
     return true;
   }
 
@@ -580,6 +574,9 @@ export class EditorManager {
     if (!component) return false;
 
     delete this.data.elements.components[name];
+
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
 
     return true;
   }

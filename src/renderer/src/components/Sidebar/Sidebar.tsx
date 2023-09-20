@@ -21,9 +21,6 @@ export interface SidebarCallbacks {
   onRequestOpenFile: () => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
-  onRequestAddComponent: () => void;
-  onRequestEditComponent: (idx: string) => void;
-  onRequestDeleteComponent: (name: string) => void;
 }
 
 interface SidebarProps {
@@ -35,15 +32,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   editor,
   manager,
-  callbacks: {
-    onRequestNewFile,
-    onRequestOpenFile,
-    onRequestSaveFile,
-    onRequestSaveAsFile,
-    onRequestAddComponent,
-    onRequestEditComponent,
-    onRequestDeleteComponent,
-  },
+  callbacks: { onRequestNewFile, onRequestOpenFile, onRequestSaveFile, onRequestSaveAsFile },
 }) => {
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
@@ -67,15 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onRequestImport={handleImport}
         compilerStatus={compilerStatus}
       />,
-      <Explorer
-        editor={editor}
-        manager={manager}
-        callbacks={{
-          onRequestAddComponent,
-          onRequestEditComponent,
-          onRequestDeleteComponent,
-        }}
-      />,
+      <Explorer editor={editor} manager={manager} />,
       <CompilerTab
         manager={manager}
         editor={editor}

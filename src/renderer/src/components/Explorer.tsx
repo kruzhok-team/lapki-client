@@ -7,26 +7,21 @@ import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-
-export interface ExplorerCallbacks {
-  onRequestAddComponent: () => void;
-  onRequestEditComponent: (idx: string) => void;
-  onRequestDeleteComponent: (idx: string) => void;
-}
+import { useAddComponent, useDeleteComponent, useEditComponent } from '@renderer/hooks';
+import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
-  callbacks: ExplorerCallbacks;
 }
 
-export const Explorer: React.FC<ExplorerProps> = ({
-  editor,
-  manager,
-  callbacks: { onRequestAddComponent, onRequestEditComponent, onRequestDeleteComponent },
-}) => {
+export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const isInitialized = manager.useData('isInitialized');
   const components = manager.useData('elements.components');
+
+  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
+  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor, manager);
+  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor, manager);
 
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -93,6 +88,10 @@ export const Explorer: React.FC<ExplorerProps> = ({
           )}
         />
       </div>
+
+      <ComponentAddModal {...addComponent} />
+      <ComponentEditModal {...editComponent} />
+      <ComponentDeleteModal {...deleteComponent} />
 
       {/* TODO: 
       <div className="h-full flex-auto px-4 pt-3 text-center">

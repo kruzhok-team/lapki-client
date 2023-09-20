@@ -20,6 +20,7 @@ import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
 import { ArgumentProto } from '@renderer/types/platform';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -42,6 +43,7 @@ interface ConditionPreset {
 interface CreateModalProps {
   isOpen: boolean;
   editor: CanvasEditor | null;
+  manager: EditorManager;
   isData: { state: State } | undefined;
   isTransition: { target: Condition } | undefined;
   isCondition: Action[] | undefined;
@@ -79,6 +81,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   onClose,
   isData,
   editor,
+  manager,
   ...props
 }) => {
   const {
@@ -90,6 +93,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   } = useForm<CreateModalFormValues>();
 
   //--------------------------------Работа со списком компонентов---------------------------------------
+  const componentsData = manager.useData('elements.components');
   const machine = editor!.container.machine;
 
   const isEditingEvent = isData === undefined;
@@ -159,17 +163,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const optionsComponents = [
     ...sysCompoOption,
-    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
   ];
 
   const optionsParam1Components = [
     ...sysCompoOption,
-    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
   ];
 
   const optionsParam2Components = [
     ...sysCompoOption,
-    ...Array.from(machine.components.entries()).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
   ];
 
   const [components, setComponents] = useState<SelectOption>(optionsComponents[0]);

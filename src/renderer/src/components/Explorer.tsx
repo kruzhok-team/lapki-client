@@ -3,27 +3,26 @@ import { twMerge } from 'tailwind-merge';
 
 import { ScrollableList } from './ScrollableList';
 
-import { EditorRef } from '@renderer/hooks/useEditorManager';
-
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-
-export interface ExplorerCallbacks {
-  onRequestAddComponent: () => void;
-  onRequestEditComponent: (idx: string) => void;
-  onRequestDeleteComponent: (idx: string) => void;
-}
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { useAddComponent, useDeleteComponent, useEditComponent } from '@renderer/hooks';
+import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 
 interface ExplorerProps {
-  editorRef: EditorRef;
-  callbacks: ExplorerCallbacks;
+  editor: CanvasEditor | null;
+  manager: EditorManager;
 }
 
-export const Explorer: React.FC<ExplorerProps> = ({
-  editorRef,
-  callbacks: { onRequestAddComponent, onRequestEditComponent, onRequestDeleteComponent },
-}) => {
-  const editorData = editorRef.editorData;
+export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
+  const isInitialized = manager.useData('isInitialized');
+  const components = manager.useData('elements.components');
+
+  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
+  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor, manager);
+  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor, manager);
+
   const [cursor, setCursor] = useState<string | null>(null);
 
   const onUnClick = (_e: React.MouseEvent) => {
@@ -57,7 +56,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
       <div className="px-4 text-center">
         <button
           className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-          disabled={!editorRef.editorData.content}
+          disabled={!isInitialized}
           onClick={onAddClick}
         >
           <AddIcon className="shrink-0" />
@@ -67,7 +66,7 @@ export const Explorer: React.FC<ExplorerProps> = ({
         <ScrollableList
           className="max-h-[350px]"
           containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={Object.keys(editorData?.data.components) ?? []}
+          listItems={Object.keys(components)}
           heightOfItem={10}
           maxItemsToRender={50}
           renderItem={(key) => (
@@ -80,13 +79,19 @@ export const Explorer: React.FC<ExplorerProps> = ({
             >
               <img
                 className="h-8"
-                src={editorRef.platform?.getComponentIconUrl(key, true) ?? UnknownIcon}
+                src={
+                  editor?.container.machine.platform?.getComponentIconUrl(key, true) ?? UnknownIcon
+                }
               />
               <p className="ml-2 line-clamp-1">{key}</p>
             </div>
           )}
         />
       </div>
+
+      <ComponentAddModal {...addComponent} />
+      <ComponentEditModal {...editComponent} />
+      <ComponentDeleteModal {...deleteComponent} />
 
       {/* TODO: 
       <div className="h-full flex-auto px-4 pt-3 text-center">

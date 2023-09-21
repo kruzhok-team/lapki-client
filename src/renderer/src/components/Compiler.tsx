@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { useSidebar } from '@renderer/store/useSidebar';
@@ -13,29 +13,19 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 export interface CompilerProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
-
   openData: [boolean, string | null, string | null, string] | undefined;
-  compilerData: CompilerResult | undefined;
-  setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>;
-  compilerStatus: string;
-  setCompilerStatus: Dispatch<SetStateAction<string>>;
 }
 
-export const CompilerTab: React.FC<CompilerProps> = ({
-  manager,
-  openData,
-  compilerData,
-  setCompilerData,
-  compilerStatus,
-  setCompilerStatus,
-}) => {
+export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
+  const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
+  const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
+  const [importData, setImportData] = useState<string | undefined>(undefined);
+
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
   const name = manager.useData('name');
   const isInitialized = manager.useData('isInitialized');
-
-  const [importData, setImportData] = useState<string | undefined>(undefined);
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной

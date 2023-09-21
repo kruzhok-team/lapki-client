@@ -88,10 +88,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   const handleReconnect = () => {
-    Settings.getCompilerSettings().then((compiler) => {
-      console.log('CONNECTING TO COMPILER');
-      Compiler.connect(compiler.host, compiler.port);
-    });
+    Compiler.reconnect();
   };
 
   useEffect(() => {

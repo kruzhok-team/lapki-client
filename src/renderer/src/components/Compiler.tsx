@@ -23,7 +23,6 @@ export interface CompilerProps {
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   manager,
-  editor,
   openData,
   compilerData,
   setCompilerData,
@@ -85,6 +84,13 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         code: element.fileContent,
         language: 'cpp',
       });
+    });
+  };
+
+  const handleReconnect = () => {
+    Settings.getCompilerSettings().then((compiler) => {
+      console.log('CONNECTING TO COMPILER');
+      Compiler.connect(compiler.host, compiler.port);
     });
   };
 

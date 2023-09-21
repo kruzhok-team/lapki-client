@@ -9,7 +9,7 @@ export type ErrorModalData = {
 
 interface ErrorModalProps {
   isOpen: boolean;
-  data: ErrorModalData | null;
+  data: ErrorModalData | null | undefined;
   onClose: () => void;
 }
 

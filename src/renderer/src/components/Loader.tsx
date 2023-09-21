@@ -8,10 +8,14 @@ import {
   FLASHER_CONNECTED,
   FLASHER_CONNECTING,
   FLASHER_SWITCHING_HOST,
+  FLASHER_CONNECTION_ERROR,
+  FLASHER_NO_CONNECTION,
   Flasher,
 } from './Modules/Flasher';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { FlasherSelectModal } from './FlasherSelectModal';
+import { ErrorModal, ErrorModalData } from './ErrorModal';
+
 export interface FlasherProps {
   manager: EditorManager | null;
   compilerData: CompilerResult | undefined;
@@ -24,6 +28,8 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
+  const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
+  const [flasherIsLocal, setFlasherIslocal] = useState<boolean>(true);
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
@@ -31,6 +37,14 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     Flasher.freezeReconnectionTimer(false);
     setIsFlasherModalOpen(false);
   };
+
+  const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
+  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
+  const openMsgModal = (data: ErrorModalData) => {
+    setMsgModalData(data);
+    setIsMsgModalOpen(true);
+  };
+  const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const isActive = (id: string) => currentDevice === id;
 
@@ -53,12 +67,14 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
 
   const handleLocalFlasher = async () => {
     console.log('local');
+    setFlasherIslocal(true);
     await manager?.startLocalModule('lapki-flasher');
     //Стандартный порт
     manager?.changeFlasherLocal();
   };
 
   const handleRemoteFlasher = (host: string, port: number) => {
+    setFlasherIslocal(false);
     console.log('remote');
     // await manager?.stopLocalModule('lapki-flasher');
     manager?.changeFlasherHost(host, port);
@@ -74,13 +90,86 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     }
   };
 
+  const handleErrorMessageDisplay = async () => {
+    // выводимое для пользователя сообщение
+    var errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
+    if (flasherIsLocal) {
+      await window.electron.ipcRenderer
+        .invoke('Module:getStatus', 'lapki-flasher')
+        .then(function (obj) {
+          let errorDetails = obj.details;
+          switch (obj.code) {
+            // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
+            case 0:
+              errorMsg = <p>{'Загрузчик не был запущен по неизвестной причине.'}</p>;
+              break;
+            // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
+            case 1:
+              switch (connectionStatus) {
+                case FLASHER_CONNECTION_ERROR:
+                  errorMsg = (
+                    <p>
+                      {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
+                      <br></br>
+                      {flasherError}
+                    </p>
+                  );
+                  break;
+                default:
+                  errorMsg = (
+                    <p>
+                      {`Локальный загрузчик работает, но IDE не может установить с ним соединение.`}
+                    </p>
+                  );
+                  break;
+              }
+              break;
+            case 2:
+              errorMsg = (
+                <p>
+                  {`Локальный загрузчик не смог запуститься из-за ошибки.`}
+                  <br></br>
+                  {errorDetails}
+                </p>
+              );
+              break;
+            case 3:
+              errorMsg = <p>{`Прервана работа локального загрузчика.`}</p>;
+              break;
+            case 4:
+              errorMsg = <p>{`Платформа ${errorDetails} не поддерживается.`}</p>;
+              break;
+          }
+        });
+    } else {
+      if (connectionStatus == FLASHER_CONNECTION_ERROR) {
+        errorMsg = (
+          <p>
+            {`Ошибка соединения.`}
+            <br></br>
+            {flasherError}
+          </p>
+        );
+      } else {
+        errorMsg = <p>{flasherError}</p>;
+      }
+    }
+    const msg: ErrorModalData = {
+      text: errorMsg,
+      caption: 'Ошибка',
+    };
+    openMsgModal(msg);
+  };
+
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,
       setFlasherConnectionStatus,
       setFlasherLog,
       setFlasherFile,
-      setFlashing
+      setFlashing,
+      setFlasherError,
+      setFlasherIslocal
     );
     const reader = new FileReader();
     Flasher.initReader(reader);
@@ -126,9 +215,23 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
-
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
+          <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
           <p>{connectionStatus}</p>
+          <br></br>
+          <button
+            className="btn-primary mb-2"
+            onClick={() => handleErrorMessageDisplay()}
+            style={{
+              display:
+                connectionStatus == FLASHER_NO_CONNECTION ||
+                connectionStatus == FLASHER_CONNECTION_ERROR
+                  ? 'inline-block'
+                  : 'none',
+            }}
+          >
+            Подробнее
+          </button>
           {[...devices.keys()].map((key) => (
             <button
               key={key}
@@ -142,7 +245,6 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
             </button>
           ))}
         </div>
-
         <div className="mb-2 h-64 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
           {[...devices.keys()].map((key) => (
             <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>

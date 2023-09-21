@@ -34,13 +34,16 @@ export class Flasher {
   static currentBlob: Blob;
   static filePos: number = 0;
   static blobSize: number = 1024;
+  // true = во время вызова таймера для переключения ничего не будет происходить.
+  static freezeReconnection = false;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
   static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
   static setFlashing: Dispatch<SetStateAction<boolean>>;
-  // true = во время вызова таймера для переключения ничего не будет происходить.
-  static freezeReconnection = false;
+  // сообщение об ошибке, undefined означает, что ошибки нет
+  static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
+  static setIsLocal: Dispatch<SetStateAction<boolean>>;
 
   static async changeLocal() {
     await this.setLocal();
@@ -101,13 +104,17 @@ export class Flasher {
     setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
-    setFlashing: Dispatch<SetStateAction<boolean>>
+    setFlashing: Dispatch<SetStateAction<boolean>>,
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
+    setIsLocal: Dispatch<SetStateAction<boolean>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
+    this.setErrorMessage = setErrorMessage;
+    this.setIsLocal = setIsLocal;
   }
   /*
     Добавляет устройство в список устройств
@@ -166,7 +173,10 @@ export class Flasher {
     return this.connection !== undefined;
   }
 
-  static async connect(route: string | undefined = undefined, timeout: number = 0): Websocket {
+  static async connect(
+    route: string | undefined = undefined,
+    timeout: number = this.incTimeout
+  ): Websocket {
     if (route == undefined) {
       await this.setLocal();
       this.base_address = this.makeAddress(this.host, this.port);
@@ -179,7 +189,9 @@ export class Flasher {
     var ws;
     try {
       ws = new Websocket(route);
+      this.setErrorMessage(undefined);
     } catch (error) {
+      this.setErrorMessage(`${error}`);
       console.log('Flasher websocket error', error);
       this.setFlasherConnectionStatus(FLASHER_CONNECTION_ERROR);
       return;
@@ -189,6 +201,7 @@ export class Flasher {
     //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
     ws.onopen = () => {
       console.log('Flasher: connected!');
+      this.setErrorMessage(undefined);
       this.setFlashing(false);
       this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
@@ -293,7 +306,16 @@ export class Flasher {
       };
     };
 
-    ws.onclose = () => {
+    ws.onclose = async (event) => {
+      if (!event.wasClean) {
+        if (this.connecting) {
+          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}`);
+        } else {
+          this.setErrorMessage(
+            `Соедиение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере`
+          );
+        }
+      }
       console.log(`flasher closed ${route}, ${timeout}, ${this.base_address}`);
       if (this.base_address == route) {
         this.connecting = false;

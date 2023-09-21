@@ -245,9 +245,9 @@ export class StateMachine extends EventEmitter {
     if (!state) return;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
-    this.transitions.forEach((data, id) => {
+    this.transitions.forEach((data, transitionId) => {
       if (data.source.id === id || data.target.id === id) {
-        this.deleteTransition(id);
+        this.deleteTransition(transitionId);
       }
     });
 

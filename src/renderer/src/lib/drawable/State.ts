@@ -1,5 +1,3 @@
-import { State as StateType } from '@renderer/types/diagram';
-
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';

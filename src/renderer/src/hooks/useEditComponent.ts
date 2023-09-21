@@ -33,7 +33,7 @@ export const useEditComponent = (editor: CanvasEditor | null, manager: EditorMan
     // }
 
     setIdx(idx);
-    setData(data);
+    setData(component);
     setProto(proto);
     // setExistingComponents(existingComponents);
     setIsOpen(true);

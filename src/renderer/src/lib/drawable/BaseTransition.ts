@@ -42,7 +42,7 @@ export class BaseTransition {
     ctx.arc(
       position.x,
       position.y,
-      transitionStyle.startSize / this.container.scale,
+      transitionStyle.startSize / this.container.app.manager.data.scale,
       0,
       2 * Math.PI
     );
@@ -52,8 +52,8 @@ export class BaseTransition {
   }
 
   protected drawEnd(ctx: CanvasRenderingContext2D, position: Point, angle: number) {
-    const width = 10 / this.container.scale;
-    const height = 10 / this.container.scale;
+    const width = 10 / this.container.app.manager.data.scale;
+    const height = 10 / this.container.app.manager.data.scale;
 
     const p1 = rotatePoint({ x: position.x - width, y: position.y - height / 2 }, position, angle);
     const p2 = rotatePoint({ x: position.x - width, y: position.y + height / 2 }, position, angle);

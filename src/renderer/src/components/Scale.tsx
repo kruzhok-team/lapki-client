@@ -6,15 +6,17 @@ import { useDoc } from '@renderer/store/useDoc';
 
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 interface ScaleProps {
   editor: CanvasEditor;
+  manager: EditorManager;
 }
 
-export const Scale: React.FC<ScaleProps> = ({ editor }) => {
+export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const isDocOpen = useDoc((state) => state.isOpen);
 
-  const scale = editor.container.useScale();
+  const scale = manager.useData('scale');
 
   const handleZoomOut = () => {
     editor.container.changeScale(0.1);

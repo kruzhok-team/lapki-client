@@ -1,12 +1,10 @@
-import { Elements, emptyElements } from '@renderer/types/diagram';
-
 import { Canvas } from './basic/Canvas';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
 import { preloadPicto } from './drawable/Picto';
-import { DataUpdateCallback } from './data/StateMachine';
+import { EditorManager } from './data/EditorManager';
 
 /**
  * Редактор машин состояний.
@@ -19,8 +17,9 @@ export class CanvasEditor {
   render!: Render;
 
   container!: Container;
+  manager!: EditorManager;
 
-  constructor(container: HTMLDivElement, elements?: Elements) {
+  constructor(container: HTMLDivElement, manager: EditorManager) {
     this.root = container;
     this.canvas = new Canvas(this);
     this.mouse = new Mouse(this.canvas.element);
@@ -30,8 +29,9 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    const contElements = typeof elements !== 'undefined' ? elements : emptyElements();
-    this.container = new Container(this, contElements);
+    this.manager = manager;
+
+    this.container = new Container(this);
     this.canvas.onResize = () => {
       this.mouse.setOffset();
       this.container.isDirty = true;
@@ -52,24 +52,8 @@ export class CanvasEditor {
     });
   }
 
-  loadData(elements: Elements) {
-    this.container.machine.clear();
-    this.container.machine.loadData(elements);
-    this.container.isDirty = true;
-    console.log('loaded!');
-  }
-
-  getData(): string {
-    return JSON.stringify(this.container.machine.graphData(), null, 2);
-  }
-
-  onDataUpdate(fn: DataUpdateCallback) {
-    this.container.machine.onDataUpdate(fn);
-  }
-
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
-    this.container.machine.onDataUpdate(undefined);
   }
 }

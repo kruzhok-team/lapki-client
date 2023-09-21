@@ -1,40 +1,93 @@
-import React, { Dispatch } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
 import { Device } from '@renderer/types/FlasherTypes';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { FLASHER_CONNECTED, FLASHER_CONNECTING, FLASHER_SWITCHING_HOST } from './Modules/Flasher';
+import {
+  FLASHER_CONNECTED,
+  FLASHER_CONNECTING,
+  FLASHER_SWITCHING_HOST,
+  Flasher,
+} from './Modules/Flasher';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { FlasherSelectModal } from './FlasherSelectModal';
 export interface FlasherProps {
-  devices: Map<string, Device>;
-  currentDevice: string | undefined;
-  connectionStatus: string;
-  flasherLog: string | undefined;
+  manager: EditorManager | null;
   compilerData: CompilerResult | undefined;
-  flasherFile: string | undefined | null;
-  flashing: boolean;
-  setCurrentDevice: Dispatch<string | undefined>;
-  handleGetList: () => void;
-  handleFlash: () => void;
-  handleHostChange: () => void;
-  handleFileChoose: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({
-  currentDevice,
-  devices,
-  connectionStatus,
-  compilerData,
-  flasherFile,
-  flasherLog,
-  flashing,
-  setCurrentDevice,
-  handleGetList,
-  handleFlash,
-  handleHostChange,
-  handleFileChoose,
-}) => {
+export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
+  const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
+  const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
+  const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
+  const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
+  const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
+  const [flashing, setFlashing] = useState(false);
+
+  const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
+  const openFlasherModal = () => setIsFlasherModalOpen(true);
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    setIsFlasherModalOpen(false);
+  };
+
   const isActive = (id: string) => currentDevice === id;
+
+  const handleGetList = async () => {
+    manager?.getList();
+  };
+
+  const handleFlash = async () => {
+    if (flasherFile) {
+      Flasher.flash(currentDevice!);
+    } else {
+      Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
+    }
+  };
+
+  const handleHostChange = () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherModal();
+  };
+
+  const handleLocalFlasher = async () => {
+    console.log('local');
+    await manager?.startLocalModule('lapki-flasher');
+    //Стандартный порт
+    manager?.changeFlasherLocal();
+  };
+
+  const handleRemoteFlasher = (host: string, port: number) => {
+    console.log('remote');
+    // await manager?.stopLocalModule('lapki-flasher');
+    manager?.changeFlasherHost(host, port);
+  };
+
+  const handleFileChoose = () => {
+    if (flasherFile) {
+      console.log('cancel file choose');
+      setFlasherFile(undefined);
+    } else {
+      console.log('file chooser');
+      Flasher.setFile();
+    }
+  };
+
+  useEffect(() => {
+    Flasher.bindReact(
+      setFlasherDevices,
+      setFlasherConnectionStatus,
+      setFlasherLog,
+      setFlasherFile,
+      setFlashing
+    );
+    const reader = new FileReader();
+    Flasher.initReader(reader);
+    console.log('CONNECTING TO FLASHER');
+    Flasher.connect();
+    // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
+  }, []);
 
   return (
     <section className="flex h-full flex-col text-center">
@@ -134,6 +187,13 @@ export const Loader: React.FC<FlasherProps> = ({
           {flasherLog}
         </div>
       </div>
+
+      <FlasherSelectModal
+        isOpen={isFlasherModalOpen}
+        handleLocal={handleLocalFlasher}
+        handleRemote={handleRemoteFlasher}
+        onClose={closeFlasherModal}
+      />
     </section>
   );
 };

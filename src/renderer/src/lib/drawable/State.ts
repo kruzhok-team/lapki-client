@@ -1,5 +1,3 @@
-import { State as StateType } from '@renderer/types/diagram';
-
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
@@ -10,22 +8,12 @@ import theme from '@renderer/theme';
 
 const style = theme.colors.diagram.state;
 
-interface StateProps {
-  container: Container;
-  id: string;
-  data: StateType;
-  parent?: State;
-  initial?: boolean;
-}
-
 /**
  * Нода машины состояний.
  * Класс выполняет отрисовку, обработку событий (за счёт {@link Draggable}),
  * управление собственным выделением и отображение «хваталок».
  */
 export class State extends Draggable {
-  data!: StateType;
-  isInitial = false;
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -34,28 +22,29 @@ export class State extends Draggable {
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
 
-  toJSON(): StateType {
-    return {
-      parent: this.data.parent,
-      name: this.data.name,
-      events: this.eventBox.toJSON(),
-      bounds: this.bounds, // FIXME: должны учитывать дочерний контейнер?
-    };
-  }
-
-  constructor({ id, container, data, parent, initial = false }: StateProps) {
-    super(container, { ...data.bounds, width: 230, height: 100 }, id, parent);
-    this.data = data;
+  constructor(container: Container, id: string, parent?: Draggable) {
+    super(container, id, parent);
     this.container = container;
 
-    this.eventBox = new Events(this.container, this, this.data.events);
+    this.eventBox = new Events(this.container, this);
     this.updateEventBox();
     this.edgeHandlers = new EdgeHandlers(container.app, this);
+  }
 
-    if (initial) {
-      this.isInitial = true;
-      this.container.isDirty = true;
-    }
+  get data() {
+    return this.container.app.manager.data.elements.states[this.id];
+  }
+
+  get isInitial() {
+    return this.container.app.manager.data.elements.initialState === this.id;
+  }
+
+  get bounds() {
+    return this.data.bounds;
+  }
+
+  set bounds(value) {
+    this.data.bounds = value;
   }
 
   updateEventBox() {
@@ -99,10 +88,10 @@ export class State extends Draggable {
     ctx.beginPath();
 
     ctx.roundRect(x, y, width, height, [
-      6,
-      6,
-      this.children.size !== 0 ? 0 : 6,
-      this.children.size !== 0 ? 0 : 6,
+      6 / this.container.app.manager.data.scale,
+      6 / this.container.app.manager.data.scale,
+      (this.children.size !== 0 ? 0 : 6) / this.container.app.manager.data.scale,
+      (this.children.size !== 0 ? 0 : 6) / this.container.app.manager.data.scale,
     ]);
     ctx.fill();
 
@@ -117,11 +106,11 @@ export class State extends Draggable {
 
   get computedTitleSizes() {
     return {
-      height: this.titleHeight / this.container.scale,
+      height: this.titleHeight / this.container.app.manager.data.scale,
       width: this.drawBounds.width,
-      fontSize: 15 / this.container.scale,
-      paddingX: 15 / this.container.scale,
-      paddingY: 10 / this.container.scale,
+      fontSize: 15 / this.container.app.manager.data.scale,
+      paddingX: 15 / this.container.app.manager.data.scale,
+      paddingY: 10 / this.container.app.manager.data.scale,
     };
   }
 
@@ -138,7 +127,12 @@ export class State extends Draggable {
 
     ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, y, width, height, [6, 6, 0, 0]);
+    ctx.roundRect(x, y, width, height, [
+      6 / this.container.app.manager.data.scale,
+      6 / this.container.app.manager.data.scale,
+      0,
+      0,
+    ]);
     ctx.fill();
 
     ctx.fillStyle = style.titleColor;
@@ -156,7 +150,7 @@ export class State extends Draggable {
     ctx.strokeStyle = style.selectedBorderColor;
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);
     ctx.stroke();
     ctx.closePath();
 
@@ -167,15 +161,15 @@ export class State extends Draggable {
     //Добавляет стиль заднему фону
     ctx.fillStyle = style.bodyBg;
     //создает указательный треугольник
-    ctx.moveTo(x + 100 / this.container.scale, y - 20 / this.container.scale);
-    ctx.lineTo(x + 110 / this.container.scale, y - 2 / this.container.scale);
-    ctx.lineTo(x + 120 / this.container.scale, y - 20 / this.container.scale);
+    ctx.moveTo(x + 100 / this.container.app.manager.data.scale, y - 20 / this.container.app.manager.data.scale);
+    ctx.lineTo(x + 110 / this.container.app.manager.data.scale, y - 2 / this.container.app.manager.data.scale);
+    ctx.lineTo(x + 120 / this.container.app.manager.data.scale, y - 20 / this.container.app.manager.data.scale);
     //Строит прямоугольник
     ctx.roundRect(
       x,
-      y - 120 / this.container.scale,
+      y - 120 / this.container.app.manager.data.scale,
       width,
-      100 / this.container.scale,
+      100 / this.container.app.manager.data.scale,
       transitionStyle.startSize
     );
     //Добавляет задний фон объекту канвы
@@ -186,7 +180,7 @@ export class State extends Draggable {
     ctx.beginPath();
     //Добавляет стиль тексту
     ctx.fillStyle = transitionStyle.bgColor;
-    ctx.fillText(this.isState, x, y - 80 / this.container.scale);
+    ctx.fillText(this.isState, x, y - 80 / this.container.app.manager.data.scale);
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
@@ -204,7 +198,12 @@ export class State extends Draggable {
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [0, 0, 6, 6]);
+    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+      0,
+      0,
+      6 / this.container.app.manager.data.scale,
+      6 / this.container.app.manager.data.scale,
+    ]);
     ctx.stroke();
 
     ctx.closePath();
@@ -217,7 +216,7 @@ export class State extends Draggable {
 
     ctx.beginPath();
     picto.drawImage(ctx, 'InitialIcon', {
-      x: x - 30 / this.container.scale,
+      x: x - 30 / this.container.app.manager.data.scale,
       y,
       width: 25,
       height: 25,

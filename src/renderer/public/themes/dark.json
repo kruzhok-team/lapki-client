@@ -1,0 +1,26 @@
+{
+  "primary": "#0C4BEE",
+  "primaryHover": "#225EF9",
+  "primaryActive": "#2A62F4",
+  "error": "red",
+  "success": "lime",
+
+  "bg-primary": "#262626",
+  "bg-secondary": "#121111",
+  "bg-hover": "#434343",
+  "bg-active": "#545454",
+
+  "border-primary": "#666666",
+
+  "text-primary": "#f2f2f2",
+  "text-secondary": "#fff",
+  "text-inactive": "#a3a2a2",
+  "text-disabled": "rgb(156,163,175)",
+
+  "codeEditorTheme": "vs-dark",
+
+  "scrollbar-track": "rgba(162,162,162, 0.5)",
+  "scrollbar-thumb": "rgba(162,162,162, 0.7)",
+
+  "grid": "rgba(255,255,255,0.03)"
+}

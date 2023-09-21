@@ -31,7 +31,7 @@ export class EdgeHandlers {
   }
 
   get position(): Point[] {
-    const offset = 4 / this.app.container.scale;
+    const offset = 4 / this.app.manager.data.scale;
     let {
       x: stateX,
       y: stateY,
@@ -63,7 +63,7 @@ export class EdgeHandlers {
   }
 
   get size() {
-    return 20 / this.app.container.scale;
+    return 20 / this.app.manager.data.scale;
   }
 
   setCurrentState(state: State) {

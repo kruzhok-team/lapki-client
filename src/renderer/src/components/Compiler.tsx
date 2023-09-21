@@ -23,7 +23,6 @@ export interface CompilerProps {
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   manager,
-  editor,
   openData,
   compilerData,
   setCompilerData,

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import React, { useEffect, useState } from 'react';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
@@ -15,8 +14,9 @@ import {
 } from './Modules/Flasher';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { FlasherSelectModal } from './FlasherSelectModal';
+import { ErrorModal, ErrorModalData } from './ErrorModal';
+
 export interface FlasherProps {
-  manager: EditorManager | null;
   manager: EditorManager | null;
   compilerData: CompilerResult | undefined;
 }
@@ -37,6 +37,14 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     Flasher.freezeReconnectionTimer(false);
     setIsFlasherModalOpen(false);
   };
+
+  const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
+  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
+  const openMsgModal = (data: ErrorModalData) => {
+    setMsgModalData(data);
+    setIsMsgModalOpen(true);
+  };
+  const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const isActive = (id: string) => currentDevice === id;
 
@@ -146,7 +154,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
         errorMsg = <p>{flasherError}</p>;
       }
     }
-    const msg: MessageModalData = {
+    const msg: ErrorModalData = {
       text: errorMsg,
       caption: 'Ошибка',
     };
@@ -207,8 +215,8 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
-
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
+          <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
           <p>{connectionStatus}</p>
           <br></br>
           <button
@@ -237,7 +245,6 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
             </button>
           ))}
         </div>
-
         <div className="mb-2 h-64 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
           {[...devices.keys()].map((key) => (
             <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>

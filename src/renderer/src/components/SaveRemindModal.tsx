@@ -6,7 +6,7 @@ import { Modal } from './Modal/Modal';
 
 interface SaveRemindModalProps {
   isOpen: boolean;
-  isData: SaveModalData | undefined;
+  data: SaveModalData | null;
   onClose: () => void;
 }
 
@@ -19,12 +19,12 @@ export type SaveModalData = {
 
 export interface SaveRemindModalFormValues {}
 
-export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, isData, ...props }) => {
+export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data, ...props }) => {
   const { reset, handleSubmit: hookHandleSubmit } = useForm<SaveRemindModalFormValues>();
 
   const handleSubmit = hookHandleSubmit(() => {
-    // data.id = isData?.state.target.id;
-    isData?.onConfirm();
+    // data.id = data?.state.target.id;
+    data?.onConfirm();
     onRequestClose();
   });
 
@@ -34,7 +34,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, isDat
   };
 
   const handleSave = () => {
-    isData?.onSave();
+    data?.onSave();
     // FIXME: не выполняет подтверждаемое действие после сохранения
     onRequestClose();
   };
@@ -44,13 +44,13 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, isDat
       {...props}
       onRequestClose={onRequestClose}
       title={'Подтверждение'}
-      extraLabel={isData?.onSave ? 'Сохранить' : undefined}
+      extraLabel={data?.onSave ? 'Сохранить' : undefined}
       submitLabel="Не сохранять"
       onSubmit={handleSubmit}
       onExtra={handleSave}
     >
       <h3>Файл был отредактирован.</h3>
-      <h3>{isData?.question ?? 'Хотите его сохранить, прежде чем продолжить?'}</h3>
+      <h3>{data?.question ?? 'Хотите его сохранить, прежде чем продолжить?'}</h3>
     </Modal>
   );
 };

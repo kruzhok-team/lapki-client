@@ -4,18 +4,14 @@ import {
   Elements,
   Event,
   Component as ComponentType,
-  Transition as TransitionType,
   Variable,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
-import { customAlphabet, nanoid } from 'nanoid';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
-import { Component } from '../Component';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-import { stateStyle } from '../styles';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
@@ -40,39 +36,17 @@ export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 export class StateMachine extends EventEmitter {
   container!: Container;
 
-  initialState = '';
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
-  components: Map<string, Component> = new Map();
 
   platform!: PlatformManager;
-  platformIdx!: string;
-  parameters: Map<string, string> = new Map();
-
-  dataUpdateCallback?: DataUpdateCallback;
 
   constructor(container: Container) {
     super();
     this.container = container;
   }
 
-  loadData(elements: Elements) {
-    this.initStates(elements.states, elements.initialState);
-    this.initTransitions(elements.transitions);
-    this.initPlatform(elements.platform, elements.parameters);
-    this.initComponents(elements.components);
-  }
-
-  onDataUpdate(fn?: DataUpdateCallback) {
-    this.dataUpdateCallback = fn;
-  }
-
-  dataTrigger(silent?: boolean) {
-    this.container.isDirty = true;
-    this.dataUpdateCallback?.(this.graphData(), !silent);
-  }
-
-  clear() {
+  reset() {
     this.transitions.forEach((value) => {
       this.container.transitions.unwatchTransition(value);
     });
@@ -80,57 +54,27 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((value) => {
       this.container.states.unwatchState(value);
     });
-    this.initialState = '';
     this.states.clear();
-    this.components.clear();
     this.transitions.clear();
-    this.parameters.clear();
-    this.platformIdx = '';
-    // FIXME: platform не обнуляется
   }
 
-  graphData(): Elements {
-    const states = {};
-    const transitions: TransitionType[] = [];
-    const components = {};
-    const parameters = {};
-    this.states.forEach((state, id) => {
-      states[id] = state.toJSON();
-    });
-    this.components.forEach((component, id) => {
-      components[id] = component.toJSON();
-    });
-    this.transitions.forEach((transition) => {
-      transitions.push(transition.toJSON());
-    });
-    this.parameters.forEach((parameter, id) => {
-      parameters[id] = parameter;
-    });
+  loadData() {
+    this.reset();
 
-    const outData = {
-      states,
-      initialState: this.initialState,
-      transitions,
-      components,
-      parameters,
-      platform: this.platformIdx,
-    };
+    this.initStates();
+    this.initTransitions();
+    this.initPlatform();
+    this.initComponents();
 
-    return outData;
+    this.container.isDirty = true;
   }
 
-  initStates(items: Elements['states'], initialState: string) {
-    this.initialState = initialState;
+  initStates() {
+    const items = this.container.app.manager.data.elements.states;
 
     for (const id in items) {
       const parent = this.states.get(items[id].parent ?? '');
-      const state = new State({
-        container: this.container,
-        id,
-        data: items[id],
-        parent,
-        initial: id === initialState,
-      });
+      const state = new State(this.container, id, parent);
 
       state.parent?.children.set(id, state);
       this.container.states.watchState(state);
@@ -138,15 +82,9 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  initComponents(items: Elements['components']) {
-    for (const name in items) {
-      const component = items[name];
-      this.components.set(name, new Component(component));
-      this.platform.nameToComponent.set(name, component.type);
-    }
-  }
+  initTransitions() {
+    const items = this.container.app.manager.data.elements.transitions;
 
-  initTransitions(items: Elements['transitions']) {
     for (const id in items) {
       const data = items[id];
 
@@ -157,7 +95,6 @@ export class StateMachine extends EventEmitter {
         container: this.container,
         source: sourceState,
         target: targetState,
-        data: data,
         id: id,
       });
 
@@ -167,58 +104,91 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  initPlatform(platformIdx: string, parameters: Elements['parameters']) {
-    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformIdx);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformIdx);
+  initComponents() {
+    const items = this.container.app.manager.data.elements.components;
+
+    for (const name in items) {
+      const component = items[name];
+      // this.components.set(name, new Component(component));
+      this.platform.nameToComponent.set(name, component.type);
     }
-    this.platform = platform;
-    this.platformIdx = platformIdx;
-    for (const paramName in parameters) {
-      this.parameters.set(paramName, parameters[paramName]);
-    }
-    // TODO: валидировать список параметров?
   }
 
-  updateState(id: string, name: string) {
-    const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
+  initPlatform() {
+    const platformName = this.container.app.manager.data.elements.platform;
 
-    state.data.name = name;
+    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
+    const platform = loadPlatform(platformName);
+    if (typeof platform === 'undefined') {
+      throw Error("couldn't init platform " + platformName);
+    }
 
-    this.dataTrigger();
+    this.platform = platform;
   }
 
   newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
     const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
+    if (!state) return;
 
-    const trueTab = state.eventBox.data.find(
-      (value) =>
-        triggerComponent === value.trigger.component &&
-        triggerMethod === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-
-    if (trueTab === undefined) {
-      state.eventBox.data = [
-        ...state.eventBox.data,
-        {
-          do: events,
-          trigger: {
-            component: triggerComponent,
-            method: triggerMethod,
-            //args: {},
-          },
-        },
-      ];
-    } else {
-      trueTab.do = [...events];
-    }
+    this.container.app.manager.newPictoState(id, events, triggerComponent, triggerMethod);
 
     state.eventBox.recalculate();
-    this.dataTrigger();
+
+    this.container.isDirty = true;
+  }
+
+  createState(name: string, position: Point, parentId?: string) {
+    // Создание данных
+    const newStateId = this.container.app.manager.createState(name, position, parentId);
+    // Создание модельки
+    const state = new State(this.container, newStateId);
+
+    this.states.set(state.id, state);
+
+    // вкладываем состояние, если оно создано над другим
+    if (parentId) {
+      this.linkState(parentId, newStateId);
+    } else {
+      this.linkStateByPoint(state, position);
+    }
+
+    this.container.states.watchState(state);
+
+    this.container.isDirty = true;
+  }
+
+  changeStateName(id: string, name: string) {
+    this.container.app.manager.changeStateName(id, name);
+
+    this.container.isDirty = true;
+  }
+
+  linkState(parentId: string, childId: string) {
+    const parent = this.states.get(parentId);
+    const child = this.states.get(childId);
+
+    if (!parent || !child) return;
+
+    if (child.data.parent) {
+      this.unlinkState(childId);
+    }
+
+    // Вычисляем новую координату внутри контейнера
+    const parentPos = parent.compoundPosition;
+    const childPos = child.compoundPosition;
+    const newBounds = {
+      ...child.bounds,
+      x: Math.max(0, childPos.x - parentPos.x),
+      y: Math.max(0, childPos.y - parentPos.y - parent.bounds.height),
+    };
+
+    this.container.app.manager.linkState(parentId, childId);
+    this.container.app.manager.changeStateBounds(childId, newBounds);
+
+    child.parent = parent;
+    parent.children.set(childId, child);
+
+    this.container.isDirty = true;
   }
 
   linkStateByPoint(state: State, position: Point) {
@@ -249,132 +219,132 @@ export class StateMachine extends EventEmitter {
       }
     }
 
-    if (possibleParent !== state && typeof possibleParent !== 'undefined') {
-      this.linkState(possibleParent.id!, state.id!);
+    if (possibleParent !== state && possibleParent) {
+      this.linkState(possibleParent.id, state.id);
     }
-  }
-
-  createNewState(name: string, position: Point, parentId?: string) {
-    const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
-    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-    let newId = nanoid();
-    while (this.states.has(newId)) {
-      newId = nanoid();
-    }
-    const state = new State({
-      container: this.container,
-      id: newId,
-      data: {
-        name: name,
-        bounds: { x, y, width, height },
-        events: [],
-      },
-    });
-
-    // если у нас не было начального состояния, им станет новое
-    if (this.initialState === '') {
-      this.initialState = state.id!;
-    }
-
-    // кладём состояние в список
-    this.states.set(state.id!, state);
-
-    // вкладываем состояние, если оно создано над другим
-    if (parentId) {
-      this.linkState(parentId, newId);
-    } else {
-      this.linkStateByPoint(state, position);
-    }
-
-    this.container.states.watchState(state);
-    this.dataTrigger();
-  }
-
-  linkState(parentId: string, childId: string) {
-    const parent = this.states.get(parentId);
-    if (typeof parent === 'undefined') return;
-    const child = this.states.get(childId);
-    if (typeof child === 'undefined') return;
-
-    if (typeof child.parent !== 'undefined') {
-      this.unlinkState(childId);
-    }
-
-    // Вычисляем новую координату внутри контейнера
-    const parentPos = parent.compoundPosition;
-    const childPos = child.compoundPosition;
-    const newBound = {
-      ...child.bounds,
-      x: Math.max(0, childPos.x - parentPos.x),
-      y: Math.max(0, childPos.y - parentPos.y - parent.bounds.height),
-    };
-
-    child.parent = parent;
-    child.data.parent = parentId;
-    parent?.children.set(child.id!, child);
-
-    child.bounds = newBound;
-
-    this.dataTrigger();
   }
 
   unlinkState(id: string) {
     const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
-    if (typeof state.parent === 'undefined') return;
+    if (!state || !state.parent) return;
+
+    this.container.app.manager.unlinkState(id);
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
-    const newBound = { ...state.bounds, ...state.compoundPosition };
+    const newBounds = { ...state.bounds, ...state.compoundPosition };
+    this.container.app.manager.changeStateBounds(id, newBounds);
 
-    state.parent?.children.delete(id);
+    state.parent.children.delete(id);
     state.parent = undefined;
-    delete state.data.parent;
 
-    state.bounds = newBound;
-
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  //Удаление состояния
-  deleteState(idState: string) {
-    const state = this.states.get(idState);
-    if (typeof state === 'undefined') return;
+  deleteState(id: string) {
+    const state = this.states.get(id);
+    if (!state) return;
 
-    //Проходим массив связей, если же связи у удаляемой ноды имеются, то они тоже удаляются
-    this.transitions.forEach((data, id) => {
-      if (data.source.id === idState || data.target.id === idState) {
-        this.deleteTransition(id);
+    // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
+    this.transitions.forEach((data, transitionId) => {
+      if (data.source.id === id || data.target.id === id) {
+        this.deleteTransition(transitionId);
       }
     });
 
-    // Ищем дочерние состояния и отвязываем их от текущего
+    // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
     this.states.forEach((childState) => {
-      if (childState.data.parent === idState) {
+      if (childState.data.parent === id) {
         // Если есть родительское, перепривязываем к нему
         if (state.data.parent) {
-          this.linkState(state.data.parent, childState.id!);
+          this.linkState(state.data.parent, childState.id);
         } else {
-          this.unlinkState(childState.id!);
+          this.unlinkState(childState.id);
         }
       }
     });
 
-    // Отсоединяемся от родительского состояния, если такое есть
+    // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
     if (state.data.parent) {
-      this.unlinkState(state.id!);
+      this.unlinkState(state.id);
     }
 
-    // Если удаляемое состояние было начальным, стираем текущее значение
-    if (state.isInitial) {
-      this.initialState = '';
-    }
+    this.container.app.manager.deleteState(id);
 
     this.container.states.unwatchState(state);
+    this.states.delete(id);
 
-    this.states.delete(idState);
-    this.dataTrigger();
+    this.container.isDirty = true;
+  }
+
+  changeInitialState(id: string) {
+    this.container.app.manager.changeInitialState(id);
+
+    this.container.isDirty = true;
+  }
+
+  createTransition(
+    source: State,
+    target: State,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    // Создание данных
+    const id = this.container.app.manager.createTransition(
+      source.id,
+      target.id,
+      color,
+      {
+        x: (source.bounds.x + target.bounds.x) / 2,
+        y: (source.bounds.y + target.bounds.y) / 2,
+      },
+      component,
+      method,
+      doAction,
+      condition
+    );
+    // Создание модельки
+    const transition = new Transition({
+      container: this.container,
+      source: source,
+      target: target,
+      id,
+    });
+
+    this.transitions.set(id, transition);
+    this.container.transitions.watchTransition(transition);
+
+    this.container.isDirty = true;
+  }
+
+  changeTransition(
+    id: string,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.container.app.manager.changeTransition(id, color, component, method, doAction, condition);
+
+    this.container.isDirty = true;
+  }
+
+  deleteTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.container.app.manager.deleteTransition(id);
+
+    this.container.transitions.unwatchTransition(transition);
+    this.transitions.delete(id);
+
+    this.container.isDirty = true;
   }
 
   deleteSelected() {
@@ -411,199 +381,68 @@ export class StateMachine extends EventEmitter {
     }
 
     if (removed) {
-      this.dataTrigger();
+      this.container.isDirty = true;
     }
-  }
-
-  // Изменение начального состояния
-  changeInitialState(idState: string) {
-    const newInitial = this.states.get(idState);
-    if (typeof newInitial === 'undefined') return;
-
-    const preInitial = this.states.get(this.initialState);
-    if (typeof preInitial !== 'undefined') {
-      preInitial.isInitial = false;
-    }
-
-    newInitial.isInitial = true;
-
-    this.initialState = idState;
-
-    this.dataTrigger();
-  }
-
-  // Удаление связи
-  deleteTransition(id: string) {
-    const transition = this.transitions.get(id);
-    if (typeof transition === 'undefined') return;
-
-    this.container.transitions.unwatchTransition(transition);
-    this.transitions.delete(id);
-
-    this.dataTrigger();
-  }
-
-  createNewTransitionFromData(
-    source: State,
-    target: State,
-    transitionData: TransitionType,
-    id?: string
-  ) {
-    const newId = typeof id !== 'undefined' ? id : nanoid();
-    const transition = new Transition({
-      container: this.container,
-      source: source,
-      target: target,
-      data: transitionData,
-      id: newId,
-    });
-
-    // FIXME: по-хорошему, должно быть редактированием, но пока перестрахуемся
-    if (this.transitions.has(newId)) {
-      this.container.transitions.unwatchTransition(this.transitions.get(newId)!);
-    }
-
-    this.transitions.set(newId, transition);
-
-    this.container.transitions.watchTransition(transition);
-    this.dataTrigger();
-  }
-
-  // Создание новой связи между состояниями и редактирование уже созданных
-  createNewTransition(
-    id: string | undefined,
-    source: State,
-    target: State,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined,
-    position: Point
-  ) {
-    if (id !== undefined) {
-      const transition = this.transitions.get(id);
-      if (typeof transition === 'undefined') return;
-    }
-
-    const transitionData = {
-      source: source.id!,
-      target: target.id!,
-      color,
-      position,
-      trigger: {
-        component,
-        method,
-      },
-      do: doAction,
-      condition,
-    };
-    this.createNewTransitionFromData(source, target, transitionData, id);
   }
 
   // Редактирование события в состояниях
-  createEvent(data: { state; event } | undefined, newValue: Event | Action) {
+  changeEvent(data: { state; event } | undefined, newValue: Event | Action) {
     const state = this.states.get(data?.state.id);
-    if (typeof state === 'undefined') return;
-    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
-    if (data?.event.actionIdx === null) {
-      const trueTab = state.eventBox.data.find(
-        (value, id) =>
-          data?.event.eventIdx !== id &&
-          newValue.component === value.trigger.component &&
-          newValue.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
+    if (!state) return;
 
-      if (trueTab === undefined) {
-        state.eventBox.data[data?.event.eventIdx].trigger = newValue;
-      } else {
-        trueTab.do = [...trueTab.do, ...state.eventBox.data[data?.event.eventIdx].do];
-        state.eventBox.data.splice(data?.event.eventIdx, 1);
-      }
-    } else {
-      state.eventBox.data[data?.event.eventIdx].do[data?.event.actionIdx] = newValue;
-    }
+    this.container.app.manager.changeEvent(state.id, data?.event, newValue);
 
     state.eventBox.recalculate();
-    this.dataTrigger();
+
+    this.container.isDirty = true;
   }
 
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в в состоянии(модалка)
   deleteEvent(id: string, eventId: EventSelection) {
     const state = this.states.get(id);
-    if (typeof state === 'undefined') return;
+    if (!state) return;
 
-    if (eventId.actionIdx === null) {
-      state.eventBox.data.splice(eventId.eventIdx, 1);
-    } else {
-      state.eventBox.data[eventId.eventIdx].do.splice(eventId.actionIdx!, 1);
-      // Проверяем, есть ли действия в событие, если нет, то удалять его
-      if (state.eventBox.data[eventId.eventIdx].do.length === 0) {
-        state.eventBox.data.splice(eventId.eventIdx, 1);
-      }
-    }
+    this.container.app.manager.deleteEvent(id, eventId.eventIdx, eventId.actionIdx);
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  addNewComponent(name: string, type: string) {
-    if (this.components.has(name)) {
-      console.log(['bad new component', name, type]);
-      return;
-    }
+  addComponent(name: string, type: string) {
+    this.container.app.manager.addComponent(name, type);
 
-    const component = new Component({
-      type,
-      parameters: {},
-    });
-
-    this.components.set(name, component);
     this.platform.nameToComponent.set(name, type);
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  // Меняет только параметры, без имени
-  editComponent(idx: string, newData: ComponentType, newName?: string) {
-    const component = this.components.get(idx);
-    if (typeof component === 'undefined') return;
-
-    console.log(idx);
-    console.log(newData);
-    console.log(newName);
-
-    // type присутствует, но мы его умышленно не трогаем
-    component.data.parameters = newData.parameters;
+  editComponent(name: string, parameters: ComponentType['parameters'], newName?: string) {
+    this.container.app.manager.editComponent(name, parameters);
 
     if (newName) {
-      this.renameComponentRaw(idx, newName);
+      this.renameComponent(name, newName);
     }
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
-  private renameComponentRaw(idx: string, newName: string) {
-    const component = this.components.get(idx);
-    if (typeof component === 'undefined') return;
+  private renameComponent(name: string, newName: string) {
+    this.container.app.manager.renameComponent(name, newName);
+    const component = this.container.app.manager.data.elements.components[newName];
 
-    this.components.set(newName, component);
-    this.components.delete(idx);
-
-    this.platform.nameToComponent.set(newName, component.data.type);
-    this.platform.nameToComponent.delete(idx);
+    this.platform.nameToComponent.set(newName, component.type);
+    this.platform.nameToComponent.delete(name);
 
     // А сейчас будет занимательное путешествие по схеме с заменой всего
     this.states.forEach((state) => {
       for (const ev of state.eventBox.data) {
         // заменяем в триггере
-        if (ev.trigger.component == idx) {
+        if (ev.trigger.component == name) {
           ev.trigger.component = newName;
         }
         for (const act of ev.do) {
           // заменяем в действии
-          if (act.component == idx) {
+          if (act.component == name) {
             act.component = newName;
           }
         }
@@ -611,22 +450,24 @@ export class StateMachine extends EventEmitter {
     });
 
     this.transitions.forEach((value) => {
-      if (value.data.trigger.component == idx) {
+      if (value.data.trigger.component == name) {
         value.data.trigger.component = newName;
       }
       // do
       if (value.data.do) {
         for (const act of value.data.do) {
-          if (act.component == idx) {
+          if (act.component == name) {
             act.component = newName;
           }
         }
       }
       // condition
       if (value.data.condition) {
-        this.renameCondition(value.data.condition, idx, newName);
+        this.renameCondition(value.data.condition, name, newName);
       }
     });
+
+    this.container.isDirty = true;
   }
 
   renameCondition(ac: Condition, oldName: string, newName: string) {
@@ -651,17 +492,16 @@ export class StateMachine extends EventEmitter {
   }
 
   removeComponent(name: string, purge?: boolean) {
-    if (!this.components.has(name)) return;
+    this.container.app.manager.removeComponent(name);
 
     if (purge) {
       // TODO: «вымарывание» компонента из машины
       console.error('removeComponent purge not implemented yet');
     }
 
-    this.components.delete(name);
     this.platform.nameToComponent.delete(name);
 
-    this.dataTrigger();
+    this.container.isDirty = true;
   }
 
   undo() {
@@ -692,10 +532,11 @@ export class StateMachine extends EventEmitter {
   }
 
   getVacantComponents(): ComponentEntry[] {
+    const components = this.container.app.manager.data.elements.components;
     const vacant: ComponentEntry[] = [];
     for (const idx in this.platform.data.components) {
       const compo = this.platform.data.components[idx];
-      if (compo.singletone && this.components.has(idx)) continue;
+      if (compo.singletone && components.hasOwnProperty(idx)) continue;
       vacant.push({
         idx,
         name: compo.name ?? idx,

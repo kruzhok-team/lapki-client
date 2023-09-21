@@ -23,11 +23,11 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-export class Draggable extends EventEmitter {
+export abstract class Draggable extends EventEmitter {
   container!: Container;
   statusevents!: Events;
-  bounds!: Rectangle;
-  id?: string;
+  // bounds!: Rectangle;
+  id!: string;
   parent?: Draggable;
   children: Map<string, Draggable> = new Map();
 
@@ -40,16 +40,18 @@ export class Draggable extends EventEmitter {
 
   childrenPadding = 15;
 
-  constructor(container: Container, bounds: Rectangle, id?: string, parent?: Draggable) {
+  constructor(container: Container, id: string, parent?: Draggable) {
     super();
 
     this.container = container;
-    this.bounds = bounds;
     this.id = id;
     this.parent = parent;
 
     this.bindEvents();
   }
+
+  abstract get bounds(): Rectangle;
+  abstract set bounds(bounds: Rectangle);
 
   bindEvents() {
     document.addEventListener('mouseup', this.globalMouseUp);
@@ -88,13 +90,13 @@ export class Draggable extends EventEmitter {
     const { x, y } = this.compoundPosition;
 
     return {
-      x: (x + this.container.offset.x) / this.container.scale,
-      y: (y + this.container.offset.y) / this.container.scale,
+      x: (x + this.container.app.manager.data.offset.x) / this.container.app.manager.data.scale,
+      y: (y + this.container.app.manager.data.offset.y) / this.container.app.manager.data.scale,
     };
   }
 
   get computedWidth() {
-    let width = this.bounds.width / this.container.scale;
+    let width = this.bounds.width / this.container.app.manager.data.scale;
     if (this.children.size > 0) {
       let rightChildren = this.children.values().next().value as Draggable;
 
@@ -115,7 +117,7 @@ export class Draggable extends EventEmitter {
         cx +
           rightChildren.computedDimensions.width -
           x +
-          this.childrenPadding / this.container.scale
+          this.childrenPadding / this.container.app.manager.data.scale
       );
     }
 
@@ -123,7 +125,7 @@ export class Draggable extends EventEmitter {
   }
 
   get computedHeight() {
-    return this.bounds.height / this.container.scale;
+    return this.bounds.height / this.container.app.manager.data.scale;
   }
 
   get childrenContainerHeight() {
@@ -148,7 +150,7 @@ export class Draggable extends EventEmitter {
 
     result =
       (bottomChildren.bounds.y + bottomChildren.bounds.height + this.childrenPadding * 2) /
-        this.container.scale +
+        this.container.app.manager.data.scale +
       bottomChildren.childrenContainerHeight;
 
     return result;
@@ -201,12 +203,26 @@ export class Draggable extends EventEmitter {
       clearTimeout(this.mouseDownTimerId);
     }
 
-    this.bounds.x += e.dx * this.container.scale;
-    this.bounds.y += e.dy * this.container.scale;
+    this.bounds = {
+      width: this.bounds.width,
+      height: this.bounds.height,
+      x: this.bounds.x + e.dx * this.container.app.manager.data.scale,
+      y: this.bounds.y + e.dy * this.container.app.manager.data.scale,
+    };
+
+    // this.bounds.x += e.dx * this.container.app.manager.data.scale;
+    // this.bounds.y += e.dy * this.container.app.manager.data.scale;
 
     if (this.parent) {
-      this.bounds.x = Math.max(0, this.bounds.x);
-      this.bounds.y = Math.max(0, this.bounds.y);
+      this.bounds = {
+        width: this.bounds.width,
+        height: this.bounds.height,
+        x: Math.max(0, this.bounds.x),
+        y: Math.max(0, this.bounds.y),
+      };
+
+      // this.bounds.x = Math.max(0, this.bounds.x);
+      // this.bounds.y = Math.max(0, this.bounds.y);
     }
 
     document.body.style.cursor = 'grabbing';
@@ -233,7 +249,6 @@ export class Draggable extends EventEmitter {
     this.emit('mouseup', { event: e, target: this });
 
     // Перетаскивания тоже считаются изменением.
-    this.container.machine.dataTrigger();
 
     if (this.isMouseDown) {
       this.isMouseDown = false;

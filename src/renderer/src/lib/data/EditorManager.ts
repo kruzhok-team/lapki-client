@@ -1,113 +1,139 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, useSyncExternalStore } from 'react';
+import { customAlphabet, nanoid } from 'nanoid';
 
-import { Elements, emptyElements } from '@renderer/types/diagram';
+import {
+  emptyElements,
+  Event,
+  Action,
+  Condition,
+  Transition,
+  Component,
+  Elements,
+} from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
-import { CanvasEditor } from '../CanvasEditor';
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
 import { isPlatformAvailable } from './PlatformLoader';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Flasher } from '@renderer/components/Modules/Flasher';
-
-export type EditorData = {
-  name: string | null;
-  shownName: string | null;
-  content: string | null;
-  data: Elements;
-  modified: boolean;
-};
+import { Point, Rectangle } from '@renderer/types/graphics';
+import { stateStyle } from '../styles';
 
 export type FileError = {
   name: string;
   content: string;
 };
 
-export function emptyEditorData(): EditorData {
-  return {
-    name: null,
-    shownName: null,
-    content: null,
-    data: emptyElements(),
-    modified: false,
-  };
-}
+const emptyEditorData = () => ({
+  isInitialized: false,
+  isStale: false,
+  basename: null as string | null,
+  name: null as string | null,
+
+  elements: emptyElements(),
+
+  offset: { x: 0, y: 0 },
+  scale: 1,
+});
+
+type EditorData = ReturnType<typeof emptyEditorData>;
+type EditorDataPropertyName = keyof EditorData | `elements.${keyof EditorData['elements']}`;
+type EditorDataReturn<T> = T extends `elements.${infer V}`
+  ? V extends keyof EditorData['elements']
+    ? EditorData['elements'][V]
+    : never
+  : T extends keyof EditorData
+  ? EditorData[T]
+  : never;
+type EditorDataListeners = { [key in EditorDataPropertyName]: (() => void)[] };
+
+const emptyDataListeners = Object.fromEntries([
+  ...Object.entries(emptyEditorData()).map(([k]) => [k, []]),
+  ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
+]) as any as EditorDataListeners;
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
  */
 export class EditorManager {
-  editor: CanvasEditor | null;
-  state!: EditorData;
-  updateState!: Dispatch<SetStateAction<EditorData>>;
+  data = emptyEditorData();
+  dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
 
-  updateInterval?: ReturnType<typeof setInterval>;
+  resetEditor?: () => void;
 
-  constructor(
-    editor: CanvasEditor | null,
-    initState: EditorData | undefined,
-    updateState: Dispatch<SetStateAction<EditorData>>
-  ) {
-    // console.log(['EditorManager constructor']);
-    this.editor = editor;
-    this.state = initState ?? emptyEditorData();
-    this.updateState = updateState;
+  constructor() {}
+
+  init(basename: string | null, name: string, elements: Elements) {
+    this.data = emptyEditorData();
+
+    const self = this;
+    this.data = new Proxy(this.data, {
+      set(target, prop, val, receiver) {
+        const result = Reflect.set(target, prop, val, receiver);
+
+        self.dataListeners[prop].forEach((listener) => listener());
+
+        return result;
+      },
+    });
+
+    this.data.basename = basename;
+    this.data.name = name;
+    this.data.elements = elements;
+    this.data.isInitialized = true;
+
+    this.data.elements = new Proxy(this.data.elements, {
+      set(target, key, val, receiver) {
+        const result = Reflect.set(target, key, val, receiver);
+
+        self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
+
+        return result;
+      },
+    });
+
+    this.resetEditor?.();
   }
 
-  mutateState(fn: (state: EditorData) => EditorData) {
-    this.state = fn(this.state);
-    this.updateState(this.state);
-  }
+  subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
+    this.dataListeners[propertyName].push(listener);
 
-  onDataUpdate(that: EditorManager) {
-    return (data: Elements, modified: boolean) => {
-      // console.log(['onDataUpdate-pre', that.state, data, modified]);
-      that.mutateState((state) => ({
-        ...state,
-        data,
-        content: JSON.stringify(data, null, 2),
-        modified: modified || this.state.modified,
-      }));
-      console.log(['onDataUpdate-post', that.state]);
+    return () => {
+      this.dataListeners[propertyName] = this.dataListeners[propertyName].filter(
+        (l) => l !== listener
+      );
     };
-  }
+  };
 
-  watchEditor(editor: CanvasEditor) {
-    this.editor = editor;
-    editor.onDataUpdate(this.onDataUpdate(this));
+  useData<T extends EditorDataPropertyName>(propertyName: T): EditorDataReturn<T> {
+    const isShallow = (propertyName: string): propertyName is keyof EditorData => {
+      return !propertyName.startsWith('elements.');
+    };
 
-    //Таймер для сохранения изменений сделанных в редакторе
-    this.updateInterval = setInterval(() => {
-      this.triggerDataUpdate();
-    }, 5000);
-  }
+    const getSnapshot = () => {
+      if (isShallow(propertyName)) {
+        return this.data[propertyName];
+      }
 
-  unwatchEditor() {
-    clearInterval(this.updateInterval);
-  }
+      return this.data['elements'][propertyName.split('.')[1]];
+    };
 
-  triggerDataUpdate() {
-    this.editor?.container.machine.dataTrigger(true);
+    return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
   newFile(platformIdx: string) {
     if (!isPlatformAvailable(platformIdx)) {
       throw Error('unknown platform ' + platformIdx);
     }
-    const data = { ...emptyElements(), platform: platformIdx };
-    this.editor?.loadData(data);
-    this.mutateState((state) => ({
-      ...state,
-      name: null,
-      shownName: 'Без названия',
-      content: JSON.stringify(data),
-      data,
-      modified: false,
-    }));
+
+    const elements = emptyElements();
+    elements.platform = platformIdx;
+    this.init(null, 'Без названия', elements);
   }
 
-  compile(platform: string): void {
-    Compiler.compile(platform, this.state.data);
+  compile() {
+    Compiler.compile(this.data.elements.platform, this.data.elements);
   }
 
   getList(): void {
@@ -124,15 +150,12 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
-        this.editor?.loadData(data);
-        this.mutateState((state) => ({
-          ...state,
-          name: openData[1]!.replace('.graphml', '.json'),
-          shownName: openData[2]!.replace('.graphml', '.json'),
-          content: JSON.stringify(importData),
-          data,
-          modified: false,
-        }));
+        this.init(
+          openData[1]!.replace('.graphml', '.json'),
+          openData[2]!.replace('.graphml', '.json'),
+          data
+        );
+
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -179,15 +202,9 @@ export class EditorManager {
             content: `Незнакомая платформа "${data.platform}".`,
           });
         }
-        this.editor?.loadData(data);
-        this.mutateState((state) => ({
-          ...state,
-          name: openData[1],
-          shownName: openData[2],
-          content: openData[3],
-          data,
-          modified: false,
-        }));
+
+        this.init(openData[1] ?? '', openData[2] ?? '', data);
+
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -226,27 +243,42 @@ export class EditorManager {
     Flasher.changeHost(host, port);
   }
 
+  getDataSerialized() {
+    return JSON.stringify(this.data.elements, undefined, 2);
+  }
+
+  getStateSerialized(id: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return null;
+
+    return JSON.stringify(state, undefined, 2);
+  }
+
+  getTransitionSerialized(id: string) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return null;
+
+    return JSON.stringify(transition, undefined, 2);
+  }
+
   async stopLocalModule(module: string) {
     await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
   }
 
   async save(): Promise<Either<FileError | null, null>> {
-    if (!this.editor) return makeLeft(null);
-    if (!this.state.name) {
+    if (!this.data.isInitialized) return makeLeft(null);
+    if (!this.data.basename) {
       return await this.saveAs();
     }
     const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
       'dialog:saveFile',
-      this.state.name,
-      this.editor!.getData()
+      this.data.basename,
+      this.getDataSerialized()
     );
     if (saveData[0]) {
-      this.mutateState((state) => ({
-        ...state,
-        name: saveData[1],
-        shownName: saveData[2],
-        modified: false,
-      }));
+      this.data.basename = saveData[1];
+      this.data.name = saveData[2];
+
       return makeRight(null);
     } else {
       return makeLeft({
@@ -257,17 +289,14 @@ export class EditorManager {
   }
 
   async saveAs(): Promise<Either<FileError | null, null>> {
-    if (!this.editor) return makeLeft(null);
-    const data = this.editor!.getData();
+    if (!this.data.isInitialized) return makeLeft(null);
+    const data = this.getDataSerialized();
     const saveData: [boolean, string | null, string | null] =
-      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.state.name, data);
+      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
     if (saveData[0]) {
-      this.mutateState((state) => ({
-        ...state,
-        name: saveData[1],
-        shownName: saveData[2],
-        modified: false,
-      }));
+      this.data.basename = saveData[1];
+      this.data.name = saveData[2];
+
       return makeRight(null);
     } else if (saveData[1]) {
       return makeLeft({
@@ -276,5 +305,279 @@ export class EditorManager {
       });
     }
     return makeLeft(null);
+  }
+
+  createState(name: string, position: Point, parentId?: string) {
+    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+    const { width, height } = stateStyle;
+    const x = position.x - width / 2;
+    const y = position.y - height / 2;
+    let id = nanoid();
+    while (this.data.elements.states.hasOwnProperty(id)) {
+      id = nanoid();
+    }
+
+    this.data.elements.states[id] = {
+      bounds: { x, y, width, height },
+      events: [],
+      name,
+      parent: parentId,
+    };
+
+    // если у нас не было начального состояния, им станет новое
+    if (this.data.elements.initialState === '') {
+      this.data.elements.initialState = id;
+    }
+
+    return id;
+  }
+
+  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    const trueTab = state.events.find(
+      (value) =>
+        triggerComponent === value.trigger.component &&
+        triggerMethod === value.trigger.method &&
+        undefined === value.trigger.args // FIXME: сравнение по args может не работать
+    );
+
+    if (trueTab === undefined) {
+      state.events = [
+        ...state.events,
+        {
+          do: events,
+          trigger: {
+            component: triggerComponent,
+            method: triggerMethod,
+            //args: {},
+          },
+        },
+      ];
+    } else {
+      trueTab.do = [...events];
+    }
+
+    return true;
+  }
+
+  changeStateName(id: string, name: string) {
+    if (!this.data.elements.states.hasOwnProperty(id)) return false;
+
+    this.data.elements.states[id].name = name;
+
+    return true;
+  }
+
+  changeStateBounds(id: string, bounds: Rectangle) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    state.bounds = bounds;
+
+    return true;
+  }
+
+  linkState(parentId: string, childId: string) {
+    const parent = this.data.elements.states[parentId];
+    const child = this.data.elements.states[childId];
+
+    if (!parent || !child) return false;
+
+    child.parent = parentId;
+
+    return true;
+  }
+
+  unlinkState(id: string) {
+    const state = this.data.elements.states[id];
+
+    if (!state || !state.parent) return false;
+
+    const parent = this.data.elements.states[state.parent];
+
+    if (!parent) return false;
+
+    delete state.parent;
+
+    return true;
+  }
+
+  deleteState(id: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    // Если удаляемое состояние было начальным, стираем текущее значение
+    if (this.data.elements.initialState === id) {
+      this.data.elements.initialState = '';
+    }
+
+    delete this.data.elements.states[id];
+
+    return true;
+  }
+
+  changeInitialState(id: string) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    this.data.elements.initialState = id;
+
+    return true;
+  }
+
+  changeEvent(stateId: string, event: any, newValue: Event | Action) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
+    if (event.actionIdx === null) {
+      const trueTab = state.events.find(
+        (value, id) =>
+          event.eventIdx !== id &&
+          newValue.component === value.trigger.component &&
+          newValue.method === value.trigger.method &&
+          undefined === value.trigger.args // FIXME: сравнение по args может не работать
+      );
+
+      if (trueTab === undefined) {
+        state.events[event.eventIdx].trigger = newValue;
+      } else {
+        trueTab.do = [...trueTab.do, ...state.events[event.eventIdx].do];
+        state.events.splice(event.eventIdx, 1);
+      }
+    } else {
+      state.events[event.eventIdx].do[event.actionIdx] = newValue;
+    }
+
+    return true;
+  }
+
+  deleteEvent(stateId: string, eventIdx: number, actionIdx: number | null) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    if (actionIdx !== null) {
+      state.events[eventIdx].do.splice(actionIdx!, 1);
+      // Проверяем, есть ли действия в событие, если нет, то удалять его
+      if (state.events[eventIdx].do.length === 0) {
+        state.events.splice(eventIdx, 1);
+      }
+    } else {
+      state.events.splice(eventIdx, 1);
+    }
+
+    return true;
+  }
+
+  createTransition(
+    source: string,
+    target: string,
+    color: string,
+    position: Point,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const id = nanoid();
+
+    this.data.elements.transitions[id] = {
+      source,
+      target,
+      color,
+      position,
+      trigger: {
+        component,
+        method,
+      },
+      do: doAction,
+      condition,
+    };
+
+    return id;
+  }
+
+  changeTransition(
+    id: string,
+    color: string,
+    component: string,
+    method: string,
+    doAction: Action[],
+    condition: Condition | undefined
+  ) {
+    const transition = this.data.elements.transitions[id] as Transition;
+    if (!transition) return false;
+
+    transition.color = color;
+    transition.trigger.component = component;
+    transition.trigger.method = method;
+    transition.do = doAction;
+    transition.condition = condition;
+
+    return true;
+  }
+
+  deleteTransition(id: string) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return false;
+
+    delete this.data.elements.transitions[id];
+
+    return true;
+  }
+
+  addComponent(name: string, type: string) {
+    if (this.data.elements.components.hasOwnProperty(name)) {
+      console.log(['bad new component', name, type]);
+      return false;
+    }
+
+    this.data.elements.components[name] = {
+      type,
+      parameters: {},
+    };
+
+    return true;
+  }
+
+  editComponent(name: string, parameters: Component['parameters']) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    component.parameters = parameters;
+
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
+
+    return true;
+  }
+
+  renameComponent(name: string, newName: string) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    this.data.elements.components[newName] = component;
+
+    delete this.data.elements.components[name];
+
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
+
+    return true;
+  }
+
+  removeComponent(name: string) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    delete this.data.elements.components[name];
+
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
+
+    return true;
   }
 }

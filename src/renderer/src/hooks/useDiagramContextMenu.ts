@@ -39,7 +39,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         {
           label: 'Вставить состояние',
           action: () => {
-            editor?.container.machine.createNewState('Состояние', canvasPos);
+            editor?.container.machine.createState('Состояние', canvasPos);
           },
         },
         {
@@ -47,8 +47,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           action: () => {
             openTab({
               type: 'code',
-              name: manager.state.shownName ?? 'Безымянная',
-              code: manager.state.content!,
+              name: manager.data.name ?? 'Безымянная',
+              code: manager.getDataSerialized(),
               language: 'json',
             });
           },
@@ -70,7 +70,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         {
           label: 'Вставить состояние',
           action: () => {
-            editor?.container.machine.createNewState('Состояние', canvasPos, state.id);
+            editor?.container.machine.createState('Состояние', canvasPos, state.id);
           },
         },
         {
@@ -85,7 +85,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'state',
               name: state.data.name,
-              code: JSON.stringify(state.data, null, 2),
+              code: manager.getStateSerialized(state.id) ?? '',
               language: 'json',
             });
           },
@@ -126,7 +126,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'transition',
               name: condition.transition.id,
-              code: JSON.stringify(condition, null, 2),
+              code: manager.getTransitionSerialized(condition.transition.id) ?? '',
               language: 'json',
             });
           },

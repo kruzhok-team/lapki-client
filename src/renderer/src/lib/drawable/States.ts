@@ -99,7 +99,6 @@ export class States extends EventEmitter {
         this.createEventCallback?.(e.target, eventIdx, true);
       }
     }
-    this.container.machine.dataTrigger(true);
   };
 
   handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {

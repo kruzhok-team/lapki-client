@@ -2,8 +2,11 @@ import { useState } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
-export const useAddComponent = (editor: CanvasEditor | null) => {
+export const useAddComponent = (editor: CanvasEditor | null, manager: EditorManager) => {
+  const components = manager.useData('elements.components');
+
   const [vacantComponents, setVacantComponents] = useState([] as ComponentEntry[]);
   const [existingComponents, setExistingComponents] = useState(new Set<string>());
 
@@ -15,7 +18,7 @@ export const useAddComponent = (editor: CanvasEditor | null) => {
     const machine = editor!.container.machine;
     const vacantComponents = machine.getVacantComponents();
     const existingComponents = new Set<string>();
-    for (const name of machine.components.keys()) {
+    for (const name in components) {
       existingComponents.add(name);
     }
 
@@ -26,7 +29,7 @@ export const useAddComponent = (editor: CanvasEditor | null) => {
 
   const onSubmit = (idx: string, name?: string) => {
     const realName = name ?? idx;
-    editor!.container.machine.addNewComponent(realName, idx);
+    editor!.container.machine.addComponent(realName, idx);
   };
 
   return { isOpen, onClose, vacantComponents, existingComponents, onSubmit, onRequestAddComponent };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { twMerge } from 'tailwind-merge';
@@ -15,6 +16,7 @@ import {
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { FlasherSelectModal } from './FlasherSelectModal';
 export interface FlasherProps {
+  manager: EditorManager | null;
   manager: EditorManager | null;
   compilerData: CompilerResult | undefined;
 }
@@ -280,6 +282,13 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
           {flasherLog}
         </div>
       </div>
+
+      <FlasherSelectModal
+        isOpen={isFlasherModalOpen}
+        handleLocal={handleLocalFlasher}
+        handleRemote={handleRemoteFlasher}
+        onClose={closeFlasherModal}
+      />
     </section>
   );
 };

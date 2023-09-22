@@ -405,8 +405,6 @@ export class StateMachine extends EventEmitter {
     navigator.clipboard.readText().then((data) => {
       const state = this.states.get(data);
       if (!state) return;
-      state.bounds.x - 100;
-      state.bounds.y - 100;
       this.createState(state.data.name, state.bounds, state.data.events, state.data.parent);
       console.log('Вставлено!');
     });

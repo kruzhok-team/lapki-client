@@ -235,14 +235,6 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('Module:startLocalModule', module);
   }
 
-  changeFlasherLocal() {
-    Flasher.changeLocal();
-  }
-
-  changeFlasherHost(host: string, port: number) {
-    Flasher.changeHost(host, port);
-  }
-
   getDataSerialized() {
     return JSON.stringify(
       // TODO тут из-за того что переходы изначально массив, а внутри он конвертируется в словарь то при удалении появляются дыры и нужно их фильтровать

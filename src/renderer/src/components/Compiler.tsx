@@ -77,6 +77,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
     });
   };
 
+  const handleReconnect = () => {
+    Compiler.reconnect();
+  };
+
   useEffect(() => {
     if (importData && openData) {
       manager.parseImportData(importData, openData!);
@@ -127,6 +131,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
   const cantCompile =
     compilerStatus == 'Не подключен' || compilerStatus == 'Идет компиляция...' || !isInitialized;
   const disabled = cantCompile;
+  const connecting = compilerStatus == 'Идет подключение...';
 
   return (
     <section>
@@ -135,8 +140,12 @@ export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
       </h3>
 
       <div className="flex flex-col px-4">
-        <button disabled={disabled} className="btn-primary mb-4" onClick={handleCompile}>
-          Скомпилировать
+        <button
+          disabled={compilerStatus != 'Не подключен' ? disabled : connecting}
+          className="btn-primary mb-4"
+          onClick={compilerStatus != 'Не подключен' ? handleCompile : handleReconnect}
+        >
+          {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
         </button>
 
         <p>

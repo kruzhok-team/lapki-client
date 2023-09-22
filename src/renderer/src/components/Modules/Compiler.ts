@@ -23,11 +23,23 @@ export class Compiler {
   static setImportData: Dispatch<SetStateAction<string | undefined>>;
   static mode: string;
 
-  static timerID: NodeJS.Timeout;
+  static timerOutID: NodeJS.Timeout;
   //Если за данное время не пришел ответ от компилятора
   //мы считаем, что произошла ошибка.
   static timeOutTime = 100000;
   static timeoutSetted = false;
+  private static timerReconnectID: NodeJS.Timeout;
+  // начальное время для timeout
+  private static startTimeout: number = 2000;
+  // текущее количество мс, через которое произойдёт повторная попытка подключения (в случае, если не удалось подключиться)
+  private static timeout: number = this.startTimeout;
+  // количество совершённых попыток переподключения, сбрасывается при удачном подключении
+  private static curReconnectAttemps: number = 1;
+  /*  
+    максимальное количество автоматических попыток переподключения
+    значение меньше нуля означает, что ограничения на попытки отсутствует
+  */
+  private static maxReconnectAttempts: number = 3;
   static filename: string;
 
   static setDefaultStatus() {
@@ -87,16 +99,23 @@ export class Compiler {
     return result;
   }
 
-  static connect(host: string, port: number, timeout = 0) {
+  static connect(host: string, port: number, timeout = this.startTimeout) {
+    this.timeout = timeout;
     this.host = host;
     this.port = port;
     this.base_address = `ws://${this.host}:${this.port}/main`;
-    Compiler.connectRoute(this.base_address, timeout);
+    Compiler.connectRoute(this.base_address);
   }
 
-  static connectRoute(route: string, timeout: number = 0): Websocket {
+  static reconnect() {
+    this.connectRoute(this.base_address);
+  }
+
+  static connectRoute(route: string): Websocket {
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
+    clearTimeout(this.timerReconnectID);
+    this.timeoutSetted = false;
     this.setCompilerStatus('Идет подключение...');
     // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
     //   асинхронную ошибку, и никто с этим ничего не может сделать.
@@ -109,13 +128,14 @@ export class Compiler {
       this.connection = ws;
       this.connecting = false;
       this.timeoutSetted = false;
-      timeout = 0;
+      this.timeout = this.startTimeout;
+      this.curReconnectAttemps = 0;
     };
 
     ws.onmessage = (msg) => {
       // console.log(msg);
       this.setCompilerStatus('Подключен');
-      clearTimeout(this.timerID);
+      clearTimeout(this.timerOutID);
       let data;
       switch (this.mode) {
         case 'compile':
@@ -168,16 +188,20 @@ export class Compiler {
       this.setCompilerStatus('Не подключен');
       this.connection = undefined;
       this.connecting = false;
-      if (!this.timeoutSetted) {
+      if (
+        !this.timeoutSetted &&
+        (this.maxReconnectAttempts < 0 || this.curReconnectAttemps < this.maxReconnectAttempts)
+      ) {
         this.timeoutSetted = true;
-        if (timeout < 16000) {
-          timeout += 2000;
-        }
-        setTimeout(() => {
-          // console.log(`Compiler: retry in ${timeout} ms`);
-          this.connectRoute(route, timeout);
+        this.timerReconnectID = setTimeout(() => {
+          console.log(`Compiler: retry in ${this.timeout} ms`);
+          if (this.timeout < 16000) {
+            this.timeout += 2000;
+          }
+          this.curReconnectAttemps++;
+          this.connectRoute(route);
           this.timeoutSetted = false;
-        }, timeout);
+        }, this.timeout);
       }
     };
 
@@ -223,7 +247,7 @@ export class Compiler {
     }
 
     this.setCompilerStatus('Идет компиляция...');
-    this.timerID = setTimeout(() => {
+    this.timerOutID = setTimeout(() => {
       Compiler.setCompilerStatus('Что-то пошло не так...');
     }, this.timeOutTime);
   }

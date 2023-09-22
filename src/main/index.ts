@@ -108,6 +108,11 @@ app.whenReady().then(() => {
     return ModuleManager.stopModule(module);
   });
 
+  ipcMain.handle('Module:reboot', (_event, module: string) => {
+    ModuleManager.stopModule(module);
+    ModuleManager.startLocalModule(module);
+  });
+
   ipcMain.handle('Flasher:getPort', (_event) => {
     return FLASHER_LOCAL_PORT;
   });

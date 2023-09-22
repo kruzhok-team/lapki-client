@@ -8,7 +8,12 @@ import {
   handleBinFileOpen,
 } from './file-handlers';
 import { join } from 'path';
-import { FLASHER_LOCAL_PORT, ModuleManager, ModuleStatus } from './modules/ModuleManager';
+import {
+  FLASHER_LOCAL_PORT,
+  LAPKI_FLASHER,
+  ModuleManager,
+  ModuleStatus,
+} from './modules/ModuleManager';
 
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
@@ -130,7 +135,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-  ModuleManager.startLocalModule('lapki-flasher');
+  ModuleManager.startLocalModule(LAPKI_FLASHER);
   createWindow();
 
   app.on('activate', function () {
@@ -144,7 +149,7 @@ app.whenReady().then(() => {
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
+  ModuleManager.stopModule(LAPKI_FLASHER);
   if (process.platform !== 'darwin') {
     app.quit();
   }

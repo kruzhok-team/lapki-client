@@ -5,7 +5,7 @@ declare global {
     electron: ElectronAPI;
     api: {
       FLASHER_LOCAL_HOST: string;
-      FLASHER_LOCAL_PORT: number;
+      LAPKI_FLASHER: string;
     };
   }
 }

@@ -9,6 +9,7 @@ import {
   Transition,
   Component,
   Elements,
+  EventData,
 } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
@@ -307,7 +308,7 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  createState(name: string, position: Point, parentId?: string) {
+  createState(name: string, position: Point, eventsData: EventData[], parentId?: string) {
     const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
 
     const { width, height } = stateStyle;
@@ -320,8 +321,8 @@ export class EditorManager {
 
     this.data.elements.states[id] = {
       bounds: { x, y, width, height },
-      events: [],
-      name,
+      events: eventsData ? eventsData : [],
+      name: name,
       parent: parentId,
     };
 

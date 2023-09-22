@@ -87,6 +87,8 @@ export class Container {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.handleDelete);
+    this.app.keyboard.on('ctrlc', this.handleCopy);
+    this.app.keyboard.on('ctrlv', this.handlePaste);
     this.app.keyboard.on('ctrlz', this.handleUndo);
 
     document.addEventListener('mouseup', this.globalMouseUp);
@@ -142,6 +144,14 @@ export class Container {
 
   handleDelete = () => {
     this.machine.deleteSelected();
+  };
+
+  handleCopy = () => {
+    this.machine.copySelected();
+  };
+
+  handlePaste = () => {
+    this.machine.pasteSelected();
   };
 
   handleUndo = () => {

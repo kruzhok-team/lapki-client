@@ -244,7 +244,13 @@ export class EditorManager {
   }
 
   getDataSerialized() {
-    return JSON.stringify(this.data.elements, undefined, 2);
+    return JSON.stringify(
+      // TODO тут из-за того что переходы изначально массив, а внутри он конвертируется в словарь то при удалении появляются дыры и нужно их фильтровать
+      // надеюсь с приходом нового формата это пофиксится
+      { ...this.data.elements, transitions: this.data.elements.transitions.filter(Boolean) },
+      undefined,
+      2
+    );
   }
 
   getStateSerialized(id: string) {
@@ -482,9 +488,7 @@ export class EditorManager {
     doAction: Action[],
     condition: Condition | undefined
   ) {
-    const id = nanoid();
-
-    this.data.elements.transitions[id] = {
+    this.data.elements.transitions.push({
       source,
       target,
       color,
@@ -495,9 +499,9 @@ export class EditorManager {
       },
       do: doAction,
       condition,
-    };
+    });
 
-    return id;
+    return String(this.data.elements.transitions.length - 1);
   }
 
   changeTransition(

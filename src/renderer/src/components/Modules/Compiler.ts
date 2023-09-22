@@ -29,7 +29,17 @@ export class Compiler {
   static timeOutTime = 100000;
   static timeoutSetted = false;
   private static timerReconnectID: NodeJS.Timeout;
-  private static timeout = 0;
+  // начальное время для timeout
+  private static startTimeout: number = 2000;
+  // текущее количество мс, через которое произойдёт повторная попытка подключения (в случае, если не удалось подключиться)
+  private static timeout: number = this.startTimeout;
+  // количество совершённых попыток переподключения, сбрасывается при удачном подключении
+  private static curReconnectAttemps: number = 1;
+  /*  
+    максимальное количество автоматических попыток переподключения
+    значение меньше нуля означает, что ограничения на попытки отсутствует
+  */
+  private static maxReconnectAttempts: number = 3;
   static filename: string;
 
   static setDefaultStatus() {
@@ -89,7 +99,7 @@ export class Compiler {
     return result;
   }
 
-  static connect(host: string, port: number, timeout = 0) {
+  static connect(host: string, port: number, timeout = this.startTimeout) {
     this.timeout = timeout;
     this.host = host;
     this.port = port;
@@ -118,7 +128,8 @@ export class Compiler {
       this.connection = ws;
       this.connecting = false;
       this.timeoutSetted = false;
-      this.timeout = 0;
+      this.timeout = this.startTimeout;
+      this.curReconnectAttemps = 0;
     };
 
     ws.onmessage = (msg) => {
@@ -177,13 +188,17 @@ export class Compiler {
       this.setCompilerStatus('Не подключен');
       this.connection = undefined;
       this.connecting = false;
-      if (!this.timeoutSetted) {
+      if (
+        !this.timeoutSetted &&
+        (this.maxReconnectAttempts < 0 || this.curReconnectAttemps < this.maxReconnectAttempts)
+      ) {
         this.timeoutSetted = true;
-        if (this.timeout < 16000) {
-          this.timeout += 2000;
-        }
         this.timerReconnectID = setTimeout(() => {
           console.log(`Compiler: retry in ${this.timeout} ms`);
+          if (this.timeout < 16000) {
+            this.timeout += 2000;
+          }
+          this.curReconnectAttemps++;
           this.connectRoute(route);
           this.timeoutSetted = false;
         }, this.timeout);

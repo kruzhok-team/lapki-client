@@ -393,7 +393,7 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((state) => {
       if (state.isSelected) {
         navigator.clipboard.writeText(state.id).then(() => {
-          console.log('Успех!');
+          console.log('Скопировано!');
         });
         this.container.isDirty = true;
       }
@@ -402,18 +402,15 @@ export class StateMachine extends EventEmitter {
 
   //Вставляем код из буфера обмена в редактор машин состояний
   pasteSelected() {
-    navigator.clipboard
-      .readText()
-      .then((data) => {
-        const state = this.states.get(data);
-        if (!state) return;
-        state.bounds.x - 100;
-        state.bounds.y - 100;
-        this.createState(state.data.name, state.bounds, state.data.events, state.data.parent);
-        console.log('Вставлено', data);
-        this.container.isDirty = true;
-      })
-      .catch((err) => console.error('Не удалось вставить', err));
+    navigator.clipboard.readText().then((data) => {
+      const state = this.states.get(data);
+      if (!state) return;
+      state.bounds.x - 100;
+      state.bounds.y - 100;
+      this.createState(state.data.name, state.bounds, state.data.events, state.data.parent);
+      console.log('Вставлено!');
+    });
+    this.container.isDirty = true;
   }
 
   // Редактирование события в состояниях

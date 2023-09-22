@@ -2,13 +2,39 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { findFreePort } from './freePortFinder';
 import path from 'path';
 export var FLASHER_LOCAL_HOST = 'localhost';
-// FIXME: порт должен назначаться автоматически
 export var FLASHER_LOCAL_PORT;
+
+export class ModuleStatus {
+  /* 
+  Статус локального модуля
+    0 - не работает
+    1 - работает
+    2 - не смог запуститься
+    3 - перестал работать
+    4 - платформа не поддерживается
+  */
+  code: number;
+  /* 
+  Детали об ошибке, например консольный вывод (undefined, если отсутствует).
+  Содержание в зависимости от кода (code):
+    0: undefined
+    1: undefined
+    2: консольный вывод
+    3: undefined
+    4: платформа
+  */
+  details: string | undefined;
+  constructor(code: number = 0, details: string | undefined = undefined) {
+    this.code = code;
+    this.details = details;
+  }
+}
 
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
-
+  static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: string) {
+    this.moduleStatus[module] = new ModuleStatus();
     if (!this.localProccesses.has(module)) {
       await findFreePort((port) => {
         FLASHER_LOCAL_PORT = port;
@@ -34,6 +60,8 @@ export class ModuleManager {
               количество секунд между автоматическими обновлениями (default 15)
           -verbose
               выводить в консоль подробную информацию
+          -alwaysUpdate
+              всегда искать устройства и обновлять их список, даже когда ни один клиент не подключён (в основном требуется для тестирования)
       */
       var flasherArgs: string[] = [
         '-updateList=1',
@@ -46,20 +74,29 @@ export class ModuleManager {
           modulePath = `${basePath}/modules/${platform}/${module}`;
           break;
         case 'win32':
-          modulePath = `${basePath}/modules/${platform}/${module}.exe`;
+          modulePath = `${basePath}\\modules\\${platform}\\${module}.exe`;
           break;
         default:
+          this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
       if (modulePath) {
         console.log(modulePath);
         chprocess = spawn(modulePath, flasherArgs);
         chprocess.on('error', function (err) {
-          // FIXME: выводить ошибку в интерфейсе
+          if (err.code == 'ENOENT') {
+            ModuleManager.moduleStatus[module] = new ModuleStatus(
+              2,
+              `Файл ${modulePath} не найден.`
+            );
+          } else {
+            ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
+          }
           console.error(`${module} spawn error: ` + err);
         });
       }
       if (chprocess !== undefined) {
+        ModuleManager.moduleStatus[module] = new ModuleStatus(1);
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {
           console.log(`${module}-stdout: ${data}`);
@@ -69,6 +106,7 @@ export class ModuleManager {
         });
 
         chprocess.on('exit', () => {
+          ModuleManager.moduleStatus[module] = new ModuleStatus(3);
           console.log(`${module}-exit!`);
         });
       }
@@ -82,5 +120,9 @@ export class ModuleManager {
       this.localProccesses.get(module)!.kill();
       this.localProccesses.delete(module);
     }
+  }
+
+  static getLocalStatus(module: string) {
+    return this.moduleStatus[module];
   }
 }

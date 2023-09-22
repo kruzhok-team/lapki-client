@@ -9,20 +9,10 @@ import {
   Sidebar,
   SidebarCallbacks,
   MainContainer,
-  ComponentAddModal,
-  ComponentEditModal,
-  ComponentDeleteModal,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 
-import {
-  useEditorManager,
-  useAddComponent,
-  useEditComponent,
-  useDeleteComponent,
-  useErrorModal,
-  useFileOperations,
-} from '@renderer/hooks';
+import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
 
 import { getColor } from '@renderer/theme';
 

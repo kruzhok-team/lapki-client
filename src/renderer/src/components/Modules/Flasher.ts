@@ -33,8 +33,11 @@ export class Flasher {
   static maxReconnectAttempts: number = 3;
   // количество совершённых попыток переподключения, сбрасывается при удачном подключении или при смене хоста
   private static curReconnectAttemps: number = 0;
-  // максимальное количество мс, через которое клиент будет пытаться переподключиться
-  static maxTimeout: number = this.incTimeout * this.maxReconnectAttempts;
+  /* 
+  максимальное количество мс, через которое клиент будет пытаться переподключиться
+  не должно быть негативным числом (поэтому не стоит делать эту переменную зависимой от maxReconnectAttempts)
+  */
+  static maxTimeout: number = this.incTimeout * 10;
   private static timeout: number = this.initialTimeout;
   static devices: Map<string, Device>;
 

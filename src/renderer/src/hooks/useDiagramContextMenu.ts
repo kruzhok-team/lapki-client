@@ -39,7 +39,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         {
           label: 'Вставить состояние',
           action: () => {
-            editor?.container.machine.createState('Состояние', canvasPos);
+            editor?.container.machine.createState({ name: 'Состояние', position: canvasPos });
           },
         },
         {
@@ -70,7 +70,11 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         {
           label: 'Вставить состояние',
           action: () => {
-            editor?.container.machine.createState('Состояние', canvasPos, state.id);
+            editor?.container.machine.createState({
+              name: 'Состояние',
+              position: canvasPos,
+              parentId: state.id,
+            });
           },
         },
         {

@@ -15,6 +15,9 @@ import { Transition } from '../drawable/Transition';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
+import { UndoRedo, possibleActions } from './UndoRedo';
+import { CreateStateParameters } from '@renderer/types/EditorManager';
+import { CreateTransitionParameters } from '@renderer/types/StateMachine';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -40,6 +43,8 @@ export class StateMachine extends EventEmitter {
   transitions: Map<string, Transition> = new Map();
 
   platform!: PlatformManager;
+
+  undoRedo = new UndoRedo();
 
   constructor(container: Container) {
     super();
@@ -137,9 +142,9 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createState(name: string, position: Point, parentId?: string) {
+  createState = ({ name, position, parentId, id }: CreateStateParameters, addToQueue = true) => {
     // Создание данных
-    const newStateId = this.container.app.manager.createState(name, position, parentId);
+    const newStateId = this.container.app.manager.createState({ name, position, parentId, id });
     // Создание модельки
     const state = new State(this.container, newStateId);
 
@@ -155,13 +160,24 @@ export class StateMachine extends EventEmitter {
     this.container.states.watchState(state);
 
     this.container.isDirty = true;
-  }
 
-  changeStateName(id: string, name: string) {
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.stateCreate(this, newStateId, name, position, parentId));
+    }
+  };
+
+  changeStateName = (id: string, name: string, addToQueue = true) => {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.changeStateName(this, id, name, state));
+    }
+
     this.container.app.manager.changeStateName(id, name);
 
     this.container.isDirty = true;
-  }
+  };
 
   linkState(parentId: string, childId: string) {
     const parent = this.states.get(parentId);
@@ -240,9 +256,13 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteState(id: string) {
+  deleteState = (id: string, addToQueue = true) => {
     const state = this.states.get(id);
     if (!state) return;
+
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.deleteState(this, id, state));
+    }
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.transitions.forEach((data, transitionId) => {
@@ -274,37 +294,42 @@ export class StateMachine extends EventEmitter {
     this.states.delete(id);
 
     this.container.isDirty = true;
-  }
+  };
 
-  changeInitialState(id: string) {
+  changeInitialState = (id: string, addToQueue = true) => {
+    if (addToQueue) {
+      this.undoRedo.do(
+        possibleActions.changeInitialState(
+          this,
+          id,
+          this.container.app.manager.data.elements.initialState
+        )
+      );
+    }
+
     this.container.app.manager.changeInitialState(id);
 
     this.container.isDirty = true;
-  }
+  };
 
-  createTransition(
-    source: State,
-    target: State,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
-  ) {
+  createTransition(params: CreateTransitionParameters, addToQueue = true) {
+    const { source, target, color, component, method, doAction, condition, id: prevId } = params;
+
     // Создание данных
-    const id = this.container.app.manager.createTransition(
-      source.id,
-      target.id,
+    const id = this.container.app.manager.createTransition({
+      id: prevId,
+      source: source.id,
+      target: target.id,
       color,
-      {
+      position: {
         x: (source.bounds.x + target.bounds.x) / 2,
         y: (source.bounds.y + target.bounds.y) / 2,
       },
       component,
       method,
       doAction,
-      condition
-    );
+      condition,
+    });
     // Создание модельки
     const transition = new Transition({
       container: this.container,
@@ -317,6 +342,10 @@ export class StateMachine extends EventEmitter {
     this.container.transitions.watchTransition(transition);
 
     this.container.isDirty = true;
+
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.createTransition(this, id, params));
+    }
   }
 
   changeTransition(
@@ -335,9 +364,13 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteTransition(id: string) {
+  deleteTransition(id: string, addToQueue = true) {
     const transition = this.transitions.get(id);
     if (!transition) return;
+
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.deleteTransition(this, transition));
+    }
 
     this.container.app.manager.deleteTransition(id);
 
@@ -502,11 +535,6 @@ export class StateMachine extends EventEmitter {
     this.platform.nameToComponent.delete(name);
 
     this.container.isDirty = true;
-  }
-
-  undo() {
-    // FIXME: очень нужно
-    console.warn('😿 🔙 not implemened yet');
   }
 
   /**

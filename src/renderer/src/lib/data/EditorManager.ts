@@ -1,5 +1,5 @@
 import { Dispatch, useSyncExternalStore } from 'react';
-import { customAlphabet, nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
 
 import {
   emptyElements,
@@ -20,41 +20,28 @@ import { Flasher } from '@renderer/components/Modules/Flasher';
 import { Point, Rectangle } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
 
+import {
+  emptyEditorData,
+  emptyDataListeners,
+  CreateStateParameters,
+  EditorData,
+  EditorDataPropertyName,
+  EditorDataReturn,
+  CreateTransitionParameters,
+} from '@renderer/types/EditorManager';
+
 export type FileError = {
   name: string;
   content: string;
 };
 
-const emptyEditorData = () => ({
-  isInitialized: false,
-  isStale: false,
-  basename: null as string | null,
-  name: null as string | null,
-
-  elements: emptyElements(),
-
-  offset: { x: 0, y: 0 },
-  scale: 1,
-});
-
-type EditorData = ReturnType<typeof emptyEditorData>;
-type EditorDataPropertyName = keyof EditorData | `elements.${keyof EditorData['elements']}`;
-type EditorDataReturn<T> = T extends `elements.${infer V}`
-  ? V extends keyof EditorData['elements']
-    ? EditorData['elements'][V]
-    : never
-  : T extends keyof EditorData
-  ? EditorData[T]
-  : never;
-type EditorDataListeners = { [key in EditorDataPropertyName]: (() => void)[] };
-
-const emptyDataListeners = Object.fromEntries([
-  ...Object.entries(emptyEditorData()).map(([k]) => [k, []]),
-  ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
-]) as any as EditorDataListeners;
-
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
+ *
+ * TODO тут появился костыль, для удобного взаимодействия с состояниями нужно их хранить в объекте,
+ * а в схеме они хранятся в массиве, поэтому когда нужна схема мы их конвертируем в массив
+ * а внутри конвертируем в объект
+ * возможно новый формат это поправит
  */
 export class EditorManager {
   data = emptyEditorData();
@@ -80,7 +67,14 @@ export class EditorManager {
 
     this.data.basename = basename;
     this.data.name = name;
-    this.data.elements = elements;
+    this.data.elements = {
+      ...elements,
+      transitions: elements.transitions.reduce((acc, cur, i) => {
+        acc[i] = cur;
+
+        return acc;
+      }, {}),
+    };
     this.data.isInitialized = true;
 
     this.data.elements = new Proxy(this.data.elements, {
@@ -128,12 +122,16 @@ export class EditorManager {
     }
 
     const elements = emptyElements();
+    (elements.transitions as any) = [];
     elements.platform = platformIdx;
-    this.init(null, 'Без названия', elements);
+    this.init(null, 'Без названия', elements as any);
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, this.data.elements);
+    Compiler.compile(this.data.elements.platform, {
+      ...this.data.elements,
+      transitions: Object.values(this.data.elements.transitions),
+    });
   }
 
   getList(): void {
@@ -237,9 +235,7 @@ export class EditorManager {
 
   getDataSerialized() {
     return JSON.stringify(
-      // TODO тут из-за того что переходы изначально массив, а внутри он конвертируется в словарь то при удалении появляются дыры и нужно их фильтровать
-      // надеюсь с приходом нового формата это пофиксится
-      { ...this.data.elements, transitions: this.data.elements.transitions.filter(Boolean) },
+      { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
       undefined,
       2
     );
@@ -305,18 +301,25 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  createState(name: string, position: Point, parentId?: string) {
-    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+  createState({ name, position, parentId, id }: CreateStateParameters) {
+    const getNewId = () => {
+      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+      let id = nanoid();
+      while (this.data.elements.states.hasOwnProperty(id)) {
+        id = nanoid();
+      }
+
+      return id;
+    };
 
     const { width, height } = stateStyle;
     const x = position.x - width / 2;
     const y = position.y - height / 2;
-    let id = nanoid();
-    while (this.data.elements.states.hasOwnProperty(id)) {
-      id = nanoid();
-    }
 
-    this.data.elements.states[id] = {
+    const newId = id ?? getNewId();
+
+    this.data.elements.states[newId] = {
       bounds: { x, y, width, height },
       events: [],
       name,
@@ -325,10 +328,10 @@ export class EditorManager {
 
     // если у нас не было начального состояния, им станет новое
     if (this.data.elements.initialState === '') {
-      this.data.elements.initialState = id;
+      this.data.elements.initialState = newId;
     }
 
-    return id;
+    return newId;
   }
 
   newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
@@ -470,17 +473,31 @@ export class EditorManager {
     return true;
   }
 
-  createTransition(
-    source: string,
-    target: string,
-    color: string,
-    position: Point,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
-  ) {
-    this.data.elements.transitions.push({
+  createTransition({
+    id,
+    source,
+    target,
+    color,
+    position,
+    component,
+    method,
+    doAction,
+    condition,
+  }: CreateTransitionParameters) {
+    const getNewId = () => {
+      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+      let id = nanoid();
+      while (this.data.elements.transitions.hasOwnProperty(id)) {
+        id = nanoid();
+      }
+
+      return id;
+    };
+
+    const newId = id ?? getNewId();
+
+    this.data.elements.transitions[newId] = {
       source,
       target,
       color,
@@ -491,9 +508,9 @@ export class EditorManager {
       },
       do: doAction,
       condition,
-    });
+    };
 
-    return String(this.data.elements.transitions.length - 1);
+    return String(newId);
   }
 
   changeTransition(

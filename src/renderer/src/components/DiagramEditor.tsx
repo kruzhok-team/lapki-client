@@ -61,7 +61,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
 
     //Перетаскиваем компонент в редактор
     editor.container.onStateDrop((position) => {
-      editor?.container.machine.createState('Состояние', position);
+      editor?.container.machine.createState({ name: 'Состояние', position });
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
@@ -135,15 +135,15 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
         data.condition
       );
     } else if (newTransition) {
-      editor?.container.machine.createTransition(
-        newTransition.source,
-        newTransition?.target,
-        data.color ?? '#FFFFFF',
-        data.trigger.component,
-        data.trigger.method,
-        events,
-        data.condition
-      );
+      editor?.container.machine.createTransition({
+        source: newTransition.source,
+        target: newTransition.target,
+        color: data.color ?? '#FFFFFF',
+        component: data.trigger.component,
+        method: data.trigger.method,
+        doAction: events,
+        condition: data.condition,
+      });
     }
     closeModal();
   };

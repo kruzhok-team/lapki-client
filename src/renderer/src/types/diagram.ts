@@ -73,10 +73,14 @@ export type Elements = {
   compilerSettings?: CompilerSettings | null;
 };
 
-export function emptyElements(): Elements {
+export interface InnerElements extends Omit<Elements, 'transitions'> {
+  transitions: Record<string, Transition>;
+}
+
+export function emptyElements(): InnerElements {
   return {
     states: {},
-    transitions: [],
+    transitions: {},
     components: {},
     initialState: '',
 

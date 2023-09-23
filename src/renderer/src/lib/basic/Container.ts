@@ -87,7 +87,8 @@ export class Container {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.handleDelete);
-    this.app.keyboard.on('ctrlz', this.handleUndo);
+    this.app.keyboard.on('ctrlz', this.machine.undoRedo.undo);
+    this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
 
     document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -142,10 +143,6 @@ export class Container {
 
   handleDelete = () => {
     this.machine.deleteSelected();
-  };
-
-  handleUndo = () => {
-    this.machine.undo();
   };
 
   handleMouseUp = () => {

@@ -1,5 +1,6 @@
 import { Component as ComponentType } from '@renderer/types/diagram';
 
+// TODO Удалить
 export class Component {
   data!: ComponentType;
 

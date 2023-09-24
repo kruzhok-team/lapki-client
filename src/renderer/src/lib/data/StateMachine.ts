@@ -16,7 +16,7 @@ import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager'
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
 import { UndoRedo, possibleActions } from './UndoRedo';
-import { CreateStateParameters } from '@renderer/types/EditorManager';
+import { ChangeTransitionParameters, CreateStateParameters } from '@renderer/types/EditorManager';
 import { CreateTransitionParameters } from '@renderer/types/StateMachine';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
@@ -178,6 +178,23 @@ export class StateMachine extends EventEmitter {
 
     this.container.isDirty = true;
   };
+
+  changeStatePosition(id: string, startPosition: Point, endPosition: Point, addToQueue = true) {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.changeStatePosition(this, id, startPosition, endPosition));
+    }
+
+    this.container.app.manager.changeStateBounds(id, {
+      ...endPosition,
+      width: state.data.bounds.width,
+      height: state.data.bounds.height,
+    });
+
+    this.container.isDirty = true;
+  }
 
   linkState(parentId: string, childId: string) {
     const parent = this.states.get(parentId);
@@ -348,18 +365,35 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  changeTransition(
+  changeTransition(args: ChangeTransitionParameters, addToQueue = true) {
+    const transition = this.transitions.get(args.id);
+    if (!transition) return;
+
+    if (addToQueue) {
+      this.undoRedo.do(possibleActions.changeTransition(this, transition, args));
+    }
+
+    this.container.app.manager.changeTransition(args);
+
+    this.container.isDirty = true;
+  }
+
+  changeTransitionPosition(
     id: string,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
+    startPosition: Point,
+    endPosition: Point,
+    addToQueue = true
   ) {
     const transition = this.transitions.get(id);
     if (!transition) return;
 
-    this.container.app.manager.changeTransition(id, color, component, method, doAction, condition);
+    if (addToQueue) {
+      this.undoRedo.do(
+        possibleActions.changeTransitionPosition(this, id, startPosition, endPosition)
+      );
+    }
+
+    this.container.app.manager.changeTransitionPosition(id, endPosition);
 
     this.container.isDirty = true;
   }

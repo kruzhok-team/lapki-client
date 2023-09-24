@@ -33,6 +33,8 @@ export abstract class Draggable extends EventEmitter {
 
   dragging = false;
 
+  private dragStartPosition: Point | null = null;
+
   private isMouseDown = false;
 
   private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
@@ -171,6 +173,22 @@ export abstract class Draggable extends EventEmitter {
     };
   }
 
+  private dragEnd() {
+    const dragEndPosition = { x: this.bounds.x, y: this.bounds.y };
+    if (
+      this.dragging &&
+      this.dragStartPosition &&
+      (dragEndPosition.x !== this.dragStartPosition.x ||
+        dragEndPosition.y !== this.dragStartPosition.y)
+    ) {
+      this.emit('dragend', {
+        target: this,
+        dragStartPosition: this.dragStartPosition,
+        dragEndPosition,
+      });
+    }
+  }
+
   handleMouseDown = (e: MyMouseEvent) => {
     if (!e.left) return;
 
@@ -182,8 +200,8 @@ export abstract class Draggable extends EventEmitter {
     e.stopPropagation();
 
     this.dragging = true;
-
     this.isMouseDown = true;
+    this.dragStartPosition = { x: this.bounds.x, y: this.bounds.y };
 
     clearTimeout(this.mouseDownTimerId);
 
@@ -230,6 +248,8 @@ export abstract class Draggable extends EventEmitter {
   };
 
   globalMouseUp = () => {
+    this.dragEnd();
+
     this.dragging = false;
     clearTimeout(this.mouseDownTimerId);
     // FIXME: перенести в общее поле (чтобы не вызывать N раз
@@ -247,8 +267,6 @@ export abstract class Draggable extends EventEmitter {
     // e.stopPropagation();
 
     this.emit('mouseup', { event: e, target: this });
-
-    // Перетаскивания тоже считаются изменением.
 
     if (this.isMouseDown) {
       this.isMouseDown = false;

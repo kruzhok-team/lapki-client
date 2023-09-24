@@ -47,3 +47,12 @@ export interface CreateTransitionParameters {
   doAction: Action[];
   condition: Condition | undefined;
 }
+
+export interface ChangeTransitionParameters {
+  id: string;
+  color: string;
+  component: string;
+  method: string;
+  doAction: Action[];
+  condition: Condition | undefined;
+}

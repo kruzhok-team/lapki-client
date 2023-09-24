@@ -28,6 +28,7 @@ import {
   EditorDataPropertyName,
   EditorDataReturn,
   CreateTransitionParameters,
+  ChangeTransitionParameters,
 } from '@renderer/types/EditorManager';
 
 export type FileError = {
@@ -513,14 +514,14 @@ export class EditorManager {
     return String(newId);
   }
 
-  changeTransition(
-    id: string,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
-  ) {
+  changeTransition({
+    id,
+    color,
+    component,
+    method,
+    doAction,
+    condition,
+  }: ChangeTransitionParameters) {
     const transition = this.data.elements.transitions[id] as Transition;
     if (!transition) return false;
 
@@ -529,6 +530,15 @@ export class EditorManager {
     transition.trigger.method = method;
     transition.do = doAction;
     transition.condition = condition;
+
+    return true;
+  }
+
+  changeTransitionPosition(id: string, position: Point) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return false;
+
+    transition.position = position;
 
     return true;
   }

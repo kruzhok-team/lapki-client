@@ -3,6 +3,7 @@ import { StateMachine } from './StateMachine';
 import { State } from '../drawable/State';
 import { CreateTransitionParameters } from '@renderer/types/StateMachine';
 import { Transition } from '../drawable/Transition';
+import { ChangeTransitionParameters } from '@renderer/types/EditorManager';
 
 type Action = { redo: () => void; undo: () => void };
 type Stack = Array<Action>;
@@ -87,10 +88,77 @@ export const possibleActions = {
     };
   },
 
+  changeTransition: (
+    stateMachine: StateMachine,
+    transition: Transition,
+    args: ChangeTransitionParameters
+  ) => {
+    const prevArgs = {
+      id: transition.id,
+      color: transition.data.color,
+      component: transition.data.trigger.component,
+      method: transition.data.trigger.method,
+      doAction: structuredClone(transition.data.do!),
+      condition: structuredClone(transition.data.condition!),
+    };
+    return {
+      redo: stateMachine.changeTransition.bind(stateMachine, args, false),
+      undo: stateMachine.changeTransition.bind(stateMachine, prevArgs, false),
+    };
+  },
+
   changeInitialState: (stateMachine: StateMachine, id: string, prevInitial: string) => {
     return {
       redo: stateMachine.changeInitialState.bind(stateMachine, id, false),
       undo: stateMachine.changeInitialState.bind(stateMachine, prevInitial, false),
+    };
+  },
+
+  changeStatePosition: (
+    stateMachine: StateMachine,
+    id: string,
+    startPosition: Point,
+    endPosition: Point
+  ) => {
+    return {
+      redo: stateMachine.changeStatePosition.bind(
+        stateMachine,
+        id,
+        startPosition,
+        endPosition,
+        false
+      ),
+      undo: stateMachine.changeStatePosition.bind(
+        stateMachine,
+        id,
+        endPosition,
+        startPosition,
+        false
+      ),
+    };
+  },
+
+  changeTransitionPosition: (
+    stateMachine: StateMachine,
+    id: string,
+    startPosition: Point,
+    endPosition: Point
+  ) => {
+    return {
+      redo: stateMachine.changeTransitionPosition.bind(
+        stateMachine,
+        id,
+        startPosition,
+        endPosition,
+        false
+      ),
+      undo: stateMachine.changeTransitionPosition.bind(
+        stateMachine,
+        id,
+        endPosition,
+        startPosition,
+        false
+      ),
     };
   },
 };

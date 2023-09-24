@@ -126,14 +126,14 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
         data.trigger.method
       );
     } else if (transition && data.key === 3) {
-      editor?.container.machine.changeTransition(
-        transition.id,
-        data.color ?? '#FFFFFF',
-        data.trigger.component,
-        data.trigger.method,
-        events,
-        data.condition
-      );
+      editor?.container.machine.changeTransition({
+        id: transition.id,
+        color: data.color ?? '#FFFFFF',
+        component: data.trigger.component,
+        method: data.trigger.method,
+        doAction: events,
+        condition: data.condition,
+      });
     } else if (newTransition) {
       editor?.container.machine.createTransition({
         source: newTransition.source,

@@ -308,7 +308,7 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  createState(name: string, position: Point, eventsData: EventData[], parentId?: string) {
+  createState(name: string, position: Point, eventsData?: EventData[], parentId?: string) {
     const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
 
     const { width, height } = stateStyle;

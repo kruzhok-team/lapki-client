@@ -16,7 +16,6 @@ import { Transition } from '../drawable/Transition';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
-import { useState } from 'react';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -139,7 +138,7 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createState(name: string, position: Point, eventsData: EventData[], parentId?: string) {
+  createState(name: string, position: Point, eventsData?: EventData[], parentId?: string) {
     // Создание данных
     const newStateId = this.container.app.manager.createState(name, position, eventsData, parentId);
     // Создание модельки

@@ -68,16 +68,15 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   const handleLocalFlasher = async () => {
     console.log('local');
     setFlasherIslocal(true);
-    await manager?.startLocalModule('lapki-flasher');
-    //Стандартный порт
-    manager?.changeFlasherLocal();
+    Flasher.setAutoReconnect(false);
+    await Flasher.connect();
   };
 
-  const handleRemoteFlasher = (host: string, port: number) => {
+  const handleRemoteFlasher = async (host: string, port: number) => {
     setFlasherIslocal(false);
     console.log('remote');
-    // await manager?.stopLocalModule('lapki-flasher');
-    manager?.changeFlasherHost(host, port);
+    Flasher.setAutoReconnect(true);
+    await Flasher.connect(host, port);
   };
 
   const handleFileChoose = () => {
@@ -168,8 +167,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
       setFlasherLog,
       setFlasherFile,
       setFlashing,
-      setFlasherError,
-      setFlasherIslocal
+      setFlasherError
     );
     const reader = new FileReader();
     Flasher.initReader(reader);
@@ -177,6 +175,28 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     Flasher.connect();
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
+
+  const display = () => {
+    if (connectionStatus == FLASHER_CONNECTED) {
+      return 'Обновить';
+    } else {
+      if (flasherIsLocal) {
+        return 'Перезапустить';
+      } else {
+        return 'Переподключиться';
+      }
+    }
+  };
+
+  const handleReconnect = () => {
+    if (flasherIsLocal) {
+      window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
+        Flasher.reconnect();
+      });
+    } else {
+      Flasher.reconnect();
+    }
+  };
 
   return (
     <section className="flex h-full flex-col text-center">
@@ -189,13 +209,13 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              connectionStatus != FLASHER_CONNECTED && 'opacity-50'
+              connectionStatus == FLASHER_CONNECTING && 'opacity-50'
             )}
-            onClick={handleGetList}
-            disabled={connectionStatus != FLASHER_CONNECTED}
+            onClick={connectionStatus == FLASHER_CONNECTED ? handleGetList : handleReconnect}
+            disabled={connectionStatus == FLASHER_CONNECTING}
           >
             <Update width="1.5rem" height="1.5rem" className="mr-1" />
-            Обновить
+            {display()}
           </button>
           <button
             className={twMerge(

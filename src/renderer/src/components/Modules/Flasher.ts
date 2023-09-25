@@ -22,10 +22,23 @@ export class Flasher {
   static connection: Websocket | undefined;
   static connecting: boolean = false;
   static timerID: NodeJS.Timeout | undefined;
+  // первоначальное значение timeout
+  private static initialTimeout: number = 5000;
   // на сколько мс увеличивается время перед новой попыткой подключения
-  static incTimeout: number = 5000;
-  // максимальное количество мс, через которое клиент будет пытаться переподключиться
-  static maxTimeout: number = 60000;
+  private static incTimeout: number = this.initialTimeout;
+  /*  
+    максимальное количество автоматических попыток переподключения
+    значение меньше нуля означает, что ограничения на попытки отсутствует
+  */
+  static maxReconnectAttempts: number = 3;
+  // количество совершённых попыток переподключения, сбрасывается при удачном подключении или при смене хоста
+  private static curReconnectAttemps: number = 0;
+  /* 
+  максимальное количество мс, через которое клиент будет пытаться переподключиться
+  не должно быть негативным числом (поэтому не стоит делать эту переменную зависимой от maxReconnectAttempts)
+  */
+  static maxTimeout: number = this.incTimeout * 10;
+  private static timeout: number = this.initialTimeout;
   static devices: Map<string, Device>;
 
   // Переменные, связанные с отправкой бинарных данных
@@ -35,7 +48,9 @@ export class Flasher {
   static filePos: number = 0;
   static blobSize: number = 1024;
   // true = во время вызова таймера для переключения ничего не будет происходить.
-  static freezeReconnection = false;
+  private static freezeReconnection: boolean = false;
+  // true = пытаться переподключиться автоматически
+  private static reconnection: boolean = false;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
@@ -43,39 +58,6 @@ export class Flasher {
   static setFlashing: Dispatch<SetStateAction<boolean>>;
   // сообщение об ошибке, undefined означает, что ошибки нет
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
-  static setIsLocal: Dispatch<SetStateAction<boolean>>;
-
-  static async changeLocal() {
-    await this.setLocal();
-    Flasher.changeHost(FLASHER_LOCAL_HOST, this.port);
-  }
-  static async setLocal() {
-    await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (port) {
-      Flasher.port = port;
-    });
-    this.host = FLASHER_LOCAL_HOST;
-    // this.base_address = this.makeAddress(this.host, this.port);
-  }
-  static changeHost(host: string, port: number) {
-    this.host = host;
-    this.port = port;
-    let new_address = this.makeAddress(host, port);
-    if (this.connection && new_address == this.base_address) {
-      return;
-    }
-    console.log(`Changing host from ${this.base_address} to ${new_address}`);
-    this.base_address = new_address;
-    this.connection?.close();
-    this.connection = undefined;
-    if (this.timerID) {
-      clearTimeout(this.timerID);
-      this.timerID = undefined;
-    }
-
-    this.setFlasherConnectionStatus(FLASHER_SWITCHING_HOST);
-    this.setFlasherDevices(new Map());
-    this.connect(this.base_address);
-  }
 
   //Когда прочитывает блоб - отправляет его
   static initReader(reader): void {
@@ -105,8 +87,7 @@ export class Flasher {
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>,
-    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    setIsLocal: Dispatch<SetStateAction<boolean>>
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -114,7 +95,6 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
-    this.setIsLocal = setIsLocal;
   }
   /*
     Добавляет устройство в список устройств
@@ -172,35 +152,61 @@ export class Flasher {
   static checkConnection(): boolean {
     return this.connection !== undefined;
   }
-
+  // переподключение к последнему адресом к которому Flasher пытался подключиться
+  static reconnect() {
+    this.connect(this.host, this.port);
+  }
+  /*
+   подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
+  */
   static async connect(
-    route: string | undefined = undefined,
-    timeout: number = this.incTimeout
+    host: string | undefined = undefined,
+    port: number | undefined = undefined
   ): Websocket {
-    if (route == undefined) {
-      await this.setLocal();
-      this.base_address = this.makeAddress(this.host, this.port);
-      this.connect(this.base_address, timeout);
-      //console.log('LOCAL', this.base_address);
-      return;
-    }
-    if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
-    var ws;
+    this.connecting = true;
+    this.setFlasherConnectionStatus(FLASHER_CONNECTING);
+    this.clearTimer();
+    if (host == undefined && port == undefined) {
+      Flasher.host = FLASHER_LOCAL_HOST;
+      await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
+        Flasher.port = localPort;
+      });
+    } else {
+      if (host != undefined) {
+        Flasher.host = host;
+      }
+      if (port != undefined) {
+        Flasher.port = port;
+      }
+    }
+    let new_address = Flasher.makeAddress(Flasher.host, Flasher.port);
+    // означает, что хост должен смениться
+    if (new_address != Flasher.base_address) {
+      Flasher.curReconnectAttemps = 1;
+      Flasher.base_address = new_address;
+      Flasher.timeout = Flasher.initialTimeout;
+    }
+    host = Flasher.host;
+    port = Flasher.port;
+    this.connection?.close();
+    this.setFlasherDevices(new Map());
+
+    var ws: Websocket;
     try {
-      ws = new Websocket(route);
+      ws = new Websocket(this.base_address);
       this.setErrorMessage(undefined);
     } catch (error) {
       this.setErrorMessage(`${error}`);
       console.log('Flasher websocket error', error);
       this.setFlasherConnectionStatus(FLASHER_CONNECTION_ERROR);
+      this.end();
       return;
     }
-    this.setFlasherConnectionStatus(FLASHER_CONNECTING);
-    this.connecting = true;
     //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
     ws.onopen = () => {
-      console.log('Flasher: connected!');
+      Flasher.curReconnectAttemps = 0;
+      console.log(`Flasher: connected to ${Flasher.host}:${Flasher.port}!`);
       this.setErrorMessage(undefined);
       this.setFlashing(false);
       this.setFlasherFile(undefined);
@@ -209,8 +215,6 @@ export class Flasher {
       this.connection = ws;
       this.connecting = false;
       this.setFlasherDevices(new Map());
-      timeout = 0;
-
       ws.onmessage = (msg: MessageEvent) => {
         //console.log(msg.data);
         const response = JSON.parse(msg.data) as FlasherMessage;
@@ -316,16 +320,22 @@ export class Flasher {
           );
         }
       }
-      console.log(`flasher closed ${route}, ${timeout}, ${this.base_address}`);
-      if (this.base_address == route) {
-        this.connecting = false;
+      if (host == Flasher.host && port == Flasher.port) {
         this.setFlasherConnectionStatus(FLASHER_NO_CONNECTION);
-        this.connection = undefined;
-        this.tryToReconnect(route!, timeout);
+        this.end();
+        if (this.reconnection) {
+          this.tryToReconnect();
+        }
       }
     };
 
     return ws;
+  }
+
+  // действия после закрытии или ошибке соединения
+  private static end() {
+    this.connecting = false;
+    this.connection = undefined;
   }
 
   static flashingEnd() {
@@ -335,6 +345,21 @@ export class Flasher {
 
   static refresh(): void {
     this.filePos = 0;
+  }
+
+  static setAutoReconnect(reconnect: boolean) {
+    if (!reconnect) {
+      this.clearTimer();
+    }
+    this.reconnection = reconnect;
+  }
+
+  // безопасное отключение таймера для переподключения
+  private static clearTimer() {
+    if (this.timerID) {
+      clearTimeout(this.timerID);
+      this.timerID = undefined;
+    }
   }
 
   static async setBinary(binaries: Array<Binary>) {
@@ -408,19 +433,25 @@ export class Flasher {
     this.freezeReconnection = freeze;
   }
 
-  static tryToReconnect(route: string, timeout: number) {
+  private static tryToReconnect() {
+    if (this.maxReconnectAttempts >= 0 && this.curReconnectAttemps >= this.maxReconnectAttempts) {
+      return;
+    }
     this.timerID = setTimeout(() => {
-      console.log(`${route} inTimer: ${timeout}`);
+      console.log(`${this.base_address} inTimer: ${this.timeout}`);
       if (!this.freezeReconnection) {
-        this.connect(route, Math.min(this.maxTimeout, timeout + this.incTimeout));
+        this.timeout = Math.min(this.timeout + this.incTimeout, this.maxTimeout);
+        this.curReconnectAttemps++;
+        this.reconnect();
       } else {
         console.log('the timer is frozen');
-        if (timeout == 0) {
-          this.tryToReconnect(route, timeout + this.incTimeout);
+        if (this.timeout == 0) {
+          this.timeout = Math.min(this.incTimeout, this.maxTimeout);
+          this.tryToReconnect();
         } else {
-          this.tryToReconnect(route, timeout);
+          this.tryToReconnect();
         }
       }
-    }, timeout);
+    }, this.timeout);
   }
 }

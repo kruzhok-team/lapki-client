@@ -1,5 +1,5 @@
 import { Dispatch, useSyncExternalStore } from 'react';
-import { customAlphabet, nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
 
 import {
   emptyElements,

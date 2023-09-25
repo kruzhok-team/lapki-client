@@ -44,6 +44,7 @@ export default {
       state: {
         bodyBg: '#404040',
         titleColor: '#FFF',
+        titleColorUndefined: '#89a3af',
         titleBg: '#525252',
         eventColor: '#FFF',
         selectedBorderColor: '#FFF',

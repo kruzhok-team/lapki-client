@@ -27,6 +27,7 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
   };
 
   useLayoutEffect(() => {
+    if (!isOpen) return;
     setValue(state.data.name);
   }, [state]);
 
@@ -45,7 +46,7 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
     fontSize: Math.max(sizes.fontSize, 15) + 'px',
     padding: `${0}px ${Math.max(sizes.paddingX, 15)}px`,
   };
-  console.log(state.data.name);
+
   return (
     <input
       style={inputStyle}

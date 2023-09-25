@@ -135,8 +135,12 @@ export class State extends Draggable {
     ]);
     ctx.fill();
 
-    ctx.fillStyle = style.titleColor;
-    ctx.fillText(this.data.name, x + paddingX, y + paddingY);
+    ctx.fillStyle = this.data.name !== '' ? style.titleColor : style.titleColorUndefined;
+    ctx.fillText(
+      this.data.name !== '' ? this.data.name : 'Без названия',
+      x + paddingX,
+      y + paddingY
+    );
 
     ctx.closePath();
   }

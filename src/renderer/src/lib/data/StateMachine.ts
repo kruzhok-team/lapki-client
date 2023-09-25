@@ -8,6 +8,7 @@ import {
   EventData,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
+import { State as StateType } from '@renderer/types/diagram';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
@@ -387,24 +388,24 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  //Копируем код выбранного состояния в буфер обмена
+  //Глубокое рекурсивное копирование выбранного состояния и занесения его в буфер обмена
   copySelected() {
     this.states.forEach((state) => {
       if (state.isSelected) {
-        navigator.clipboard.writeText(state.id).then(() => {
+        navigator.clipboard.writeText(JSON.stringify(state.data)).then(() => {
           console.log('Скопировано!');
         });
-        this.container.isDirty = true;
       }
     });
+    this.container.isDirty = true;
   }
 
   //Вставляем код из буфера обмена в редактор машин состояний
   pasteSelected() {
     navigator.clipboard.readText().then((data) => {
-      const state = this.states.get(data);
+      const state = JSON.parse(data) as StateType;
       if (!state) return;
-      this.createState(state.data.name, state.bounds, state.data.events, state.data.parent);
+      this.createState(state.name, state.bounds, state.events, state.parent);
       console.log('Вставлено!');
     });
     this.container.isDirty = true;

@@ -23,7 +23,8 @@ function createWindow(): void {
     resizable: true, // запрет на изменение размеров окна
     minHeight: 600,
     minWidth: 1000,
-    autoHideMenuBar: true,
+    /*Скрыть меню при запуске(уже не требуется, см. код ниже) 
+    autoHideMenuBar: true,*/
     ...(process.platform === 'win32' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -33,6 +34,8 @@ function createWindow(): void {
   });
   // Разворачиваем окно на весь экран
   mainWindow.maximize();
+  //Навсегда скрывает верхнее меню электрона
+  mainWindow.setMenu(null);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();

@@ -86,7 +86,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
       {Object.entries(proto.parameters ?? {}).map(([idx, param]) => {
         const name = param.name ?? idx;
-        const value = parameters[name];
+        const value = parameters[name] ?? '';
         return (
           <label key={idx} className="flex items-center gap-2">
             {name}:

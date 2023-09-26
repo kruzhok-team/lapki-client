@@ -15,7 +15,7 @@ export const useDiagramStateName = (editor: CanvasEditor | null) => {
     const stateId = state.id;
     if (!stateId) return;
 
-    editor?.container.machine.changeStateName(stateId, name || 'Состояние');
+    editor?.container.machine.changeStateName(stateId, name);
 
     onClose();
   };

@@ -8,7 +8,12 @@ import {
   handleBinFileOpen,
 } from './file-handlers';
 import { join } from 'path';
-import { FLASHER_LOCAL_PORT, ModuleManager, ModuleStatus } from './modules/ModuleManager';
+import {
+  FLASHER_LOCAL_PORT,
+  LAPKI_FLASHER,
+  ModuleManager,
+  ModuleStatus,
+} from './modules/ModuleManager';
 
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
@@ -23,7 +28,8 @@ function createWindow(): void {
     resizable: true, // запрет на изменение размеров окна
     minHeight: 600,
     minWidth: 1000,
-    autoHideMenuBar: true,
+    /*Скрыть меню при запуске(уже не требуется, см. код ниже) 
+    autoHideMenuBar: true,*/
     ...(process.platform === 'win32' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -33,6 +39,8 @@ function createWindow(): void {
   });
   // Разворачиваем окно на весь экран
   mainWindow.maximize();
+  //Навсегда скрывает верхнее меню электрона
+  mainWindow.setMenu(null);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -135,7 +143,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-  ModuleManager.startLocalModule('lapki-flasher');
+  ModuleManager.startLocalModule(LAPKI_FLASHER);
   createWindow();
 
   app.on('activate', function () {
@@ -149,7 +157,7 @@ app.whenReady().then(() => {
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
+  ModuleManager.stopModule(LAPKI_FLASHER);
   if (process.platform !== 'darwin') {
     app.quit();
   }

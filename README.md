@@ -7,16 +7,17 @@
 ## Зависимости
 
 Поддерживаемые ОС:
- - Windows 7 и новее
-   - Для прошивки могут понадобиться драйвера прошиваемых устройств (например, нестандартных Arduino или в Windows 7).
- - Linux-дистрибутивы с менеджером **Systemd**. 
-   - Для прошивки потребуется `libusb`, для опроса устройств также используется `udevadm`. Возможна работа с `eudev`, но это не тестировалось.
+
+- Windows 7 и новее
+  - Для прошивки могут понадобиться драйвера прошиваемых устройств (например, нестандартных Arduino или в Windows 7).
+- Linux-дистрибутивы с менеджером **Systemd**.
+  - Для прошивки потребуется `libusb`, для опроса устройств также используется `udevadm`. Возможна работа с `eudev`, но это не тестировалось.
 
 Также для прошивки потребуется **avrdude**. В Linux достаточно установить утилиту встроенным пакетным менеджером, под Windows предлагается установить [форк от maurisgreuel](https://github.com/mariusgreuel/avrdude), положить в рабочую директорию или PATH.
 
 ## Разработка
 
-Для работы с репозиторием рекомендуется использовать [VSCode](https://code.visualstudio.com/) с расширениями [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) и [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). 
+Для работы с репозиторием рекомендуется использовать [VSCode](https://code.visualstudio.com/) с расширениями [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) и [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
 
 Для запуска dev-версии потребуется установить Node 18.х и новее c npm, после выполнить команды:
 
@@ -30,7 +31,7 @@ $ npm run dev
 
 Dev-версия работает в режиме горячей замены, но некоторые изменения (например, затрагивающие хранение данных схемы) могут приводить к проблемам, не проявляющимся в обычной работе.
 
-Для разработки под NixOS предусмотрен shell-файл, запускающий FHS-окружение с VS Code и необходимыми зависимостями. 
+Для разработки под NixOS предусмотрен shell-файл, запускающий FHS-окружение с VS Code и необходимыми зависимостями.
 Команда `nix-shell` автоматически запускает редактор. При первом запуске в VS Code также желательно поставить Prettier и ESLint.
 
 ### Сборка

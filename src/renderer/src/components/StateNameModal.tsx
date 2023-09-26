@@ -1,5 +1,4 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useLayoutEffect, useState } from 'react';
 
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
@@ -21,9 +20,16 @@ export interface StateNameModalFormValues {
 export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
   const { isOpen, onClose, state, position, sizes, onRename } = props;
 
-  const { register, handleSubmit } = useForm<StateNameModalFormValues>();
+  const [value, setValue] = useState<string>();
 
-  const onSubmit = handleSubmit(({ name }) => onRename(name));
+  const onSubmit = () => {
+    onRename(value!);
+  };
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    setValue(state.data.name);
+  }, [state]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return onSubmit();
@@ -49,10 +55,9 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
       placeholder="Придумайте название"
       maxLength={20}
       onKeyUp={handleKeyUp}
-      {...register('name', {
-        onBlur: onClose,
-        value: state.data.name,
-      })}
+      onBlur={onClose}
+      onChange={(e) => setValue(e.target.value)}
+      value={value}
     />
   );
 };

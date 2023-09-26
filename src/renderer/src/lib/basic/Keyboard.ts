@@ -30,16 +30,18 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
   };
 
   handleKeyUp = (e: KeyboardEvent) => {
-    // console.log(e.code, e);
+    //console.log(e.code, e);
     if (e.code === 'Space') {
       this.spacePressed = false;
       this.emit('spaceup', e);
       return;
     }
-    if (e.code === 'Delete') {
+
+    if (e.key === 'Delete') {
       this.emit('delete', e);
       return;
     }
+
     if (e.ctrlKey) {
       if (e.code === 'KeyZ') {
         this.emit('ctrlz', e);
@@ -47,6 +49,14 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
       }
       if (e.code === 'KeyY') {
         this.emit('ctrly', e);
+        return;
+      }
+      if (e.code === 'KeyC') {
+        this.emit('ctrlc', e);
+        return;
+      }
+      if (e.code === 'KeyV') {
+        this.emit('ctrlv', e);
         return;
       }
     }

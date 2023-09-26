@@ -50,8 +50,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
 
     const editor = new CanvasEditor(containerRef.current, manager);
 
+    //Функция очистки всех данных
     const ClearUseState = () => {
-      //Очищаем все старые данные
       setState(undefined);
       setEvents([]);
       setIdEvents(undefined);
@@ -147,7 +147,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     }
     closeModal();
   };
-
+  console.log(stateName);
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>

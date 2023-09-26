@@ -1,11 +1,11 @@
 import { electronAPI } from '@electron-toolkit/preload';
 import { contextBridge } from 'electron';
-import { FLASHER_LOCAL_HOST, FLASHER_LOCAL_PORT } from '../main/modules/ModuleManager';
+import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
 
 // Custom APIs for renderer
 const api = {
-  FLASHER_LOCAL_PORT,
   FLASHER_LOCAL_HOST,
+  LAPKI_FLASHER,
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

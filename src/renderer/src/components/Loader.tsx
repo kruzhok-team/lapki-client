@@ -16,6 +16,8 @@ import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { FlasherSelectModal } from './FlasherSelectModal';
 import { ErrorModal, ErrorModalData } from './ErrorModal';
 
+const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
+
 export interface FlasherProps {
   manager: EditorManager | null;
   compilerData: CompilerResult | undefined;
@@ -94,7 +96,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     var errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
     if (flasherIsLocal) {
       await window.electron.ipcRenderer
-        .invoke('Module:getStatus', 'lapki-flasher')
+        .invoke('Module:getStatus', LAPKI_FLASHER)
         .then(function (obj) {
           let errorDetails = obj.details;
           switch (obj.code) {

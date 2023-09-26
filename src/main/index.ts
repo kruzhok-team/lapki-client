@@ -6,7 +6,8 @@ import {
   handleFileSaveAs,
   handleSaveIntoFolder,
   handleBinFileOpen,
-  handleGetPlatforms
+  handleGetPlatforms,
+  handleOpenPlatformFile,
 } from './file-handlers';
 import { join } from 'path';
 import {
@@ -80,8 +81,8 @@ function initSettings(): void {
 
   if (!settings.hasSync('PlatformsPath')) {
     settings.setSync('PlatformsPath', {
-      path: `${process.cwd()}/src/renderer/public/platform`
-    })
+      path: `${process.cwd()}/src/renderer/public/platform`,
+    });
   }
 }
 
@@ -140,6 +141,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('PlatformLoader:getPlatforms', (_event, directory: string) => {
     return handleGetPlatforms(directory);
+  });
+
+  ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {
+    return handleOpenPlatformFile(absolute_path);
   });
 
   // main process

@@ -3,11 +3,16 @@ import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
 import { PlatformManager } from './PlatformManager';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
-
+import { Settings } from '@renderer/components/Modules/Settings';
 // TODO? выдача стандартного файла для платформы
 
 // TODO: забирать пути динамически или дать пользователям их редактировать
+// const platformPaths = [
+//   '/home/l140/programming/ide/client/src/renderer/public/platform/Berloga.json',
+//   '/home/l140/programming/ide/client/src/renderer/public/platform/Arduino.json',
+// ];
 const platformPaths = ['./platform/Berloga.json', './platform/Arduino.json'];
+const test = window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms', (await Settings.getPlatformPath()).path) 
 
 let platformsLoaded = false;
 

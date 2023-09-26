@@ -6,6 +6,7 @@ import {
   handleFileSaveAs,
   handleSaveIntoFolder,
   handleBinFileOpen,
+  handleGetPlatforms
 } from './file-handlers';
 import { join } from 'path';
 import {
@@ -76,6 +77,12 @@ function initSettings(): void {
       port: 8081,
     });
   }
+
+  if (!settings.hasSync('PlatformsPath')) {
+    settings.setSync('PlatformsPath', {
+      path: `${process.cwd()}/src/renderer/public/platform`
+    })
+  }
 }
 
 // Выполняется после инициализации Electron
@@ -129,6 +136,10 @@ app.whenReady().then(() => {
       message: status.message,
     };
     return obj;*/
+  });
+
+  ipcMain.handle('PlatformLoader:getPlatforms', (_event, directory: string) => {
+    return handleGetPlatforms(directory);
   });
 
   // main process

@@ -1,5 +1,5 @@
 import { dialog } from 'electron';
-
+import { readdir } from 'fs/promises';
 import fs from 'fs';
 import { basename } from 'path';
 import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
@@ -32,6 +32,23 @@ export async function handleFileOpen(platform: string) {
       resolve([false, null, null, '']);
     }
   });
+}
+
+export async function handleGetPlatforms(directory: string) {
+  return new Promise(async (resolve, _reject) => {
+    await readdir(directory)
+    .then((files) => {
+      files.forEach(element => {
+        console.log(element);
+      });
+      resolve([true, files])
+    })
+    .catch((err) => {
+      console.log(err);
+      resolve([false, null])
+    }
+    );
+  })
 }
 
 export async function handleSaveIntoFolder(data: Array<SourceFile | Binary>) {

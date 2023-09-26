@@ -2,17 +2,23 @@ import React from 'react';
 
 import { Modal } from './Modal/Modal';
 
+import { ComponentProto } from '@renderer/types/platform';
+import { Component as ComponentData } from '@renderer/types/diagram';
+
 interface ComponentDeleteModalProps {
   isOpen: boolean;
-  idx: string;
-  type: string;
   onClose: () => void;
+
+  idx: string;
+  data: ComponentData;
+  proto: ComponentProto;
   onSubmit: (idx: string) => void;
 }
 
 export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   idx,
-  type,
+  data,
+  proto,
   onClose,
   onSubmit,
   ...props
@@ -24,7 +30,9 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
     onClose();
   };
 
-  const compoLabel = type ? `${type} ${idx}` : idx;
+  const type = data.type;
+
+  const compoLabel = type && !proto.singletone ? `${type} ${idx}` : idx;
 
   return (
     <Modal

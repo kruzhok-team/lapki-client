@@ -3,6 +3,8 @@ import { findFreePort } from './freePortFinder';
 import path from 'path';
 export var FLASHER_LOCAL_HOST = 'localhost';
 export var FLASHER_LOCAL_PORT;
+// название локального загрузчика
+export const LAPKI_FLASHER = 'lapki-flasher';
 
 export class ModuleStatus {
   /* 

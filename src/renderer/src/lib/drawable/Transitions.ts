@@ -90,6 +90,9 @@ export class Transitions {
   handleContextMenu = (e: { target: Condition; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
+    this.container.machine.removeSelection();
+    e.target.setIsSelected(true);
+
     this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
   };
 

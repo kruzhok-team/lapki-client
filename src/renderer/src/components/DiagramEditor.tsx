@@ -112,19 +112,19 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
   const handleCreateEventsModal = (data: EventsModalResult) => {
     setEvents([...events, data.action]);
     if (!isModalOpen) {
-      editor?.container.machine.changeEvent(data.id, data.trigger);
+      editor?.container.machine.changeEvent(data.id?.state.id, data.id?.event, data.trigger);
     }
     closeEventsModal();
   };
 
   const handleCreateModal = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.machine.newPictoState(
-        data.id,
+      editor?.container.machine.changeStateEvents({
+        id: data.id,
+        triggerComponent: data.trigger.component,
+        triggerMethod: data.trigger.method,
         events,
-        data.trigger.component,
-        data.trigger.method
-      );
+      });
     } else if (transition && data.key === 3) {
       editor?.container.machine.changeTransition({
         id: transition.id,
@@ -136,8 +136,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       });
     } else if (newTransition) {
       editor?.container.machine.createTransition({
-        source: newTransition.source,
-        target: newTransition.target,
+        source: newTransition.source.id,
+        target: newTransition.target.id,
         color: data.color ?? '#FFFFFF',
         component: data.trigger.component,
         method: data.trigger.method,

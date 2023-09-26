@@ -16,7 +16,12 @@ import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager'
 import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
 import { UndoRedo, possibleActions } from './UndoRedo';
-import { ChangeTransitionParameters, CreateStateParameters } from '@renderer/types/EditorManager';
+import {
+  ChangeStateEventsParams,
+  ChangeTransitionParameters,
+  CreateStateParameters,
+  SetStateEventsParams,
+} from '@renderer/types/EditorManager';
 import { CreateTransitionParameters } from '@renderer/types/StateMachine';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
@@ -91,17 +96,7 @@ export class StateMachine extends EventEmitter {
     const items = this.container.app.manager.data.elements.transitions;
 
     for (const id in items) {
-      const data = items[id];
-
-      const sourceState = this.states.get(data.source) as State;
-      const targetState = this.states.get(data.target) as State;
-
-      const transition = new Transition({
-        container: this.container,
-        source: sourceState,
-        target: targetState,
-        id: id,
-      });
+      const transition = new Transition(this.container, id);
 
       this.transitions.set(id, transition);
 
@@ -131,20 +126,11 @@ export class StateMachine extends EventEmitter {
     this.platform = platform;
   }
 
-  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
-    const state = this.states.get(id);
-    if (!state) return;
+  createState = (args: CreateStateParameters, canUndo = true) => {
+    const { parentId, position } = args;
 
-    this.container.app.manager.newPictoState(id, events, triggerComponent, triggerMethod);
-
-    state.eventBox.recalculate();
-
-    this.container.isDirty = true;
-  }
-
-  createState = ({ name, position, parentId, id }: CreateStateParameters, addToQueue = true) => {
     // Создание данных
-    const newStateId = this.container.app.manager.createState({ name, position, parentId, id });
+    const newStateId = this.container.app.manager.createState(args);
     // Создание модельки
     const state = new State(this.container, newStateId);
 
@@ -161,16 +147,46 @@ export class StateMachine extends EventEmitter {
 
     this.container.isDirty = true;
 
-    if (addToQueue) {
-      this.undoRedo.do(possibleActions.stateCreate(this, newStateId, name, position, parentId));
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.stateCreate(this, newStateId, args));
     }
   };
 
-  changeStateName = (id: string, name: string, addToQueue = true) => {
+  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
+    const { id } = args;
+
     const state = this.states.get(id);
     if (!state) return;
 
-    if (addToQueue) {
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.changeStateEvents(this, state, args));
+    }
+
+    this.container.app.manager.changeStateEvents(args);
+
+    state.eventBox.recalculate();
+
+    this.container.isDirty = true;
+  }
+
+  setStateEvents(args: SetStateEventsParams) {
+    const { id } = args;
+
+    const state = this.states.get(id);
+    if (!state) return;
+
+    this.container.app.manager.setStateEvents(args);
+
+    state.eventBox.recalculate();
+
+    this.container.isDirty = true;
+  }
+
+  changeStateName = (id: string, name: string, canUndo = true) => {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    if (canUndo) {
       this.undoRedo.do(possibleActions.changeStateName(this, id, name, state));
     }
 
@@ -179,11 +195,11 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   };
 
-  changeStatePosition(id: string, startPosition: Point, endPosition: Point, addToQueue = true) {
+  changeStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
     const state = this.states.get(id);
     if (!state) return;
 
-    if (addToQueue) {
+    if (canUndo) {
       this.undoRedo.do(possibleActions.changeStatePosition(this, id, startPosition, endPosition));
     }
 
@@ -273,11 +289,11 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteState = (id: string, addToQueue = true) => {
+  deleteState = (id: string, canUndo = true) => {
     const state = this.states.get(id);
     if (!state) return;
 
-    if (addToQueue) {
+    if (canUndo) {
       this.undoRedo.do(possibleActions.deleteState(this, id, state));
     }
 
@@ -313,8 +329,8 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   };
 
-  changeInitialState = (id: string, addToQueue = true) => {
-    if (addToQueue) {
+  changeInitialState = (id: string, canUndo = true) => {
+    if (canUndo) {
       this.undoRedo.do(
         possibleActions.changeInitialState(
           this,
@@ -329,18 +345,23 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   };
 
-  createTransition(params: CreateTransitionParameters, addToQueue = true) {
+  createTransition(params: CreateTransitionParameters, canUndo = true) {
     const { source, target, color, component, method, doAction, condition, id: prevId } = params;
+
+    const soruceState = this.states.get(source);
+    const targetState = this.states.get(target);
+
+    if (!soruceState || !targetState) return;
 
     // Создание данных
     const id = this.container.app.manager.createTransition({
       id: prevId,
-      source: source.id,
-      target: target.id,
+      source,
+      target,
       color,
       position: {
-        x: (source.bounds.x + target.bounds.x) / 2,
-        y: (source.bounds.y + target.bounds.y) / 2,
+        x: (soruceState.bounds.x + targetState.bounds.x) / 2,
+        y: (soruceState.bounds.y + targetState.bounds.y) / 2,
       },
       component,
       method,
@@ -348,28 +369,23 @@ export class StateMachine extends EventEmitter {
       condition,
     });
     // Создание модельки
-    const transition = new Transition({
-      container: this.container,
-      source: source,
-      target: target,
-      id,
-    });
+    const transition = new Transition(this.container, id);
 
     this.transitions.set(id, transition);
     this.container.transitions.watchTransition(transition);
 
     this.container.isDirty = true;
 
-    if (addToQueue) {
+    if (canUndo) {
       this.undoRedo.do(possibleActions.createTransition(this, id, params));
     }
   }
 
-  changeTransition(args: ChangeTransitionParameters, addToQueue = true) {
+  changeTransition(args: ChangeTransitionParameters, canUndo = true) {
     const transition = this.transitions.get(args.id);
     if (!transition) return;
 
-    if (addToQueue) {
+    if (canUndo) {
       this.undoRedo.do(possibleActions.changeTransition(this, transition, args));
     }
 
@@ -378,16 +394,11 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  changeTransitionPosition(
-    id: string,
-    startPosition: Point,
-    endPosition: Point,
-    addToQueue = true
-  ) {
+  changeTransitionPosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
     const transition = this.transitions.get(id);
     if (!transition) return;
 
-    if (addToQueue) {
+    if (canUndo) {
       this.undoRedo.do(
         possibleActions.changeTransitionPosition(this, id, startPosition, endPosition)
       );
@@ -398,11 +409,11 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  deleteTransition(id: string, addToQueue = true) {
+  deleteTransition(id: string, canUndo = true) {
     const transition = this.transitions.get(id);
     if (!transition) return;
 
-    if (addToQueue) {
+    if (canUndo) {
       this.undoRedo.do(possibleActions.deleteTransition(this, transition));
     }
 
@@ -453,11 +464,15 @@ export class StateMachine extends EventEmitter {
   }
 
   // Редактирование события в состояниях
-  changeEvent(data: { state; event } | undefined, newValue: Event | Action) {
-    const state = this.states.get(data?.state.id);
+  changeEvent(stateId: string, event: any, newValue: Event | Action, canUndo = true) {
+    const state = this.states.get(stateId);
     if (!state) return;
 
-    this.container.app.manager.changeEvent(state.id, data?.event, newValue);
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.changeEvent(this, stateId, event, newValue));
+    }
+
+    this.container.app.manager.changeEvent(stateId, event, newValue);
 
     state.eventBox.recalculate();
 

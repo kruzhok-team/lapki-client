@@ -147,6 +147,7 @@ export class States extends EventEmitter {
     state.off('dblclick', this.handleStateDoubleClick as any);
     state.off('contextmenu', this.handleContextMenu as any);
     state.off('longpress', this.handleLongPress as any);
+    state.off('dragend', this.handleDragEnd as any);
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();

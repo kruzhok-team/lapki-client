@@ -1,4 +1,4 @@
-import { emptyElements, Action, Condition } from '@renderer/types/diagram';
+import { emptyElements, Action, Condition, EventData } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
 export const emptyEditorData = () => ({
@@ -34,6 +34,7 @@ export interface CreateStateParameters {
   position: Point;
   parentId?: string;
   id?: string;
+  events?: EventData[];
 }
 
 export interface CreateTransitionParameters {
@@ -55,4 +56,16 @@ export interface ChangeTransitionParameters {
   method: string;
   doAction: Action[];
   condition: Condition | undefined;
+}
+
+export interface ChangeStateEventsParams {
+  id: string;
+  events: Action[];
+  triggerComponent: string;
+  triggerMethod: string;
+}
+
+export interface SetStateEventsParams {
+  id: string;
+  events: EventData[];
 }

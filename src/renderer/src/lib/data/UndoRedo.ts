@@ -3,25 +3,20 @@ import { StateMachine } from './StateMachine';
 import { State } from '../drawable/State';
 import { CreateTransitionParameters } from '@renderer/types/StateMachine';
 import { Transition } from '../drawable/Transition';
-import { ChangeTransitionParameters } from '@renderer/types/EditorManager';
+import {
+  ChangeStateEventsParams,
+  ChangeTransitionParameters,
+  CreateStateParameters,
+} from '@renderer/types/EditorManager';
+import { Action as EventAction, Event } from '@renderer/types/diagram';
 
 type Action = { redo: () => void; undo: () => void };
 type Stack = Array<Action>;
 
 export const possibleActions = {
-  stateCreate: (
-    stateMachine: StateMachine,
-    newStateId: string,
-    name: string,
-    position: Point,
-    parentId?: string
-  ) => {
+  stateCreate: (stateMachine: StateMachine, newStateId: string, args: CreateStateParameters) => {
     return {
-      redo: stateMachine.createState.bind(
-        stateMachine,
-        { name, position, parentId, id: newStateId },
-        false
-      ),
+      redo: stateMachine.createState.bind(stateMachine, { ...args, id: newStateId }, false),
       undo: stateMachine.deleteState.bind(stateMachine, newStateId, false),
     };
   },
@@ -39,6 +34,7 @@ export const possibleActions = {
             y: state.data.bounds.y + state.data.bounds.height / 2,
           },
           parentId: state.data.parent,
+          events: structuredClone(state.data.events),
         },
         false
       ),
@@ -49,6 +45,16 @@ export const possibleActions = {
     return {
       redo: stateMachine.changeStateName.bind(stateMachine, id, name, false),
       undo: stateMachine.changeStateName.bind(stateMachine, id, state.data.name, false),
+    };
+  },
+
+  changeStateEvents: (stateMachine: StateMachine, state: State, args: ChangeStateEventsParams) => {
+    return {
+      redo: stateMachine.changeStateEvents.bind(stateMachine, args, false),
+      undo: stateMachine.setStateEvents.bind(stateMachine, {
+        id: state.id,
+        events: state.data.events,
+      }),
     };
   },
 
@@ -66,8 +72,6 @@ export const possibleActions = {
   deleteTransition: (stateMachine: StateMachine, transition: Transition) => {
     const prevData = structuredClone(transition.data);
     const id = transition.id;
-    const source = transition.source;
-    const target = transition.target;
 
     return {
       redo: stateMachine.deleteTransition.bind(stateMachine, transition.id, false),
@@ -75,9 +79,7 @@ export const possibleActions = {
         stateMachine,
         {
           id,
-          source,
-          target,
-          color: prevData.color,
+          ...prevData,
           component: prevData.trigger.component,
           method: prevData.trigger.method,
           condition: prevData.condition!,
@@ -159,6 +161,18 @@ export const possibleActions = {
         startPosition,
         false
       ),
+    };
+  },
+
+  changeEvent: (
+    stateMachine: StateMachine,
+    stateId: string,
+    event: any,
+    newValue: Event | EventAction
+  ) => {
+    return {
+      redo: stateMachine.changeEvent.bind(stateMachine, stateId, event, newValue, false),
+      undo: stateMachine.changeEvent.bind(stateMachine, stateId, newValue, event, false),
     };
   },
 };

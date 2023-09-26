@@ -8,12 +8,12 @@ import { transitionStyle } from '../styles';
 import { degrees_to_radians, getTransitionLines } from '../utils';
 import { BaseTransition } from './BaseTransition';
 
-interface TransitionProps {
-  container: Container;
-  source: State;
-  target: State;
-  id: string;
-}
+// interface TransitionProps {
+// container: Container;
+// source: State;
+// target: State;
+// id: string;
+// }
 /**
  * Переход между состояниями.
  * Выполняет отрисовку стрелки между тремя движущимися блоками:
@@ -21,24 +21,32 @@ interface TransitionProps {
  */
 export class Transition extends BaseTransition {
   // data!: TransitionType;
-  source!: State;
-  target!: State;
+  // source!: State;
+  // target!: State;
   condition!: Condition;
   id!: string;
 
-  constructor({ container, source, target, id }: TransitionProps) {
+  constructor(container: Container, id: string) {
     super(container);
 
     this.id = id;
 
-    this.source = source;
-    this.target = target;
+    // this.source = source;
+    // this.target = target;
 
     this.condition = new Condition(this.container, this, id);
   }
 
   get data(): TransitionType {
     return this.container.app.manager.data.elements.transitions[this.id];
+  }
+
+  get source() {
+    return this.container.machine.states.get(this.data.source)!;
+  }
+
+  get target() {
+    return this.container.machine.states.get(this.data.target)!;
   }
 
   toJSON(): TransitionType {

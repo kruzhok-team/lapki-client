@@ -9,6 +9,7 @@ import {
   Transition,
   Component,
   Elements,
+  EventData,
 } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 
@@ -29,6 +30,8 @@ import {
   EditorDataReturn,
   CreateTransitionParameters,
   ChangeTransitionParameters,
+  ChangeStateEventsParams,
+  SetStateEventsParams,
 } from '@renderer/types/EditorManager';
 
 export type FileError = {
@@ -302,7 +305,7 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  createState({ name, position, parentId, id }: CreateStateParameters) {
+  createState({ name, position, parentId, id, events = [] }: CreateStateParameters) {
     const getNewId = () => {
       const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
 
@@ -322,7 +325,7 @@ export class EditorManager {
 
     this.data.elements.states[newId] = {
       bounds: { x, y, width, height },
-      events: [],
+      events: events,
       name,
       parent: parentId,
     };
@@ -335,7 +338,7 @@ export class EditorManager {
     return newId;
   }
 
-  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
+  changeStateEvents({ id, triggerComponent, triggerMethod, events }: ChangeStateEventsParams) {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
@@ -361,6 +364,15 @@ export class EditorManager {
     } else {
       trueTab.do = [...events];
     }
+
+    return true;
+  }
+
+  setStateEvents({ id, events }: SetStateEventsParams) {
+    const state = this.data.elements.states[id];
+    if (!state) return false;
+
+    state.events = events;
 
     return true;
   }

@@ -5,8 +5,10 @@ import {
   Event,
   Component as ComponentType,
   Variable,
+  EventData,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
+import { State as StateType } from '@renderer/types/diagram';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
@@ -137,9 +139,9 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createState(name: string, position: Point, parentId?: string) {
+  createState(name: string, position: Point, eventsData?: EventData[], parentId?: string) {
     // Создание данных
-    const newStateId = this.container.app.manager.createState(name, position, parentId);
+    const newStateId = this.container.app.manager.createState(name, position, eventsData, parentId);
     // Создание модельки
     const state = new State(this.container, newStateId);
 
@@ -375,6 +377,7 @@ export class StateMachine extends EventEmitter {
         killList.push(value.id!);
       }
     });
+
     for (const k of killList) {
       this.deleteTransition(k);
       removed = true;
@@ -383,6 +386,29 @@ export class StateMachine extends EventEmitter {
     if (removed) {
       this.container.isDirty = true;
     }
+  }
+
+  //Глубокое рекурсивное копирование выбранного состояния и занесения его в буфер обмена
+  copySelected() {
+    this.states.forEach((state) => {
+      if (state.isSelected) {
+        navigator.clipboard.writeText(JSON.stringify(state.data)).then(() => {
+          console.log('Скопировано!');
+        });
+      }
+    });
+    this.container.isDirty = true;
+  }
+
+  //Вставляем код из буфера обмена в редактор машин состояний
+  pasteSelected() {
+    navigator.clipboard.readText().then((data) => {
+      const state = JSON.parse(data) as StateType;
+      if (!state) return;
+      this.createState(state.name, state.bounds, state.events, state.parent);
+      console.log('Вставлено!');
+    });
+    this.container.isDirty = true;
   }
 
   // Редактирование события в состояниях
@@ -398,7 +424,7 @@ export class StateMachine extends EventEmitter {
   }
 
   // Удаление события в состояниях
-  //TODO показывать предупреждение при удалении события в в состоянии(модалка)
+  //TODO показывать предупреждение при удалении события в состоянии(модалка)
   deleteEvent(id: string, eventId: EventSelection) {
     const state = this.states.get(id);
     if (!state) return;

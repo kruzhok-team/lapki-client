@@ -68,6 +68,12 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
 
       handleEvent(pos, [
         {
+          label: 'Копировать',
+          action: () => {
+            editor?.container.handleCopy();
+          },
+        },
+        {
           label: 'Вставить состояние',
           action: () => {
             editor?.container.machine.createState('Состояние', canvasPos);
@@ -120,6 +126,12 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     // контекстное меню для связи
     editor.container.transitions.onTransitionContextMenu((condition: Condition, pos: Point) => {
       handleEvent(pos, [
+        {
+          label: 'Копировать',
+          action: () => {
+            editor?.container.handleCopy();
+          },
+        },
         {
           label: 'Посмотреть код',
           action: () => {

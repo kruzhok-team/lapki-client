@@ -37,6 +37,12 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
 
       handleEvent(pos, [
         {
+          label: 'Вставить',
+          action: () => {
+            editor?.container.handlePaste();
+          },
+        },
+        {
           label: 'Вставить состояние',
           action: () => {
             editor?.container.machine.createState('Состояние', canvasPos);
@@ -71,6 +77,12 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Копировать',
           action: () => {
             editor?.container.handleCopy();
+          },
+        },
+        {
+          label: 'Вставить',
+          action: () => {
+            editor?.container.handlePaste();
           },
         },
         {

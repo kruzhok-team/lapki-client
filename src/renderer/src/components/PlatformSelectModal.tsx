@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Modal } from './Modal/Modal';
-
+import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 interface PlatformSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +32,8 @@ export const PlatformSelectModal: React.FC<PlatformSelectModalProps> = ({
   const onRequestClose = () => {
     onClose();
   };
+  
+  const platforms = getAvailablePlatforms()
 
   return (
     <Modal
@@ -41,7 +43,19 @@ export const PlatformSelectModal: React.FC<PlatformSelectModalProps> = ({
       submitLabel="Создать"
       onSubmit={undefined /* TODO: handleSubmit */}
     >
-      <button
+    {platforms.map((platform) => (
+      <span>
+        <button
+        type="button"
+        className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+        onClick={() => justSubmit(platform.idx)}
+        >
+          {platform.name}
+        </button>
+        <br /> <br />
+      </span>
+    ))}
+      {/* <button
         type="button"
         className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
         onClick={() => justSubmit('ArduinoUno')}
@@ -56,6 +70,14 @@ export const PlatformSelectModal: React.FC<PlatformSelectModalProps> = ({
       >
         Берлога/Защита пасеки
       </button>
+      <br /> <br />
+      <button
+        type="button"
+        className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
+        onClick={() => justSubmit('Bearloga-Autoborder')}
+      >
+        Bearloga-Autoborder
+      </button> */}
     </Modal>
   );
 };

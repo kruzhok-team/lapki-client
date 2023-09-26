@@ -43,6 +43,7 @@ function fetchPlatforms(paths: string[]) {
       try {
         let text = response[1];
         let data = PlatformsJSONCodec.toPlatforms(text);
+        console.log(data)
         resolve([path, makeRight(data)]);
       } catch (e) {
         let errText = 'unknown error';

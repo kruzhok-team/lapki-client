@@ -55,29 +55,6 @@ export const PlatformSelectModal: React.FC<PlatformSelectModalProps> = ({
         <br /> <br />
       </span>
     ))}
-      {/* <button
-        type="button"
-        className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-        onClick={() => justSubmit('ArduinoUno')}
-      >
-        Arduino Uno
-      </button>
-      <br /> <br />
-      <button
-        type="button"
-        className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-        onClick={() => justSubmit('BearlogaDefend')}
-      >
-        Берлога/Защита пасеки
-      </button>
-      <br /> <br />
-      <button
-        type="button"
-        className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-        onClick={() => justSubmit('Bearloga-Autoborder')}
-      >
-        Bearloga-Autoborder
-      </button> */}
     </Modal>
   );
 };

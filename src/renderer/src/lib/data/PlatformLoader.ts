@@ -6,13 +6,6 @@ import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 import { Settings } from '@renderer/components/Modules/Settings';
 // TODO? выдача стандартного файла для платформы
 
-// TODO: забирать пути динамически или дать пользователям их редактировать
-// const platformPaths = [
-//   '/home/l140/programming/ide/client/src/renderer/public/platform/Berloga.json',
-//   '/home/l140/programming/ide/client/src/renderer/public/platform/Arduino.json',
-// ];
-
-// const platformPaths = ['./platform/Berloga.json', './platform/Arduino.json'];
 const platformPaths = await window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms', (await Settings.getPlatformPath()).path)
 
 let platformsLoaded = false;
@@ -21,15 +14,8 @@ const platforms: Map<string, Platform> = new Map();
 const platformsErrors: Map<string, string> = new Map();
 
 function fetchPlatforms(paths: string[]) {
-  // if (test[0]) {
-  //   test[1]!.forEach(async path => {
-  //     await window.electron.ipcRenderer.invoke('PlatformLoader:openPlatformFile', path);
-  //   });
-  // }
   const promises = paths.map((path): Promise<[string, Either<string, Platforms>]> => {
     return new Promise(async (resolve) => {
-      // let response = await fetch(url);
-      console.log(path)
       const response = await window.electron.ipcRenderer.invoke(
         'PlatformLoader:openPlatformFile',
         path
@@ -43,7 +29,6 @@ function fetchPlatforms(paths: string[]) {
       try {
         let text = response[1];
         let data = PlatformsJSONCodec.toPlatforms(text);
-        console.log(data)
         resolve([path, makeRight(data)]);
       } catch (e) {
         let errText = 'unknown error';

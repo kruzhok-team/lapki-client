@@ -5,7 +5,6 @@ import {
   Event,
   Component as ComponentType,
   Variable,
-  EventData,
   State as StateType,
   Transition as TransitionType,
 } from '@renderer/types/diagram';
@@ -296,16 +295,19 @@ export class StateMachine extends EventEmitter {
     const state = this.states.get(id);
     if (!state) return;
 
-    if (canUndo) {
-      this.undoRedo.do(possibleActions.deleteState(this, id, state));
-    }
+    let numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.transitions.forEach((data, transitionId) => {
       if (data.source.id === id || data.target.id === id) {
         this.deleteTransition(transitionId);
+        numberOfConnectedActions += 1;
       }
     });
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.deleteState(this, id, state, numberOfConnectedActions));
+    }
 
     // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
     this.states.forEach((childState) => {

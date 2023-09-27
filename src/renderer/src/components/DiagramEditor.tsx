@@ -147,7 +147,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     }
     closeModal();
   };
-  console.log(stateName);
+
   return (
     <>
       <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>

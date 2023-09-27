@@ -10,7 +10,7 @@ import {
 } from '@renderer/types/EditorManager';
 import { Action as EventAction, Event } from '@renderer/types/diagram';
 
-type Action = { redo: () => void; undo: () => void };
+type Action = { redo: () => void; undo: () => void; numberOfConnectedActions?: number };
 type Stack = Array<Action>;
 
 export const possibleActions = {
@@ -21,8 +21,14 @@ export const possibleActions = {
     };
   },
 
-  deleteState: (stateMachine: StateMachine, id: string, state: State) => {
+  deleteState: (
+    stateMachine: StateMachine,
+    id: string,
+    state: State,
+    numberOfConnectedActions = 0
+  ) => {
     return {
+      numberOfConnectedActions,
       redo: stateMachine.deleteState.bind(stateMachine, id, false),
       undo: stateMachine.createState.bind(
         stateMachine,
@@ -194,6 +200,13 @@ export class UndoRedo {
 
     action.undo();
 
+    if (action.numberOfConnectedActions) {
+      for (let i = 0; i < action.numberOfConnectedActions; i++) {
+        this.undo();
+      }
+    }
+
+    // Если соединённые действия то первое должно попасть в конец redo стака
     this.redoStack.push(action);
   };
 
@@ -205,6 +218,12 @@ export class UndoRedo {
     action.redo();
 
     this.undoStack.push(action);
+
+    if (action.numberOfConnectedActions) {
+      for (let i = 0; i < action.numberOfConnectedActions; i++) {
+        this.redo();
+      }
+    }
   };
 
   isUndoStackEmpty() {

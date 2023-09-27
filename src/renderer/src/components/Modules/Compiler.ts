@@ -212,7 +212,7 @@ export class Compiler {
     const route = `${this.base_address}main`;
     const ws: Websocket = this.connectRoute(route);
     let compilerSettings: CompilerSettings;
-    console.log(platform);
+
     switch (platform) {
       case 'ArduinoUno':
         ws.send('arduino');
@@ -228,7 +228,7 @@ export class Compiler {
         };
         ws.send(JSON.stringify(obj));
         break;
-      case 'BearlogaDefendImport':
+      case 'import':
         ws.send('berlogaImport');
         ws.send(data);
         console.log('import!');

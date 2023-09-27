@@ -36,15 +36,15 @@ export async function handleFileOpen(platform: string) {
 
 export async function handleOpenPlatformFile(absolute_path: string) {
   return new Promise(async (resolve, _reject) => {
-    await readFile(absolute_path, 'utf-8').
-    then((text) => {
-      resolve([true, text, basename(absolute_path), null])
-    })
-    .catch((err) => {
-      console.log(err);
-      resolve([false, null, null, err.message])
-    })
-  })
+    await readFile(absolute_path, 'utf-8')
+      .then((text) => {
+        resolve([true, text, basename(absolute_path), null]);
+      })
+      .catch((err) => {
+        console.log(err);
+        resolve([false, null, null, err.message]);
+      });
+  });
 }
 
 /**
@@ -54,24 +54,22 @@ export async function handleOpenPlatformFile(absolute_path: string) {
 export async function handleGetPlatforms(directory: string) {
   return new Promise(async (resolve, _reject) => {
     await readdir(directory)
-    .then((files) => {
-      const platformPaths = new Array<string>
-      files.forEach(element => {
-        if (directory.endsWith("/")) {
-          platformPaths.push(`${directory}${element}`)
-        }
-        else {
-          platformPaths.push(`${directory}/${element}`);
-        }
+      .then((files) => {
+        const platformPaths = new Array<string>();
+        files.forEach((element) => {
+          if (directory.endsWith('/')) {
+            platformPaths.push(`${directory}${element}`);
+          } else {
+            platformPaths.push(`${directory}/${element}`);
+          }
+        });
+        resolve([true, platformPaths]);
+      })
+      .catch((err) => {
+        console.log(err);
+        resolve([false, err.message]);
       });
-      resolve([true, platformPaths])
-    })
-    .catch((err) => {
-      console.log(err);
-      resolve([false, err.message])
-    }
-    );
-  })
+  });
 }
 
 export async function handleSaveIntoFolder(data: Array<SourceFile | Binary>) {

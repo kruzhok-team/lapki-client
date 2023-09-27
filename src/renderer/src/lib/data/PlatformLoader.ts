@@ -6,7 +6,12 @@ import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 import { Settings } from '@renderer/components/Modules/Settings';
 // TODO? выдача стандартного файла для платформы
 
-const platformPaths = await window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms', (await Settings.getPlatformPath()).path)
+const platformPaths = await window.electron.ipcRenderer.invoke(
+  'PlatformLoader:getPlatforms',
+  (
+    await Settings.getPlatformPath()
+  ).path
+);
 
 let platformsLoaded = false;
 
@@ -50,7 +55,7 @@ export function preloadPlatforms(callback: () => void) {
     callback();
     return;
   }
-  if (platformPaths[0]){
+  if (platformPaths[0]) {
     fetchPlatforms(platformPaths[1]).then((results) => {
       platforms.clear();
       platformsErrors.clear();
@@ -77,8 +82,7 @@ export function preloadPlatforms(callback: () => void) {
       platformsLoaded = true;
       callback();
     });
-  }
-  else {
+  } else {
     // TODO Вывести ошибку о том, что файлы не были загружены
   }
 }

@@ -25,7 +25,6 @@ import { preloadPicto } from './lib/drawable/Picto';
 
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
-import { machine } from 'os';
 
 /**
  * React-компонент приложения

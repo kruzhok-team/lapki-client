@@ -37,6 +37,12 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
 
       handleEvent(pos, [
         {
+          label: 'Вставить',
+          action: () => {
+            editor?.container.handlePaste();
+          },
+        },
+        {
           label: 'Вставить состояние',
           action: () => {
             editor?.container.machine.createState({ name: 'Состояние', position: canvasPos });
@@ -67,6 +73,18 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       const canvasPos = editor.container.relativeMousePos(pos);
 
       handleEvent(pos, [
+        {
+          label: 'Копировать',
+          action: () => {
+            editor?.container.handleCopy();
+          },
+        },
+        {
+          label: 'Вставить',
+          action: () => {
+            editor?.container.handlePaste();
+          },
+        },
         {
           label: 'Вставить состояние',
           action: () => {
@@ -124,6 +142,12 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     // контекстное меню для связи
     editor.container.transitions.onTransitionContextMenu((condition: Condition, pos: Point) => {
       handleEvent(pos, [
+        {
+          label: 'Копировать',
+          action: () => {
+            editor?.container.handleCopy();
+          },
+        },
         {
           label: 'Посмотреть код',
           action: () => {

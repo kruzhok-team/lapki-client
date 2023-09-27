@@ -5,9 +5,11 @@ import {
   Event,
   Component as ComponentType,
   Variable,
+  EventData,
+  State as StateType,
+  Transition as TransitionType,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
-import { State as StateType } from '@renderer/types/diagram';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
@@ -465,12 +467,22 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  //Глубокое рекурсивное копирование выбранного состояния и занесения его в буфер обмена
+  //Глубокое рекурсивное копирование выбранного состояния или связи и занесения его данных в буфер обмена
   copySelected() {
+    //Выделено состояние для копирования
     this.states.forEach((state) => {
       if (state.isSelected) {
         navigator.clipboard.writeText(JSON.stringify(state.data)).then(() => {
-          console.log('Скопировано!');
+          console.log('Скопировано состояние!');
+        });
+      }
+    });
+
+    //Выделена связь для копирования
+    this.transitions.forEach((transition) => {
+      if (transition.condition.isSelected) {
+        navigator.clipboard.writeText(JSON.stringify(transition.data)).then(() => {
+          console.log('Скопирована связь!');
         });
       }
     });
@@ -480,15 +492,25 @@ export class StateMachine extends EventEmitter {
   //Вставляем код из буфера обмена в редактор машин состояний
   pasteSelected() {
     navigator.clipboard.readText().then((data) => {
-      const state = JSON.parse(data) as StateType;
-      if (!state) return;
-      this.createState({
-        name: state.name,
-        position: state.bounds,
-        events: state.events,
-        parentId: state.parent,
-      });
-      console.log('Вставлено!');
+      const copyData = JSON.parse(data) as StateType | TransitionType;
+      //Проверяем, нет ли нужного нам элемента в объекте с разными типами
+      if ('name' in copyData) {
+        this.createState({
+          name: copyData.name,
+          position: copyData.bounds,
+          events: copyData.events,
+          parentId: copyData.parent,
+        });
+      } else {
+        this.createTransition({
+          ...copyData,
+          component: copyData.trigger.component,
+          method: copyData.trigger.method,
+          doAction: copyData.do!,
+          condition: copyData.condition!,
+        });
+      }
+      console.log('Объект вставлен!');
     });
     this.container.isDirty = true;
   }

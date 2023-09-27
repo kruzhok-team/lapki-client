@@ -104,6 +104,9 @@ export class States extends EventEmitter {
   handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
+    this.container.machine.removeSelection();
+    e.target.setIsSelected(true);
+
     const eventIdx = e.target.eventBox.handleClick({ x: e.event.x, y: e.event.y });
     if (!eventIdx) {
       this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });

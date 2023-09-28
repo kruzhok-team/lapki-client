@@ -20,7 +20,7 @@ export interface StateNameModalFormValues {
 export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
   const { isOpen, onClose, state, position, sizes, onRename } = props;
 
-  const [value, setValue] = useState<string>();
+  const [value, setValue] = useState<string>('');
 
   const onSubmit = () => {
     onRename(value!);
@@ -30,6 +30,17 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
     if (!isOpen) return;
     setValue(state.data.name);
   }, [state]);
+
+  const handleNavigation = (e: WheelEvent) => {
+    if (e.deltaY !== 0) {
+      onClose();
+    }
+  };
+
+  useLayoutEffect(() => {
+    window.addEventListener('wheel', handleNavigation);
+    return () => window.removeEventListener('wheel', handleNavigation);
+  }, []);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return onSubmit();

@@ -39,8 +39,8 @@ function createWindow(): void {
   });
   // Разворачиваем окно на весь экран
   mainWindow.maximize();
-  //Навсегда скрывает верхнее меню электрона
-  mainWindow.setMenu(null);
+  //Навсегда скрывает верхнее меню электрона, не блокируя при этом остальные комбинации клавиш
+  mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();

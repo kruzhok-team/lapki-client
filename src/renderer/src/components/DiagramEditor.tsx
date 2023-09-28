@@ -16,6 +16,9 @@ import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
 import { Transition } from '@renderer/lib/drawable/Transition';
 
+// цвет связи по-умолчанию
+export const defaultTransColor: string = '#0000FF';
+
 export interface DiagramEditorProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
@@ -128,7 +131,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     } else if (transition && data.key === 3) {
       editor?.container.machine.changeTransition(
         transition.id,
-        data.color ?? '#FFFFFF',
+        data.color ?? defaultTransColor,
         data.trigger.component,
         data.trigger.method,
         events,
@@ -138,7 +141,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       editor?.container.machine.createTransition(
         newTransition.source,
         newTransition?.target,
-        data.color ?? '#FFFFFF',
+        defaultTransColor,
         data.trigger.component,
         data.trigger.method,
         events,

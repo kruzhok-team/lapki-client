@@ -10,7 +10,12 @@ import {
 } from '@renderer/types/EditorManager';
 import { Action as EventAction, Event } from '@renderer/types/diagram';
 
-type Action = { redo: () => void; undo: () => void; numberOfConnectedActions?: number };
+type Action = {
+  redo: () => void;
+  undo: () => void;
+  numberOfConnectedActions?: number;
+  description?: string;
+};
 type Stack = Array<Action>;
 
 export const possibleActions = {
@@ -61,6 +66,28 @@ export const possibleActions = {
         id: state.id,
         events: state.data.events,
       }),
+    };
+  },
+
+  linkState: (
+    stateMachine: StateMachine,
+    parentId: string,
+    childId: string,
+    numberOfConnectedActions = 0
+  ) => {
+    return {
+      redo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
+      undo: stateMachine.unlinkState.bind(stateMachine, childId, false),
+      description: 'linkState',
+      numberOfConnectedActions,
+    };
+  },
+
+  unlinkState: (stateMachine: StateMachine, parentId: string, childId: string) => {
+    return {
+      redo: stateMachine.unlinkState.bind(stateMachine, childId, false),
+      undo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
+      description: 'unlinkState',
     };
   },
 
@@ -143,6 +170,7 @@ export const possibleActions = {
         startPosition,
         false
       ),
+      description: `changeStatePosition from {x: ${startPosition.x}, y: ${startPosition.y}} to {x: ${endPosition.x}, y: ${endPosition.y}}`,
     };
   },
 
@@ -177,8 +205,8 @@ export const possibleActions = {
     newValue: Event | EventAction
   ) => {
     return {
-      redo: stateMachine.changeEvent.bind(stateMachine, stateId, event, newValue, false),
-      undo: stateMachine.changeEvent.bind(stateMachine, stateId, newValue, event, false),
+      redo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, event, newValue, false),
+      undo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, newValue, event, false),
     };
   },
 };

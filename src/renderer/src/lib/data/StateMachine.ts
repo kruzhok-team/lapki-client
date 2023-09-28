@@ -214,7 +214,7 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  linkState(parentId: string, childId: string) {
+  linkState(parentId: string, childId: string, canUndo = true) {
     const parent = this.states.get(parentId);
     const child = this.states.get(childId);
 
@@ -234,7 +234,13 @@ export class StateMachine extends EventEmitter {
     };
 
     this.container.app.manager.linkState(parentId, childId);
-    this.container.app.manager.changeStateBounds(childId, newBounds);
+    this.changeStatePosition(childId, child.bounds, newBounds, false);
+    // this.container.app.manager.changeStateBounds(childId, newBounds);
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.linkState(this, parentId, childId));
+      child.offOnce('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+    }
 
     child.parent = parent;
     parent.children.set(childId, child);
@@ -275,7 +281,7 @@ export class StateMachine extends EventEmitter {
     }
   }
 
-  unlinkState(id: string) {
+  unlinkState(id: string, canUndo = true) {
     const state = this.states.get(id);
     if (!state || !state.parent) return;
 
@@ -284,6 +290,11 @@ export class StateMachine extends EventEmitter {
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBounds = { ...state.bounds, ...state.compoundPosition };
     this.container.app.manager.changeStateBounds(id, newBounds);
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.unlinkState(this, state.parent.id, id));
+      state.offOnce('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+    }
 
     state.parent.children.delete(id);
     state.parent = undefined;
@@ -518,7 +529,7 @@ export class StateMachine extends EventEmitter {
   }
 
   // Редактирование события в состояниях
-  changeEvent(stateId: string, event: any, newValue: Event | Action, canUndo = true) {
+  createOrChangeEvent(stateId: string, event: any, newValue: Event | Action, canUndo = true) {
     const state = this.states.get(stateId);
     if (!state) return;
 

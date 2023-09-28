@@ -5,11 +5,9 @@ import {
   emptyElements,
   Event,
   Action,
-  Condition,
   Transition,
   Component,
   Elements,
-  EventData,
 } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 

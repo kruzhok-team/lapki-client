@@ -3,6 +3,7 @@
  */
 export class EventEmitter<T extends {} = {}> {
   handlers = new Map<string, Set<Function>>();
+  offedOnce = new Set<string>();
 
   addEventListener(name: string, handler: (e: T) => any) {
     return this.on(name, handler);
@@ -29,11 +30,21 @@ export class EventEmitter<T extends {} = {}> {
     }
   }
 
+  // Странная штука, нужна чтобы на один раз отключить событие
+  offOnce(name: string) {
+    this.offedOnce.add(name);
+  }
+
   reset() {
     this.handlers.clear();
   }
 
   emit(name: string, event: T) {
+    if (this.offedOnce.has(name)) {
+      this.offedOnce.delete(name);
+      return;
+    }
+
     if (this.handlers.has(name)) {
       const handlers = this.handlers.get(name);
 

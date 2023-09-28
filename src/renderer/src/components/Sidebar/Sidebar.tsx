@@ -61,10 +61,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         manager={manager}
         editor={editor}
         openData={openData}
-        compilerData={compilerData}
-        setCompilerData={setCompilerData}
-        compilerStatus={compilerStatus}
-        setCompilerStatus={setCompilerStatus}
+        defaultStatusColor="#0000FF"
+        errorStatusColor="#FF0000"
       />,
       <Loader manager={manager} compilerData={compilerData} />,
       <Setting />,

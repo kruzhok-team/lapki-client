@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import { useSidebar } from '@renderer/store/useSidebar';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
@@ -12,11 +11,19 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 export interface CompilerProps {
   manager: EditorManager;
-  editor: CanvasEditor | null;
   openData: [boolean, string | null, string | null, string] | undefined;
+  editor: CanvasEditor | null;
+  defaultStatusColor: string;
+  errorStatusColor: string;
 }
 
-export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
+export const CompilerTab: React.FC<CompilerProps> = ({
+  manager,
+  openData,
+  editor,
+  defaultStatusColor,
+  errorStatusColor,
+}) => {
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
   const [importData, setImportData] = useState<string | undefined>(undefined);
@@ -147,20 +154,22 @@ export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
         >
           {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
         </button>
-
         <p>
           Статус:{' '}
           <span
-            className={twMerge('text-success', compilerStatus === 'Не подключен' && 'text-error')}
+            style={
+              compilerStatus === 'Не подключен'
+                ? { color: errorStatusColor }
+                : { color: defaultStatusColor }
+            }
+            //</p>className={twMerge('text-blue-600', compilerStatus === 'Не подключен' && 'text-error')}
           >
             {compilerStatus}
           </span>
         </p>
-
         <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
           Результат компиляции: {compilerData ? compilerData.result : 'Нет данных'}
         </div>
-
         {button.map(({ name, handler, disabled }, i) => (
           <button key={i} className="btn-primary mb-2" onClick={handler} disabled={disabled}>
             {name}

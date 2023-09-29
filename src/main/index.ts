@@ -81,7 +81,8 @@ function initSettings(): void {
 
   if (!settings.hasSync('PlatformsPath')) {
     settings.setSync('PlatformsPath', {
-      path: `${process.cwd()}/src/renderer/public/platform`,
+      path: ""
+      // path: `${process.cwd()}/src/renderer/public/platform`,
     });
   }
 }

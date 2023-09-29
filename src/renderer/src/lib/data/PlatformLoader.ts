@@ -15,7 +15,6 @@ const platforms: Map<string, Platform> = new Map();
 const platformsErrors: Map<string, string> = new Map();
 
 function fetchPlatforms(paths: string[]) {
-  console.log(paths)
   const promises = paths.map((path): Promise<[string, Either<string, Platforms>]> => {
     return new Promise(async (resolve) => {
       const response = await window.electron.ipcRenderer.invoke(

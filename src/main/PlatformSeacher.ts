@@ -14,7 +14,9 @@ export async function searchPlatforms() {
     const platformsPaths = new Array<string>();
     const userPath: any = await settings.get('PlatformsPath');
     let platformFound = false
-    DEFAULT_PATH.push(userPath!.path);
+    if (userPath) {
+      DEFAULT_PATH.push(userPath!.path);
+    }
     for (const path of DEFAULT_PATH) {
       const response = await handleGetPlatforms(path);
       if (response[0]) {
@@ -24,7 +26,6 @@ export async function searchPlatforms() {
         }
       }
     }
-    // platformsPaths.length
     resolve([platformFound, platformsPaths]);
   });
 }

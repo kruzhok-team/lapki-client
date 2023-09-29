@@ -6,7 +6,6 @@ import {
   handleFileSaveAs,
   handleSaveIntoFolder,
   handleBinFileOpen,
-  handleGetPlatforms,
   handleOpenPlatformFile,
 } from './file-handlers';
 import { join } from 'path';
@@ -19,6 +18,7 @@ import {
 
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
+import { searchPlatforms } from './PlatformSeacher';
 
 /**
  * Создание главного окна редактора.
@@ -139,8 +139,9 @@ app.whenReady().then(() => {
     return obj;*/
   });
 
-  ipcMain.handle('PlatformLoader:getPlatforms', (_event, directory: string) => {
-    return handleGetPlatforms(directory);
+  ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {
+    // console.log(await loadPlatforms())
+    return searchPlatforms();
   });
 
   ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {

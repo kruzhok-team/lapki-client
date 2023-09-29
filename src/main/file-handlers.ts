@@ -51,24 +51,29 @@ export async function handleOpenPlatformFile(absolute_path: string) {
  * @param directory - путь до папки, содержащей схемы платформ
  * @returns список абсолютных путей до схем платформ
  */
-export async function handleGetPlatforms(directory: string) {
+export async function handleGetPlatforms(directory: string): Promise<Array<any>> {
   return new Promise(async (resolve, _reject) => {
-    await readdir(directory)
-      .then((files) => {
-        const platformPaths = new Array<string>();
-        files.forEach((element) => {
-          if (directory.endsWith('/')) {
-            platformPaths.push(`${directory}${element}`);
-          } else {
-            platformPaths.push(`${directory}/${element}`);
-          }
+    if (fs.existsSync(directory)) {
+      await readdir(directory)
+        .then((files) => {
+          const platformPaths = new Array<string>();
+          files.forEach((element) => {
+            if (directory.endsWith('/')) {
+              platformPaths.push(`${directory}${element}`);
+            } else {
+              platformPaths.push(`${directory}/${element}`);
+            }
+          });
+          resolve([true, platformPaths]);
+        })
+        .catch((err) => {
+          console.log(err);
+          resolve([false, err.message]);
         });
-        resolve([true, platformPaths]);
-      })
-      .catch((err) => {
-        console.log(err);
-        resolve([false, err.message]);
-      });
+    } else {
+      resolve([false, `${directory} doesn't exists!`]);
+      console.log(`${directory} doesn't exists!`);
+    }
   });
 }
 

@@ -228,7 +228,7 @@ export class Compiler {
         };
         ws.send(JSON.stringify(obj));
         break;
-      case 'import':
+      case 'BearlogaDefendImport':
         ws.send('berlogaImport');
         ws.send(data);
         console.log('import!');

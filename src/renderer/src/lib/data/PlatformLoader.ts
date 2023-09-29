@@ -3,14 +3,10 @@ import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
 import { PlatformManager } from './PlatformManager';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
-import { Settings } from '@renderer/components/Modules/Settings';
 // TODO? выдача стандартного файла для платформы
 
 const platformPaths = await window.electron.ipcRenderer.invoke(
-  'PlatformLoader:getPlatforms',
-  (
-    await Settings.getPlatformPath()
-  ).path
+  'PlatformLoader:getPlatforms'
 );
 
 let platformsLoaded = false;
@@ -19,6 +15,7 @@ const platforms: Map<string, Platform> = new Map();
 const platformsErrors: Map<string, string> = new Map();
 
 function fetchPlatforms(paths: string[]) {
+  console.log(paths)
   const promises = paths.map((path): Promise<[string, Either<string, Platforms>]> => {
     return new Promise(async (resolve) => {
       const response = await window.electron.ipcRenderer.invoke(
@@ -55,6 +52,7 @@ export function preloadPlatforms(callback: () => void) {
     callback();
     return;
   }
+  console.log(platformPaths)
   if (platformPaths[0]) {
     fetchPlatforms(platformPaths[1]).then((results) => {
       platforms.clear();
@@ -83,7 +81,9 @@ export function preloadPlatforms(callback: () => void) {
       callback();
     });
   } else {
-    // TODO Вывести ошибку о том, что файлы не были загружены
+    console.log("Плафтормы не были найдены!")
+    // platformsLoaded = true;
+    // TODO Вывести модалку с ошибкой о том, что файлы не были загружены
   }
 }
 

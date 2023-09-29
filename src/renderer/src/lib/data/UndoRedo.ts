@@ -23,261 +23,221 @@ type Action = {
 };
 type Stack = Array<Action>;
 
-export const possibleActions = {
-  stateCreate: (
-    stateMachine: StateMachine,
-    newStateId: string,
-    args: CreateStateParameters,
-    numberOfConnectedActions = 0
-  ) => {
-    return {
-      redo: stateMachine.createState.bind(stateMachine, { ...args, id: newStateId }, false),
-      undo: stateMachine.deleteState.bind(stateMachine, newStateId, false),
-      numberOfConnectedActions,
-      description: 'stateCreate',
-    };
-  },
+export const getPossibleActions = (stateMachine: StateMachine) => {
+  return {
+    stateCreate: (
+      newStateId: string,
+      args: CreateStateParameters,
+      numberOfConnectedActions = 0
+    ) => {
+      return {
+        redo: stateMachine.createState.bind(stateMachine, { ...args, id: newStateId }, false),
+        undo: stateMachine.deleteState.bind(stateMachine, newStateId, false),
+        numberOfConnectedActions,
+        description: 'stateCreate',
+      };
+    },
 
-  deleteState: (
-    stateMachine: StateMachine,
-    id: string,
-    state: State,
-    numberOfConnectedActions = 0
-  ) => {
-    return {
-      redo: stateMachine.deleteState.bind(stateMachine, id, false),
-      undo: stateMachine.createState.bind(
-        stateMachine,
-        {
-          name: state.data.name,
-          id,
-          position: {
-            x: state.data.bounds.x + state.data.bounds.width / 2,
-            y: state.data.bounds.y + state.data.bounds.height / 2,
+    deleteState: (id: string, state: State, numberOfConnectedActions = 0) => {
+      return {
+        redo: stateMachine.deleteState.bind(stateMachine, id, false),
+        undo: stateMachine.createState.bind(
+          stateMachine,
+          {
+            name: state.data.name,
+            id,
+            position: {
+              x: state.data.bounds.x + state.data.bounds.width / 2,
+              y: state.data.bounds.y + state.data.bounds.height / 2,
+            },
+            parentId: state.data.parent,
+            events: structuredClone(state.data.events),
           },
-          parentId: state.data.parent,
-          events: structuredClone(state.data.events),
-        },
-        false
-      ),
-      numberOfConnectedActions,
-      description: 'deleteState',
-    };
-  },
+          false
+        ),
+        numberOfConnectedActions,
+        description: 'deleteState',
+      };
+    },
 
-  changeStateName: (stateMachine: StateMachine, id: string, name: string, state: State) => {
-    return {
-      redo: stateMachine.changeStateName.bind(stateMachine, id, name, false),
-      undo: stateMachine.changeStateName.bind(stateMachine, id, state.data.name, false),
-      description: 'changeStateName',
-    };
-  },
+    changeStateName: (id: string, name: string, state: State) => {
+      return {
+        redo: stateMachine.changeStateName.bind(stateMachine, id, name, false),
+        undo: stateMachine.changeStateName.bind(stateMachine, id, state.data.name, false),
+        description: 'changeStateName',
+      };
+    },
 
-  changeStateEvents: (stateMachine: StateMachine, state: State, args: ChangeStateEventsParams) => {
-    return {
-      redo: stateMachine.changeStateEvents.bind(stateMachine, args, false),
-      undo: stateMachine.setStateEvents.bind(stateMachine, {
-        id: state.id,
-        events: state.data.events,
-      }),
-      description: 'changeStateEvents',
-    };
-  },
+    changeStateEvents: (state: State, args: ChangeStateEventsParams) => {
+      return {
+        redo: stateMachine.changeStateEvents.bind(stateMachine, args, false),
+        undo: stateMachine.setStateEvents.bind(stateMachine, {
+          id: state.id,
+          events: state.data.events,
+        }),
+        description: 'changeStateEvents',
+      };
+    },
 
-  linkState: (
-    stateMachine: StateMachine,
-    parentId: string,
-    childId: string,
-    numberOfConnectedActions = 0
-  ) => {
-    return {
-      redo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
-      undo: stateMachine.unlinkState.bind(stateMachine, childId, false),
-      description: 'linkState',
-      numberOfConnectedActions,
-    };
-  },
+    linkState: (parentId: string, childId: string, numberOfConnectedActions = 0) => {
+      return {
+        redo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
+        undo: stateMachine.unlinkState.bind(stateMachine, childId, false),
+        description: 'linkState',
+        numberOfConnectedActions,
+      };
+    },
 
-  unlinkState: (stateMachine: StateMachine, parentId: string, childId: string) => {
-    return {
-      redo: stateMachine.unlinkState.bind(stateMachine, childId, false),
-      undo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
-      description: 'unlinkState',
-    };
-  },
+    unlinkState: (parentId: string, childId: string) => {
+      return {
+        redo: stateMachine.unlinkState.bind(stateMachine, childId, false),
+        undo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
+        description: 'unlinkState',
+      };
+    },
 
-  createTransition: (
-    stateMachine: StateMachine,
-    id: string,
-    params: CreateTransitionParameters
-  ) => {
-    return {
-      redo: stateMachine.createTransition.bind(stateMachine, { ...params, id }, false),
-      undo: stateMachine.deleteTransition.bind(stateMachine, id, false),
-      description: 'createTransition',
-    };
-  },
+    createTransition: (id: string, params: CreateTransitionParameters) => {
+      return {
+        redo: stateMachine.createTransition.bind(stateMachine, { ...params, id }, false),
+        undo: stateMachine.deleteTransition.bind(stateMachine, id, false),
+        description: 'createTransition',
+      };
+    },
 
-  deleteTransition: (stateMachine: StateMachine, transition: Transition) => {
-    const prevData = structuredClone(transition.data);
-    const id = transition.id;
+    deleteTransition: (transition: Transition) => {
+      const prevData = structuredClone(transition.data);
+      const id = transition.id;
 
-    return {
-      redo: stateMachine.deleteTransition.bind(stateMachine, transition.id, false),
-      undo: stateMachine.createTransition.bind(
-        stateMachine,
-        {
+      return {
+        redo: stateMachine.deleteTransition.bind(stateMachine, transition.id, false),
+        undo: stateMachine.createTransition.bind(
+          stateMachine,
+          {
+            id,
+            ...prevData,
+            component: prevData.trigger.component,
+            method: prevData.trigger.method,
+            condition: prevData.condition!,
+            doAction: prevData.do!,
+          },
+          false
+        ),
+        description: 'deleteTransition',
+      };
+    },
+
+    changeTransition: (transition: Transition, args: ChangeTransitionParameters) => {
+      const prevArgs = {
+        id: transition.id,
+        color: transition.data.color,
+        component: transition.data.trigger.component,
+        method: transition.data.trigger.method,
+        doAction: structuredClone(transition.data.do!),
+        condition: structuredClone(transition.data.condition!),
+      };
+      return {
+        redo: stateMachine.changeTransition.bind(stateMachine, args, false),
+        undo: stateMachine.changeTransition.bind(stateMachine, prevArgs, false),
+        description: 'changeTransition',
+      };
+    },
+
+    changeInitialState: (id: string, prevInitial: string) => {
+      return {
+        redo: stateMachine.changeInitialState.bind(stateMachine, id, false),
+        undo: stateMachine.changeInitialState.bind(stateMachine, prevInitial, false),
+        description: 'changeInitialState',
+      };
+    },
+
+    changeStatePosition: (id: string, startPosition: Point, endPosition: Point) => {
+      return {
+        redo: stateMachine.changeStatePosition.bind(
+          stateMachine,
           id,
-          ...prevData,
-          component: prevData.trigger.component,
-          method: prevData.trigger.method,
-          condition: prevData.condition!,
-          doAction: prevData.do!,
-        },
-        false
-      ),
-      description: 'deleteTransition',
-    };
-  },
+          startPosition,
+          endPosition,
+          false
+        ),
+        undo: stateMachine.changeStatePosition.bind(
+          stateMachine,
+          id,
+          endPosition,
+          startPosition,
+          false
+        ),
+        description: `changeStatePosition from {x: ${startPosition.x}, y: ${startPosition.y}} to {x: ${endPosition.x}, y: ${endPosition.y}}`,
+      };
+    },
 
-  changeTransition: (
-    stateMachine: StateMachine,
-    transition: Transition,
-    args: ChangeTransitionParameters
-  ) => {
-    const prevArgs = {
-      id: transition.id,
-      color: transition.data.color,
-      component: transition.data.trigger.component,
-      method: transition.data.trigger.method,
-      doAction: structuredClone(transition.data.do!),
-      condition: structuredClone(transition.data.condition!),
-    };
-    return {
-      redo: stateMachine.changeTransition.bind(stateMachine, args, false),
-      undo: stateMachine.changeTransition.bind(stateMachine, prevArgs, false),
-      description: 'changeTransition',
-    };
-  },
+    changeTransitionPosition: (id: string, startPosition: Point, endPosition: Point) => {
+      return {
+        redo: stateMachine.changeTransitionPosition.bind(
+          stateMachine,
+          id,
+          startPosition,
+          endPosition,
+          false
+        ),
+        undo: stateMachine.changeTransitionPosition.bind(
+          stateMachine,
+          id,
+          endPosition,
+          startPosition,
+          false
+        ),
+        description: 'changeTransitionPosition',
+      };
+    },
 
-  changeInitialState: (stateMachine: StateMachine, id: string, prevInitial: string) => {
-    return {
-      redo: stateMachine.changeInitialState.bind(stateMachine, id, false),
-      undo: stateMachine.changeInitialState.bind(stateMachine, prevInitial, false),
-      description: 'changeInitialState',
-    };
-  },
+    changeEvent: (stateId: string, event: any, newValue: Event | EventAction) => {
+      return {
+        redo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, event, newValue, false),
+        undo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, newValue, event, false),
+        description: 'changeEvent',
+      };
+    },
 
-  changeStatePosition: (
-    stateMachine: StateMachine,
-    id: string,
-    startPosition: Point,
-    endPosition: Point
-  ) => {
-    return {
-      redo: stateMachine.changeStatePosition.bind(
-        stateMachine,
-        id,
-        startPosition,
-        endPosition,
-        false
-      ),
-      undo: stateMachine.changeStatePosition.bind(
-        stateMachine,
-        id,
-        endPosition,
-        startPosition,
-        false
-      ),
-      description: `changeStatePosition from {x: ${startPosition.x}, y: ${startPosition.y}} to {x: ${endPosition.x}, y: ${endPosition.y}}`,
-    };
-  },
+    addComponent: (args: AddComponentParams) => {
+      return {
+        redo: stateMachine.addComponent.bind(stateMachine, args, false),
+        undo: stateMachine.removeComponent.bind(
+          stateMachine,
+          { name: args.name, purge: false },
+          false
+        ),
+        description: 'addComponent',
+      };
+    },
 
-  changeTransitionPosition: (
-    stateMachine: StateMachine,
-    id: string,
-    startPosition: Point,
-    endPosition: Point
-  ) => {
-    return {
-      redo: stateMachine.changeTransitionPosition.bind(
-        stateMachine,
-        id,
-        startPosition,
-        endPosition,
-        false
-      ),
-      undo: stateMachine.changeTransitionPosition.bind(
-        stateMachine,
-        id,
-        endPosition,
-        startPosition,
-        false
-      ),
-      description: 'changeTransitionPosition',
-    };
-  },
+    removeComponent: (args: RemoveComponentParams, prevComponent: Component) => {
+      return {
+        redo: stateMachine.removeComponent.bind(stateMachine, args, false),
+        undo: stateMachine.addComponent.bind(
+          stateMachine,
+          { name: args.name, ...prevComponent },
+          false
+        ),
+        description: 'removeComponent',
+      };
+    },
 
-  changeEvent: (
-    stateMachine: StateMachine,
-    stateId: string,
-    event: any,
-    newValue: Event | EventAction
-  ) => {
-    return {
-      redo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, event, newValue, false),
-      undo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, newValue, event, false),
-      description: 'changeEvent',
-    };
-  },
-
-  addComponent: (stateMachine: StateMachine, args: AddComponentParams) => {
-    return {
-      redo: stateMachine.addComponent.bind(stateMachine, args, false),
-      undo: stateMachine.removeComponent.bind(
-        stateMachine,
-        { name: args.name, purge: false },
-        false
-      ),
-      description: 'addComponent',
-    };
-  },
-
-  removeComponent: (
-    stateMachine: StateMachine,
-    args: RemoveComponentParams,
-    prevComponent: Component
-  ) => {
-    return {
-      redo: stateMachine.removeComponent.bind(stateMachine, args, false),
-      undo: stateMachine.addComponent.bind(
-        stateMachine,
-        { name: args.name, ...prevComponent },
-        false
-      ),
-      description: 'removeComponent',
-    };
-  },
-
-  editComponent: (
-    stateMachine: StateMachine,
-    args: EditComponentParams,
-    prevComponent: Component
-  ) => {
-    return {
-      redo: stateMachine.editComponent.bind(stateMachine, args, false),
-      undo: stateMachine.editComponent.bind(
-        stateMachine,
-        {
-          name: args.newName ?? args.name,
-          parameters: prevComponent.parameters,
-          newName: args.newName ? args.name : undefined,
-        },
-        false
-      ),
-      description: 'editComponent',
-    };
-  },
+    editComponent: (args: EditComponentParams, prevComponent: Component) => {
+      return {
+        redo: stateMachine.editComponent.bind(stateMachine, args, false),
+        undo: stateMachine.editComponent.bind(
+          stateMachine,
+          {
+            name: args.newName ?? args.name,
+            parameters: prevComponent.parameters,
+            newName: args.newName ? args.name : undefined,
+          },
+          false
+        ),
+        description: 'editComponent',
+      };
+    },
+  };
 };
 
 export class UndoRedo {

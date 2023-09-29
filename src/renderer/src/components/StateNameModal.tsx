@@ -31,16 +31,10 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
     setValue(state.data.name);
   }, [state]);
 
-  const handleNavigation = (e: WheelEvent) => {
-    if (e.deltaY !== 0) {
-      onClose();
-    }
-  };
-
   useLayoutEffect(() => {
-    window.addEventListener('wheel', handleNavigation);
-    return () => window.removeEventListener('wheel', handleNavigation);
-  }, []);
+    window.addEventListener('wheel', onClose);
+    return () => window.removeEventListener('wheel', onClose);
+  });
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return onSubmit();

@@ -78,7 +78,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
               onContextMenu={() => onCompRightClick(key)}
             >
               <img
-                className="h-8 w-8"
+                className="w-8 object-cover"
                 src={
                   editor?.container.machine.platform?.getComponentIconUrl(key, true) ?? UnknownIcon
                 }

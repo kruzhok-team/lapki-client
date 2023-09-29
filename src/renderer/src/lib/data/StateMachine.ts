@@ -19,12 +19,17 @@ import { loadPlatform } from './PlatformLoader';
 import { EventSelection } from '../drawable/Events';
 import { UndoRedo, possibleActions } from './UndoRedo';
 import {
+  AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
   CreateStateParameters,
   SetStateEventsParams,
 } from '@renderer/types/EditorManager';
-import { CreateTransitionParameters } from '@renderer/types/StateMachine';
+import {
+  CreateTransitionParameters,
+  EditComponentParams,
+  RemoveComponentParams,
+} from '@renderer/types/StateMachine';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -564,15 +569,27 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  addComponent(name: string, type: string) {
-    this.container.app.manager.addComponent(name, type);
+  addComponent(args: AddComponentParams, canUndo = true) {
+    const { name, type } = args;
+
+    this.container.app.manager.addComponent(args);
 
     this.platform.nameToComponent.set(name, type);
 
     this.container.isDirty = true;
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.addComponent(this, args));
+    }
   }
 
-  editComponent(name: string, parameters: ComponentType['parameters'], newName?: string) {
+  editComponent(args: EditComponentParams, canUndo = true) {
+    const { name, parameters, newName } = args;
+
+    const prevComponent = structuredClone(
+      this.container.app.manager.data.elements.components[name]
+    );
+
     this.container.app.manager.editComponent(name, parameters);
 
     if (newName) {
@@ -580,6 +597,30 @@ export class StateMachine extends EventEmitter {
     }
 
     this.container.isDirty = true;
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.editComponent(this, args, prevComponent));
+    }
+  }
+
+  removeComponent(args: RemoveComponentParams, canUndo = true) {
+    const { name, purge } = args;
+
+    const prevComponent = this.container.app.manager.data.elements.components[name];
+    this.container.app.manager.removeComponent(name);
+
+    if (purge) {
+      // TODO: «вымарывание» компонента из машины
+      console.error('removeComponent purge not implemented yet');
+    }
+
+    this.platform.nameToComponent.delete(name);
+
+    this.container.isDirty = true;
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.removeComponent(this, args, prevComponent));
+    }
   }
 
   private renameComponent(name: string, newName: string) {
@@ -645,19 +686,6 @@ export class StateMachine extends EventEmitter {
       }
       return;
     }
-  }
-
-  removeComponent(name: string, purge?: boolean) {
-    this.container.app.manager.removeComponent(name);
-
-    if (purge) {
-      // TODO: «вымарывание» компонента из машины
-      console.error('removeComponent purge not implemented yet');
-    }
-
-    this.platform.nameToComponent.delete(name);
-
-    this.container.isDirty = true;
   }
 
   /**

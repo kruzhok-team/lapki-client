@@ -1,14 +1,19 @@
 import { Point } from '@renderer/types/graphics';
 import { StateMachine } from './StateMachine';
 import { State } from '../drawable/State';
-import { CreateTransitionParameters } from '@renderer/types/StateMachine';
+import {
+  CreateTransitionParameters,
+  EditComponentParams,
+  RemoveComponentParams,
+} from '@renderer/types/StateMachine';
 import { Transition } from '../drawable/Transition';
 import {
+  AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
-import { Action as EventAction, Event } from '@renderer/types/diagram';
+import { Action as EventAction, Event, Component } from '@renderer/types/diagram';
 
 type Action = {
   redo: () => void;
@@ -225,6 +230,54 @@ export const possibleActions = {
       description: 'changeEvent',
     };
   },
+
+  addComponent: (stateMachine: StateMachine, args: AddComponentParams) => {
+    return {
+      redo: stateMachine.addComponent.bind(stateMachine, args, false),
+      undo: stateMachine.removeComponent.bind(
+        stateMachine,
+        { name: args.name, purge: false },
+        false
+      ),
+      description: 'addComponent',
+    };
+  },
+
+  removeComponent: (
+    stateMachine: StateMachine,
+    args: RemoveComponentParams,
+    prevComponent: Component
+  ) => {
+    return {
+      redo: stateMachine.removeComponent.bind(stateMachine, args, false),
+      undo: stateMachine.addComponent.bind(
+        stateMachine,
+        { name: args.name, ...prevComponent },
+        false
+      ),
+      description: 'removeComponent',
+    };
+  },
+
+  editComponent: (
+    stateMachine: StateMachine,
+    args: EditComponentParams,
+    prevComponent: Component
+  ) => {
+    return {
+      redo: stateMachine.editComponent.bind(stateMachine, args, false),
+      undo: stateMachine.editComponent.bind(
+        stateMachine,
+        {
+          name: args.newName ?? args.name,
+          parameters: prevComponent.parameters,
+          newName: args.newName ? args.name : undefined,
+        },
+        false
+      ),
+      description: 'editComponent',
+    };
+  },
 };
 
 export class UndoRedo {
@@ -235,10 +288,6 @@ export class UndoRedo {
     this.redoStack.length = 0;
 
     this.undoStack.push(action);
-
-    console.log('do', action.description);
-    console.log('undoStack', this.undoStack);
-    console.log('redoStack', this.redoStack);
   }
 
   undo = () => {
@@ -255,12 +304,7 @@ export class UndoRedo {
     }
 
     // Если соединённые действия то первое должно попасть в конец redo стека
-
     this.redoStack.push(action);
-
-    console.log('undo');
-    console.log('undoStack', this.undoStack);
-    console.log('redoStack', this.redoStack);
   };
 
   redo = () => {
@@ -278,10 +322,6 @@ export class UndoRedo {
 
     // Если соединённые действия то первое должно попасть в конец undo стека
     this.undoStack.push(action);
-
-    console.log('redo');
-    console.log('undoStack', this.undoStack);
-    console.log('redoStack', this.redoStack);
   };
 
   isUndoStackEmpty() {

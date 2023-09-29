@@ -69,3 +69,9 @@ export interface SetStateEventsParams {
   id: string;
   events: EventData[];
 }
+
+export interface AddComponentParams {
+  name: string;
+  type: string;
+  parameters?: { [key: string]: string };
+}

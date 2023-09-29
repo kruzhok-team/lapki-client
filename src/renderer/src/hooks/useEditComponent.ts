@@ -40,11 +40,11 @@ export const useEditComponent = (editor: CanvasEditor | null, manager: EditorMan
   };
 
   const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor!.container.machine.editComponent(idx, data.parameters, newName);
+    editor!.container.machine.editComponent({ name: idx, parameters: data.parameters, newName });
   };
 
   const onDelete = (idx: string) => {
-    editor!.container.machine.removeComponent(idx, false);
+    editor!.container.machine.removeComponent({ name: idx, purge: false });
 
     onClose();
   };

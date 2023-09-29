@@ -30,6 +30,7 @@ import {
   ChangeTransitionParameters,
   ChangeStateEventsParams,
   SetStateEventsParams,
+  AddComponentParams,
 } from '@renderer/types/EditorManager';
 
 export type FileError = {
@@ -562,7 +563,7 @@ export class EditorManager {
     return true;
   }
 
-  addComponent(name: string, type: string) {
+  addComponent({ name, type, parameters = {} }: AddComponentParams) {
     if (this.data.elements.components.hasOwnProperty(name)) {
       console.log(['bad new component', name, type]);
       return false;
@@ -570,8 +571,11 @@ export class EditorManager {
 
     this.data.elements.components[name] = {
       type,
-      parameters: {},
+      parameters,
     };
+
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
 
     return true;
   }

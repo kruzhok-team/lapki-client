@@ -29,7 +29,7 @@ export const useDeleteComponent = (editor: CanvasEditor | null, manager: EditorM
   };
 
   const onSubmit = (idx: string) => {
-    editor!.container.machine.removeComponent(idx, false);
+    editor!.container.machine.removeComponent({ name: idx, purge: false });
   };
 
   return {

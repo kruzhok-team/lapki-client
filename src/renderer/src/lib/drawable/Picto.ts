@@ -3,7 +3,7 @@ import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
-import { preloadImagesMap } from '../utils';
+import { drawImageFit, preloadImagesMap } from '../utils';
 
 let imagesLoaded = false;
 
@@ -84,15 +84,15 @@ export class Picto {
 
   drawImage(ctx: CanvasRenderingContext2D, iconName: string, bounds: Rectangle) {
     // console.log([iconName, icons.has(iconName)]);
-    if (!icons.has(iconName)) return;
+    const image = icons.get(iconName);
+    if (!image) return;
+
     ctx.beginPath();
-    ctx.drawImage(
-      icons.get(iconName)!,
-      bounds.x,
-      bounds.y,
-      bounds.width / this.scale,
-      bounds.height / this.scale
-    );
+    drawImageFit(ctx, image, {
+      ...bounds,
+      width: bounds.width / this.scale,
+      height: bounds.height / this.scale,
+    });
     ctx.closePath();
   }
 

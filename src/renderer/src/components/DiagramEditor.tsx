@@ -1,20 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { State } from '@renderer/lib/drawable/State';
-
-import { CreateModal, CreateModalResult } from './CreateModal';
-import { CreateEventsModal, EventsModalResult } from './EventsModal';
-
-import { EventSelection } from '@renderer/lib/drawable/Events';
-import { Action } from '@renderer/types/diagram';
-import { StateNameModal } from './StateNameModal';
-import { Scale } from './Scale';
-import { DiagramContextMenu } from './DiagramContextMenu';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { EventSelection } from '@renderer/lib/drawable/Events';
+import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
+import { Action } from '@renderer/types/diagram';
+
+import { CreateModal, CreateModalResult } from './CreateModal';
+import { DiagramContextMenu } from './DiagramContextMenu';
+import { CreateEventsModal, EventsModalResult } from './EventsModal';
+import { Scale } from './Scale';
+import { StateNameModal } from './StateNameModal';
+
+// цвет связи по-умолчанию
+export const defaultTransColor = '#0000FF';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -132,7 +134,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     } else if (transition && data.key === 3) {
       editor?.container.machine.changeTransition({
         id: transition.id,
-        color: data.color ?? '#FFFFFF',
+        color: data.color ?? defaultTransColor,
         component: data.trigger.component,
         method: data.trigger.method,
         doAction: events,
@@ -142,7 +144,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       editor?.container.machine.createTransition({
         source: newTransition.source.id,
         target: newTransition.target.id,
-        color: data.color ?? '#FFFFFF',
+        color: data.color ?? defaultTransColor,
         component: data.trigger.component,
         method: data.trigger.method,
         doAction: events,

@@ -13,11 +13,14 @@
   "plugins": ["react-refresh"],
   "settings": {
     "import/resolver": {
-      "typescript": true,
+      "typescript": {
+        "project": ["./tsconfig.web.json"]
+      },
       "node": true
     }
   },
   "rules": {
+    "@typescript-eslint/no-inferrable-types": "warn",
     "react-refresh/only-export-components": "warn",
     "import/order": [
       "warn",

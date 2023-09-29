@@ -211,7 +211,10 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
       <div className="px-4">
         <div className="mb-2 flex rounded border-2 border-[#557b91]">
           <button
-            className={'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white'}
+            className={twMerge(
+              'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
+              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-50'
+            )}
             onClick={() => {
               switch (connectionStatus) {
                 case FLASHER_CONNECTED:

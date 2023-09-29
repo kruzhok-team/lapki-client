@@ -138,9 +138,12 @@ export class StateMachine extends EventEmitter {
 
     this.states.set(state.id, state);
 
+    let numberOfConnectedActions = 0;
+
     // вкладываем состояние, если оно создано над другим
     if (parentId) {
-      this.linkState(parentId, newStateId);
+      this.linkState(parentId, newStateId, canUndo);
+      numberOfConnectedActions += 1;
     } else {
       this.linkStateByPoint(state, position);
     }
@@ -150,7 +153,9 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do(possibleActions.stateCreate(this, newStateId, args));
+      this.undoRedo.do(
+        possibleActions.stateCreate(this, newStateId, args, numberOfConnectedActions)
+      );
     }
   };
 
@@ -214,14 +219,14 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  linkState(parentId: string, childId: string, canUndo = true) {
+  linkState(parentId: string, childId: string, canUndo = true, addOnceOff = false) {
     const parent = this.states.get(parentId);
     const child = this.states.get(childId);
 
     if (!parent || !child) return;
 
     if (child.data.parent) {
-      this.unlinkState(childId);
+      this.unlinkState(childId, canUndo);
     }
 
     // Вычисляем новую координату внутри контейнера
@@ -239,7 +244,9 @@ export class StateMachine extends EventEmitter {
 
     if (canUndo) {
       this.undoRedo.do(possibleActions.linkState(this, parentId, childId));
-      child.offOnce('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+      if (addOnceOff) {
+        child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+      }
     }
 
     child.parent = parent;
@@ -277,7 +284,7 @@ export class StateMachine extends EventEmitter {
     }
 
     if (possibleParent !== state && possibleParent) {
-      this.linkState(possibleParent.id, state.id);
+      this.linkState(possibleParent.id, state.id, true, true);
     }
   }
 
@@ -293,7 +300,7 @@ export class StateMachine extends EventEmitter {
 
     if (canUndo) {
       this.undoRedo.do(possibleActions.unlinkState(this, state.parent.id, id));
-      state.offOnce('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+      state.removeOnceOff('dragend');
     }
 
     state.parent.children.delete(id);
@@ -311,30 +318,32 @@ export class StateMachine extends EventEmitter {
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.transitions.forEach((data, transitionId) => {
       if (data.source.id === id || data.target.id === id) {
-        this.deleteTransition(transitionId);
+        this.deleteTransition(transitionId, canUndo);
         numberOfConnectedActions += 1;
       }
     });
-
-    if (canUndo) {
-      this.undoRedo.do(possibleActions.deleteState(this, id, state, numberOfConnectedActions));
-    }
 
     // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
     this.states.forEach((childState) => {
       if (childState.data.parent === id) {
         // Если есть родительское, перепривязываем к нему
         if (state.data.parent) {
-          this.linkState(state.data.parent, childState.id);
+          this.linkState(state.data.parent, childState.id, canUndo);
         } else {
-          this.unlinkState(childState.id);
+          this.unlinkState(childState.id, canUndo);
         }
+        numberOfConnectedActions += 1;
       }
     });
 
     // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
     if (state.data.parent) {
-      this.unlinkState(state.id);
+      this.unlinkState(state.id, canUndo);
+      numberOfConnectedActions += 1;
+    }
+
+    if (canUndo) {
+      this.undoRedo.do(possibleActions.deleteState(this, id, state, numberOfConnectedActions));
     }
 
     this.container.app.manager.deleteState(id);

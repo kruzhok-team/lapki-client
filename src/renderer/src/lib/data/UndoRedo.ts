@@ -19,10 +19,17 @@ type Action = {
 type Stack = Array<Action>;
 
 export const possibleActions = {
-  stateCreate: (stateMachine: StateMachine, newStateId: string, args: CreateStateParameters) => {
+  stateCreate: (
+    stateMachine: StateMachine,
+    newStateId: string,
+    args: CreateStateParameters,
+    numberOfConnectedActions = 0
+  ) => {
     return {
       redo: stateMachine.createState.bind(stateMachine, { ...args, id: newStateId }, false),
       undo: stateMachine.deleteState.bind(stateMachine, newStateId, false),
+      numberOfConnectedActions,
+      description: 'stateCreate',
     };
   },
 
@@ -33,7 +40,6 @@ export const possibleActions = {
     numberOfConnectedActions = 0
   ) => {
     return {
-      numberOfConnectedActions,
       redo: stateMachine.deleteState.bind(stateMachine, id, false),
       undo: stateMachine.createState.bind(
         stateMachine,
@@ -49,6 +55,8 @@ export const possibleActions = {
         },
         false
       ),
+      numberOfConnectedActions,
+      description: 'deleteState',
     };
   },
 
@@ -56,6 +64,7 @@ export const possibleActions = {
     return {
       redo: stateMachine.changeStateName.bind(stateMachine, id, name, false),
       undo: stateMachine.changeStateName.bind(stateMachine, id, state.data.name, false),
+      description: 'changeStateName',
     };
   },
 
@@ -66,6 +75,7 @@ export const possibleActions = {
         id: state.id,
         events: state.data.events,
       }),
+      description: 'changeStateEvents',
     };
   },
 
@@ -99,6 +109,7 @@ export const possibleActions = {
     return {
       redo: stateMachine.createTransition.bind(stateMachine, { ...params, id }, false),
       undo: stateMachine.deleteTransition.bind(stateMachine, id, false),
+      description: 'createTransition',
     };
   },
 
@@ -120,6 +131,7 @@ export const possibleActions = {
         },
         false
       ),
+      description: 'deleteTransition',
     };
   },
 
@@ -139,6 +151,7 @@ export const possibleActions = {
     return {
       redo: stateMachine.changeTransition.bind(stateMachine, args, false),
       undo: stateMachine.changeTransition.bind(stateMachine, prevArgs, false),
+      description: 'changeTransition',
     };
   },
 
@@ -146,6 +159,7 @@ export const possibleActions = {
     return {
       redo: stateMachine.changeInitialState.bind(stateMachine, id, false),
       undo: stateMachine.changeInitialState.bind(stateMachine, prevInitial, false),
+      description: 'changeInitialState',
     };
   },
 
@@ -195,6 +209,7 @@ export const possibleActions = {
         startPosition,
         false
       ),
+      description: 'changeTransitionPosition',
     };
   },
 
@@ -207,6 +222,7 @@ export const possibleActions = {
     return {
       redo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, event, newValue, false),
       undo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, newValue, event, false),
+      description: 'changeEvent',
     };
   },
 };
@@ -219,6 +235,10 @@ export class UndoRedo {
     this.redoStack.length = 0;
 
     this.undoStack.push(action);
+
+    console.log('do', action.description);
+    console.log('undoStack', this.undoStack);
+    console.log('redoStack', this.redoStack);
   }
 
   undo = () => {
@@ -234,8 +254,13 @@ export class UndoRedo {
       }
     }
 
-    // Если соединённые действия то первое должно попасть в конец redo стака
+    // Если соединённые действия то первое должно попасть в конец redo стека
+
     this.redoStack.push(action);
+
+    console.log('undo');
+    console.log('undoStack', this.undoStack);
+    console.log('redoStack', this.redoStack);
   };
 
   redo = () => {
@@ -245,13 +270,18 @@ export class UndoRedo {
 
     action.redo();
 
-    this.undoStack.push(action);
-
     if (action.numberOfConnectedActions) {
       for (let i = 0; i < action.numberOfConnectedActions; i++) {
         this.redo();
       }
     }
+
+    // Если соединённые действия то первое должно попасть в конец undo стека
+    this.undoStack.push(action);
+
+    console.log('redo');
+    console.log('undoStack', this.undoStack);
+    console.log('redoStack', this.redoStack);
   };
 
   isUndoStackEmpty() {

@@ -31,8 +31,11 @@ export class EventEmitter<T extends {} = {}> {
   }
 
   // Странная штука, нужна чтобы на один раз отключить событие
-  offOnce(name: string) {
+  addOnceOff(name: string) {
     this.offedOnce.add(name);
+  }
+  removeOnceOff(name: string) {
+    this.offedOnce.delete(name);
   }
 
   reset() {

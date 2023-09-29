@@ -147,6 +147,7 @@ export class Transitions {
     transition.condition.off('dblclick', this.handleConditionDoubleClick as any);
     transition.condition.off('mouseup', this.handleMouseUpOnState as any);
     transition.condition.off('contextmenu', this.handleContextMenu as any);
+    transition.condition.off('dragend', this.handleDragEnd as any);
     transition.condition.unbindEvents();
   }
 }

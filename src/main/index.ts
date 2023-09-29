@@ -1,5 +1,5 @@
 import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import {
   handleFileOpen,
   handleFileSave,
@@ -37,10 +37,17 @@ function createWindow(): void {
       webSecurity: false,
     },
   });
+
+  //Пример обращения к глобальным командам и выполняем необходимые действия с ними
+  //Обращаемся к команде ctrl+W и блокируем её исполнение
+  globalShortcut.register('Ctrl+W', () => {
+    return false;
+  });
+
   // Разворачиваем окно на весь экран
   mainWindow.maximize();
-  //Навсегда скрывает верхнее меню электрона
-  mainWindow.setMenu(null);
+  //Навсегда скрывает верхнее меню электрона, не блокируя при этом остальные комбинации клавиш
+  mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();

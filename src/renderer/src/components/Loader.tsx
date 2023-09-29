@@ -178,7 +178,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   }, []);
 
   const display = () => {
-    if (connectionStatus == FLASHER_CONNECTING) {
+    if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
       return 'Отменить';
     }
     if (connectionStatus == FLASHER_CONNECTED) {
@@ -225,7 +225,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
                   break;
               }
             }}
-            //disabled={connectionStatus == FLASHER_CONNECTING}
+            disabled={connectionStatus == FLASHER_CONNECTING && flasherIsLocal}
           >
             <Update width="1.5rem" height="1.5rem" className="mr-1" />
             {display()}

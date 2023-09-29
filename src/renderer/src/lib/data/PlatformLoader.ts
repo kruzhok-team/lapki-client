@@ -5,9 +5,7 @@ import { PlatformManager } from './PlatformManager';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 // TODO? выдача стандартного файла для платформы
 
-const platformPaths = await window.electron.ipcRenderer.invoke(
-  'PlatformLoader:getPlatforms'
-);
+const platformPaths = await window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms');
 
 let platformsLoaded = false;
 
@@ -51,7 +49,7 @@ export function preloadPlatforms(callback: () => void) {
     callback();
     return;
   }
-  console.log(platformPaths)
+  console.log(platformPaths);
   if (platformPaths[0]) {
     fetchPlatforms(platformPaths[1]).then((results) => {
       platforms.clear();
@@ -80,7 +78,7 @@ export function preloadPlatforms(callback: () => void) {
       callback();
     });
   } else {
-    console.log("Плафтормы не были найдены!")
+    console.log('Плафтормы не были найдены!');
     // platformsLoaded = true;
     // TODO Вывести модалку с ошибкой о том, что файлы не были загружены
   }

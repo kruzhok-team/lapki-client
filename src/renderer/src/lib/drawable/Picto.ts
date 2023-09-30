@@ -1,6 +1,6 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
+import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
@@ -150,10 +150,10 @@ export class Picto {
   }
 
   drawMono(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
-    let rightIcon = ps.rightIcon;
-    let bgColor = ps.bgColor ?? '#3a426b';
-    let fgColor = ps.fgColor ?? '#fff';
-    let opacity = ps.opacity ?? 1.0;
+    const rightIcon = ps.rightIcon;
+    const bgColor = ps.bgColor ?? '#3a426b';
+    const fgColor = ps.fgColor ?? '#fff';
+    const opacity = ps.opacity ?? 1.0;
 
     // Рамка
     this.drawRect(ctx, x, y, this.eventHeight, this.eventHeight, bgColor, fgColor, opacity);
@@ -169,10 +169,10 @@ export class Picto {
   }
 
   drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
-    let text = ps.rightIcon;
-    let bgColor = ps.bgColor ?? '#3a426b';
-    let fgColor = ps.fgColor ?? '#fff';
-    let opacity = ps.opacity ?? 1.0;
+    const text = ps.rightIcon;
+    const bgColor = ps.bgColor ?? '#3a426b';
+    const fgColor = ps.fgColor ?? '#fff';
+    const opacity = ps.opacity ?? 1.0;
 
     const baseFontSize = 24;
     const w = this.textPadding * 2 + text.length * this.pxPerChar;
@@ -195,11 +195,11 @@ export class Picto {
   }
 
   drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
-    let leftIcon = ps.leftIcon;
-    let rightIcon = ps.rightIcon;
-    let bgColor = ps.bgColor ?? '#3a426b';
-    let fgColor = ps.fgColor ?? '#fff';
-    let opacity = ps.opacity ?? 1.0;
+    const leftIcon = ps.leftIcon;
+    const rightIcon = ps.rightIcon;
+    const bgColor = ps.bgColor ?? '#3a426b';
+    const fgColor = ps.fgColor ?? '#fff';
+    const opacity = ps.opacity ?? 1.0;
 
     // Рамка
     this.drawBorder(ctx, x, y, bgColor, fgColor, opacity);

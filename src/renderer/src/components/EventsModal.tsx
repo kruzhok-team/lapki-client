@@ -58,10 +58,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       value: idx,
       label: (
         <div className="flex items-center">
-          <img
-            src={machine.platform.getComponentIconUrl(idx, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
+          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
           {idx}
         </div>
       ),

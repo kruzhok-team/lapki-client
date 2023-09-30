@@ -1,8 +1,15 @@
-import { Platform } from '@renderer/types/platform';
-import { icons, picto } from '../drawable/Picto';
+import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
-import { ComponentProto } from '@renderer/types/platform';
+import { Platform, ComponentProto } from '@renderer/types/platform';
+
+import { icons, picto } from '../drawable/Picto';
 import { stateStyle } from '../styles';
+
+export type VisualCompoData = {
+  component: string;
+  label?: string;
+  color?: string;
+};
 
 export type ListEntry = {
   name: string;
@@ -46,11 +53,12 @@ export class PlatformManager {
   data!: Platform;
 
   /**
-   * Проекция названия компонента к его типу.
+   * Проекция названия компонента к его типу и метке.
    * Если платформа не видит проекцию, она будет считать
-   * переданное название типом компонента.
+   * переданное название типом компонента,
+   * а данные метки – пустыми.
    */
-  nameToComponent: Map<string, string> = new Map();
+  nameToVisual: Map<string, VisualCompoData> = new Map();
 
   componentToIcon: Map<string, string> = new Map();
   eventToIcon: Map<string, string> = new Map();
@@ -98,7 +106,7 @@ export class PlatformManager {
   }
 
   resolveComponent(name: string): string {
-    return this.nameToComponent.get(name) ?? name;
+    return this.nameToVisual.get(name)?.component ?? name;
   }
 
   getComponent(name: string, isType?: boolean): ComponentProto | undefined {
@@ -169,6 +177,41 @@ export class PlatformManager {
     return icons.get(query)!.src;
   }
 
+  getFullComponentIcon(name: string, className?: string): React.ReactNode {
+    const query = this.nameToVisual.get(name) ?? { component: name };
+    const iconQuery = this.getComponentIcon(query.component, false);
+    const icon = icons.get(iconQuery)!;
+    // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
+    // return <img className="h-8 w-8 object-contain" src={icon?.src ?? UnknownIcon} />;
+    return (
+      <svg
+        className={className ?? 'h-8 w-8'}
+        viewBox="0 0 32 32"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <image width={32} height={32} href={icon?.src ?? UnknownIcon} />;
+        {!query.label ? (
+          ''
+        ) : (
+          <text
+            x="32"
+            y="31"
+            fontSize="16"
+            fill={query.color ?? 'white'}
+            textAnchor="end"
+            fontFamily="Fira Mono"
+            fontWeight="600"
+            stroke="white"
+            strokeWidth={0.5}
+          >
+            {query.label}
+          </text>
+        )}
+        <text></text>
+      </svg>
+    );
+  }
+
   getEventIcon(component: string, method: string) {
     const icon = this.eventToIcon.get(`${component}/${method}`);
     if (icon && icons.has(icon)) {
@@ -220,8 +263,8 @@ export class PlatformManager {
   drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {
     let leftIcon: string | undefined = undefined;
     let rightIcon = 'unknown';
-    let bgColor = '#3a426b';
-    let fgColor = '#fff';
+    const bgColor = '#3a426b';
+    const fgColor = '#fff';
     let argQuery: string = '';
 
     if (ev.component === 'System') {
@@ -264,9 +307,9 @@ export class PlatformManager {
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
     let leftIcon: string | undefined = undefined;
     let rightIcon = 'unknown';
-    let bgColor = '#5b5f73';
-    let fgColor = '#fff';
-    let opacity = alpha ?? 1.0;
+    const bgColor = '#5b5f73';
+    const fgColor = '#fff';
+    const opacity = alpha ?? 1.0;
     let argQuery: string = '';
 
     if (ac.component === 'System') {
@@ -335,9 +378,9 @@ export class PlatformManager {
     y: number,
     alpha?: number
   ) {
-    let bgColor = '#5b7173';
-    let fgColor = '#fff';
-    let opacity = alpha ?? 1.0;
+    const bgColor = '#5b7173';
+    const fgColor = '#fff';
+    const opacity = alpha ?? 1.0;
 
     if (ac.type == 'component') {
       let leftIcon: string | undefined = undefined;
@@ -379,7 +422,7 @@ export class PlatformManager {
 
       const mr = picto.eventMargin;
       const icoW = (picto.eventHeight + picto.eventMargin) / picto.scale;
-      let leftW = (this.measureCondition(ac.value[0]) + mr) / picto.scale;
+      const leftW = (this.measureCondition(ac.value[0]) + mr) / picto.scale;
 
       this.drawCondition(ctx, ac.value[0], x, y, alpha);
       picto.drawMono(ctx, x + leftW, y, {

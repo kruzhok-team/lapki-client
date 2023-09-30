@@ -206,13 +206,17 @@
   "components": {
     "diod1": {
       "parameters": {
-        "pin": "12"
+        "pin": "12",
+        "labelColor": "#0008f5",
+        "label": "1"
       },
       "type": "LED"
     },
     "button1": {
       "parameters": {
-        "pin": "4"
+        "pin": "4",
+        "labelColor": "#c70000",
+        "label": "1"
       },
       "type": "Button"
     }

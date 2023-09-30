@@ -105,10 +105,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       value: idx,
       label: (
         <div className="flex items-center">
-          <img
-            src={machine.platform.getComponentIconUrl(idx, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
+          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
           {idx}
         </div>
       ),
@@ -792,10 +789,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                     'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-lg border-2 bg-neutral-700 px-1'
                   )}
                 >
-                  <img
-                    style={{ height: '32px', width: '32px' }}
-                    src={machine.platform.getComponentIconUrl(data.component, true)}
-                  />
+                  {machine.platform.getFullComponentIcon(data.component)}
                   <div className="h-full border-2 border-white"></div>
                   <img
                     style={{ height: '32px', width: '32px' }}

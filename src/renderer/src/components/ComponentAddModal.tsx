@@ -111,7 +111,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
               onClick={() => onCompClick(entry)}
             >
               <img
-                style={{ height: '32px' }}
+                className="h-8 w-8 object-contain"
                 src={icons.get(entry.img ?? 'unknown')?.src ?? UnknownIcon}
               />
               <p className="line-clamp-1">{entry.name}</p>

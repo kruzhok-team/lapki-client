@@ -14,11 +14,20 @@ export interface CompilerProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   openData: [boolean, string | null, string | null, string] | undefined;
+  compilerData: CompilerResult | undefined;
+  setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
+  compilerStatus: string;
+  setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const CompilerTab: React.FC<CompilerProps> = ({ manager, openData }) => {
-  const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
-  const [compilerStatus, setCompilerStatus] = useState<string>('Не подключен.');
+export const CompilerTab: React.FC<CompilerProps> = ({
+  manager,
+  openData,
+  compilerData,
+  setCompilerData,
+  compilerStatus,
+  setCompilerStatus,
+}) => {
   const [importData, setImportData] = useState<string | undefined>(undefined);
 
   const openTab = useTabs((state) => state.openTab);

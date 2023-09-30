@@ -13,11 +13,15 @@
   "plugins": ["react-refresh"],
   "settings": {
     "import/resolver": {
-      "typescript": true,
+      "typescript": {
+        "project": ["./tsconfig.web.json"]
+      },
       "node": true
     }
   },
   "rules": {
+    "import/default": "off",
+    "@typescript-eslint/no-inferrable-types": "off", // чтобы можно было указывать тип даже когда он может определиться сам
     "react-refresh/only-export-components": "warn",
     "import/order": [
       "warn",

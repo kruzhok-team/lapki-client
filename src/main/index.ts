@@ -1,11 +1,12 @@
 import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import {
   handleFileOpen,
   handleFileSave,
   handleFileSaveAs,
   handleSaveIntoFolder,
   handleBinFileOpen,
+  handleOpenPlatformFile,
 } from './file-handlers';
 import { join } from 'path';
 import {
@@ -17,6 +18,7 @@ import {
 
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
+import { searchPlatforms } from './PlatformSeacher';
 
 /**
  * Создание главного окна редактора.
@@ -37,10 +39,17 @@ function createWindow(): void {
       webSecurity: false,
     },
   });
+
+  //Пример обращения к глобальным командам и выполняем необходимые действия с ними
+  //Обращаемся к команде ctrl+W и блокируем её исполнение
+  globalShortcut.register('Ctrl+W', () => {
+    return false;
+  });
+
   // Разворачиваем окно на весь экран
   mainWindow.maximize();
-  //Навсегда скрывает верхнее меню электрона
-  mainWindow.setMenu(null);
+  //Навсегда скрывает верхнее меню электрона, не блокируя при этом остальные комбинации клавиш
+  mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -74,6 +83,13 @@ function initSettings(): void {
     settings.setSync('compiler', {
       host: 'lapki.polyus-nt.ru',
       port: 8081,
+    });
+  }
+
+  if (!settings.hasSync('PlatformsPath')) {
+    settings.setSync('PlatformsPath', {
+      path: ""
+      // path: `${process.cwd()}/src/renderer/public/platform`,
     });
   }
 }
@@ -129,6 +145,15 @@ app.whenReady().then(() => {
       message: status.message,
     };
     return obj;*/
+  });
+
+  ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {
+    // console.log(await loadPlatforms())
+    return searchPlatforms();
+  });
+
+  ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {
+    return handleOpenPlatformFile(absolute_path);
   });
 
   // main process

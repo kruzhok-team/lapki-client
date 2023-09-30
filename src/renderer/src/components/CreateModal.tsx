@@ -21,6 +21,7 @@ import { State } from '@renderer/lib/drawable/State';
 import { ArgumentProto } from '@renderer/types/platform';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { defaultTransColor } from './DiagramEditor';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -193,7 +194,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     : machine.platform
         .getAvailableVariables(param1Components.value)
         .map(({ name }) => conditionEntry(name, param1Components.value));
-
+  console.log(machine.platform.name);
   const optionsParam2Methods = !components
     ? []
     : machine.platform
@@ -831,7 +832,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
-            defaultValue={props.isTransition?.target.transition.data.color}
+            defaultValue={props.isTransition?.target.transition.data.color ?? defaultTransColor}
           />
         </>
       )}

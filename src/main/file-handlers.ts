@@ -1,5 +1,5 @@
 import { dialog } from 'electron';
-
+import { readdir, readFile } from 'fs/promises';
 import fs from 'fs';
 import { basename } from 'path';
 import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
@@ -30,6 +30,49 @@ export async function handleFileOpen(platform: string) {
       });
     } else {
       resolve([false, null, null, '']);
+    }
+  });
+}
+
+export async function handleOpenPlatformFile(absolute_path: string) {
+  return new Promise(async (resolve, _reject) => {
+    await readFile(absolute_path, 'utf-8')
+      .then((text) => {
+        resolve([true, text, basename(absolute_path), null]);
+      })
+      .catch((err) => {
+        console.log(err);
+        resolve([false, null, null, err.message]);
+      });
+  });
+}
+
+/**
+ * @param directory - путь до папки, содержащей схемы платформ
+ * @returns список абсолютных путей до схем платформ
+ */
+export async function handleGetPlatforms(directory: string): Promise<Array<any>> {
+  return new Promise(async (resolve, _reject) => {
+    if (fs.existsSync(directory)) {
+      await readdir(directory)
+        .then((files) => {
+          const platformPaths = new Array<string>();
+          files.forEach((element) => {
+            if (directory.endsWith('/')) {
+              platformPaths.push(`${directory}${element}`);
+            } else {
+              platformPaths.push(`${directory}/${element}`);
+            }
+          });
+          resolve([true, platformPaths]);
+        })
+        .catch((err) => {
+          console.log(err);
+          resolve([false, err.message]);
+        });
+    } else {
+      resolve([false, `${directory} doesn't exists!`]);
+      console.log(`${directory} doesn't exists!`);
     }
   });
 }

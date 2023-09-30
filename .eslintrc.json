@@ -20,6 +20,7 @@
     }
   },
   "rules": {
+    "import/default": "off",
     "react-refresh/only-export-components": "warn",
     "import/order": [
       "warn",

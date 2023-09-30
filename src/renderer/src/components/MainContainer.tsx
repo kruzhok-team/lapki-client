@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 import { Documentations } from './Documentation/Documentation';
 import { Tabs } from './Tabs';

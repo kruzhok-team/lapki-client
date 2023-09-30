@@ -6,6 +6,7 @@ import {
   handleFileSaveAs,
   handleSaveIntoFolder,
   handleBinFileOpen,
+  handleOpenPlatformFile,
 } from './file-handlers';
 import { join } from 'path';
 import {
@@ -17,6 +18,7 @@ import {
 
 import icon from '../../resources/icon.png?asset';
 import settings from 'electron-settings';
+import { searchPlatforms } from './PlatformSeacher';
 
 /**
  * Создание главного окна редактора.
@@ -83,6 +85,13 @@ function initSettings(): void {
       port: 8081,
     });
   }
+
+  if (!settings.hasSync('PlatformsPath')) {
+    settings.setSync('PlatformsPath', {
+      path: ""
+      // path: `${process.cwd()}/src/renderer/public/platform`,
+    });
+  }
 }
 
 // Выполняется после инициализации Electron
@@ -136,6 +145,15 @@ app.whenReady().then(() => {
       message: status.message,
     };
     return obj;*/
+  });
+
+  ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {
+    // console.log(await loadPlatforms())
+    return searchPlatforms();
+  });
+
+  ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {
+    return handleOpenPlatformFile(absolute_path);
   });
 
   // main process

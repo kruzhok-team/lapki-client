@@ -1,6 +1,10 @@
 import { Dispatch, useSyncExternalStore } from 'react';
+
 import { customAlphabet } from 'nanoid';
 
+import { Compiler } from '@renderer/components/Modules/Compiler';
+import { Flasher } from '@renderer/components/Modules/Flasher';
+import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import {
   emptyElements,
   Event,
@@ -9,16 +13,6 @@ import {
   Component,
   Elements,
 } from '@renderer/types/diagram';
-import { Either, makeLeft, makeRight } from '@renderer/types/Either';
-
-import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
-import { isPlatformAvailable } from './PlatformLoader';
-import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
-import { Flasher } from '@renderer/components/Modules/Flasher';
-import { Point, Rectangle } from '@renderer/types/graphics';
-import { stateStyle } from '../styles';
-
 import {
   emptyEditorData,
   emptyDataListeners,
@@ -32,6 +26,13 @@ import {
   SetStateEventsParams,
   AddComponentParams,
 } from '@renderer/types/EditorManager';
+import { Either, makeLeft, makeRight } from '@renderer/types/Either';
+import { Point, Rectangle } from '@renderer/types/graphics';
+
+import { isPlatformAvailable } from './PlatformLoader';
+
+import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
+import { stateStyle } from '../styles';
 
 export type FileError = {
   name: string;
@@ -131,7 +132,14 @@ export class EditorManager {
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, {
+    /**
+     Временное решение, чтобы выделить основную платформу
+     Все подплатформы имеют название вида:
+     MainPlatform-Subplatform
+    */
+    const main_platform = this.data.elements.platform.split('-');
+    console.log(main_platform[0]);
+    Compiler.compile(main_platform[0], {
       ...this.data.elements,
       transitions: Object.values(this.data.elements.transitions),
     });

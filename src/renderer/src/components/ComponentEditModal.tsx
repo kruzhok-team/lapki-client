@@ -74,16 +74,19 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       sideLabel="Удалить"
       onSide={handleDelete}
     >
-      <label className="mb-2 flex items-center gap-2">
-        Name:
-        <input
-          className="w-[250px] max-w-[250px] rounded border border-white bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
-          maxLength={20}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </label>
-
+      {proto.singletone ? (
+        ''
+      ) : (
+        <label className="mb-2 flex items-center gap-2">
+          Name:
+          <input
+            className="w-[250px] max-w-[250px] rounded border border-white bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            maxLength={20}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+      )}
       {Object.entries(proto.parameters ?? {}).map(([idx, param]) => {
         const name = param.name ?? idx;
         const value = parameters[name] ?? '';

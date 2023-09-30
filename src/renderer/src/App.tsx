@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
-import DocumentTitle from 'react-document-title';
+
 import * as monaco from 'monaco-editor';
+import DocumentTitle from 'react-document-title';
 
 import {
   PlatformSelectModal,
   SaveRemindModal,
   ErrorModal,
   Sidebar,
-  SidebarCallbacks,
   MainContainer,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-
 import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
-
 import { getColor } from '@renderer/theme';
 
 import {
@@ -22,7 +20,6 @@ import {
   preparePreloadImages,
 } from './lib/data/PlatformLoader';
 import { preloadPicto } from './lib/drawable/Picto';
-
 import { ThemeContext } from './store/ThemeContext';
 import { Theme } from './types/theme';
 
@@ -55,8 +52,16 @@ export const App: React.FC = () => {
     openSaveError,
   });
 
-  const sidebarCallbacks: SidebarCallbacks = {
-    ...operations,
+  const handleChangeTheme = (theme: Theme) => {
+    setTheme(theme);
+
+    document.documentElement.dataset.theme = theme;
+
+    monaco.editor.setTheme(getColor('codeEditorTheme').trim());
+
+    if (editor) {
+      editor.container.isDirty = true;
+    }
   };
 
   useEffect(() => {
@@ -79,26 +84,19 @@ export const App: React.FC = () => {
     setTitle(`${name} [${platformName}] – Lapki IDE`);
   }, [name, platformName]);
 
-  const handleChangeTheme = (theme: Theme) => {
-    setTheme(theme);
-
-    document.documentElement.dataset.theme = theme;
-
-    monaco.editor.setTheme(getColor('codeEditorTheme').trim());
-
-    if (editor) {
-      editor.container.isDirty = true;
-    }
-  };
-
   return (
     <DocumentTitle title={title}>
       <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
-            <Sidebar manager={manager} editor={editor} callbacks={sidebarCallbacks} />
+            <Sidebar manager={manager} editor={editor} callbacks={operations} />
 
-            <MainContainer manager={manager} editor={editor} setEditor={setEditor} />
+            <MainContainer
+              manager={manager}
+              editor={editor}
+              setEditor={setEditor}
+              onRequestOpenFile={operations.onRequestOpenFile}
+            />
           </div>
 
           <SaveRemindModal {...saveModalProps} />

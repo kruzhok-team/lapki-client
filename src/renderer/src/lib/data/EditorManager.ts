@@ -1,6 +1,10 @@
 import { Dispatch, useSyncExternalStore } from 'react';
+
 import { customAlphabet } from 'nanoid';
 
+import { Compiler } from '@renderer/components/Modules/Compiler';
+import { Flasher } from '@renderer/components/Modules/Flasher';
+import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import {
   emptyElements,
   Event,
@@ -12,13 +16,11 @@ import {
   EventData,
 } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
+import { Point, Rectangle } from '@renderer/types/graphics';
+
+import { isPlatformAvailable } from './PlatformLoader';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
-import { isPlatformAvailable } from './PlatformLoader';
-import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
-import { Flasher } from '@renderer/components/Modules/Flasher';
-import { Point, Rectangle } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
 
 export type FileError = {
@@ -120,6 +122,7 @@ export class EditorManager {
       return this.data['elements'][propertyName.split('.')[1]];
     };
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 

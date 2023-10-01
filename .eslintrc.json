@@ -20,6 +20,7 @@
     }
   },
   "rules": {
+    "no-prototype-builtins": "off",
     "import/default": "off",
     "@typescript-eslint/no-inferrable-types": "off", // чтобы можно было указывать тип даже когда он может определиться сам
     "react-refresh/only-export-components": "warn",

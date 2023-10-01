@@ -1,250 +1,183 @@
-import { Point } from '@renderer/types/graphics';
-import { StateMachine } from './StateMachine';
-import { State } from '../drawable/State';
 import {
-  CreateTransitionParameters,
-  EditComponentParams,
-  RemoveComponentParams,
-} from '@renderer/types/StateMachine';
-import { Transition } from '../drawable/Transition';
+  Action as EventAction,
+  Event,
+  Component,
+  Transition as TransitionData,
+} from '@renderer/types/diagram';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
-import { Action as EventAction, Event, Component } from '@renderer/types/diagram';
+import { Point } from '@renderer/types/graphics';
+import {
+  CreateTransitionParameters,
+  EditComponentParams,
+  RemoveComponentParams,
+} from '@renderer/types/StateMachine';
 
-type Action = {
-  redo: () => void;
-  undo: () => void;
-  numberOfConnectedActions?: number;
-  description?: string;
-};
-type Stack = Array<Action>;
+import { StateMachine } from './StateMachine';
 
-export const getPossibleActions = (stateMachine: StateMachine) => {
-  return {
-    stateCreate: (
-      newStateId: string,
-      args: CreateStateParameters,
-      numberOfConnectedActions = 0
-    ) => {
-      return {
-        redo: stateMachine.createState.bind(stateMachine, { ...args, id: newStateId }, false),
-        undo: stateMachine.deleteState.bind(stateMachine, newStateId, false),
-        numberOfConnectedActions,
-        description: 'stateCreate',
-      };
-    },
+import { State } from '../drawable/State';
+import { Transition } from '../drawable/Transition';
 
-    deleteState: (id: string, state: State, numberOfConnectedActions = 0) => {
-      return {
-        redo: stateMachine.deleteState.bind(stateMachine, id, false),
-        undo: stateMachine.createState.bind(
-          stateMachine,
-          {
-            name: state.data.name,
-            id,
-            position: {
-              x: state.data.bounds.x + state.data.bounds.width / 2,
-              y: state.data.bounds.y + state.data.bounds.height / 2,
-            },
-            parentId: state.data.parent,
-            events: structuredClone(state.data.events),
-          },
-          false
-        ),
-        numberOfConnectedActions,
-        description: 'deleteState',
-      };
-    },
-
-    changeStateName: (id: string, name: string, state: State) => {
-      return {
-        redo: stateMachine.changeStateName.bind(stateMachine, id, name, false),
-        undo: stateMachine.changeStateName.bind(stateMachine, id, state.data.name, false),
-        description: 'changeStateName',
-      };
-    },
-
-    changeStateEvents: (state: State, args: ChangeStateEventsParams) => {
-      return {
-        redo: stateMachine.changeStateEvents.bind(stateMachine, args, false),
-        undo: stateMachine.setStateEvents.bind(stateMachine, {
-          id: state.id,
-          events: state.data.events,
-        }),
-        description: 'changeStateEvents',
-      };
-    },
-
-    linkState: (parentId: string, childId: string, numberOfConnectedActions = 0) => {
-      return {
-        redo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
-        undo: stateMachine.unlinkState.bind(stateMachine, childId, false),
-        description: 'linkState',
-        numberOfConnectedActions,
-      };
-    },
-
-    unlinkState: (parentId: string, childId: string) => {
-      return {
-        redo: stateMachine.unlinkState.bind(stateMachine, childId, false),
-        undo: stateMachine.linkState.bind(stateMachine, parentId, childId, false),
-        description: 'unlinkState',
-      };
-    },
-
-    createTransition: (id: string, params: CreateTransitionParameters) => {
-      return {
-        redo: stateMachine.createTransition.bind(stateMachine, { ...params, id }, false),
-        undo: stateMachine.deleteTransition.bind(stateMachine, id, false),
-        description: 'createTransition',
-      };
-    },
-
-    deleteTransition: (transition: Transition) => {
-      const prevData = structuredClone(transition.data);
-      const id = transition.id;
-
-      return {
-        redo: stateMachine.deleteTransition.bind(stateMachine, transition.id, false),
-        undo: stateMachine.createTransition.bind(
-          stateMachine,
-          {
-            id,
-            ...prevData,
-            component: prevData.trigger.component,
-            method: prevData.trigger.method,
-            condition: prevData.condition!,
-            doAction: prevData.do!,
-          },
-          false
-        ),
-        description: 'deleteTransition',
-      };
-    },
-
-    changeTransition: (transition: Transition, args: ChangeTransitionParameters) => {
-      const prevArgs = {
-        id: transition.id,
-        color: transition.data.color,
-        component: transition.data.trigger.component,
-        method: transition.data.trigger.method,
-        doAction: structuredClone(transition.data.do!),
-        condition: structuredClone(transition.data.condition!),
-      };
-      return {
-        redo: stateMachine.changeTransition.bind(stateMachine, args, false),
-        undo: stateMachine.changeTransition.bind(stateMachine, prevArgs, false),
-        description: 'changeTransition',
-      };
-    },
-
-    changeInitialState: (id: string, prevInitial: string) => {
-      return {
-        redo: stateMachine.changeInitialState.bind(stateMachine, id, false),
-        undo: stateMachine.changeInitialState.bind(stateMachine, prevInitial, false),
-        description: 'changeInitialState',
-      };
-    },
-
-    changeStatePosition: (id: string, startPosition: Point, endPosition: Point) => {
-      return {
-        redo: stateMachine.changeStatePosition.bind(
-          stateMachine,
-          id,
-          startPosition,
-          endPosition,
-          false
-        ),
-        undo: stateMachine.changeStatePosition.bind(
-          stateMachine,
-          id,
-          endPosition,
-          startPosition,
-          false
-        ),
-        description: `changeStatePosition from {x: ${startPosition.x}, y: ${startPosition.y}} to {x: ${endPosition.x}, y: ${endPosition.y}}`,
-      };
-    },
-
-    changeTransitionPosition: (id: string, startPosition: Point, endPosition: Point) => {
-      return {
-        redo: stateMachine.changeTransitionPosition.bind(
-          stateMachine,
-          id,
-          startPosition,
-          endPosition,
-          false
-        ),
-        undo: stateMachine.changeTransitionPosition.bind(
-          stateMachine,
-          id,
-          endPosition,
-          startPosition,
-          false
-        ),
-        description: 'changeTransitionPosition',
-      };
-    },
-
-    changeEvent: (stateId: string, event: any, newValue: Event | EventAction) => {
-      return {
-        redo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, event, newValue, false),
-        undo: stateMachine.createOrChangeEvent.bind(stateMachine, stateId, newValue, event, false),
-        description: 'changeEvent',
-      };
-    },
-
-    addComponent: (args: AddComponentParams) => {
-      return {
-        redo: stateMachine.addComponent.bind(stateMachine, args, false),
-        undo: stateMachine.removeComponent.bind(
-          stateMachine,
-          { name: args.name, purge: false },
-          false
-        ),
-        description: 'addComponent',
-      };
-    },
-
-    removeComponent: (args: RemoveComponentParams, prevComponent: Component) => {
-      return {
-        redo: stateMachine.removeComponent.bind(stateMachine, args, false),
-        undo: stateMachine.addComponent.bind(
-          stateMachine,
-          { name: args.name, ...prevComponent },
-          false
-        ),
-        description: 'removeComponent',
-      };
-    },
-
-    editComponent: (args: EditComponentParams, prevComponent: Component) => {
-      return {
-        redo: stateMachine.editComponent.bind(stateMachine, args, false),
-        undo: stateMachine.editComponent.bind(
-          stateMachine,
-          {
-            name: args.newName ?? args.name,
-            parameters: prevComponent.parameters,
-            newName: args.newName ? args.name : undefined,
-          },
-          false
-        ),
-        description: 'editComponent',
-      };
-    },
+type PossibleActions = {
+  stateCreate: CreateStateParameters & { newStateId: string };
+  deleteState: { id: string; state: State };
+  changeStateName: { id: string; name: string; state: State };
+  changeStateEvents: { state: State; args: ChangeStateEventsParams };
+  linkState: { parentId: string; childId: string };
+  unlinkState: { parentId: string; childId: string };
+  createTransition: { id: string; params: CreateTransitionParameters };
+  deleteTransition: { transition: Transition; prevData: TransitionData };
+  changeTransition: {
+    transition: Transition;
+    args: ChangeTransitionParameters;
+    prevData: TransitionData;
   };
+  changeInitialState: { id: string; prevInitial: string };
+  changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
+  changeTransitionPosition: { id: string; startPosition: Point; endPosition: Point };
+  changeEvent: { stateId: string; event: any; newValue: Event | EventAction };
+  addComponent: { args: AddComponentParams };
+  removeComponent: { args: RemoveComponentParams; prevComponent: Component };
+  editComponent: { args: EditComponentParams; prevComponent: Component };
+};
+type PossibleActionTypes = keyof PossibleActions;
+type Action<T extends PossibleActionTypes> = {
+  type: T;
+  args: PossibleActions[T];
+  numberOfConnectedActions?: number;
+};
+type Stack = Array<Action<any>>;
+type ActionFunctions = {
+  [Type in PossibleActionTypes]: (
+    sm: StateMachine,
+    args: PossibleActions[Type]
+  ) => { undo: () => void; redo: () => void };
+};
+
+export const actionFunctions: ActionFunctions = {
+  stateCreate: (sM, args) => ({
+    redo: sM.createState.bind(sM, { ...args, id: args.newStateId }, false),
+    undo: sM.deleteState.bind(sM, args.newStateId, false),
+  }),
+  deleteState: (sM, { id, state }) => ({
+    redo: sM.deleteState.bind(sM, id, false),
+    undo: sM.createState.bind(
+      sM,
+      {
+        name: state.data.name,
+        id,
+        position: {
+          x: state.data.bounds.x + state.data.bounds.width / 2,
+          y: state.data.bounds.y + state.data.bounds.height / 2,
+        },
+        parentId: state.data.parent,
+        events: structuredClone(state.data.events),
+      },
+      false
+    ),
+  }),
+  changeStateName: (sM, { id, name, state }) => ({
+    redo: sM.changeStateName.bind(sM, id, name, false),
+    undo: sM.changeStateName.bind(sM, id, state.data.name, false),
+  }),
+  changeStateEvents: (sM, { state, args }) => ({
+    redo: sM.changeStateEvents.bind(sM, args, false),
+    undo: sM.setStateEvents.bind(sM, {
+      id: state.id,
+      events: state.data.events,
+    }),
+  }),
+  linkState: (sM, { parentId, childId }) => ({
+    redo: sM.linkState.bind(sM, parentId, childId, false),
+    undo: sM.unlinkState.bind(sM, childId, false),
+  }),
+  unlinkState: (sM, { parentId, childId }) => ({
+    redo: sM.unlinkState.bind(sM, childId, false),
+    undo: sM.linkState.bind(sM, parentId, childId, false),
+  }),
+  createTransition: (sM, { id, params }) => ({
+    redo: sM.createTransition.bind(sM, { ...params, id }, false),
+    undo: sM.deleteTransition.bind(sM, id, false),
+  }),
+  deleteTransition: (sM, { transition, prevData }) => ({
+    redo: sM.deleteTransition.bind(sM, transition.id, false),
+    undo: sM.createTransition.bind(
+      sM,
+      {
+        id: transition.id,
+        ...prevData,
+        component: prevData.trigger.component,
+        method: prevData.trigger.method,
+        condition: prevData.condition!,
+        doAction: prevData.do!,
+      },
+      false
+    ),
+  }),
+  changeTransition: (sM, { transition, args, prevData }) => ({
+    redo: sM.changeTransition.bind(sM, args, false),
+    undo: sM.changeTransition.bind(
+      sM,
+      {
+        id: transition.id,
+        color: prevData.color,
+        component: prevData.trigger.component,
+        method: prevData.trigger.method,
+        doAction: prevData.do!,
+        condition: prevData.condition!,
+      },
+      false
+    ),
+  }),
+  changeInitialState: (sM, { id, prevInitial }) => ({
+    redo: sM.changeInitialState.bind(sM, id, false),
+    undo: sM.changeInitialState.bind(sM, prevInitial, false),
+  }),
+  changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.changeStatePosition.bind(sM, id, startPosition, endPosition, false),
+    undo: sM.changeStatePosition.bind(sM, id, endPosition, startPosition, false),
+  }),
+  changeTransitionPosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.changeTransitionPosition.bind(sM, id, startPosition, endPosition, false),
+    undo: sM.changeTransitionPosition.bind(sM, id, endPosition, startPosition, false),
+  }),
+  changeEvent: (sM, { stateId, event, newValue }) => ({
+    redo: sM.createOrChangeEvent.bind(sM, stateId, event, newValue, false),
+    undo: sM.createOrChangeEvent.bind(sM, stateId, newValue, event, false),
+  }),
+  addComponent: (sM, { args }) => ({
+    redo: sM.addComponent.bind(sM, args, false),
+    undo: sM.removeComponent.bind(sM, { name: args.name, purge: false }, false),
+  }),
+  removeComponent: (sM, { args, prevComponent }) => ({
+    redo: sM.removeComponent.bind(sM, args, false),
+    undo: sM.addComponent.bind(sM, { name: args.name, ...prevComponent }, false),
+  }),
+  editComponent: (sM, { args, prevComponent }) => ({
+    redo: sM.editComponent.bind(sM, args, false),
+    undo: sM.editComponent.bind(
+      sM,
+      {
+        name: args.newName ?? args.name,
+        parameters: prevComponent.parameters,
+        newName: args.newName ? args.name : undefined,
+      },
+      false
+    ),
+  }),
 };
 
 export class UndoRedo {
   undoStack = [] as Stack;
   redoStack = [] as Stack;
 
-  do(action: Action) {
+  constructor(public stateMachine: StateMachine) {}
+
+  do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;
 
     this.undoStack.push(action);
@@ -253,9 +186,9 @@ export class UndoRedo {
   undo = () => {
     if (this.isUndoStackEmpty()) return;
 
-    const action = this.undoStack.pop() as Action;
+    const action = this.undoStack.pop() as Action<any>;
 
-    action.undo();
+    actionFunctions[action.type](this.stateMachine, action.args).undo();
 
     if (action.numberOfConnectedActions) {
       for (let i = 0; i < action.numberOfConnectedActions; i++) {
@@ -270,9 +203,9 @@ export class UndoRedo {
   redo = () => {
     if (this.isRedoStackEmpty()) return;
 
-    const action = this.redoStack.pop() as Action;
+    const action = this.redoStack.pop() as Action<any>;
 
-    action.redo();
+    actionFunctions[action.type](this.stateMachine, action.args).redo();
 
     if (action.numberOfConnectedActions) {
       for (let i = 0; i < action.numberOfConnectedActions; i++) {

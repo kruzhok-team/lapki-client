@@ -7,16 +7,6 @@ import {
   State as StateType,
   Transition as TransitionType,
 } from '@renderer/types/diagram';
-import { Point } from '@renderer/types/graphics';
-
-import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitter';
-import { State } from '../drawable/State';
-import { Transition } from '../drawable/Transition';
-import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
-import { loadPlatform } from './PlatformLoader';
-import { EventSelection } from '../drawable/Events';
-import { UndoRedo, getPossibleActions } from './UndoRedo';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
@@ -24,11 +14,22 @@ import {
   CreateStateParameters,
   SetStateEventsParams,
 } from '@renderer/types/EditorManager';
+import { Point } from '@renderer/types/graphics';
 import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
 } from '@renderer/types/StateMachine';
+
+import { loadPlatform } from './PlatformLoader';
+import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
+import { UndoRedo } from './UndoRedo';
+
+import { Container } from '../basic/Container';
+import { EventEmitter } from '../common/EventEmitter';
+import { EventSelection } from '../drawable/Events';
+import { State } from '../drawable/State';
+import { Transition } from '../drawable/Transition';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -55,8 +56,7 @@ export class StateMachine extends EventEmitter {
 
   platform!: PlatformManager;
 
-  undoRedo = new UndoRedo();
-  possibleActions = getPossibleActions(this);
+  undoRedo = new UndoRedo(this);
 
   constructor(container: Container) {
     super();
@@ -158,9 +158,11 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do(
-        this.possibleActions.stateCreate(newStateId, args, numberOfConnectedActions)
-      );
+      this.undoRedo.do({
+        type: 'stateCreate',
+        args: { ...args, newStateId },
+        numberOfConnectedActions,
+      });
     }
   };
 
@@ -171,7 +173,10 @@ export class StateMachine extends EventEmitter {
     if (!state) return;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.changeStateEvents(state, args));
+      this.undoRedo.do({
+        type: 'changeStateEvents',
+        args: { state, args },
+      });
     }
 
     this.container.app.manager.changeStateEvents(args);
@@ -199,7 +204,10 @@ export class StateMachine extends EventEmitter {
     if (!state) return;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.changeStateName(id, name, state));
+      this.undoRedo.do({
+        type: 'changeStateName',
+        args: { id, name, state },
+      });
     }
 
     this.container.app.manager.changeStateName(id, name);
@@ -212,7 +220,10 @@ export class StateMachine extends EventEmitter {
     if (!state) return;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.changeStatePosition(id, startPosition, endPosition));
+      this.undoRedo.do({
+        type: 'changeStatePosition',
+        args: { id, startPosition, endPosition },
+      });
     }
 
     this.container.app.manager.changeStateBounds(id, {
@@ -248,7 +259,10 @@ export class StateMachine extends EventEmitter {
     // this.container.app.manager.changeStateBounds(childId, newBounds);
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.linkState(parentId, childId));
+      this.undoRedo.do({
+        type: 'linkState',
+        args: { parentId, childId },
+      });
       if (addOnceOff) {
         child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
       }
@@ -304,7 +318,10 @@ export class StateMachine extends EventEmitter {
     this.container.app.manager.changeStateBounds(id, newBounds);
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.unlinkState(state.parent.id, id));
+      this.undoRedo.do({
+        type: 'unlinkState',
+        args: { parentId: state.parent.id, childId: id },
+      });
       state.removeOnceOff('dragend');
     }
 
@@ -348,7 +365,11 @@ export class StateMachine extends EventEmitter {
     }
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.deleteState(id, state, numberOfConnectedActions));
+      this.undoRedo.do({
+        type: 'deleteState',
+        args: { id, state },
+        numberOfConnectedActions,
+      });
     }
 
     this.container.app.manager.deleteState(id);
@@ -361,12 +382,10 @@ export class StateMachine extends EventEmitter {
 
   changeInitialState = (id: string, canUndo = true) => {
     if (canUndo) {
-      this.undoRedo.do(
-        this.possibleActions.changeInitialState(
-          id,
-          this.container.app.manager.data.elements.initialState
-        )
-      );
+      this.undoRedo.do({
+        type: 'changeInitialState',
+        args: { id, prevInitial: this.container.app.manager.data.elements.initialState },
+      });
     }
 
     this.container.app.manager.changeInitialState(id);
@@ -406,7 +425,10 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.createTransition(id, params));
+      this.undoRedo.do({
+        type: 'createTransition',
+        args: { id, params },
+      });
     }
   }
 
@@ -415,7 +437,10 @@ export class StateMachine extends EventEmitter {
     if (!transition) return;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.changeTransition(transition, args));
+      this.undoRedo.do({
+        type: 'changeTransition',
+        args: { transition, args, prevData: structuredClone(transition.data) },
+      });
     }
 
     this.container.app.manager.changeTransition(args);
@@ -428,9 +453,10 @@ export class StateMachine extends EventEmitter {
     if (!transition) return;
 
     if (canUndo) {
-      this.undoRedo.do(
-        this.possibleActions.changeTransitionPosition(id, startPosition, endPosition)
-      );
+      this.undoRedo.do({
+        type: 'changeTransitionPosition',
+        args: { id, startPosition, endPosition },
+      });
     }
 
     this.container.app.manager.changeTransitionPosition(id, endPosition);
@@ -443,7 +469,10 @@ export class StateMachine extends EventEmitter {
     if (!transition) return;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.deleteTransition(transition));
+      this.undoRedo.do({
+        type: 'deleteTransition',
+        args: { transition, prevData: structuredClone(transition.data) },
+      });
     }
 
     this.container.app.manager.deleteTransition(id);
@@ -547,7 +576,10 @@ export class StateMachine extends EventEmitter {
     if (!state) return;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.changeEvent(stateId, event, newValue));
+      this.undoRedo.do({
+        type: 'changeEvent',
+        args: { stateId, event, newValue },
+      });
     }
 
     this.container.app.manager.changeEvent(stateId, event, newValue);
@@ -578,7 +610,10 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.addComponent(args));
+      this.undoRedo.do({
+        type: 'addComponent',
+        args: { args },
+      });
     }
   }
 
@@ -598,7 +633,10 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.editComponent(args, prevComponent));
+      this.undoRedo.do({
+        type: 'editComponent',
+        args: { args, prevComponent },
+      });
     }
   }
 
@@ -618,7 +656,10 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do(this.possibleActions.removeComponent(args, prevComponent));
+      this.undoRedo.do({
+        type: 'removeComponent',
+        args: { args, prevComponent },
+      });
     }
   }
 

@@ -14,7 +14,7 @@
   "settings": {
     "import/resolver": {
       "typescript": {
-        "project": ["./tsconfig.web.json"]
+        "project": ["./tsconfig.web.json", "./tsconfig.node.json"]
       },
       "node": true
     }
@@ -23,6 +23,9 @@
     "react-hooks/rules-of-hooks": "warn",
     "@typescript-eslint/no-this-alias": "warn",
     "no-prototype-builtins": "off",
+    "@typescript-eslint/no-empty-interface": "warn",
+    "no-async-promise-executor": "warn",
+    "prefer-const": "warn",
     "import/default": "off",
     "@typescript-eslint/no-inferrable-types": "off", // чтобы можно было указывать тип даже когда он может определиться сам
     "react-refresh/only-export-components": "warn",

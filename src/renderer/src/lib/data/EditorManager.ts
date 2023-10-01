@@ -116,6 +116,7 @@ export class EditorManager {
       return this.data['elements'][propertyName.split('.')[1]];
     };
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
@@ -198,9 +199,9 @@ export class EditorManager {
     }
   }
 
-  async open(): Promise<Either<FileError | null, null>> {
+  async open(path?: string): Promise<Either<FileError | null, null>> {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide');
+      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide', path);
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);

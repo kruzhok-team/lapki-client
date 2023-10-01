@@ -6,6 +6,7 @@ import {
   Variable,
   State as StateType,
   Transition as TransitionType,
+  EventData,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
@@ -173,9 +174,18 @@ export class StateMachine extends EventEmitter {
     if (!state) return;
 
     if (canUndo) {
+      const prevEvent = state.data.events.find(
+        (value) =>
+          args.triggerComponent === value.trigger.component &&
+          args.triggerMethod === value.trigger.method &&
+          undefined === value.trigger.args // FIXME: сравнение по args может не работать
+      );
+
+      const prevActions = structuredClone(prevEvent?.do ?? []);
+
       this.undoRedo.do({
         type: 'changeStateEvents',
-        args: { state, args },
+        args: { args, prevActions },
       });
     }
 
@@ -186,7 +196,7 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  setStateEvents(args: SetStateEventsParams) {
+  setStateEvents(args: SetStateEventsParams, canUndo = true) {
     const { id } = args;
 
     const state = this.states.get(id);
@@ -490,12 +500,12 @@ export class StateMachine extends EventEmitter {
     this.states.forEach((state) => {
       if (state.isSelected) {
         if (state.eventBox.selection) {
-          this.deleteEvent(state.id!, state.eventBox.selection);
+          this.deleteEvent(state.id, state.eventBox.selection);
           state.eventBox.selection = undefined;
           removed = true;
           return;
         } else {
-          killList.push(state.id!);
+          killList.push(state.id);
         }
       }
     });
@@ -570,19 +580,58 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  // Редактирование события в состояниях
-  createOrChangeEvent(stateId: string, event: any, newValue: Event | Action, canUndo = true) {
+  createEvent(stateId: string, eventData: EventData, canUndo = true) {
     const state = this.states.get(stateId);
     if (!state) return;
 
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'changeEvent',
-        args: { stateId, event, newValue },
-      });
-    }
+    this.container.app.manager.createEvent(stateId, eventData);
 
-    this.container.app.manager.changeEvent(stateId, event, newValue);
+    state.eventBox.recalculate();
+
+    this.container.isDirty = true;
+  }
+
+  createEventAction(stateId: string, event: EventSelection, value: Action, canUndo = true) {
+    const state = this.states.get(stateId);
+    if (!state) return;
+
+    this.container.app.manager.createEventAction(stateId, event, value);
+
+    state.eventBox.recalculate();
+
+    this.container.isDirty = true;
+  }
+
+  // Редактирование события в состояниях
+  changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
+    const state = this.states.get(stateId);
+    if (!state) return;
+
+    const { eventIdx, actionIdx } = event;
+
+    if (actionIdx !== null) {
+      const prevValue = state.data.events[eventIdx].do[actionIdx];
+
+      this.container.app.manager.changeEventAction(stateId, event, newValue);
+
+      if (canUndo) {
+        this.undoRedo.do({
+          type: 'changeEvent',
+          args: { stateId, event, newValue, prevValue },
+        });
+      }
+    } else {
+      const prevValue = state.data.events[eventIdx].trigger;
+
+      this.container.app.manager.changeEvent(stateId, eventIdx, newValue);
+
+      if (canUndo) {
+        this.undoRedo.do({
+          type: 'changeEvent',
+          args: { stateId, event, newValue, prevValue },
+        });
+      }
+    }
 
     state.eventBox.recalculate();
 
@@ -591,11 +640,40 @@ export class StateMachine extends EventEmitter {
 
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в состоянии(модалка)
-  deleteEvent(id: string, eventId: EventSelection) {
-    const state = this.states.get(id);
+  deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
+    const state = this.states.get(stateId);
     if (!state) return;
 
-    this.container.app.manager.deleteEvent(id, eventId.eventIdx, eventId.actionIdx);
+    const { eventIdx, actionIdx } = event;
+
+    if (actionIdx !== null) {
+      // Проверяем если действие в событие последнее то надо удалить всё событие
+      if (state.data.events[eventIdx].do.length === 1) {
+        return this.deleteEvent(stateId, { eventIdx, actionIdx: null });
+      }
+
+      const prevValue = state.data.events[eventIdx].do[actionIdx];
+
+      this.container.app.manager.deleteEventAction(stateId, event);
+
+      if (canUndo) {
+        this.undoRedo.do({
+          type: 'deleteEventAction',
+          args: { stateId, event, prevValue },
+        });
+      }
+    } else {
+      const prevValue = state.data.events[eventIdx];
+
+      this.container.app.manager.deleteEvent(stateId, eventIdx);
+
+      if (canUndo) {
+        this.undoRedo.do({
+          type: 'deleteEvent',
+          args: { stateId, eventIdx, prevValue },
+        });
+      }
+    }
 
     this.container.isDirty = true;
   }

@@ -74,7 +74,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       // manager.triggerDataUpdate();
     });
 
-    editor.container.states.onStateEventCreate((state, event, click) => {
+    editor.container.states.onStateEventChange((state, event, click) => {
       ClearUseState();
       setIdEvents({ state, event, click });
       openEventsModal();
@@ -113,12 +113,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
 
   const handleCreateEventsModal = (data: EventsModalResult) => {
     setEvents([...events, data.action]);
-    if (!isModalOpen) {
-      editor?.container.machine.createOrChangeEvent(
-        data.id?.state.id,
-        data.id?.event,
-        data.trigger
-      );
+    if (!isModalOpen && data.id?.event) {
+      editor?.container.machine.changeEvent(data.id?.state.id, data.id.event, data.trigger);
     }
     closeEventsModal();
   };
@@ -129,7 +125,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
         id: data.id,
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,
-        events,
+        actions: events,
       });
     } else if (transition && data.key === 3) {
       editor?.container.machine.changeTransition({

@@ -12,6 +12,7 @@ import {
   Transition,
   Component,
   Elements,
+  EventData,
 } from '@renderer/types/diagram';
 import {
   emptyEditorData,
@@ -32,6 +33,7 @@ import { Point, Rectangle } from '@renderer/types/graphics';
 import { isPlatformAvailable } from './PlatformLoader';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
+import { EventSelection } from '../drawable/Events';
 import { stateStyle } from '../styles';
 
 export type FileError = {
@@ -343,31 +345,36 @@ export class EditorManager {
     return newId;
   }
 
-  changeStateEvents({ id, triggerComponent, triggerMethod, events }: ChangeStateEventsParams) {
+  changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    const trueTab = state.events.find(
+    const eventIndex = state.events.findIndex(
       (value) =>
         triggerComponent === value.trigger.component &&
         triggerMethod === value.trigger.method &&
         undefined === value.trigger.args // FIXME: сравнение по args может не работать
     );
+    const event = state.events[eventIndex];
 
-    if (trueTab === undefined) {
+    if (event === undefined) {
       state.events = [
         ...state.events,
         {
-          do: events,
+          do: actions,
           trigger: {
             component: triggerComponent,
             method: triggerMethod,
-            //args: {},
+            // args: {},
           },
         },
       ];
     } else {
-      trueTab.do = [...events];
+      if (actions.length) {
+        event.do = [...actions];
+      } else {
+        state.events.splice(eventIndex, 1);
+      }
     }
 
     return true;
@@ -447,46 +454,81 @@ export class EditorManager {
     return true;
   }
 
-  changeEvent(stateId: string, event: any, newValue: Event | Action) {
+  createEvent(stateId: string, eventData: EventData) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
-    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
-    if (event.actionIdx === null) {
-      const trueTab = state.events.find(
-        (value, id) =>
-          event.eventIdx !== id &&
-          newValue.component === value.trigger.component &&
-          newValue.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      if (trueTab === undefined) {
-        state.events[event.eventIdx].trigger = newValue;
-      } else {
-        trueTab.do = [...trueTab.do, ...state.events[event.eventIdx].do];
-        state.events.splice(event.eventIdx, 1);
-      }
-    } else {
-      state.events[event.eventIdx].do[event.actionIdx] = newValue;
-    }
+    state.events.push(eventData);
 
     return true;
   }
 
-  deleteEvent(stateId: string, eventIdx: number, actionIdx: number | null) {
+  createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
-    if (actionIdx !== null) {
-      state.events[eventIdx].do.splice(actionIdx!, 1);
-      // Проверяем, есть ли действия в событие, если нет, то удалять его
-      if (state.events[eventIdx].do.length === 0) {
-        state.events.splice(eventIdx, 1);
-      }
-    } else {
-      state.events.splice(eventIdx, 1);
-    }
+    const { eventIdx, actionIdx } = event;
+
+    state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
+
+    return true;
+  }
+
+  changeEvent(stateId: string, eventIdx: number, newValue: Event) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    // const event = state.events.find(
+    //   (value, id) =>
+    //     eventIdx !== id &&
+    //     newValue.component === value.trigger.component &&
+    //     newValue.method === value.trigger.method &&
+    //     undefined === value.trigger.args // FIXME: сравнение по args может не работать
+    // );
+
+    const event = state.events[eventIdx];
+
+    if (!event) return false;
+
+    event.trigger = newValue;
+
+    // if (trueTab === undefined) {
+    //   state.events[eventIdx].trigger = newValue;
+    // } else {
+    // event.do = [...event.do, ...state.events[eventIdx].do];
+    // state.events.splice(eventIdx, 1);
+    // }
+
+    return true;
+  }
+
+  changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    const { eventIdx, actionIdx } = event;
+
+    state.events[eventIdx].do[actionIdx as number] = newValue;
+
+    return true;
+  }
+
+  deleteEvent(stateId: string, eventIdx: number) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    state.events.splice(eventIdx, 1);
+
+    return true;
+  }
+
+  deleteEventAction(stateId: string, event: EventSelection) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    const { eventIdx, actionIdx } = event;
+
+    state.events[eventIdx].do.splice(actionIdx as number, 1);
 
     return true;
   }

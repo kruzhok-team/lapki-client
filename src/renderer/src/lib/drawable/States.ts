@@ -1,10 +1,11 @@
+import { Point } from '@renderer/types/graphics';
+
+import { EventSelection } from './Events';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Point } from '@renderer/types/graphics';
-import { EventSelection } from './Events';
 
 type CreateNameCallback = (state: State) => void;
 type CreateCallback = (state: State) => void;
@@ -27,7 +28,7 @@ export class States extends EventEmitter {
 
   createCallback!: CreateCallback;
   createNameCallback!: CreateNameCallback;
-  createEventCallback!: CreateEventCallback;
+  changeEventCallback!: CreateEventCallback;
   menuEventCallback!: MenuEventCallback;
   menuCallback!: MenuCallback;
 
@@ -39,8 +40,8 @@ export class States extends EventEmitter {
     this.createNameCallback = nameCallback;
   };
 
-  onStateEventCreate = (eventCallback: CreateEventCallback) => {
-    this.createEventCallback = eventCallback;
+  onStateEventChange = (eventCallback: CreateEventCallback) => {
+    this.changeEventCallback = eventCallback;
   };
 
   onStateContextMenu = (menuCallback: MenuCallback) => {
@@ -96,7 +97,7 @@ export class States extends EventEmitter {
       if (!eventIdx) {
         this.createCallback?.(e.target);
       } else {
-        this.createEventCallback?.(e.target, eventIdx, true);
+        this.changeEventCallback?.(e.target, eventIdx, true);
       }
     }
   };

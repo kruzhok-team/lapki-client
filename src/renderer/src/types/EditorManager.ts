@@ -60,7 +60,7 @@ export interface ChangeTransitionParameters {
 
 export interface ChangeStateEventsParams {
   id: string;
-  events: Action[];
+  actions: Action[];
   triggerComponent: string;
   triggerMethod: string;
 }

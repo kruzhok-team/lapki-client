@@ -3,6 +3,7 @@ import {
   Event,
   Component,
   Transition as TransitionData,
+  EventData,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
@@ -19,6 +20,7 @@ import {
 
 import { StateMachine } from './StateMachine';
 
+import { EventSelection } from '../drawable/Events';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 
@@ -26,7 +28,7 @@ type PossibleActions = {
   stateCreate: CreateStateParameters & { newStateId: string };
   deleteState: { id: string; state: State };
   changeStateName: { id: string; name: string; state: State };
-  changeStateEvents: { state: State; args: ChangeStateEventsParams };
+  changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; childId: string };
   createTransition: { id: string; params: CreateTransitionParameters };
@@ -39,7 +41,15 @@ type PossibleActions = {
   changeInitialState: { id: string; prevInitial: string };
   changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   changeTransitionPosition: { id: string; startPosition: Point; endPosition: Point };
-  changeEvent: { stateId: string; event: any; newValue: Event | EventAction };
+  changeEvent: { stateId: string; event: EventSelection; newValue: Event; prevValue: Event };
+  changeEventAction: {
+    stateId: string;
+    event: EventSelection;
+    newValue: EventAction;
+    prevValue: EventAction;
+  };
+  deleteEvent: { stateId: string; eventIdx: number; prevValue: EventData };
+  deleteEventAction: { stateId: string; event: EventSelection; prevValue: EventAction };
   addComponent: { args: AddComponentParams };
   removeComponent: { args: RemoveComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
@@ -84,12 +94,16 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.changeStateName.bind(sM, id, name, false),
     undo: sM.changeStateName.bind(sM, id, state.data.name, false),
   }),
-  changeStateEvents: (sM, { state, args }) => ({
+  changeStateEvents: (sM, { args, prevActions }) => ({
     redo: sM.changeStateEvents.bind(sM, args, false),
-    undo: sM.setStateEvents.bind(sM, {
-      id: state.id,
-      events: state.data.events,
-    }),
+    undo: sM.changeStateEvents.bind(
+      sM,
+      {
+        ...args,
+        actions: prevActions,
+      },
+      false
+    ),
   }),
   linkState: (sM, { parentId, childId }) => ({
     redo: sM.linkState.bind(sM, parentId, childId, false),
@@ -145,9 +159,21 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.changeTransitionPosition.bind(sM, id, startPosition, endPosition, false),
     undo: sM.changeTransitionPosition.bind(sM, id, endPosition, startPosition, false),
   }),
-  changeEvent: (sM, { stateId, event, newValue }) => ({
-    redo: sM.createOrChangeEvent.bind(sM, stateId, event, newValue, false),
-    undo: sM.createOrChangeEvent.bind(sM, stateId, newValue, event, false),
+  changeEvent: (sM, { stateId, event, newValue, prevValue }) => ({
+    redo: sM.changeEvent.bind(sM, stateId, event, newValue, false),
+    undo: sM.changeEvent.bind(sM, stateId, event, prevValue, false),
+  }),
+  changeEventAction: (sM, { stateId, event, newValue, prevValue }) => ({
+    redo: sM.changeEvent.bind(sM, stateId, event, newValue, false),
+    undo: sM.changeEvent.bind(sM, stateId, event, prevValue, false),
+  }),
+  deleteEvent: (sM, { stateId, eventIdx, prevValue }) => ({
+    redo: sM.deleteEvent.bind(sM, stateId, { eventIdx, actionIdx: null }, false),
+    undo: sM.createEvent.bind(sM, stateId, prevValue, false),
+  }),
+  deleteEventAction: (sM, { stateId, event, prevValue }) => ({
+    redo: sM.deleteEvent.bind(sM, stateId, event, false),
+    undo: sM.createEventAction.bind(sM, stateId, event, prevValue, false),
   }),
   addComponent: (sM, { args }) => ({
     redo: sM.addComponent.bind(sM, args, false),
@@ -181,8 +207,7 @@ export class UndoRedo {
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;
-    this.redoStack.push(action);
-    this.redo();
+    this.undoStack.push(action);
   }
 
   undo = () => {

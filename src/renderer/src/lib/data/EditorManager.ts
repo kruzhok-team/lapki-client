@@ -65,8 +65,6 @@ export class EditorManager {
 
   resetEditor?: () => void;
 
-  constructor() {}
-
   init(basename: string | null, name: string, elements: Elements) {
     this.data = emptyEditorData();
 
@@ -141,7 +139,7 @@ export class EditorManager {
      Временное решение, чтобы выделить основную платформу
      Все подплатформы имеют название вида:
      MainPlatform-Subplatform
-    */ 
+    */
     const main_platform = this.data.elements.platform.split('-');
     console.log(main_platform[0]);
     Compiler.compile(main_platform[0], this.data.elements);
@@ -201,9 +199,9 @@ export class EditorManager {
     }
   }
 
-  async open(): Promise<Either<FileError | null, null>> {
+  async open(path?: string): Promise<Either<FileError | null, null>> {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide');
+      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide', path);
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);

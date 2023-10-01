@@ -20,6 +20,7 @@
     }
   },
   "rules": {
+    "@typescript-eslint/no-empty-interface": "warn",
     "no-async-promise-executor": "warn",
     "prefer-const": "warn",
     "@typescript-eslint/no-this-alias": "off",

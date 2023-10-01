@@ -13,7 +13,7 @@ interface MainContainerProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
-  onRequestOpenFile: () => void;
+  onRequestOpenFile: (path?: string) => void;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -24,11 +24,16 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 }) => {
   const isInitialized = manager.useData('isInitialized');
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log(acceptedFiles);
-  }, []);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      onRequestOpenFile(acceptedFiles[0].path);
+    },
+    [onRequestOpenFile]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    noKeyboard: true,
+    noClick: true,
     accept: {
       'application/json': ['.json'],
     },
@@ -39,8 +44,9 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   return (
     <div
       className={twMerge(
-        'relative w-full min-w-0 bg-bg-primary transition-colors',
-        isDragActive && 'bg-bg-hover'
+        'relative w-full min-w-0 bg-bg-primary',
+        'after:pointer-events-none after:absolute after:inset-0 after:z-50 after:block after:bg-bg-hover after:opacity-0 after:transition-all after:content-[""]',
+        isDragActive && 'opacity-30'
       )}
       {...getRootProps()}
     >

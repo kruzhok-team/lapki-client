@@ -53,8 +53,6 @@ export class EditorManager {
 
   resetEditor?: () => void;
 
-  constructor() {}
-
   init(basename: string | null, name: string, elements: Elements) {
     this.data = emptyEditorData();
 

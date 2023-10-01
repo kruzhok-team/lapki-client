@@ -171,6 +171,8 @@ export const actionFunctions: ActionFunctions = {
   }),
 };
 
+export const STACK_SIZE_LIMIT = 100;
+
 export class UndoRedo {
   undoStack = [] as Stack;
   redoStack = [] as Stack;
@@ -179,8 +181,8 @@ export class UndoRedo {
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;
-
-    this.undoStack.push(action);
+    this.redoStack.push(action);
+    this.redo();
   }
 
   undo = () => {
@@ -215,6 +217,11 @@ export class UndoRedo {
 
     // Если соединённые действия то первое должно попасть в конец undo стека
     this.undoStack.push(action);
+
+    // Проверка на лимит
+    if (this.undoStack.length > STACK_SIZE_LIMIT) {
+      this.undoStack.shift();
+    }
   };
 
   isUndoStackEmpty() {

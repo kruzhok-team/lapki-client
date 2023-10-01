@@ -24,7 +24,6 @@ import {
   CreateTransitionParameters,
   ChangeTransitionParameters,
   ChangeStateEventsParams,
-  SetStateEventsParams,
   AddComponentParams,
 } from '@renderer/types/EditorManager';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
@@ -376,15 +375,6 @@ export class EditorManager {
         state.events.splice(eventIndex, 1);
       }
     }
-
-    return true;
-  }
-
-  setStateEvents({ id, events }: SetStateEventsParams) {
-    const state = this.data.elements.states[id];
-    if (!state) return false;
-
-    state.events = events;
 
     return true;
   }

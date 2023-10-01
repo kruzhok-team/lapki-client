@@ -65,11 +65,6 @@ export interface ChangeStateEventsParams {
   triggerMethod: string;
 }
 
-export interface SetStateEventsParams {
-  id: string;
-  events: EventData[];
-}
-
 export interface AddComponentParams {
   name: string;
   type: string;

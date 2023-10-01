@@ -1,12 +1,11 @@
 import { Transition as TransitionType } from '@renderer/types/diagram';
 
+import { BaseTransition } from './BaseTransition';
 import { Condition } from './Condition';
-import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
 import { degrees_to_radians, getTransitionLines } from '../utils';
-import { BaseTransition } from './BaseTransition';
 
 // interface TransitionProps {
 // container: Container;

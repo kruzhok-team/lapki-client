@@ -13,7 +13,6 @@ import {
   ChangeStateEventsParams,
   ChangeTransitionParameters,
   CreateStateParameters,
-  SetStateEventsParams,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
 import {
@@ -190,19 +189,6 @@ export class StateMachine extends EventEmitter {
     }
 
     this.container.app.manager.changeStateEvents(args);
-
-    state.eventBox.recalculate();
-
-    this.container.isDirty = true;
-  }
-
-  setStateEvents(args: SetStateEventsParams, canUndo = true) {
-    const { id } = args;
-
-    const state = this.states.get(id);
-    if (!state) return;
-
-    this.container.app.manager.setStateEvents(args);
 
     state.eventBox.recalculate();
 
@@ -518,7 +504,7 @@ export class StateMachine extends EventEmitter {
 
     this.transitions.forEach((value) => {
       if (value.condition.isSelected) {
-        killList.push(value.id!);
+        killList.push(value.id);
       }
     });
 
@@ -580,7 +566,7 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createEvent(stateId: string, eventData: EventData, canUndo = true) {
+  createEvent(stateId: string, eventData: EventData) {
     const state = this.states.get(stateId);
     if (!state) return;
 
@@ -591,7 +577,7 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createEventAction(stateId: string, event: EventSelection, value: Action, canUndo = true) {
+  createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.states.get(stateId);
     if (!state) return;
 

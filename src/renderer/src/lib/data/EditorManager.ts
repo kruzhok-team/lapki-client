@@ -137,7 +137,14 @@ export class EditorManager {
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, this.data.elements);
+    /**
+     Временное решение, чтобы выделить основную платформу
+     Все подплатформы имеют название вида:
+     MainPlatform-Subplatform
+    */ 
+    const main_platform = this.data.elements.platform.split('-');
+    console.log(main_platform[0]);
+    Compiler.compile(main_platform[0], this.data.elements);
   }
 
   getList(): void {

@@ -1,27 +1,28 @@
 import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
-
-import { ColorInput } from './Modal/ColorInput';
-import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
+import { Select, SelectOption } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { TextInput } from './Modal/TextInput';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { operatorSet } from '@renderer/lib/data/PlatformManager';
+import { Condition } from '@renderer/lib/drawable/Condition';
+import { State } from '@renderer/lib/drawable/State';
 import {
   Action,
   Condition as ConditionData,
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
-import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { Select, SelectOption } from '@renderer/components/UI';
-import { Condition } from '@renderer/lib/drawable/Condition';
-import { State } from '@renderer/lib/drawable/State';
 import { ArgumentProto } from '@renderer/types/platform';
-import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+
 import { defaultTransColor } from './DiagramEditor';
+import { ColorInput } from './Modal/ColorInput';
+import { Modal } from './Modal/Modal';
+import { TextInput } from './Modal/TextInput';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -104,7 +105,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       value: idx,
       label: (
         <div className="flex items-center">
-          <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+          <img
+            src={machine.platform.getComponentIconUrl(idx, true)}
+            className="mr-1 h-7 w-7 object-contain"
+          />
           {idx}
         </div>
       ),
@@ -118,7 +122,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <div className="flex items-center">
           <img
             src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -133,7 +137,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <div className="flex items-center">
           <img
             src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -152,7 +156,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               name,
               true
             )}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -194,7 +198,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     : machine.platform
         .getAvailableVariables(param1Components.value)
         .map(({ name }) => conditionEntry(name, param1Components.value));
-
+  console.log(machine.platform.name);
   const optionsParam2Methods = !components
     ? []
     : machine.platform
@@ -477,7 +481,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   }, [dataDo]);
 
-  var method: Action[] = props.isCondition!;
+  const method: Action[] = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [condOperator, setCondOperator] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {

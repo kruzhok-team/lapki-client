@@ -69,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Loader manager={manager} compilerData={compilerData} />,
       <Setting />,
     ],
-    [manager, editor]
+    [manager, editor, compilerData, openData, compilerStatus]
   );
 
   const tabLabels = useMemo(

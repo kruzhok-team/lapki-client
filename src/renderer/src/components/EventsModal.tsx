@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
+
 import ReactModal, { Props } from 'react-modal';
 
 import './Modal/style.css';
-import { EventSelection } from '../lib/drawable/Events';
-import { Action, Event } from '@renderer/types/diagram';
-import { State } from '@renderer/lib/drawable/State';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Select, SelectOption } from '@renderer/components/UI';
-import { ArgumentProto } from '@renderer/types/platform';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { State } from '@renderer/lib/drawable/State';
+import { Action, Event } from '@renderer/types/diagram';
+import { ArgumentProto } from '@renderer/types/platform';
+
+import { EventSelection } from '../lib/drawable/Events';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -56,7 +58,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       value: idx,
       label: (
         <div className="flex items-center">
-          <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+          <img
+            src={machine.platform.getComponentIconUrl(idx, true)}
+            className="mr-1 h-7 w-7 object-contain"
+          />
           {idx}
         </div>
       ),
@@ -70,7 +75,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
         <div className="flex items-center">
           <img
             src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -85,7 +90,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
         <div className="flex items-center">
           <img
             src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>

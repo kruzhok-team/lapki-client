@@ -169,11 +169,11 @@ export const actionFunctions: ActionFunctions = {
   }),
   deleteEvent: (sM, { stateId, eventIdx, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, stateId, { eventIdx, actionIdx: null }, false),
-    undo: sM.createEvent.bind(sM, stateId, prevValue, false),
+    undo: sM.createEvent.bind(sM, stateId, prevValue),
   }),
   deleteEventAction: (sM, { stateId, event, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, stateId, event, false),
-    undo: sM.createEventAction.bind(sM, stateId, event, prevValue, false),
+    undo: sM.createEventAction.bind(sM, stateId, event, prevValue),
   }),
   addComponent: (sM, { args }) => ({
     redo: sM.addComponent.bind(sM, args, false),

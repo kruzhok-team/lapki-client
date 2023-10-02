@@ -533,7 +533,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     };
 
     if (isData !== undefined && method.length !== 0) {
-      console.log('Данные записали!');
       onSubmit(data);
     }
   });

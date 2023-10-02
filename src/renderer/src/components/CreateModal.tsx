@@ -773,7 +773,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       <div className="flex">
         <label className="mx-1">Делай: </label>
         <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
-          {method === undefined ||
+          {method.length === 0 ||
             method.map((data, key) => (
               <div
                 key={'Methods' + key}

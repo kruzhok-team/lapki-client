@@ -532,7 +532,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       color: formData.color,
     };
 
-    onSubmit(data);
+    if (isData !== undefined && method.length !== 0) {
+      console.log('Данные записали!');
+      onSubmit(data);
+    }
   });
   //-----------------------------------------------------------------------------------------------------
 
@@ -634,7 +637,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           (dataDo ? (
             <p className="text-success">Событие существует!</p>
           ) : (
-            <p className="text-error">Событие отсутствует!</p>
+            <p className="text-orange-500">Событие отсутствует!</p>
           ))}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
@@ -805,6 +808,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
+          {method.length === 0 && <div className="flex text-error">Вы не выбрали действия!</div>}
         </div>
         <div className="flex flex-col">
           <button

@@ -61,6 +61,7 @@ export type Component = {
   parameters: { [key: string]: string };
 };
 
+// Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
   transitions: Transition[];
@@ -73,6 +74,7 @@ export type Elements = {
   compilerSettings?: CompilerSettings | null;
 };
 
+// Данные внутри редактора хранятся немного по-другому и это их описание
 export interface InnerElements extends Omit<Elements, 'transitions'> {
   transitions: Record<string, Transition>;
 }

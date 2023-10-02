@@ -256,4 +256,9 @@ export class UndoRedo {
   isRedoStackEmpty() {
     return this.redoStack.length === 0;
   }
+
+  clear() {
+    this.undoStack.length = 0;
+    this.redoStack.length = 0;
+  }
 }

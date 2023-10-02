@@ -63,7 +63,7 @@ export class StateMachine extends EventEmitter {
     this.container = container;
   }
 
-  reset() {
+  resetEntities() {
     this.transitions.forEach((value) => {
       this.container.transitions.unwatchTransition(value);
     });
@@ -73,10 +73,11 @@ export class StateMachine extends EventEmitter {
     });
     this.states.clear();
     this.transitions.clear();
+    this.undoRedo.clear();
   }
 
   loadData() {
-    this.reset();
+    this.resetEntities();
 
     this.initStates();
     this.initTransitions();

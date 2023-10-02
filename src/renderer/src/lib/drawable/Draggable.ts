@@ -176,7 +176,6 @@ export abstract class Draggable extends EventEmitter {
   private dragEnd() {
     const dragEndPosition = { x: this.bounds.x, y: this.bounds.y };
     if (
-      this.dragging &&
       this.dragStartPosition &&
       (dragEndPosition.x !== this.dragStartPosition.x ||
         dragEndPosition.y !== this.dragStartPosition.y)
@@ -248,8 +247,6 @@ export abstract class Draggable extends EventEmitter {
   };
 
   globalMouseUp = () => {
-    this.dragEnd();
-
     this.dragging = false;
     clearTimeout(this.mouseDownTimerId);
     // FIXME: перенести в общее поле (чтобы не вызывать N раз
@@ -257,6 +254,8 @@ export abstract class Draggable extends EventEmitter {
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
+    const prevDragging = this.dragging; // globalMouseUp убивает dragging, а для dragEnd он нужен, поэтому сохраняем
+
     this.globalMouseUp();
 
     const isUnderMouse = this.isUnderMouse(e);
@@ -267,6 +266,10 @@ export abstract class Draggable extends EventEmitter {
     // e.stopPropagation();
 
     this.emit('mouseup', { event: e, target: this });
+
+    if (prevDragging) {
+      this.dragEnd();
+    }
 
     if (this.isMouseDown) {
       this.isMouseDown = false;

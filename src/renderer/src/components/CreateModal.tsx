@@ -537,7 +537,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       color: formData.color,
     };
 
-    onSubmit(data);
+    if ((isData !== undefined && method.length !== 0) || isData === undefined) {
+      onSubmit(data);
+    }
   });
   //-----------------------------------------------------------------------------------------------------
 
@@ -639,7 +641,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           (dataDo ? (
             <p className="text-success">Событие существует!</p>
           ) : (
-            <p className="text-error">Событие отсутствует!</p>
+            <p className="text-orange-500">Событие отсутствует!</p>
           ))}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
@@ -776,7 +778,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       <div className="flex">
         <label className="mx-1">Делай: </label>
         <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
-          {method === undefined ||
+          {method.length === 0 ||
             method.map((data, key) => (
               <div
                 key={'Methods' + key}
@@ -810,6 +812,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
+          {method.length === 0 && <div className="flex text-error">Вы не выбрали действия!</div>}
         </div>
         <div className="flex flex-col">
           <button

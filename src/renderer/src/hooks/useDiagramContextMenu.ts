@@ -109,12 +109,6 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           },
         },
         {
-          label: 'Центрировать камеру',
-          action: () => {
-            editor?.container.viewCentering();
-          },
-        },
-        {
           label: 'Удалить',
           action: () => {
             editor?.container.machine.deleteState(state.id as string);
@@ -153,12 +147,6 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               code: manager.getTransitionSerialized(condition.transition.id) ?? '',
               language: 'json',
             });
-          },
-        },
-        {
-          label: 'Центрировать камеру',
-          action: () => {
-            editor?.container.viewCentering();
           },
         },
         {

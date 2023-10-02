@@ -278,3 +278,25 @@ export const preloadImagesMap = (
 
   return Promise.all(promises);
 };
+
+export const drawImageFit = (
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  containerBounds: Rectangle
+) => {
+  const { x, y, width, height } = containerBounds;
+
+  const hRatio = width / img.naturalWidth;
+  const vRatio = height / img.naturalHeight;
+  const ratio = Math.min(hRatio, vRatio);
+  const centerShiftX = x + (width - img.naturalWidth * ratio) / 2;
+  const centerShiftY = y + (height - img.naturalHeight * ratio) / 2;
+
+  ctx.drawImage(
+    img,
+    centerShiftX,
+    centerShiftY,
+    img.naturalWidth * ratio,
+    img.naturalHeight * ratio
+  );
+};

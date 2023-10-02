@@ -1,22 +1,26 @@
 import { optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
+import settings from 'electron-settings';
+
+import { join } from 'path';
+
 import {
   handleFileOpen,
   handleFileSave,
   handleFileSaveAs,
   handleSaveIntoFolder,
   handleBinFileOpen,
+  handleOpenPlatformFile,
 } from './file-handlers';
-import { join } from 'path';
 import {
   FLASHER_LOCAL_PORT,
   LAPKI_FLASHER,
   ModuleManager,
   ModuleStatus,
 } from './modules/ModuleManager';
+import { searchPlatforms } from './PlatformSeacher';
 
 import icon from '../../resources/icon.png?asset';
-import settings from 'electron-settings';
 
 /**
  * Создание главного окна редактора.
@@ -83,6 +87,13 @@ function initSettings(): void {
       port: 8081,
     });
   }
+
+  if (!settings.hasSync('PlatformsPath')) {
+    settings.setSync('PlatformsPath', {
+      path: '',
+      // path: `${process.cwd()}/src/renderer/public/platform`,
+    });
+  }
 }
 
 // Выполняется после инициализации Electron
@@ -94,8 +105,8 @@ app.whenReady().then(() => {
     return handleSaveIntoFolder(data);
   });
 
-  ipcMain.handle('dialog:openFile', (_event, platform: string) => {
-    return handleFileOpen(platform);
+  ipcMain.handle('dialog:openFile', (_event, platform: string, path?: string) => {
+    return handleFileOpen(platform, path);
   });
 
   ipcMain.handle('dialog:saveFile', (_event, filename, data) => {
@@ -128,7 +139,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('Module:getStatus', (_event, module: string) => {
-    let status: ModuleStatus = ModuleManager.getLocalStatus(module);
+    const status: ModuleStatus = ModuleManager.getLocalStatus(module);
     console.log(status.details, typeof status.details);
     return status;
     /*const obj = {
@@ -136,6 +147,15 @@ app.whenReady().then(() => {
       message: status.message,
     };
     return obj;*/
+  });
+
+  ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {
+    // console.log(await loadPlatforms())
+    return searchPlatforms();
+  });
+
+  ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {
+    return handleOpenPlatformFile(absolute_path);
   });
 
   // main process

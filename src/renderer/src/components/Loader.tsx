@@ -7,7 +7,6 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import {
   FLASHER_CONNECTED,
   FLASHER_CONNECTING,
-  FLASHER_SWITCHING_HOST,
   FLASHER_CONNECTION_ERROR,
   FLASHER_NO_CONNECTION,
   Flasher,
@@ -179,6 +178,9 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   }, []);
 
   const display = () => {
+    if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
+      return 'Отменить';
+    }
     if (connectionStatus == FLASHER_CONNECTED) {
       return 'Обновить';
     } else {
@@ -193,7 +195,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   const handleReconnect = () => {
     if (flasherIsLocal) {
       window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
-        Flasher.reconnect();
+        Flasher.connect();
       });
     } else {
       Flasher.reconnect();
@@ -211,10 +213,22 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
           <button
             className={twMerge(
               'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              connectionStatus == FLASHER_CONNECTING && 'opacity-50'
+              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-50'
             )}
-            onClick={connectionStatus == FLASHER_CONNECTED ? handleGetList : handleReconnect}
-            disabled={connectionStatus == FLASHER_CONNECTING}
+            onClick={() => {
+              switch (connectionStatus) {
+                case FLASHER_CONNECTED:
+                  handleGetList();
+                  break;
+                case FLASHER_CONNECTING:
+                  Flasher.cancelConnection();
+                  break;
+                default:
+                  handleReconnect();
+                  break;
+              }
+            }}
+            disabled={connectionStatus == FLASHER_CONNECTING && flasherIsLocal}
           >
             <Update width="1.5rem" height="1.5rem" className="mr-1" />
             {display()}
@@ -222,17 +236,10 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
           <button
             className={twMerge(
               'p-1 hover:bg-[#557b91] hover:text-white',
-              (connectionStatus == FLASHER_CONNECTING ||
-                connectionStatus == FLASHER_SWITCHING_HOST ||
-                flashing) &&
-                'opacity-50'
+              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-50'
             )}
             onClick={handleHostChange}
-            disabled={
-              connectionStatus == FLASHER_CONNECTING ||
-              connectionStatus == FLASHER_SWITCHING_HOST ||
-              flashing
-            }
+            disabled={connectionStatus == FLASHER_CONNECTING || flashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
           </button>

@@ -233,8 +233,17 @@ export class Container {
       arrY.push(transition.condition.bounds.y);
     });
 
-    this.app.manager.data.scale = 1;
-    this.app.manager.data.offset = { x: -Math.min(...arrX), y: -Math.min(...arrY) };
+    let minX = Math.min(...arrX);
+    let minY = Math.min(...arrY);
+    // Если нод нет то минимум координат будет Infinity, в таком случае нужно привести к нулю
+    minX = isFinite(minX) ? -minX : 0;
+    minY = isFinite(minY) ? -minY : 0;
+    // Отступ для красоты
+    minX += 40;
+    minY += 40;
+
+    this.setScale(1);
+    this.app.manager.data.offset = { x: minX, y: minY };
 
     this.isDirty = true;
   }

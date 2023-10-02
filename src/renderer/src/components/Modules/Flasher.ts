@@ -9,7 +9,6 @@ import {
 import Websocket from 'isomorphic-ws';
 import { Dispatch, SetStateAction } from 'react';
 export const FLASHER_CONNECTING = 'Идет подключение...';
-export const FLASHER_SWITCHING_HOST = 'Подключение к новому хосту...';
 export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
@@ -51,6 +50,8 @@ export class Flasher {
   private static freezeReconnection: boolean = false;
   // true = пытаться переподключиться автоматически
   private static reconnection: boolean = false;
+  // true = соединение было отменено пользователем и переподключаться не нунжо.
+  private static connectionCanceled: boolean = false;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
@@ -191,10 +192,12 @@ export class Flasher {
     port = Flasher.port;
     this.connection?.close();
     this.setFlasherDevices(new Map());
+    Flasher.connectionCanceled = false;
 
     var ws: Websocket;
     try {
       ws = new Websocket(this.base_address);
+      this.connection = ws;
       this.setErrorMessage(undefined);
     } catch (error) {
       this.setErrorMessage(`${error}`);
@@ -212,7 +215,6 @@ export class Flasher {
       this.setFlasherFile(undefined);
       this.setFlasherConnectionStatus(FLASHER_CONNECTED);
 
-      this.connection = ws;
       this.connecting = false;
       this.setFlasherDevices(new Map());
       ws.onmessage = (msg: MessageEvent) => {
@@ -434,7 +436,10 @@ export class Flasher {
   }
 
   private static tryToReconnect() {
-    if (this.maxReconnectAttempts >= 0 && this.curReconnectAttemps >= this.maxReconnectAttempts) {
+    if (
+      this.connectionCanceled ||
+      (this.maxReconnectAttempts >= 0 && this.curReconnectAttemps >= this.maxReconnectAttempts)
+    ) {
       return;
     }
     this.timerID = setTimeout(() => {
@@ -453,5 +458,13 @@ export class Flasher {
         }
       }
     }, this.timeout);
+  }
+
+  // отмена подключения
+  static cancelConnection() {
+    this?.connection.close();
+    this.clearTimer();
+    this.connectionCanceled = true;
+    Flasher.curReconnectAttemps = 0;
   }
 }

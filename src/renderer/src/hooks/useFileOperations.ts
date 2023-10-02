@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 import { SaveModalData } from '@renderer/components';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 import { useTabs } from '@renderer/store/useTabs';
+import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
 interface useFileOperationsArgs {
   manager: EditorManager;
@@ -26,7 +26,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const onClose = () => setIsOpen(false);
 
   /*Открытие файла*/
-  const handleOpenFile = async () => {
+  const handleOpenFile = async (path?: string) => {
     if (isStale) {
       setData({
         shownName: name,
@@ -36,12 +36,12 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       });
       openSaveModal();
     } else {
-      await performOpenFile();
+      await performOpenFile(path);
     }
   };
 
-  const performOpenFile = async () => {
-    const result = await manager?.open();
+  const performOpenFile = async (path?: string) => {
+    const result = await manager?.open(path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);

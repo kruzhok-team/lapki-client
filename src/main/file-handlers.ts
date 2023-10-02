@@ -1,7 +1,9 @@
 import { dialog } from 'electron';
 
 import fs from 'fs';
+import { readdir, readFile } from 'fs/promises';
 import { basename } from 'path';
+
 import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
 
 /**
@@ -9,27 +11,79 @@ import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
  * @returns Promise
  */
 
-export async function handleFileOpen(platform: string) {
+export async function handleFileOpen(platform: string, path?: string) {
   return new Promise(async (resolve, _reject) => {
     const platforms: Map<string, Array<string>> = new Map([
       ['ide', ['json']],
       ['BearlogaDefend', ['graphml']],
     ]);
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      filters: [{ name: 'json', extensions: platforms.get(platform)! }],
-      properties: ['openFile'],
-    });
-    const fileName = filePaths[0];
-    if (!canceled && fileName) {
-      fs.readFile(fileName, 'utf-8', (err, data) => {
+
+    let filePath = path;
+    let canceled = false;
+
+    if (!path) {
+      const res = await dialog.showOpenDialog({
+        filters: [{ name: 'json', extensions: platforms.get(platform)! }],
+        properties: ['openFile'],
+      });
+
+      filePath = res.filePaths[0];
+      canceled = res.canceled;
+    }
+
+    if (!canceled && filePath) {
+      fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err) {
-          resolve([false, fileName, basename(fileName), err.message]);
+          resolve([false, filePath, basename(filePath as string), err.message]);
         } else {
-          resolve([true, fileName, basename(fileName), data]);
+          resolve([true, filePath, basename(filePath as string), data]);
         }
       });
     } else {
       resolve([false, null, null, '']);
+    }
+  });
+}
+
+export async function handleOpenPlatformFile(absolute_path: string) {
+  return new Promise(async (resolve, _reject) => {
+    await readFile(absolute_path, 'utf-8')
+      .then((text) => {
+        resolve([true, text, basename(absolute_path), null]);
+      })
+      .catch((err) => {
+        console.log(err);
+        resolve([false, null, null, err.message]);
+      });
+  });
+}
+
+/**
+ * @param directory - путь до папки, содержащей схемы платформ
+ * @returns список абсолютных путей до схем платформ
+ */
+export async function handleGetPlatforms(directory: string): Promise<Array<any>> {
+  return new Promise(async (resolve, _reject) => {
+    if (fs.existsSync(directory)) {
+      await readdir(directory)
+        .then((files) => {
+          const platformPaths = new Array<string>();
+          files.forEach((element) => {
+            if (directory.endsWith('/')) {
+              platformPaths.push(`${directory}${element}`);
+            } else {
+              platformPaths.push(`${directory}/${element}`);
+            }
+          });
+          resolve([true, platformPaths]);
+        })
+        .catch((err) => {
+          console.log(err);
+          resolve([false, err.message]);
+        });
+    } else {
+      resolve([false, `${directory} doesn't exists!`]);
+      console.log(`${directory} doesn't exists!`);
     }
   });
 }
@@ -126,7 +180,7 @@ export async function handleFileSaveAs(filename, data) {
  */
 export async function handleBinFileOpen() {
   return new Promise(async (resolve, _reject) => {
-    let validExtensions = ['hex', 'bin'];
+    const validExtensions = ['hex', 'bin'];
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [{ name: 'binary files', extensions: validExtensions }],
       properties: ['openFile'],

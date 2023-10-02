@@ -212,7 +212,6 @@ export class Compiler {
     const route = `${this.base_address}main`;
     const ws: Websocket = this.connectRoute(route);
     let compilerSettings: CompilerSettings;
-    console.log(platform);
     switch (platform) {
       case 'ArduinoUno':
         ws.send('arduino');

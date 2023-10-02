@@ -532,7 +532,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       color: formData.color,
     };
 
-    if (isData !== undefined && method.length !== 0) {
+    if ((isData !== undefined && method.length !== 0) || isData === undefined) {
       onSubmit(data);
     }
   });

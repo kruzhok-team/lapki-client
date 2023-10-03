@@ -88,9 +88,16 @@ export class Picto {
     return imagesLoaded;
   }
 
+  /**
+   * Рисует масштабированный значок на canvas.
+   *
+   * @param ctx Контекст canvas, в котором рисуем
+   * @param iconData Название значка или контейнер с данными для метки
+   * @param bounds Координаты и размер рамки
+   */
   drawImage(ctx: CanvasRenderingContext2D, iconData: string | MarkedIconData, bounds: Rectangle) {
     // console.log([iconName, icons.has(iconName)]);
-    const isMarked = !(typeof iconData === 'string');
+    const isMarked = typeof iconData !== 'string';
     const iconName = isMarked ? iconData.icon : iconData;
     const image = icons.get(iconName);
     if (!image) return;
@@ -121,6 +128,14 @@ export class Picto {
     ctx.closePath();
   }
 
+  /**
+   * Генерирует SVG-ноду для значка с меткой.
+   * По сути, дублирует {@link drawImage} вне canvas.
+   *
+   * @param data Контейнер с данными значка
+   * @param className Атрибут class для генерируемой ноды (дополнительно)
+   * @returns JSX-нода со значком
+   */
   getMarkedSvg(data: MarkedIconData, className?: string) {
     const icon = icons.get(data.icon);
     return (
@@ -151,8 +166,6 @@ export class Picto {
       </svg>
     );
   }
-
-  // TODO: все перечисленные ниже функции нужно вернуть в законные места
 
   eventWidth = 100;
   eventHeight = 40;
@@ -250,6 +263,15 @@ export class Picto {
     ctx.restore();
   }
 
+  /**
+   * Рисует масштабированную пиктограмму на canvas.
+   * Главная функция в этом классе.
+   *
+   * @param ctx Контекст canvas, в котором рисуем
+   * @param x X-координата
+   * @param y Y-координата
+   * @param ps Контейнер с параметрами пиктограммы
+   */
   drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
     const leftIcon = ps.leftIcon;
     const rightIcon = ps.rightIcon;

@@ -1,6 +1,10 @@
 import { Dispatch, useSyncExternalStore } from 'react';
+
 import { customAlphabet } from 'nanoid';
 
+import { Compiler } from '@renderer/components/Modules/Compiler';
+import { Flasher } from '@renderer/components/Modules/Flasher';
+import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import {
   emptyElements,
   Event,
@@ -12,13 +16,11 @@ import {
   EventData,
 } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
+import { Point, Rectangle } from '@renderer/types/graphics';
+
+import { isPlatformAvailable } from './PlatformLoader';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
-import { isPlatformAvailable } from './PlatformLoader';
-import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
-import { Flasher } from '@renderer/components/Modules/Flasher';
-import { Point, Rectangle } from '@renderer/types/graphics';
 import { stateStyle } from '../styles';
 
 export type FileError = {
@@ -63,9 +65,9 @@ export class EditorManager {
 
   resetEditor?: () => void;
 
-  constructor() {}
-
   init(basename: string | null, name: string, elements: Elements) {
+    this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
+
     this.data = emptyEditorData();
 
     const self = this;
@@ -120,6 +122,7 @@ export class EditorManager {
       return this.data['elements'][propertyName.split('.')[1]];
     };
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
@@ -138,7 +141,7 @@ export class EditorManager {
      Временное решение, чтобы выделить основную платформу
      Все подплатформы имеют название вида:
      MainPlatform-Subplatform
-    */ 
+    */
     const main_platform = this.data.elements.platform.split('-');
     console.log(main_platform[0]);
     Compiler.compile(main_platform[0], this.data.elements);
@@ -198,9 +201,9 @@ export class EditorManager {
     }
   }
 
-  async open(): Promise<Either<FileError | null, null>> {
+  async open(path?: string): Promise<Either<FileError | null, null>> {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide');
+      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide', path);
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);

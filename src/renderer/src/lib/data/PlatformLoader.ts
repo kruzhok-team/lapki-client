@@ -3,31 +3,32 @@ import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
 import { PlatformManager } from './PlatformManager';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
-
 // TODO? выдача стандартного файла для платформы
 
-// TODO: забирать пути динамически или дать пользователям их редактировать
-const platformPaths = ['./platform/Berloga.json', './platform/Arduino.json'];
+const platformPaths = await window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms');
 
 let platformsLoaded = false;
 
 const platforms: Map<string, Platform> = new Map();
 const platformsErrors: Map<string, string> = new Map();
 
-function fetchPlatforms(urls: string[]) {
-  const promises = urls.map((url): Promise<[string, Either<string, Platforms>]> => {
+function fetchPlatforms(paths: string[]) {
+  const promises = paths.map((path): Promise<[string, Either<string, Platforms>]> => {
     return new Promise(async (resolve) => {
-      let response = await fetch(url);
+      const response = await window.electron.ipcRenderer.invoke(
+        'PlatformLoader:openPlatformFile',
+        path
+      );
 
-      if (!response.ok) {
-        resolve([url, makeLeft('Ошибка HTTP: ' + response.status)]);
+      if (!response[0]) {
+        resolve([path, makeLeft('Ошибка при чтении файла:' + response[3])]);
         return;
       }
 
       try {
-        let text = await response.text();
+        let text = response[1];
         let data = PlatformsJSONCodec.toPlatforms(text);
-        resolve([url, makeRight(data)]);
+        resolve([path, makeRight(data)]);
       } catch (e) {
         let errText = 'unknown error';
         if (typeof e === 'string') {
@@ -35,7 +36,7 @@ function fetchPlatforms(urls: string[]) {
         } else if (e instanceof Error) {
           errText = e.message;
         }
-        resolve([url, makeLeft('Ошибка формата: ' + errText)]);
+        resolve([path, makeLeft('Ошибка формата: ' + errText)]);
       }
     });
   });
@@ -48,32 +49,39 @@ export function preloadPlatforms(callback: () => void) {
     callback();
     return;
   }
-  fetchPlatforms(platformPaths).then((results) => {
-    platforms.clear();
-    platformsErrors.clear();
-    results.forEach(([url, eData]) => {
-      if (isLeft(eData)) {
-        const err = unwrapEither(eData);
-        platformsErrors.set(url, err);
-      } else {
-        const data = unwrapEither(eData);
-        Object.entries(data.platform).forEach(([key, platform]) => {
-          if (platforms.has(key)) {
-            const platformName = platform.name ? ` (${platform.name})` : '';
-            const newErr = `Обнаружен дубликат платформы ${key}${platformName}. `;
-            if (platformsErrors.get(key)) {
-              platformsErrors.set(key, platformsErrors.get(key) + '\n' + newErr);
-            } else {
-              platformsErrors.set(key, newErr);
+  console.log(platformPaths);
+  if (platformPaths[0]) {
+    fetchPlatforms(platformPaths[1]).then((results) => {
+      platforms.clear();
+      platformsErrors.clear();
+      results.forEach(([url, eData]) => {
+        if (isLeft(eData)) {
+          const err = unwrapEither(eData);
+          platformsErrors.set(url, err);
+        } else {
+          const data = unwrapEither(eData);
+          Object.entries(data.platform).forEach(([key, platform]) => {
+            if (platforms.has(key)) {
+              const platformName = platform.name ? ` (${platform.name})` : '';
+              const newErr = `Обнаружен дубликат платформы ${key}${platformName}. `;
+              if (platformsErrors.get(key)) {
+                platformsErrors.set(key, platformsErrors.get(key) + '\n' + newErr);
+              } else {
+                platformsErrors.set(key, newErr);
+              }
             }
-          }
-          platforms.set(key, platform);
-        });
-      }
+            platforms.set(key, platform);
+          });
+        }
+      });
+      platformsLoaded = true;
+      callback();
     });
-    platformsLoaded = true;
-    callback();
-  });
+  } else {
+    console.log('Плафтормы не были найдены!');
+    // platformsLoaded = true;
+    // TODO Вывести модалку с ошибкой о том, что файлы не были загружены
+  }
 }
 
 export function getPlatformsErrors(): { [url: string]: string } {

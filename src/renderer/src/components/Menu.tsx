@@ -18,7 +18,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Открыть...',
-      onClick: props.onRequestOpenFile,
+      onClick: () => props.onRequestOpenFile(), // Если передавать просто функцию, в параметры может попать то что не нужно
     },
     {
       text: 'Сохранить',

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
-import { ScrollableList } from './ScrollableList';
-
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { useAddComponent, useDeleteComponent, useEditComponent } from '@renderer/hooks';
+import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
+import { useAddComponent, useEditDeleteComponent } from '@renderer/hooks';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+
+import { ScrollableList } from './ScrollableList';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;
@@ -20,26 +21,33 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const components = manager.useData('elements.components');
 
   const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
-  const { onRequestEditComponent, ...editComponent } = useEditComponent(editor, manager);
-  const { onRequestDeleteComponent, ...deleteComponent } = useDeleteComponent(editor, manager);
+  const { onRequestEditComponent, onRequestDeleteComponent, editProps, deleteProps } =
+    useEditDeleteComponent(editor, manager);
 
   const [cursor, setCursor] = useState<string | null>(null);
 
-  const onUnClick = (_e: React.MouseEvent) => {
+  const onUnClick = () => {
     setCursor(null);
   };
 
-  const onCompClick = (key: string) => {
+  const onClick = (key: string) => {
     setCursor(key);
   };
 
+  const onAuxClick = (key: string) => {
+    setCursor(key);
+    onRequestDeleteComponent(key);
+  };
+
   const onCompDblClick = (key: string) => {
+    setCursor(key);
     onRequestEditComponent(key);
   };
 
   // TODO: контекстное меню? клонировать, переименовать, удалить
   const onCompRightClick = (key: string) => {
-    onRequestDeleteComponent(key);
+    setCursor(key);
+    onRequestEditComponent(key);
   };
 
   const onAddClick = (e: React.MouseEvent) => {
@@ -48,7 +56,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   };
 
   return (
-    <section className="flex flex-col" onClick={onUnClick}>
+    <section className="flex flex-col" onClick={() => onUnClick()}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Компоненты
       </h3>
@@ -73,12 +81,13 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
             <div
               key={key}
               className={twMerge('flex items-center p-1', key == cursor && 'bg-bg-active')}
-              onClick={() => onCompClick(key)}
+              onClick={() => onClick(key)}
+              onAuxClick={() => onAuxClick(key)}
               onDoubleClick={() => onCompDblClick(key)}
               onContextMenu={() => onCompRightClick(key)}
             >
               <img
-                className="h-8 w-8"
+                className="h-8 w-8 object-contain"
                 src={
                   editor?.container.machine.platform?.getComponentIconUrl(key, true) ?? UnknownIcon
                 }
@@ -90,8 +99,8 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
       </div>
 
       <ComponentAddModal {...addComponent} />
-      <ComponentEditModal {...editComponent} />
-      <ComponentDeleteModal {...deleteComponent} />
+      <ComponentEditModal {...editProps} />
+      <ComponentDeleteModal {...deleteProps} />
 
       {/* TODO: 
       <div className="h-full flex-auto px-4 pt-3 text-center">

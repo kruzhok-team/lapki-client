@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useDropzone } from 'react-dropzone';
+import { twMerge } from 'tailwind-merge';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 import { Documentations } from './Documentation/Documentation';
 import { Tabs } from './Tabs';
@@ -10,17 +13,51 @@ interface MainContainerProps {
   manager: EditorManager;
   editor: CanvasEditor | null;
   setEditor: (editor: CanvasEditor | null) => void;
+  onRequestOpenFile: (path?: string) => void;
 }
 
-export const MainContainer: React.FC<MainContainerProps> = ({ manager, editor, setEditor }) => {
+export const MainContainer: React.FC<MainContainerProps> = ({
+  manager,
+  editor,
+  setEditor,
+  onRequestOpenFile,
+}) => {
   const isInitialized = manager.useData('isInitialized');
 
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      onRequestOpenFile(acceptedFiles[0].path);
+    },
+    [onRequestOpenFile]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    noKeyboard: true,
+    noClick: true,
+    accept: {
+      'application/json': ['.json'],
+    },
+    multiple: false,
+    onDrop,
+  });
+
   return (
-    <div className="relative w-full min-w-0 bg-bg-primary">
+    <div
+      className={twMerge(
+        'relative w-full min-w-0 bg-bg-primary',
+        'after:pointer-events-none after:absolute after:inset-0 after:z-50 after:block after:bg-bg-hover after:opacity-0 after:transition-all after:content-[""]',
+        isDragActive && 'opacity-30'
+      )}
+      {...getRootProps()}
+    >
+      <input {...getInputProps()} />
+
       {isInitialized ? (
         <Tabs manager={manager} editor={editor} setEditor={setEditor} />
       ) : (
-        <p className="pt-24 text-center text-base">Откройте файл или перенесите его сюда...</p>
+        <p className="pt-24 text-center text-base">
+          Откройте файл в формате json или перенесите его сюда...
+        </p>
       )}
 
       <Documentations topOffset={!!isInitialized} baseUrl={'https://lapki-doc.polyus-nt.ru/'} />

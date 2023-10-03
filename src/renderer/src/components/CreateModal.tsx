@@ -1,26 +1,28 @@
 import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
-
-import { ColorInput } from './Modal/ColorInput';
-import { Modal } from './Modal/Modal';
 import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
+import { Select, SelectOption } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { TextInput } from './Modal/TextInput';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { operatorSet } from '@renderer/lib/data/PlatformManager';
+import { Condition } from '@renderer/lib/drawable/Condition';
+import { State } from '@renderer/lib/drawable/State';
 import {
   Action,
   Condition as ConditionData,
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
-import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { Select, SelectOption } from '@renderer/components/UI';
-import { Condition } from '@renderer/lib/drawable/Condition';
-import { State } from '@renderer/lib/drawable/State';
 import { ArgumentProto } from '@renderer/types/platform';
-import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+
+import { defaultTransColor } from './DiagramEditor';
+import { ColorInput } from './Modal/ColorInput';
+import { Modal } from './Modal/Modal';
+import { TextInput } from './Modal/TextInput';
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -103,7 +105,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       value: idx,
       label: (
         <div className="flex items-center">
-          <img src={machine.platform.getComponentIconUrl(idx, true)} className="mr-1 h-7 w-7" />
+          <img
+            src={machine.platform.getComponentIconUrl(idx, true)}
+            className="mr-1 h-7 w-7 object-contain"
+          />
           {idx}
         </div>
       ),
@@ -117,7 +122,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <div className="flex items-center">
           <img
             src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -132,7 +137,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <div className="flex items-center">
           <img
             src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -151,7 +156,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               name,
               true
             )}
-            className="mr-1 h-7 w-7"
+            className="mr-1 h-7 w-7 object-contain"
           />
           {name}
         </div>
@@ -193,7 +198,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     : machine.platform
         .getAvailableVariables(param1Components.value)
         .map(({ name }) => conditionEntry(name, param1Components.value));
-
+  console.log(machine.platform.name);
   const optionsParam2Methods = !components
     ? []
     : machine.platform
@@ -476,7 +481,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   }, [dataDo]);
 
-  var method: Action[] = props.isCondition!;
+  const method: Action[] = props.isCondition!;
   //-----------------------------Функция на нажатие кнопки "Сохранить"-----------------------------------
   const [condOperator, setCondOperator] = useState<string>();
   const handleSubmit = hookHandleSubmit((formData) => {
@@ -532,7 +537,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       color: formData.color,
     };
 
-    onSubmit(data);
+    if ((isData !== undefined && method.length !== 0) || isData === undefined) {
+      onSubmit(data);
+    }
   });
   //-----------------------------------------------------------------------------------------------------
 
@@ -634,7 +641,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           (dataDo ? (
             <p className="text-success">Событие существует!</p>
           ) : (
-            <p className="text-error">Событие отсутствует!</p>
+            <p className="text-orange-500">Событие отсутствует!</p>
           ))}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
@@ -771,7 +778,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       <div className="flex">
         <label className="mx-1">Делай: </label>
         <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
-          {method === undefined ||
+          {method.length === 0 ||
             method.map((data, key) => (
               <div
                 key={'Methods' + key}
@@ -805,6 +812,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
+          {method.length === 0 && <div className="flex text-error">Вы не выбрали действия!</div>}
         </div>
         <div className="flex flex-col">
           <button
@@ -831,7 +839,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
-            defaultValue={props.isTransition?.target.transition.data.color}
+            defaultValue={props.isTransition?.target.transition.data.color ?? defaultTransColor}
           />
         </>
       )}

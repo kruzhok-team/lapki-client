@@ -1,9 +1,15 @@
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
+import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
+
+export type MarkedIconData = {
+  icon: string;
+  label?: string;
+  color?: string;
+};
 
 let imagesLoaded = false;
 
@@ -62,7 +68,7 @@ export function preloadPicto(callback: () => void) {
 }
 
 export type PictoProps = {
-  leftIcon?: string;
+  leftIcon?: string | MarkedIconData;
   rightIcon: string;
   bgColor?: string;
   fgColor?: string;
@@ -82,8 +88,17 @@ export class Picto {
     return imagesLoaded;
   }
 
-  drawImage(ctx: CanvasRenderingContext2D, iconName: string, bounds: Rectangle) {
+  /**
+   * Рисует масштабированный значок на canvas.
+   *
+   * @param ctx Контекст canvas, в котором рисуем
+   * @param iconData Название значка или контейнер с данными для метки
+   * @param bounds Координаты и размер рамки
+   */
+  drawImage(ctx: CanvasRenderingContext2D, iconData: string | MarkedIconData, bounds: Rectangle) {
     // console.log([iconName, icons.has(iconName)]);
+    const isMarked = typeof iconData !== 'string';
+    const iconName = isMarked ? iconData.icon : iconData;
     const image = icons.get(iconName);
     if (!image) return;
 
@@ -93,10 +108,64 @@ export class Picto {
       width: bounds.width / this.scale,
       height: bounds.height / this.scale,
     });
+    if (isMarked && iconData.label) {
+      const { x, y, width, height } = bounds;
+      const tX = x + width / this.scale;
+      const tY = y + (height - 1) / this.scale;
+      ctx.save();
+      ctx.font = `600 ${16 / this.scale}px/0 Fira Mono`;
+      ctx.fillStyle = iconData.color ?? 'white';
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 0.5 / this.scale;
+      ctx.textAlign = 'end';
+      ctx.textBaseline = 'alphabetic';
+
+      ctx.fillText(iconData.label, tX, tY);
+      ctx.strokeText(iconData.label, tX, tY);
+
+      ctx.restore();
+    }
     ctx.closePath();
   }
 
-  // TODO: все перечисленные ниже функции нужно вернуть в законные места
+  /**
+   * Генерирует SVG-ноду для значка с меткой.
+   * По сути, дублирует {@link drawImage} вне canvas.
+   *
+   * @param data Контейнер с данными значка
+   * @param className Атрибут class для генерируемой ноды (дополнительно)
+   * @returns JSX-нода со значком
+   */
+  getMarkedSvg(data: MarkedIconData, className?: string) {
+    const icon = icons.get(data.icon);
+    return (
+      <svg
+        className={className ?? 'h-8 w-8'}
+        viewBox="0 0 32 32"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <image width={32} height={32} href={icon?.src ?? UnknownIcon} />;
+        {!data.label ? (
+          ''
+        ) : (
+          <text
+            x="32"
+            y="31"
+            fontSize="16"
+            fill={data.color ?? 'white'}
+            textAnchor="end"
+            fontFamily="Fira Mono"
+            fontWeight="600"
+            stroke="white"
+            strokeWidth={0.5}
+          >
+            {data.label}
+          </text>
+        )}
+        <text></text>
+      </svg>
+    );
+  }
 
   eventWidth = 100;
   eventHeight = 40;
@@ -150,10 +219,10 @@ export class Picto {
   }
 
   drawMono(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
-    let rightIcon = ps.rightIcon;
-    let bgColor = ps.bgColor ?? '#3a426b';
-    let fgColor = ps.fgColor ?? '#fff';
-    let opacity = ps.opacity ?? 1.0;
+    const rightIcon = ps.rightIcon;
+    const bgColor = ps.bgColor ?? '#3a426b';
+    const fgColor = ps.fgColor ?? '#fff';
+    const opacity = ps.opacity ?? 1.0;
 
     // Рамка
     this.drawRect(ctx, x, y, this.eventHeight, this.eventHeight, bgColor, fgColor, opacity);
@@ -169,10 +238,10 @@ export class Picto {
   }
 
   drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
-    let text = ps.rightIcon;
-    let bgColor = ps.bgColor ?? '#3a426b';
-    let fgColor = ps.fgColor ?? '#fff';
-    let opacity = ps.opacity ?? 1.0;
+    const text = ps.rightIcon;
+    const bgColor = ps.bgColor ?? '#3a426b';
+    const fgColor = ps.fgColor ?? '#fff';
+    const opacity = ps.opacity ?? 1.0;
 
     const baseFontSize = 24;
     const w = this.textPadding * 2 + text.length * this.pxPerChar;
@@ -194,12 +263,21 @@ export class Picto {
     ctx.restore();
   }
 
+  /**
+   * Рисует масштабированную пиктограмму на canvas.
+   * Главная функция в этом классе.
+   *
+   * @param ctx Контекст canvas, в котором рисуем
+   * @param x X-координата
+   * @param y Y-координата
+   * @param ps Контейнер с параметрами пиктограммы
+   */
   drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
-    let leftIcon = ps.leftIcon;
-    let rightIcon = ps.rightIcon;
-    let bgColor = ps.bgColor ?? '#3a426b';
-    let fgColor = ps.fgColor ?? '#fff';
-    let opacity = ps.opacity ?? 1.0;
+    const leftIcon = ps.leftIcon;
+    const rightIcon = ps.rightIcon;
+    const bgColor = ps.bgColor ?? '#3a426b';
+    const fgColor = ps.fgColor ?? '#fff';
+    const opacity = ps.opacity ?? 1.0;
 
     // Рамка
     this.drawBorder(ctx, x, y, bgColor, fgColor, opacity);

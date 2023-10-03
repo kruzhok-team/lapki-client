@@ -1,8 +1,7 @@
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
 
-import { icons, picto } from '../drawable/Picto';
+import { MarkedIconData, icons, picto } from '../drawable/Picto';
 import { stateStyle } from '../styles';
 
 export type VisualCompoData = {
@@ -105,13 +104,17 @@ export class PlatformManager {
     }
   }
 
-  resolveComponent(name: string): string {
+  resolveComponent(name: string) {
+    return this.nameToVisual.get(name) ?? { component: name };
+  }
+
+  resolveComponentType(name: string): string {
     return this.nameToVisual.get(name)?.component ?? name;
   }
 
   getComponent(name: string, isType?: boolean): ComponentProto | undefined {
     if (name == 'System') return systemComponent;
-    const query = isType ? name : this.resolveComponent(name);
+    const query = isType ? name : this.resolveComponentType(name);
     return this.data.components[query];
   }
 
@@ -161,7 +164,7 @@ export class PlatformManager {
   }
 
   getComponentIcon(name: string, isName?: boolean) {
-    const query = isName ? this.resolveComponent(name) : name;
+    const query = isName ? this.resolveComponentType(name) : name;
     const icon = this.componentToIcon.get(query);
     // console.log(['getComponentIcon', name, isName, icon]);
     if (icon && icons.has(icon)) {
@@ -179,37 +182,13 @@ export class PlatformManager {
 
   getFullComponentIcon(name: string, className?: string): React.ReactNode {
     const query = this.nameToVisual.get(name) ?? { component: name };
-    const iconQuery = this.getComponentIcon(query.component, false);
-    const icon = icons.get(iconQuery)!;
+    const iconQuery = {
+      ...query,
+      icon: this.getComponentIcon(query.component, false),
+    };
     // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
     // return <img className="h-8 w-8 object-contain" src={icon?.src ?? UnknownIcon} />;
-    return (
-      <svg
-        className={className ?? 'h-8 w-8'}
-        viewBox="0 0 32 32"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <image width={32} height={32} href={icon?.src ?? UnknownIcon} />;
-        {!query.label ? (
-          ''
-        ) : (
-          <text
-            x="32"
-            y="31"
-            fontSize="16"
-            fill={query.color ?? 'white'}
-            textAnchor="end"
-            fontFamily="Fira Mono"
-            fontWeight="600"
-            stroke="white"
-            strokeWidth={0.5}
-          >
-            {query.label}
-          </text>
-        )}
-        <text></text>
-      </svg>
-    );
+    return picto.getMarkedSvg(iconQuery, className);
   }
 
   getEventIcon(component: string, method: string) {
@@ -222,7 +201,7 @@ export class PlatformManager {
   }
 
   getEventIconUrl(component: string, method: string, isName?: boolean) {
-    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const compoQuery = isName ? this.resolveComponentType(component) : component;
     const query = this.getEventIcon(compoQuery, method);
     // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
     return icons.get(query)!.src;
@@ -238,7 +217,7 @@ export class PlatformManager {
   }
 
   getActionIconUrl(component: string, method: string, isName?: boolean) {
-    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const compoQuery = isName ? this.resolveComponentType(component) : component;
     const query = this.getActionIcon(compoQuery, method);
     // console.log(['getActionIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
     return icons.get(query)!.src;
@@ -254,14 +233,14 @@ export class PlatformManager {
   }
 
   getVariableIconUrl(component: string, method: string, isName?: boolean) {
-    const compoQuery = isName ? this.resolveComponent(component) : component;
+    const compoQuery = isName ? this.resolveComponentType(component) : component;
     const query = this.getVariableIcon(compoQuery, method);
     // console.log(['getEventIconUrl', component, isName, compoQuery, method, query, icons.get(query)!.src,]);
     return icons.get(query)!.src;
   }
 
   drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {
-    let leftIcon: string | undefined = undefined;
+    let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';
     const bgColor = '#3a426b';
     const fgColor = '#fff';
@@ -271,8 +250,12 @@ export class PlatformManager {
       // ev.method === 'onEnter' || ev.method === 'onExit'
       rightIcon = ev.method;
     } else {
-      const component = this.resolveComponent(ev.component);
-      leftIcon = this.getComponentIcon(component);
+      const compoData = this.resolveComponent(ev.component);
+      const component = compoData.component;
+      leftIcon = {
+        ...compoData,
+        icon: this.getComponentIcon(component),
+      };
       rightIcon = this.getEventIcon(component, ev.method);
 
       const parameterList = this.data.components[component]?.signals[ev.method]?.parameters;
@@ -305,7 +288,7 @@ export class PlatformManager {
   }
 
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
-    let leftIcon: string | undefined = undefined;
+    let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';
     const bgColor = '#5b5f73';
     const fgColor = '#fff';
@@ -315,8 +298,12 @@ export class PlatformManager {
     if (ac.component === 'System') {
       rightIcon = ac.method;
     } else {
-      const component = this.resolveComponent(ac.component);
-      leftIcon = this.getComponentIcon(component);
+      const compoData = this.resolveComponent(ac.component);
+      const component = compoData.component;
+      leftIcon = {
+        ...compoData,
+        icon: this.getComponentIcon(component),
+      };
       rightIcon = this.getActionIcon(component, ac.method);
 
       const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
@@ -383,7 +370,7 @@ export class PlatformManager {
     const opacity = alpha ?? 1.0;
 
     if (ac.type == 'component') {
-      let leftIcon: string | undefined = undefined;
+      let leftIcon: string | MarkedIconData | undefined = undefined;
       let rightIcon = 'unknown';
 
       // FIXME: столько проверок ради простой валидации...
@@ -396,8 +383,12 @@ export class PlatformManager {
         if (vr.component === 'System') {
           rightIcon = vr.method;
         } else {
-          const component = this.resolveComponent(vr.component);
-          leftIcon = this.getComponentIcon(component);
+          const compoData = this.resolveComponent(vr.component);
+          const component = compoData.component;
+          leftIcon = {
+            ...compoData,
+            icon: this.getComponentIcon(component),
+          };
           rightIcon = this.getVariableIcon(component, vr.method);
         }
       }

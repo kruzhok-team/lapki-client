@@ -237,8 +237,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [argForm, setArgForm] = useState<ArgForm>([]);
 
   const retrieveArgForm = (compo: string, method: string) => {
-    const compoType = machine.platform.resolveComponent(compo);
-    const component = machine.platform.data.components[compoType];
+    const component = machine.platform.getComponent(compo);
     if (!component) return [];
 
     const argList: ArgumentProto[] | undefined = isEditingEvent

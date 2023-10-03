@@ -5,6 +5,12 @@ import { Rectangle } from '@renderer/types/graphics';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
 
+export type MarkedIconData = {
+  icon: string;
+  label?: string;
+  color?: string;
+};
+
 let imagesLoaded = false;
 
 export const icons: Map<string, HTMLImageElement> = new Map();
@@ -62,7 +68,7 @@ export function preloadPicto(callback: () => void) {
 }
 
 export type PictoProps = {
-  leftIcon?: string;
+  leftIcon?: string | MarkedIconData;
   rightIcon: string;
   bgColor?: string;
   fgColor?: string;
@@ -82,8 +88,10 @@ export class Picto {
     return imagesLoaded;
   }
 
-  drawImage(ctx: CanvasRenderingContext2D, iconName: string, bounds: Rectangle) {
+  drawImage(ctx: CanvasRenderingContext2D, iconData: string | MarkedIconData, bounds: Rectangle) {
     // console.log([iconName, icons.has(iconName)]);
+    const isMarked = !(typeof iconData === 'string');
+    const iconName = isMarked ? iconData.icon : iconData;
     const image = icons.get(iconName);
     if (!image) return;
 
@@ -93,7 +101,55 @@ export class Picto {
       width: bounds.width / this.scale,
       height: bounds.height / this.scale,
     });
+    if (isMarked && iconData.label) {
+      const { x, y, width, height } = bounds;
+      const tX = x + width / this.scale;
+      const tY = y + (height - 1) / this.scale;
+      ctx.save();
+      ctx.font = `600 ${16 / this.scale}px/0 Fira Mono`;
+      ctx.fillStyle = iconData.color ?? 'white';
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 0.5 / this.scale;
+      ctx.textAlign = 'end';
+      ctx.textBaseline = 'alphabetic';
+
+      ctx.fillText(iconData.label, tX, tY);
+      ctx.strokeText(iconData.label, tX, tY);
+
+      ctx.restore();
+    }
     ctx.closePath();
+  }
+
+  getMarkedSvg(data: MarkedIconData, className?: string) {
+    const icon = icons.get(data.icon);
+    return (
+      <svg
+        className={className ?? 'h-8 w-8'}
+        viewBox="0 0 32 32"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <image width={32} height={32} href={icon?.src ?? UnknownIcon} />;
+        {!data.label ? (
+          ''
+        ) : (
+          <text
+            x="32"
+            y="31"
+            fontSize="16"
+            fill={data.color ?? 'white'}
+            textAnchor="end"
+            fontFamily="Fira Mono"
+            fontWeight="600"
+            stroke="white"
+            strokeWidth={0.5}
+          >
+            {data.label}
+          </text>
+        )}
+        <text></text>
+      </svg>
+    );
   }
 
   // TODO: все перечисленные ниже функции нужно вернуть в законные места

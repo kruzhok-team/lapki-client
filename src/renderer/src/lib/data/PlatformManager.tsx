@@ -187,7 +187,6 @@ export class PlatformManager {
       icon: this.getComponentIcon(query.component, false),
     };
     // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
-    // return <img className="h-8 w-8 object-contain" src={icon?.src ?? UnknownIcon} />;
     return picto.getMarkedSvg(iconQuery, className);
   }
 

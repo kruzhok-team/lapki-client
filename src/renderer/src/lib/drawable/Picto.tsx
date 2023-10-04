@@ -140,7 +140,7 @@ export class Picto {
     const icon = icons.get(data.icon);
     return (
       <svg
-        className={className ?? 'h-8 w-8'}
+        className={className ?? 'h-8 w-8 object-contain'}
         viewBox="0 0 32 32"
         preserveAspectRatio="xMidYMid meet"
       >

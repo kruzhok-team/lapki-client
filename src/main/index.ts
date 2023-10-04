@@ -1,5 +1,5 @@
 import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import settings from 'electron-settings';
 
 import { join } from 'path';
@@ -42,10 +42,10 @@ function createWindow(): void {
     },
   });
 
-  //Пример обращения к глобальным командам и выполняем необходимые действия с ними
-  //Обращаемся к команде ctrl+W и блокируем её исполнение
-  globalShortcut.register('Ctrl+W', () => {
-    return false;
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.key.toLowerCase() === 'w') {
+      event.preventDefault();
+    }
   });
 
   // Разворачиваем окно на весь экран

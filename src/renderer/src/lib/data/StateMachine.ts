@@ -314,7 +314,7 @@ export class StateMachine extends EventEmitter {
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBounds = { ...state.bounds, ...state.compoundPosition };
-    this.changeStatePosition(id, state.bounds, newBounds);
+    this.changeStatePosition(id, state.bounds, newBounds, canUndo);
     // this.container.app.manager.changeStateBounds(id, newBounds);
 
     if (canUndo) {
@@ -617,7 +617,7 @@ export class StateMachine extends EventEmitter {
 
       if (canUndo) {
         this.undoRedo.do({
-          type: 'changeEvent',
+          type: 'changeEventAction',
           args: { stateId, event, newValue, prevValue },
         });
       }

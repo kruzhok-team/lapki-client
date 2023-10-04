@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+
 import {
   Action as EventAction,
   Event,
@@ -24,7 +26,7 @@ import { StateMachine } from './StateMachine';
 import { EventSelection } from '../drawable/Events';
 import { Transition } from '../drawable/Transition';
 
-type PossibleActions = {
+export type PossibleActions = {
   stateCreate: CreateStateParameters & { newStateId: string };
   deleteState: { id: string; stateData: StateData };
   changeStateName: { id: string; name: string; prevName: string };
@@ -54,18 +56,24 @@ type PossibleActions = {
   removeComponent: { args: RemoveComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
 };
-type PossibleActionTypes = keyof PossibleActions;
-type Action<T extends PossibleActionTypes> = {
+export type PossibleActionTypes = keyof PossibleActions;
+export type Action<T extends PossibleActionTypes> = {
   type: T;
   args: PossibleActions[T];
   numberOfConnectedActions?: number;
 };
-type Stack = Array<Action<any>>;
+export type Stack = Array<Action<any>>;
 type ActionFunctions = {
   [Type in PossibleActionTypes]: (
     sm: StateMachine,
     args: PossibleActions[Type]
   ) => { undo: () => void; redo: () => void };
+};
+type ActionDescriptions = {
+  [Type in PossibleActionTypes]: (args: PossibleActions[Type]) => {
+    name: string;
+    description: string;
+  };
 };
 
 export const actionFunctions: ActionFunctions = {
@@ -197,11 +205,103 @@ export const actionFunctions: ActionFunctions = {
   }),
 };
 
+export const actionDescriptions: ActionDescriptions = {
+  stateCreate: (args) => ({
+    name: 'Создание состояния',
+    description: `Имя: ${args.name}`,
+  }),
+  deleteState: (args) => ({
+    name: 'Удаление состояния',
+    description: `Имя: ${args.stateData.name}`,
+  }),
+  changeStateName: (args) => ({
+    name: 'Изменение имени состояния',
+    description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
+  }),
+  changeStateEvents: ({ args, prevActions }) => ({
+    name: 'Изменение состояния',
+    description: `Id состояния: ${args.id}\nТриггер: ${args.triggerComponent}\nМетод: ${
+      args.triggerMethod
+    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.actions)}`,
+  }),
+  linkState: (args) => ({
+    name: 'Присоединение состояния',
+    description: `Id: "${args.childId}"\nId родителя: "${args.childId}"`,
+  }),
+  unlinkState: (args) => ({
+    name: 'Отсоединение состояния',
+    description: `Id: "${args.childId}"\nId родителя: "${args.childId}"`,
+  }),
+  createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),
+  deleteTransition: (args) => ({
+    name: 'Удаление перехода',
+    description: `Id: ${args.transition.id}`,
+  }),
+  changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
+  changeInitialState: (args) => ({
+    name: 'Изменение начального состояния',
+    description: `Было: "${args.prevInitial}"\nСтало: ${args.id}`,
+  }),
+  changeStatePosition: (args) => ({
+    name: 'Перемещение состояния',
+    description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
+      args.startPosition
+    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+  }),
+  changeTransitionPosition: (args) => ({
+    name: 'Перемещение перехода',
+    description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
+      args.startPosition
+    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+  }),
+  changeEvent: (args) => ({
+    name: 'Изменение события состояния',
+    description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(
+      args.event
+    )}\nБыло: ${JSON.stringify(args.prevValue)}\nСтало: ${JSON.stringify(args.newValue)}`,
+  }),
+  changeEventAction: (args) => ({
+    name: 'Изменение действия в событии',
+    description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(
+      args.event
+    )}\nБыло: ${JSON.stringify(args.prevValue)}\nСтало: ${JSON.stringify(args.newValue)}`,
+  }),
+  deleteEvent: (args) => ({
+    name: 'Удаление события',
+    description: `Id состояния: ${args.stateId}\nПозиция: ${args.eventIdx}`,
+  }),
+  deleteEventAction: (args) => ({
+    name: 'Удаление действия в событии',
+    description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(args.event)}`,
+  }),
+  addComponent: ({ args }) => ({
+    name: 'Добавление компонента',
+    description: `Имя: ${args.name}\nТип: ${args.type}`,
+  }),
+  removeComponent: ({ args, prevComponent }) => ({
+    name: 'Удаление компонента',
+    description: `Имя: ${args.name}\nТип: ${prevComponent.type}`,
+  }),
+  editComponent: ({ args, prevComponent }) => {
+    const prev = { prevComponent, name: args.name };
+    const newComp = { ...args, type: prevComponent.type };
+    delete newComp.newName;
+
+    return {
+      name: 'Изменение компонента',
+      description: `Было: ${JSON.stringify(prev)}\nСтало: ${JSON.stringify(newComp)}`,
+    };
+  },
+};
+
 export const STACK_SIZE_LIMIT = 100;
 
 export class UndoRedo {
   undoStack = [] as Stack;
   redoStack = [] as Stack;
+
+  private listeners = [] as (() => void)[];
+  private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
   constructor(public stateMachine: StateMachine) {}
 
@@ -209,9 +309,12 @@ export class UndoRedo {
     this.redoStack.length = 0;
     this.undoStack.push(action);
 
-    console.log('do', action);
-    console.log('undoStack', this.undoStack);
-    console.log('redoStack', this.redoStack);
+    // Проверка на лимит
+    if (this.undoStack.length > STACK_SIZE_LIMIT) {
+      this.undoStack.shift();
+    }
+
+    this.updateSnapshot();
   }
 
   undo = () => {
@@ -230,9 +333,7 @@ export class UndoRedo {
     // Если соединённые действия то первое должно попасть в конец redo стека
     this.redoStack.push(action);
 
-    console.log('undo');
-    console.log('undoStack', this.undoStack);
-    console.log('redoStack', this.redoStack);
+    this.updateSnapshot();
   };
 
   redo = () => {
@@ -256,9 +357,7 @@ export class UndoRedo {
       this.undoStack.shift();
     }
 
-    console.log('redo');
-    console.log('undoStack', this.undoStack);
-    console.log('redoStack', this.redoStack);
+    this.updateSnapshot();
   };
 
   isUndoStackEmpty() {
@@ -273,4 +372,22 @@ export class UndoRedo {
     this.undoStack.length = 0;
     this.redoStack.length = 0;
   }
+
+  private updateSnapshot = () => {
+    this.cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
+    this.listeners.forEach((l) => l());
+  };
+
+  private subscribe = (listener: () => void) => {
+    this.listeners.push(listener);
+
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== listener);
+    };
+  };
+
+  use = () => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useSyncExternalStore(this.subscribe, () => this.cachedSnapshot);
+  };
 }

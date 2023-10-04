@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
-import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
+
 import { twMerge } from 'tailwind-merge';
-import { Device } from '@renderer/types/FlasherTypes';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
+
+import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
+import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
+import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
+import { FlasherSelectModal } from '@renderer/components/FlasherSelectModal';
 import {
   FLASHER_CONNECTED,
   FLASHER_CONNECTING,
   FLASHER_CONNECTION_ERROR,
   FLASHER_NO_CONNECTION,
   Flasher,
-} from './Modules/Flasher';
+} from '@renderer/components/Modules/Flasher';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { FlasherSelectModal } from './FlasherSelectModal';
-import { ErrorModal, ErrorModalData } from './ErrorModal';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { Device } from '@renderer/types/FlasherTypes';
 
 const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
 
@@ -92,12 +94,12 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
 
   const handleErrorMessageDisplay = async () => {
     // выводимое для пользователя сообщение
-    var errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
+    let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
     if (flasherIsLocal) {
       await window.electron.ipcRenderer
         .invoke('Module:getStatus', LAPKI_FLASHER)
         .then(function (obj) {
-          let errorDetails = obj.details;
+          const errorDetails = obj.details;
           switch (obj.code) {
             // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
             case 0:

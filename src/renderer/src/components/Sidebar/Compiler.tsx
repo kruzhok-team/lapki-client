@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
-import { useSidebar } from '@renderer/store/useSidebar';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
-
-import { Compiler } from '../components/Modules/Compiler';
-import { Settings } from '../components/Modules/Settings';
-import { useTabs } from '@renderer/store/useTabs';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { Compiler } from '@renderer/components/Modules/Compiler';
+import { Settings } from '@renderer/components/Modules/Settings';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useSidebar } from '@renderer/store/useSidebar';
+import { useTabs } from '@renderer/store/useTabs';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 export interface CompilerProps {
   manager: EditorManager;

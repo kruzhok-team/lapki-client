@@ -428,11 +428,6 @@ export class EditorManager {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    // Если удаляемое состояние было начальным, стираем текущее значение
-    if (this.data.elements.initialState === id) {
-      this.data.elements.initialState = '';
-    }
-
     delete this.data.elements.states[id];
 
     return true;
@@ -447,11 +442,15 @@ export class EditorManager {
     return true;
   }
 
-  createEvent(stateId: string, eventData: EventData) {
+  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
-    state.events.push(eventData);
+    if (eventIdx !== undefined) {
+      state.events.splice(eventIdx, 0, eventData);
+    } else {
+      state.events.push(eventData);
+    }
 
     return true;
   }

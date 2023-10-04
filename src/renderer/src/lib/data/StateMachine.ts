@@ -207,7 +207,7 @@ export class StateMachine extends EventEmitter {
     if (canUndo) {
       this.undoRedo.do({
         type: 'changeStateName',
-        args: { id, name, state },
+        args: { id, name, prevName: state.data.name },
       });
     }
 
@@ -312,19 +312,21 @@ export class StateMachine extends EventEmitter {
     const state = this.states.get(id);
     if (!state || !state.parent) return;
 
-    this.container.app.manager.unlinkState(id);
-
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newBounds = { ...state.bounds, ...state.compoundPosition };
-    this.container.app.manager.changeStateBounds(id, newBounds);
+    this.changeStatePosition(id, state.bounds, newBounds);
+    // this.container.app.manager.changeStateBounds(id, newBounds);
 
     if (canUndo) {
       this.undoRedo.do({
         type: 'unlinkState',
         args: { parentId: state.parent.id, childId: id },
+        numberOfConnectedActions: 1, // Изменение позиции
       });
-      state.removeOnceOff('dragend');
+      state.addOnceOff('dragend');
     }
+
+    this.container.app.manager.unlinkState(id);
 
     state.parent.children.delete(id);
     state.parent = undefined;
@@ -365,10 +367,16 @@ export class StateMachine extends EventEmitter {
       numberOfConnectedActions += 1;
     }
 
+    // Если удаляемое состояние было начальным, стираем текущее значение
+    if (this.container.app.manager.data.elements.initialState === id) {
+      this.changeInitialState('', canUndo);
+      numberOfConnectedActions += 1;
+    }
+
     if (canUndo) {
       this.undoRedo.do({
         type: 'deleteState',
-        args: { id, state },
+        args: { id, stateData: structuredClone(state.data) },
         numberOfConnectedActions,
       });
     }
@@ -402,16 +410,18 @@ export class StateMachine extends EventEmitter {
 
     if (!soruceState || !targetState) return;
 
+    const position = params.position ?? {
+      x: (soruceState.bounds.x + targetState.bounds.x) / 2,
+      y: (soruceState.bounds.y + targetState.bounds.y) / 2,
+    };
+
     // Создание данных
     const id = this.container.app.manager.createTransition({
       id: prevId,
       source,
       target,
       color,
-      position: {
-        x: (soruceState.bounds.x + targetState.bounds.x) / 2,
-        y: (soruceState.bounds.y + targetState.bounds.y) / 2,
-      },
+      position,
       component,
       method,
       doAction,
@@ -571,11 +581,11 @@ export class StateMachine extends EventEmitter {
     this.container.isDirty = true;
   }
 
-  createEvent(stateId: string, eventData: EventData) {
+  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.states.get(stateId);
     if (!state) return;
 
-    this.container.app.manager.createEvent(stateId, eventData);
+    this.container.app.manager.createEvent(stateId, eventData, eventIdx);
 
     state.eventBox.recalculate();
 

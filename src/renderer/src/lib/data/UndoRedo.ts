@@ -4,6 +4,7 @@ import {
   Component,
   Transition as TransitionData,
   EventData,
+  State as StateData,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
@@ -21,13 +22,12 @@ import {
 import { StateMachine } from './StateMachine';
 
 import { EventSelection } from '../drawable/Events';
-import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 
 type PossibleActions = {
   stateCreate: CreateStateParameters & { newStateId: string };
-  deleteState: { id: string; state: State };
-  changeStateName: { id: string; name: string; state: State };
+  deleteState: { id: string; stateData: StateData };
+  changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; childId: string };
@@ -73,26 +73,26 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.createState.bind(sM, { ...args, id: args.newStateId }, false),
     undo: sM.deleteState.bind(sM, args.newStateId, false),
   }),
-  deleteState: (sM, { id, state }) => ({
+  deleteState: (sM, { id, stateData }) => ({
     redo: sM.deleteState.bind(sM, id, false),
     undo: sM.createState.bind(
       sM,
       {
-        name: state.data.name,
+        name: stateData.name,
         id,
         position: {
-          x: state.data.bounds.x + state.data.bounds.width / 2,
-          y: state.data.bounds.y + state.data.bounds.height / 2,
+          x: stateData.bounds.x + stateData.bounds.width / 2,
+          y: stateData.bounds.y + stateData.bounds.height / 2,
         },
-        parentId: state.data.parent,
-        events: structuredClone(state.data.events),
+        parentId: stateData.parent,
+        events: stateData.events,
       },
       false
     ),
   }),
-  changeStateName: (sM, { id, name, state }) => ({
+  changeStateName: (sM, { id, name, prevName }) => ({
     redo: sM.changeStateName.bind(sM, id, name, false),
-    undo: sM.changeStateName.bind(sM, id, state.data.name, false),
+    undo: sM.changeStateName.bind(sM, id, prevName, false),
   }),
   changeStateEvents: (sM, { args, prevActions }) => ({
     redo: sM.changeStateEvents.bind(sM, args, false),
@@ -169,7 +169,7 @@ export const actionFunctions: ActionFunctions = {
   }),
   deleteEvent: (sM, { stateId, eventIdx, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, stateId, { eventIdx, actionIdx: null }, false),
-    undo: sM.createEvent.bind(sM, stateId, prevValue),
+    undo: sM.createEvent.bind(sM, stateId, prevValue, eventIdx),
   }),
   deleteEventAction: (sM, { stateId, event, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, stateId, event, false),
@@ -208,6 +208,10 @@ export class UndoRedo {
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;
     this.undoStack.push(action);
+
+    console.log('do', action);
+    console.log('undoStack', this.undoStack);
+    console.log('redoStack', this.redoStack);
   }
 
   undo = () => {
@@ -225,6 +229,10 @@ export class UndoRedo {
 
     // Если соединённые действия то первое должно попасть в конец redo стека
     this.redoStack.push(action);
+
+    console.log('undo');
+    console.log('undoStack', this.undoStack);
+    console.log('redoStack', this.redoStack);
   };
 
   redo = () => {
@@ -247,6 +255,10 @@ export class UndoRedo {
     if (this.undoStack.length > STACK_SIZE_LIMIT) {
       this.undoStack.shift();
     }
+
+    console.log('redo');
+    console.log('undoStack', this.undoStack);
+    console.log('redoStack', this.redoStack);
   };
 
   isUndoStackEmpty() {

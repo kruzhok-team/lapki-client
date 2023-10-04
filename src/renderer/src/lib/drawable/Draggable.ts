@@ -258,6 +258,10 @@ export abstract class Draggable extends EventEmitter {
 
     this.globalMouseUp();
 
+    if (prevDragging) {
+      this.dragEnd();
+    }
+
     const isUnderMouse = this.isUnderMouse(e);
     if (!isUnderMouse) return;
 
@@ -266,10 +270,6 @@ export abstract class Draggable extends EventEmitter {
     // e.stopPropagation();
 
     this.emit('mouseup', { event: e, target: this });
-
-    if (prevDragging) {
-      this.dragEnd();
-    }
 
     if (this.isMouseDown) {
       this.isMouseDown = false;

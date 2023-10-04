@@ -1,7 +1,11 @@
 import { CreateTransitionParameters as MCreateTransitionParameters } from '@renderer/types/EditorManager';
-import { Component } from './diagram';
 
-export type CreateTransitionParameters = Omit<MCreateTransitionParameters, 'position'>;
+import { Component } from './diagram';
+import { Point } from './graphics';
+
+export type CreateTransitionParameters = Omit<MCreateTransitionParameters, 'position'> & {
+  position?: Point;
+};
 
 export interface EditComponentParams {
   name: string;

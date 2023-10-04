@@ -55,6 +55,8 @@ export class EditorManager {
   resetEditor?: () => void;
 
   init(basename: string | null, name: string, elements: Elements) {
+    this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
+
     this.data = emptyEditorData();
 
     const self = this;

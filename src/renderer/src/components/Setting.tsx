@@ -32,6 +32,7 @@ export const Setting: React.FC<SettingProps> = () => {
             options={themeOptions}
             value={themeOptions.find((o) => o.value === theme)}
             onChange={({ value }: any) => setTheme(value)}
+            isSearchable={false}
           />
         </div>
       </div>

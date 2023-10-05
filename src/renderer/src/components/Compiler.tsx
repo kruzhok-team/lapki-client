@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { useSidebar } from '@renderer/store/useSidebar';
+import { useTabs } from '@renderer/store/useTabs';
+import { getColor } from '@renderer/theme';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { Compiler } from '../components/Modules/Compiler';
 import { Settings } from '../components/Modules/Settings';
-import { useTabs } from '@renderer/store/useTabs';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
 export interface CompilerProps {
   manager: EditorManager;
@@ -160,7 +160,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         <p>
           Статус:{' '}
           <span
-            className={twMerge('text-success', compilerStatus === 'Не подключен' && 'text-error')}
+            style={
+              compilerStatus !== 'Не подключен'
+                ? { color: getColor('primary') }
+                : { color: getColor('error') }
+            }
           >
             {compilerStatus}
           </span>

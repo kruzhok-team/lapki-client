@@ -58,10 +58,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       value: idx,
       label: (
         <div className="flex items-center">
-          <img
-            src={machine.platform.getComponentIconUrl(idx, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
+          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
           {idx}
         </div>
       ),
@@ -128,8 +125,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const [argForm, setArgForm] = useState<ArgForm>([]);
 
   const retrieveArgForm = (compo: string, method: string) => {
-    const compoType = machine.platform.resolveComponent(compo);
-    const component = machine.platform.data.components[compoType];
+    const component = machine.platform.getComponent(compo);
     if (!component) return [];
 
     const argList: ArgumentProto[] | undefined = isEditingEvent

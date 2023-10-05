@@ -113,7 +113,11 @@ export class StateMachine extends EventEmitter {
     for (const name in items) {
       const component = items[name];
       // this.components.set(name, new Component(component));
-      this.platform.nameToComponent.set(name, component.type);
+      this.platform.nameToVisual.set(name, {
+        component: component.type,
+        label: component.parameters['label'],
+        color: component.parameters['labelColor'],
+      });
     }
   }
 
@@ -462,13 +466,22 @@ export class StateMachine extends EventEmitter {
   addComponent(name: string, type: string) {
     this.container.app.manager.addComponent(name, type);
 
-    this.platform.nameToComponent.set(name, type);
+    this.platform.nameToVisual.set(name, {
+      component: type,
+    });
 
     this.container.isDirty = true;
   }
 
   editComponent(name: string, parameters: ComponentType['parameters'], newName?: string) {
     this.container.app.manager.editComponent(name, parameters);
+
+    const component = this.container.app.manager.data.elements.components[name];
+    this.platform.nameToVisual.set(name, {
+      component: component.type,
+      label: component.parameters['label'],
+      color: component.parameters['labelColor'],
+    });
 
     if (newName) {
       this.renameComponent(name, newName);
@@ -479,10 +492,10 @@ export class StateMachine extends EventEmitter {
 
   private renameComponent(name: string, newName: string) {
     this.container.app.manager.renameComponent(name, newName);
-    const component = this.container.app.manager.data.elements.components[newName];
 
-    this.platform.nameToComponent.set(newName, component.type);
-    this.platform.nameToComponent.delete(name);
+    const visualCompo = this.platform.nameToVisual.get(name)!;
+    this.platform.nameToVisual.set(newName, visualCompo);
+    this.platform.nameToVisual.delete(name);
 
     // А сейчас будет занимательное путешествие по схеме с заменой всего
     this.states.forEach((state) => {
@@ -550,7 +563,7 @@ export class StateMachine extends EventEmitter {
       console.error('removeComponent purge not implemented yet');
     }
 
-    this.platform.nameToComponent.delete(name);
+    this.platform.nameToVisual.delete(name);
 
     this.container.isDirty = true;
   }

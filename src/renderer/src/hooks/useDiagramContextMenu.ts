@@ -44,7 +44,11 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         {
           label: 'Вставить состояние',
           action: () => {
-            editor?.container.machine.createState({ name: 'Состояние', position: canvasPos });
+            editor?.container.machine.createState({
+              name: 'Состояние',
+              position: canvasPos,
+              placeInCenter: true,
+            });
           },
         },
         {

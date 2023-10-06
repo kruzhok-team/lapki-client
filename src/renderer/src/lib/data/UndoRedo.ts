@@ -78,7 +78,7 @@ type ActionDescriptions = {
 
 export const actionFunctions: ActionFunctions = {
   stateCreate: (sM, args) => ({
-    redo: sM.createState.bind(sM, { ...args, id: args.newStateId }, false),
+    redo: sM.createState.bind(sM, { ...args, id: args.newStateId, linkByPoint: false }, false),
     undo: sM.deleteState.bind(sM, args.newStateId, false),
   }),
   deleteState: (sM, { id, stateData }) => ({
@@ -88,12 +88,10 @@ export const actionFunctions: ActionFunctions = {
       {
         name: stateData.name,
         id,
-        position: {
-          x: stateData.bounds.x + stateData.bounds.width / 2,
-          y: stateData.bounds.y + stateData.bounds.height / 2,
-        },
+        position: stateData.bounds,
         parentId: stateData.parent,
         events: stateData.events,
+        linkByPoint: false,
       },
       false
     ),

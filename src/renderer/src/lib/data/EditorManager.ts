@@ -314,7 +314,11 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  createState({ name, position, parentId, id, events = [] }: CreateStateParameters) {
+  createState(args: CreateStateParameters) {
+    const { name, parentId, id, events = [], placeInCenter = false } = args;
+    let position = args.position;
+    const { width, height } = stateStyle;
+
     const getNewId = () => {
       const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
 
@@ -326,14 +330,19 @@ export class EditorManager {
       return id;
     };
 
-    const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
+    const centerPosition = () => {
+      return {
+        x: position.x - width / 2,
+        y: position.y - height / 2,
+      };
+    };
+
+    position = placeInCenter ? centerPosition() : position;
 
     const newId = id ?? getNewId();
 
     this.data.elements.states[newId] = {
-      bounds: { x, y, width, height },
+      bounds: { ...position, width, height },
       events: events,
       name,
       parent: parentId,

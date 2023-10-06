@@ -35,6 +35,8 @@ export interface CreateStateParameters {
   parentId?: string;
   id?: string;
   events?: EventData[];
+  placeInCenter?: boolean;
+  linkByPoint?: boolean;
 }
 
 export interface CreateTransitionParameters {

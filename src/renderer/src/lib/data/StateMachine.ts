@@ -139,7 +139,7 @@ export class StateMachine extends EventEmitter {
   }
 
   createState = (args: CreateStateParameters, canUndo = true) => {
-    const { parentId, position } = args;
+    const { parentId, position, linkByPoint = true } = args;
 
     // Создание данных
     const newStateId = this.container.app.manager.createState(args);
@@ -155,7 +155,9 @@ export class StateMachine extends EventEmitter {
       this.linkState(parentId, newStateId, canUndo);
       numberOfConnectedActions += 1;
     } else {
-      this.linkStateByPoint(state, position);
+      if (linkByPoint) {
+        this.linkStateByPoint(state, position);
+      }
     }
 
     this.container.states.watchState(state);
@@ -338,6 +340,7 @@ export class StateMachine extends EventEmitter {
     const state = this.states.get(id);
     if (!state) return;
 
+    const parentId = state.data.parent;
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
@@ -376,7 +379,7 @@ export class StateMachine extends EventEmitter {
     if (canUndo) {
       this.undoRedo.do({
         type: 'deleteState',
-        args: { id, stateData: structuredClone(state.data) },
+        args: { id, stateData: { ...structuredClone(state.data), parent: parentId } },
         numberOfConnectedActions,
       });
     }

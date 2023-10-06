@@ -25,9 +25,6 @@ import { loadPlatform } from './PlatformLoader';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { UndoRedo } from './UndoRedo';
 
-import { loadPlatform } from './PlatformLoader';
-import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
-
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';

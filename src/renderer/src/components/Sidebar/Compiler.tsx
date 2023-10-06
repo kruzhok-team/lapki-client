@@ -8,7 +8,6 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
-import { getColor } from '@renderer/theme';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 export interface CompilerProps {

@@ -11,13 +11,14 @@ import {
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 
+import { loadPlatform } from './PlatformLoader';
+import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
+
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
+import { EventSelection } from '../drawable/Events';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
-import { loadPlatform } from './PlatformLoader';
-import { EventSelection } from '../drawable/Events';
 
 export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
@@ -68,6 +69,9 @@ export class StateMachine extends EventEmitter {
     this.initTransitions();
     this.initPlatform();
     this.initComponents();
+
+    // Центрирование камеры после открытия новой схемы
+    this.container.viewCentering();
 
     this.container.isDirty = true;
   }

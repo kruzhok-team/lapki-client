@@ -8,7 +8,7 @@ import { useAddComponent, useEditDeleteComponent } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
-import { ScrollableList } from './ScrollableList';
+import { ScrollableList } from '@renderer/components/ScrollableList';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useThemeContext } from '@renderer/store/ThemeContext';
 import { Select } from '@renderer/components/UI';
+import { useThemeContext } from '@renderer/store/ThemeContext';
 
 interface SettingProps {}
 

@@ -87,9 +87,10 @@ export class Container {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.handleDelete);
+    this.app.keyboard.on('ctrlz', this.machine.undoRedo.undo);
+    this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
-    this.app.keyboard.on('ctrlz', this.handleUndo);
 
     document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -152,10 +153,6 @@ export class Container {
 
   handlePaste = () => {
     this.machine.pasteSelected();
-  };
-
-  handleUndo = () => {
-    this.machine.undo();
   };
 
   handleMouseUp = () => {

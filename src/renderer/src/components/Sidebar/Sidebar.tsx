@@ -1,20 +1,25 @@
 import React, { useMemo, useState } from 'react';
 
-import { Explorer, Menu, CompilerTab, Loader } from '../../components';
-
-import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
-import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
+import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
 import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
+import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
+import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { Setting } from '../Setting';
-
-import { Labels } from './Labels';
-import { Menus } from './Menus';
-import { Badge } from '../UI';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
+
+import { CompilerTab } from './Compiler';
+import { Explorer } from './Explorer';
+import { History } from './History';
+import { Labels } from './Labels';
+import { Loader } from './Loader';
+import { Menu } from './Menu';
+import { Menus } from './Menus';
+import { Setting } from './Setting';
+
+import { Badge } from '../UI';
 
 export interface SidebarCallbacks {
   onRequestNewFile: () => void;
@@ -67,6 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
       />,
       <Loader manager={manager} compilerData={compilerData} />,
+      <History editor={editor} />,
       <Setting />,
     ],
     [manager, editor, compilerData, openData, compilerStatus]
@@ -91,8 +97,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         Icon: <DriveIcon />,
       },
       {
-        Icon: <SettingsIcon />,
+        Icon: <HistoryIcon />,
         bottom: true,
+      },
+      {
+        Icon: <SettingsIcon />,
       },
     ],
     [isEditorDataStale]

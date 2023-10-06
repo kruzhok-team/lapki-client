@@ -47,6 +47,10 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
         this.emit('ctrlz', e);
         return;
       }
+      if (e.code === 'KeyY') {
+        this.emit('ctrly', e);
+        return;
+      }
       if (e.code === 'KeyC') {
         this.emit('ctrlc', e);
         return;

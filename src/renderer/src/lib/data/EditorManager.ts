@@ -9,18 +9,30 @@ import {
   emptyElements,
   Event,
   Action,
-  Condition,
   Transition,
   Component,
   Elements,
   EventData,
 } from '@renderer/types/diagram';
+import {
+  emptyEditorData,
+  emptyDataListeners,
+  CreateStateParameters,
+  EditorData,
+  EditorDataPropertyName,
+  EditorDataReturn,
+  CreateTransitionParameters,
+  ChangeTransitionParameters,
+  ChangeStateEventsParams,
+  AddComponentParams,
+} from '@renderer/types/EditorManager';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
 import { isPlatformAvailable } from './PlatformLoader';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
+import { EventSelection } from '../drawable/Events';
 import { stateStyle } from '../styles';
 
 export type FileError = {
@@ -28,36 +40,13 @@ export type FileError = {
   content: string;
 };
 
-const emptyEditorData = () => ({
-  isInitialized: false,
-  isStale: false,
-  basename: null as string | null,
-  name: null as string | null,
-
-  elements: emptyElements(),
-
-  offset: { x: 0, y: 0 },
-  scale: 1,
-});
-
-type EditorData = ReturnType<typeof emptyEditorData>;
-type EditorDataPropertyName = keyof EditorData | `elements.${keyof EditorData['elements']}`;
-type EditorDataReturn<T> = T extends `elements.${infer V}`
-  ? V extends keyof EditorData['elements']
-    ? EditorData['elements'][V]
-    : never
-  : T extends keyof EditorData
-  ? EditorData[T]
-  : never;
-type EditorDataListeners = { [key in EditorDataPropertyName]: (() => void)[] };
-
-const emptyDataListeners = Object.fromEntries([
-  ...Object.entries(emptyEditorData()).map(([k]) => [k, []]),
-  ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
-]) as any as EditorDataListeners;
-
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
+ *
+ * TODO тут появился костыль, для удобного взаимодействия с состояниями нужно их хранить в объекте,
+ * а в схеме они хранятся в массиве, поэтому когда нужна схема мы их конвертируем в массив
+ * а внутри конвертируем в объект
+ * возможно новый формат это поправит
  */
 export class EditorManager {
   data = emptyEditorData();
@@ -83,7 +72,14 @@ export class EditorManager {
 
     this.data.basename = basename;
     this.data.name = name;
-    this.data.elements = elements;
+    this.data.elements = {
+      ...elements,
+      transitions: elements.transitions.reduce((acc, cur, i) => {
+        acc[i] = cur;
+
+        return acc;
+      }, {}),
+    };
     this.data.isInitialized = true;
 
     this.data.elements = new Proxy(this.data.elements, {
@@ -132,8 +128,9 @@ export class EditorManager {
     }
 
     const elements = emptyElements();
+    (elements.transitions as any) = [];
     elements.platform = platformIdx;
-    this.init(null, 'Без названия', elements);
+    this.init(null, 'Без названия', elements as any);
   }
 
   compile() {
@@ -144,7 +141,10 @@ export class EditorManager {
     */
     const main_platform = this.data.elements.platform.split('-');
     console.log(main_platform[0]);
-    Compiler.compile(main_platform[0], this.data.elements);
+    Compiler.compile(main_platform[0], {
+      ...this.data.elements,
+      transitions: Object.values(this.data.elements.transitions),
+    });
   }
 
   getList(): void {
@@ -248,9 +248,7 @@ export class EditorManager {
 
   getDataSerialized() {
     return JSON.stringify(
-      // TODO тут из-за того что переходы изначально массив, а внутри он конвертируется в словарь то при удалении появляются дыры и нужно их фильтровать
-      // надеюсь с приходом нового формата это пофиксится
-      { ...this.data.elements, transitions: this.data.elements.transitions.filter(Boolean) },
+      { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
       undefined,
       2
     );
@@ -316,57 +314,78 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  createState(name: string, position: Point, eventsData?: EventData[], parentId?: string) {
-    const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-
+  createState(args: CreateStateParameters) {
+    const { name, parentId, id, events = [], placeInCenter = false } = args;
+    let position = args.position;
     const { width, height } = stateStyle;
-    const x = position.x - width / 2;
-    const y = position.y - height / 2;
-    let id = nanoid();
-    while (this.data.elements.states.hasOwnProperty(id)) {
-      id = nanoid();
-    }
 
-    this.data.elements.states[id] = {
-      bounds: { x, y, width, height },
-      events: eventsData ? eventsData : [],
-      name: name,
+    const getNewId = () => {
+      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+      let id = nanoid();
+      while (this.data.elements.states.hasOwnProperty(id)) {
+        id = nanoid();
+      }
+
+      return id;
+    };
+
+    const centerPosition = () => {
+      return {
+        x: position.x - width / 2,
+        y: position.y - height / 2,
+      };
+    };
+
+    position = placeInCenter ? centerPosition() : position;
+
+    const newId = id ?? getNewId();
+
+    this.data.elements.states[newId] = {
+      bounds: { ...position, width, height },
+      events: events,
+      name,
       parent: parentId,
     };
 
     // если у нас не было начального состояния, им станет новое
     if (this.data.elements.initialState === '') {
-      this.data.elements.initialState = id;
+      this.data.elements.initialState = newId;
     }
 
-    return id;
+    return newId;
   }
 
-  newPictoState(id: string, events: Action[], triggerComponent: string, triggerMethod: string) {
+  changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    const trueTab = state.events.find(
+    const eventIndex = state.events.findIndex(
       (value) =>
         triggerComponent === value.trigger.component &&
         triggerMethod === value.trigger.method &&
         undefined === value.trigger.args // FIXME: сравнение по args может не работать
     );
+    const event = state.events[eventIndex];
 
-    if (trueTab === undefined) {
+    if (event === undefined) {
       state.events = [
         ...state.events,
         {
-          do: events,
+          do: actions,
           trigger: {
             component: triggerComponent,
             method: triggerMethod,
-            //args: {},
+            // args: {},
           },
         },
       ];
     } else {
-      trueTab.do = [...events];
+      if (actions.length) {
+        event.do = [...actions];
+      } else {
+        state.events.splice(eventIndex, 1);
+      }
     }
 
     return true;
@@ -418,11 +437,6 @@ export class EditorManager {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    // Если удаляемое состояние было начальным, стираем текущее значение
-    if (this.data.elements.initialState === id) {
-      this.data.elements.initialState = '';
-    }
-
     delete this.data.elements.states[id];
 
     return true;
@@ -437,61 +451,114 @@ export class EditorManager {
     return true;
   }
 
-  changeEvent(stateId: string, event: any, newValue: Event | Action) {
+  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
-    //Проверяем по условию, что мы редактируем, либо главное событие, либо действие
-    if (event.actionIdx === null) {
-      const trueTab = state.events.find(
-        (value, id) =>
-          event.eventIdx !== id &&
-          newValue.component === value.trigger.component &&
-          newValue.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      if (trueTab === undefined) {
-        state.events[event.eventIdx].trigger = newValue;
-      } else {
-        trueTab.do = [...trueTab.do, ...state.events[event.eventIdx].do];
-        state.events.splice(event.eventIdx, 1);
-      }
+    if (eventIdx !== undefined) {
+      state.events.splice(eventIdx, 0, eventData);
     } else {
-      state.events[event.eventIdx].do[event.actionIdx] = newValue;
+      state.events.push(eventData);
     }
 
     return true;
   }
 
-  deleteEvent(stateId: string, eventIdx: number, actionIdx: number | null) {
+  createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
-    if (actionIdx !== null) {
-      state.events[eventIdx].do.splice(actionIdx!, 1);
-      // Проверяем, есть ли действия в событие, если нет, то удалять его
-      if (state.events[eventIdx].do.length === 0) {
-        state.events.splice(eventIdx, 1);
-      }
-    } else {
-      state.events.splice(eventIdx, 1);
-    }
+    const { eventIdx, actionIdx } = event;
+
+    state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
 
     return true;
   }
 
-  createTransition(
-    source: string,
-    target: string,
-    color: string,
-    position: Point,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
-  ) {
-    this.data.elements.transitions.push({
+  changeEvent(stateId: string, eventIdx: number, newValue: Event) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    // const event = state.events.find(
+    //   (value, id) =>
+    //     eventIdx !== id &&
+    //     newValue.component === value.trigger.component &&
+    //     newValue.method === value.trigger.method &&
+    //     undefined === value.trigger.args // FIXME: сравнение по args может не работать
+    // );
+
+    const event = state.events[eventIdx];
+
+    if (!event) return false;
+
+    event.trigger = newValue;
+
+    // if (trueTab === undefined) {
+    //   state.events[eventIdx].trigger = newValue;
+    // } else {
+    // event.do = [...event.do, ...state.events[eventIdx].do];
+    // state.events.splice(eventIdx, 1);
+    // }
+
+    return true;
+  }
+
+  changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    const { eventIdx, actionIdx } = event;
+
+    state.events[eventIdx].do[actionIdx as number] = newValue;
+
+    return true;
+  }
+
+  deleteEvent(stateId: string, eventIdx: number) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    state.events.splice(eventIdx, 1);
+
+    return true;
+  }
+
+  deleteEventAction(stateId: string, event: EventSelection) {
+    const state = this.data.elements.states[stateId];
+    if (!state) return false;
+
+    const { eventIdx, actionIdx } = event;
+
+    state.events[eventIdx].do.splice(actionIdx as number, 1);
+
+    return true;
+  }
+
+  createTransition({
+    id,
+    source,
+    target,
+    color,
+    position,
+    component,
+    method,
+    doAction,
+    condition,
+  }: CreateTransitionParameters) {
+    const getNewId = () => {
+      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+      let id = nanoid();
+      while (this.data.elements.transitions.hasOwnProperty(id)) {
+        id = nanoid();
+      }
+
+      return id;
+    };
+
+    const newId = id ?? getNewId();
+
+    this.data.elements.transitions[newId] = {
       source,
       target,
       color,
@@ -502,19 +569,19 @@ export class EditorManager {
       },
       do: doAction,
       condition,
-    });
+    };
 
-    return String(this.data.elements.transitions.length - 1);
+    return String(newId);
   }
 
-  changeTransition(
-    id: string,
-    color: string,
-    component: string,
-    method: string,
-    doAction: Action[],
-    condition: Condition | undefined
-  ) {
+  changeTransition({
+    id,
+    color,
+    component,
+    method,
+    doAction,
+    condition,
+  }: ChangeTransitionParameters) {
     const transition = this.data.elements.transitions[id] as Transition;
     if (!transition) return false;
 
@@ -523,6 +590,15 @@ export class EditorManager {
     transition.trigger.method = method;
     transition.do = doAction;
     transition.condition = condition;
+
+    return true;
+  }
+
+  changeTransitionPosition(id: string, position: Point) {
+    const transition = this.data.elements.transitions[id];
+    if (!transition) return false;
+
+    transition.position = position;
 
     return true;
   }
@@ -536,7 +612,7 @@ export class EditorManager {
     return true;
   }
 
-  addComponent(name: string, type: string) {
+  addComponent({ name, type, parameters = {} }: AddComponentParams) {
     if (this.data.elements.components.hasOwnProperty(name)) {
       console.log(['bad new component', name, type]);
       return false;
@@ -544,8 +620,11 @@ export class EditorManager {
 
     this.data.elements.components[name] = {
       type,
-      parameters: {},
+      parameters,
     };
+
+    // TODO Выглядит костыльно
+    this.data.elements.components = { ...this.data.elements.components };
 
     return true;
   }

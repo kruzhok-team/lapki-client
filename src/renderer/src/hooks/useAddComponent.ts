@@ -29,7 +29,7 @@ export const useAddComponent = (editor: CanvasEditor | null, manager: EditorMana
 
   const onSubmit = (idx: string, name?: string) => {
     const realName = name ?? idx;
-    editor!.container.machine.addComponent(realName, idx);
+    editor!.container.machine.addComponent({ name: realName, type: idx });
   };
 
   return { isOpen, onClose, vacantComponents, existingComponents, onSubmit, onRequestAddComponent };

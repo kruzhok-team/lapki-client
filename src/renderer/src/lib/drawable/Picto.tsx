@@ -192,7 +192,7 @@ export class Picto {
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
     ctx.lineWidth = 0.5;
-    ctx.roundRect(x, y, width / this.scale, height / this.scale, 5);
+    ctx.roundRect(x, y, width / this.scale, height / this.scale, 5 / this.scale);
     ctx.fill();
     ctx.stroke();
     ctx.restore();

@@ -32,21 +32,20 @@ export const rotatePoint = (point: Point, origin: Point, angle: number) => {
   return point;
 };
 
-const getDistanceBetweenPoints = (p1: Point, p2: Point) => {
-  return (p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2;
-};
+// const getDistanceBetweenPoints = (p1: Point, p2: Point) => {
+//   return (p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2;
+// };
 
-const getRectangleCenter = (rect: Rectangle): Point => {
-  return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
-};
+// const getRectangleCenter = (rect: Rectangle): Point => {
+//   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+// };
 
-// @ts-ignore
-const getDistanceBetweenRectangles = (rect1: Rectangle, rect2: Rectangle) => {
-  const c1 = getRectangleCenter(rect1);
-  const c2 = getRectangleCenter(rect2);
+// const getDistanceBetweenRectangles = (rect1: Rectangle, rect2: Rectangle) => {
+//   const c1 = getRectangleCenter(rect1);
+//   const c2 = getRectangleCenter(rect2);
 
-  return getDistanceBetweenPoints(c1, c2);
-};
+//   return getDistanceBetweenPoints(c1, c2);
+// };
 
 const getSectors = (
   rect1Left: number,

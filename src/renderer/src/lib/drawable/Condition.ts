@@ -1,9 +1,9 @@
 import { Draggable } from './Draggable';
+import { picto } from './Picto';
 import { Transition } from './Transition';
 
 import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
-import { picto } from './Picto';
 
 /**
  * Условие перехода (т.е. подпись ребра машины состояний).
@@ -50,7 +50,7 @@ export class Condition extends Draggable {
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height, 8);
+    ctx.roundRect(x, y, width, height, 8 / this.container.app.manager.data.scale);
     ctx.fill();
     ctx.closePath();
 
@@ -118,7 +118,7 @@ export class Condition extends Draggable {
     //       а перед ними прописывать стили!
     ctx.beginPath();
     ctx.strokeStyle = transitionStyle.bgColor;
-    ctx.roundRect(x, y, width, height + childrenHeight, transitionStyle.startSize);
+    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.container.app.manager.data.scale);
     ctx.stroke();
     ctx.closePath();
   }

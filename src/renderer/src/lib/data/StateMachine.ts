@@ -25,6 +25,9 @@ import { loadPlatform } from './PlatformLoader';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
 import { UndoRedo } from './UndoRedo';
 
+import { loadPlatform } from './PlatformLoader';
+import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
+
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
@@ -83,6 +86,9 @@ export class StateMachine extends EventEmitter {
     this.initTransitions();
     this.initPlatform();
     this.initComponents();
+
+    // Центрирование камеры после открытия новой схемы
+    this.container.viewCentering();
 
     this.container.isDirty = true;
   }

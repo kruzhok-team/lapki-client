@@ -90,6 +90,11 @@ export class Container {
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
     this.app.keyboard.on('ctrlz', this.handleUndo);
+    this.app.keyboard.on('ctrln', this.handleNewFile);
+    this.app.keyboard.on('ctrlo', this.handleOpenFile);
+    this.app.keyboard.on('ctrls', this.handleSaveFile);
+    this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
+    this.app.keyboard.on('ctrle', this.handleImport);
 
     document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -156,6 +161,26 @@ export class Container {
 
   handleUndo = () => {
     this.machine.undo();
+  };
+
+  handleNewFile = () => {
+    return true;
+  };
+
+  handleOpenFile = () => {
+    return true;
+  };
+
+  handleSaveFile = () => {
+    return true;
+  };
+
+  handleSaveAsFile = () => {
+    return true;
+  };
+
+  handleImport = () => {
+    return true;
   };
 
   handleMouseUp = () => {

@@ -8,7 +8,13 @@ import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
 
-type DiagramContextMenuItem = { label: string; action: () => void };
+type DiagramContextMenuItem = {
+  label: string;
+  type: string;
+  isFolder?: boolean;
+  children?: string[];
+  action: () => void;
+};
 
 export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: EditorManager) => {
   const openTab = useTabs((state) => state.openTab);
@@ -38,18 +44,21 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(pos, [
         {
           label: 'Вставить',
+          type: 'paste',
           action: () => {
             editor?.container.handlePaste();
           },
         },
         {
           label: 'Вставить состояние',
+          type: 'pasteState',
           action: () => {
             editor?.container.machine.createState('Состояние', canvasPos);
           },
         },
         {
           label: 'Посмотреть код',
+          type: 'showCodeAll',
           action: () => {
             openTab({
               type: 'code',
@@ -61,6 +70,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Центрировать камеру',
+          type: 'centerCamera',
           action: () => {
             editor?.container.viewCentering();
           },
@@ -75,30 +85,49 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(pos, [
         {
           label: 'Копировать',
+          type: 'copy',
           action: () => {
             editor?.container.handleCopy();
           },
         },
         {
           label: 'Вставить',
+          type: 'paste',
           action: () => {
             editor?.container.handlePaste();
           },
         },
         {
-          label: 'Вставить состояние',
-          action: () => {
-            editor?.container.machine.createState('Состояние', canvasPos);
-          },
+          label: 'Редактировать',
+          type: 'edit',
+          isFolder: true,
+          children: ['Назначить начальным', 'Вставить состояние', 'Вставить событие'],
+          action: () => {},
         },
         {
           label: 'Назначить начальным',
+          type: 'initialState',
           action: () => {
             editor?.container.machine.changeInitialState(state.id as string);
           },
         },
         {
+          label: 'Вставить состояние',
+          type: 'pasteState',
+          action: () => {
+            editor?.container.machine.createState('Состояние', canvasPos);
+          },
+        },
+        {
+          label: 'Вставить событие',
+          type: 'pasteEvent',
+          action: () => {
+            editor?.container.machine.createState('Состояние', canvasPos);
+          },
+        },
+        {
           label: 'Посмотреть код',
+          type: 'showCodeAll',
           action: () => {
             openTab({
               type: 'state',
@@ -110,6 +139,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Удалить',
+          type: 'delete',
           action: () => {
             editor?.container.machine.deleteState(state.id as string);
           },
@@ -122,6 +152,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(pos, [
         {
           label: 'Удалить',
+          type: 'delete',
           action: () => {
             editor?.container.machine.deleteEvent(state.id as string, event);
           },
@@ -134,12 +165,14 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(pos, [
         {
           label: 'Копировать',
+          type: 'copy',
           action: () => {
             editor?.container.handleCopy();
           },
         },
         {
           label: 'Посмотреть код',
+          type: 'showCodeAll',
           action: () => {
             openTab({
               type: 'transition',
@@ -151,6 +184,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Удалить',
+          type: 'delete',
           action: () => {
             editor?.container.machine.deleteTransition(condition.id as string);
           },

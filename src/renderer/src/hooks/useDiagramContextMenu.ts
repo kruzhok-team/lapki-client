@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { useTabs } from '@renderer/store/useTabs';
-
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
+import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
 
 type DiagramContextMenuItem = {
@@ -53,7 +52,11 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor?.container.machine.createState('Состояние', canvasPos);
+            editor?.container.machine.createState({
+              name: 'Состояние',
+              position: canvasPos,
+              placeInCenter: true,
+            });
           },
         },
         {
@@ -98,11 +101,22 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           },
         },
         {
+<<<<<<< HEAD
           label: 'Редактировать',
           type: 'edit',
           isFolder: true,
           children: ['Назначить начальным', 'Вставить состояние', 'Вставить событие'],
           action: () => {},
+=======
+          label: 'Вставить состояние',
+          action: () => {
+            editor?.container.machine.createState({
+              name: 'Состояние',
+              position: canvasPos,
+              parentId: state.id,
+            });
+          },
+>>>>>>> 1a54cf6afdc365fcd7fdb637d61ab7071f0a2d71
         },
         {
           label: 'Назначить начальным',
@@ -154,7 +168,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machine.deleteEvent(state.id as string, event);
+            editor?.container.machine.deleteEvent(state.id, event);
           },
         },
       ]);

@@ -122,6 +122,14 @@ export class Transitions {
     this.container.isDirty = true;
   };
 
+  handleDragEnd = (e: { target: Condition; dragStartPosition: Point; dragEndPosition: Point }) => {
+    this.container.machine.changeTransitionPosition(
+      e.target.id,
+      e.dragStartPosition,
+      e.dragEndPosition
+    );
+  };
+
   watchTransition(transition: Transition) {
     //Если клик был на блок transition, то он выполняет функции
     transition.condition.on('click', this.handleConditionClick as any);
@@ -131,6 +139,7 @@ export class Transitions {
     transition.condition.on('mouseup', this.handleMouseUpOnState as any);
 
     transition.condition.on('contextmenu', this.handleContextMenu as any);
+    transition.condition.on('dragend', this.handleDragEnd as any);
   }
 
   unwatchTransition(transition: Transition) {
@@ -138,6 +147,7 @@ export class Transitions {
     transition.condition.off('dblclick', this.handleConditionDoubleClick as any);
     transition.condition.off('mouseup', this.handleMouseUpOnState as any);
     transition.condition.off('contextmenu', this.handleContextMenu as any);
+    transition.condition.off('dragend', this.handleDragEnd as any);
     transition.condition.unbindEvents();
   }
 }

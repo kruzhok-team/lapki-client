@@ -1,10 +1,11 @@
+import { Point } from '@renderer/types/graphics';
+
+import { EventSelection } from './Events';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { Point } from '@renderer/types/graphics';
-import { EventSelection } from './Events';
 
 type CreateNameCallback = (state: State) => void;
 type CreateCallback = (state: State) => void;
@@ -27,7 +28,7 @@ export class States extends EventEmitter {
 
   createCallback!: CreateCallback;
   createNameCallback!: CreateNameCallback;
-  createEventCallback!: CreateEventCallback;
+  changeEventCallback!: CreateEventCallback;
   menuEventCallback!: MenuEventCallback;
   menuCallback!: MenuCallback;
 
@@ -39,8 +40,8 @@ export class States extends EventEmitter {
     this.createNameCallback = nameCallback;
   };
 
-  onStateEventCreate = (eventCallback: CreateEventCallback) => {
-    this.createEventCallback = eventCallback;
+  onStateEventChange = (eventCallback: CreateEventCallback) => {
+    this.changeEventCallback = eventCallback;
   };
 
   onStateContextMenu = (menuCallback: MenuCallback) => {
@@ -96,7 +97,7 @@ export class States extends EventEmitter {
       if (!eventIdx) {
         this.createCallback?.(e.target);
       } else {
-        this.createEventCallback?.(e.target, eventIdx, true);
+        this.changeEventCallback?.(e.target, eventIdx, true);
       }
     }
   };
@@ -129,12 +130,17 @@ export class States extends EventEmitter {
     // TODO: визуальная обратная связь
   };
 
+  handleDragEnd = (e: { target: State; dragStartPosition: Point; dragEndPosition: Point }) => {
+    this.container.machine.changeStatePosition(e.target.id, e.dragStartPosition, e.dragEndPosition);
+  };
+
   watchState(state: State) {
     state.on('mouseup', this.handleMouseUpOnState as any);
     state.on('click', this.handleStateClick as any);
     state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('contextmenu', this.handleContextMenu as any);
     state.on('longpress', this.handleLongPress as any);
+    state.on('dragend', this.handleDragEnd as any);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
@@ -145,6 +151,7 @@ export class States extends EventEmitter {
     state.off('dblclick', this.handleStateDoubleClick as any);
     state.off('contextmenu', this.handleContextMenu as any);
     state.off('longpress', this.handleLongPress as any);
+    state.off('dragend', this.handleDragEnd as any);
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();

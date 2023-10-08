@@ -61,7 +61,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   }, [idx]);
 
   useEffect(() => {
-    setParameters(data.parameters);
+    setParameters({ ...data.parameters });
   }, [data.parameters]);
 
   return (

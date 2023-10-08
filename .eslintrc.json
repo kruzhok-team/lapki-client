@@ -20,11 +20,12 @@
     }
   },
   "rules": {
+    "react-hooks/rules-of-hooks": "warn",
+    "@typescript-eslint/no-this-alias": "warn",
+    "no-prototype-builtins": "off",
     "@typescript-eslint/no-empty-interface": "warn",
     "no-async-promise-executor": "warn",
     "prefer-const": "warn",
-    "@typescript-eslint/no-this-alias": "off",
-    "no-prototype-builtins": "off",
     "import/default": "off",
     "@typescript-eslint/no-inferrable-types": "off", // чтобы можно было указывать тип даже когда он может определиться сам
     "react-refresh/only-export-components": "warn",
@@ -45,6 +46,12 @@
           "order": "asc",
           "caseInsensitive": true
         }
+      }
+    ],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
       }
     ]
   }

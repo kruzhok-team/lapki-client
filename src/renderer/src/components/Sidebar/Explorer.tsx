@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { useAddComponent, useEditDeleteComponent } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
-import { ScrollableList } from './ScrollableList';
+import { ScrollableList } from '@renderer/components/ScrollableList';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;
@@ -86,12 +85,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
               onDoubleClick={() => onCompDblClick(key)}
               onContextMenu={() => onCompRightClick(key)}
             >
-              <img
-                className="h-8 w-8 object-contain"
-                src={
-                  editor?.container.machine.platform?.getComponentIconUrl(key, true) ?? UnknownIcon
-                }
-              />
+              {editor?.container.machine.platform?.getFullComponentIcon(key)}
               <p className="ml-2 line-clamp-1">{key}</p>
             </div>
           )}

@@ -1,7 +1,8 @@
 import { Point, TransitionLine } from '@renderer/types/graphics';
+
+import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
 import { rotatePoint } from '../utils';
-import { Container } from '../basic/Container';
 
 export class BaseTransition {
   container!: Container;
@@ -12,7 +13,7 @@ export class BaseTransition {
 
   protected drawLine(ctx: CanvasRenderingContext2D, line: TransitionLine) {
     const { start, mid, end } = line;
-    const rounded = 10; // нет защиты на максимальный радиус, так что просто его не ставь!
+    const rounded = 12 / this.container.app.manager.data.scale; // нет защиты на максимальный радиус, так что просто его не ставь!
 
     ctx.beginPath();
 

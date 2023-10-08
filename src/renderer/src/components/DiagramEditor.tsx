@@ -1,23 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { State } from '@renderer/lib/drawable/State';
-
-import { CreateModal, CreateModalResult } from './CreateModal';
-import { CreateEventsModal, EventsModalResult } from './EventsModal';
-
-import { EventSelection } from '@renderer/lib/drawable/Events';
-import { Action } from '@renderer/types/diagram';
-import { StateNameModal } from './StateNameModal';
-import { Scale } from './Scale';
-import { DiagramContextMenu } from './DiagramContextMenu';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { EventSelection } from '@renderer/lib/drawable/Events';
+import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
+import { Action } from '@renderer/types/diagram';
+
+import { CreateModal, CreateModalResult } from './CreateModal';
+import { DiagramContextMenu } from './DiagramContextMenu';
+import { CreateEventsModal, EventsModalResult } from './EventsModal';
+import { Scale } from './Scale';
+import { StateNameModal } from './StateNameModal';
 
 // цвет связи по-умолчанию
-export const defaultTransColor: string = '#0000FF';
+export const defaultTransColor = '#0000FF';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -64,7 +63,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
 
     //Перетаскиваем компонент в редактор
     editor.container.onStateDrop((position) => {
-      editor?.container.machine.createState('Состояние', position);
+      editor?.container.machine.createState({ name: 'Состояние', position, placeInCenter: true });
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
@@ -75,7 +74,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       // manager.triggerDataUpdate();
     });
 
-    editor.container.states.onStateEventCreate((state, event, click) => {
+    editor.container.states.onStateEventChange((state, event, click) => {
       ClearUseState();
       setIdEvents({ state, event, click });
       openEventsModal();
@@ -114,39 +113,39 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
 
   const handleCreateEventsModal = (data: EventsModalResult) => {
     setEvents([...events, data.action]);
-    if (!isModalOpen) {
-      editor?.container.machine.changeEvent(data.id, data.trigger);
+    if (!isModalOpen && data.id?.event) {
+      editor?.container.machine.changeEvent(data.id?.state.id, data.id.event, data.trigger);
     }
     closeEventsModal();
   };
 
   const handleCreateModal = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.machine.newPictoState(
-        data.id,
-        events,
-        data.trigger.component,
-        data.trigger.method
-      );
+      editor?.container.machine.changeStateEvents({
+        id: data.id,
+        triggerComponent: data.trigger.component,
+        triggerMethod: data.trigger.method,
+        actions: events,
+      });
     } else if (transition && data.key === 3) {
-      editor?.container.machine.changeTransition(
-        transition.id,
-        data.color ?? defaultTransColor,
-        data.trigger.component,
-        data.trigger.method,
-        events,
-        data.condition
-      );
+      editor?.container.machine.changeTransition({
+        id: transition.id,
+        color: data.color ?? defaultTransColor,
+        component: data.trigger.component,
+        method: data.trigger.method,
+        doAction: events,
+        condition: data.condition,
+      });
     } else if (newTransition) {
-      editor?.container.machine.createTransition(
-        newTransition.source,
-        newTransition?.target,
-        defaultTransColor,
-        data.trigger.component,
-        data.trigger.method,
-        events,
-        data.condition
-      );
+      editor?.container.machine.createTransition({
+        source: newTransition.source.id,
+        target: newTransition.target.id,
+        color: data.color ?? defaultTransColor,
+        component: data.trigger.component,
+        method: data.trigger.method,
+        doAction: events,
+        condition: data.condition,
+      });
     }
     closeModal();
   };

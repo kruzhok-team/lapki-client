@@ -101,22 +101,11 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           },
         },
         {
-<<<<<<< HEAD
           label: 'Редактировать',
           type: 'edit',
           isFolder: true,
           children: ['Назначить начальным', 'Вставить состояние', 'Вставить событие'],
           action: () => {},
-=======
-          label: 'Вставить состояние',
-          action: () => {
-            editor?.container.machine.createState({
-              name: 'Состояние',
-              position: canvasPos,
-              parentId: state.id,
-            });
-          },
->>>>>>> 1a54cf6afdc365fcd7fdb637d61ab7071f0a2d71
         },
         {
           label: 'Назначить начальным',
@@ -129,14 +118,22 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor?.container.machine.createState('Состояние', canvasPos);
+            editor?.container.machine.createState({
+              name: 'Состояние',
+              position: canvasPos,
+              parentId: state.id,
+            });
           },
         },
         {
           label: 'Вставить событие',
           type: 'pasteEvent',
           action: () => {
-            editor?.container.machine.createState('Состояние', canvasPos);
+            editor?.container.machine.createState({
+              name: 'Состояние',
+              position: canvasPos,
+              parentId: state.id,
+            });
           },
         },
         {

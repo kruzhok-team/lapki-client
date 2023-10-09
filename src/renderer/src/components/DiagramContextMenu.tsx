@@ -9,7 +9,7 @@ import { getVirtualElement } from '@renderer/utils';
 
 import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
-import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
+//import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as InitialIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event_add.svg';

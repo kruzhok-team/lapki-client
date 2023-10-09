@@ -125,17 +125,17 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             });
           },
         },
-        {
-          label: 'Вставить событие',
-          type: 'pasteEvent',
-          action: () => {
-            editor?.container.machine.createState({
-              name: 'Состояние',
-              position: canvasPos,
-              parentId: state.id,
-            });
-          },
-        },
+        // {
+        //   label: 'Вставить событие',
+        //   type: 'pasteEvent',
+        //   action: () => {
+        //     editor?.container.machine.createState({
+        //       name: 'Состояние',
+        //       position: canvasPos,
+        //       parentId: state.id,
+        //     });
+        //   },
+        // },
         {
           label: 'Посмотреть код',
           type: 'showCodeAll',

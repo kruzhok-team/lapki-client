@@ -100,9 +100,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             Перетащите файл в эту область, либо воспользуйтесь комбинациями клавиш:
           </p>
           <div> 
-          
             {
-              
               combination.map((value) => (
                 <div className="flex justify-between my-3">
                   <div className="px-1">{value.name}</div>

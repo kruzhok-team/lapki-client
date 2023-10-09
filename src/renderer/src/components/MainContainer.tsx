@@ -97,7 +97,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         <div className="flex flex-col items-center pt-24">
           <Icon />
           <p className="text-center text-base py-6">
-            Перетащите файл в эту область, либо воспользуйтесь комбинациями клавиш:
+            Перетащите файл в эту область, либо воспользуйтесь комбинацией клавиш:
           </p>
           <div> 
             {

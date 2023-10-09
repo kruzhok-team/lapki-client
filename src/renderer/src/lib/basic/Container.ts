@@ -91,7 +91,6 @@ export class Container {
     this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
-    // this.app.keyboard.on('ctrlz', this.handleUndo);
     // this.app.keyboard.on('ctrln', this.handleNewFile);
     // this.app.keyboard.on('ctrlo', this.handleOpenFile);
     // this.app.keyboard.on('ctrls', this.handleSaveFile);
@@ -160,6 +159,26 @@ export class Container {
   handlePaste = () => {
     this.machine.pasteSelected();
   };
+
+  // handleNewFile = () => {
+  //   this.machine.deleteSelected();
+  // };
+
+  // handleOpenFile = () => {
+  //   this.machine.deleteSelected();
+  // };
+
+  // handleSaveFile = () => {
+  //   this.machine.deleteSelected();
+  // };
+
+  // handleSaveAsFile = () => {
+  //   this.machine.deleteSelected();
+  // };
+
+  // handleImport = () => {
+  //   this.machine.deleteSelected();
+  // };
 
   handleMouseUp = () => {
     this.machine.removeSelection();

@@ -44,41 +44,34 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   });
 
   const combination = [
+    // {
+    //   name: "Создать файл ",
+    //   command: {
+    //     button1: "Ctrl",
+    //     button2: "N",
+    //   }
+    // },
+    // {
+    //   name: "Открыть файл ",
+    //   command: {
+    //     button1: "Ctrl",
+    //     button2: "O",
+    //   }
+    // },
+    // {
+    //   name: "Обновить приложение ",
+    //   command: {
+    //     button1: "Ctrl",
+    //     button2: "R",
+    //   }
+    // },
     {
-      name: "Создать файл ",
-      command: {
-        button1: "Ctrl",
-        button2: "N",
-      }
-    },
-    {
-      name: "Открыть файл ",
-      command: {
-        button1: "Ctrl",
-        button2: "O",
-      }
-    },
-    {
-      name: "Обновить приложение ",
-      command: {
-        button1: "Ctrl",
-        button2: "R",
-      }
-    },
-    {
-      name: "Во весь экран ",
+      name: "Во весь экран",
       command: {
         button1: "F11",
         button2: undefined,
       }
     },
-    {
-      name: "DevTools ",
-      command: {
-        button1: "F12",
-        button2: undefined,
-      }
-    }
   ]
   return (
     <div
@@ -97,7 +90,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         <div className="flex flex-col items-center pt-24">
           <Icon />
           <p className="text-center text-base py-6">
-            Перетащите файл в эту область, либо воспользуйтесь комбинацией клавиш:
+            Перетащите файл в эту область или воспользуйтесь комбинацией клавиш:
           </p>
           <div> 
             {

@@ -100,13 +100,13 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             editor?.container.handlePaste();
           },
         },
-        {
-          label: 'Редактировать',
-          type: 'edit',
-          isFolder: true,
-          children: ['Назначить начальным', 'Вставить состояние', 'Вставить событие'],
-          action: () => {},
-        },
+        // {
+        //   label: 'Редактировать',
+        //   type: 'edit',
+        //   isFolder: true,
+        //   children: ['Назначить начальным', 'Вставить состояние', 'Вставить событие'],
+        //   action: () => {},
+        // },
         {
           label: 'Назначить начальным',
           type: 'initialState',

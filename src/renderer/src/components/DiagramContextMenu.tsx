@@ -71,10 +71,10 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
       icon: <CodeAllIcon />,
       combination: undefined,
     },
-    edit: {
-      icon: <EditIcon />,
-      combination: undefined,
-    },
+    // edit: {
+    //   icon: <EditIcon />,
+    //   combination: undefined,
+    // },
     centerCamera: {
       icon: <CameraIcon />,
       combination: undefined,
@@ -114,8 +114,8 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
               {isFolder && <div className="flex">{'>'}</div>}
             </div>
           </button>
-          {isFolder && (
-            //Крайняя мера, которую я не хотел добавлять сюда
+          {/* {isFolder && (
+            //Крайняя мера, которую я не хотел добавлять сюда, я про стили
             <div
               className={twMerge(
                 'absolute top-[5.5rem] z-50 w-64 rounded bg-bg-secondary p-2 shadow-xl',
@@ -125,7 +125,7 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
             >
               {children}
             </div>
-          )}
+          )} */}
         </>
       ))}
     </div>

@@ -123,20 +123,6 @@ export class States extends EventEmitter {
     }
   };
 
-  handleLongPress = (e: { target: State; event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
-    // если состояние вложено – отсоединяем
-    if (typeof e.target.parent !== 'undefined') {
-      this.container.machine.unlinkState(e.target.id!);
-      return;
-    }
-
-    // если под курсором есть состояние – присоединить к нему
-    this.container.machine.linkStateByPoint(e.target, e.event);
-    // TODO: визуальная обратная связь
-  };
-
   handleDrag = (e: { event: MyMouseEvent; target: State }) => {
     const { target: state } = e;
     const position = { x: e.event.x, y: e.event.y };
@@ -197,7 +183,6 @@ export class States extends EventEmitter {
     state.on('click', this.handleStateClick as any);
     state.on('dblclick', this.handleStateDoubleClick as any);
     state.on('contextmenu', this.handleContextMenu as any);
-    state.on('longpress', this.handleLongPress as any);
     state.on('dragend', this.handleDragEnd as any);
     state.on('drag', this.handleDrag as any);
 
@@ -209,7 +194,6 @@ export class States extends EventEmitter {
     state.off('click', this.handleStateClick as any);
     state.off('dblclick', this.handleStateDoubleClick as any);
     state.off('contextmenu', this.handleContextMenu as any);
-    state.off('longpress', this.handleLongPress as any);
     state.off('dragend', this.handleDragEnd as any);
     state.off('drag', this.handleDrag as any);
 

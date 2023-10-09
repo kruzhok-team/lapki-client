@@ -1,10 +1,12 @@
+import theme from '@renderer/theme';
+
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
 import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import theme from '@renderer/theme';
+import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 const style = theme.colors.diagram.state;
 
@@ -13,7 +15,7 @@ const style = theme.colors.diagram.state;
  * Класс выполняет отрисовку, обработку событий (за счёт {@link Draggable}),
  * управление собственным выделением и отображение «хваталок».
  */
-export class State extends Draggable {
+export class State extends Draggable<State> {
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -22,7 +24,7 @@ export class State extends Draggable {
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
 
-  constructor(container: Container, id: string, parent?: Draggable) {
+  constructor(container: Container, id: string, parent?: Draggable<State>) {
     super(container, id, parent);
     this.container = container;
 
@@ -231,4 +233,10 @@ export class State extends Draggable {
   setIsSelected(value: boolean) {
     this.isSelected = value;
   }
+
+  handleMouseMove = (e: MyMouseEvent) => {
+    super.handleMouseMove(e);
+
+    console.log('here');
+  };
 }

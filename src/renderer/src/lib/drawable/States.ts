@@ -135,23 +135,23 @@ export class States extends EventEmitter {
   };
 
   watchState(state: State) {
-    state.on('mouseup', this.handleMouseUpOnState as any);
-    state.on('click', this.handleStateClick as any);
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('contextmenu', this.handleContextMenu as any);
-    state.on('longpress', this.handleLongPress as any);
-    state.on('dragend', this.handleDragEnd as any);
+    state.on('mouseup', this.handleMouseUpOnState);
+    state.on('click', this.handleStateClick);
+    state.on('dblclick', this.handleStateDoubleClick);
+    state.on('contextmenu', this.handleContextMenu);
+    state.on('longpress', this.handleLongPress);
+    state.on('dragend', this.handleDragEnd);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
 
   unwatchState(state: State) {
-    state.off('mouseup', this.handleMouseUpOnState as any);
-    state.off('click', this.handleStateClick as any);
-    state.off('dblclick', this.handleStateDoubleClick as any);
-    state.off('contextmenu', this.handleContextMenu as any);
-    state.off('longpress', this.handleLongPress as any);
-    state.off('dragend', this.handleDragEnd as any);
+    state.off('mouseup', this.handleMouseUpOnState);
+    state.off('click', this.handleStateClick);
+    state.off('dblclick', this.handleStateDoubleClick);
+    state.off('contextmenu', this.handleContextMenu);
+    state.off('longpress', this.handleLongPress);
+    state.off('dragend', this.handleDragEnd);
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();

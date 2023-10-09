@@ -3,7 +3,7 @@ import { Point, Rectangle } from '@renderer/types/graphics';
 import { Events } from './Events';
 
 import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitter';
+import { EventEmitter } from '../common/EventEmitterNew';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { isPointInRectangle } from '../utils';
 
@@ -23,13 +23,25 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-export abstract class Draggable extends EventEmitter {
+interface DraggableEvents<T extends ThisType<Draggable<any>>> {
+  mousedown: { event: MyMouseEvent; target: T };
+  mouseup: { event: MyMouseEvent; target: T };
+  click: { event: MyMouseEvent; target: T };
+  dblclick: { event: MyMouseEvent; target: T };
+  contextmenu: { event: MyMouseEvent; target: T };
+  longpress: { event: MyMouseEvent; target: T };
+  dragend: { dragStartPosition: Point; dragEndPosition: Point; target: T };
+}
+
+export abstract class Draggable<T extends Draggable<any> = Draggable<any>> extends EventEmitter<
+  DraggableEvents<T>
+> {
   container!: Container;
   statusevents!: Events;
   // bounds!: Rectangle;
   id!: string;
-  parent?: Draggable;
-  children: Map<string, Draggable> = new Map();
+  parent?: Draggable<any>;
+  children: Map<string, Draggable<any>> = new Map();
 
   dragging = false;
 
@@ -42,7 +54,7 @@ export abstract class Draggable extends EventEmitter {
 
   childrenPadding = 15;
 
-  constructor(container: Container, id: string, parent?: Draggable) {
+  constructor(container: Container, id: string, parent?: Draggable<any>) {
     super();
 
     this.container = container;
@@ -211,6 +223,11 @@ export abstract class Draggable extends EventEmitter {
     this.emit('mousedown', { event: e, target: this });
 
     this.emit('click', { event: e, target: this });
+
+    // this.emit('a', 'sa');
+    // this.on('a', (e) => {});
+
+    // this.emit('as', { a: 2 });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {

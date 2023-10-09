@@ -39,6 +39,7 @@
     "buffer": "^6.0.3",
     "curved-arrows": "^0.1.0",
     "electron-settings": "^4.0.2",
+    "fast-xml-parser": "^4.3.2",
     "find-free-port": "^2.0.0",
     "isomorphic-ws": "^5.0.0",
     "monaco-editor": "^0.39.0",

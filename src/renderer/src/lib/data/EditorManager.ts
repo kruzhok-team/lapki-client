@@ -155,6 +155,7 @@ export class EditorManager {
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(importData);
+        console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,
@@ -207,6 +208,7 @@ export class EditorManager {
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);
+        console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,

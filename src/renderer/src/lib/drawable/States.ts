@@ -13,6 +13,11 @@ type MenuCallback = (state: State, pos: Point) => void;
 type CreateEventCallback = (state: State, events: EventSelection, click: boolean) => void;
 type MenuEventCallback = (state: State, position: Point, events: EventSelection) => void;
 
+type DragInfo = {
+  parentId: string;
+  childId: string;
+} | null;
+
 /**
  * Контроллер {@link State|состояний}.
  * Предоставляет подписку на события, связанные с состояниями.
@@ -20,12 +25,14 @@ type MenuEventCallback = (state: State, position: Point, events: EventSelection)
  */
 export class States extends EventEmitter {
   container!: Container;
+  dragInfo: DragInfo = null;
 
   constructor(container: Container) {
     super();
     this.container = container;
   }
 
+  // TODO Переделать это на EventEmitter
   createCallback!: CreateCallback;
   createNameCallback!: CreateNameCallback;
   changeEventCallback!: CreateEventCallback;
@@ -130,7 +137,58 @@ export class States extends EventEmitter {
     // TODO: визуальная обратная связь
   };
 
+  handleDrag = (e: { event: MyMouseEvent; target: State }) => {
+    const { target: state } = e;
+    const position = { x: e.event.x, y: e.event.y };
+
+    // Чтобы проверять начиная со своего уровня вложенности
+    const dragOverStates = (
+      state.parent ? state.parent.children : this.container.machine.states
+    ) as Map<string, State>;
+
+    let possibleParent: State | undefined = undefined;
+    for (const item of dragOverStates.values()) {
+      if (state.id == item.id) continue;
+      if (item.isUnderMouse(position, true)) {
+        if (typeof possibleParent === 'undefined') {
+          possibleParent = item;
+        } else {
+          // учитываем вложенность, нужно поместить состояние
+          // в максимально дочернее
+          let searchPending = true;
+          while (searchPending) {
+            searchPending = false;
+            for (const child of possibleParent.children.values()) {
+              if (!(child instanceof State)) continue;
+              if (state.id == child.id) continue;
+              if (child.isUnderMouse(position, true)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    this.dragInfo = null;
+
+    if (possibleParent) {
+      this.dragInfo = {
+        parentId: possibleParent.id,
+        childId: state.id,
+      };
+    }
+  };
+
   handleDragEnd = (e: { target: State; dragStartPosition: Point; dragEndPosition: Point }) => {
+    if (this.dragInfo) {
+      this.container.machine.linkState(this.dragInfo.parentId, this.dragInfo.childId);
+      this.dragInfo = null;
+      return;
+    }
+
     this.container.machine.changeStatePosition(e.target.id, e.dragStartPosition, e.dragEndPosition);
   };
 
@@ -141,6 +199,7 @@ export class States extends EventEmitter {
     state.on('contextmenu', this.handleContextMenu as any);
     state.on('longpress', this.handleLongPress as any);
     state.on('dragend', this.handleDragEnd as any);
+    state.on('drag', this.handleDrag as any);
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
@@ -152,6 +211,7 @@ export class States extends EventEmitter {
     state.off('contextmenu', this.handleContextMenu as any);
     state.off('longpress', this.handleLongPress as any);
     state.off('dragend', this.handleDragEnd as any);
+    state.off('drag', this.handleDrag as any);
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();

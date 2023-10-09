@@ -242,6 +242,8 @@ export abstract class Draggable extends EventEmitter {
       // this.bounds.y = Math.max(0, this.bounds.y);
     }
 
+    this.emit('drag', { event: e, target: this });
+
     document.body.style.cursor = 'grabbing';
     this.container.isDirty = true;
   };

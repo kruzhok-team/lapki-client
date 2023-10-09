@@ -1,10 +1,11 @@
+import theme, { getColor } from '@renderer/theme';
+
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
 import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import theme from '@renderer/theme';
 
 const style = theme.colors.diagram.state;
 
@@ -76,6 +77,10 @@ export class State extends Draggable {
     if (this.isSelected) {
       this.drawSelection(ctx);
       this.edgeHandlers.draw(ctx);
+    }
+
+    if (this.container.states.dragInfo?.parentId === this.id) {
+      this.drawHighlight(ctx);
     }
   }
 
@@ -189,6 +194,19 @@ export class State extends Draggable {
     ctx.fill();
     ctx.closePath();
     */
+  }
+
+  private drawHighlight(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+    ctx.canvas.hidden;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = getColor('primaryActive');
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);
+    ctx.stroke();
+    ctx.closePath();
   }
 
   //Дополнять внешними border при добавлении дочерних состояний

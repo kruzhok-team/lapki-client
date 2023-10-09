@@ -78,7 +78,7 @@ export function preloadPlatforms(callback: () => void) {
       callback();
     });
   } else {
-    console.log('Плафтормы не были найдены!');
+    console.log('Платформы не были найдены!');
     // platformsLoaded = true;
     // TODO Вывести модалку с ошибкой о том, что файлы не были загружены
   }

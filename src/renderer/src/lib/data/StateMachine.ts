@@ -142,7 +142,7 @@ export class StateMachine extends EventEmitter {
   }
 
   createState = (args: CreateStateParameters, canUndo = true) => {
-    const { parentId, position, linkByPoint = true } = args;
+    const { parentId } = args;
 
     // Создание данных
     const newStateId = this.container.app.manager.createState(args);

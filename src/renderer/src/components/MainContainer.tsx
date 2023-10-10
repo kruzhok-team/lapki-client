@@ -44,27 +44,27 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   });
 
   const combination = [
-    // {
-    //   name: "Создать файл ",
-    //   command: {
-    //     button1: "Ctrl",
-    //     button2: "N",
-    //   }
-    // },
-    // {
-    //   name: "Открыть файл ",
-    //   command: {
-    //     button1: "Ctrl",
-    //     button2: "O",
-    //   }
-    // },
-    // {
-    //   name: "Обновить приложение ",
-    //   command: {
-    //     button1: "Ctrl",
-    //     button2: "R",
-    //   }
-    // },
+    {
+      name: "Создать файл",
+      command: {
+        button1: "Ctrl",
+        button2: "N",
+      }
+    },
+    {
+      name: "Открыть файл",
+      command: {
+        button1: "Ctrl",
+        button2: "O",
+      }
+    },
+    {
+      name: "Импорт схемы(Graphml)",
+      command: {
+        button1: "Ctrl",
+        button2: "I",
+      }
+    },
     {
       name: "Во весь экран",
       command: {
@@ -94,8 +94,8 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           </p>
           <div> 
             {
-              combination.map((value) => (
-                <div className="flex justify-between my-3">
+              combination.map((value, key) => (
+                <div key={key} className="flex justify-between my-3">
                   <div className="px-1">{value.name}</div>
                   <div className="flex items-start">
                     <div className="bg-gray-600 px-1 rounded border-b-2 text-gray-300">{value.command.button1}</div>

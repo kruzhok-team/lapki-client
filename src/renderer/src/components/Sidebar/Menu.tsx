@@ -49,12 +49,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   });
 
   const handleKeyUp = (e: KeyboardEvent) => {
-
     if (e.ctrlKey) {
       if (e.code === 'KeyN') {
         return props.onRequestNewFile();
       }
-      if (e.code === 'KeyO') { 
+      if (e.code === 'KeyO') {
         return props.onRequestOpenFile();
       }
       if (e.code === 'KeyI') {

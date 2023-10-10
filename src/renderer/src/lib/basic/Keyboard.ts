@@ -59,26 +59,14 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
         this.emit('ctrlv', e);
         return;
       }
-      if (e.code === 'KeyN') {
-        this.emit('ctrln', e);
-        return;
-      }
-      if (e.code === 'KeyO') {
-        this.emit('ctrlo', e);
-        return;
-      }
       if (e.code === 'KeyS') {
         this.emit('ctrls', e);
-        return;
-      }
-      if (e.code === 'KeyE') {
-        this.emit('ctrle', e);
         return;
       }
     }
     if (e.ctrlKey && e.shiftKey) {
       if (e.code === 'KeyA') {
-        this.emit('ctrla', e);
+        this.emit('ctrlshifta', e);
         return;
       }
     }

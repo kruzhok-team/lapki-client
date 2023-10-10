@@ -91,11 +91,8 @@ export class Container {
     this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
-    // this.app.keyboard.on('ctrln', this.handleNewFile);
-    // this.app.keyboard.on('ctrlo', this.handleOpenFile);
-    // this.app.keyboard.on('ctrls', this.handleSaveFile);
-    // this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
-    // this.app.keyboard.on('ctrle', this.handleImport);
+    this.app.keyboard.on('ctrls', this.handleSaveFile);
+    this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
 
     document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -160,25 +157,13 @@ export class Container {
     this.machine.pasteSelected();
   };
 
-  // handleNewFile = () => {
-  //   this.machine.deleteSelected();
-  // };
+  handleSaveFile = () => {
+    this.app.manager.save();
+  };
 
-  // handleOpenFile = () => {
-  //   this.machine.deleteSelected();
-  // };
-
-  // handleSaveFile = () => {
-  //   this.machine.deleteSelected();
-  // };
-
-  // handleSaveAsFile = () => {
-  //   this.machine.deleteSelected();
-  // };
-
-  // handleImport = () => {
-  //   this.machine.deleteSelected();
-  // };
+  handleSaveAsFile = () => {
+    this.app.manager.saveAs();
+  };
 
   handleMouseUp = () => {
     this.machine.removeSelection();

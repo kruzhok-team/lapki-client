@@ -8,6 +8,7 @@ import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { Action } from '@renderer/types/diagram';
+import { Point } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
@@ -61,8 +62,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setNewTransition(undefined);
     };
 
-    //Перетаскиваем компонент в редактор
-    editor.container.onStateDrop((position) => {
+    editor.container.on('dblclick', (e) => {
+      const position = e as Point;
       editor?.container.machine.createState({ name: 'Состояние', position, placeInCenter: true });
     });
 

@@ -31,7 +31,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     };
 
     // контекстное меню для пустого поля
-    editor.container.onFieldContextMenu((pos) => {
+    editor.container.on('contextmenu', (e) => {
+      const pos = e as Point;
       const canvasPos = editor.container.relativeMousePos(pos);
 
       handleEvent(pos, [

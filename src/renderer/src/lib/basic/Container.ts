@@ -2,6 +2,7 @@ import { getColor } from '@renderer/theme';
 import { Point } from '@renderer/types/graphics';
 
 import { CanvasEditor } from '../CanvasEditor';
+import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { StateMachine } from '../data/StateMachine';
 import { picto } from '../drawable/Picto';
@@ -16,7 +17,7 @@ export const MIN_SCALE = 0.2;
  * Контейнер с машиной состояний, в котором происходит отрисовка,
  * управление камерой, обработка событий и сериализация.
  */
-export class Container {
+export class Container extends EventEmitter {
   app!: CanvasEditor;
 
   isDirty = true;
@@ -28,10 +29,9 @@ export class Container {
 
   isPan = false;
 
-  dropCallback?: (position: Point) => void;
-  contextMenuOpenCallback?: (position: Point) => void;
-
   constructor(app: CanvasEditor) {
+    super();
+
     this.app = app;
     this.machine = new StateMachine(this);
     this.states = new States(this);
@@ -81,8 +81,9 @@ export class Container {
   }
 
   private initEvents() {
-    this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
-    this.app.canvas.element.addEventListener('drop', this.handleDrop);
+    // ! Это на будущее
+    // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
+    // this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
@@ -109,27 +110,24 @@ export class Container {
     this.isDirty = true;
   }
 
-  handleDrop = (e: DragEvent) => {
-    e.preventDefault();
+  // ! Это на будущее
+  // handleDrop = (e: DragEvent) => {
+  //   e.preventDefault();
 
-    const rect = this.app.canvas.element.getBoundingClientRect();
-    const scale = this.app.manager.data.scale;
-    const offset = this.app.manager.data.offset;
-    const position = {
-      x: (e.clientX - rect.left) * scale - offset.x,
-      y: (e.clientY - rect.top) * scale - offset.y,
-    };
+  //   const rect = this.app.canvas.element.getBoundingClientRect();
+  //   const scale = this.app.manager.data.scale;
+  //   const offset = this.app.manager.data.offset;
+  //   const position = {
+  //     x: (e.clientX - rect.left) * scale - offset.x,
+  //     y: (e.clientY - rect.top) * scale - offset.y,
+  //   };
 
-    this.dropCallback?.(position);
-  };
+  //   this.dropCallback?.(position);
+  // };
 
-  onStateDrop = (callback: (position: Point) => void) => {
-    this.dropCallback = callback;
-  };
-
-  onFieldContextMenu = (callback: (position: Point) => void) => {
-    this.contextMenuOpenCallback = callback;
-  };
+  // onStateDrop = (callback: (position: Point) => void) => {
+  //   this.dropCallback = callback;
+  // };
 
   handleMouseDown = (e: MyMouseEvent) => {
     this.isPan = true;
@@ -171,10 +169,6 @@ export class Container {
     this.isDirty = true;
   };
 
-  handleFieldContextMenu = (e: MyMouseEvent) => {
-    this.contextMenuOpenCallback?.(e);
-  };
-
   handleSpaceDown = () => {
     this.isPan = true;
 
@@ -203,7 +197,11 @@ export class Container {
   handleMouseDoubleClick = (e: MyMouseEvent) => {
     e.stopPropagation();
 
-    this.dropCallback?.(this.relativeMousePos({ x: e.x, y: e.y }));
+    this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
+  };
+
+  handleFieldContextMenu = (e: MyMouseEvent) => {
+    this.emit('contextmenu', e);
   };
 
   relativeMousePos(e: Point): Point {

@@ -247,8 +247,10 @@ export class StateMachine extends EventEmitter {
 
     if (!parent || !child) return;
 
+    let numberOfConnectedActions = 0;
     if (child.data.parent) {
       this.unlinkState(childId, canUndo);
+      numberOfConnectedActions += 1;
     }
 
     // Вычисляем новую координату внутри контейнера
@@ -268,6 +270,7 @@ export class StateMachine extends EventEmitter {
       this.undoRedo.do({
         type: 'linkState',
         args: { parentId, childId },
+        numberOfConnectedActions,
       });
       if (addOnceOff) {
         child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo

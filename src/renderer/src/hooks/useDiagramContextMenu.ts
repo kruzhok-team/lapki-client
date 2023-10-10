@@ -7,11 +7,11 @@ import { State } from '@renderer/lib/drawable/State';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
 
-type DiagramContextMenuItem = {
+export type DiagramContextMenuItem = {
   label: string;
   type: string;
   isFolder?: boolean;
-  children?: string[];
+  children?: DiagramContextMenuItem[];
   action: () => void;
 };
 
@@ -100,42 +100,33 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             editor?.container.handlePaste();
           },
         },
-        // {
-        //   label: 'Редактировать',
-        //   type: 'edit',
-        //   isFolder: true,
-        //   children: ['Назначить начальным', 'Вставить состояние', 'Вставить событие'],
-        //   action: () => {},
-        // },
         {
-          label: 'Назначить начальным',
-          type: 'initialState',
-          action: () => {
-            editor?.container.machine.changeInitialState(state.id as string);
-          },
+          label: 'Редактировать',
+          type: 'edit',
+          isFolder: true,
+          children: [
+            {
+              label: 'Назначить начальным',
+              type: 'initialState',
+              action: () => {
+                editor?.container.machine.changeInitialState(state.id as string);
+              },
+            },
+            {
+              label: 'Вставить состояние',
+              type: 'pasteState',
+              action: () => {
+                editor?.container.machine.createState({
+                  name: 'Состояние',
+                  position: canvasPos,
+                  parentId: state.id,
+                });
+              },
+            },
+          ],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
         },
-        {
-          label: 'Вставить состояние',
-          type: 'pasteState',
-          action: () => {
-            editor?.container.machine.createState({
-              name: 'Состояние',
-              position: canvasPos,
-              parentId: state.id,
-            });
-          },
-        },
-        // {
-        //   label: 'Вставить событие',
-        //   type: 'pasteEvent',
-        //   action: () => {
-        //     editor?.container.machine.createState({
-        //       name: 'Состояние',
-        //       position: canvasPos,
-        //       parentId: state.id,
-        //     });
-        //   },
-        // },
         {
           label: 'Посмотреть код',
           type: 'showCodeAll',
@@ -181,6 +172,22 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             editor?.container.handleCopy();
           },
         },
+        // {
+        //   label: 'Выбрать исход(source)',
+        //   type: 'source',
+        //   isFolder: true,
+        //   children: [],
+        //   // eslint-disable-next-line @typescript-eslint/no-empty-function
+        //   action: () => {},
+        // },
+        // {
+        //   label: 'Выбрать цель(target)',
+        //   type: 'target',
+        //   isFolder: true,
+        //   children: [],
+        //   // eslint-disable-next-line @typescript-eslint/no-empty-function
+        //   action: () => {},
+        // },
         {
           label: 'Посмотреть код',
           type: 'showCodeAll',

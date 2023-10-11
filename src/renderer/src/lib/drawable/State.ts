@@ -6,7 +6,6 @@ import { Events } from './Events';
 import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 const style = theme.colors.diagram.state;
 

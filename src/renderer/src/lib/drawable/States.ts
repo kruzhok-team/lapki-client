@@ -20,15 +20,14 @@ type MenuEventCallback = (state: State, position: Point, events: EventSelection)
  * Реализует отрисовку и обработку выделения состояний.
  */
 export class States extends EventEmitter {
-  initialStateMark!: InitialStateMark;
+  initialStateMark: InitialStateMark | null = null;
 
   constructor(public container: Container) {
     super();
     this.container = container;
-
-    this.initialStateMark = new InitialStateMark(container);
   }
 
+  // TODO Переделать на EventEmitter
   createCallback!: CreateCallback;
   createNameCallback!: CreateNameCallback;
   changeEventCallback!: CreateEventCallback;
@@ -60,7 +59,7 @@ export class States extends EventEmitter {
       state.draw(ctx, canvas);
     });
 
-    this.initialStateMark.draw(ctx);
+    this.initialStateMark?.draw(ctx);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -160,5 +159,9 @@ export class States extends EventEmitter {
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();
+  }
+
+  initInitialStateMark(stateId: string) {
+    this.initialStateMark = new InitialStateMark(this.container, stateId);
   }
 }

@@ -28,6 +28,7 @@ import { UndoRedo } from './UndoRedo';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
+import { InitialStateMark } from '../drawable/InitialStateMark';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 
@@ -102,13 +103,7 @@ export class StateMachine extends EventEmitter {
       this.states.set(id, state);
 
       if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.states.initialStateMark.setState(state);
-        this.container.states.initialStateMark.on('click', (e) => {
-          // console.log(e);
-          console.log('here', e);
-
-          (e as any).event.stopPropagation();
-        });
+        this.container.states.initInitialStateMark(id);
       }
     }
   }
@@ -420,7 +415,7 @@ export class StateMachine extends EventEmitter {
     }
 
     this.container.app.manager.changeInitialState(id);
-    this.container.states.initialStateMark.setState(state);
+    this.container.states.initInitialStateMark(id);
 
     this.container.isDirty = true;
   };

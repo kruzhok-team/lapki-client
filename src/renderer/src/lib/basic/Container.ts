@@ -132,8 +132,6 @@ export class Container {
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
-    console.log('container');
-
     this.isPan = true;
     if (!this.isPan || !e.left) return;
 

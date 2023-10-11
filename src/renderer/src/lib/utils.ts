@@ -299,3 +299,104 @@ export const drawImageFit = (
     img.naturalHeight * ratio
   );
 };
+
+interface DrawTextOptions {
+  x: number;
+  y: number;
+  color?: string;
+  align?: CanvasTextAlign;
+  baseline?: CanvasTextBaseline;
+  fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  fontSize?: number;
+  fontFamily?: string;
+}
+
+export const drawText = (ctx: CanvasRenderingContext2D, text: string, options: DrawTextOptions) => {
+  const {
+    x,
+    y,
+    color = '#FFF',
+    align = 'left',
+    baseline = 'bottom',
+    fontWeight = 'normal',
+    fontSize = 16,
+    fontFamily = 'Fira Sans',
+  } = options;
+
+  // Как я понял это луший вариант для перфоманса чем ctx.save() и ctx.restore()
+  const prevTextAlign = ctx.textAlign;
+  const prevTextBaseline = ctx.textBaseline;
+  const prevFont = ctx.font;
+  const prevFillStyle = ctx.fillStyle;
+
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
+  ctx.fillStyle = color;
+
+  ctx.fillText(text, x, y);
+
+  ctx.textAlign = prevTextAlign;
+  ctx.textBaseline = prevTextBaseline;
+  ctx.font = prevFont;
+  ctx.fillStyle = prevFillStyle;
+};
+
+export const drawCurvedLine = (
+  ctx: CanvasRenderingContext2D,
+  line: TransitionLine,
+  rounded: number
+) => {
+  const { start, mid, end } = line;
+
+  ctx.beginPath();
+
+  ctx.moveTo(start.x, start.y);
+
+  // просто отступаем на радиус в обе стороны и рисуем дугу между этими двумя точками
+  if (mid) {
+    const p1x = mid.x - (start.x < mid.x ? rounded : -rounded);
+    const p1y = mid.y;
+    const p2x = mid.x;
+    const p2y = mid.y - (end.y < mid.y ? rounded : -rounded);
+
+    ctx.lineTo(p1x, p1y);
+
+    ctx.bezierCurveTo(p1x, p1y, mid.x, mid.y, p2x, p2y);
+  }
+  ctx.lineTo(end.x, end.y);
+
+  ctx.stroke();
+
+  ctx.closePath();
+};
+
+export const drawCircle = (ctx: CanvasRenderingContext2D, position: Point, radius: number) => {
+  ctx.beginPath();
+
+  ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
+  ctx.fill();
+
+  ctx.closePath();
+};
+
+export const drawTriangle = (
+  ctx: CanvasRenderingContext2D,
+  position: Point,
+  size: number,
+  angle: number
+) => {
+  const p1 = rotatePoint({ x: position.x - size, y: position.y - size / 2 }, position, angle);
+  const p2 = rotatePoint({ x: position.x - size, y: position.y + size / 2 }, position, angle);
+
+  ctx.beginPath();
+
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(position.x, position.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.lineTo(p1.x, p1.y);
+
+  ctx.fill();
+
+  ctx.closePath();
+};

@@ -1,10 +1,10 @@
+import theme from '@renderer/theme';
+
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
-import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import theme from '@renderer/theme';
 
 const style = theme.colors.diagram.state;
 
@@ -35,10 +35,6 @@ export class State extends Draggable {
     return this.container.app.manager.data.elements.states[this.id];
   }
 
-  get isInitial() {
-    return this.container.app.manager.data.elements.initialState === this.id;
-  }
-
   get bounds() {
     return this.data.bounds;
   }
@@ -64,10 +60,6 @@ export class State extends Draggable {
     this.drawBody(ctx);
     this.drawTitle(ctx);
     this.eventBox.draw(ctx);
-
-    if (this.isInitial) {
-      this.drawInitialMark(ctx);
-    }
 
     if (this.children) {
       this.drawChildren(ctx, canvas);
@@ -210,21 +202,6 @@ export class State extends Draggable {
     ]);
     ctx.stroke();
 
-    ctx.closePath();
-  }
-
-  private drawInitialMark(ctx: CanvasRenderingContext2D) {
-    if (!this.isInitial) return;
-
-    const { x, y } = this.drawBounds;
-
-    ctx.beginPath();
-    picto.drawImage(ctx, 'InitialIcon', {
-      x: x - 30 / this.container.app.manager.data.scale,
-      y,
-      width: 25,
-      height: 25,
-    });
     ctx.closePath();
   }
 

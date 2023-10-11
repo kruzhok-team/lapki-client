@@ -23,7 +23,17 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-export abstract class Draggable extends EventEmitter {
+interface DraggableEvents {
+  mousedown: { event: MyMouseEvent };
+  mouseup: { event: MyMouseEvent };
+  click: { event: MyMouseEvent };
+  dblclick: { event: MyMouseEvent };
+  contextmenu: { event: MyMouseEvent };
+  longpress: { event: MyMouseEvent };
+  dragend: { dragStartPosition: Point; dragEndPosition: Point };
+}
+
+export abstract class Draggable extends EventEmitter<DraggableEvents> {
   container!: Container;
   statusevents!: Events;
   // bounds!: Rectangle;
@@ -181,7 +191,6 @@ export abstract class Draggable extends EventEmitter {
         dragEndPosition.y !== this.dragStartPosition.y)
     ) {
       this.emit('dragend', {
-        target: this,
         dragStartPosition: this.dragStartPosition,
         dragEndPosition,
       });
@@ -205,12 +214,12 @@ export abstract class Draggable extends EventEmitter {
     clearTimeout(this.mouseDownTimerId);
 
     this.mouseDownTimerId = setTimeout(() => {
-      this.emit('longpress', { event: e, target: this });
+      this.emit('longpress', { event: e });
     }, this.longPressTimeout);
 
-    this.emit('mousedown', { event: e, target: this });
+    this.emit('mousedown', { event: e });
 
-    this.emit('click', { event: e, target: this });
+    this.emit('click', { event: e });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -269,11 +278,11 @@ export abstract class Draggable extends EventEmitter {
     // может привезти к новым багам (пока на карандаше)
     // e.stopPropagation();
 
-    this.emit('mouseup', { event: e, target: this });
+    this.emit('mouseup', { event: e });
 
     if (this.isMouseDown) {
       this.isMouseDown = false;
-      this.emit('click', { event: e, target: this });
+      this.emit('click', { event: e });
     }
   };
 
@@ -282,7 +291,7 @@ export abstract class Draggable extends EventEmitter {
     if (!isUnderMouse) return;
 
     // TODO: возможна коллизия с mouseup и click, нужно тестировать
-    this.emit('dblclick', { event: e, target: this });
+    this.emit('dblclick', { event: e });
   };
 
   handleContextMenuClick = (e: MyMouseEvent) => {
@@ -291,7 +300,7 @@ export abstract class Draggable extends EventEmitter {
 
     e.stopPropagation();
 
-    this.emit('contextmenu', { event: e, target: this });
+    this.emit('contextmenu', { event: e });
   };
 
   isUnderMouse<T extends Point>({ x, y }: T, withChildren?: boolean) {

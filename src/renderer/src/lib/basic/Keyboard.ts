@@ -5,7 +5,17 @@ import { EventEmitter } from '../common/EventEmitter';
  * Оборачивает браузерные события, происходящие на холсте, и фильтрует из них
  * связанные с необходимыми для работы клавишами.
  */
-export class Keyboard extends EventEmitter<KeyboardEvent> {
+interface KeyboardEvents {
+  spacedown: KeyboardEvent;
+  spaceup: KeyboardEvent;
+  delete: KeyboardEvent;
+  ctrlz: KeyboardEvent;
+  ctrly: KeyboardEvent;
+  ctrlc: KeyboardEvent;
+  ctrlv: KeyboardEvent;
+}
+
+export class Keyboard extends EventEmitter<KeyboardEvents> {
   spacePressed = false;
   ctrlPressed = false;
 
@@ -57,6 +67,16 @@ export class Keyboard extends EventEmitter<KeyboardEvent> {
       }
       if (e.code === 'KeyV') {
         this.emit('ctrlv', e);
+        return;
+      }
+      if (e.code === 'KeyS') {
+        this.emit('ctrls', e);
+        return;
+      }
+    }
+    if (e.ctrlKey && e.shiftKey) {
+      if (e.code === 'KeyA') {
+        this.emit('ctrlshifta', e);
         return;
       }
     }

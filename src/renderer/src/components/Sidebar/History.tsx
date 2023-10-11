@@ -64,7 +64,7 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
 };
 
 const HistoryWithoutEditor: React.FC = () => {
-  return <p>Нельзя посмотреть историю до инциализации</p>;
+  return <p>Нельзя посмотреть историю до инициализации</p>;
 };
 
 const HistoryWithEditor: React.FC<{ editor: CanvasEditor }> = ({ editor }) => {

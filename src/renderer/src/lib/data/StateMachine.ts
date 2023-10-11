@@ -1,7 +1,6 @@
 import {
   Action,
   Condition,
-  Elements,
   Event,
   Variable,
   State as StateType,
@@ -26,12 +25,9 @@ import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager'
 import { UndoRedo } from './UndoRedo';
 
 import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-
-export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
 /**
  * Данные машины состояний.
@@ -48,7 +44,7 @@ export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 //        чтобы через раз не делать запрос в словарь
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
-export class StateMachine extends EventEmitter {
+export class StateMachine {
   container!: Container;
 
   states: Map<string, State> = new Map();
@@ -59,7 +55,6 @@ export class StateMachine extends EventEmitter {
   undoRedo = new UndoRedo(this);
 
   constructor(container: Container) {
-    super();
     this.container = container;
   }
 
@@ -243,8 +238,10 @@ export class StateMachine extends EventEmitter {
 
     if (!parent || !child) return;
 
+    let numberOfConnectedActions = 0;
     if (child.data.parent) {
       this.unlinkState(childId, canUndo);
+      numberOfConnectedActions += 1;
     }
 
     // Вычисляем новую координату внутри контейнера
@@ -264,6 +261,7 @@ export class StateMachine extends EventEmitter {
       this.undoRedo.do({
         type: 'linkState',
         args: { parentId, childId },
+        numberOfConnectedActions,
       });
       if (addOnceOff) {
         child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo

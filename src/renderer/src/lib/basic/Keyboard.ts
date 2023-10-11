@@ -5,7 +5,17 @@ import { EventEmitter } from '../common/EventEmitter';
  * Оборачивает браузерные события, происходящие на холсте, и фильтрует из них
  * связанные с необходимыми для работы клавишами.
  */
-export class Keyboard extends EventEmitter<KeyboardEvent> {
+interface KeyboardEvents {
+  spacedown: KeyboardEvent;
+  spaceup: KeyboardEvent;
+  delete: KeyboardEvent;
+  ctrlz: KeyboardEvent;
+  ctrly: KeyboardEvent;
+  ctrlc: KeyboardEvent;
+  ctrlv: KeyboardEvent;
+}
+
+export class Keyboard extends EventEmitter<KeyboardEvents> {
   spacePressed = false;
   ctrlPressed = false;
 

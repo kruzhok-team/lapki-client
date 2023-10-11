@@ -1,29 +1,31 @@
+type EventHandler<T extends object, N extends keyof T> = (e: T[N]) => void;
+
 /**
  * Система обработки событий с подпиской и генерацией сигналов
  */
-export class EventEmitter<T extends {} = {}> {
-  handlers = new Map<string, Set<Function>>();
-  offedOnce = new Set<string>();
+export class EventEmitter<
+  T extends object,
+  Name extends keyof T = keyof T,
+  Handler extends EventHandler<T, Name> = EventHandler<T, Name>
+> {
+  handlers = new Map<Name, Set<EventHandler<T, Name>>>();
+  offedOnce = new Set<Name>();
 
-  addEventListener(name: string, handler: (e: T) => any) {
-    return this.on(name, handler);
-  }
-
-  on(name: string, handler: (e: T) => any) {
+  on<N extends Name>(name: N, handler: EventHandler<T, N>) {
     if (!this.handlers.has(name)) {
       this.handlers.set(name, new Set());
     }
 
-    this.handlers.get(name)?.add(handler);
+    this.handlers.get(name)?.add(handler as Handler); // ? Не знаю что он тут ругается
   }
 
-  off(name: string, handler: (e: T) => any) {
+  off<N extends Name>(name: N, handler: EventHandler<T, N>) {
     if (!this.handlers.has(name)) {
       return;
     }
 
     const handlers = this.handlers.get(name);
-    handlers?.delete(handler);
+    handlers?.delete(handler as Handler); // ? Не знаю что он тут ругается
 
     if (handlers?.size === 0) {
       this.handlers.delete(name);
@@ -31,10 +33,10 @@ export class EventEmitter<T extends {} = {}> {
   }
 
   // Странная штука, нужна чтобы на один раз отключить событие
-  addOnceOff(name: string) {
+  addOnceOff(name: Name) {
     this.offedOnce.add(name);
   }
-  removeOnceOff(name: string) {
+  removeOnceOff(name: Name) {
     this.offedOnce.delete(name);
   }
 
@@ -42,7 +44,7 @@ export class EventEmitter<T extends {} = {}> {
     this.handlers.clear();
   }
 
-  emit(name: string, event: T) {
+  emit<N extends Name>(name: N, event: T[N]) {
     if (this.offedOnce.has(name)) {
       this.offedOnce.delete(name);
       return;

@@ -23,7 +23,7 @@ export const useDiagramStateName = (editor: CanvasEditor | null) => {
   useEffect(() => {
     if (!editor) return;
 
-    editor.container.states.onStateNameCreate((state) => {
+    editor.container.states.on('changeStateName', (state) => {
       const globalOffset = state.container.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {

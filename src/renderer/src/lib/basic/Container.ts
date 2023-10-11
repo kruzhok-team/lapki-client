@@ -17,7 +17,12 @@ export const MIN_SCALE = 0.2;
  * Контейнер с машиной состояний, в котором происходит отрисовка,
  * управление камерой, обработка событий и сериализация.
  */
-export class Container extends EventEmitter {
+interface ContainerEvents {
+  dblclick: Point;
+  contextMenu: Point;
+}
+
+export class Container extends EventEmitter<ContainerEvents> {
   app!: CanvasEditor;
 
   isDirty = true;
@@ -122,11 +127,7 @@ export class Container extends EventEmitter {
   //     y: (e.clientY - rect.top) * scale - offset.y,
   //   };
 
-  //   this.dropCallback?.(position);
-  // };
-
-  // onStateDrop = (callback: (position: Point) => void) => {
-  //   this.dropCallback = callback;
+  //   this.emit('stateDrop', position);
   // };
 
   handleMouseDown = (e: MyMouseEvent) => {
@@ -169,6 +170,10 @@ export class Container extends EventEmitter {
     this.isDirty = true;
   };
 
+  handleFieldContextMenu = (e: MyMouseEvent) => {
+    this.emit('contextMenu', e);
+  };
+
   handleSpaceDown = () => {
     this.isPan = true;
 
@@ -198,10 +203,6 @@ export class Container extends EventEmitter {
     e.stopPropagation();
 
     this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
-  };
-
-  handleFieldContextMenu = (e: MyMouseEvent) => {
-    this.emit('contextmenu', e);
   };
 
   relativeMousePos(e: Point): Point {

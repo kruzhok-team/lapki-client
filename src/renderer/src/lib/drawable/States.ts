@@ -7,12 +7,6 @@ import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 
-type CreateNameCallback = (state: State) => void;
-type CreateCallback = (state: State) => void;
-type MenuCallback = (state: State, pos: Point) => void;
-type CreateEventCallback = (state: State, events: EventSelection, click: boolean) => void;
-type MenuEventCallback = (state: State, position: Point, events: EventSelection) => void;
-
 type DragInfo = {
   parentId: string;
   childId: string;
@@ -23,7 +17,17 @@ type DragInfo = {
  * Предоставляет подписку на события, связанные с состояниями.
  * Реализует отрисовку и обработку выделения состояний.
  */
-export class States extends EventEmitter {
+interface StatesEvents {
+  mouseUpOnState: State;
+  startNewTransition: State;
+  changeState: State;
+  changeStateName: State;
+  stateContextMenu: { state: State; position: Point };
+  changeEvent: { state: State; event: EventSelection; click: boolean };
+  eventContextMenu: { state: State; event: EventSelection; position: Point };
+}
+
+export class States extends EventEmitter<StatesEvents> {
   container!: Container;
   dragInfo: DragInfo = null;
 
@@ -31,33 +35,6 @@ export class States extends EventEmitter {
     super();
     this.container = container;
   }
-
-  // TODO Переделать это на EventEmitter
-  createCallback!: CreateCallback;
-  createNameCallback!: CreateNameCallback;
-  changeEventCallback!: CreateEventCallback;
-  menuEventCallback!: MenuEventCallback;
-  menuCallback!: MenuCallback;
-
-  onStateCreate = (callback: CreateCallback) => {
-    this.createCallback = callback;
-  };
-
-  onStateNameCreate = (nameCallback: CreateNameCallback) => {
-    this.createNameCallback = nameCallback;
-  };
-
-  onStateEventChange = (eventCallback: CreateEventCallback) => {
-    this.changeEventCallback = eventCallback;
-  };
-
-  onStateContextMenu = (menuCallback: MenuCallback) => {
-    this.menuCallback = menuCallback;
-  };
-
-  onEventContextMenu = (menuEventCallback: MenuEventCallback) => {
-    this.menuEventCallback = menuEventCallback;
-  };
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.container.machine.states.forEach((state) => {
@@ -69,62 +46,65 @@ export class States extends EventEmitter {
     this.emit('startNewTransition', state);
   };
 
-  handleMouseUpOnState = (e: { target: State; event: MyMouseEvent }) => {
-    this.emit('mouseUpOnState', e);
+  handleMouseUpOnState = (state: State) => {
+    this.emit('mouseUpOnState', state);
   };
 
-  handleStateClick = (e: { target: State; event: MyMouseEvent }) => {
+  handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
     this.container.machine.removeSelection();
-    e.target.setIsSelected(true);
+    state.setIsSelected(true);
 
-    const targetPos = e.target.computedPosition;
-    const titleHeight = e.target.titleHeight;
+    const targetPos = state.computedPosition;
+    const titleHeight = state.titleHeight;
     const y = e.event.y - targetPos.y;
     // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
     if (y > titleHeight) {
       // FIXME: пересчитывает координаты внутри, ещё раз
-      e.target.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+      state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
     }
   };
 
-  handleStateDoubleClick = (e: { target: State; event: MyMouseEvent }) => {
+  handleStateDoubleClick = (state: State, e: { event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    const targetPos = e.target.computedPosition;
-    const titleHeight = e.target.computedTitleSizes.height;
+    const targetPos = state.computedPosition;
+    const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
     if (y <= titleHeight) {
-      this.createNameCallback?.(e.target);
+      this.emit('changeStateName', state);
     } else {
       // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
       // FIXME: пересчитывает координаты внутри, ещё раз
-      const eventIdx = e.target.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+      const eventIdx = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
       if (!eventIdx) {
-        this.createCallback?.(e.target);
+        this.emit('changeState', state);
       } else {
-        this.changeEventCallback?.(e.target, eventIdx, true);
+        this.emit('changeEvent', { state, event: eventIdx, click: true });
       }
     }
   };
 
-  handleContextMenu = (e: { target: State; event: MyMouseEvent }) => {
+  handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
     this.container.machine.removeSelection();
-    e.target.setIsSelected(true);
+    state.setIsSelected(true);
 
-    const eventIdx = e.target.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+    const eventIdx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
     if (!eventIdx) {
-      this.menuCallback?.(e.target, { x: e.event.x, y: e.event.y });
+      this.emit('stateContextMenu', { state, position: { x: e.event.x, y: e.event.y } });
     } else {
-      this.menuEventCallback?.(e.target, { x: e.event.x, y: e.event.y }, eventIdx);
+      this.emit('eventContextMenu', {
+        state,
+        position: { x: e.event.x, y: e.event.y },
+        event: eventIdx,
+      });
     }
   };
 
-  handleDrag = (e: { event: MyMouseEvent; target: State }) => {
-    const { target: state } = e;
+  handleDrag = (state: State, e: { event: MyMouseEvent }) => {
     const position = { x: e.event.x, y: e.event.y };
 
     // Чтобы проверять начиная со своего уровня вложенности
@@ -168,34 +148,34 @@ export class States extends EventEmitter {
     }
   };
 
-  handleDragEnd = (e: { target: State; dragStartPosition: Point; dragEndPosition: Point }) => {
+  handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     if (this.dragInfo) {
       this.container.machine.linkState(this.dragInfo.parentId, this.dragInfo.childId);
       this.dragInfo = null;
       return;
     }
 
-    this.container.machine.changeStatePosition(e.target.id, e.dragStartPosition, e.dragEndPosition);
+    this.container.machine.changeStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
   };
 
   watchState(state: State) {
-    state.on('mouseup', this.handleMouseUpOnState as any);
-    state.on('click', this.handleStateClick as any);
-    state.on('dblclick', this.handleStateDoubleClick as any);
-    state.on('contextmenu', this.handleContextMenu as any);
-    state.on('dragend', this.handleDragEnd as any);
-    state.on('drag', this.handleDrag as any);
+    state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
+    state.on('click', this.handleStateClick.bind(this, state));
+    state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
+    state.on('contextmenu', this.handleContextMenu.bind(this, state));
+    state.on('drag', this.handleDrag.bind(this, state));
+    state.on('dragend', this.handleDragEnd.bind(this, state));
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
 
   unwatchState(state: State) {
-    state.off('mouseup', this.handleMouseUpOnState as any);
-    state.off('click', this.handleStateClick as any);
-    state.off('dblclick', this.handleStateDoubleClick as any);
-    state.off('contextmenu', this.handleContextMenu as any);
-    state.off('dragend', this.handleDragEnd as any);
-    state.off('drag', this.handleDrag as any);
+    state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
+    state.off('click', this.handleStateClick.bind(this, state));
+    state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
+    state.off('contextmenu', this.handleContextMenu.bind(this, state));
+    state.off('drag', this.handleDrag.bind(this, state));
+    state.off('dragend', this.handleDragEnd.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();

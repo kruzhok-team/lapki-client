@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { Condition } from '@renderer/lib/drawable/Condition';
-import { State } from '@renderer/lib/drawable/State';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
 
@@ -31,8 +29,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     };
 
     // контекстное меню для пустого поля
-    editor.container.on('contextmenu', (e) => {
-      const pos = e as Point;
+    editor.container.on('contextMenu', (pos) => {
       const canvasPos = editor.container.relativeMousePos(pos);
 
       handleEvent(pos, [
@@ -73,10 +70,10 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     });
 
     // контекстное меню для состояния
-    editor.container.states.onStateContextMenu((state: State, pos) => {
-      const canvasPos = editor.container.relativeMousePos(pos);
+    editor.container.states.on('stateContextMenu', ({ state, position }) => {
+      const canvasPos = editor.container.relativeMousePos(position);
 
-      handleEvent(pos, [
+      handleEvent(position, [
         {
           label: 'Копировать',
           action: () => {
@@ -126,8 +123,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     });
 
     // контекстное меню для события
-    editor.container.states.onEventContextMenu((state, pos, event) => {
-      handleEvent(pos, [
+    editor.container.states.on('eventContextMenu', ({ state, position, event }) => {
+      handleEvent(position, [
         {
           label: 'Удалить',
           action: () => {
@@ -138,8 +135,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     });
 
     // контекстное меню для связи
-    editor.container.transitions.onTransitionContextMenu((condition: Condition, pos: Point) => {
-      handleEvent(pos, [
+    editor.container.transitions.on('transitionContextMenu', ({ condition, position }) => {
+      handleEvent(position, [
         {
           label: 'Копировать',
           action: () => {

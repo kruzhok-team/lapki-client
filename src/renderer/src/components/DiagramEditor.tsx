@@ -8,7 +8,6 @@ import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { Action } from '@renderer/types/diagram';
-import { Point } from '@renderer/types/graphics';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
@@ -62,27 +61,26 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setNewTransition(undefined);
     };
 
-    editor.container.on('dblclick', (e) => {
-      const position = e as Point;
+    editor.container.on('dblclick', (position) => {
       editor?.container.machine.createState({ name: 'Состояние', position, placeInCenter: true });
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.states.onStateCreate((state) => {
+    editor.container.states.on('changeState', (state) => {
       ClearUseState();
       setState({ state });
       openModal();
       // manager.triggerDataUpdate();
     });
 
-    editor.container.states.onStateEventChange((state, event, click) => {
+    editor.container.states.on('changeEvent', ({ state, event, click }) => {
       ClearUseState();
       setIdEvents({ state, event, click });
       openEventsModal();
     });
 
     //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.container.transitions.onTransitionEdit((target) => {
+    editor.container.transitions.on('changeTransition', (target) => {
       ClearUseState();
       setEvents(target.data.do ?? []);
       setTransition(target);
@@ -91,7 +89,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     });
 
     //Здесь мы открываем модальное окно редактирования новой связи
-    editor.container.transitions.onNewTransitionCreate((source, target) => {
+    editor.container.transitions.on('createTransition', ({ source, target }) => {
       ClearUseState();
       setNewTransition({ source, target });
       openModal();

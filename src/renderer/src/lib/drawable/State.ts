@@ -233,10 +233,4 @@ export class State extends Draggable {
   setIsSelected(value: boolean) {
     this.isSelected = value;
   }
-
-  handleMouseMove = (e: MyMouseEvent) => {
-    super.handleMouseMove(e);
-
-    console.log('here');
-  };
 }

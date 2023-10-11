@@ -28,7 +28,6 @@ import { UndoRedo } from './UndoRedo';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
-import { InitialStateMark } from '../drawable/InitialStateMark';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 

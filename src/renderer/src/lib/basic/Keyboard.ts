@@ -13,6 +13,8 @@ interface KeyboardEvents {
   ctrly: KeyboardEvent;
   ctrlc: KeyboardEvent;
   ctrlv: KeyboardEvent;
+  ctrls: KeyboardEvent;
+  ctrlshifta: KeyboardEvent;
 }
 
 export class Keyboard extends EventEmitter<KeyboardEvents> {

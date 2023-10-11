@@ -1,6 +1,7 @@
 import { Point } from '@renderer/types/graphics';
 
 import { EventSelection } from './Events';
+import { InitialStateMark } from './InitialStateMark';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
@@ -23,9 +24,9 @@ interface StatesEvents {
 }
 
 export class States extends EventEmitter<StatesEvents> {
-  container!: Container;
+  initialStateMark: InitialStateMark | null = null;
 
-  constructor(container: Container) {
+  constructor(public container: Container) {
     super();
     this.container = container;
   }
@@ -34,6 +35,8 @@ export class States extends EventEmitter<StatesEvents> {
     this.container.machine.states.forEach((state) => {
       state.draw(ctx, canvas);
     });
+
+    this.initialStateMark?.draw(ctx);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -137,5 +140,9 @@ export class States extends EventEmitter<StatesEvents> {
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();
+  }
+
+  initInitialStateMark(stateId: string) {
+    this.initialStateMark = new InitialStateMark(this.container, stateId);
   }
 }

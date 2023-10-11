@@ -95,6 +95,10 @@ export class StateMachine {
       state.parent?.children.set(id, state);
       this.container.states.watchState(state);
       this.states.set(id, state);
+
+      if (this.container.app.manager.data.elements.initialState === id) {
+        this.container.states.initInitialStateMark(id);
+      }
     }
   }
 
@@ -394,6 +398,9 @@ export class StateMachine {
   };
 
   changeInitialState = (id: string, canUndo = true) => {
+    const state = this.states.get(id);
+    if (!state) return;
+
     if (canUndo) {
       this.undoRedo.do({
         type: 'changeInitialState',
@@ -402,6 +409,7 @@ export class StateMachine {
     }
 
     this.container.app.manager.changeInitialState(id);
+    this.container.states.initInitialStateMark(id);
 
     this.container.isDirty = true;
   };

@@ -1,11 +1,16 @@
 import { Transition as TransitionType } from '@renderer/types/diagram';
 
-import { BaseTransition } from './BaseTransition';
 import { Condition } from './Condition';
 
 import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
-import { degrees_to_radians, getTransitionLines } from '../utils';
+import {
+  degrees_to_radians,
+  drawCircle,
+  drawCurvedLine,
+  drawTriangle,
+  getTransitionLines,
+} from '../utils';
 
 // interface TransitionProps {
 // container: Container;
@@ -18,16 +23,14 @@ import { degrees_to_radians, getTransitionLines } from '../utils';
  * Выполняет отрисовку стрелки между тремя движущимися блоками:
  * источник, назначение, а также {@link Condition|условие} перехода.
  */
-export class Transition extends BaseTransition {
+export class Transition {
   // data!: TransitionType;
   // source!: State;
   // target!: State;
   condition!: Condition;
   id!: string;
 
-  constructor(container: Container, id: string) {
-    super(container);
-
+  constructor(public container: Container, id: string) {
     this.id = id;
 
     // this.source = source;
@@ -66,10 +69,19 @@ export class Transition extends BaseTransition {
     ctx.strokeStyle = this.data.color;
     ctx.fillStyle = this.data.color;
 
-    this.drawLine(ctx, sourceLine);
-    this.drawLine(ctx, targetLine);
-    this.drawStart(ctx, sourceLine.start);
-    this.drawEnd(ctx, targetLine.start, degrees_to_radians(targetLine.se));
+    drawCurvedLine(ctx, sourceLine, 12 / this.container.app.manager.data.scale);
+    drawCurvedLine(ctx, targetLine, 12 / this.container.app.manager.data.scale);
+    drawCircle(
+      ctx,
+      sourceLine.start,
+      transitionStyle.startSize / this.container.app.manager.data.scale
+    );
+    drawTriangle(
+      ctx,
+      targetLine.start,
+      10 / this.container.app.manager.data.scale,
+      degrees_to_radians(targetLine.se)
+    );
 
     this.condition.draw(ctx, canvas);
   }

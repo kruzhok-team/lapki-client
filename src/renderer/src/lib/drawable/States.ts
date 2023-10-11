@@ -1,6 +1,7 @@
 import { Point } from '@renderer/types/graphics';
 
 import { EventSelection } from './Events';
+import { InitialStateMark } from './InitialStateMark';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
@@ -19,11 +20,13 @@ type MenuEventCallback = (state: State, position: Point, events: EventSelection)
  * Реализует отрисовку и обработку выделения состояний.
  */
 export class States extends EventEmitter {
-  container!: Container;
+  initialStateMark!: InitialStateMark;
 
-  constructor(container: Container) {
+  constructor(public container: Container) {
     super();
     this.container = container;
+
+    this.initialStateMark = new InitialStateMark(container);
   }
 
   createCallback!: CreateCallback;
@@ -56,6 +59,8 @@ export class States extends EventEmitter {
     this.container.machine.states.forEach((state) => {
       state.draw(ctx, canvas);
     });
+
+    this.initialStateMark.draw(ctx);
   }
 
   handleStartNewTransition = (state: State) => {

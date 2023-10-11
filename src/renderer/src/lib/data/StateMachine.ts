@@ -100,6 +100,16 @@ export class StateMachine extends EventEmitter {
       state.parent?.children.set(id, state);
       this.container.states.watchState(state);
       this.states.set(id, state);
+
+      if (this.container.app.manager.data.elements.initialState === id) {
+        this.container.states.initialStateMark.setState(state);
+        this.container.states.initialStateMark.on('click', (e) => {
+          // console.log(e);
+          console.log('here', e);
+
+          (e as any).event.stopPropagation();
+        });
+      }
     }
   }
 
@@ -396,6 +406,9 @@ export class StateMachine extends EventEmitter {
   };
 
   changeInitialState = (id: string, canUndo = true) => {
+    const state = this.states.get(id);
+    if (!state) return;
+
     if (canUndo) {
       this.undoRedo.do({
         type: 'changeInitialState',
@@ -404,6 +417,7 @@ export class StateMachine extends EventEmitter {
     }
 
     this.container.app.manager.changeInitialState(id);
+    this.container.states.initialStateMark.setState(state);
 
     this.container.isDirty = true;
   };

@@ -5,7 +5,13 @@ import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
 
-type DiagramContextMenuItem = { label: string; action: () => void };
+export type DiagramContextMenuItem = {
+  label: string;
+  type: string;
+  isFolder?: boolean;
+  children?: DiagramContextMenuItem[];
+  action: () => void;
+};
 
 export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: EditorManager) => {
   const openTab = useTabs((state) => state.openTab);
@@ -35,12 +41,14 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(pos, [
         {
           label: 'Вставить',
+          type: 'paste',
           action: () => {
             editor?.container.handlePaste();
           },
         },
         {
           label: 'Вставить состояние',
+          type: 'pasteState',
           action: () => {
             editor?.container.machine.createState({
               name: 'Состояние',
@@ -51,6 +59,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Посмотреть код',
+          type: 'showCodeAll',
           action: () => {
             openTab({
               type: 'code',
@@ -62,6 +71,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Центрировать камеру',
+          type: 'centerCamera',
           action: () => {
             editor?.container.viewCentering();
           },
@@ -76,34 +86,48 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(position, [
         {
           label: 'Копировать',
+          type: 'copy',
           action: () => {
             editor?.container.handleCopy();
           },
         },
         {
           label: 'Вставить',
+          type: 'paste',
           action: () => {
             editor?.container.handlePaste();
           },
         },
         {
-          label: 'Вставить состояние',
-          action: () => {
-            editor?.container.machine.createState({
-              name: 'Состояние',
-              position: canvasPos,
-              parentId: state.id,
-            });
-          },
-        },
-        {
-          label: 'Назначить начальным',
-          action: () => {
-            editor?.container.machine.changeInitialState(state.id as string);
-          },
+          label: 'Редактировать',
+          type: 'edit',
+          isFolder: true,
+          children: [
+            {
+              label: 'Назначить начальным',
+              type: 'initialState',
+              action: () => {
+                editor?.container.machine.changeInitialState(state.id as string);
+              },
+            },
+            {
+              label: 'Вставить состояние',
+              type: 'pasteState',
+              action: () => {
+                editor?.container.machine.createState({
+                  name: 'Состояние',
+                  position: canvasPos,
+                  parentId: state.id,
+                });
+              },
+            },
+          ],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
         },
         {
           label: 'Посмотреть код',
+          type: 'showCodeAll',
           action: () => {
             openTab({
               type: 'state',
@@ -115,6 +139,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Удалить',
+          type: 'delete',
           action: () => {
             editor?.container.machine.deleteState(state.id as string);
           },
@@ -127,6 +152,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(position, [
         {
           label: 'Удалить',
+          type: 'delete',
           action: () => {
             editor?.container.machine.deleteEvent(state.id, event);
           },
@@ -139,12 +165,30 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
       handleEvent(position, [
         {
           label: 'Копировать',
+          type: 'copy',
           action: () => {
             editor?.container.handleCopy();
           },
         },
+        // {
+        //   label: 'Выбрать исход(source)',
+        //   type: 'source',
+        //   isFolder: true,
+        //   children: [],
+        //   // eslint-disable-next-line @typescript-eslint/no-empty-function
+        //   action: () => {},
+        // },
+        // {
+        //   label: 'Выбрать цель(target)',
+        //   type: 'target',
+        //   isFolder: true,
+        //   children: [],
+        //   // eslint-disable-next-line @typescript-eslint/no-empty-function
+        //   action: () => {},
+        // },
         {
           label: 'Посмотреть код',
+          type: 'showCodeAll',
           action: () => {
             openTab({
               type: 'transition',
@@ -156,6 +200,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         },
         {
           label: 'Удалить',
+          type: 'delete',
           action: () => {
             editor?.container.machine.deleteTransition(condition.id as string);
           },

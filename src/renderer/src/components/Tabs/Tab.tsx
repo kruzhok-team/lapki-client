@@ -9,13 +9,6 @@ import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transit
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 
-const TabIcon = {
-  editor: <EditorIcon />,
-  code: <CodeIcon />,
-  transition: <TransitionIcon />,
-  state: <StateIcon />,
-};
-
 interface TabProps {
   isActive: boolean;
   isDragging: boolean;
@@ -45,6 +38,12 @@ export const Tab: React.FC<TabProps> = (props) => {
     onClose,
   } = props;
 
+  const TabIcon = {
+    editor: <EditorIcon />,
+    code: <CodeIcon />,
+    transition: <TransitionIcon />,
+    state: <StateIcon />,
+  };
   const [dragOver, setDragOver] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {

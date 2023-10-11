@@ -10,6 +10,8 @@ import {
   emptyElements,
 } from '@renderer/types/diagram';
 
+import { getAvailablePlatforms } from './PlatformLoader';
+
 type Node = {
   id: string;
   data?: Array<DataNode>;
@@ -55,42 +57,79 @@ type KeyNode = {
   properties: KeyProperties;
 };
 
-// interface DataProcess {
-//   elements: InnerElements;
-//   meta: Meta;
-//   node: DataNode;
-//   parentNode?: Node;
-// }
-
-function isDataNode(node: DataNode | KeyNode) {
-  return (node as DataNode).key !== undefined;
-}
-
 const dataNodeProcess = new Map<
   string,
-  (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node) => void // Вынести в отдельный интерфейс?
+  (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => void // Вынести в отдельный интерфейс?
 >([
   [
     'gFormat',
     (_elemelnts: InnerElements, meta: Meta, node: DataNode, _parentNode?: Node) => {
       console.log(node);
-      if (isDataNode(node)) {
-        meta.format = (node as DataNode).content;
-      }
+      meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
     },
   ],
   [
     'dData',
-    (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node) => {
+    (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => {
       if (parentNode !== undefined) {
         // Если это мета-компонент, то извлекаем мета-информацию
         if (parentNode.id == '') {
           parseMeta(meta, node.content);
+        } else {
+          if (state !== undefined) {
+            parseNodeData(node.content, meta);
+          }
         }
       }
     },
   ],
+  [
+    'dName',
+    (_elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => {
+      if (parentNode !== undefined) {
+        // В мета-состоянии dName означает название платформы
+        if (parentNode.id == '') {
+          if (meta.platform == '') {
+            meta.platform = node.content;
+          } else {
+            console.log(
+              `Повторное указание платформы! Старое значение: ${meta.platform}. Новое значение: ${node.content}`
+            ); //TODO Модалкой
+          }
+        } else {
+          if (state != undefined) {
+            state.name = node.content;
+          }
+        }
+      }
+    },
+  ],
+  [
+    'dInitial',
+    (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node) => {
+      if (parentNode !== undefined) {
+        elements.initialState = parentNode?.id;
+      }
+    },
+  ],
 ]);
+
+// Функция извлекает события и действия из дата-ноды
+function parseNodeData(content: string, meta: Meta) {
+  switch (meta.platform) {
+    case 'BearsTowerDefence': {
+      console.log('parse bearloga');
+      break;
+    }
+    case 'ArduinoUno': {
+      console.log('bububu');
+      break;
+    }
+    default: {
+      console.log(`Unsupported platform ${meta.platform}`);
+    }
+  }
+}
 
 // Функция, которая находит формат и присваивают его к Meta
 function setFormatToMeta(elements: InnerElements, xml: any, meta: Meta) {
@@ -103,7 +142,7 @@ function setFormatToMeta(elements: InnerElements, xml: any, meta: Meta) {
   }
 }
 
-// Функция получается на вход строку, в которой мета-информация разделена символом /
+// Функция получает на вход строку, в которой мета-информация разделена символами / и \n
 function parseMeta(meta: Meta, unproccessedMeta: string) {
   const splitedMeta = unproccessedMeta.split('\n');
 
@@ -122,18 +161,15 @@ function parseMeta(meta: Meta, unproccessedMeta: string) {
       }
     }
   }
-
-  console.log(meta);
 }
 
-// Обработка ачального "теневого" события
-// В этой функции достается вся мета-информация
-// function processInitialNode(node: Node, meta: Meta) {
-//   if (node.data !== undefined) {
-//     for (const data of node.data) {
-//     }
-//   }
-// }
+function createEmptyState(): State {
+  return {
+    name: '',
+    bounds: { x: 0, y: 0, width: 0, height: 0 },
+    events: [],
+  };
+}
 
 // Обработка нод
 function processNode(
@@ -142,20 +178,23 @@ function processNode(
   meta: Meta,
   awailableDataProperties: Map<string, Map<string, KeyProperties>>
 ): State {
-  console.log(node);
+  const state: State = createEmptyState();
+
   if (node.data !== undefined) {
     for (const dataNode of node.data) {
       console.log(awailableDataProperties);
       if (awailableDataProperties.get('node')?.has(dataNode.key)) {
         const func = dataNodeProcess.get(dataNode.key);
         if (func) {
-          func(elements, meta, dataNode, node);
+          func(elements, meta, dataNode, node, state);
         }
       } else {
         console.log(`Неизвестный key "${dataNode.key}" для узла node!`);
       }
     }
   }
+
+  return state;
 }
 
 function processGraph(
@@ -167,8 +206,10 @@ function processGraph(
   const graph: Graph = xml.graphml.graph;
   console.log(graph);
   for (const node of graph.node) {
-    processNode(elements, node, meta, awailableDataProperties);
+    elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties);
   }
+
+  console.log(elements);
 
   return new Map<string, State>();
 }
@@ -333,5 +374,8 @@ export function importGraphml() {
     }
   }
 
+  elements.platform = meta.platform;
+
   console.log(xml);
+  console.log(getAvailablePlatforms());
 }

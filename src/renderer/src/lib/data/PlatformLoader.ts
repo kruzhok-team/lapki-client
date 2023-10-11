@@ -5,7 +5,6 @@ import { PlatformManager } from './PlatformManager';
 
 import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
-import { importGraphml } from './GraphmlParser';
 // TODO? выдача стандартного файла для платформы
 
 const platformPaths = await window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms');
@@ -18,7 +17,6 @@ const platformsErrors: Map<string, string> = new Map();
 function fetchPlatforms(paths: string[]) {
   const promises = paths.map((path): Promise<[string, Either<string, Platforms>]> => {
     return new Promise(async (resolve) => {
-      importGraphml();
       const response = await window.electron.ipcRenderer.invoke(
         'PlatformLoader:openPlatformFile',
         path
@@ -104,6 +102,10 @@ export function getAvailablePlatforms(): PlatformInfo[] {
       description: pfm.description ?? '',
     };
   });
+}
+
+export function getPlatform(idx: string) {
+  return platforms.get(idx);
 }
 
 export function loadPlatform(idx: string): PlatformManager | undefined {

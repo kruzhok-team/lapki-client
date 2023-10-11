@@ -3,7 +3,7 @@ import { Point, Rectangle } from '@renderer/types/graphics';
 import { Events } from './Events';
 
 import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitterNew';
+import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { isPointInRectangle } from '../utils';
 
@@ -23,25 +23,23 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-interface DraggableEvents<T extends ThisType<Draggable<any>>> {
-  mousedown: { event: MyMouseEvent; target: T };
-  mouseup: { event: MyMouseEvent; target: T };
-  click: { event: MyMouseEvent; target: T };
-  dblclick: { event: MyMouseEvent; target: T };
-  contextmenu: { event: MyMouseEvent; target: T };
-  longpress: { event: MyMouseEvent; target: T };
-  dragend: { dragStartPosition: Point; dragEndPosition: Point; target: T };
+interface DraggableEvents {
+  mousedown: { event: MyMouseEvent };
+  mouseup: { event: MyMouseEvent };
+  click: { event: MyMouseEvent };
+  dblclick: { event: MyMouseEvent };
+  contextmenu: { event: MyMouseEvent };
+  longpress: { event: MyMouseEvent };
+  dragend: { dragStartPosition: Point; dragEndPosition: Point };
 }
 
-export abstract class Draggable<T extends Draggable<any> = Draggable<any>> extends EventEmitter<
-  DraggableEvents<T>
-> {
+export abstract class Draggable extends EventEmitter<DraggableEvents> {
   container!: Container;
   statusevents!: Events;
   // bounds!: Rectangle;
   id!: string;
-  parent?: Draggable<any>;
-  children: Map<string, Draggable<any>> = new Map();
+  parent?: Draggable;
+  children: Map<string, Draggable> = new Map();
 
   dragging = false;
 
@@ -54,7 +52,7 @@ export abstract class Draggable<T extends Draggable<any> = Draggable<any>> exten
 
   childrenPadding = 15;
 
-  constructor(container: Container, id: string, parent?: Draggable<any>) {
+  constructor(container: Container, id: string, parent?: Draggable) {
     super();
 
     this.container = container;
@@ -193,7 +191,6 @@ export abstract class Draggable<T extends Draggable<any> = Draggable<any>> exten
         dragEndPosition.y !== this.dragStartPosition.y)
     ) {
       this.emit('dragend', {
-        target: this,
         dragStartPosition: this.dragStartPosition,
         dragEndPosition,
       });
@@ -217,17 +214,12 @@ export abstract class Draggable<T extends Draggable<any> = Draggable<any>> exten
     clearTimeout(this.mouseDownTimerId);
 
     this.mouseDownTimerId = setTimeout(() => {
-      this.emit('longpress', { event: e, target: this });
+      this.emit('longpress', { event: e });
     }, this.longPressTimeout);
 
-    this.emit('mousedown', { event: e, target: this });
+    this.emit('mousedown', { event: e });
 
-    this.emit('click', { event: e, target: this });
-
-    // this.emit('a', 'sa');
-    // this.on('a', (e) => {});
-
-    // this.emit('as', { a: 2 });
+    this.emit('click', { event: e });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -286,11 +278,11 @@ export abstract class Draggable<T extends Draggable<any> = Draggable<any>> exten
     // может привезти к новым багам (пока на карандаше)
     // e.stopPropagation();
 
-    this.emit('mouseup', { event: e, target: this });
+    this.emit('mouseup', { event: e });
 
     if (this.isMouseDown) {
       this.isMouseDown = false;
-      this.emit('click', { event: e, target: this });
+      this.emit('click', { event: e });
     }
   };
 
@@ -299,7 +291,7 @@ export abstract class Draggable<T extends Draggable<any> = Draggable<any>> exten
     if (!isUnderMouse) return;
 
     // TODO: возможна коллизия с mouseup и click, нужно тестировать
-    this.emit('dblclick', { event: e, target: this });
+    this.emit('dblclick', { event: e });
   };
 
   handleContextMenuClick = (e: MyMouseEvent) => {
@@ -308,7 +300,7 @@ export abstract class Draggable<T extends Draggable<any> = Draggable<any>> exten
 
     e.stopPropagation();
 
-    this.emit('contextmenu', { event: e, target: this });
+    this.emit('contextmenu', { event: e });
   };
 
   isUnderMouse<T extends Point>({ x, y }: T, withChildren?: boolean) {

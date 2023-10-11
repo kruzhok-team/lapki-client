@@ -1,7 +1,6 @@
 import {
   Action,
   Condition,
-  Elements,
   Event,
   Variable,
   State as StateType,
@@ -26,12 +25,9 @@ import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager'
 import { UndoRedo } from './UndoRedo';
 
 import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
-
-export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 
 /**
  * Данные машины состояний.
@@ -48,7 +44,7 @@ export type DataUpdateCallback = (e: Elements, modified: boolean) => void;
 //        чтобы через раз не делать запрос в словарь
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
-export class StateMachine extends EventEmitter {
+export class StateMachine {
   container!: Container;
 
   states: Map<string, State> = new Map();
@@ -59,7 +55,6 @@ export class StateMachine extends EventEmitter {
   undoRedo = new UndoRedo(this);
 
   constructor(container: Container) {
-    super();
     this.container = container;
   }
 

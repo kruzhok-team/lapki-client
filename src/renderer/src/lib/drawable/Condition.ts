@@ -18,7 +18,7 @@ export class Condition extends Draggable {
   isSelected = false;
 
   constructor(container: Container, transition: Transition, id: string) {
-    super({ container, id });
+    super(container, id);
 
     this.transition = transition;
     // this.contextmenu = new ContextMenu(container, this);

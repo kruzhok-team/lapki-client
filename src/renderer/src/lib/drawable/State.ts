@@ -15,7 +15,7 @@ const style = theme.colors.diagram.state;
  * Класс выполняет отрисовку, обработку событий (за счёт {@link Draggable}),
  * управление собственным выделением и отображение «хваталок».
  */
-export class State extends Draggable<State> {
+export class State extends Draggable {
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -24,7 +24,7 @@ export class State extends Draggable<State> {
   DiodOn?: HTMLImageElement;
   DiodOff?: HTMLImageElement;
 
-  constructor(container: Container, id: string, parent?: Draggable<State>) {
+  constructor(container: Container, id: string, parent?: Draggable) {
     super(container, id, parent);
     this.container = container;
 

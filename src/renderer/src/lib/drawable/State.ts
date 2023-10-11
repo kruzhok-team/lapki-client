@@ -1,10 +1,11 @@
+import theme from '@renderer/theme';
+
 import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
 import { picto } from './Picto';
 
 import { Container } from '../basic/Container';
-import theme from '@renderer/theme';
 
 const style = theme.colors.diagram.state;
 

@@ -2,6 +2,7 @@ import { getColor } from '@renderer/theme';
 import { Point } from '@renderer/types/graphics';
 
 import { CanvasEditor } from '../CanvasEditor';
+import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { StateMachine } from '../data/StateMachine';
 import { picto } from '../drawable/Picto';
@@ -16,7 +17,12 @@ export const MIN_SCALE = 0.2;
  * Контейнер с машиной состояний, в котором происходит отрисовка,
  * управление камерой, обработка событий и сериализация.
  */
-export class Container {
+interface ContainerEvents {
+  stateDrop: Point;
+  contextMenu: Point;
+}
+
+export class Container extends EventEmitter<ContainerEvents> {
   app!: CanvasEditor;
 
   isDirty = true;
@@ -28,10 +34,9 @@ export class Container {
 
   isPan = false;
 
-  dropCallback?: (position: Point) => void;
-  contextMenuOpenCallback?: (position: Point) => void;
-
   constructor(app: CanvasEditor) {
+    super();
+
     this.app = app;
     this.machine = new StateMachine(this);
     this.states = new States(this);
@@ -120,15 +125,7 @@ export class Container {
       y: (e.clientY - rect.top) * scale - offset.y,
     };
 
-    this.dropCallback?.(position);
-  };
-
-  onStateDrop = (callback: (position: Point) => void) => {
-    this.dropCallback = callback;
-  };
-
-  onFieldContextMenu = (callback: (position: Point) => void) => {
-    this.contextMenuOpenCallback = callback;
+    this.emit('stateDrop', position);
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
@@ -172,7 +169,7 @@ export class Container {
   };
 
   handleFieldContextMenu = (e: MyMouseEvent) => {
-    this.contextMenuOpenCallback?.(e);
+    this.emit('contextMenu', e);
   };
 
   handleSpaceDown = () => {
@@ -203,7 +200,7 @@ export class Container {
   handleMouseDoubleClick = (e: MyMouseEvent) => {
     e.stopPropagation();
 
-    this.dropCallback?.(this.relativeMousePos({ x: e.x, y: e.y }));
+    this.emit('stateDrop', this.relativeMousePos({ x: e.x, y: e.y }));
   };
 
   relativeMousePos(e: Point): Point {

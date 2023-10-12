@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { Fragment, useLayoutEffect, useState } from 'react';
 
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { twMerge } from 'tailwind-merge';
@@ -89,9 +89,8 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
       className={twMerge('z-50 w-64 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
     >
       {items.map(({ label, type, isFolder, children, action }, i) => (
-        <>
+        <Fragment key={i}>
           <button
-            key={i}
             className={twMerge(
               'flex w-full justify-between rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
               openMenu && isFolder && 'bg-bg-hover'
@@ -145,7 +144,7 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
                 ))}
             </div>
           )}
-        </>
+        </Fragment>
       ))}
     </div>
   );

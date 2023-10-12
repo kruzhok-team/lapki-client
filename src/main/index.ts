@@ -43,7 +43,7 @@ function createWindow(): void {
   });
 
   mainWindow.webContents.on('before-input-event', (event, input) => {
-    if (input.control && input.key.toLowerCase() === 'w') {
+    if (input.control && input.code === 'KeyW') {
       event.preventDefault();
     }
   });

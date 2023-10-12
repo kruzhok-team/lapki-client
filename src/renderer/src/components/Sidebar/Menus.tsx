@@ -52,7 +52,7 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
       maxWidth={maxWidth}
       onResize={handleResize}
       onResizeStop={handleResizeStop}
-      className="overflow-hidden border-r border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500"
+      className="z-50 overflow-hidden border-r border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500"
     >
       <div className={twMerge('h-full w-full', isCollapsed && 'opacity-0')}>
         {items.map((Element, i) => (

@@ -33,6 +33,7 @@ export class Condition extends Draggable {
     this.transition.data.position.y = value.y;
   }
 
+  // TODO Удалить
   toJSON() {
     return this.transition.data;
   }

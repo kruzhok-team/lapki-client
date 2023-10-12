@@ -97,6 +97,8 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
+    this.app.keyboard.on('ctrls', this.handleSaveFile);
+    this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
 
     document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -152,6 +154,14 @@ export class Container extends EventEmitter<ContainerEvents> {
 
   handlePaste = () => {
     this.machine.pasteSelected();
+  };
+
+  handleSaveFile = () => {
+    this.app.manager.save();
+  };
+
+  handleSaveAsFile = () => {
+    this.app.manager.saveAs();
   };
 
   handleMouseUp = () => {

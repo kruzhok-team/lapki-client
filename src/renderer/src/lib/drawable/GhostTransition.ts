@@ -1,22 +1,20 @@
 import { Point } from '@renderer/types/graphics';
 
 import { State } from './State';
-import { degrees_to_radians, getLine } from '../utils';
-import { BaseTransition } from './BaseTransition';
+
 import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
+import { degrees_to_radians, drawCircle, drawCurvedLine, drawTriangle, getLine } from '../utils';
 
 /**
  * Неоформленный («призрачный») переход.
  * Используется для визуализации создаваемого перехода.
  */
-export class GhostTransition extends BaseTransition {
+export class GhostTransition {
   source!: State | null;
   target!: Point | null;
 
-  constructor(container: Container) {
-    super(container);
-  }
+  constructor(public container: Container) {}
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (!this.source || !this.target) return;
@@ -37,9 +35,14 @@ export class GhostTransition extends BaseTransition {
 
     ctx.lineWidth = transitionStyle.width;
 
-    this.drawLine(ctx, line);
-    this.drawStart(ctx, line.start);
-    this.drawEnd(ctx, line.end, degrees_to_radians(line.ee));
+    drawCurvedLine(ctx, line, 12 / this.container.app.manager.data.scale);
+    drawCircle(ctx, line.start, transitionStyle.startSize / this.container.app.manager.data.scale);
+    drawTriangle(
+      ctx,
+      line.end,
+      10 / this.container.app.manager.data.scale,
+      degrees_to_radians(line.ee)
+    );
   }
 
   setSource(state: State) {

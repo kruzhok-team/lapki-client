@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -18,7 +18,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Открыть...',
-      onClick: () => props.onRequestOpenFile(), // Если передавать просто функцию, в параметры может попать то что не нужно
+      onClick: () => props.onRequestOpenFile(), // Если передавать просто функцию, в параметры может попасть то что не нужно
     },
     {
       text: 'Сохранить',
@@ -42,6 +42,25 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   TODO: модальное окно с выбором примера
     // },
   ];
+
+  useLayoutEffect(() => {
+    window.addEventListener('keyup', handleKeyUp);
+    return () => window.removeEventListener('keyup', handleKeyUp);
+  });
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (e.ctrlKey) {
+      if (e.code === 'KeyN') {
+        return props.onRequestNewFile();
+      }
+      if (e.code === 'KeyO') {
+        return props.onRequestOpenFile();
+      }
+      if (e.code === 'KeyI') {
+        return props.onRequestImport('BearlogaDefend');
+      }
+    }
+  };
 
   return (
     <section className="flex flex-col">

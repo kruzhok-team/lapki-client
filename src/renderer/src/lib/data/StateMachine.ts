@@ -141,7 +141,7 @@ export class StateMachine {
   }
 
   createState = (args: CreateStateParameters, canUndo = true) => {
-    const { parentId } = args;
+    const { parentId, position, linkByPoint = true } = args;
 
     // Создание данных
     const newStateId = this.container.app.manager.createState(args);
@@ -156,6 +156,8 @@ export class StateMachine {
     if (parentId) {
       this.linkState(parentId, newStateId, canUndo);
       numberOfConnectedActions += 1;
+    } else if (linkByPoint) {
+      this.linkStateByPoint(state, position);
     }
 
     this.container.states.watchState(state);
@@ -276,6 +278,39 @@ export class StateMachine {
     parent.children.set(childId, child);
 
     this.container.isDirty = true;
+  }
+
+  linkStateByPoint(state: State, position: Point) {
+    // назначаем родительское состояние по месту его создания
+    let possibleParent: State | undefined = undefined;
+    for (const item of this.states.values()) {
+      if (state.id == item.id) continue;
+      if (item.isUnderMouse(position, true)) {
+        if (typeof possibleParent === 'undefined') {
+          possibleParent = item;
+        } else {
+          // учитываем вложенность, нужно поместить состояние
+          // в максимально дочернее
+          let searchPending = true;
+          while (searchPending) {
+            searchPending = false;
+            for (const child of possibleParent.children.values()) {
+              if (!(child instanceof State)) continue;
+              if (state.id == child.id) continue;
+              if (child.isUnderMouse(position, true)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (possibleParent !== state && possibleParent) {
+      this.linkState(possibleParent.id, state.id, true, true);
+    }
   }
 
   unlinkState(id: string, canUndo = true) {

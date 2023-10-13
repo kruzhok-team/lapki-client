@@ -115,7 +115,7 @@ export class Picto {
       const tX = x + width / this.scale;
       const tY = y + (height - 1) / this.scale;
       ctx.save();
-      ctx.font = `600 ${16 / this.scale}px/0 Fira Mono`;
+      ctx.font = `600 ${16 / this.scale}px/0 Fira Sans`;
       ctx.fillStyle = iconData.color ?? 'white';
       ctx.strokeStyle = 'white';
       ctx.lineWidth = 0.5 / this.scale;
@@ -145,7 +145,7 @@ export class Picto {
         <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
         {data.label && (
           <p
-            className="absolute bottom-0 right-0 text-right font-Fira text-base font-semibold leading-none"
+            className="absolute bottom-0 right-0 text-right font-Fira text-base font-semibold leading-none [-webkit-text-stroke:_1px_white]"
             style={{ color: data.color ?? 'white' }}
           >
             {data.label}

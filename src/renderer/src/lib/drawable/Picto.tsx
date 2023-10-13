@@ -141,7 +141,7 @@ export class Picto {
   getMarkedIcon(data: MarkedIconData, className?: string) {
     const icon = icons.get(data.icon);
     return (
-      <div className={twMerge('relative h-8 w-8', className)}>
+      <div className={twMerge('relative h-8 w-8 shrink-0', className)}>
         <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
         {data.label && (
           <p

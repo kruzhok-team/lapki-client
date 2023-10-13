@@ -4,11 +4,10 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
+import { ScrollableList } from '@renderer/components/ScrollableList';
 import { useAddComponent, useEditDeleteComponent } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-
-import { ScrollableList } from '@renderer/components/ScrollableList';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;

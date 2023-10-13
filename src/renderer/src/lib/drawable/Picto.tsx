@@ -1,3 +1,5 @@
+import { twMerge } from 'tailwind-merge';
+
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
@@ -129,41 +131,27 @@ export class Picto {
   }
 
   /**
-   * Генерирует SVG-ноду для значка с меткой.
+   * Генерирует иконку для значка с меткой.
    * По сути, дублирует {@link drawImage} вне canvas.
    *
    * @param data Контейнер с данными значка
    * @param className Атрибут class для генерируемой ноды (дополнительно)
    * @returns JSX-нода со значком
    */
-  getMarkedSvg(data: MarkedIconData, className?: string) {
+  getMarkedIcon(data: MarkedIconData, className?: string) {
     const icon = icons.get(data.icon);
     return (
-      <svg
-        className={className ?? 'h-8 w-8 object-contain'}
-        viewBox="0 0 32 32"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <image width={32} height={32} href={icon?.src ?? UnknownIcon} />;
-        {!data.label ? (
-          ''
-        ) : (
-          <text
-            x="32"
-            y="31"
-            fontSize="16"
-            fill={data.color ?? 'white'}
-            textAnchor="end"
-            fontFamily="Fira Mono"
-            fontWeight="600"
-            stroke="white"
-            strokeWidth={0.5}
+      <div className={twMerge('relative h-8 w-8', className)}>
+        <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
+        {data.label && (
+          <p
+            className="absolute bottom-0 right-0 text-right font-Fira text-base font-semibold leading-none"
+            style={{ color: data.color ?? 'white' }}
           >
             {data.label}
-          </text>
+          </p>
         )}
-        <text></text>
-      </svg>
+      </div>
     );
   }
 

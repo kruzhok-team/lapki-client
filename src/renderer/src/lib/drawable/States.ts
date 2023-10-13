@@ -161,6 +161,15 @@ export class States extends EventEmitter<StatesEvents> {
     this.container.machine.changeStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
   };
 
+  // если состояние вложено – отсоединяем
+  handleLongPress = (state: State, e: { event: MyMouseEvent }) => {
+    e.event.stopPropagation();
+
+    if (typeof state.parent === 'undefined') return;
+
+    this.container.machine.unlinkState(state.id);
+  };
+
   watchState(state: State) {
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('click', this.handleStateClick.bind(this, state));
@@ -168,6 +177,7 @@ export class States extends EventEmitter<StatesEvents> {
     state.on('contextmenu', this.handleContextMenu.bind(this, state));
     state.on('drag', this.handleDrag.bind(this, state));
     state.on('dragend', this.handleDragEnd.bind(this, state));
+    state.on('longpress', this.handleLongPress.bind(this, state));
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
@@ -179,6 +189,7 @@ export class States extends EventEmitter<StatesEvents> {
     state.off('contextmenu', this.handleContextMenu.bind(this, state));
     state.off('drag', this.handleDrag.bind(this, state));
     state.off('dragend', this.handleDragEnd.bind(this, state));
+    state.off('longpress', this.handleLongPress.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
     state.unbindEvents();

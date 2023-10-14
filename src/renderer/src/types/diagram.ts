@@ -1,7 +1,7 @@
 import { Point, Rectangle } from './graphics';
 
 // FIXME: в перспективе тип должен быть string | Variable
-type ArgList = { [key: string]: string };
+export type ArgList = { [key: string]: string };
 
 export type Action = {
   component: string;

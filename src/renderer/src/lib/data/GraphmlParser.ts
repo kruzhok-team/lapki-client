@@ -8,9 +8,12 @@ import {
   Event,
   InnerElements,
   emptyElements,
+  EventData,
+  ArgList,
 } from '@renderer/types/diagram';
+import { ArgumentProto, Platform } from '@renderer/types/platform';
 
-import { getAvailablePlatforms } from './PlatformLoader';
+import { getAvailablePlatforms, getPlatform, isPlatformAvailable } from './PlatformLoader';
 
 type Node = {
   id: string;
@@ -77,7 +80,7 @@ const dataNodeProcess = new Map<
           parseMeta(meta, node.content);
         } else {
           if (state !== undefined) {
-            parseNodeData(node.content, meta);
+            parseNodeData(node.content, meta, state);
           }
         }
       }
@@ -91,6 +94,11 @@ const dataNodeProcess = new Map<
         if (parentNode.id == '') {
           if (meta.platform == '') {
             meta.platform = node.content;
+            if (isPlatformAvailable(meta.platform)) {
+              platform = getPlatform(meta.platform);
+            } else {
+              console.log(`Неизвестная платформа ${meta.platform}`);
+            }
           } else {
             console.log(
               `Повторное указание платформы! Старое значение: ${meta.platform}. Новое значение: ${node.content}`
@@ -115,20 +123,78 @@ const dataNodeProcess = new Map<
 ]);
 
 // Функция извлекает события и действия из дата-ноды
-function parseNodeData(content: string, meta: Meta) {
-  switch (meta.platform) {
-    case 'BearsTowerDefence': {
-      console.log('parse bearloga');
-      break;
-    }
-    case 'ArduinoUno': {
-      console.log('bububu');
-      break;
-    }
-    default: {
-      console.log(`Unsupported platform ${meta.platform}`);
+function parseNodeData(content: string, meta: Meta, state: State) {
+  // По формату CyberiadaGraphML события разделены пустой строкой.
+  const unproccessedEventsAndActions = content.split('\n\n');
+
+  for (const event of unproccessedEventsAndActions) {
+    if (event.includes('/')) {
+      const eventAndAction = event.split('/');
+      const trigger = eventAndAction[0].trim();
+      const actions = parseActions(eventAndAction[1].trim());
+
+      if (actions !== undefined) {
+        let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
+        if (ev == undefined) {
+          const [component, method] = trigger.split('.');
+          ev = {
+            component: component,
+            method: method,
+          };
+        }
+        state.events.push({
+          trigger: ev,
+          do: actions,
+        });
+      }
+    } else {
+      console.log(`Не определен триггер для действий ${event}`);
+      return;
     }
   }
+}
+
+function parseActions(unsplitedActions: string): Action[] | undefined {
+  if (platform !== undefined && unsplitedActions != '') {
+    // Считаем, что действия находятся на разных строках
+    const actions = unsplitedActions.split('\n');
+    const resultActions = new Array<Action>();
+    for (const unproccessedAction of actions) {
+      const [component, action] = unproccessedAction.trim().split('.');
+      const bracketPos = action.indexOf('(');
+      const args = action.slice(bracketPos + 1, action.length - 1).split(',');
+      const method = action.slice(0, bracketPos);
+
+      const resultAction: Action = {
+        component: component,
+        method: method,
+      };
+      const argList: ArgList = {};
+      const methodParameters = platform.components[component].methods[method].parameters;
+      if (platform.components[component] && platform.components[component].methods[method]) {
+        for (const index in methodParameters) {
+          const parameter: ArgumentProto = methodParameters[index];
+          console.log(args[index]);
+          if (args[index] !== undefined && args[index] !== '') {
+            argList[parameter.name] = args[index];
+          } else {
+            console.log(`У ${component}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
+            return;
+          }
+        }
+        if (Object.keys(argList).length > 0) {
+          resultAction.args = argList;
+        }
+        resultActions.push(resultAction);
+      } else {
+        console.log(`Неизвестный метод ${method} у компонента ${component}`);
+        return;
+      }
+    }
+    return resultActions;
+  }
+
+  return;
 }
 
 // Функция, которая находит формат и присваивают его к Meta
@@ -176,7 +242,8 @@ function processNode(
   elements: InnerElements,
   node: Node,
   meta: Meta,
-  awailableDataProperties: Map<string, Map<string, KeyProperties>>
+  awailableDataProperties: Map<string, Map<string, KeyProperties>>,
+  parent?: Node
 ): State {
   const state: State = createEmptyState();
 
@@ -194,6 +261,15 @@ function processNode(
     }
   }
 
+  if (parent !== undefined) {
+    state.parent = parent.id;
+  }
+
+  if (node.graph !== undefined) {
+    console.log(node.graph);
+    processGraph(elements, node.graph, meta, awailableDataProperties);
+  }
+
   return state;
 }
 
@@ -203,7 +279,7 @@ function processGraph(
   meta: Meta,
   awailableDataProperties: Map<string, Map<string, KeyProperties>>
 ): Map<string, State> {
-  const graph: Graph = xml.graphml.graph;
+  const graph: Graph = xml;
   console.log(graph);
   for (const node of graph.node) {
     elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties);
@@ -249,6 +325,13 @@ function addPropertiesFromKeyNode(
   }
 }
 
+let platform: Platform | undefined;
+
+const systemComponentAlias = new Map<string, Event>([
+  ['entry', { component: 'System', method: 'onEnter' }],
+  ['exit', { component: 'System', method: 'onExit' }],
+]);
+
 export function importGraphml() {
   const parser = new XMLParser({
     textNodeName: 'content',
@@ -280,7 +363,7 @@ export function importGraphml() {
 
   <graph id="G" edgedefault="directed">
     <node id="">
-      <data key="dName">BearsTowerDefence</data>
+      <data key="dName">BearlogaDefend</data>
       <data key="dData">name/ Автобортник
   author/ Матросов В.М.
   contact/ matrosov@mail.ru
@@ -293,7 +376,8 @@ export function importGraphml() {
     <node id="n0">
       <data key="dName">Бой</data>
       <data key="dData">entry/
-  exit/
+
+      exit/
   </data>
       <data key="dGeometry" x="-578.005" y="438.187256"
             width="672.532166" height="802.962646" />
@@ -302,6 +386,7 @@ export function importGraphml() {
           <data key="dName">Сближение</data>
           <data key="dData">entry/
   МодульДвижения.ДвигатьсяКЦели()
+
   exit/
   </data>
           <data key="dGeometry" x="-525.738953" y="609.6686" 
@@ -311,6 +396,7 @@ export function importGraphml() {
           <data key="dName">Атака</data>
           <data key="dData">entry/
   ОружиеЦелевое.АтаковатьЦель()
+
   exit/
   </data>
           <data key="dGeometry" x="-630.2711" y="206.705933" 
@@ -322,6 +408,7 @@ export function importGraphml() {
       <data key="dName">Скан</data>
       <data key="dData">entry/
   Сенсор.ПоискВрагаПоДистанции(мин)
+
   exit/
   Сенсор.ОстановкаПоиска()
   </data>
@@ -362,10 +449,9 @@ export function importGraphml() {
 
   setFormatToMeta(elements, xml, meta);
   addPropertiesFromKeyNode(xml, awailableDataProperties);
-
   switch (meta.format) {
     case 'Cyberiada-GraphML': {
-      processGraph(elements, xml, meta, awailableDataProperties);
+      processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
       break;
     }
     default: {
@@ -373,9 +459,9 @@ export function importGraphml() {
       console.log(`ОШИБКА! НЕИЗВЕСТНЫЙ ФОРМАТ "${meta.format}"!`);
     }
   }
-
   elements.platform = meta.platform;
 
-  console.log(xml);
+  // console.log(xml);
+  console.log('platform!');
   console.log(getAvailablePlatforms());
 }

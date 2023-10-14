@@ -26,6 +26,7 @@ unit/ Autoborder
   <node id="n0">
     <data key="dName">Бой</data>
     <data key="dData">entry/
+
 exit/
 </data>
     <data key="dGeometry" x="-578.005" y="438.187256"
@@ -35,6 +36,7 @@ exit/
         <data key="dName">Сближение</data>
         <data key="dData">entry/
 МодульДвижения.ДвигатьсяКЦели()
+
 exit/
 </data>
         <data key="dGeometry" x="-525.738953" y="609.6686" 
@@ -44,6 +46,7 @@ exit/
         <data key="dName">Атака</data>
         <data key="dData">entry/
 ОружиеЦелевое.АтаковатьЦель()
+
 exit/
 </data>
         <data key="dGeometry" x="-630.2711" y="206.705933" 
@@ -55,6 +58,7 @@ exit/
     <data key="dName">Скан</data>
     <data key="dData">entry/
 Сенсор.ПоискВрагаПоДистанции(мин)
+
 exit/
 Сенсор.ОстановкаПоиска()
 </data>

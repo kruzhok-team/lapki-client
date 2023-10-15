@@ -1,3 +1,4 @@
+import { Data } from 'electron';
 import { XMLParser } from 'fast-xml-parser';
 
 import {
@@ -10,6 +11,7 @@ import {
   emptyElements,
   EventData,
   ArgList,
+  Elements,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -60,20 +62,35 @@ type KeyNode = {
   properties: KeyProperties;
 };
 
+// Набор функций, обрабатывающих data-узлы в зависимости от их ключа.
 const dataNodeProcess = new Map<
   string,
-  (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => void // Вынести в отдельный интерфейс?
+  (
+    elements: Elements,
+    meta: Meta,
+    node: DataNode,
+    parentNode?: Node,
+    state?: State,
+    transition?: Transition
+  ) => void // Вынести в отдельный интерфейс?
 >([
   [
     'gFormat',
-    (_elemelnts: InnerElements, meta: Meta, node: DataNode, _parentNode?: Node) => {
+    (_elemelnts: Elements, meta: Meta, node: DataNode, _parentNode?: Node) => {
       console.log(node);
       meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
     },
   ],
   [
     'dData',
-    (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => {
+    (
+      elements: Elements,
+      meta: Meta,
+      node: DataNode,
+      parentNode?: Node,
+      state?: State,
+      transition?: Transition
+    ) => {
       if (parentNode !== undefined) {
         // Если это мета-компонент, то извлекаем мета-информацию
         if (parentNode.id == '') {
@@ -83,12 +100,17 @@ const dataNodeProcess = new Map<
             parseNodeData(node.content, meta, state);
           }
         }
+      } else {
+        if (transition !== undefined) {
+          parseTransitionData(node.content, transition);
+          elements.transitions.push(transition);
+        }
       }
     },
   ],
   [
     'dName',
-    (_elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => {
+    (_elements: Elements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => {
       if (parentNode !== undefined) {
         // В мета-состоянии dName означает название платформы
         if (parentNode.id == '') {
@@ -109,96 +131,228 @@ const dataNodeProcess = new Map<
             state.name = node.content;
           }
         }
+      } else {
+        console.log('Непредвиденный вызов функции dName');
       }
     },
   ],
   [
     'dInitial',
-    (elements: InnerElements, meta: Meta, node: DataNode, parentNode?: Node) => {
+    (elements: Elements, meta: Meta, node: DataNode, parentNode?: Node) => {
       if (parentNode !== undefined) {
         elements.initialState = parentNode?.id;
+      } else {
+        console.log('Непредвиденный вызов функции dInitial');
+      }
+    },
+  ],
+  [
+    'dGeometry',
+    (elements: Elements, meta: Meta, node: DataNode, parentNode?: Node, state?: State) => {
+      if (state !== undefined) {
+        const x = node['x'];
+        const y = node['y'];
+        if (x == undefined || y == undefined) {
+          console.log('Не указаны x или y для узла data с идентификатором dGeometry');
+          return;
+        } else {
+          state.bounds = {
+            x: node['x'],
+            y: node['y'],
+            width: node['width'] ? node['width'] : 0,
+            height: node['height'] ? node['height'] : 0,
+          };
+        }
+      } else {
+        console.log('Непредвиденный вызов функции dGeometry');
       }
     },
   ],
 ]);
 
+const randomColor = (): string => {
+  let result = '';
+  for (let i = 0; i < 6; ++i) {
+    const value = Math.floor(16 * Math.random());
+    result += value.toString(16);
+  }
+  return '#' + result;
+};
+
 // Функция извлекает события и действия из дата-ноды
 function parseNodeData(content: string, meta: Meta, state: State) {
   // По формату CyberiadaGraphML события разделены пустой строкой.
-  const unproccessedEventsAndActions = content.split('\n\n');
+  const unprocessedEventsAndActions = content.split('\n\n');
 
-  for (const event of unproccessedEventsAndActions) {
-    if (event.includes('/')) {
-      const eventAndAction = event.split('/');
-      const trigger = eventAndAction[0].trim();
-      const actions = parseActions(eventAndAction[1].trim());
-
-      if (actions !== undefined) {
-        let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
-        if (ev == undefined) {
-          const [component, method] = trigger.split('.');
-          ev = {
-            component: component,
-            method: method,
-          };
-        }
-        state.events.push({
-          trigger: ev,
-          do: actions,
-        });
-      }
-    } else {
-      console.log(`Не определен триггер для действий ${event}`);
-      return;
+  for (const event of unprocessedEventsAndActions) {
+    const result = parseEvent(event);
+    console.log(result);
+    if (result !== undefined) {
+      state.events.push(result);
     }
   }
 }
 
-function parseActions(unsplitedActions: string): Action[] | undefined {
-  if (platform !== undefined && unsplitedActions != '') {
-    // Считаем, что действия находятся на разных строках
-    const actions = unsplitedActions.split('\n');
-    const resultActions = new Array<Action>();
-    for (const unproccessedAction of actions) {
-      const [component, action] = unproccessedAction.trim().split('.');
-      const bracketPos = action.indexOf('(');
-      const args = action.slice(bracketPos + 1, action.length - 1).split(',');
-      const method = action.slice(0, bracketPos);
+function parseEvent(event: string): EventData | undefined {
+  if (event.includes('/')) {
+    const eventAndAction = event.split('/'); // заменить на [event, action]
+    const trigger = eventAndAction[0].trim();
+    const actions = parseActions(eventAndAction[1].trim());
 
-      const resultAction: Action = {
-        component: component,
-        method: method,
-      };
-      const argList: ArgList = {};
-      const methodParameters = platform.components[component].methods[method].parameters;
-      if (platform.components[component] && platform.components[component].methods[method]) {
-        for (const index in methodParameters) {
-          const parameter: ArgumentProto = methodParameters[index];
-          console.log(args[index]);
-          if (args[index] !== undefined && args[index] !== '') {
-            argList[parameter.name] = args[index];
-          } else {
-            console.log(`У ${component}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
-            return;
-          }
-        }
-        if (Object.keys(argList).length > 0) {
-          resultAction.args = argList;
-        }
-        resultActions.push(resultAction);
-      } else {
-        console.log(`Неизвестный метод ${method} у компонента ${component}`);
-        return;
+    if (trigger !== undefined) {
+      let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
+      if (ev == undefined) {
+        const [component, method] = trigger.split('.');
+        ev = {
+          component: component,
+          method: method,
+        };
       }
+      console.log(ev, actions);
+      return {
+        trigger: ev,
+        do: actions !== undefined ? actions : [],
+      };
     }
-    return resultActions;
+  } else {
+    console.log(`Не определен триггер для действий ${event}`);
+    return;
   }
 
   return;
 }
 
+function parseTransitionData(content: string, transition: Transition) {
+  const unprocessedEventsAndActions = content.split('\n\n');
+  // TODO: сделать проверку, что триггер всего один.
+  for (const event of unprocessedEventsAndActions) {
+    console.log(event);
+    const result = parseEvent(event);
+    console.log(result);
+    if (result !== undefined) {
+      transition.trigger = result.trigger;
+      transition.do = result.do;
+    }
+  }
+}
+
+function getAllComponents(elements: Elements, meta: Meta) {
+  if (platform !== undefined && meta.platform == 'BearlogaDefend') {
+    for (const componentName of Object.keys(platform.components)) {
+      const component = platform.components[componentName];
+      elements.components[componentName] = {
+        type: componentName,
+        parameters: {},
+      };
+    }
+  }
+}
+
+function parseAction(unproccessedAction: string): Action | undefined {
+  const [component, action] = unproccessedAction.trim().split('.');
+  const bracketPos = action.indexOf('(');
+  const args = action
+    .slice(bracketPos + 1, action.length - 1)
+    .split(',')
+    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+  const method = action.slice(0, bracketPos);
+
+  const resultAction: Action = {
+    component: component,
+    method: method,
+  };
+  const argList: ArgList = {};
+  // Если параметров у метода нет, то methodParameters будет равен undefined
+  const methodParameters = platform?.components[component]?.methods[method]?.parameters;
+  if (
+    platform?.components[component] !== undefined &&
+    platform?.components[component].methods[method] !== undefined
+  ) {
+    for (const index in methodParameters) {
+      const parameter: ArgumentProto = methodParameters[index];
+      console.log(args[index]);
+      if (args[index] !== undefined && args[index] !== '') {
+        argList[parameter.name] = args[index];
+      } else {
+        console.log(`У ${component}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
+        return;
+      }
+    }
+    if (methodParameters == undefined) {
+      console.log(args);
+      if (args.length == 0) {
+        resultAction.args = argList;
+      } else {
+        console.log(
+          `Неправильное количество аргументов у функции ${method} компонента ${component}.\n Нужно: 0, получено: ${args.length}`
+        );
+        return;
+      }
+    } else {
+      console.log(Object.keys(methodParameters).length);
+      console.log(methodParameters);
+      if (Object.keys(argList).length == Object.keys(methodParameters).length) {
+        resultAction.args = argList;
+      } else {
+        console.log(
+          `Неправильное количество аргументов у функции ${method} компонента ${component}.\n Нужно: ${
+            Object.keys(methodParameters).length
+          }, получено: ${args.length}`
+        );
+      }
+    }
+    return resultAction;
+  } else {
+    console.log(`Неизвестный метод ${method} у компонента ${component}`);
+    return;
+  }
+}
+
+function parseActions(unsplitedActions: string): Action[] | undefined {
+  console.log(unsplitedActions);
+  if (platform !== undefined && unsplitedActions != '') {
+    // Считаем, что действия находятся на разных строках
+    const actions = unsplitedActions.split('\n');
+    const resultActions = new Array<Action>();
+    for (const unproccessedAction of actions) {
+      const resultAction = parseAction(unproccessedAction);
+      if (resultAction !== undefined) {
+        resultActions.push(resultAction);
+      }
+    }
+    return resultActions;
+  }
+  console.log('here');
+  return;
+}
+
+function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
+  for (const edge of edges) {
+    const transition: Transition = {
+      source: edge.source,
+      target: edge.target,
+      color: randomColor(),
+      trigger: {
+        component: '',
+        method: '',
+      },
+      position: {
+        x: 0,
+        y: 0,
+      },
+    };
+    for (const dataNodeIndex in edge.data) {
+      const dataNode: DataNode = edge.data[dataNodeIndex];
+      const func = dataNodeProcess.get(dataNode.key);
+      if (func) {
+        func(elements, meta, dataNode, undefined, undefined, transition);
+      }
+    }
+  }
+}
+
 // Функция, которая находит формат и присваивают его к Meta
-function setFormatToMeta(elements: InnerElements, xml: any, meta: Meta) {
+function setFormatToMeta(elements: Elements, xml: any, meta: Meta) {
   for (const node of xml.graphml.data) {
     const dataNode: DataNode = node;
     const func: CallableFunction | undefined = dataNodeProcess.get(dataNode.key);
@@ -239,7 +393,7 @@ function createEmptyState(): State {
 
 // Обработка нод
 function processNode(
-  elements: InnerElements,
+  elements: Elements,
   node: Node,
   meta: Meta,
   awailableDataProperties: Map<string, Map<string, KeyProperties>>,
@@ -267,22 +421,27 @@ function processNode(
 
   if (node.graph !== undefined) {
     console.log(node.graph);
-    processGraph(elements, node.graph, meta, awailableDataProperties);
+    processGraph(elements, node.graph, meta, awailableDataProperties, node);
   }
 
   return state;
 }
 
 function processGraph(
-  elements: InnerElements,
+  elements: Elements,
   xml: any,
   meta: Meta,
-  awailableDataProperties: Map<string, Map<string, KeyProperties>>
+  awailableDataProperties: Map<string, Map<string, KeyProperties>>,
+  parent?: Node
 ): Map<string, State> {
   const graph: Graph = xml;
   console.log(graph);
   for (const node of graph.node) {
-    elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties);
+    elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties, parent);
+  }
+
+  if (graph.edge) {
+    processTransitions(elements, meta, graph.edge);
   }
 
   console.log(elements);
@@ -346,8 +505,14 @@ export function importGraphml() {
     format: '',
     platform: '',
   };
-
-  const elements: InnerElements = emptyElements();
+  const elements: Elements = {
+    states: {},
+    transitions: [],
+    initialState: '',
+    components: {},
+    platform: '',
+  };
+  //const elements: Elements = emptyElements();
 
   const awailableDataProperties = new Map<string, Map<string, KeyProperties>>();
   const expression = `<?xml version="1.0" encoding="UTF-8"?>
@@ -423,7 +588,7 @@ export function importGraphml() {
     
     <edge source="init" target="n3"> </edge>
     <edge source="n0" target="n3">
-      <data key="dData">АнализаторЦели.ЦельУничтожена/
+      <data key="dData">АнализаторЦели.ЦельУничтожена/ Сосать.хуй()
   </data>
     </edge>
     <edge source="n0" target="n3">
@@ -452,6 +617,7 @@ export function importGraphml() {
   switch (meta.format) {
     case 'Cyberiada-GraphML': {
       processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
+      getAllComponents(elements, meta);
       break;
     }
     default: {
@@ -461,7 +627,5 @@ export function importGraphml() {
   }
   elements.platform = meta.platform;
 
-  // console.log(xml);
-  console.log('platform!');
-  console.log(getAvailablePlatforms());
+  return elements;
 }

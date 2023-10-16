@@ -155,6 +155,7 @@ export class EditorManager {
   parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
+        console.log('parsing')
         const data = importGraphml();
         console.log(data);
         if (!isPlatformAvailable(data.platform)) {
@@ -191,21 +192,19 @@ export class EditorManager {
     return makeLeft(null);
   }
 
-  async import(
-    platform: string,
-    setImportData: Dispatch<[boolean, string | null, string | null, string]>
-  ) {
+  async import(setImportData: Dispatch<[boolean, string | null, string | null, string]>) {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', platform);
+      await window.electron.ipcRenderer.invoke('dialog:openFile');
     if (openData[0]) {
-      Compiler.compile(`${platform}Import`, openData[3]);
+      // Compiler.compile(`${platform}Import`, openData[3]);
+      console.log('import call', openData);
       setImportData(openData);
     }
   }
 
   async open(path?: string): Promise<Either<FileError | null, null>> {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide', path);
+      await window.electron.ipcRenderer.invoke('dialog:openFile', path);
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);

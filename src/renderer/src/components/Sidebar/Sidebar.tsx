@@ -47,8 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isEditorDataStale = manager.useData('isStale');
 
-  const handleImport = async (platform: string) => {
-    await manager.import(platform, setOpenData);
+  const handleImport = async () => {
+    await manager.import(setOpenData);
   };
 
   const menus = useMemo(

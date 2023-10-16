@@ -187,7 +187,7 @@ export class PlatformManager {
       icon: this.getComponentIcon(query.component, false),
     };
     // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
-    return picto.getMarkedSvg(iconQuery, className);
+    return picto.getMarkedIcon(iconQuery, className);
   }
 
   getEventIcon(component: string, method: string) {

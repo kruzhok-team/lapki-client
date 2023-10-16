@@ -29,6 +29,7 @@ import {
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
+import { importGraphml } from './GraphmlParser';
 import { isPlatformAvailable } from './PlatformLoader';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
@@ -154,7 +155,7 @@ export class EditorManager {
   parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
-        const data = ElementsJSONCodec.toElements(importData);
+        const data = importGraphml();
         console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({

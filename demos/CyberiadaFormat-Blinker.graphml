@@ -18,6 +18,10 @@ description/ Включение и выключение лампочки по т
         </data>
     </node>
 
+    <node id="init">
+        <data key="dInitial"></data>
+    </node>
+    
     <node id="LED1">
         <data key="dName">LED1</data>
         <data key="dData">type/ LED
@@ -37,7 +41,6 @@ description/ Программный таймер.
 
     <node id="diod1">
         <data key="dName">Включен</data>
-        <data key="dInitial"></data>
         <data key="dData">System.onEnter/
 LED1.on()
 timer1.start(1000)
@@ -58,7 +61,7 @@ timer1.start(1000)
     
     <edge source="" target="LED1"></edge>
     <edge source="" target="timer1"></edge>
-
+    <edge source="init" target="diod1"></edge>
     <edge source="diod1" target="diod2">
         <data key="dData">timer1.timeout/</data>
         <data key="dColor">#F29727</data>

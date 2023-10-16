@@ -12,6 +12,7 @@ import {
   EventData,
   ArgList,
   Elements,
+  Condition,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -76,7 +77,7 @@ const dataNodeProcess = new Map<
 >([
   [
     'gFormat',
-    (_elemelnts: Elements, meta: Meta, node: DataNode, _parentNode?: Node) => {
+    (_elements: Elements, meta: Meta, node: DataNode, parentNode?: Node) => {
       console.log(node);
       meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
     },
@@ -116,11 +117,6 @@ const dataNodeProcess = new Map<
         if (parentNode.id == '') {
           if (meta.platform == '') {
             meta.platform = node.content;
-            if (isPlatformAvailable(meta.platform)) {
-              platform = getPlatform(meta.platform);
-            } else {
-              console.log(`Неизвестная платформа ${meta.platform}`);
-            }
           } else {
             console.log(
               `Повторное указание платформы! Старое значение: ${meta.platform}. Новое значение: ${node.content}`
@@ -153,12 +149,12 @@ const dataNodeProcess = new Map<
         const x = node['x'];
         const y = node['y'];
         if (x == undefined || y == undefined) {
-          console.log('Не указаны x или y для узла data с идентификатором dGeometry');
+          console.log('Не указаны x или y для узла data с ключом dGeometry');
           return;
         } else {
           state.bounds = {
-            x: node['x'],
-            y: node['y'],
+            x: node['x'] / 100,
+            y: node['y'] / 100,
             width: node['width'] ? node['width'] : 0,
             height: node['height'] ? node['height'] : 0,
           };
@@ -186,21 +182,28 @@ function parseNodeData(content: string, meta: Meta, state: State) {
 
   for (const event of unprocessedEventsAndActions) {
     const result = parseEvent(event);
-    console.log(result);
     if (result !== undefined) {
-      state.events.push(result);
+      state.events.push(result[0]);
     }
   }
 }
 
-function parseEvent(event: string): EventData | undefined {
+function parseEvent(event: string): [EventData, Condition?] | undefined {
   if (event.includes('/')) {
     const eventAndAction = event.split('/'); // заменить на [event, action]
-    const trigger = eventAndAction[0].trim();
+    let trigger = eventAndAction[0].trim();
+    let condition = '';
     const actions = parseActions(eventAndAction[1].trim());
 
     if (trigger !== undefined) {
+      if (trigger.includes('[')) {
+        const event = trigger.split('[');
+        trigger = event[0];
+        condition = event[1].replace(']', '');
+        console.log(condition);
+      }
       let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
+
       if (ev == undefined) {
         const [component, method] = trigger.split('.');
         ev = {
@@ -208,11 +211,12 @@ function parseEvent(event: string): EventData | undefined {
           method: method,
         };
       }
-      console.log(ev, actions);
-      return {
-        trigger: ev,
-        do: actions !== undefined ? actions : [],
-      };
+      return [
+        {
+          trigger: ev,
+          do: actions !== undefined ? actions : [],
+        },
+      ];
     }
   } else {
     console.log(`Не определен триггер для действий ${event}`);
@@ -230,8 +234,8 @@ function parseTransitionData(content: string, transition: Transition) {
     const result = parseEvent(event);
     console.log(result);
     if (result !== undefined) {
-      transition.trigger = result.trigger;
-      transition.do = result.do;
+      transition.trigger = result[0].trigger;
+      transition.do = result[0].do;
     }
   }
 }
@@ -289,8 +293,6 @@ function parseAction(unproccessedAction: string): Action | undefined {
         return;
       }
     } else {
-      console.log(Object.keys(methodParameters).length);
-      console.log(methodParameters);
       if (Object.keys(argList).length == Object.keys(methodParameters).length) {
         resultAction.args = argList;
       } else {
@@ -309,7 +311,6 @@ function parseAction(unproccessedAction: string): Action | undefined {
 }
 
 function parseActions(unsplitedActions: string): Action[] | undefined {
-  console.log(unsplitedActions);
   if (platform !== undefined && unsplitedActions != '') {
     // Считаем, что действия находятся на разных строках
     const actions = unsplitedActions.split('\n');
@@ -322,7 +323,6 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
     }
     return resultActions;
   }
-  console.log('here');
   return;
 }
 
@@ -341,6 +341,7 @@ function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
         y: 0,
       },
     };
+    console.log(edge);
     for (const dataNodeIndex in edge.data) {
       const dataNode: DataNode = edge.data[dataNodeIndex];
       const func = dataNodeProcess.get(dataNode.key);
@@ -380,6 +381,15 @@ function parseMeta(meta: Meta, unproccessedMeta: string) {
         meta[lastPropertyKey] += property;
       }
     }
+  }
+
+  if (meta.platform == 'BearlogaDefend') {
+    meta.platform = `${meta.platform}-${meta.unit}`;
+  }
+  if (isPlatformAvailable(meta.platform)) {
+    platform = getPlatform(meta.platform);
+  } else {
+    console.log(`Неизвестная платформа ${meta.platform}`);
   }
 }
 
@@ -512,7 +522,6 @@ export function importGraphml() {
     components: {},
     platform: '',
   };
-  //const elements: Elements = emptyElements();
 
   const awailableDataProperties = new Map<string, Map<string, KeyProperties>>();
   const expression = `<?xml version="1.0" encoding="UTF-8"?>
@@ -604,7 +613,7 @@ export function importGraphml() {
   </data>
     </edge>
     <edge source="n0::n2" target="n0::n1">
-        <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/
+        <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки[Счетчик.ТекущееЗначениеСчетчика &gt;= 2]/
   </data>
     </edge>
   </graph>

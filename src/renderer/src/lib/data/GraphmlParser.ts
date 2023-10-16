@@ -153,8 +153,8 @@ const dataNodeProcess = new Map<
           return;
         } else {
           state.bounds = {
-            x: node['x'] / 100,
-            y: node['y'] / 100,
+            x: node['x'] / 10,
+            y: node['y'] / 10,
             width: node['width'] ? node['width'] : 0,
             height: node['height'] ? node['height'] : 0,
           };
@@ -175,6 +175,62 @@ const randomColor = (): string => {
   return '#' + result;
 };
 
+// export const operatorSet = new Set([
+//   'notEquals',
+//   'equals',
+//   'greater',
+//   'less',
+//   'greaterOrEqual',
+//   'lessOrEqual',
+// ]);
+
+const operatorAlias = new Map<string, string>([
+  ['==', 'equals'],
+  ['!=', 'notEquals'],
+  ['>', 'greater'],
+  ['<', 'less'],
+  ['>=', 'greaterOfEqual'],
+  ['lessOrEqual', '<='],
+]);
+
+function checkConditionTokenType(token: string): Condition {
+  if (token.includes('.')) {
+    const [component, method] = token.split('.');
+
+    return {
+      type: 'component',
+      value: {
+        component: component,
+        method: method,
+        args: {},
+      },
+    };
+  }
+
+  return {
+    type: 'value',
+    value: token,
+  };
+}
+
+function parseCondition(condition: string): Condition | undefined {
+  const tokens = condition.split(' ');
+  const lval = checkConditionTokenType(tokens[0]);
+  const operator = operatorAlias.get(tokens[1]);
+  const rval = checkConditionTokenType(tokens[2]);
+
+  if (operator !== undefined) {
+    return {
+      type: operator,
+      value: [lval, rval],
+    };
+  }
+
+  console.log(`Неизвестный оператор ${operator}`);
+
+  return;
+}
+
 // Функция извлекает события и действия из дата-ноды
 function parseNodeData(content: string, meta: Meta, state: State) {
   // По формату CyberiadaGraphML события разделены пустой строкой.
@@ -192,14 +248,14 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
   if (event.includes('/')) {
     const eventAndAction = event.split('/'); // заменить на [event, action]
     let trigger = eventAndAction[0].trim();
-    let condition = '';
+    let condition: Condition | undefined;
     const actions = parseActions(eventAndAction[1].trim());
 
     if (trigger !== undefined) {
       if (trigger.includes('[')) {
         const event = trigger.split('[');
         trigger = event[0];
-        condition = event[1].replace(']', '');
+        condition = parseCondition(event[1].replace(']', ''));
         console.log(condition);
       }
       let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
@@ -216,6 +272,7 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
           trigger: ev,
           do: actions !== undefined ? actions : [],
         },
+        condition,
       ];
     }
   } else {
@@ -232,16 +289,24 @@ function parseTransitionData(content: string, transition: Transition) {
   for (const event of unprocessedEventsAndActions) {
     console.log(event);
     const result = parseEvent(event);
-    console.log(result);
     if (result !== undefined) {
-      transition.trigger = result[0].trigger;
-      transition.do = result[0].do;
+      const eventData = result[0];
+      const condition = result[1];
+      console.log(eventData);
+      if (eventData !== undefined) {
+        transition.trigger = eventData.trigger;
+        transition.do = eventData.do;
+
+        if (condition !== undefined) {
+          transition.condition = condition;
+        }
+      }
     }
   }
 }
 
 function getAllComponents(elements: Elements, meta: Meta) {
-  if (platform !== undefined && meta.platform == 'BearlogaDefend') {
+  if (platform !== undefined && meta.platform.startsWith('BearlogaDefend')) {
     for (const componentName of Object.keys(platform.components)) {
       const component = platform.components[componentName];
       elements.components[componentName] = {
@@ -327,7 +392,13 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
 }
 
 function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
+  let foundInitial = false;
   for (const edge of edges) {
+    if (!foundInitial && edge.source == elements.initialState) {
+      delete elements.states[edge.source];
+      elements.initialState = edge.target;
+      foundInitial = true;
+    }
     const transition: Transition = {
       source: edge.source,
       target: edge.target,
@@ -634,6 +705,8 @@ export function importGraphml() {
       console.log(`ОШИБКА! НЕИЗВЕСТНЫЙ ФОРМАТ "${meta.format}"!`);
     }
   }
+  delete elements.states[''];
+
   elements.platform = meta.platform;
 
   return elements;

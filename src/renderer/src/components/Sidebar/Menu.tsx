@@ -57,7 +57,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         return props.onRequestOpenFile();
       }
       if (e.code === 'KeyI') {
-        return props.onRequestImport('BearlogaDefend');
+        return props.onRequestImport();
       }
     }
   };

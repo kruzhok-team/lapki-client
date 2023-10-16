@@ -14,7 +14,6 @@ import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
-import { importGraphml } from './lib/data/GraphmlParser';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -80,7 +79,6 @@ export const App: React.FC = () => {
     console.log(platformName);
     console.log(manager);
     console.log(editor);
-    importGraphml();
   }, []);
 
   // Переименование вынес сюда из EditorManager.

@@ -91,11 +91,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   useEffect(() => {
-    if (importData && openData) {
-      manager.parseImportData(importData, openData!);
+    if (openData) {
+      manager.parseImportData(openData!);
       setImportData(undefined);
     }
-  }, [importData]);
+  }, [openData]);
 
   useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);

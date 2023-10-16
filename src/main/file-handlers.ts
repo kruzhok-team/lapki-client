@@ -11,19 +11,19 @@ import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
  * @returns Promise
  */
 
-export async function handleFileOpen(path?: string) {
+export async function handleFileOpen(platform: string, path?: string) {
   return new Promise(async (resolve, _reject) => {
-    // const platforms: Map<string, Array<string>> = new Map([
-    //   ['ide', ['json']],
-    //   ['BearlogaDefend', ['graphml']],
-    // ]);
+    const platforms: Map<string, Array<string>> = new Map([
+      ['ide', ['json']],
+      ['Cyberiada', ['graphml']],
+    ]);
 
     let filePath = path;
     let canceled = false;
 
     if (!path) {
       const res = await dialog.showOpenDialog({
-        filters: [{ name: 'json', extensions: ['graphml'] }],
+        filters: [{ name: 'json', extensions: platforms.get(platform)! }],
         properties: ['openFile'],
       });
 

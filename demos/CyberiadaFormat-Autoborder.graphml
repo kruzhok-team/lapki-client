@@ -13,7 +13,7 @@
 <graph id="G" edgedefault="directed">
 
   <node id="">
-    <data key="dName">BearsTowerDefence</data>
+    <data key="dName">BearlogaDefend</data>
     <data key="dData">name/ Автобортник
 author/ Матросов В.М.
 contact/ matrosov@mail.ru

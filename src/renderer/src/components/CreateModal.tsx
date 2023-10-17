@@ -195,7 +195,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     : machine.platform
         .getAvailableVariables(param1Components.value)
         .map(({ name }) => conditionEntry(name, param1Components.value));
-  console.log(machine.platform.name);
   const optionsParam2Methods = !components
     ? []
     : machine.platform

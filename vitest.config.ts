@@ -4,8 +4,8 @@ import { resolve } from 'path';
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./tests.setup.ts'],
+    environment: 'jsdom', // Чтобы был глобальный window
+    setupFiles: ['./tests.setup.js'], // Тут объявление глобальных переменных которые делает электрон
   },
   resolve: {
     alias: {

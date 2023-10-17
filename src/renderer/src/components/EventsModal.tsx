@@ -259,7 +259,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     <ReactModal
       {...props}
       className="absolute left-1/2 top-12 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
-      overlayClassName="bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-50"
+      overlayClassName="bg-[rgba(0,0,0,0.6)] z-[60] fixed inset-0 backdrop-blur"
       onRequestClose={onClose}
     >
       <div className="relative mb-3 justify-between border-b border-neutral-400 pb-1">

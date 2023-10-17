@@ -33,7 +33,7 @@ export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
   return (
     <>
       <section
-        className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#a1c8df]"
+        className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current"
         tabIndex={-1}
       >
         {items.map(({ type, name }) => (

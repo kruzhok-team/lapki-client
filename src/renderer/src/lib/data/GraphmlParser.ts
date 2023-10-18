@@ -175,15 +175,6 @@ const randomColor = (): string => {
   return '#' + result;
 };
 
-// export const operatorSet = new Set([
-//   'notEquals',
-//   'equals',
-//   'greater',
-//   'less',
-//   'greaterOrEqual',
-//   'lessOrEqual',
-// ]);
-
 const operatorAlias = new Map<string, string>([
   ['==', 'equals'],
   ['!=', 'notEquals'],
@@ -235,7 +226,7 @@ function parseCondition(condition: string): Condition | undefined {
 function parseNodeData(content: string, meta: Meta, state: State) {
   // По формату CyberiadaGraphML события разделены пустой строкой.
   const unprocessedEventsAndActions = content.split('\n\n');
-
+  console.log(unprocessedEventsAndActions);
   for (const event of unprocessedEventsAndActions) {
     const result = parseEvent(event);
     if (result !== undefined) {
@@ -247,10 +238,10 @@ function parseNodeData(content: string, meta: Meta, state: State) {
 function parseEvent(event: string): [EventData, Condition?] | undefined {
   if (event.includes('/')) {
     const eventAndAction = event.split('/'); // заменить на [event, action]
+    console.log(eventAndAction);
     let trigger = eventAndAction[0].trim();
     let condition: Condition | undefined;
     const actions = parseActions(eventAndAction[1].trim());
-
     if (trigger !== undefined) {
       if (trigger.includes('[')) {
         const event = trigger.split('[');
@@ -318,59 +309,66 @@ function getAllComponents(elements: Elements, meta: Meta) {
 }
 
 function parseAction(unproccessedAction: string): Action | undefined {
-  const [component, action] = unproccessedAction.trim().split('.');
-  const bracketPos = action.indexOf('(');
-  const args = action
-    .slice(bracketPos + 1, action.length - 1)
-    .split(',')
-    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-  const method = action.slice(0, bracketPos);
-
-  const resultAction: Action = {
-    component: component,
-    method: method,
-  };
-  const argList: ArgList = {};
-  // Если параметров у метода нет, то methodParameters будет равен undefined
-  const methodParameters = platform?.components[component]?.methods[method]?.parameters;
-  if (
-    platform?.components[component] !== undefined &&
-    platform?.components[component].methods[method] !== undefined
-  ) {
-    for (const index in methodParameters) {
-      const parameter: ArgumentProto = methodParameters[index];
-      console.log(args[index]);
-      if (args[index] !== undefined && args[index] !== '') {
-        argList[parameter.name] = args[index];
-      } else {
-        console.log(`У ${component}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
-        return;
+  try {
+    const [component, action] = unproccessedAction.trim().split('.');
+    const bracketPos = action.indexOf('(');
+    console.log(bracketPos);
+    console.log(component, action);
+    const args = action
+      .slice(bracketPos + 1, action.length - 1)
+      .split(',')
+      .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+    const method = action.slice(0, bracketPos);
+    console.log(args);
+    const resultAction: Action = {
+      component: component,
+      method: method,
+    };
+    const argList: ArgList = {};
+    // Если параметров у метода нет, то methodParameters будет равен undefined
+    const methodParameters = platform?.components[component]?.methods[method]?.parameters;
+    if (
+      platform?.components[component] !== undefined &&
+      platform?.components[component].methods[method] !== undefined
+    ) {
+      for (const index in methodParameters) {
+        const parameter: ArgumentProto = methodParameters[index];
+        console.log(args[index]);
+        if (args[index] !== undefined && args[index] !== '') {
+          argList[parameter.name] = args[index];
+        } else {
+          console.log(`У ${component}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
+          return;
+        }
       }
-    }
-    if (methodParameters == undefined) {
-      console.log(args);
-      if (args.length == 0) {
-        resultAction.args = argList;
+      if (methodParameters == undefined) {
+        console.log(args);
+        if (args.length == 0) {
+          resultAction.args = argList;
+        } else {
+          console.log(
+            `Неправильное количество аргументов у функции ${method} компонента ${component}.\n Нужно: 0, получено: ${args.length}`
+          );
+          return;
+        }
       } else {
-        console.log(
-          `Неправильное количество аргументов у функции ${method} компонента ${component}.\n Нужно: 0, получено: ${args.length}`
-        );
-        return;
+        if (Object.keys(argList).length == Object.keys(methodParameters).length) {
+          resultAction.args = argList;
+        } else {
+          console.log(
+            `Неправильное количество аргументов у функции ${method} компонента ${component}.\n Нужно: ${
+              Object.keys(methodParameters).length
+            }, получено: ${args.length}`
+          );
+        }
       }
+      return resultAction;
     } else {
-      if (Object.keys(argList).length == Object.keys(methodParameters).length) {
-        resultAction.args = argList;
-      } else {
-        console.log(
-          `Неправильное количество аргументов у функции ${method} компонента ${component}.\n Нужно: ${
-            Object.keys(methodParameters).length
-          }, получено: ${args.length}`
-        );
-      }
+      console.log(`Неизвестный метод ${method} у компонента ${component}`);
+      return;
     }
-    return resultAction;
-  } else {
-    console.log(`Неизвестный метод ${method} у компонента ${component}`);
+  } catch (error) {
+    console.log(error);
     return;
   }
 }
@@ -387,6 +385,8 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
       }
     }
     return resultActions;
+  } else {
+    console.log('Отсутствуют действия на событие');
   }
   return;
 }
@@ -481,10 +481,9 @@ function processNode(
   parent?: Node
 ): State {
   const state: State = createEmptyState();
-
+  console.log(node);
   if (node.data !== undefined) {
     for (const dataNode of node.data) {
-      console.log(awailableDataProperties);
       if (awailableDataProperties.get('node')?.has(dataNode.key)) {
         const func = dataNodeProcess.get(dataNode.key);
         if (func) {
@@ -501,7 +500,6 @@ function processNode(
   }
 
   if (node.graph !== undefined) {
-    console.log(node.graph);
     processGraph(elements, node.graph, meta, awailableDataProperties, node);
   }
 
@@ -517,6 +515,16 @@ function processGraph(
 ): Map<string, State> {
   const graph: Graph = xml;
   console.log(graph);
+  if (meta.platform == 'ArduinoUno' && parent == undefined) {
+    if (graph.edge) {
+      for (const edge of graph.edge) {
+        if (edge.source == '') {
+          components.push(edge.target);
+        }
+      }
+    }
+  }
+
   for (const node of graph.node) {
     elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties, parent);
   }
@@ -566,6 +574,7 @@ function addPropertiesFromKeyNode(
 }
 
 let platform: Platform | undefined;
+const components = new Array<string>();
 
 const systemComponentAlias = new Map<string, Event>([
   ['entry', { component: 'System', method: 'onEnter' }],
@@ -573,6 +582,8 @@ const systemComponentAlias = new Map<string, Event>([
 ]);
 
 export function importGraphml(expression: string) {
+  platform = undefined;
+  components.splice(0);
   const parser = new XMLParser({
     textNodeName: 'content',
     ignoreAttributes: false,
@@ -596,13 +607,32 @@ export function importGraphml(expression: string) {
 
   const awailableDataProperties = new Map<string, Map<string, KeyProperties>>();
   const xml = parser.parse(expression);
-
+  console.log(xml);
   setFormatToMeta(elements, xml, meta);
   addPropertiesFromKeyNode(xml, awailableDataProperties);
   switch (meta.format) {
     case 'Cyberiada-GraphML': {
-      processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
-      getAllComponents(elements, meta);
+      const indexOfMetaNode = (xml.graphml.graph.node as Array<Node>).findIndex(
+        (node) => node.id == ''
+      );
+      if (indexOfMetaNode !== -1) {
+        processNode(
+          elements,
+          xml.graphml.graph.node[indexOfMetaNode],
+          meta,
+          awailableDataProperties
+        );
+        xml.graphml.graph.node = (xml.graphml.graph.node as Array<Node>).filter(
+          (value) => value.id !== ''
+        );
+        getAllComponents(elements, meta);
+        processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
+      } else {
+        console.log('Отсутствует мета-узел!');
+      }
+      // getAllComponents(elements, meta);
+      // processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
+
       break;
     }
     default: {
@@ -610,9 +640,10 @@ export function importGraphml(expression: string) {
       console.log(`ОШИБКА! НЕИЗВЕСТНЫЙ ФОРМАТ "${meta.format}"!`);
     }
   }
+  console.log('here');
+  console.log(components);
   delete elements.states[''];
-
   elements.platform = meta.platform;
-
+  console.log(elements);
   return elements;
 }

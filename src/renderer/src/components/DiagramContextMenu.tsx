@@ -126,10 +126,11 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
             //Крайняя мера, которую я не хотел добавлять сюда, я про стили и про дублирующий код
             <div
               className={twMerge(
-                `absolute top-[5.5rem] z-50 w-64 overflow-y-auto rounded bg-bg-secondary p-2 shadow-xl scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current`,
+                `absolute z-50 w-64 overflow-y-auto rounded bg-bg-secondary p-2 shadow-xl scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current`,
                 !openMenu && 'hidden',
                 position.x < 800 ? 'left-64' : 'left-[-16rem]'
               )}
+              style={{ top: `calc(${i}*2.75rem)` }}
             >
               {children &&
                 children.map(({ label, action }, i) => (

@@ -215,7 +215,6 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         ),
       ];
 
-      console.log(sourceArray);
       handleEvent(position, [
         {
           label: 'Копировать',

@@ -417,14 +417,14 @@ export class StateMachine {
   createTransition(params: CreateTransitionParameters, canUndo = true) {
     const { source, target, color, component, method, doAction, condition, id: prevId } = params;
 
-    const soruceState = this.states.get(source);
+    const sourceState = this.states.get(source);
     const targetState = this.states.get(target);
 
-    if (!soruceState || !targetState) return;
+    if (!sourceState || !targetState) return;
 
     const position = params.position ?? {
-      x: (soruceState.bounds.x + targetState.bounds.x) / 2,
-      y: (soruceState.bounds.y + targetState.bounds.y) / 2,
+      x: (sourceState.bounds.x + targetState.bounds.x) / 2,
+      y: (sourceState.bounds.y + targetState.bounds.y) / 2,
     };
 
     // Создание данных

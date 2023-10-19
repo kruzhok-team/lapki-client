@@ -130,6 +130,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
     } else if (transition && data.key === 3) {
       editor?.container.machine.changeTransition({
         id: transition.id,
+        source: transition.source.id,
+        target: transition.target.id,
         color: data.color ?? defaultTransColor,
         component: data.trigger.component,
         method: data.trigger.method,

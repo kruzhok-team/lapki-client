@@ -144,6 +144,8 @@ export const actionFunctions: ActionFunctions = {
       sM,
       {
         id: transition.id,
+        source: prevData.source,
+        target: prevData.target,
         color: prevData.color,
         component: prevData.trigger.component,
         method: prevData.trigger.method,

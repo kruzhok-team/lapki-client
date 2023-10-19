@@ -1,3 +1,5 @@
+import throttle from 'lodash.throttle';
+
 import { Point } from '@renderer/types/graphics';
 
 import { EventSelection } from './Events';
@@ -107,7 +109,7 @@ export class States extends EventEmitter<StatesEvents> {
     }
   };
 
-  handleDrag = (state: State, e: { event: MyMouseEvent }) => {
+  handleDrag: (state: State, e: { event: MyMouseEvent }) => void = throttle((state, e) => {
     const position = { x: e.event.x, y: e.event.y };
 
     // Чтобы проверять начиная со своего уровня вложенности
@@ -149,7 +151,7 @@ export class States extends EventEmitter<StatesEvents> {
         childId: state.id,
       };
     }
-  };
+  }, 100);
 
   handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     if (this.dragInfo) {

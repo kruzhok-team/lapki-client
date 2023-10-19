@@ -576,6 +576,8 @@ export class EditorManager {
 
   changeTransition({
     id,
+    source,
+    target,
     color,
     component,
     method,
@@ -585,6 +587,8 @@ export class EditorManager {
     const transition = this.data.elements.transitions[id] as Transition;
     if (!transition) return false;
 
+    transition.source = source;
+    transition.target = target;
     transition.color = color;
     transition.trigger.component = component;
     transition.trigger.method = method;

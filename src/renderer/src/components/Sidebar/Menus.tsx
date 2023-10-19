@@ -17,7 +17,7 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
   ]);
 
   const [width, setWidth] = useState(260);
-  const [minWidth, setMinWidth] = useState(200);
+  const [minWidth, setMinWidth] = useState(260);
   const [maxWidth, setMaxWidth] = useState('80vw');
 
   const handleResize = (e) => {
@@ -40,7 +40,7 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
       setMinWidth(5);
     } else {
       setMaxWidth('80vw');
-      setMinWidth(200);
+      setMinWidth(260);
     }
   }, [isCollapsed]);
 

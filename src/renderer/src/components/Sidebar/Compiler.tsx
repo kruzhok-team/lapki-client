@@ -151,7 +151,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       <div className="flex flex-col px-4">
         <button
           disabled={compilerStatus != 'Не подключен' ? disabled : connecting}
-          className="btn-primary mb-4"
+          className="btn-primary mb-4 flex justify-center"
           onClick={compilerStatus != 'Не подключен' ? handleCompile : handleReconnect}
         >
           {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}

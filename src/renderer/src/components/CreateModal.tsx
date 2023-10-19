@@ -165,17 +165,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const optionsComponents = [
     ...sysCompoOption,
-    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx]) => compoEntry(idx)),
   ];
 
   const optionsParam1Components = [
     ...sysCompoOption,
-    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx]) => compoEntry(idx)),
   ];
 
   const optionsParam2Components = [
     ...sysCompoOption,
-    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx]) => compoEntry(idx)),
   ];
 
   const [components, setComponents] = useState<SelectOption>(optionsComponents[0]);

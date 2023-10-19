@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
+import { TextInput } from '../Modal/TextInput';
 
 interface SettingProps {}
 
@@ -33,6 +34,31 @@ export const Setting: React.FC<SettingProps> = () => {
             value={themeOptions.find((o) => o.value === theme)}
             onChange={({ value }: any) => setTheme(value)}
             isSearchable={false}
+          />
+        </div>
+        <br></br>
+        Адрес компилятора
+        <div>
+          <TextInput
+            label=""
+            //{...register('host')}
+            //placeholder="Напишите адрес компилятора"
+            isElse={false}
+            error={false}
+            errorMessage={''}
+            //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+          />
+        </div>
+        Адрес док-сервера
+        <div>
+          <TextInput
+            label=""
+            //{...register('host')}
+            //placeholder="Напишите адрес компилятора"
+            isElse={false}
+            error={false}
+            errorMessage={''}
+            //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
           />
         </div>
       </div>

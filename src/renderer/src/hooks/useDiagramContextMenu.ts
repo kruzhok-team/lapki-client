@@ -211,7 +211,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
 
       const targetArray = [
         ...Array.from(editor.container.machine.states).filter(
-          (value) => condition.transition.data.source !== value[0]
+          (value) => condition.transition.data.target !== value[0]
         ),
       ];
 

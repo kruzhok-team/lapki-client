@@ -27,10 +27,10 @@ interface DiagramContextMenuProps {
 export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => {
   const { position, items, isOpen, onClose } = props;
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует
-  const [openMenu, setOpenMenu] = useState(false);
+  const [openMenu, setOpenMenu] = useState('');
 
   useLayoutEffect(() => {
-    setOpenMenu(false);
+    setOpenMenu('');
   }, [isOpen]);
 
   const { refs, floatingStyles } = useFloating({
@@ -80,6 +80,14 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
       icon: <DeleteIcon />,
       combination: 'Del',
     },
+    source: {
+      icon: undefined,
+      combination: undefined,
+    },
+    target: {
+      icon: undefined,
+      combination: undefined,
+    },
   };
 
   return (
@@ -93,16 +101,20 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
           <button
             className={twMerge(
               'flex w-full justify-between rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
-              openMenu && isFolder && 'bg-bg-hover'
+              openMenu === type && isFolder && 'bg-bg-hover'
             )}
             onClick={() => {
               action();
               isFolder || onClose();
             }}
-            onMouseMove={() => setOpenMenu(isFolder ? true : false)}
+            onMouseOver={() => {
+              openMenu !== type && setOpenMenu(type);
+            }}
           >
             <div className="flex">
-              <div className="h-6 w-6">{contextData[type].icon}</div>
+              <div className={twMerge('h-6 w-6', contextData[type].icon === undefined && 'hidden')}>
+                {contextData[type].icon}
+              </div>
               <div className="pl-2">{label}</div>
             </div>
             <div className="flex">
@@ -110,22 +122,21 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
               {isFolder && <div className="flex">{'>'}</div>}
             </div>
           </button>
-          {isFolder && (
+          {openMenu === type && isFolder && (
             //Крайняя мера, которую я не хотел добавлять сюда, я про стили и про дублирующий код
             <div
               className={twMerge(
-                'absolute top-[5.5rem] z-50 w-64 rounded bg-bg-secondary p-2 shadow-xl',
+                `absolute top-[5.5rem] z-50 w-64 overflow-y-auto rounded bg-bg-secondary p-2 shadow-xl scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current`,
                 !openMenu && 'hidden',
                 position.x < 800 ? 'left-64' : 'left-[-16rem]'
               )}
             >
               {children &&
-                children.map(({ label, type, isFolder, action }, i) => (
+                children.map(({ label, type, action }, i) => (
                   <button
                     key={i}
                     className={twMerge(
-                      'flex w-full justify-between rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
-                      openMenu && isFolder && 'bg-bg-hover'
+                      'flex w-full justify-between rounded px-4 py-2 transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled'
                     )}
                     onClick={() => {
                       action();
@@ -133,12 +144,7 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
                     }}
                   >
                     <div className="flex">
-                      <div className="h-6 w-6">{contextData[type].icon}</div>
                       <div className="pl-2">{label}</div>
-                    </div>
-                    <div className="flex">
-                      {contextData[type].combination}
-                      {isFolder && <div className="flex">{'>'}</div>}
                     </div>
                   </button>
                 ))}

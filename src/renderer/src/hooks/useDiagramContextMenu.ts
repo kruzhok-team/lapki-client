@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { State } from '@renderer/lib/drawable/State';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
 
@@ -162,6 +163,59 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
 
     // контекстное меню для связи
     editor.container.transitions.on('transitionContextMenu', ({ condition, position }) => {
+      const source = (state: State) => {
+        return {
+          label: state.eventBox.parent.data.name,
+          type: 'source',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {
+            editor?.container.machine.changeTransition({
+              id: condition.transition.id,
+              source: state.id,
+              target: condition.transition.data.target,
+              color: condition.transition.data.color,
+              component: condition.transition.data.trigger.component,
+              method: condition.transition.data.trigger.method,
+              doAction: condition.transition.data.do!,
+              condition: condition.transition.data.condition!,
+            });
+          },
+        };
+      };
+
+      const target = (state: State) => {
+        return {
+          label: state.eventBox.parent.data.name,
+          type: 'target',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {
+            editor?.container.machine.changeTransition({
+              id: condition.transition.id,
+              source: condition.transition.data.source,
+              target: state.id,
+              color: condition.transition.data.color,
+              component: condition.transition.data.trigger.component,
+              method: condition.transition.data.trigger.method,
+              doAction: condition.transition.data.do!,
+              condition: condition.transition.data.condition!,
+            });
+          },
+        };
+      };
+
+      const sourceArray = [
+        ...Array.from(editor.container.machine.states).filter(
+          (value) => condition.transition.data.source !== value[0]
+        ),
+      ];
+
+      const targetArray = [
+        ...Array.from(editor.container.machine.states).filter(
+          (value) => condition.transition.data.source !== value[0]
+        ),
+      ];
+
+      console.log(sourceArray);
       handleEvent(position, [
         {
           label: 'Копировать',
@@ -170,22 +224,22 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             editor?.container.handleCopy();
           },
         },
-        // {
-        //   label: 'Выбрать исход(source)',
-        //   type: 'source',
-        //   isFolder: true,
-        //   children: [],
-        //   // eslint-disable-next-line @typescript-eslint/no-empty-function
-        //   action: () => {},
-        // },
-        // {
-        //   label: 'Выбрать цель(target)',
-        //   type: 'target',
-        //   isFolder: true,
-        //   children: [],
-        //   // eslint-disable-next-line @typescript-eslint/no-empty-function
-        //   action: () => {},
-        // },
+        {
+          label: 'Выбрать исход(source)',
+          type: 'source',
+          isFolder: true,
+          children: [...sourceArray.map(([_id, value]) => source(value))],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
+        },
+        {
+          label: 'Выбрать цель(target)',
+          type: 'target',
+          isFolder: true,
+          children: [...targetArray.map(([_id, value]) => target(value))],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
+        },
         {
           label: 'Посмотреть код',
           type: 'showCodeAll',

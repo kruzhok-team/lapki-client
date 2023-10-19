@@ -132,7 +132,7 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
               )}
             >
               {children &&
-                children.map(({ label, type, action }, i) => (
+                children.map(({ label, action }, i) => (
                   <button
                     key={i}
                     className={twMerge(

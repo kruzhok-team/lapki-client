@@ -31,14 +31,6 @@ export class States extends EventEmitter<StatesEvents> {
     this.container = container;
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.container.machine.states.forEach((state) => {
-      state.draw(ctx, canvas);
-    });
-
-    this.initialStateMark?.draw(ctx);
-  }
-
   handleStartNewTransition = (state: State) => {
     this.emit('startNewTransition', state);
   };
@@ -50,8 +42,7 @@ export class States extends EventEmitter<StatesEvents> {
   handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
     e.event.stopPropagation();
 
-    this.container.machine.removeSelection();
-    state.setIsSelected(true);
+    this.container.machine.selectState(state.id);
 
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;

@@ -25,6 +25,7 @@ import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager'
 import { UndoRedo } from './UndoRedo';
 
 import { Container } from '../basic/Container';
+import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
@@ -44,9 +45,14 @@ import { Transition } from '../drawable/Transition';
 //        чтобы через раз не делать запрос в словарь
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
-export class StateMachine {
-  container!: Container;
 
+interface StateMachineEvents {
+  createState: { id: string };
+  createTransition: { id: string };
+  deleteState: { id: string };
+  deleteTransition: { id: string };
+}
+export class StateMachine extends EventEmitter<StateMachineEvents> {
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
 
@@ -54,8 +60,8 @@ export class StateMachine {
 
   undoRedo = new UndoRedo(this);
 
-  constructor(container: Container) {
-    this.container = container;
+  constructor(public container: Container) {
+    super();
   }
 
   resetEntities() {
@@ -99,6 +105,8 @@ export class StateMachine {
       if (this.container.app.manager.data.elements.initialState === id) {
         this.container.states.initInitialStateMark(id);
       }
+
+      this.emit('createState', { id: state.id });
     }
   }
 
@@ -111,6 +119,8 @@ export class StateMachine {
       this.transitions.set(id, transition);
 
       this.container.transitions.watchTransition(transition);
+
+      this.emit('createTransition', { id: transition.id });
     }
   }
 
@@ -163,6 +173,8 @@ export class StateMachine {
     }
 
     this.container.states.watchState(state);
+
+    this.emit('createState', { id: state.id });
 
     this.container.isDirty = true;
 
@@ -394,6 +406,8 @@ export class StateMachine {
     this.container.states.unwatchState(state);
     this.states.delete(id);
 
+    this.emit('deleteState', { id: state.id });
+
     this.container.isDirty = true;
   };
 
@@ -446,6 +460,8 @@ export class StateMachine {
     this.container.transitions.watchTransition(transition);
 
     this.container.isDirty = true;
+
+    this.emit('createTransition', { id: transition.id });
 
     if (canUndo) {
       this.undoRedo.do({
@@ -502,6 +518,8 @@ export class StateMachine {
 
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
+
+    this.emit('deleteTransition', { id: transition.id });
 
     this.container.isDirty = true;
   }
@@ -826,6 +844,30 @@ export class StateMachine {
       }
       return;
     }
+  }
+
+  selectState(id: string) {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    this.removeSelection();
+    state.setIsSelected(true);
+
+    this.container.drawList.moveToEnd('s' + state.id);
+
+    state.children.forEach((child) => {
+      this.container.drawList.moveToEnd('s' + child.id);
+    });
+  }
+
+  selectTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.removeSelection();
+    transition.condition.setIsSelected(true);
+
+    this.container.drawList.moveToEnd('t' + transition.id);
   }
 
   /**

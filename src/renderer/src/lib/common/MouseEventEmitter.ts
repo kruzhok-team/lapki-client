@@ -33,7 +33,7 @@ interface MouseEvents {
   mousemove: MyMouseEvent;
   contextmenu: MyMouseEvent;
   dblclick: MyMouseEvent;
-  wheel: MyMouseEvent;
+  wheel: MyMouseEvent & { nativeEvent: WheelEvent };
 }
 
 /**

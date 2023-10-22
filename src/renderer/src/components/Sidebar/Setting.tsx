@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { TextInput } from '../Modal/TextInput';
+import { useForm } from 'react-hook-form';
 
 interface SettingProps {}
 
@@ -19,7 +20,15 @@ const themeOptions = [
 
 export const Setting: React.FC<SettingProps> = () => {
   const { setTheme, theme } = useThemeContext();
-
+  const compilerRef = useRef<HTMLInputElement>(null);
+  const handleCompileConnect = () => {
+    console.log(compilerRef?.current?.value);
+  };
+  const handleCompileReset = () => {
+    if (compilerRef.current != undefined || compilerRef.current != null) {
+      compilerRef.current.value = '';
+    }
+  };
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -41,13 +50,20 @@ export const Setting: React.FC<SettingProps> = () => {
         <div>
           <TextInput
             label=""
-            //{...register('host')}
             //placeholder="Напишите адрес компилятора"
             isElse={false}
             error={false}
             errorMessage={''}
+            ref={compilerRef}
+            //onChange={handleSubmit}
             //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
           />
+          <button className="btn-primary mb-4" onClick={handleCompileConnect}>
+            {'A'}
+          </button>
+          <button className="btn-primary mb-4" onClick={handleCompileReset}>
+            {'B'}
+          </button>
         </div>
         Адрес док-сервера
         <div>

@@ -4,6 +4,7 @@ import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { TextInput } from '../Modal/TextInput';
 import { useForm } from 'react-hook-form';
+import { Settings } from '../Modules/Settings';
 
 interface SettingProps {}
 
@@ -20,15 +21,31 @@ const themeOptions = [
 
 export const Setting: React.FC<SettingProps> = () => {
   const { setTheme, theme } = useThemeContext();
-  const compilerRef = useRef<HTMLInputElement>(null);
+
+  const compilerAddressRef = useRef<HTMLInputElement>(null);
+  const compilerPortRef = useRef<HTMLInputElement>(null);
   const handleCompileConnect = () => {
-    console.log(compilerRef?.current?.value);
+    console.log(compilerAddressRef?.current?.value, compilerPortRef?.current?.value);
   };
   const handleCompileReset = () => {
-    if (compilerRef.current != undefined || compilerRef.current != null) {
-      compilerRef.current.value = '';
-    }
+    Settings.getCompilerSettings().then((compiler) => {
+      if (
+        compilerAddressRef.current != undefined &&
+        compilerAddressRef.current != null &&
+        compilerPortRef.current != undefined &&
+        compilerPortRef.current != null
+      ) {
+        compilerAddressRef.current.value = compiler.host;
+        compilerPortRef.current.value = String(compiler.port);
+      }
+      console.log(compiler.host, compiler.port);
+    });
   };
+  /*const defaultAddress = () => {
+    Settings.getCompilerSettings().then((compiler) => {
+      return compiler.host
+    }
+  }*/
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -46,16 +63,21 @@ export const Setting: React.FC<SettingProps> = () => {
           />
         </div>
         <br></br>
-        Адрес компилятора
         <div>
           <TextInput
-            label=""
-            //placeholder="Напишите адрес компилятора"
+            label="Адрес"
             isElse={false}
             error={false}
             errorMessage={''}
-            ref={compilerRef}
-            //onChange={handleSubmit}
+            ref={compilerAddressRef}
+            //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+          />
+          <TextInput
+            label="Порт"
+            isElse={false}
+            error={false}
+            errorMessage={''}
+            ref={compilerPortRef}
             //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
           />
           <button className="btn-primary mb-4" onClick={handleCompileConnect}>

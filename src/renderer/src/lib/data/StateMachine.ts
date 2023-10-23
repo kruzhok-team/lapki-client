@@ -211,7 +211,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
     this.container.app.manager.changeStateEvents(args);
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -617,7 +617,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
     this.container.app.manager.createEvent(stateId, eventData, eventIdx);
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -628,7 +628,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
     this.container.app.manager.createEventAction(stateId, event, value);
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -664,7 +664,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
       }
     }
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -705,6 +705,8 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
         });
       }
     }
+
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }

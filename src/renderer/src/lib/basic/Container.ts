@@ -120,7 +120,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.mouse.on('mousemove', this.handleMouseMove);
     this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
-    this.app.mouse.on('wheel', this.handleMouseWheel as any);
+    this.app.mouse.on('wheel', this.handleMouseWheel);
 
     this.machine.on('createState', ({ id }) => this.drawList.add('s' + id));
     this.machine.on('createTransition', ({ id }) => this.drawList.add('t' + id));

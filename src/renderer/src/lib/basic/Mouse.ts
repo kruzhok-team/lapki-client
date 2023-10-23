@@ -1,4 +1,5 @@
 import { Point } from '@renderer/types/graphics';
+
 import { MouseEventEmitter, Button } from '../common/MouseEventEmitter';
 
 /**

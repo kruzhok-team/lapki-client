@@ -197,7 +197,7 @@ export class StateMachine {
 
     this.container.app.manager.changeStateEvents(args);
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -597,7 +597,7 @@ export class StateMachine {
 
     this.container.app.manager.createEvent(stateId, eventData, eventIdx);
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -608,7 +608,7 @@ export class StateMachine {
 
     this.container.app.manager.createEventAction(stateId, event, value);
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -644,7 +644,7 @@ export class StateMachine {
       }
     }
 
-    state.eventBox.recalculate();
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }
@@ -685,6 +685,8 @@ export class StateMachine {
         });
       }
     }
+
+    state.updateEventBox();
 
     this.container.isDirty = true;
   }

@@ -106,7 +106,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.mouse.on('mousemove', this.handleMouseMove);
     this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
-    this.app.mouse.on('wheel', this.handleMouseWheel as any);
+    this.app.mouse.on('wheel', this.handleMouseWheel);
   }
 
   setScale(value: number) {

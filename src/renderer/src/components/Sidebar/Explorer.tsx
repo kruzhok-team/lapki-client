@@ -6,8 +6,11 @@ import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { useAddComponent, useEditDeleteComponent } from '@renderer/hooks';
+import { useHierarchyManager } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+
+import { Hierarchy } from '../Hierarchy/Hierarchy';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;
@@ -21,6 +24,8 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
   const { onRequestEditComponent, onRequestDeleteComponent, editProps, deleteProps } =
     useEditDeleteComponent(editor, manager);
+
+  const hierarchyManager = useHierarchyManager(editor, manager);
 
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -70,7 +75,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         </button>
 
         <ScrollableList
-          className="max-h-[350px]"
+          className="max-h-[300px]"
           containerProps={{ onClick: (e) => e.stopPropagation() }}
           listItems={Object.keys(components)}
           heightOfItem={10}
@@ -95,16 +100,13 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
       <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
 
-      {/* TODO: 
       <div className="h-full flex-auto px-4 pt-3 text-center">
         <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
 
         <div>
-          Не забыть посмотреть варианты древа и возможности редактирования машины состояний
-          отсюда!!!
+          <Hierarchy {...hierarchyManager} />
         </div>
       </div>
-       */}
     </section>
   );
 };

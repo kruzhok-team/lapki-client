@@ -4,6 +4,7 @@ import { Point } from '@renderer/types/graphics';
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { DrawList } from '../data/DrawList';
 import { StateMachine } from '../data/StateMachine';
 import { picto } from '../drawable/Picto';
 import { States } from '../drawable/States';
@@ -31,6 +32,7 @@ export class Container extends EventEmitter<ContainerEvents> {
 
   states!: States;
   transitions!: Transitions;
+  drawList = new DrawList();
 
   isPan = false;
 
@@ -51,8 +53,21 @@ export class Container extends EventEmitter<ContainerEvents> {
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawGrid(ctx, canvas);
-    this.states.draw(ctx, canvas);
-    this.transitions.draw(ctx, canvas);
+
+    this.drawList.forEach((id) => {
+      const actualId = id.slice(1);
+
+      if (id.startsWith('s')) {
+        this.machine.states.get(actualId)?.draw(ctx, canvas);
+      }
+
+      if (id.startsWith('t')) {
+        this.machine.transitions.get(actualId)?.draw(ctx, canvas);
+      }
+    });
+
+    this.transitions.ghost.draw(ctx, canvas);
+    this.states.initialStateMark?.draw(ctx);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -106,6 +121,11 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
+
+    this.machine.on('createState', ({ id }) => this.drawList.add('s' + id));
+    this.machine.on('createTransition', ({ id }) => this.drawList.add('t' + id));
+    this.machine.on('deleteState', ({ id }) => this.drawList.remove('s' + id));
+    this.machine.on('deleteTransition', ({ id }) => this.drawList.remove('t' + id));
   }
 
   setScale(value: number) {

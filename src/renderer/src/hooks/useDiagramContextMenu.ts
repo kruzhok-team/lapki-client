@@ -167,7 +167,6 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         return {
           label: state.eventBox.parent.data.name,
           type: 'source',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor?.container.machine.changeTransition({
               id: condition.transition.id,
@@ -187,7 +186,6 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         return {
           label: state.eventBox.parent.data.name,
           type: 'target',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor?.container.machine.changeTransition({
               id: condition.transition.id,

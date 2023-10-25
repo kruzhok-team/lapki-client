@@ -3,7 +3,6 @@ import React, { useRef, useState } from 'react';
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { TextInput } from '../Modal/TextInput';
-import { useForm } from 'react-hook-form';
 
 interface SettingProps {}
 

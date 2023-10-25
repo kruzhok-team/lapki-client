@@ -25,6 +25,34 @@ export class Children {
     });
   }
 
+  [Symbol.iterator]() {
+    let i = 0;
+    const statesList = this.statesList;
+    const transitionsList = this.transitionsList;
+    const stateMachine = this.stateMachine;
+    const size = this.size;
+
+    return {
+      next() {
+        if (i >= size) {
+          return { value: undefined, done: true };
+        }
+
+        if (i < statesList.length) {
+          const id = statesList[i++];
+          const state = stateMachine.states.get(id) as State;
+          return { value: state, done: false };
+        }
+
+        const id = transitionsList[i - statesList.length];
+        i++;
+
+        const transition = stateMachine.transitions.get(id) as Transition;
+        return { value: transition, done: false };
+      },
+    };
+  }
+
   add(type: 'state' | 'transition', id: string) {
     if (type === 'state') {
       this.statesList.push(id);

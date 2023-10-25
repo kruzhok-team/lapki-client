@@ -71,6 +71,8 @@ export class Container extends EventEmitter<ContainerEvents> {
 
     drawChildren(this);
 
+    console.log(this.children);
+
     this.transitions.ghost.draw(ctx, canvas);
     this.states.initialStateMark?.draw(ctx);
   }

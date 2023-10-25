@@ -16,5 +16,6 @@
         "src/renderer/src/*"
       ]
     },
+    "downlevelIteration": true,
   }
 }

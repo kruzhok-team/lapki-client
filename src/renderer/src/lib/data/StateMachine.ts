@@ -305,25 +305,15 @@ export class StateMachine {
           let searchPending = true;
           while (searchPending) {
             searchPending = false;
-            // TODO Сделать for of
-            // possibleParent.children.forEach(({ value: child }) => {
-            //   if (!(child instanceof State)) return;
-            //   if (state.id == child.id) return;
-            //   if (child.isUnderMouse(position, true)) {
-            //     possibleParent = child as State;
-            //     searchPending = true;
-            //     break;
-            //   }
-            // });
-            // for (const child of possibleParent.children) {
-            //   if (!(child instanceof State)) continue;
-            //   if (state.id == child.id) continue;
-            //   if (child.isUnderMouse(position, true)) {
-            //     possibleParent = child as State;
-            //     searchPending = true;
-            //     break;
-            //   }
-            // }
+            for (const child of possibleParent.children) {
+              if (!(child instanceof State)) continue;
+              if (state.id == child.id) continue;
+              if (child.isUnderMouse(position, true)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
           }
         }
       }
@@ -353,8 +343,9 @@ export class StateMachine {
     }
 
     this.container.app.manager.unlinkState(id);
-    const parent = state.parent ?? this.container;
-    parent.children.remove('state', id);
+
+    state.parent.children.remove('state', id);
+
     state.parent = undefined;
 
     this.container.isDirty = true;
@@ -392,6 +383,8 @@ export class StateMachine {
     if (state.data.parent) {
       this.unlinkState(state.id, canUndo);
       numberOfConnectedActions += 1;
+    } else {
+      this.container.children.remove('state', id);
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение

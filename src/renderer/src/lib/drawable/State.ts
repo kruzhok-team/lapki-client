@@ -5,7 +5,6 @@ import { Events } from './Events';
 import { Node } from './Node';
 
 import { Container } from '../basic/Container';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 
 const style = theme.colors.diagram.state;
 

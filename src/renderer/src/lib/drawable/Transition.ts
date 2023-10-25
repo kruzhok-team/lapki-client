@@ -47,7 +47,7 @@ export class Transition extends Node {
     this.data.position.y = value.y;
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     this.drawArrows(ctx);
     this.drawCondition(ctx);
   }

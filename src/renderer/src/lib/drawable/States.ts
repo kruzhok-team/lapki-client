@@ -28,7 +28,6 @@ export class States extends EventEmitter<StatesEvents> {
 
   constructor(public container: Container) {
     super();
-    this.container = container;
   }
 
   handleStartNewTransition = (state: State) => {
@@ -40,8 +39,6 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
     this.container.machine.selectState(state.id);
 
     const targetPos = state.computedPosition;
@@ -55,8 +52,6 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleStateDoubleClick = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
     const targetPos = state.computedPosition;
     const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
@@ -75,10 +70,7 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
-    this.container.machine.removeSelection();
-    state.setIsSelected(true);
+    this.container.machine.selectState(state.id);
 
     const eventIdx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
     if (!eventIdx) {
@@ -93,11 +85,9 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleLongPress = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
     // если состояние вложено – отсоединяем
     if (typeof state.parent !== 'undefined') {
-      this.container.machine.unlinkState(state.id!);
+      this.container.machine.unlinkState(state.id);
       return;
     }
 
@@ -111,8 +101,8 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   watchState(state: State) {
+    state.on('mousedown', this.handleStateClick.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.on('click', this.handleStateClick.bind(this, state));
     state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleContextMenu.bind(this, state));
     state.on('longpress', this.handleLongPress.bind(this, state));
@@ -122,15 +112,14 @@ export class States extends EventEmitter<StatesEvents> {
   }
 
   unwatchState(state: State) {
+    state.off('mousedown', this.handleStateClick.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.off('click', this.handleStateClick.bind(this, state));
     state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.off('contextmenu', this.handleContextMenu.bind(this, state));
     state.off('longpress', this.handleLongPress.bind(this, state));
     state.off('dragend', this.handleDragEnd.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
-    state.unbindEvents();
   }
 
   initInitialStateMark(stateId: string) {

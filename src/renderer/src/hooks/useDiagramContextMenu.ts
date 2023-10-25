@@ -162,7 +162,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     });
 
     // контекстное меню для связи
-    editor.container.transitions.on('transitionContextMenu', ({ condition, position }) => {
+    editor.container.transitions.on('transitionContextMenu', ({ transition, position }) => {
       const source = (state: State) => {
         return {
           label: state.eventBox.parent.data.name,
@@ -170,14 +170,14 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor?.container.machine.changeTransition({
-              id: condition.transition.id,
+              id: transition.id,
               source: state.id,
-              target: condition.transition.data.target,
-              color: condition.transition.data.color,
-              component: condition.transition.data.trigger.component,
-              method: condition.transition.data.trigger.method,
-              doAction: condition.transition.data.do!,
-              condition: condition.transition.data.condition!,
+              target: transition.data.target,
+              color: transition.data.color,
+              component: transition.data.trigger.component,
+              method: transition.data.trigger.method,
+              doAction: transition.data.do!,
+              condition: transition.data.condition!,
             });
           },
         };
@@ -190,14 +190,14 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor?.container.machine.changeTransition({
-              id: condition.transition.id,
-              source: condition.transition.data.source,
+              id: transition.id,
+              source: transition.data.source,
               target: state.id,
-              color: condition.transition.data.color,
-              component: condition.transition.data.trigger.component,
-              method: condition.transition.data.trigger.method,
-              doAction: condition.transition.data.do!,
-              condition: condition.transition.data.condition!,
+              color: transition.data.color,
+              component: transition.data.trigger.component,
+              method: transition.data.trigger.method,
+              doAction: transition.data.do!,
+              condition: transition.data.condition!,
             });
           },
         };
@@ -205,13 +205,13 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
 
       const sourceArray = [
         ...Array.from(editor.container.machine.states).filter(
-          (value) => condition.transition.data.source !== value[0]
+          (value) => transition.data.source !== value[0]
         ),
       ];
 
       const targetArray = [
         ...Array.from(editor.container.machine.states).filter(
-          (value) => condition.transition.data.target !== value[0]
+          (value) => transition.data.target !== value[0]
         ),
       ];
 
@@ -245,8 +245,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           action: () => {
             openTab({
               type: 'transition',
-              name: condition.transition.id,
-              code: manager.getTransitionSerialized(condition.transition.id) ?? '',
+              name: transition.id,
+              code: manager.getTransitionSerialized(transition.id) ?? '',
               language: 'json',
             });
           },
@@ -255,7 +255,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machine.deleteTransition(condition.id as string);
+            editor?.container.machine.deleteTransition(transition.id);
           },
         },
       ]);

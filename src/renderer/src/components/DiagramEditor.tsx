@@ -181,7 +181,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
           isOpen={isModalOpen}
           onOpenEventsModal={openEventsModal}
           isData={state}
-          isTransition={transition ? { target: transition.condition } : undefined}
+          isTransition={transition ? { target: transition } : undefined}
           onClose={closeModal}
           onSubmit={handleCreateModal}
         />

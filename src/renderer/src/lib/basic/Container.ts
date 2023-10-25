@@ -6,7 +6,10 @@ import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { DrawList } from '../data/DrawList';
 import { StateMachine } from '../data/StateMachine';
+import { Children } from '../drawable/Children';
+import { Node } from '../drawable/Node';
 import { picto } from '../drawable/Picto';
+import { State } from '../drawable/State';
 import { States } from '../drawable/States';
 import { Transitions } from '../drawable/Transitions';
 import { clamp } from '../utils';
@@ -36,6 +39,9 @@ export class Container extends EventEmitter<ContainerEvents> {
 
   isPan = false;
 
+  children: Children;
+  private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать
+
   constructor(app: CanvasEditor) {
     super();
 
@@ -43,6 +49,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.machine = new StateMachine(this);
     this.states = new States(this);
     this.transitions = new Transitions(this);
+    this.children = new Children(this.machine);
 
     // Порядок важен, система очень тонкая
 
@@ -54,17 +61,17 @@ export class Container extends EventEmitter<ContainerEvents> {
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawGrid(ctx, canvas);
 
-    this.drawList.forEach((id) => {
-      const actualId = id.slice(1);
+    const drawChildren = (node: Container | Node) => {
+      node.children.forEach((child) => {
+        child.draw(ctx, canvas);
 
-      if (id.startsWith('s')) {
-        this.machine.states.get(actualId)?.draw(ctx, canvas);
-      }
+        if (!child.children.isEmpty) {
+          drawChildren(child);
+        }
+      });
+    };
 
-      if (id.startsWith('t')) {
-        this.machine.transitions.get(actualId)?.draw(ctx, canvas);
-      }
-    });
+    drawChildren(this);
 
     this.transitions.ghost.draw(ctx, canvas);
     this.states.initialStateMark?.draw(ctx);
@@ -114,18 +121,29 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.keyboard.on('ctrls', this.handleSaveFile);
     this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
 
-    document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
-    this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
+    this.app.mouse.on('contextmenu', this.handleMouseContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
 
-    this.machine.on('createState', ({ id }) => this.drawList.add('s' + id));
-    this.machine.on('createTransition', ({ id }) => this.drawList.add('t' + id));
-    this.machine.on('deleteState', ({ id }) => this.drawList.remove('s' + id));
-    this.machine.on('deleteTransition', ({ id }) => this.drawList.remove('t' + id));
+    // this.machine.on('createState', ({ id }) => this.drawList.add('s' + id));
+    // this.machine.on('createTransition', ({ id }) => this.drawList.add('t' + id));
+    // this.machine.on('deleteState', ({ id }) => this.drawList.remove('s' + id));
+    // this.machine.on('deleteTransition', ({ id }) => this.drawList.remove('t' + id));
+  }
+
+  private getCapturedNode(position: Point) {
+    const end = this.children.size - 1;
+
+    for (let i = end; i >= 0; i--) {
+      const node = this.children.getByIndex(i)?.getIntersection(position);
+
+      if (node) return node;
+    }
+
+    return null;
   }
 
   setScale(value: number) {
@@ -151,15 +169,85 @@ export class Container extends EventEmitter<ContainerEvents> {
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
-    this.isPan = true;
-    if (!this.isPan || !e.left) return;
+    if (!e.left) return;
 
-    this.app.canvas.element.style.cursor = 'grabbing';
+    const node = this.getCapturedNode(e);
+
+    if (node) {
+      node.handleMouseDown(e);
+
+      const parent = node.parent ?? this;
+      const type = node instanceof State ? 'state' : 'transition';
+      parent.children.moveToEnd(type, node.id);
+
+      this.mouseDownNode = node;
+    } else {
+      this.isPan = true;
+    }
   };
 
-  globalMouseUp = () => {
+  handleMouseUp = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode(e);
+
+    if (node) {
+      node.handleMouseUp(e);
+    } else {
+      this.transitions.handleMouseUp();
+      this.machine.removeSelection();
+    }
+
+    this.mouseDownNode = null;
+
     this.isPan = false;
     this.app.canvas.element.style.cursor = 'default';
+  };
+
+  handleMouseMove = (e: MyMouseEvent) => {
+    if (!e.left) return;
+
+    if (this.isPan) {
+      // TODO Много раз такие операции повторяются, нужно переделать на функции
+      this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
+      this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+    } else if (this.mouseDownNode) {
+      this.mouseDownNode.handleMouseMove(e);
+    }
+
+    this.app.canvas.element.style.cursor = 'grabbing';
+    this.isDirty = true;
+  };
+
+  handleMouseDoubleClick = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode(e);
+
+    if (node) {
+      node.handleMouseDoubleClick(e);
+    } else {
+      this.emit('stateDrop', this.relativeMousePos({ x: e.x, y: e.y }));
+    }
+  };
+
+  handleMouseContextMenu = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode(e);
+
+    if (node) {
+      node.handleMouseContextMenu(e);
+    } else {
+      this.emit('contextMenu', e);
+    }
+  };
+
+  handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
+    e.nativeEvent.preventDefault();
+
+    const prevScale = this.app.manager.data.scale;
+    const newScale = Number(
+      clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
+    );
+    this.app.manager.data.offset.x -= e.x * prevScale - e.x * newScale;
+    this.app.manager.data.offset.y -= e.y * prevScale - e.y * newScale;
+
+    this.setScale(newScale);
   };
 
   handleDelete = () => {
@@ -182,26 +270,6 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.manager.saveAs();
   };
 
-  handleMouseUp = () => {
-    this.machine.removeSelection();
-
-    this.globalMouseUp();
-  };
-
-  handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.isPan || !e.left) return;
-
-    // TODO Много раз такие операции повторяются, нужно переделать на функции
-    this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
-    this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
-
-    this.isDirty = true;
-  };
-
-  handleFieldContextMenu = (e: MyMouseEvent) => {
-    this.emit('contextMenu', e);
-  };
-
   handleSpaceDown = () => {
     this.isPan = true;
 
@@ -212,25 +280,6 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.isPan = false;
 
     this.app.canvas.element.style.cursor = 'default';
-  };
-
-  handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
-    e.nativeEvent.preventDefault();
-
-    const prevScale = this.app.manager.data.scale;
-    const newScale = Number(
-      clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
-    );
-    this.app.manager.data.offset.x -= e.x * prevScale - e.x * newScale;
-    this.app.manager.data.offset.y -= e.y * prevScale - e.y * newScale;
-
-    this.setScale(newScale);
-  };
-
-  handleMouseDoubleClick = (e: MyMouseEvent) => {
-    e.stopPropagation();
-
-    this.emit('stateDrop', this.relativeMousePos({ x: e.x, y: e.y }));
   };
 
   relativeMousePos(e: Point): Point {
@@ -253,8 +302,8 @@ export class Container extends EventEmitter<ContainerEvents> {
     });
 
     this.machine.transitions.forEach((transition) => {
-      arrX.push(transition.condition.bounds.x);
-      arrY.push(transition.condition.bounds.y);
+      arrX.push(transition.bounds.x);
+      arrY.push(transition.bounds.y);
     });
 
     let minX = Math.min(...arrX);

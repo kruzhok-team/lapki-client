@@ -19,6 +19,7 @@ import {
   EditComponentParams,
   RemoveComponentParams,
 } from '@renderer/types/StateMachine';
+import { indexOfMin } from '@renderer/utils';
 
 import { loadPlatform } from './PlatformLoader';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
@@ -46,13 +47,7 @@ import { Transition } from '../drawable/Transition';
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
-interface StateMachineEvents {
-  createState: { id: string };
-  createTransition: { id: string };
-  deleteState: { id: string };
-  deleteTransition: { id: string };
-}
-export class StateMachine extends EventEmitter<StateMachineEvents> {
+export class StateMachine {
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
 
@@ -60,9 +55,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
   undoRedo = new UndoRedo(this);
 
-  constructor(public container: Container) {
-    super();
-  }
+  constructor(public container: Container) {}
 
   resetEntities() {
     this.transitions.forEach((value) => {
@@ -95,18 +88,18 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     const items = this.container.app.manager.data.elements.states;
 
     for (const id in items) {
-      const parent = this.states.get(items[id].parent ?? '');
-      const state = new State(this.container, id, parent);
-
-      state.parent?.children.set(id, state);
-      this.container.states.watchState(state);
-      this.states.set(id, state);
+      const data = items[id];
+      this.createState({
+        id,
+        name: data.name,
+        position: data.bounds,
+        events: data.events,
+        parentId: data.parent,
+      });
 
       if (this.container.app.manager.data.elements.initialState === id) {
         this.container.states.initInitialStateMark(id);
       }
-
-      this.emit('createState', { id: state.id });
     }
   }
 
@@ -114,13 +107,19 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     const items = this.container.app.manager.data.elements.transitions;
 
     for (const id in items) {
-      const transition = new Transition(this.container, id);
+      const data = items[id];
 
-      this.transitions.set(id, transition);
-
-      this.container.transitions.watchTransition(transition);
-
-      this.emit('createTransition', { id: transition.id });
+      this.createTransition({
+        id,
+        color: data.color,
+        condition: data.condition ?? undefined,
+        position: data.position,
+        source: data.source,
+        target: data.target,
+        doAction: data.do ?? [],
+        component: data.trigger.component,
+        method: data.trigger.method,
+      });
     }
   }
 
@@ -167,14 +166,13 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
       this.linkState(parentId, newStateId, canUndo);
       numberOfConnectedActions += 1;
     } else {
+      this.container.children.add('state', state.id);
       if (linkByPoint) {
         this.linkStateByPoint(state, position);
       }
     }
 
     this.container.states.watchState(state);
-
-    this.emit('createState', { id: state.id });
 
     this.container.isDirty = true;
 
@@ -289,7 +287,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     }
 
     child.parent = parent;
-    parent.children.set(childId, child);
+    parent.children.add('state', child.id);
 
     this.container.isDirty = true;
   }
@@ -308,15 +306,25 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
           let searchPending = true;
           while (searchPending) {
             searchPending = false;
-            for (const child of possibleParent.children.values()) {
-              if (!(child instanceof State)) continue;
-              if (state.id == child.id) continue;
-              if (child.isUnderMouse(position, true)) {
-                possibleParent = child as State;
-                searchPending = true;
-                break;
-              }
-            }
+            // TODO Сделать for of
+            // possibleParent.children.forEach(({ value: child }) => {
+            //   if (!(child instanceof State)) return;
+            //   if (state.id == child.id) return;
+            //   if (child.isUnderMouse(position, true)) {
+            //     possibleParent = child as State;
+            //     searchPending = true;
+            //     break;
+            //   }
+            // });
+            // for (const child of possibleParent.children) {
+            //   if (!(child instanceof State)) continue;
+            //   if (state.id == child.id) continue;
+            //   if (child.isUnderMouse(position, true)) {
+            //     possibleParent = child as State;
+            //     searchPending = true;
+            //     break;
+            //   }
+            // }
           }
         }
       }
@@ -346,8 +354,8 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     }
 
     this.container.app.manager.unlinkState(id);
-
-    state.parent.children.delete(id);
+    const parent = state.parent ?? this.container;
+    parent.children.remove('state', id);
     state.parent = undefined;
 
     this.container.isDirty = true;
@@ -406,8 +414,6 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     this.container.states.unwatchState(state);
     this.states.delete(id);
 
-    this.emit('deleteState', { id: state.id });
-
     this.container.isDirty = true;
   };
 
@@ -457,11 +463,24 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     const transition = new Transition(this.container, id);
 
     this.transitions.set(id, transition);
+
+    if (!transition.source.parent || !transition.target.parent) {
+      this.container.children.add('transition', transition.id);
+    } else {
+      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
+      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
+      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.container;
+
+      if (parent instanceof State) {
+        transition.parent = parent;
+      }
+
+      parent.children.add('transition', transition.id);
+    }
+
     this.container.transitions.watchTransition(transition);
 
     this.container.isDirty = true;
-
-    this.emit('createTransition', { id: transition.id });
 
     if (canUndo) {
       this.undoRedo.do({
@@ -516,10 +535,10 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
     this.container.app.manager.deleteTransition(id);
 
+    const parent = transition.parent ?? this.container;
+    parent.children.remove('transition', id);
     this.container.transitions.unwatchTransition(transition);
     this.transitions.delete(id);
-
-    this.emit('deleteTransition', { id: transition.id });
 
     this.container.isDirty = true;
   }
@@ -548,7 +567,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     killList.length = 0;
 
     this.transitions.forEach((value) => {
-      if (value.condition.isSelected) {
+      if (value.isSelected) {
         killList.push(value.id);
       }
     });
@@ -576,7 +595,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
     //Выделена связь для копирования
     this.transitions.forEach((transition) => {
-      if (transition.condition.isSelected) {
+      if (transition.isSelected) {
         navigator.clipboard.writeText(JSON.stringify(transition.data)).then(() => {
           console.log('Скопирована связь!');
         });
@@ -854,12 +873,6 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
 
     this.removeSelection();
     state.setIsSelected(true);
-
-    this.container.drawList.moveToEnd('s' + state.id);
-
-    state.children.forEach((child) => {
-      this.container.drawList.moveToEnd('s' + child.id);
-    });
   }
 
   selectTransition(id: string) {
@@ -867,9 +880,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     if (!transition) return;
 
     this.removeSelection();
-    transition.condition.setIsSelected(true);
-
-    this.container.drawList.moveToEnd('t' + transition.id);
+    transition.setIsSelected(true);
   }
 
   /**
@@ -888,7 +899,7 @@ export class StateMachine extends EventEmitter<StateMachineEvents> {
     });
 
     this.transitions.forEach((value) => {
-      value.condition.setIsSelected(false);
+      value.setIsSelected(false);
     });
 
     this.container.isDirty = true;

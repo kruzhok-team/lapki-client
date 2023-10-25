@@ -1,6 +1,5 @@
 import { Point } from '@renderer/types/graphics';
 
-import { Condition } from './Condition';
 import { GhostTransition } from './GhostTransition';
 import { State } from './State';
 import { Transition } from './Transition';
@@ -18,7 +17,7 @@ import { MyMouseEvent } from '../common/MouseEventEmitter';
 interface TransitionsEvents {
   createTransition: { source: State; target: State };
   changeTransition: Transition;
-  transitionContextMenu: { condition: Condition; position: Point };
+  transitionContextMenu: { transition: Transition; position: Point };
 }
 
 export class Transitions extends EventEmitter<TransitionsEvents> {
@@ -34,8 +33,6 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
   }
 
   initEvents() {
-    document.addEventListener('mouseup', this.handleMouseUp);
-    this.container.app.mouse.on('mouseup', this.handleMouseUp);
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
     this.container.states.on('startNewTransition', this.handleStartNewTransition);
@@ -46,24 +43,19 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
     this.ghost.setSource(state);
   };
 
-  handleConditionClick = (condition: Condition, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
-    this.container.machine.selectTransition(condition.transition.id);
+  handleConditionClick = (transition: Transition) => {
+    this.container.machine.selectTransition(transition.id);
   };
 
-  handleConditionDoubleClick = (condition: Condition, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-    this.emit('changeTransition', condition.transition);
+  handleConditionDoubleClick = (transition: Transition) => {
+    this.emit('changeTransition', transition);
   };
 
-  handleContextMenu = (condition: Condition, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
+  handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
     this.container.machine.removeSelection();
-    condition.setIsSelected(true);
+    transition.setIsSelected(true);
 
-    this.emit('transitionContextMenu', { condition, position: { x: e.event.x, y: e.event.y } });
+    this.emit('transitionContextMenu', { transition, position: { x: e.event.x, y: e.event.y } });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -75,8 +67,6 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
   };
 
   handleMouseUpOnState = (state: State) => {
-    this.container.machine.removeSelection();
-
     if (!this.ghost.source) return;
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
@@ -93,37 +83,27 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
   };
 
   handleDragEnd = (
-    condition: Condition,
+    transition: Transition,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
     this.container.machine.changeTransitionPosition(
-      condition.id,
+      transition.id,
       e.dragStartPosition,
       e.dragEndPosition
     );
   };
 
   watchTransition(transition: Transition) {
-    const condition = transition.condition;
-    //Если клик был на блок transition, то он выполняет функции
-    condition.on('click', this.handleConditionClick.bind(this, condition));
-    //Если клик был на блок transition, то он выполняет функции
-    condition.on('dblclick', this.handleConditionDoubleClick.bind(this, condition));
-    //Если клик был за пределами блока transition, то он выполняет функции
-    // condition.on('mouseup', this.handleMouseUpOnState.bind(this, condition));
-
-    condition.on('contextmenu', this.handleContextMenu.bind(this, condition));
-    condition.on('dragend', this.handleDragEnd.bind(this, condition));
+    transition.on('click', this.handleConditionClick.bind(this, transition));
+    transition.on('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    transition.on('contextmenu', this.handleContextMenu.bind(this, transition));
+    transition.on('dragend', this.handleDragEnd.bind(this, transition));
   }
 
   unwatchTransition(transition: Transition) {
-    const condition = transition.condition;
-
-    condition.off('click', this.handleConditionClick.bind(this, condition));
-    condition.off('dblclick', this.handleConditionDoubleClick.bind(this, condition));
-    // condition.off('mouseup', this.handleMouseUpOnState.bind(this, condition));
-    condition.off('contextmenu', this.handleContextMenu.bind(this, condition));
-    condition.off('dragend', this.handleDragEnd.bind(this, condition));
-    condition.unbindEvents();
+    transition.off('click', this.handleConditionClick.bind(this, transition));
+    transition.off('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    transition.off('contextmenu', this.handleContextMenu.bind(this, transition));
+    transition.off('dragend', this.handleDragEnd.bind(this, transition));
   }
 }

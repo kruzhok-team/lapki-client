@@ -9,8 +9,8 @@ import { Select, SelectOption } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
+import { Transition } from '@renderer/lib/drawable/Transition';
 import {
   Action,
   Condition as ConditionData,
@@ -47,7 +47,7 @@ interface CreateModalProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
   isData: { state: State } | undefined;
-  isTransition: { target: Condition } | undefined;
+  isTransition: { target: Transition } | undefined;
   isCondition: Action[] | undefined;
   setIsCondition: React.Dispatch<React.SetStateAction<Action[]>>;
   onOpenEventsModal: () => void;
@@ -293,7 +293,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         }
       }
     } else if (props.isTransition) {
-      const d = props.isTransition.target.transition.data;
+      const d = props.isTransition.target.data;
       const compoName = d.trigger.component;
       const methodName = d.trigger.method;
       return {
@@ -308,7 +308,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const tryGetCondition: () => ConditionPreset | undefined = () => {
     if (props.isTransition) {
-      const c = props.isTransition.target.transition.data.condition;
+      const c = props.isTransition.target.data.condition;
       if (!c) return undefined;
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
@@ -832,7 +832,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
-            defaultValue={props.isTransition?.target.transition.data.color ?? defaultTransColor}
+            defaultValue={props.isTransition?.target.data.color ?? defaultTransColor}
           />
         </>
       )}

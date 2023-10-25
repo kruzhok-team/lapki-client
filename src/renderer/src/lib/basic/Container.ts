@@ -4,7 +4,6 @@ import { Point } from '@renderer/types/graphics';
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { DrawList } from '../data/DrawList';
 import { StateMachine } from '../data/StateMachine';
 import { Children } from '../drawable/Children';
 import { Node } from '../drawable/Node';
@@ -35,7 +34,6 @@ export class Container extends EventEmitter<ContainerEvents> {
 
   states!: States;
   transitions!: Transitions;
-  drawList = new DrawList();
 
   isPan = false;
 
@@ -127,11 +125,6 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.mouse.on('contextmenu', this.handleMouseContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
-
-    // this.machine.on('createState', ({ id }) => this.drawList.add('s' + id));
-    // this.machine.on('createTransition', ({ id }) => this.drawList.add('t' + id));
-    // this.machine.on('deleteState', ({ id }) => this.drawList.remove('s' + id));
-    // this.machine.on('deleteTransition', ({ id }) => this.drawList.remove('t' + id));
   }
 
   private getCapturedNode(position: Point) {

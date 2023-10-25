@@ -1,5 +1,8 @@
-import { CanvasEditor } from '../CanvasEditor';
+import debounce from 'lodash.debounce';
+
 import { getColor } from '@renderer/theme';
+
+import { CanvasEditor } from '../CanvasEditor';
 
 /**
  * Класс-прослойка для взаимодействия с JS Canvas API.
@@ -9,8 +12,6 @@ import { getColor } from '@renderer/theme';
  * на самом холсте.
  */
 export class Canvas {
-  app!: CanvasEditor;
-
   element = document.createElement('canvas');
   context = this.element.getContext('2d') as CanvasRenderingContext2D;
 
@@ -18,11 +19,8 @@ export class Canvas {
 
   // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
   onResize: (() => void) | undefined;
-  toDataURL: any;
 
-  constructor(app: CanvasEditor) {
-    this.app = app;
-
+  constructor(public app: CanvasEditor) {
     window.addEventListener('resize', this.resize);
 
     this.resizeObserver = new ResizeObserver(this.resize);
@@ -44,7 +42,7 @@ export class Canvas {
     context.closePath();
   }
 
-  resize = () => {
+  resize: () => void = debounce(() => {
     if (!this.element.parentElement) {
       return;
     }
@@ -55,7 +53,7 @@ export class Canvas {
     this.clear();
 
     this.onResize?.();
-  };
+  }, 10);
 
   draw(callback: (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void) {
     callback(this.context, this.element);

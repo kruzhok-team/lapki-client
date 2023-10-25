@@ -30,6 +30,14 @@ export class States extends EventEmitter<StatesEvents> {
     super();
   }
 
+  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    this.container.machine.states.forEach((state) => {
+      state.draw(ctx, canvas);
+    });
+
+    this.initialStateMark?.draw(ctx);
+  }
+
   handleStartNewTransition = (state: State) => {
     this.emit('startNewTransition', state);
   };

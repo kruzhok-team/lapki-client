@@ -39,6 +39,16 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
     this.container.states.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
+  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    this.container.machine.transitions.forEach((state) => {
+      state.draw(ctx, canvas);
+    });
+
+    if (this.ghost.source) {
+      this.ghost.draw(ctx, canvas);
+    }
+  }
+
   handleStartNewTransition = (state: State) => {
     this.ghost.setSource(state);
   };

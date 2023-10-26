@@ -21,20 +21,20 @@ const themeOptions = [
 export const Setting: React.FC<SettingProps> = () => {
   const { setTheme, theme } = useThemeContext();
 
-  const compilerAddressRef = useRef<HTMLInputElement>(null);
+  const compilerHostRef = useRef<HTMLInputElement>(null);
   const compilerPortRef = useRef<HTMLInputElement>(null);
   const handleCompileConnect = () => {
-    console.log(compilerAddressRef?.current?.value, compilerPortRef?.current?.value);
+    console.log(compilerHostRef?.current?.value, compilerPortRef?.current?.value);
   };
   const handleCompileReset = () => {
     Settings.getCompilerSettings().then((compiler) => {
       if (
-        compilerAddressRef.current != undefined &&
-        compilerAddressRef.current != null &&
+        compilerHostRef.current != undefined &&
+        compilerHostRef.current != null &&
         compilerPortRef.current != undefined &&
         compilerPortRef.current != null
       ) {
-        compilerAddressRef.current.value = compiler.host;
+        compilerHostRef.current.value = compiler.host;
         compilerPortRef.current.value = String(compiler.port);
       }
       console.log(compiler.host, compiler.port);
@@ -64,11 +64,11 @@ export const Setting: React.FC<SettingProps> = () => {
         <br></br>
         <div>
           <TextInput
-            label="Адрес"
+            label="Хост"
             isElse={false}
             error={false}
             errorMessage={''}
-            ref={compilerAddressRef}
+            ref={compilerHostRef}
             //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
           />
           <TextInput

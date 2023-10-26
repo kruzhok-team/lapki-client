@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
+import {
+  UncontrolledTreeEnvironment,
+  Tree,
+  StaticTreeDataProvider,
+  TreeItem,
+  DraggingPosition,
+} from 'react-complex-tree';
 
 import './style-modern.css';
 
@@ -13,23 +19,32 @@ interface HierarchyProps {
 }
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
-  const [hierarchyData, setHierarchyData] = useState(hierarchy);
-
-  const dataProvider = new StaticTreeDataProvider(hierarchyData, (item, newName) => ({
+  const dataProvider = new StaticTreeDataProvider(hierarchy, (item, data) => ({
     ...item,
-    data: newName,
+    data,
   }));
 
-  const onSubmit = (name: string) => {
-    const state = editor?.container.machine.states.get(name);
-    if (!state) return;
-    console.log(state);
-    //editor?.container.states.handleStateClick(state);
+  const onSubmit = (id: string) => {
+    editor?.container.machine.selectState(id);
+    editor?.container.machine.selectTransition(id);
   };
 
-  useEffect(() => {
-    console.log('Обновили данные');
-  }, [hierarchy]);
+  const onRename = (id: string, name: string) => {
+    editor?.container.machine.changeStateName(id, name);
+  };
+
+  //Здесь мы напрямую работаем с родителями и дочерними элементами
+  const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
+    if (!editor) return;
+    items.map((value) => {
+      target.targetItem !== undefined
+        ? editor.container.machine.linkState(target.targetItem.toString(), value.index.toString())
+        : target.targetType === 'between-items' && target.parentItem !== 'root'
+        ? editor.container.machine.linkState(target.parentItem.toString(), value.index.toString())
+        : editor.container.machine.unlinkState(value.index.toString());
+    });
+    console.log(target);
+  };
 
   return (
     <div className="rct-dark">
@@ -37,10 +52,15 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
         dataProvider={dataProvider}
         getItemTitle={(item) => item.data}
         viewState={{}}
+        // //Данная ошибка вызвана по глупости ESlint, но данное свойство работает
+        // defaultInteractionMode={'click-arrow-to-expand'}
         canDragAndDrop={true}
-        canDropOnFolder={true}
         canReorderItems={true}
+        canDropOnFolder={true}
+        canDropOnNonFolder={true}
         canSearch={false}
+        onDrop={(items, target) => onLinkUnlinkState(items, target)}
+        onRenameItem={(item, name) => onRename(item.index.toString(), name)}
         onFocusItem={(item) => onSubmit(item.index.toString())}
       >
         <Tree treeId="tree-2" rootItem="root" treeLabel="Tree Example" />

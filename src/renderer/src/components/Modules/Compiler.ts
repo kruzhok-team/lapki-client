@@ -11,8 +11,13 @@ import {
 } from '@renderer/types/CompilerTypes';
 
 export class Compiler {
-  static port = 8081;
-  static host = 'localhost';
+  // сохранённые значения хоста и порта, если значения пусты, то используются значения по-умолчанию
+
+  static LOCAL_STORAGE_HOST = 'compiler host';
+  static LOCAL_STORAGE_PORT = 'compiler port';
+
+  static port = Number(localStorage.getItem(this.LOCAL_STORAGE_PORT)) ?? 8081;
+  static host = localStorage.getItem(this.LOCAL_STORAGE_HOST) ?? 'localhost';
   static base_address = `ws://${this.host}:${this.port}/`;
   static connection: Websocket | undefined;
   static connecting: boolean = false;

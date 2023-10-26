@@ -4,6 +4,7 @@ import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { TextInput } from '../Modal/TextInput';
 import { Settings } from '../Modules/Settings';
+import { Compiler } from '../Modules/Compiler';
 
 interface SettingProps {}
 
@@ -26,17 +27,12 @@ export const Setting: React.FC<SettingProps> = () => {
   const compilerHostRef = useRef<HTMLInputElement>(null);
   const compilerPortRef = useRef<HTMLInputElement>(null);
 
-  // сохранённые значения хоста и порта, если значения пусты, то используются значения по-умолчанию
-
-  const lOCAL_STORAGE_HOST = 'compiler host';
-  const LOCAL_STORAGE_PORT = 'compiler port';
-
   const handleCompileConnect = () => {
     if (compilerHostRef.current != undefined && compilerHostRef.current != null) {
-      localStorage.setItem(lOCAL_STORAGE_HOST, compilerHostRef?.current?.value);
+      localStorage.setItem(Compiler.LOCAL_STORAGE_HOST, compilerHostRef?.current?.value);
     }
     if (compilerPortRef.current != undefined && compilerPortRef.current != null) {
-      localStorage.setItem(LOCAL_STORAGE_PORT, compilerPortRef?.current?.value);
+      localStorage.setItem(Compiler.LOCAL_STORAGE_PORT, compilerPortRef?.current?.value);
     }
     console.log(compilerHostRef?.current?.value, compilerPortRef?.current?.value);
   };
@@ -79,7 +75,8 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerHostRef}
-            defaultValue={localStorage.getItem(lOCAL_STORAGE_HOST) ?? ''}
+            //defaultValue={localStorage.getItem(lOCAL_STORAGE_HOST) ?? ''}
+            defaultValue={Compiler.host}
           />
           <TextInput
             label="Порт"
@@ -87,7 +84,7 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerPortRef}
-            defaultValue={localStorage.getItem(LOCAL_STORAGE_PORT) ?? ''}
+            defaultValue={Compiler.port}
           />
           <button className="btn-primary mb-4" onClick={handleCompileConnect}>
             {'A'}

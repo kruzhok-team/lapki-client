@@ -1,74 +1,73 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
-export type HierarchyItem = {
+export interface HierarchyItem {
   [index: string]: {
     index: string;
     isFolder?: boolean;
-    children: string[];
+    children?: Array<string>;
     data: string;
-    canRename?: boolean;
   };
-};
+}
 
 export const useHierarchyManager = (editor: CanvasEditor | null, manager: EditorManager) => {
-  const [hierarchy] = useState<HierarchyItem>({});
+  const states = manager.useData('elements.states');
+  const transitions = manager.useData('elements.transitions');
 
-  useEffect(() => {
+  const hierarchy: HierarchyItem = {};
+
+  useLayoutEffect(() => {
     if (!editor) return;
 
     hierarchy['root'] = {
       index: 'root',
       isFolder: true,
       children: [
-        ...Array.from(editor.container.machine.states)
-          .filter((value) => value[1].data.parent === undefined)
+        ...Object.entries(states)
+          .filter((value) => value[1].parent === undefined)
           .map((value) => value[0]),
       ],
       data: 'Root item',
     };
 
     //Создаем элементы списка иерархий(состояния)
-    Array.from(editor.container.machine.states).map((state) => {
+    Object.entries(states).map((state) => {
       hierarchy[state[0]] = {
         index: state[0],
         isFolder:
-          Array.from(editor.container.machine.states).some(
-            (value) => value[1].data.parent === state[0]
-          ) ||
-          Array.from(editor.container.machine.transitions).some(
-            (transition) => transition[1].data.source === state[0]
-          ),
+          Object.entries(states).some((value) => value[1].parent === state[0]) ||
+          Object.entries(transitions).some((transition) => transition[1].source === state[0]),
         children: [
-          ...Array.from(editor.container.machine.states)
-            .filter((value) => value[1].data.parent === state[0])
+          ...Object.entries(states)
+            .filter((value) => value[1].parent === state[0])
             .map((value) => value[0]),
-          ...Array.from(editor.container.machine.transitions)
-            .filter((transition) => transition[1].data.source === state[0])
+          ...Object.entries(transitions)
+            .filter((transition) => transition[1].source === state[0])
             .map((value) => value[0]),
         ],
-        data: state[1].data.name,
+        data: state[1].name,
       };
     });
+
     //Создаем элементы списка иерархий(связи)
-    Array.from(editor.container.machine.transitions).map((transition) => {
+    Object.entries(transitions).map((transition) => {
       hierarchy[transition[0]] = {
         index: transition[0],
-        children: [],
         data:
-          Array.from(editor.container.machine.states)
-            .filter((state) => transition[1].data.source === state[0])
-            .map((value) => value[1].data.name) +
+          Object.entries(states)
+            .filter((state) => transition[1].source === state[0])
+            .map((value) => value[1].name) +
           ' -> ' +
-          Array.from(editor.container.machine.states)
-            .filter((state) => transition[1].data.target === state[0])
-            .map((value) => value[1].data.name),
-        canRename: false,
+          Object.entries(states)
+            .filter((state) => transition[1].target === state[0])
+            .map((value) => value[1].name),
       };
     });
-  }, [editor, manager]);
+
+    console.log(hierarchy);
+  }, [editor, states, transitions]);
 
   return { hierarchy, editor };
 };

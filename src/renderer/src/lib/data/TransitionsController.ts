@@ -1,52 +1,38 @@
 import { Point } from '@renderer/types/graphics';
 
-import { GhostTransition } from './GhostTransition';
-import { State } from './State';
-import { Transition } from './Transition';
-
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { GhostTransition } from '../drawable/GhostTransition';
+import { State } from '../drawable/State';
+import { Transition } from '../drawable/Transition';
 
 /**
  * Контроллер {@link Transition|переходов}.
  * Обрабатывает события, связанные с переходами.
- * Отрисовывает переходы, в том числе {@link GhostTransition|«призрачный» переход}.
+ * Отрисовывает {@link GhostTransition|«призрачный» переход}.
  */
 
-interface TransitionsEvents {
+interface TransitionsControllerEvents {
   createTransition: { source: State; target: State };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
 
-export class Transitions extends EventEmitter<TransitionsEvents> {
-  container!: Container;
-
+export class TransitionsController extends EventEmitter<TransitionsControllerEvents> {
   ghost!: GhostTransition;
 
-  constructor(container: Container) {
+  constructor(public container: Container) {
     super();
 
-    this.container = container;
     this.ghost = new GhostTransition(container);
   }
 
   initEvents() {
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.container.states.on('startNewTransition', this.handleStartNewTransition);
-    this.container.states.on('mouseUpOnState', this.handleMouseUpOnState);
-  }
-
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.container.machine.transitions.forEach((state) => {
-      state.draw(ctx, canvas);
-    });
-
-    if (this.ghost.source) {
-      this.ghost.draw(ctx, canvas);
-    }
+    this.container.statesController.on('startNewTransition', this.handleStartNewTransition);
+    this.container.statesController.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -54,7 +40,7 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
   };
 
   handleConditionClick = (transition: Transition) => {
-    this.container.machine.selectTransition(transition.id);
+    this.container.machineController.selectTransition(transition.id);
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
@@ -62,7 +48,7 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
   };
 
   handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
-    this.container.machine.removeSelection();
+    this.container.machineController.removeSelection();
     transition.setIsSelected(true);
 
     this.emit('transitionContextMenu', { transition, position: { x: e.event.x, y: e.event.y } });
@@ -96,7 +82,7 @@ export class Transitions extends EventEmitter<TransitionsEvents> {
     transition: Transition,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.container.machine.changeTransitionPosition(
+    this.container.machineController.changeTransitionPosition(
       transition.id,
       e.dragStartPosition,
       e.dragEndPosition

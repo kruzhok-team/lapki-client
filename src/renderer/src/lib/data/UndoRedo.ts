@@ -1,6 +1,12 @@
 import { useSyncExternalStore } from 'react';
 
 import {
+  CreateTransitionParameters,
+  EditComponentParams,
+  RemoveComponentParams,
+} from '@renderer/types/MachineController';
+
+import {
   Action as EventAction,
   Event,
   Component,
@@ -15,13 +21,8 @@ import {
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
-import {
-  CreateTransitionParameters,
-  EditComponentParams,
-  RemoveComponentParams,
-} from '@renderer/types/StateMachine';
 
-import { StateMachine } from './StateMachine';
+import { MachineController } from './MachineController';
 
 import { EventSelection } from '../drawable/Events';
 import { Transition } from '../drawable/Transition';
@@ -65,7 +66,7 @@ export type Action<T extends PossibleActionTypes> = {
 export type Stack = Array<Action<any>>;
 type ActionFunctions = {
   [Type in PossibleActionTypes]: (
-    sm: StateMachine,
+    sm: MachineController,
     args: PossibleActions[Type]
   ) => { undo: () => void; redo: () => void };
 };
@@ -303,7 +304,7 @@ export class UndoRedo {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(public stateMachine: StateMachine) {}
+  constructor(public stateMachine: MachineController) {}
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;

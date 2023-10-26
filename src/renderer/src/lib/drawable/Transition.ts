@@ -31,11 +31,11 @@ export class Transition extends Node {
   }
 
   get source() {
-    return this.container.machine.states.get(this.data.source) as State;
+    return this.container.machineController.states.get(this.data.source) as State;
   }
 
   get target() {
-    return this.container.machine.states.get(this.data.target) as State;
+    return this.container.machineController.states.get(this.data.target) as State;
   }
 
   get bounds() {
@@ -72,7 +72,7 @@ export class Transition extends Node {
     ctx.fillStyle = transitionStyle.bgColor;
 
     const trigger = this.data.trigger;
-    const platform = this.container.machine.platform;
+    const platform = this.container.machineController.platform;
     ctx.beginPath();
     platform.drawEvent(ctx, trigger, x + p, y + p);
     ctx.closePath();

@@ -84,7 +84,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
               onDoubleClick={() => onCompDblClick(key)}
               onContextMenu={() => onCompRightClick(key)}
             >
-              {editor?.container.machine.platform?.getFullComponentIcon(key)}
+              {editor?.container.machineController.platform?.getFullComponentIcon(key)}
               <p className="ml-2 line-clamp-1">{key}</p>
             </div>
           )}

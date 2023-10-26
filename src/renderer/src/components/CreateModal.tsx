@@ -96,7 +96,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   //--------------------------------Работа со списком компонентов---------------------------------------
   const componentsData = manager.useData('elements.components');
-  const machine = editor!.container.machine;
+  const machine = editor!.container.machineController;
 
   const isEditingEvent = isData === undefined;
 

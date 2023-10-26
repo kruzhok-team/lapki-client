@@ -18,7 +18,7 @@ import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
-} from '@renderer/types/StateMachine';
+} from '@renderer/types/MachineController';
 import { indexOfMin } from '@renderer/utils';
 
 import { loadPlatform } from './PlatformLoader';
@@ -31,7 +31,7 @@ import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 
 /**
- * Данные машины состояний.
+ * Контроллер машины состояний.
  * Хранит все состояния и переходы, предоставляет интерфейс
  * для работы с ними. Не отвечает за графику и события (эта логика
  * вынесена в контроллеры)
@@ -46,7 +46,7 @@ import { Transition } from '../drawable/Transition';
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
-export class StateMachine {
+export class MachineController {
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
 
@@ -58,11 +58,11 @@ export class StateMachine {
 
   resetEntities() {
     this.transitions.forEach((value) => {
-      this.container.transitions.unwatchTransition(value);
+      this.container.transitionsController.unwatchTransition(value);
     });
 
     this.states.forEach((value) => {
-      this.container.states.unwatchState(value);
+      this.container.statesController.unwatchState(value);
     });
     this.states.clear();
     this.transitions.clear();
@@ -97,7 +97,7 @@ export class StateMachine {
       });
 
       if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.states.initInitialStateMark(id);
+        this.container.statesController.initInitialStateMark(id);
       }
     }
   }
@@ -171,7 +171,7 @@ export class StateMachine {
       }
     }
 
-    this.container.states.watchState(state);
+    this.container.statesController.watchState(state);
 
     this.container.isDirty = true;
 
@@ -403,7 +403,7 @@ export class StateMachine {
 
     this.container.app.manager.deleteState(id);
 
-    this.container.states.unwatchState(state);
+    this.container.statesController.unwatchState(state);
     this.states.delete(id);
 
     this.container.isDirty = true;
@@ -421,7 +421,7 @@ export class StateMachine {
     }
 
     this.container.app.manager.changeInitialState(id);
-    this.container.states.initInitialStateMark(id);
+    this.container.statesController.initInitialStateMark(id);
 
     this.container.isDirty = true;
   };
@@ -470,7 +470,7 @@ export class StateMachine {
       parent.children.add('transition', transition.id);
     }
 
-    this.container.transitions.watchTransition(transition);
+    this.container.transitionsController.watchTransition(transition);
 
     this.container.isDirty = true;
 
@@ -529,7 +529,7 @@ export class StateMachine {
 
     const parent = transition.parent ?? this.container;
     parent.children.remove('transition', id);
-    this.container.transitions.unwatchTransition(transition);
+    this.container.transitionsController.unwatchTransition(transition);
     this.transitions.delete(id);
 
     this.container.isDirty = true;

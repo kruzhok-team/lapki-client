@@ -51,7 +51,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor?.container.machine.createState({
+            editor?.container.machineController.createState({
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
@@ -81,7 +81,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     });
 
     // контекстное меню для состояния
-    editor.container.states.on('stateContextMenu', ({ state, position }) => {
+    editor.container.statesController.on('stateContextMenu', ({ state, position }) => {
       const canvasPos = editor.container.relativeMousePos(position);
 
       handleEvent(position, [
@@ -108,14 +108,14 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                editor?.container.machine.changeInitialState(state.id as string);
+                editor?.container.machineController.changeInitialState(state.id as string);
               },
             },
             {
               label: 'Вставить состояние',
               type: 'pasteState',
               action: () => {
-                editor?.container.machine.createState({
+                editor?.container.machineController.createState({
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
@@ -142,124 +142,127 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machine.deleteState(state.id as string);
+            editor?.container.machineController.deleteState(state.id as string);
           },
         },
       ]);
     });
 
     // контекстное меню для события
-    editor.container.states.on('eventContextMenu', ({ state, position, event }) => {
+    editor.container.statesController.on('eventContextMenu', ({ state, position, event }) => {
       handleEvent(position, [
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machine.deleteEvent(state.id, event);
+            editor?.container.machineController.deleteEvent(state.id, event);
           },
         },
       ]);
     });
 
     // контекстное меню для связи
-    editor.container.transitions.on('transitionContextMenu', ({ transition, position }) => {
-      const source = (state: State) => {
-        return {
-          label: state.eventBox.parent.data.name,
-          type: 'source',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {
-            editor?.container.machine.changeTransition({
-              id: transition.id,
-              source: state.id,
-              target: transition.data.target,
-              color: transition.data.color,
-              component: transition.data.trigger.component,
-              method: transition.data.trigger.method,
-              doAction: transition.data.do!,
-              condition: transition.data.condition!,
-            });
-          },
+    editor.container.transitionsController.on(
+      'transitionContextMenu',
+      ({ transition, position }) => {
+        const source = (state: State) => {
+          return {
+            label: state.eventBox.parent.data.name,
+            type: 'source',
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            action: () => {
+              editor?.container.machineController.changeTransition({
+                id: transition.id,
+                source: state.id,
+                target: transition.data.target,
+                color: transition.data.color,
+                component: transition.data.trigger.component,
+                method: transition.data.trigger.method,
+                doAction: transition.data.do!,
+                condition: transition.data.condition!,
+              });
+            },
+          };
         };
-      };
 
-      const target = (state: State) => {
-        return {
-          label: state.eventBox.parent.data.name,
-          type: 'target',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {
-            editor?.container.machine.changeTransition({
-              id: transition.id,
-              source: transition.data.source,
-              target: state.id,
-              color: transition.data.color,
-              component: transition.data.trigger.component,
-              method: transition.data.trigger.method,
-              doAction: transition.data.do!,
-              condition: transition.data.condition!,
-            });
-          },
+        const target = (state: State) => {
+          return {
+            label: state.eventBox.parent.data.name,
+            type: 'target',
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            action: () => {
+              editor?.container.machineController.changeTransition({
+                id: transition.id,
+                source: transition.data.source,
+                target: state.id,
+                color: transition.data.color,
+                component: transition.data.trigger.component,
+                method: transition.data.trigger.method,
+                doAction: transition.data.do!,
+                condition: transition.data.condition!,
+              });
+            },
+          };
         };
-      };
 
-      const sourceArray = [
-        ...Array.from(editor.container.machine.states).filter(
-          (value) => transition.data.source !== value[0]
-        ),
-      ];
+        const sourceArray = [
+          ...Array.from(editor.container.machineController.states).filter(
+            (value) => transition.data.source !== value[0]
+          ),
+        ];
 
-      const targetArray = [
-        ...Array.from(editor.container.machine.states).filter(
-          (value) => transition.data.target !== value[0]
-        ),
-      ];
+        const targetArray = [
+          ...Array.from(editor.container.machineController.states).filter(
+            (value) => transition.data.target !== value[0]
+          ),
+        ];
 
-      handleEvent(position, [
-        {
-          label: 'Копировать',
-          type: 'copy',
-          action: () => {
-            editor?.container.handleCopy();
+        handleEvent(position, [
+          {
+            label: 'Копировать',
+            type: 'copy',
+            action: () => {
+              editor?.container.handleCopy();
+            },
           },
-        },
-        {
-          label: 'Выбрать исход(source)',
-          type: 'source',
-          isFolder: true,
-          children: [...sourceArray.map(([_id, value]) => source(value))],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
-        },
-        {
-          label: 'Выбрать цель(target)',
-          type: 'target',
-          isFolder: true,
-          children: [...targetArray.map(([_id, value]) => target(value))],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
-        },
-        {
-          label: 'Посмотреть код',
-          type: 'showCodeAll',
-          action: () => {
-            openTab({
-              type: 'transition',
-              name: transition.id,
-              code: manager.getTransitionSerialized(transition.id) ?? '',
-              language: 'json',
-            });
+          {
+            label: 'Выбрать исход(source)',
+            type: 'source',
+            isFolder: true,
+            children: [...sourceArray.map(([_id, value]) => source(value))],
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            action: () => {},
           },
-        },
-        {
-          label: 'Удалить',
-          type: 'delete',
-          action: () => {
-            editor?.container.machine.deleteTransition(transition.id);
+          {
+            label: 'Выбрать цель(target)',
+            type: 'target',
+            isFolder: true,
+            children: [...targetArray.map(([_id, value]) => target(value))],
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            action: () => {},
           },
-        },
-      ]);
-    });
+          {
+            label: 'Посмотреть код',
+            type: 'showCodeAll',
+            action: () => {
+              openTab({
+                type: 'transition',
+                name: transition.id,
+                code: manager.getTransitionSerialized(transition.id) ?? '',
+                language: 'json',
+              });
+            },
+          },
+          {
+            label: 'Удалить',
+            type: 'delete',
+            action: () => {
+              editor?.container.machineController.deleteTransition(transition.id);
+            },
+          },
+        ]);
+      }
+    );
   }, [editor]);
 
   return { isOpen, onClose, items, position };

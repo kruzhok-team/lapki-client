@@ -37,7 +37,7 @@ export class InitialStateMark extends Node {
   }
 
   get state() {
-    return this.container.machine.states.get(this.sourceId) ?? null;
+    return this.container.machineController.states.get(this.sourceId) ?? null;
   }
 
   draw(ctx: CanvasRenderingContext2D) {

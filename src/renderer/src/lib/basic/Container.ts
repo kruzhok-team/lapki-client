@@ -4,13 +4,13 @@ import { Point } from '@renderer/types/graphics';
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { StateMachine } from '../data/StateMachine';
+import { MachineController } from '../data/MachineController';
+import { StatesController } from '../data/StatesController';
+import { TransitionsController } from '../data/TransitionsController';
 import { Children } from '../drawable/Children';
 import { Node } from '../drawable/Node';
 import { picto } from '../drawable/Picto';
 import { State } from '../drawable/State';
-import { States } from '../drawable/States';
-import { Transitions } from '../drawable/Transitions';
 import { clamp } from '../utils';
 
 export const MAX_SCALE = 10;
@@ -30,10 +30,10 @@ export class Container extends EventEmitter<ContainerEvents> {
 
   isDirty = true;
 
-  machine!: StateMachine;
+  machineController!: MachineController;
 
-  states!: States;
-  transitions!: Transitions;
+  statesController!: StatesController;
+  transitionsController!: TransitionsController;
 
   isPan = false;
 
@@ -44,16 +44,16 @@ export class Container extends EventEmitter<ContainerEvents> {
     super();
 
     this.app = app;
-    this.machine = new StateMachine(this);
-    this.states = new States(this);
-    this.transitions = new Transitions(this);
-    this.children = new Children(this.machine);
+    this.machineController = new MachineController(this);
+    this.statesController = new StatesController(this);
+    this.transitionsController = new TransitionsController(this);
+    this.children = new Children(this.machineController);
 
     // Порядок важен, система очень тонкая
 
     this.initEvents();
-    this.transitions.initEvents();
-    this.machine.loadData();
+    this.transitionsController.initEvents();
+    this.machineController.loadData();
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -71,8 +71,8 @@ export class Container extends EventEmitter<ContainerEvents> {
 
     drawChildren(this);
 
-    this.transitions.ghost.draw(ctx, canvas);
-    this.states.initialStateMark?.draw(ctx);
+    this.transitionsController.ghost.draw(ctx, canvas);
+    this.statesController.initialStateMark?.draw(ctx);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -112,8 +112,8 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.handleDelete);
-    this.app.keyboard.on('ctrlz', this.machine.undoRedo.undo);
-    this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
+    this.app.keyboard.on('ctrlz', this.machineController.undoRedo.undo);
+    this.app.keyboard.on('ctrly', this.machineController.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
     this.app.keyboard.on('ctrls', this.handleSaveFile);
@@ -185,8 +185,8 @@ export class Container extends EventEmitter<ContainerEvents> {
     if (node) {
       node.handleMouseUp(e);
     } else {
-      this.transitions.handleMouseUp();
-      this.machine.removeSelection();
+      this.transitionsController.handleMouseUp();
+      this.machineController.removeSelection();
     }
 
     this.mouseDownNode = null;
@@ -244,15 +244,15 @@ export class Container extends EventEmitter<ContainerEvents> {
   };
 
   handleDelete = () => {
-    this.machine.deleteSelected();
+    this.machineController.deleteSelected();
   };
 
   handleCopy = () => {
-    this.machine.copySelected();
+    this.machineController.copySelected();
   };
 
   handlePaste = () => {
-    this.machine.pasteSelected();
+    this.machineController.pasteSelected();
   };
 
   handleSaveFile = () => {
@@ -289,12 +289,12 @@ export class Container extends EventEmitter<ContainerEvents> {
     const arrX: number[] = [];
     const arrY: number[] = [];
 
-    this.machine.states.forEach((state) => {
+    this.machineController.states.forEach((state) => {
       arrX.push(state.bounds.x);
       arrY.push(state.bounds.y);
     });
 
-    this.machine.transitions.forEach((transition) => {
+    this.machineController.transitions.forEach((transition) => {
       arrX.push(transition.bounds.x);
       arrY.push(transition.bounds.y);
     });

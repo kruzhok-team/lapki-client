@@ -54,7 +54,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
     this.container = container;
     this.id = id;
     this.parent = parent;
-    this.children = new Children(this.container.machine);
+    this.children = new Children(this.container.machineController);
   }
 
   abstract get bounds(): Rectangle;

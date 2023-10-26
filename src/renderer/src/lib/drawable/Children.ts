@@ -1,7 +1,7 @@
 import { State } from './State';
 import { Transition } from './Transition';
 
-import { StateMachine } from '../data/StateMachine';
+import { MachineController } from '../data/MachineController';
 
 type CbListItem = State | Transition;
 /**
@@ -13,7 +13,7 @@ export class Children {
   private statesList = [] as string[];
   private transitionsList = [] as string[];
 
-  constructor(public stateMachine: StateMachine) {}
+  constructor(public stateMachine: MachineController) {}
 
   forEach(cb: (item: CbListItem) => void) {
     this.statesList.forEach((id) => {
@@ -25,6 +25,7 @@ export class Children {
     });
   }
 
+  // Для того чтобы можно было перебрать экземпляр класса с помощью for of
   [Symbol.iterator]() {
     let i = 0;
     const statesList = this.statesList;

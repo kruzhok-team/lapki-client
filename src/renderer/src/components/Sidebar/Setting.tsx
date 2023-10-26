@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
@@ -21,9 +21,23 @@ const themeOptions = [
 export const Setting: React.FC<SettingProps> = () => {
   const { setTheme, theme } = useThemeContext();
 
+  // ссылки для хранения значений хоста и порта
+
   const compilerHostRef = useRef<HTMLInputElement>(null);
   const compilerPortRef = useRef<HTMLInputElement>(null);
+
+  // сохранённые значения хоста и порта, если значения пусты, то используются значения по-умолчанию
+
+  const lOCAL_STORAGE_HOST = 'compiler host';
+  const LOCAL_STORAGE_PORT = 'compiler port';
+
   const handleCompileConnect = () => {
+    if (compilerHostRef.current != undefined && compilerHostRef.current != null) {
+      localStorage.setItem(lOCAL_STORAGE_HOST, compilerHostRef?.current?.value);
+    }
+    if (compilerPortRef.current != undefined && compilerPortRef.current != null) {
+      localStorage.setItem(LOCAL_STORAGE_PORT, compilerPortRef?.current?.value);
+    }
     console.log(compilerHostRef?.current?.value, compilerPortRef?.current?.value);
   };
   const handleCompileReset = () => {
@@ -40,11 +54,7 @@ export const Setting: React.FC<SettingProps> = () => {
       console.log(compiler.host, compiler.port);
     });
   };
-  /*const defaultAddress = () => {
-    Settings.getCompilerSettings().then((compiler) => {
-      return compiler.host
-    }
-  }*/
+
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -69,7 +79,7 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerHostRef}
-            //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+            defaultValue={localStorage.getItem(lOCAL_STORAGE_HOST) ?? ''}
           />
           <TextInput
             label="Порт"
@@ -77,7 +87,7 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerPortRef}
-            //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+            defaultValue={localStorage.getItem(LOCAL_STORAGE_PORT) ?? ''}
           />
           <button className="btn-primary mb-4" onClick={handleCompileConnect}>
             {'A'}

@@ -19,7 +19,7 @@ export const useEditDeleteComponent = (editor: CanvasEditor | null, manager: Edi
   const onDeleteClose = () => setIsDeleteOpen(false);
 
   const onRequestEditComponent = (idx: string) => {
-    const machine = editor!.container.machine;
+    const machine = editor!.container.machineController;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     const proto = machine.platform.data.components[component.type];
@@ -42,7 +42,7 @@ export const useEditDeleteComponent = (editor: CanvasEditor | null, manager: Edi
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor!.container.machine;
+    const machine = editor!.container.machineController;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
@@ -55,11 +55,15 @@ export const useEditDeleteComponent = (editor: CanvasEditor | null, manager: Edi
   };
 
   const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor!.container.machine.editComponent({ name: idx, parameters: data.parameters, newName });
+    editor!.container.machineController.editComponent({
+      name: idx,
+      parameters: data.parameters,
+      newName,
+    });
   };
 
   const onDelete = (idx: string) => {
-    editor!.container.machine.removeComponent({ name: idx, purge: false });
+    editor!.container.machineController.removeComponent({ name: idx, purge: false });
 
     onEditClose();
   };

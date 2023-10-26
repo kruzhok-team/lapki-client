@@ -18,7 +18,8 @@ import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
-} from '@renderer/types/StateMachine';
+} from '@renderer/types/MachineController';
+import { indexOfMin } from '@renderer/utils';
 
 import { loadPlatform } from './PlatformLoader';
 import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
@@ -30,7 +31,7 @@ import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';
 
 /**
- * Данные машины состояний.
+ * Контроллер машины состояний.
  * Хранит все состояния и переходы, предоставляет интерфейс
  * для работы с ними. Не отвечает за графику и события (эта логика
  * вынесена в контроллеры)
@@ -44,9 +45,8 @@ import { Transition } from '../drawable/Transition';
 //        чтобы через раз не делать запрос в словарь
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
-export class StateMachine {
-  container!: Container;
 
+export class MachineController {
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
 
@@ -54,17 +54,15 @@ export class StateMachine {
 
   undoRedo = new UndoRedo(this);
 
-  constructor(container: Container) {
-    this.container = container;
-  }
+  constructor(public container: Container) {}
 
   resetEntities() {
     this.transitions.forEach((value) => {
-      this.container.transitions.unwatchTransition(value);
+      this.container.transitionsController.unwatchTransition(value);
     });
 
     this.states.forEach((value) => {
-      this.container.states.unwatchState(value);
+      this.container.statesController.unwatchState(value);
     });
     this.states.clear();
     this.transitions.clear();
@@ -89,15 +87,17 @@ export class StateMachine {
     const items = this.container.app.manager.data.elements.states;
 
     for (const id in items) {
-      const parent = this.states.get(items[id].parent ?? '');
-      const state = new State(this.container, id, parent);
-
-      state.parent?.children.set(id, state);
-      this.container.states.watchState(state);
-      this.states.set(id, state);
+      const data = items[id];
+      this.createState({
+        id,
+        name: data.name,
+        position: data.bounds,
+        events: data.events,
+        parentId: data.parent,
+      });
 
       if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.states.initInitialStateMark(id);
+        this.container.statesController.initInitialStateMark(id);
       }
     }
   }
@@ -106,11 +106,19 @@ export class StateMachine {
     const items = this.container.app.manager.data.elements.transitions;
 
     for (const id in items) {
-      const transition = new Transition(this.container, id);
+      const data = items[id];
 
-      this.transitions.set(id, transition);
-
-      this.container.transitions.watchTransition(transition);
+      this.createTransition({
+        id,
+        color: data.color,
+        condition: data.condition ?? undefined,
+        position: data.position,
+        source: data.source,
+        target: data.target,
+        doAction: data.do ?? [],
+        component: data.trigger.component,
+        method: data.trigger.method,
+      });
     }
   }
 
@@ -157,12 +165,13 @@ export class StateMachine {
       this.linkState(parentId, newStateId, canUndo);
       numberOfConnectedActions += 1;
     } else {
+      this.container.children.add('state', state.id);
       if (linkByPoint) {
         this.linkStateByPoint(state, position);
       }
     }
 
-    this.container.states.watchState(state);
+    this.container.statesController.watchState(state);
 
     this.container.isDirty = true;
 
@@ -277,7 +286,7 @@ export class StateMachine {
     }
 
     child.parent = parent;
-    parent.children.set(childId, child);
+    parent.children.add('state', child.id);
 
     this.container.isDirty = true;
   }
@@ -296,7 +305,7 @@ export class StateMachine {
           let searchPending = true;
           while (searchPending) {
             searchPending = false;
-            for (const child of possibleParent.children.values()) {
+            for (const child of possibleParent.children) {
               if (!(child instanceof State)) continue;
               if (state.id == child.id) continue;
               if (child.isUnderMouse(position, true)) {
@@ -335,7 +344,8 @@ export class StateMachine {
 
     this.container.app.manager.unlinkState(id);
 
-    state.parent.children.delete(id);
+    state.parent.children.remove('state', id);
+
     state.parent = undefined;
 
     this.container.isDirty = true;
@@ -373,6 +383,8 @@ export class StateMachine {
     if (state.data.parent) {
       this.unlinkState(state.id, canUndo);
       numberOfConnectedActions += 1;
+    } else {
+      this.container.children.remove('state', id);
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
@@ -391,7 +403,7 @@ export class StateMachine {
 
     this.container.app.manager.deleteState(id);
 
-    this.container.states.unwatchState(state);
+    this.container.statesController.unwatchState(state);
     this.states.delete(id);
 
     this.container.isDirty = true;
@@ -409,7 +421,7 @@ export class StateMachine {
     }
 
     this.container.app.manager.changeInitialState(id);
-    this.container.states.initInitialStateMark(id);
+    this.container.statesController.initInitialStateMark(id);
 
     this.container.isDirty = true;
   };
@@ -443,7 +455,22 @@ export class StateMachine {
     const transition = new Transition(this.container, id);
 
     this.transitions.set(id, transition);
-    this.container.transitions.watchTransition(transition);
+
+    if (!transition.source.parent || !transition.target.parent) {
+      this.container.children.add('transition', transition.id);
+    } else {
+      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
+      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
+      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.container;
+
+      if (parent instanceof State) {
+        transition.parent = parent;
+      }
+
+      parent.children.add('transition', transition.id);
+    }
+
+    this.container.transitionsController.watchTransition(transition);
 
     this.container.isDirty = true;
 
@@ -500,7 +527,9 @@ export class StateMachine {
 
     this.container.app.manager.deleteTransition(id);
 
-    this.container.transitions.unwatchTransition(transition);
+    const parent = transition.parent ?? this.container;
+    parent.children.remove('transition', id);
+    this.container.transitionsController.unwatchTransition(transition);
     this.transitions.delete(id);
 
     this.container.isDirty = true;
@@ -530,7 +559,7 @@ export class StateMachine {
     killList.length = 0;
 
     this.transitions.forEach((value) => {
-      if (value.condition.isSelected) {
+      if (value.isSelected) {
         killList.push(value.id);
       }
     });
@@ -558,7 +587,7 @@ export class StateMachine {
 
     //Выделена связь для копирования
     this.transitions.forEach((transition) => {
-      if (transition.condition.isSelected) {
+      if (transition.isSelected) {
         navigator.clipboard.writeText(JSON.stringify(transition.data)).then(() => {
           console.log('Скопирована связь!');
         });
@@ -830,6 +859,22 @@ export class StateMachine {
     }
   }
 
+  selectState(id: string) {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    this.removeSelection();
+    state.setIsSelected(true);
+  }
+
+  selectTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    this.removeSelection();
+    transition.setIsSelected(true);
+  }
+
   /**
    * Снимает выделение со всех нод и переходов.
    *
@@ -846,7 +891,7 @@ export class StateMachine {
     });
 
     this.transitions.forEach((value) => {
-      value.condition.setIsSelected(false);
+      value.setIsSelected(false);
     });
 
     this.container.isDirty = true;

@@ -1,19 +1,17 @@
 import { Point } from '@renderer/types/graphics';
 
-import { EventSelection } from './Events';
-import { InitialStateMark } from './InitialStateMark';
-import { State } from './State';
-
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
+import { EventSelection } from '../drawable/Events';
+import { InitialStateMark } from '../drawable/InitialStateMark';
+import { State } from '../drawable/State';
 
 /**
  * Контроллер {@link State|состояний}.
  * Предоставляет подписку на события, связанные с состояниями.
- * Реализует отрисовку и обработку выделения состояний.
  */
-interface StatesEvents {
+interface StatesControllerEvents {
   mouseUpOnState: State;
   startNewTransition: State;
   changeState: State;
@@ -23,20 +21,11 @@ interface StatesEvents {
   eventContextMenu: { state: State; event: EventSelection; position: Point };
 }
 
-export class States extends EventEmitter<StatesEvents> {
+export class StatesController extends EventEmitter<StatesControllerEvents> {
   initialStateMark: InitialStateMark | null = null;
 
   constructor(public container: Container) {
     super();
-    this.container = container;
-  }
-
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.container.machine.states.forEach((state) => {
-      state.draw(ctx, canvas);
-    });
-
-    this.initialStateMark?.draw(ctx);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -48,10 +37,7 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
-    this.container.machine.removeSelection();
-    state.setIsSelected(true);
+    this.container.machineController.selectState(state.id);
 
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
@@ -64,8 +50,6 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleStateDoubleClick = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
     const targetPos = state.computedPosition;
     const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
@@ -84,10 +68,7 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
-    this.container.machine.removeSelection();
-    state.setIsSelected(true);
+    this.container.machineController.selectState(state.id);
 
     const eventIdx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
     if (!eventIdx) {
@@ -102,26 +83,28 @@ export class States extends EventEmitter<StatesEvents> {
   };
 
   handleLongPress = (state: State, e: { event: MyMouseEvent }) => {
-    e.event.stopPropagation();
-
     // если состояние вложено – отсоединяем
     if (typeof state.parent !== 'undefined') {
-      this.container.machine.unlinkState(state.id!);
+      this.container.machineController.unlinkState(state.id);
       return;
     }
 
     // если под курсором есть состояние – присоединить к нему
-    this.container.machine.linkStateByPoint(state, e.event);
+    this.container.machineController.linkStateByPoint(state, e.event);
     // TODO: визуальная обратная связь
   };
 
   handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
-    this.container.machine.changeStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+    this.container.machineController.changeStatePosition(
+      state.id,
+      e.dragStartPosition,
+      e.dragEndPosition
+    );
   };
 
   watchState(state: State) {
+    state.on('mousedown', this.handleStateClick.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.on('click', this.handleStateClick.bind(this, state));
     state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleContextMenu.bind(this, state));
     state.on('longpress', this.handleLongPress.bind(this, state));
@@ -131,15 +114,14 @@ export class States extends EventEmitter<StatesEvents> {
   }
 
   unwatchState(state: State) {
+    state.off('mousedown', this.handleStateClick.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.off('click', this.handleStateClick.bind(this, state));
     state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.off('contextmenu', this.handleContextMenu.bind(this, state));
     state.off('longpress', this.handleLongPress.bind(this, state));
     state.off('dragend', this.handleDragEnd.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
-    state.unbindEvents();
   }
 
   initInitialStateMark(stateId: string) {

@@ -57,6 +57,7 @@ export class MachineController {
   constructor(public container: Container) {}
 
   resetEntities() {
+    this.container.children.clear();
     this.transitions.forEach((value) => {
       this.container.transitionsController.unwatchTransition(value);
     });
@@ -88,13 +89,16 @@ export class MachineController {
 
     for (const id in items) {
       const data = items[id];
-      this.createState({
-        id,
-        name: data.name,
-        position: data.bounds,
-        events: data.events,
-        parentId: data.parent,
-      });
+      this.createState(
+        {
+          id,
+          name: data.name,
+          position: data.bounds,
+          events: data.events,
+          parentId: data.parent,
+        },
+        false
+      );
 
       if (this.container.app.manager.data.elements.initialState === id) {
         this.container.statesController.initInitialStateMark(id);
@@ -108,17 +112,20 @@ export class MachineController {
     for (const id in items) {
       const data = items[id];
 
-      this.createTransition({
-        id,
-        color: data.color,
-        condition: data.condition ?? undefined,
-        position: data.position,
-        source: data.source,
-        target: data.target,
-        doAction: data.do ?? [],
-        component: data.trigger.component,
-        method: data.trigger.method,
-      });
+      this.createTransition(
+        {
+          id,
+          color: data.color,
+          condition: data.condition ?? undefined,
+          position: data.position,
+          source: data.source,
+          target: data.target,
+          doAction: data.do ?? [],
+          component: data.trigger.component,
+          method: data.trigger.method,
+        },
+        false
+      );
     }
   }
 

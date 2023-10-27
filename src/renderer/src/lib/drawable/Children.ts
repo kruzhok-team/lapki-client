@@ -33,6 +33,11 @@ export class Children {
     this.transitionsList.length = 0;
   }
 
+  clear() {
+    this.statesList.length = 0;
+    this.transitionsList.length = 0;
+  }
+
   // Для того чтобы можно было перебрать экземпляр класса с помощью for of
   [Symbol.iterator]() {
     let i = 0;

@@ -189,7 +189,8 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile', platform);
     if (openData[0]) {
-      Compiler.compile(`${platform}Import`, openData[3]);
+      console.log(openData);
+      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
       setImportData(openData);
     }
   }

@@ -236,6 +236,7 @@ export class Compiler {
       case 'BearlogaDefendImport':
         ws.send('berlogaImport');
         ws.send(data);
+        ws.send(subPlatform);
         console.log('import!');
         this.mode = 'import';
         break;

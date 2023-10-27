@@ -1,5 +1,6 @@
-import { StateMachine } from '@renderer/lib/data/StateMachine';
 import { useEffect, useState, forwardRef, ComponentProps } from 'react';
+
+import { MachineController } from '@renderer/lib/data/MachineController';
 import { twMerge } from 'tailwind-merge';
 
 export interface SelectEntry {
@@ -10,7 +11,7 @@ export interface SelectEntry {
 
 interface TextSelectProps extends ComponentProps<'select'> {
   label: string;
-  machine?: StateMachine;
+  machine?: MachineController;
   data: SelectEntry[] | string | undefined;
   isElse: boolean;
 }

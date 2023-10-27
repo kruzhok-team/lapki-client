@@ -50,7 +50,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   ...props
 }) => {
   const componentsData = manager.useData('elements.components');
-  const machine = editor!.container.machine;
+  const machine = editor!.container.machineController;
   const isEditingEvent = props.isData?.event.actionIdx === null;
 
   const compoEntry = (idx: string) => {

@@ -1,8 +1,8 @@
 import theme from '@renderer/theme';
 
-import { Draggable } from './Draggable';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
+import { Node } from './Node';
 
 import { Container } from '../basic/Container';
 
@@ -10,21 +10,16 @@ const style = theme.colors.diagram.state;
 
 /**
  * Нода машины состояний.
- * Класс выполняет отрисовку, обработку событий (за счёт {@link Draggable}),
+ * Класс выполняет отрисовку, обработку событий (за счёт {@link Node}),
  * управление собственным выделением и отображение «хваталок».
  */
-export class State extends Draggable {
+export class State extends Node {
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
-  onEnter?: HTMLImageElement;
-  onExit?: HTMLImageElement;
-  DiodOn?: HTMLImageElement;
-  DiodOff?: HTMLImageElement;
 
-  constructor(container: Container, id: string, parent?: Draggable) {
+  constructor(container: Container, id: string, parent?: Node) {
     super(container, id, parent);
-    this.container = container;
 
     this.eventBox = new Events(this.container, this);
     this.updateEventBox();
@@ -61,7 +56,7 @@ export class State extends Draggable {
     this.drawTitle(ctx);
     this.eventBox.draw(ctx);
 
-    if (this.children) {
+    if (!this.children.isEmpty) {
       this.drawChildren(ctx, canvas);
     }
 
@@ -82,8 +77,8 @@ export class State extends Draggable {
     ctx.roundRect(x, y, width, height, [
       6 / this.container.app.manager.data.scale,
       6 / this.container.app.manager.data.scale,
-      (this.children.size !== 0 ? 0 : 6) / this.container.app.manager.data.scale,
-      (this.children.size !== 0 ? 0 : 6) / this.container.app.manager.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.container.app.manager.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.container.app.manager.data.scale,
     ]);
     ctx.fill();
 
@@ -185,8 +180,6 @@ export class State extends Draggable {
 
   //Дополнять внешними border при добавлении дочерних состояний
   private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    if (this.children.size === 0) return;
-
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.lineWidth = 2;

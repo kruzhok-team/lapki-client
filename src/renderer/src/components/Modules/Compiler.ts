@@ -42,9 +42,11 @@ export class Compiler {
   private static curReconnectAttemps: number = 1;
   /*  
     максимальное количество автоматических попыток переподключения
-    значение меньше нуля означает, что ограничения на попытки отсутствует
+    значение меньше нуля означает, что ограничение на попытки отсутствует
   */
   private static maxReconnectAttempts: number = 3;
+  // true = пробовать переподключиться
+  private static shouldReconnect: boolean = true;
   static filename: string;
 
   static setDefaultStatus() {
@@ -112,6 +114,13 @@ export class Compiler {
     Compiler.connectRoute(this.base_address);
   }
 
+  static close() {
+    this.shouldReconnect = false;
+    clearTimeout(this.timerReconnectID);
+    this.timeoutSetted = false;
+    this.connection?.close();
+  }
+
   static reconnect() {
     this.connectRoute(this.base_address);
   }
@@ -121,16 +130,17 @@ export class Compiler {
     if (this.connecting) return;
     clearTimeout(this.timerReconnectID);
     this.timeoutSetted = false;
+    this.shouldReconnect = true;
     this.setCompilerStatus('Идет подключение...');
     // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
     //   асинхронную ошибку, и никто с этим ничего не может сделать.
     const ws = new WebSocket(route);
+    this.connection = ws;
     this.connecting = true;
 
     ws.onopen = () => {
       console.log('Compiler: connected');
       this.setCompilerStatus('Подключен');
-      this.connection = ws;
       this.connecting = false;
       this.timeoutSetted = false;
       this.timeout = this.startTimeout;
@@ -194,6 +204,7 @@ export class Compiler {
       this.connection = undefined;
       this.connecting = false;
       if (
+        this.shouldReconnect &&
         !this.timeoutSetted &&
         (this.maxReconnectAttempts < 0 || this.curReconnectAttemps < this.maxReconnectAttempts)
       ) {

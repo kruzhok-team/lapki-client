@@ -28,13 +28,19 @@ export const Setting: React.FC<SettingProps> = () => {
   const compilerPortRef = useRef<HTMLInputElement>(null);
 
   const handleCompileConnect = () => {
-    if (compilerHostRef.current != undefined && compilerHostRef.current != null) {
-      localStorage.setItem(Compiler.LOCAL_STORAGE_HOST, compilerHostRef?.current?.value);
+    if (
+      compilerHostRef.current == undefined ||
+      compilerHostRef.current == null ||
+      compilerPortRef.current == undefined ||
+      compilerPortRef.current == null
+    ) {
+      return;
     }
-    if (compilerPortRef.current != undefined && compilerPortRef.current != null) {
-      localStorage.setItem(Compiler.LOCAL_STORAGE_PORT, compilerPortRef?.current?.value);
-    }
-    console.log(compilerHostRef?.current?.value, compilerPortRef?.current?.value);
+    localStorage.setItem(Compiler.LOCAL_STORAGE_HOST, compilerHostRef?.current?.value);
+    localStorage.setItem(Compiler.LOCAL_STORAGE_PORT, compilerPortRef?.current!.value);
+    console.log(compilerHostRef?.current?.value, compilerPortRef?.current!.value);
+    Compiler.close();
+    Compiler.connect(compilerHostRef!.current!.value, Number(compilerPortRef!.current!.value));
   };
   const handleCompileReset = () => {
     Settings.getCompilerSettings().then((compiler) => {
@@ -75,7 +81,6 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerHostRef}
-            //defaultValue={localStorage.getItem(lOCAL_STORAGE_HOST) ?? ''}
             defaultValue={Compiler.host}
           />
           <TextInput

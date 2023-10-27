@@ -101,15 +101,13 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
     let port = localStorage.getItem(Compiler.LOCAL_STORAGE_PORT) ?? '';
     let host = localStorage.getItem(Compiler.LOCAL_STORAGE_HOST) ?? '';
+    console.log('CONNECTING TO COMPILER');
     if (port == '' || host == '') {
       Settings.getCompilerSettings().then((compiler) => {
-        console.log('CONNECTING TO COMPILER');
         Compiler.connect(compiler.host, compiler.port);
-        console.log('COMPILER', Compiler.host, Compiler.port);
       });
     } else {
       Compiler.connect(host, Number(port));
-      console.log('COMPILER', host, Number(port));
     }
   }, []);
 

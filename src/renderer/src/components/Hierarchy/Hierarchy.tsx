@@ -19,11 +19,6 @@ interface HierarchyProps {
 }
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
-  const onSubmit = (id: string) => {
-    editor?.container.machineController.selectState(id);
-    editor?.container.machineController.selectTransition(id);
-  };
-
   const result = useMemo(() => {
     if (!editor) return;
 
@@ -31,6 +26,11 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
       ...item,
       data,
     }));
+
+    const onSubmit = (id: string) => {
+      editor?.container.machineController.selectState(id);
+      editor?.container.machineController.selectTransition(id);
+    };
 
     const onRename = (id: string, name: string) => {
       editor?.container.machineController.changeStateName(id, name);

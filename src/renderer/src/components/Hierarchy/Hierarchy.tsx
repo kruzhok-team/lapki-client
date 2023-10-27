@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import {
   UncontrolledTreeEnvironment,
   Tree,
-  StaticTreeDataProvider,
   TreeItem,
   DraggingPosition,
+  StaticTreeDataProvider,
 } from 'react-complex-tree';
 
 import './style-modern.css';
@@ -19,35 +19,36 @@ interface HierarchyProps {
 }
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
-  const dataProvider = new StaticTreeDataProvider(hierarchy, (item, data) => ({
-    ...item,
-    data,
-  }));
-
   // const onSubmit = (id: string) => {
   //   editor?.container.machine.selectState(id);
   //   editor?.container.machine.selectTransition(id);
   // };
 
-  const onRename = (id: string, name: string) => {
-    editor?.container.machine.changeStateName(id, name);
-  };
-
-  //Здесь мы напрямую работаем с родителями и дочерними элементами
-  const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
+  const result = useMemo(() => {
     if (!editor) return;
-    items.map((value) => {
-      target.targetItem !== undefined
-        ? editor.container.machine.linkState(target.targetItem.toString(), value.index.toString())
-        : target.targetType === 'between-items' && target.parentItem !== 'root'
-        ? editor.container.machine.linkState(target.parentItem.toString(), value.index.toString())
-        : editor.container.machine.unlinkState(value.index.toString());
-    });
-    console.log(target);
-  };
 
-  return (
-    <div className="rct-dark">
+    const dataProvider = new StaticTreeDataProvider(hierarchy, (item, data) => ({
+      ...item,
+      data,
+    }));
+
+    const onRename = (id: string, name: string) => {
+      editor?.container.machine.changeStateName(id, name);
+    };
+
+    //Здесь мы напрямую работаем с родителями и дочерними элементами
+    const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
+      if (!editor) return;
+      items.map((value) => {
+        target.targetItem !== undefined
+          ? editor.container.machine.linkState(target.targetItem.toString(), value.index.toString())
+          : target.targetType === 'between-items' && target.parentItem !== 'root'
+          ? editor.container.machine.linkState(target.parentItem.toString(), value.index.toString())
+          : editor.container.machine.unlinkState(value.index.toString());
+      });
+    };
+
+    return (
       <UncontrolledTreeEnvironment
         dataProvider={dataProvider}
         getItemTitle={(item) => item.data}
@@ -65,6 +66,8 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
       >
         <Tree treeId="tree-2" rootItem="root" treeLabel="Tree Example" />
       </UncontrolledTreeEnvironment>
-    </div>
-  );
+    );
+  }, [editor, hierarchy]);
+
+  return <div className="rct-dark">{result}</div>;
 };

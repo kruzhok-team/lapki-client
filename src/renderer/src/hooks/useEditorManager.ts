@@ -11,7 +11,7 @@ export const useEditorManager = () => {
     if (!editor) return;
 
     managerRef.current.resetEditor = () => {
-      editor.container.machine.loadData();
+      editor.container.machineController.loadData();
     };
   }, [editor]);
 

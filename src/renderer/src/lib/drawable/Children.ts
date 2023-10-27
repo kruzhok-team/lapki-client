@@ -25,6 +25,14 @@ export class Children {
     });
   }
 
+  getTransitionIds() {
+    return [...this.transitionsList];
+  }
+
+  clearTransitions() {
+    this.transitionsList.length = 0;
+  }
+
   // Для того чтобы можно было перебрать экземпляр класса с помощью for of
   [Symbol.iterator]() {
     let i = 0;

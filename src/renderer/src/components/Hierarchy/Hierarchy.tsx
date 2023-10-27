@@ -19,10 +19,10 @@ interface HierarchyProps {
 }
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
-  // const onSubmit = (id: string) => {
-  //   editor?.container.machine.selectState(id);
-  //   editor?.container.machine.selectTransition(id);
-  // };
+  const onSubmit = (id: string) => {
+    editor?.container.machineController.selectState(id);
+    editor?.container.machineController.selectTransition(id);
+  };
 
   const result = useMemo(() => {
     if (!editor) return;
@@ -33,7 +33,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
     }));
 
     const onRename = (id: string, name: string) => {
-      editor?.container.machine.changeStateName(id, name);
+      editor?.container.machineController.changeStateName(id, name);
     };
 
     //Здесь мы напрямую работаем с родителями и дочерними элементами
@@ -41,10 +41,16 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
       if (!editor) return;
       items.map((value) => {
         target.targetItem !== undefined
-          ? editor.container.machine.linkState(target.targetItem.toString(), value.index.toString())
+          ? editor.container.machineController.linkState(
+              target.targetItem.toString(),
+              value.index.toString()
+            )
           : target.targetType === 'between-items' && target.parentItem !== 'root'
-          ? editor.container.machine.linkState(target.parentItem.toString(), value.index.toString())
-          : editor.container.machine.unlinkState(value.index.toString());
+          ? editor.container.machineController.linkState(
+              target.parentItem.toString(),
+              value.index.toString()
+            )
+          : editor.container.machineController.unlinkState(value.index.toString());
       });
     };
 
@@ -62,7 +68,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
         canSearch={false}
         onDrop={(items, target) => onLinkUnlinkState(items, target)}
         onRenameItem={(item, name) => onRename(item.index.toString(), name)}
-        //onFocusItem={(item) => onSubmit(item.index.toString())}
+        onFocusItem={(item) => onSubmit(item.index.toString())}
       >
         <Tree treeId="tree-2" rootItem="root" treeLabel="Tree Example" />
       </UncontrolledTreeEnvironment>

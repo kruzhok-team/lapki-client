@@ -5,7 +5,6 @@ import { useThemeContext } from '@renderer/store/ThemeContext';
 import { TextInput } from '../Modal/TextInput';
 import { Settings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
-import settings from 'electron-settings';
 
 interface SettingProps {}
 
@@ -38,8 +37,6 @@ export const Setting: React.FC<SettingProps> = () => {
     ) {
       return;
     }
-    localStorage.setItem(Compiler.LOCAL_STORAGE_HOST, compilerHostRef?.current!.value);
-    localStorage.setItem(Compiler.LOCAL_STORAGE_PORT, compilerPortRef?.current!.value);
     console.log(compilerHostRef?.current?.value, compilerPortRef?.current!.value);
     Compiler.close();
     Compiler.connect(compilerHostRef!.current!.value, Number(compilerPortRef!.current!.value));
@@ -95,10 +92,10 @@ export const Setting: React.FC<SettingProps> = () => {
             defaultValue={Compiler.port}
           />
           <button className="btn-primary mb-4" onClick={handleCompileConnect}>
-            {'A'}
+            {'⇨'}
           </button>
           <button className="btn-primary mb-4" onClick={handleCompileReset}>
-            {'B'}
+            {'↺'}
           </button>
         </div>
         Адрес док-сервера
@@ -110,7 +107,6 @@ export const Setting: React.FC<SettingProps> = () => {
             isElse={false}
             error={false}
             errorMessage={''}
-            //defaultValue={localStorage.getItem(localStorageHost) ?? ''}
           />
         </div>
       </div>

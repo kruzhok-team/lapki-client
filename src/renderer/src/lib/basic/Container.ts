@@ -29,13 +29,11 @@ export class Container extends EventEmitter<ContainerEvents> {
   app!: CanvasEditor;
 
   isDirty = true;
+  isPan = false;
 
   machineController!: MachineController;
-
   statesController!: StatesController;
   transitionsController!: TransitionsController;
-
-  isPan = false;
 
   children: Children;
   private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать

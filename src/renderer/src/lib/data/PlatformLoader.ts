@@ -1,7 +1,9 @@
-import { Platform, PlatformInfo, Platforms } from '@renderer/types/platform';
-import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
+import { Platform, PlatformInfo, Platforms } from '@renderer/types/platform';
+
 import { PlatformManager } from './PlatformManager';
+
+import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 // TODO? выдача стандартного файла для платформы
 
@@ -26,8 +28,8 @@ function fetchPlatforms(paths: string[]) {
       }
 
       try {
-        let text = response[1];
-        let data = PlatformsJSONCodec.toPlatforms(text);
+        const text = response[1];
+        const data = PlatformsJSONCodec.toPlatforms(text);
         resolve([path, makeRight(data)]);
       } catch (e) {
         let errText = 'unknown error';

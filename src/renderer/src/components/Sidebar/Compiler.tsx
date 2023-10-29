@@ -98,17 +98,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   }, [importData]);
 
   useEffect(() => {
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
-    let port = localStorage.getItem(Compiler.LOCAL_STORAGE_PORT) ?? '';
-    let host = localStorage.getItem(Compiler.LOCAL_STORAGE_HOST) ?? '';
     console.log('CONNECTING TO COMPILER');
-    if (port == '' || host == '') {
-      Settings.getCompilerSettings().then((compiler) => {
-        Compiler.connect(compiler.host, compiler.port);
-      });
-    } else {
-      Compiler.connect(host, Number(port));
-    }
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    Settings.getCompilerSettings().then((compiler) => {
+      Compiler.connect(compiler.host, compiler.port);
+    });
   }, []);
 
   const button = [

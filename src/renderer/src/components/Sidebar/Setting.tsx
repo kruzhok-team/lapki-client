@@ -3,9 +3,8 @@ import React, { useRef } from 'react';
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { TextInput } from '../Modal/TextInput';
-import { Settings } from '../Modules/Settings';
+import { Settings, CompilerSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
-
 interface SettingProps {}
 
 const themeOptions = [
@@ -27,6 +26,18 @@ export const Setting: React.FC<SettingProps> = () => {
   const compilerHostRef = useRef<HTMLInputElement>(null);
   const compilerPortRef = useRef<HTMLInputElement>(null);
 
+  function setCompilerHost(host: string) {
+    if (compilerHostRef.current != null) {
+      compilerHostRef.current.value = host;
+    }
+  }
+
+  function setCompilerPort(port: number | string) {
+    if (compilerPortRef.current != null) {
+      compilerPortRef.current.value = String(port);
+    }
+  }
+
   // подключение к серверу компилятора
   const handleCompileConnect = () => {
     if (
@@ -37,24 +48,17 @@ export const Setting: React.FC<SettingProps> = () => {
     ) {
       return;
     }
-    console.log(compilerHostRef?.current?.value, compilerPortRef?.current!.value);
+    let host: string = compilerHostRef?.current?.value;
+    let port: number = Number(compilerPortRef?.current!.value);
+    console.log(host, port);
+    Settings.setCompilerSettings({ host, port } as CompilerSettings);
     Compiler.close();
-    Compiler.connect(compilerHostRef!.current!.value, Number(compilerPortRef!.current!.value));
+    Compiler.connect(host, port);
   };
   // возвращение значений порта и хоста на те, что по-умолчанию
   const handleCompileReset = () => {
-    Settings.getCompilerSettings().then((compiler) => {
-      if (
-        compilerHostRef.current != undefined &&
-        compilerHostRef.current != null &&
-        compilerPortRef.current != undefined &&
-        compilerPortRef.current != null
-      ) {
-        compilerHostRef.current.value = compiler.host;
-        compilerPortRef.current.value = String(compiler.port);
-      }
-      console.log(compiler.host, compiler.port);
-    });
+    setCompilerHost(window.api.DEFAULT_COMPILER_HOST);
+    setCompilerPort(window.api.DEFAULT_COMPILER_PORT);
   };
 
   return (
@@ -81,7 +85,7 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerHostRef}
-            defaultValue={Compiler.host}
+            //defaultValue={Compiler.host}
           />
           <TextInput
             label="Порт"
@@ -89,7 +93,7 @@ export const Setting: React.FC<SettingProps> = () => {
             error={false}
             errorMessage={''}
             ref={compilerPortRef}
-            defaultValue={Compiler.port}
+            //defaultValue={Compiler.port}
           />
           <button className="btn-primary mb-4" onClick={handleCompileConnect}>
             {'⇨'}

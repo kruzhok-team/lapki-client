@@ -1,13 +1,22 @@
 import { electronAPI } from '@electron-toolkit/preload';
 import { contextBridge } from 'electron';
 import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
-
+import {
+  COMPILER_SETTINGS,
+  PLATFORMS_PATH_SETTINGS,
+  DEFAULT_COMPILER_HOST,
+  DEFAULT_COMPILER_PORT,
+} from '../main/consts';
 // Custom APIs for renderer
 const api = {
   FLASHER_LOCAL_HOST,
   LAPKI_FLASHER,
+  COMPILER_SETTINGS,
+  PLATFORMS_PATH_SETTINGS,
+  DEFAULT_COMPILER_HOST,
+  DEFAULT_COMPILER_PORT,
 };
-
+console.log('COMPILER_SETTINGS', COMPILER_SETTINGS);
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.

@@ -16,8 +16,8 @@ export class Compiler {
   static LOCAL_STORAGE_HOST = 'compiler host';
   static LOCAL_STORAGE_PORT = 'compiler port';
 
-  static port = Number(localStorage.getItem(this.LOCAL_STORAGE_PORT)) ?? 8081;
-  static host = localStorage.getItem(this.LOCAL_STORAGE_HOST) ?? 'localhost';
+  static port = 8081;
+  static host = 'localhost';
   static base_address = `ws://${this.host}:${this.port}/`;
   static connection: Websocket | undefined;
   static connecting: boolean = false;
@@ -134,6 +134,7 @@ export class Compiler {
     this.setCompilerStatus('Идет подключение...');
     // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
     //   асинхронную ошибку, и никто с этим ничего не может сделать.
+    console.log('CONNECTING TO', route);
     const ws = new WebSocket(route);
     this.connection = ws;
     this.connecting = true;

@@ -12,11 +12,13 @@ export const FLASHER_CONNECTING = 'Идет подключение...';
 export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
-const FLASHER_LOCAL_HOST = window.api.FLASHER_LOCAL_HOST;
+
 //export const FLASHER_LOCAL_PORT = window.electron.ipcRenderer.invoke;
 export class Flasher {
   static port;
-  static host = FLASHER_LOCAL_HOST;
+  static host;
+  static localPort;
+  static localHost;
   static base_address;
   static connection: Websocket | undefined;
   static connecting: boolean = false;
@@ -88,7 +90,9 @@ export class Flasher {
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>,
-    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
+    localHost: string,
+    localPort: number
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -96,6 +100,8 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
+    this.localHost = localHost;
+    this.localPort = localPort;
   }
   /*
     Добавляет устройство в список устройств
@@ -169,10 +175,8 @@ export class Flasher {
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.clearTimer();
     if (host == undefined && port == undefined) {
-      Flasher.host = FLASHER_LOCAL_HOST;
-      await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
-        Flasher.port = localPort;
-      });
+      Flasher.host = Flasher.localHost;
+      Flasher.port = Flasher.localPort;
     } else {
       if (host != undefined) {
         Flasher.host = host;

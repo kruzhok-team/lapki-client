@@ -16,6 +16,7 @@ import {
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device } from '@renderer/types/FlasherTypes';
+import { Settings } from '../Modules/Settings';
 
 const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
 
@@ -164,18 +165,22 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   };
 
   useEffect(() => {
-    Flasher.bindReact(
-      setFlasherDevices,
-      setFlasherConnectionStatus,
-      setFlasherLog,
-      setFlasherFile,
-      setFlashing,
-      setFlasherError
-    );
-    const reader = new FileReader();
-    Flasher.initReader(reader);
-    console.log('CONNECTING TO FLASHER');
-    Flasher.connect();
+    Settings.getFlasherSettings().then((flasherSettings) => {
+      Flasher.bindReact(
+        setFlasherDevices,
+        setFlasherConnectionStatus,
+        setFlasherLog,
+        setFlasherFile,
+        setFlashing,
+        setFlasherError,
+        flasherSettings.localHost,
+        flasherSettings.localPort
+      );
+      const reader = new FileReader();
+      Flasher.initReader(reader);
+      console.log('CONNECTING TO FLASHER');
+      Flasher.connect();
+    });
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 

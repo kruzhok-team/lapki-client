@@ -22,6 +22,13 @@ import { searchPlatforms } from './PlatformSeacher';
 
 import icon from '../../resources/icon.png?asset';
 
+import {
+  COMPILER_SETTINGS,
+  DEFAULT_COMPILER_HOST,
+  DEFAULT_COMPILER_PORT,
+  PLATFORMS_PATH_SETTINGS,
+} from './electron-settings-consts';
+
 /**
  * Создание главного окна редактора.
  */
@@ -81,15 +88,15 @@ function createWindow(): void {
 
 function initSettings(): void {
   console.log('getting settings from', settings.file());
-  if (!settings.hasSync('compiler')) {
-    settings.setSync('compiler', {
-      host: 'lapki.polyus-nt.ru',
-      port: 8081,
+  if (!settings.hasSync(COMPILER_SETTINGS)) {
+    settings.setSync(COMPILER_SETTINGS, {
+      host: DEFAULT_COMPILER_HOST,
+      port: DEFAULT_COMPILER_PORT,
     });
   }
 
-  if (!settings.hasSync('PlatformsPath')) {
-    settings.setSync('PlatformsPath', {
+  if (!settings.hasSync(PLATFORMS_PATH_SETTINGS)) {
+    settings.setSync(PLATFORMS_PATH_SETTINGS, {
       path: '',
       // path: `${process.cwd()}/src/renderer/public/platform`,
     });
@@ -140,13 +147,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('Module:getStatus', (_event, module: string) => {
     const status: ModuleStatus = ModuleManager.getLocalStatus(module);
-    console.log(status.details, typeof status.details);
     return status;
-    /*const obj = {
-      code: status.code,
-      message: status.message,
-    };
-    return obj;*/
   });
 
   ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {

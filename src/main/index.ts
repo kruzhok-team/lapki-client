@@ -162,6 +162,9 @@ app.whenReady().then(() => {
   ipcMain.handle('settings:get', (_event, key) => {
     return settings.get(key);
   });
+  ipcMain.handle('settings:set', (_event, key, value) => {
+    return settings.set(key, value);
+  });
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

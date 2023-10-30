@@ -57,6 +57,7 @@ export class MachineController {
   constructor(public container: Container) {}
 
   resetEntities() {
+    this.container.children.clear();
     this.transitions.forEach((value) => {
       this.container.transitionsController.unwatchTransition(value);
     });
@@ -293,6 +294,12 @@ export class MachineController {
 
     child.parent = parent;
     parent.children.add('state', child.id);
+    // TODO Сделать удобный проход по переходам состояния
+    this.transitions.forEach((transition) => {
+      if (transition.source.id === child.id || transition.target.id === child.id) {
+        this.linkTransition(transition.id);
+      }
+    });
 
     this.container.isDirty = true;
   }
@@ -351,8 +358,13 @@ export class MachineController {
     this.container.app.manager.unlinkState(id);
 
     state.parent.children.remove('state', id);
-
+    const parentTransitionIds = state.parent.children.getTransitionIds();
+    state.parent.children.clearTransitions();
     state.parent = undefined;
+    parentTransitionIds.forEach((id) => {
+      this.linkTransition(id);
+    });
+    this.container.children.add('state', id);
 
     this.container.isDirty = true;
   }
@@ -461,20 +473,7 @@ export class MachineController {
     const transition = new Transition(this.container, id);
 
     this.transitions.set(id, transition);
-
-    if (!transition.source.parent || !transition.target.parent) {
-      this.container.children.add('transition', transition.id);
-    } else {
-      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
-      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
-      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.container;
-
-      if (parent instanceof State) {
-        transition.parent = parent;
-      }
-
-      parent.children.add('transition', transition.id);
-    }
+    this.linkTransition(id);
 
     this.container.transitionsController.watchTransition(transition);
 
@@ -485,6 +484,32 @@ export class MachineController {
         type: 'createTransition',
         args: { id, params },
       });
+    }
+  }
+
+  linkTransition(id: string) {
+    const transition = this.transitions.get(id);
+    if (!transition) return;
+
+    // Убираем из предыдущего родителя
+    transition.source.parent?.children.remove('transition', id);
+    transition.target.parent?.children.remove('transition', id);
+
+    if (!transition.source.parent || !transition.target.parent) {
+      this.container.children.add('transition', transition.id);
+      transition.parent = undefined;
+    } else {
+      this.container.children.remove('transition', id);
+
+      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
+      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
+      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.container;
+
+      if (parent instanceof State) {
+        transition.parent = parent;
+      }
+
+      parent.children.add('transition', transition.id);
     }
   }
 

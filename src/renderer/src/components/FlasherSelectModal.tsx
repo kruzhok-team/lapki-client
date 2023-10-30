@@ -37,7 +37,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   } = useForm<FlasherSelectModalFormValues>();
 
   // настройка видимости текстовых полей
-  const [isHidden, setHidden] = useState(true);
+  const [isHidden, setHidden] = useState(false);
   const handleHidden = (event) => {
     // текстовые поля становятся видимыми, если выбран удалённый хост
     setHidden(event.target.value != SELECT_REMOTE);
@@ -55,7 +55,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   });
 
   const onRequestClose = () => {
-    setHidden(true);
+    setHidden(false);
     onClose();
     reset();
   };

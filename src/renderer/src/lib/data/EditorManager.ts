@@ -134,14 +134,7 @@ export class EditorManager {
   }
 
   compile() {
-    /**
-     Временное решение, чтобы выделить основную платформу
-     Все подплатформы имеют название вида:
-     MainPlatform-Subplatform
-    */
-    const main_platform = this.data.elements.platform.split('-');
-    console.log(main_platform[0]);
-    Compiler.compile(main_platform[0], {
+    Compiler.compile(this.data.elements.platform, {
       ...this.data.elements,
       transitions: Object.values(this.data.elements.transitions),
     });
@@ -196,7 +189,8 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile', platform);
     if (openData[0]) {
-      Compiler.compile(`${platform}Import`, openData[3]);
+      console.log(openData);
+      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
       setImportData(openData);
     }
   }

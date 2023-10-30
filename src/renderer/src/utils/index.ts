@@ -18,3 +18,17 @@ export const getVirtualElement = (position: Point) => {
 };
 
 export const isDev = () => !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+
+export const indexOfMin = (arr: number[]) => {
+  let min = Infinity;
+  let minIndex = Infinity;
+
+  arr.forEach((v, i) => {
+    if (v < min) {
+      min = v;
+      minIndex = i;
+    }
+  });
+
+  return minIndex;
+};

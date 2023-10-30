@@ -68,15 +68,21 @@ const HistoryWithoutEditor: React.FC = () => {
 };
 
 const HistoryWithEditor: React.FC<{ editor: CanvasEditor }> = ({ editor }) => {
-  const { undoStack, redoStack } = editor.container.machine.undoRedo.use();
+  const { undoStack, redoStack } = editor.container.machineController.undoRedo.use();
 
   return (
     <div>
       <div className="mb-4 flex gap-1">
-        <button className="btn-secondary" onClick={() => editor.container.machine.undoRedo.undo()}>
+        <button
+          className="btn-secondary"
+          onClick={() => editor.container.machineController.undoRedo.undo()}
+        >
           Назад
         </button>
-        <button className="btn-secondary" onClick={() => editor.container.machine.undoRedo.redo()}>
+        <button
+          className="btn-secondary"
+          onClick={() => editor.container.machineController.undoRedo.redo()}
+        >
           Вперёд
         </button>
       </div>

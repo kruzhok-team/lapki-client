@@ -1,6 +1,6 @@
 import { getColor } from '@renderer/theme';
 
-import { Draggable } from './Draggable';
+import { Node } from './Node';
 
 import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
@@ -13,7 +13,7 @@ import {
   getLine,
 } from '../utils';
 
-export class InitialStateMark extends Draggable {
+export class InitialStateMark extends Node {
   position = { x: 0, y: 0 };
 
   constructor(container: Container, public sourceId: string) {
@@ -37,7 +37,7 @@ export class InitialStateMark extends Draggable {
   }
 
   get state() {
-    return this.container.machine.states.get(this.sourceId) ?? null;
+    return this.container.machineController.states.get(this.sourceId) ?? null;
   }
 
   draw(ctx: CanvasRenderingContext2D) {

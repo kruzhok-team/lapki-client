@@ -1,13 +1,17 @@
 import { getColor } from '@renderer/theme';
+import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point } from '@renderer/types/graphics';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
 import { MyMouseEvent } from '../common/MouseEventEmitter';
-import { StateMachine } from '../data/StateMachine';
+import { MachineController } from '../data/MachineController';
+import { StatesController } from '../data/StatesController';
+import { TransitionsController } from '../data/TransitionsController';
+import { Children } from '../drawable/Children';
+import { Node } from '../drawable/Node';
 import { picto } from '../drawable/Picto';
-import { States } from '../drawable/States';
-import { Transitions } from '../drawable/Transitions';
+import { State } from '../drawable/State';
 import { clamp } from '../utils';
 
 export const MAX_SCALE = 10;
@@ -26,33 +30,48 @@ export class Container extends EventEmitter<ContainerEvents> {
   app!: CanvasEditor;
 
   isDirty = true;
-
-  machine!: StateMachine;
-
-  states!: States;
-  transitions!: Transitions;
-
   isPan = false;
+
+  machineController!: MachineController;
+  statesController!: StatesController;
+  transitionsController!: TransitionsController;
+
+  children: Children;
+  private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
   constructor(app: CanvasEditor) {
     super();
 
     this.app = app;
-    this.machine = new StateMachine(this);
-    this.states = new States(this);
-    this.transitions = new Transitions(this);
+    this.machineController = new MachineController(this);
+    this.statesController = new StatesController(this);
+    this.transitionsController = new TransitionsController(this);
+    this.children = new Children(this.machineController);
 
     // Порядок важен, система очень тонкая
 
     this.initEvents();
-    this.transitions.initEvents();
-    this.machine.loadData();
+    this.transitionsController.initEvents();
+    this.machineController.loadData();
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawGrid(ctx, canvas);
-    this.states.draw(ctx, canvas);
-    this.transitions.draw(ctx, canvas);
+
+    const drawChildren = (node: Container | Node) => {
+      node.children.forEach((child) => {
+        child.draw(ctx, canvas);
+
+        if (!child.children.isEmpty) {
+          drawChildren(child);
+        }
+      });
+    };
+
+    drawChildren(this);
+
+    this.transitionsController.ghost.draw(ctx, canvas);
+    this.statesController.initialStateMark?.draw(ctx);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -93,20 +112,35 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.handleDelete);
-    this.app.keyboard.on('ctrlz', this.machine.undoRedo.undo);
-    this.app.keyboard.on('ctrly', this.machine.undoRedo.redo);
+    this.app.keyboard.on('ctrlz', this.machineController.undoRedo.undo);
+    this.app.keyboard.on('ctrly', this.machineController.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.handleCopy);
     this.app.keyboard.on('ctrlv', this.handlePaste);
     this.app.keyboard.on('ctrls', this.handleSaveFile);
     this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
 
-    document.addEventListener('mouseup', this.globalMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
-    this.app.mouse.on('contextmenu', this.handleFieldContextMenu);
+    this.app.mouse.on('contextmenu', this.handleMouseContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
+  }
+
+  getCapturedNode(args: getCapturedNodeArgs) {
+    const { type } = args;
+
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
+
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
+
+      if (node) return node;
+    }
+
+    return null;
   }
 
   setScale(value: number) {
@@ -133,67 +167,72 @@ export class Container extends EventEmitter<ContainerEvents> {
   // };
 
   handleMouseDown = (e: MyMouseEvent) => {
-    this.isPan = true;
-    if (!this.isPan || !e.left) return;
+    if (!e.left) return;
 
-    this.app.canvas.element.style.cursor = 'grabbing';
+    const node = this.getCapturedNode({ position: e });
+
+    if (node) {
+      node.handleMouseDown(e);
+
+      const parent = node.parent ?? this;
+      const type = node instanceof State ? 'state' : 'transition';
+      parent.children.moveToEnd(type, node.id);
+
+      this.mouseDownNode = node;
+    } else {
+      this.isPan = true;
+    }
   };
 
-  globalMouseUp = () => {
+  handleMouseUp = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode({ position: e });
+
+    if (node) {
+      node.handleMouseUp(e);
+    } else {
+      this.transitionsController.handleMouseUp();
+      this.machineController.removeSelection();
+    }
+
+    this.mouseDownNode = null;
+
     this.isPan = false;
     this.app.canvas.element.style.cursor = 'default';
-  };
-
-  handleDelete = () => {
-    this.machine.deleteSelected();
-  };
-
-  handleCopy = () => {
-    this.machine.copySelected();
-  };
-
-  handlePaste = () => {
-    this.machine.pasteSelected();
-  };
-
-  handleSaveFile = () => {
-    this.app.manager.save();
-  };
-
-  handleSaveAsFile = () => {
-    this.app.manager.saveAs();
-  };
-
-  handleMouseUp = () => {
-    this.machine.removeSelection();
-
-    this.globalMouseUp();
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.isPan || !e.left) return;
+    if (!e.left) return;
 
-    // TODO Много раз такие операции повторяются, нужно переделать на функции
-    this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
-    this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+    if (this.isPan) {
+      // TODO Много раз такие операции повторяются, нужно переделать на функции
+      this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
+      this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+    } else if (this.mouseDownNode) {
+      this.mouseDownNode.handleMouseMove(e);
+    }
 
+    this.app.canvas.element.style.cursor = 'grabbing';
     this.isDirty = true;
   };
 
-  handleFieldContextMenu = (e: MyMouseEvent) => {
-    this.emit('contextMenu', e);
+  handleMouseDoubleClick = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode({ position: e });
+
+    if (node) {
+      node.handleMouseDoubleClick(e);
+    } else {
+      this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
+    }
   };
 
-  handleSpaceDown = () => {
-    this.isPan = true;
+  handleMouseContextMenu = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode({ position: e });
 
-    this.app.canvas.element.style.cursor = 'grab';
-  };
-
-  handleSpaceUp = () => {
-    this.isPan = false;
-
-    this.app.canvas.element.style.cursor = 'default';
+    if (node) {
+      node.handleMouseContextMenu(e);
+    } else {
+      this.emit('contextMenu', e);
+    }
   };
 
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
@@ -209,10 +248,36 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.setScale(newScale);
   };
 
-  handleMouseDoubleClick = (e: MyMouseEvent) => {
-    e.stopPropagation();
+  handleDelete = () => {
+    this.machineController.deleteSelected();
+  };
 
-    this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
+  handleCopy = () => {
+    this.machineController.copySelected();
+  };
+
+  handlePaste = () => {
+    this.machineController.pasteSelected();
+  };
+
+  handleSaveFile = () => {
+    this.app.manager.save();
+  };
+
+  handleSaveAsFile = () => {
+    this.app.manager.saveAs();
+  };
+
+  handleSpaceDown = () => {
+    this.isPan = true;
+
+    this.app.canvas.element.style.cursor = 'grab';
+  };
+
+  handleSpaceUp = () => {
+    this.isPan = false;
+
+    this.app.canvas.element.style.cursor = 'default';
   };
 
   relativeMousePos(e: Point): Point {
@@ -229,14 +294,14 @@ export class Container extends EventEmitter<ContainerEvents> {
     const arrX: number[] = [];
     const arrY: number[] = [];
 
-    this.machine.states.forEach((state) => {
+    this.machineController.states.forEach((state) => {
       arrX.push(state.bounds.x);
       arrY.push(state.bounds.y);
     });
 
-    this.machine.transitions.forEach((transition) => {
-      arrX.push(transition.condition.bounds.x);
-      arrY.push(transition.condition.bounds.y);
+    this.machineController.transitions.forEach((transition) => {
+      arrX.push(transition.bounds.x);
+      arrY.push(transition.bounds.y);
     });
 
     let minX = Math.min(...arrX);

@@ -39,7 +39,7 @@
   },
   "initialState": "n5",
   "parameters": {},
-  "platform": "BearlogaDefend-Stepler",
+  "platform": "BearlogaDefend-Stapler",
   "states": {
     "n0": {
       "bounds": {

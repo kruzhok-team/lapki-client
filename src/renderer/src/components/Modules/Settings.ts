@@ -2,10 +2,12 @@ export interface CompilerSettings {
   host: string;
   port: number;
 }
-// настройка для flasher выглядит идентично compiler, но в будущем они могут получить новые параметры, которые могут между собой не совпадать, поэтому используется два интерфейса вместо одного
+
 export interface FlasherSettings {
-  host: string;
-  port: number;
+  remoteHost: string | null;
+  remotePort: number | null;
+  localHost: string;
+  localPort: number;
 }
 
 export interface PlatfromDirectory {

@@ -15,10 +15,12 @@ export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке по
 
 //export const FLASHER_LOCAL_PORT = window.electron.ipcRenderer.invoke;
 export class Flasher {
-  static port;
-  static host;
-  static localPort;
-  static localHost;
+  static port: number;
+  static host: string;
+  static localPort: number;
+  static localHost: string;
+  static remotePort: number | null;
+  static remoteHost: string | null;
   static base_address;
   static connection: Websocket | undefined;
   static connecting: boolean = false;
@@ -92,7 +94,9 @@ export class Flasher {
     setFlashing: Dispatch<SetStateAction<boolean>>,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
     localHost: string,
-    localPort: number
+    localPort: number,
+    remoteHost: string | null,
+    remotePort: number | null
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -102,6 +106,8 @@ export class Flasher {
     this.setErrorMessage = setErrorMessage;
     this.localHost = localHost;
     this.localPort = localPort;
+    this.remoteHost = remoteHost;
+    this.remotePort = remotePort;
   }
   /*
     Добавляет устройство в список устройств
@@ -180,9 +186,11 @@ export class Flasher {
     } else {
       if (host != undefined) {
         Flasher.host = host;
+        Flasher.remoteHost = host;
       }
       if (port != undefined) {
         Flasher.port = port;
+        Flasher.remotePort = port;
       }
     }
     let new_address = Flasher.makeAddress(Flasher.host, Flasher.port);

@@ -43,8 +43,8 @@ export class ModuleManager {
       if (module == LAPKI_FLASHER) {
         await findFreePort((port) => {
           FLASHER_LOCAL_PORT = port;
-          if (!settings.hasSync(FLASHER_SETTINGS)) {
-            settings.setSync(FLASHER_SETTINGS, {
+          if (!settings.hasSync(FLASHER_SETTINGS.key)) {
+            settings.setSync(FLASHER_SETTINGS.key, {
               remoteHost: null,
               remotePort: null,
               localHost: FLASHER_LOCAL_HOST,

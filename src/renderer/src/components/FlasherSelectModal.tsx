@@ -8,8 +8,7 @@ import { TextInput } from './Modal/TextInput';
 
 import { SELECT_LOCAL, SELECT_REMOTE, TextSelectFlasher } from './Modal/TextSelectFlasher';
 
-const localStorageHost = 'host';
-const localStoragePort = 'port';
+import { Flasher } from './Modules/Flasher';
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
@@ -48,8 +47,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     if (data.flasherType == SELECT_LOCAL) {
       handleLocal();
     } else {
-      localStorage.setItem(localStorageHost, data.host);
-      localStorage.setItem(localStoragePort, data.port.toString());
       handleRemote(data.host, data.port);
     }
   });
@@ -84,16 +81,17 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           label="Хост:"
           {...register('host')}
           placeholder="Напишите адрес хоста"
-          isElse={isHidden}
+          isElse={false}
           error={false}
           errorMessage={''}
-          defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+          defaultValue={Flasher.remoteHost ?? ''}
+          disabled={isHidden}
         />
         <TextInput
           label="Порт:"
           {...register('port')}
           placeholder="Напишите порт"
-          isElse={isHidden}
+          isElse={false}
           error={false}
           errorMessage={''}
           onInput={(event) => {
@@ -105,7 +103,8 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
               );
             }
           }}
-          defaultValue={localStorage.getItem(localStoragePort) ?? ''}
+          defaultValue={Flasher.remotePort ?? ''}
+          disabled={isHidden}
         />
       </div>
     </Modal>

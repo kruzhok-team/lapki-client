@@ -12,12 +12,7 @@ import {
   handleBinFileOpen,
   handleOpenPlatformFile,
 } from './file-handlers';
-import {
-  FLASHER_LOCAL_PORT,
-  LAPKI_FLASHER,
-  ModuleManager,
-  ModuleStatus,
-} from './modules/ModuleManager';
+import { LAPKI_FLASHER, ModuleManager, ModuleStatus } from './modules/ModuleManager';
 import { searchPlatforms } from './PlatformSeacher';
 
 import icon from '../../resources/icon.png?asset';
@@ -101,6 +96,8 @@ function initSettings(): void {
       // path: `${process.cwd()}/src/renderer/public/platform`,
     });
   }
+
+  // настройки для flasher инициализируются в файле ModuleManager.ts в функции startLocalModule
 }
 
 // Выполняется после инициализации Electron
@@ -139,10 +136,6 @@ app.whenReady().then(() => {
   ipcMain.handle('Module:reboot', (_event, module: string) => {
     ModuleManager.stopModule(module);
     ModuleManager.startLocalModule(module);
-  });
-
-  ipcMain.handle('Flasher:getPort', (_event) => {
-    return FLASHER_LOCAL_PORT;
   });
 
   ipcMain.handle('Module:getStatus', (_event, module: string) => {

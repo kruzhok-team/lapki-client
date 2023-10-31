@@ -80,8 +80,10 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     setFlasherIslocal(false);
     console.log('remote');
     Flasher.setAutoReconnect(true);
-    await Settings.setFlasherRemotePort(port);
-    await Settings.setFlasherRemoteHost(host);
+    await Settings.setFlasherSettings({
+      port: port,
+      host: host,
+    });
     await Flasher.connect(host, port);
   };
 
@@ -175,10 +177,8 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
         setFlasherFile,
         setFlashing,
         setFlasherError,
-        flasherSettings.localHost,
-        flasherSettings.localPort,
-        flasherSettings.remoteHost,
-        flasherSettings.remotePort
+        flasherSettings.host,
+        flasherSettings.port
       );
       const reader = new FileReader();
       Flasher.initReader(reader);

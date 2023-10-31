@@ -17,8 +17,6 @@ export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке по
 export class Flasher {
   static port: number;
   static host: string;
-  static localPort: number;
-  static localHost: string;
   static remotePort: number | null;
   static remoteHost: string | null;
   static base_address;
@@ -93,8 +91,6 @@ export class Flasher {
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    localHost: string,
-    localPort: number,
     remoteHost: string | null,
     remotePort: number | null
   ): void {
@@ -104,8 +100,6 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
-    this.localHost = localHost;
-    this.localPort = localPort;
     this.remoteHost = remoteHost;
     this.remotePort = remotePort;
   }
@@ -181,8 +175,10 @@ export class Flasher {
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.clearTimer();
     if (host == undefined && port == undefined) {
-      Flasher.host = Flasher.localHost;
-      Flasher.port = Flasher.localPort;
+      Flasher.host = window.api.FLASHER_LOCAL_HOST;
+      await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
+        Flasher.port = localPort;
+      });
     } else {
       if (host != undefined) {
         Flasher.host = host;

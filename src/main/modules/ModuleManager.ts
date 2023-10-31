@@ -1,8 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { findFreePort } from './freePortFinder';
 import path from 'path';
-import settings from 'electron-settings';
-import { FLASHER_SETTINGS } from '../electron-settings-consts';
 export var FLASHER_LOCAL_HOST: string = 'localhost';
 export var FLASHER_LOCAL_PORT: number;
 // название локального загрузчика
@@ -43,14 +41,6 @@ export class ModuleManager {
       if (module == LAPKI_FLASHER) {
         await findFreePort((port) => {
           FLASHER_LOCAL_PORT = port;
-          if (!settings.hasSync(FLASHER_SETTINGS.key)) {
-            settings.setSync(FLASHER_SETTINGS.key, {
-              remoteHost: null,
-              remotePort: null,
-              localHost: FLASHER_LOCAL_HOST,
-              localPort: FLASHER_LOCAL_PORT,
-            });
-          }
         });
       }
       const platform = process.platform;

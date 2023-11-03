@@ -80,7 +80,9 @@ export class Children {
     const list = type === 'state' ? this.statesList : this.transitionsList;
     const index = list.findIndex((item) => id === item);
 
-    list.splice(index, 1);
+    if (index !== -1) {
+      list.splice(index, 1);
+    }
   }
 
   getByIndex(index: number) {

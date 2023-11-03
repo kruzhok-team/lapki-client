@@ -85,7 +85,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleLongPress = (state: State, e: { event: MyMouseEvent }) => {
     // если состояние вложено – отсоединяем
     if (typeof state.parent !== 'undefined') {
-      this.container.machineController.unlinkState(state.id);
+      this.container.machineController.unlinkState({ id: state.id });
       return;
     }
 

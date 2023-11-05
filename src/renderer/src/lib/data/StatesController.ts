@@ -104,7 +104,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const possibleParent = (state.parent ?? this.container).getCapturedNode({
       position: e.event,
       exclude: [state.id],
-      includeChildrenHeight: true,
+      includeChildrenHeight: false,
       type: 'states',
     });
 

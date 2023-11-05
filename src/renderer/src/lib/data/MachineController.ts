@@ -18,6 +18,7 @@ import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
+  UnlinkStateParams,
 } from '@renderer/types/MachineController';
 import { indexOfMin } from '@renderer/utils';
 
@@ -264,7 +265,7 @@ export class MachineController {
 
     let numberOfConnectedActions = 0;
     if (child.data.parent) {
-      this.unlinkState(childId, canUndo);
+      this.unlinkState({ id: childId }, canUndo);
       numberOfConnectedActions += 1;
     }
 
@@ -337,7 +338,9 @@ export class MachineController {
     }
   }
 
-  unlinkState(id: string, canUndo = true) {
+  unlinkState(params: UnlinkStateParams, canUndo = true) {
+    const { id } = params;
+
     const state = this.states.get(id);
     if (!state || !state.parent) return;
 
@@ -349,7 +352,7 @@ export class MachineController {
     if (canUndo) {
       this.undoRedo.do({
         type: 'unlinkState',
-        args: { parentId: state.parent.id, childId: id },
+        args: { parentId: state.parent.id, params },
         numberOfConnectedActions: 1, // Изменение позиции
       });
       state.addOnceOff('dragend');
@@ -391,7 +394,7 @@ export class MachineController {
         if (state.data.parent) {
           this.linkState(state.data.parent, childState.id, canUndo);
         } else {
-          this.unlinkState(childState.id, canUndo);
+          this.unlinkState({ id: childState.id }, canUndo);
         }
         numberOfConnectedActions += 1;
       }
@@ -399,8 +402,7 @@ export class MachineController {
 
     // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
     if (state.data.parent) {
-      this.unlinkState(state.id, canUndo);
-      numberOfConnectedActions += 1;
+      state.parent?.children.remove('state', id);
     } else {
       this.container.children.remove('state', id);
     }
@@ -428,9 +430,6 @@ export class MachineController {
   };
 
   changeInitialState = (id: string, canUndo = true) => {
-    const state = this.states.get(id);
-    if (!state) return;
-
     if (canUndo) {
       this.undoRedo.do({
         type: 'changeInitialState',

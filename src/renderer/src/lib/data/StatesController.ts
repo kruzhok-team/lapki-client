@@ -97,7 +97,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleLongPress = (state: State) => {
     if (typeof state.parent === 'undefined') return;
 
-    this.container.machineController.unlinkState(state.id);
+    this.container.machineController.unlinkState({ id: state.id });
   };
 
   handleDrag: DragHandler = throttle<DragHandler>((state, e) => {

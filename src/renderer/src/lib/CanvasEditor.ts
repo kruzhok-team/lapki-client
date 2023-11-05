@@ -3,8 +3,8 @@ import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
 import { Mouse } from './basic/Mouse';
 import { Render } from './common/Render';
-import { preloadPicto } from './drawable/Picto';
 import { EditorManager } from './data/EditorManager';
+import { preloadPicto } from './drawable/Picto';
 
 /**
  * Редактор машин состояний.
@@ -55,5 +55,6 @@ export class CanvasEditor {
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
+    this.mouse.clearUp();
   }
 }

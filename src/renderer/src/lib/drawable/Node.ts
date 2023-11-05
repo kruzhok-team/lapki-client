@@ -1,10 +1,10 @@
 import { Point, Rectangle } from '@renderer/types/graphics';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Children } from './Children';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { isPointInRectangle } from '../utils';
 
 /**

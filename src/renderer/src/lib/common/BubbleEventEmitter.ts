@@ -1,48 +1,12 @@
 import { BaseEventEmitter } from './BaseEventEmitter';
 
 /**
- * Интерфейс, реализующий события, связанные с мышью.
- * Используется в {@link MouseEventEmitter}.
- */
-export interface MyMouseEvent {
-  x: number;
-  y: number;
-  dx: number;
-  dy: number;
-  /**
-   * Наличие зажатой левой кнопки.
-   * Полезно для отслеживания перетаскивания.
-   */
-  left: boolean;
-  button: Button;
-  stopPropagation: () => void;
-  nativeEvent: MouseEvent;
-}
-
-export enum Button {
-  left = 0,
-  middle = 1,
-  right = 2,
-  back = 3,
-  forward = 4,
-}
-
-interface MouseEvents {
-  mousedown: MyMouseEvent;
-  mouseup: MyMouseEvent;
-  mousemove: MyMouseEvent;
-  contextmenu: MyMouseEvent;
-  dblclick: MyMouseEvent;
-  wheel: MyMouseEvent & { nativeEvent: WheelEvent };
-}
-
-/**
  * Система обработки событий специально для мыши.
  * Отличается от обычного {@link EventEmitter} возможностью отключить
  * вызов обработчиков событий на любом из шагов (stopPropagation).
  */
-export class MouseEventEmitter<
-  T extends object = MouseEvents,
+export class BubbleEventEmitter<
+  T extends object,
   Name extends keyof T = keyof T
 > extends BaseEventEmitter<T, Name> {
   emit<N extends Name>(name: N, event: Omit<T[N], 'stopPropagation'>) {

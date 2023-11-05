@@ -565,7 +565,7 @@ export class MachineController {
     this.container.isDirty = true;
   }
 
-  deleteSelected() {
+  deleteSelected = () => {
     let removed = false;
 
     const killList: string[] = [];
@@ -602,10 +602,10 @@ export class MachineController {
     if (removed) {
       this.container.isDirty = true;
     }
-  }
+  };
 
   //Глубокое рекурсивное копирование выбранного состояния или связи и занесения его данных в буфер обмена
-  copySelected() {
+  copySelected = () => {
     //Выделено состояние для копирования
     this.states.forEach((state) => {
       if (state.isSelected) {
@@ -624,10 +624,10 @@ export class MachineController {
       }
     });
     this.container.isDirty = true;
-  }
+  };
 
   //Вставляем код из буфера обмена в редактор машин состояний
-  pasteSelected() {
+  pasteSelected = () => {
     navigator.clipboard.readText().then((data) => {
       const copyData = JSON.parse(data) as StateType | TransitionType;
       //Проверяем, нет ли нужного нам элемента в объекте с разными типами
@@ -650,7 +650,7 @@ export class MachineController {
       console.log('Объект вставлен!');
     });
     this.container.isDirty = true;
-  }
+  };
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.states.get(stateId);

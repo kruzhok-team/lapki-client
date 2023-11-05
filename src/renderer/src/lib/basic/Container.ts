@@ -1,9 +1,9 @@
 import { getColor } from '@renderer/theme';
 import { Point } from '@renderer/types/graphics';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { MachineController } from '../data/MachineController';
 import { StatesController } from '../data/StatesController';
 import { TransitionsController } from '../data/TransitionsController';
@@ -29,7 +29,6 @@ export class Container extends EventEmitter<ContainerEvents> {
   app!: CanvasEditor;
 
   isDirty = true;
-  isPan = false;
 
   machineController!: MachineController;
   statesController!: StatesController;
@@ -52,6 +51,10 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.initEvents();
     this.transitionsController.initEvents();
     this.machineController.loadData();
+  }
+
+  get isPan() {
+    return this.app.keyboard.spacePressed;
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -109,20 +112,20 @@ export class Container extends EventEmitter<ContainerEvents> {
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('delete', this.handleDelete);
+    this.app.keyboard.on('delete', this.machineController.deleteSelected);
     this.app.keyboard.on('ctrlz', this.machineController.undoRedo.undo);
     this.app.keyboard.on('ctrly', this.machineController.undoRedo.redo);
-    this.app.keyboard.on('ctrlc', this.handleCopy);
-    this.app.keyboard.on('ctrlv', this.handlePaste);
-    this.app.keyboard.on('ctrls', this.handleSaveFile);
-    this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
+    this.app.keyboard.on('ctrlc', this.machineController.copySelected);
+    this.app.keyboard.on('ctrlv', this.machineController.pasteSelected);
+    this.app.keyboard.on('ctrls', this.app.manager.save);
+    this.app.keyboard.on('ctrlshifta', this.app.manager.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
-    this.app.mouse.on('contextmenu', this.handleMouseContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
+    this.app.mouse.on('rightclick', this.handleRightMouseClick);
   }
 
   private getCapturedNode(position: Point) {
@@ -160,7 +163,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   };
 
   handleMouseDown = (e: MyMouseEvent) => {
-    if (!e.left) return;
+    if (!e.left || this.isPan) return;
 
     const node = this.getCapturedNode(e);
 
@@ -172,12 +175,20 @@ export class Container extends EventEmitter<ContainerEvents> {
       parent.children.moveToEnd(type, node.id);
 
       this.mouseDownNode = node;
-    } else {
-      this.isPan = true;
     }
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
+    this.app.canvas.element.style.cursor = 'default';
+    this.mouseDownNode = null;
+
+    if (!e.left) return;
+
+    if (this.isPan) {
+      this.app.canvas.element.style.cursor = 'grab';
+      return;
+    }
+
     const node = this.getCapturedNode(e);
 
     if (node) {
@@ -186,15 +197,29 @@ export class Container extends EventEmitter<ContainerEvents> {
       this.transitionsController.handleMouseUp();
       this.machineController.removeSelection();
     }
+  };
 
-    this.mouseDownNode = null;
+  handleRightMouseClick = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode(e);
 
-    this.isPan = false;
-    this.app.canvas.element.style.cursor = 'default';
+    if (node) {
+      node.handleMouseContextMenu(e);
+    } else {
+      this.emit('contextMenu', e);
+    }
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!e.left) return;
+    if (e.left) this.handleLeftMouseMove(e);
+    if (e.right) this.handleRightMouseMove(e);
+
+    this.isDirty = true;
+  };
+
+  private handleLeftMouseMove(e: MyMouseEvent) {
+    if (this.isPan || this.mouseDownNode) {
+      this.app.canvas.element.style.cursor = 'grabbing';
+    }
 
     if (this.isPan) {
       // TODO Много раз такие операции повторяются, нужно переделать на функции
@@ -203,10 +228,14 @@ export class Container extends EventEmitter<ContainerEvents> {
     } else if (this.mouseDownNode) {
       this.mouseDownNode.handleMouseMove(e);
     }
+  }
+
+  private handleRightMouseMove(e: MyMouseEvent) {
+    this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
+    this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
 
     this.app.canvas.element.style.cursor = 'grabbing';
-    this.isDirty = true;
-  };
+  }
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {
     const node = this.getCapturedNode(e);
@@ -218,19 +247,23 @@ export class Container extends EventEmitter<ContainerEvents> {
     }
   };
 
-  handleMouseContextMenu = (e: MyMouseEvent) => {
-    const node = this.getCapturedNode(e);
-
-    if (node) {
-      node.handleMouseContextMenu(e);
-    } else {
-      this.emit('contextMenu', e);
-    }
-  };
-
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
     e.nativeEvent.preventDefault();
 
+    if (this.app.keyboard.ctrlPressed) {
+      this.handleChangeScale(e);
+    } else {
+      if (this.app.keyboard.shiftPressed) {
+        this.app.manager.data.offset.x -= e.nativeEvent.deltaY * 0.1;
+      } else {
+        this.app.manager.data.offset.y -= e.nativeEvent.deltaY * 0.1;
+      }
+
+      this.isDirty = true;
+    }
+  };
+
+  private handleChangeScale(e: MyMouseEvent & { nativeEvent: WheelEvent }) {
     const prevScale = this.app.manager.data.scale;
     const newScale = Number(
       clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
@@ -239,37 +272,13 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.manager.data.offset.y -= e.y * prevScale - e.y * newScale;
 
     this.setScale(newScale);
-  };
-
-  handleDelete = () => {
-    this.machineController.deleteSelected();
-  };
-
-  handleCopy = () => {
-    this.machineController.copySelected();
-  };
-
-  handlePaste = () => {
-    this.machineController.pasteSelected();
-  };
-
-  handleSaveFile = () => {
-    this.app.manager.save();
-  };
-
-  handleSaveAsFile = () => {
-    this.app.manager.saveAs();
-  };
+  }
 
   handleSpaceDown = () => {
-    this.isPan = true;
-
     this.app.canvas.element.style.cursor = 'grab';
   };
 
   handleSpaceUp = () => {
-    this.isPan = false;
-
     this.app.canvas.element.style.cursor = 'default';
   };
 

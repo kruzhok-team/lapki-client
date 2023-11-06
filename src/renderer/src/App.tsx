@@ -11,9 +11,15 @@ import {
   MainContainer,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
+import {
+  useDiagramContextMenu,
+  useEditorManager,
+  useErrorModal,
+  useFileOperations,
+} from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
+import { DiagramContextMenu } from './components/DiagramContextMenu';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -84,6 +90,8 @@ export const App: React.FC = () => {
     setTitle(`${name} [${platformName}] – Lapki IDE`);
   }, [name, platformName]);
 
+  const contextMenu = useDiagramContextMenu(editor, manager);
+
   return (
     <DocumentTitle title={title}>
       <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
@@ -106,6 +114,7 @@ export const App: React.FC = () => {
             onCreate={performNewFile}
             onClose={closePlatformModal}
           />
+          <DiagramContextMenu {...contextMenu} />
         </div>
       </ThemeContext.Provider>
     </DocumentTitle>

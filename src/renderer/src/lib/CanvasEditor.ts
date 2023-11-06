@@ -55,5 +55,6 @@ export class CanvasEditor {
   cleanUp() {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
+    this.mouse.clearUp();
   }
 }

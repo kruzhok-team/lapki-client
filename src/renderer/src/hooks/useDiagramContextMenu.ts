@@ -45,7 +45,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.container.handlePaste();
+            editor?.container.machineController.pasteSelected();
           },
         },
         {
@@ -90,14 +90,14 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.container.handleCopy();
+            editor?.container.machineController.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.container.handlePaste();
+            editor?.container.machineController.pasteSelected();
           },
         },
         {
@@ -223,7 +223,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             label: 'Копировать',
             type: 'copy',
             action: () => {
-              editor?.container.handleCopy();
+              editor?.container.machineController.copySelected();
             },
           },
           {

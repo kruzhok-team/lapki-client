@@ -8,6 +8,10 @@ import { EventEmitter } from '../common/EventEmitter';
 interface KeyboardEvents {
   spacedown: KeyboardEvent;
   spaceup: KeyboardEvent;
+  ctrldown: KeyboardEvent;
+  ctrlup: KeyboardEvent;
+  shiftdown: KeyboardEvent;
+  shiftup: KeyboardEvent;
   delete: KeyboardEvent;
   ctrlz: KeyboardEvent;
   ctrly: KeyboardEvent;
@@ -20,6 +24,7 @@ interface KeyboardEvents {
 export class Keyboard extends EventEmitter<KeyboardEvents> {
   spacePressed = false;
   ctrlPressed = false;
+  shiftPressed = false;
 
   constructor() {
     super();
@@ -37,21 +42,37 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
     if (e.code === 'Space' && !this.spacePressed) {
       this.spacePressed = true;
       this.emit('spacedown', e);
-      return;
+    }
+
+    if (e.code === 'ControlLeft' && !this.ctrlPressed) {
+      this.ctrlPressed = true;
+      this.emit('ctrldown', e);
+    }
+
+    if (e.code === 'ShiftLeft' && !this.shiftPressed) {
+      this.shiftPressed = true;
+      this.emit('shiftdown', e);
     }
   };
 
   handleKeyUp = (e: KeyboardEvent) => {
-    //console.log(e.code, e);
     if (e.code === 'Space') {
       this.spacePressed = false;
       this.emit('spaceup', e);
-      return;
+    }
+
+    if (e.code === 'ShiftLeft') {
+      this.shiftPressed = false;
+      this.emit('shiftup', e);
+    }
+
+    if (e.code === 'ControlLeft') {
+      this.ctrlPressed = false;
+      this.emit('ctrlup', e);
     }
 
     if (e.key === 'Delete') {
       this.emit('delete', e);
-      return;
     }
 
     if (e.ctrlKey) {

@@ -18,6 +18,7 @@ import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
+  UnlinkStateParams,
 } from '@renderer/types/MachineController';
 import { indexOfMin } from '@renderer/utils';
 
@@ -264,7 +265,7 @@ export class MachineController {
 
     let numberOfConnectedActions = 0;
     if (child.data.parent) {
-      this.unlinkState(childId, canUndo);
+      this.unlinkState({ id: childId }, canUndo);
       numberOfConnectedActions += 1;
     }
 
@@ -337,7 +338,9 @@ export class MachineController {
     }
   }
 
-  unlinkState(id: string, canUndo = true) {
+  unlinkState(params: UnlinkStateParams, canUndo = true) {
+    const { id } = params;
+
     const state = this.states.get(id);
     if (!state || !state.parent) return;
 
@@ -349,7 +352,7 @@ export class MachineController {
     if (canUndo) {
       this.undoRedo.do({
         type: 'unlinkState',
-        args: { parentId: state.parent.id, childId: id },
+        args: { parentId: state.parent.id, params },
         numberOfConnectedActions: 1, // Изменение позиции
       });
       state.addOnceOff('dragend');
@@ -391,7 +394,7 @@ export class MachineController {
         if (state.data.parent) {
           this.linkState(state.data.parent, childState.id, canUndo);
         } else {
-          this.unlinkState(childState.id, canUndo);
+          this.unlinkState({ id: childState.id }, canUndo);
         }
         numberOfConnectedActions += 1;
       }
@@ -399,8 +402,7 @@ export class MachineController {
 
     // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
     if (state.data.parent) {
-      this.unlinkState(state.id, canUndo);
-      numberOfConnectedActions += 1;
+      state.parent?.children.remove('state', id);
     } else {
       this.container.children.remove('state', id);
     }
@@ -428,9 +430,6 @@ export class MachineController {
   };
 
   changeInitialState = (id: string, canUndo = true) => {
-    const state = this.states.get(id);
-    if (!state) return;
-
     if (canUndo) {
       this.undoRedo.do({
         type: 'changeInitialState',
@@ -566,7 +565,7 @@ export class MachineController {
     this.container.isDirty = true;
   }
 
-  deleteSelected() {
+  deleteSelected = () => {
     let removed = false;
 
     const killList: string[] = [];
@@ -603,10 +602,10 @@ export class MachineController {
     if (removed) {
       this.container.isDirty = true;
     }
-  }
+  };
 
   //Глубокое рекурсивное копирование выбранного состояния или связи и занесения его данных в буфер обмена
-  copySelected() {
+  copySelected = () => {
     //Выделено состояние для копирования
     this.states.forEach((state) => {
       if (state.isSelected) {
@@ -625,10 +624,10 @@ export class MachineController {
       }
     });
     this.container.isDirty = true;
-  }
+  };
 
   //Вставляем код из буфера обмена в редактор машин состояний
-  pasteSelected() {
+  pasteSelected = () => {
     navigator.clipboard.readText().then((data) => {
       const copyData = JSON.parse(data) as StateType | TransitionType;
       //Проверяем, нет ли нужного нам элемента в объекте с разными типами
@@ -651,7 +650,7 @@ export class MachineController {
       console.log('Объект вставлен!');
     });
     this.container.isDirty = true;
-  }
+  };
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.states.get(stateId);

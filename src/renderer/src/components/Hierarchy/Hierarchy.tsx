@@ -1,35 +1,44 @@
-import React, { useMemo } from 'react';
+import React, { useRef, useState } from 'react';
 
 import {
-  UncontrolledTreeEnvironment,
   Tree,
   TreeItem,
   DraggingPosition,
-  StaticTreeDataProvider,
+  ControlledTreeEnvironment,
+  TreeItemIndex,
+  TreeRef,
 } from 'react-complex-tree';
+import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { MyMouseEvent } from '@renderer/lib/common/MouseEventEmitter';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 interface HierarchyProps {
   hierarchy: HierarchyItem;
   editor: CanvasEditor | null;
+  manager: EditorManager;
 }
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
-  const result = useMemo(() => {
+  const tree = useRef<TreeRef>(null);
+  const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
+  const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
+  const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
+
+  const result = () => {
     if (!editor) return;
 
-    const dataProvider = new StaticTreeDataProvider(hierarchy, (item, data) => ({
-      ...item,
-      data,
-    }));
-
-    const onSubmit = (id: string) => {
-      editor?.container.machineController.selectState(id);
-      editor?.container.machineController.selectTransition(id);
+    const onSubmit = (id: string | undefined) => {
+      if (id) {
+        editor?.container.machineController.selectState(id);
+        editor?.container.machineController.selectTransition(id);
+      } else {
+        console.log(id);
+      }
     };
 
     const onRename = (id: string, name: string) => {
@@ -55,25 +64,132 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
     };
 
     return (
-      <UncontrolledTreeEnvironment
-        dataProvider={dataProvider}
+      <ControlledTreeEnvironment
+        items={hierarchy}
         getItemTitle={(item) => item.data}
-        viewState={{}}
-        // //Данная ошибка вызвана по глупости ESlint, но данное свойство работает
-        // defaultInteractionMode={'click-arrow-to-expand'}
-        canDragAndDrop={true}
-        canReorderItems={true}
-        canDropOnFolder={true}
-        canDropOnNonFolder={true}
+        canDragAndDrop
+        canReorderItems
+        canDropOnFolder
+        canDropOnNonFolder
         canSearch={false}
-        onDrop={(items, target) => onLinkUnlinkState(items, target)}
+        onDrop={(items, target) => {
+          onLinkUnlinkState(items, target);
+        }}
         onRenameItem={(item, name) => onRename(item.index.toString(), name)}
-        onFocusItem={(item) => onSubmit(item.index.toString())}
+        onFocusItem={(item) => {
+          setFocusedItem(item?.index);
+          onSubmit(item?.index.toString());
+        }}
+        onExpandItem={(item) => {
+          setExpandedItems((items) => [...items, item.index]);
+        }}
+        onCollapseItem={(item) =>
+          setExpandedItems((items) =>
+            items.filter((expandedItemIndex) => expandedItemIndex !== item.index)
+          )
+        }
+        onSelectItems={(items) => setSelectedItems(items)}
+        viewState={{
+          ['tree-1']: {
+            focusedItem,
+            expandedItems,
+            selectedItems,
+          },
+        }}
+        defaultInteractionMode={{
+          mode: 'custom',
+          createInteractiveElementProps: (item, _treeId, actions, renderFlags) => ({
+            onClick: () => {
+              actions.focusItem();
+              actions.selectItem();
+              //Раскрытие списка по нажатию на текст
+              if (item.isFolder) {
+                actions.toggleExpandedState();
+              }
+            },
+            onDragStart: (e) => {
+              //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
+              if (item.canMove) {
+                e.dataTransfer.dropEffect = 'move';
+                actions.startDragging();
+              }
+            },
+            onDragOver: (e) => {
+              e.preventDefault(); // Разрешить удаление
+              console.log('Переместили');
+            },
+            onBlur: () => {
+              actions.unselectItem();
+            },
+            //Разрешаем перемещение
+            draggable: renderFlags.canDrag && !renderFlags.isRenaming,
+            onDoubleClick: () => {
+              if (item.canRename) {
+                actions.startRenamingItem();
+              }
+            },
+            onContextMenu: (e) => {
+              actions.selectItem();
+              //Создаем необходимую переменную, чтобы совпадало с типом в контроллерах и пишем туда значения мыши во время клика правой кнопкой
+              const mouse: MyMouseEvent = {
+                x: e.clientX,
+                y: e.clientY,
+                dx: e.pageX,
+                dy: e.pageY,
+                left: false,
+                button: e.button,
+                stopPropagation: () => e.stopPropagation(),
+                nativeEvent: e.nativeEvent,
+              };
+              Array.from(editor.container.machineController.states).map((state) => {
+                if (state[0] === item.index.toString()) {
+                  editor.container.statesController.handleContextMenu(state[1], { event: mouse });
+                }
+              });
+              Array.from(editor.container.machineController.transitions).map((transition) => {
+                if (transition[0] === item.index.toString()) {
+                  editor.container.transitionsController.handleContextMenu(transition[1], {
+                    event: mouse,
+                  });
+                }
+              });
+            },
+            onFocus: () => {
+              actions.focusItem();
+            },
+          }),
+        }}
       >
-        <Tree treeId="tree-2" rootItem="root" treeLabel="Tree Example" />
-      </UncontrolledTreeEnvironment>
+        <div>
+          <button
+            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+            type="button"
+            onClick={() => {
+              setExpandedItems([]);
+              tree.current?.expandAll();
+            }}
+          >
+            Раскрыть все
+          </button>
+          <button
+            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+            type="button"
+            onClick={() => {
+              setExpandedItems([]);
+              tree.current?.collapseAll();
+            }}
+          >
+            Свернуть все
+          </button>
+        </div>
+        <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
+      </ControlledTreeEnvironment>
     );
-  }, [editor, hierarchy]);
+  };
 
-  return <div className="rct-dark">{result}</div>;
+  return (
+    <div className={twMerge(document.documentElement.dataset.theme !== 'light' && 'rct-dark')}>
+      {result()}
+    </div>
+  );
 };

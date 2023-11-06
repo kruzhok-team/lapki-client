@@ -1,5 +1,6 @@
-import { useLayoutEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
+import CustomDataProvider from '@renderer/components/Hierarchy/Hierarchy2000';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
@@ -8,6 +9,8 @@ export interface HierarchyItem {
     index: string;
     isFolder?: boolean;
     children?: Array<string>;
+    canRename?: boolean;
+    canMove?: boolean;
     data: string;
   };
 }
@@ -16,12 +19,10 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
   const states = manager.useData('elements.states');
   const transitions = manager.useData('elements.transitions');
 
-  const hierarchy: HierarchyItem = {};
+  const hierarchy: HierarchyItem = useMemo(() => {
+    const data: HierarchyItem = {};
 
-  useLayoutEffect(() => {
-    if (!editor) return;
-
-    hierarchy['root'] = {
+    data['root'] = {
       index: 'root',
       isFolder: true,
       children: [
@@ -34,7 +35,7 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
 
     //Создаем элементы списка иерархий(состояния)
     Object.entries(states).map((state) => {
-      hierarchy[state[0]] = {
+      data[state[0]] = {
         index: state[0],
         isFolder:
           Object.entries(states).some((value) => value[1].parent === state[0]) ||
@@ -48,12 +49,14 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
             .map((value) => value[0]),
         ],
         data: state[1].name,
+        canRename: true,
+        canMove: true,
       };
     });
 
     //Создаем элементы списка иерархий(связи)
     Object.entries(transitions).map((transition) => {
-      hierarchy[transition[0]] = {
+      data[transition[0]] = {
         index: transition[0],
         data:
           Object.entries(states)
@@ -63,11 +66,18 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
           Object.entries(states)
             .filter((state) => transition[1].target === state[0])
             .map((value) => value[1].name),
+        canRename: false,
+        canMove: false,
       };
     });
+    return data;
+  }, [states, transitions]);
 
-    console.log(hierarchy);
-  }, [editor, states, transitions]);
+  useEffect(() => {
+    if (!manager) return;
+    const hi = new CustomDataProvider(hierarchy);
+    console.log(hi);
+  }, [hierarchy, manager]);
 
-  return { hierarchy, editor };
+  return { hierarchy, editor, manager };
 };

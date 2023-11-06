@@ -25,7 +25,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const { onRequestEditComponent, onRequestDeleteComponent, editProps, deleteProps } =
     useEditDeleteComponent(editor, manager);
 
-  const hierarchyProps = useHierarchyManager(editor, manager);
+  const { ...hierarchyData } = useHierarchyManager(editor, manager);
 
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -95,18 +95,14 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
           )}
         />
       </div>
+      <div className="h-full flex-auto px-4 pt-3 text-center">
+        <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
+        <Hierarchy {...hierarchyData} />
+      </div>
 
       <ComponentAddModal {...addComponent} />
       <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
-
-      <div className="h-full flex-auto px-4 pt-3 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
-
-        <div>
-          <Hierarchy {...hierarchyProps} />
-        </div>
-      </div>
     </section>
   );
 };

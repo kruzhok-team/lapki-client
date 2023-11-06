@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" yed:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd" entryPosition="-751.1937 229.3251">
+  <key attr.name="Description" attr.type="string" for="graph" id="d0" />
+  <key for="port" id="d1" yfiles.type="portgraphics" />
+  <key for="port" id="d2" yfiles.type="portgeometry" />
+  <key for="port" id="d3" yfiles.type="portuserdata" />
+  <key attr.name="url" attr.type="string" for="node" id="d4" />
+  <key attr.name="description" attr.type="string" for="node" id="d5" />
+  <key for="node" id="d6" yfiles.type="nodegraphics" />
+  <key for="graphml" id="d7" yfiles.type="resources" />
+  <key attr.name="url" attr.type="string" for="edge" id="d8" />
+  <key attr.name="description" attr.type="string" for="edge" id="d9" />
+  <key for="edge" id="d10" yfiles.type="edgegraphics" />
+  <graph edgedefault="directed" id="G">
+    <data key="d0" xml:space="preserve" />
+    <node id="">
+      <data key="d6">
+        <y:GenericNode configuration="com.yworks.bpmn.Event.withShadow">
+          <y:Geometry x="-806.1937" y="-32.67488" width="10" height="10" />
+          <y:Fill color="#333333" color2="#000000" transparent="false" />
+          <y:BorderStyle color="#000000" type="line" width="1.0" />
+          <y:NodeLabel />
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n0">
+      <data key="d6">
+        <y:GenericNode>
+          <y:Geometry x="-751.1937" y="-42.67488" width="411.2" height="304" />
+          <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false" />
+          <y:BorderStyle color="#000000" type="line" width="1.0" />
+          <y:NodeLabel alignment="center" autoSizePolicy="node_width" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="15" fontStyle="bold" hasLineColor="false" height="22" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="411.2" x="0" xml:space="preserve" y="0">Скан</y:NodeLabel>
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.name" fontFamily="Consolas" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="304" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="411.2" x="0" xml:space="preserve" y="0">entry/
+Сенсор.ПоискВрагаПоДистанции(мин)
+exit/
+Сенсор.ОстановкаПоиска()
+</y:NodeLabel>
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n1" yfiles.foldertype="group">
+      <data key="d4" xml:space="preserve" />
+      <data key="d6">
+        <y:ProxyAutoBoundsNode>
+          <y:Realizers active="0">
+            <y:GroupNode>
+              <y:Geometry x="-35.0172043" y="-238.653076" width="517.2018" height="831.572632" />
+              <y:Fill color="#F5F5F5" transparent="false" />
+              <y:BorderStyle color="#000000" type="line" width="1.0" />
+              <y:NodeLabel alignment="center" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="bold" hasLineColor="false" height="22" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="517.2018" x="0" xml:space="preserve" y="0">Бой</y:NodeLabel>
+              <y:NodeLabel alignment="left" autoSizePolicy="node_size" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="831.572632" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="517.2018" x="0" xml:space="preserve" y="0">entry/
+exit/
+</y:NodeLabel>
+              <y:Shape type="roundrectangle" />
+              <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false" />
+              <y:NodeBounds considerNodeLabelSize="true" />
+              <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0" />
+              <y:BorderInsets bottom="0" bottomF="0.0" left="0" leftF="0.0" right="0" rightF="0.0" top="0" topF="0.0" />
+            </y:GroupNode>
+          </y:Realizers>
+        </y:ProxyAutoBoundsNode>
+      </data>
+      <graph edgedefault="directed" id="n1:">
+        <node id="n1::n2">
+          <data key="d6">
+            <y:GenericNode>
+              <y:Geometry x="-32.01631" y="-103.86673" width="411.2" height="274" />
+              <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false" />
+              <y:BorderStyle color="#000000" type="line" width="1.0" />
+              <y:NodeLabel alignment="center" autoSizePolicy="node_width" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="15" fontStyle="bold" hasLineColor="false" height="22" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="411.2" x="0" xml:space="preserve" y="0">Сближение</y:NodeLabel>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.name" fontFamily="Consolas" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="274" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="411.2" x="0" xml:space="preserve" y="0">entry/
+МодульДвижения.ДвигатьсяКЦели()
+exit/
+МодульДвижения.Стоп()
+</y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n1::n3">
+          <data key="d6">
+            <y:GenericNode>
+              <y:Geometry x="-38.01808" y="-457.4394" width="411.2" height="194" />
+              <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false" />
+              <y:BorderStyle color="#000000" type="line" width="1.0" />
+              <y:NodeLabel alignment="center" autoSizePolicy="node_width" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="15" fontStyle="bold" hasLineColor="false" height="22" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="411.2" x="0" xml:space="preserve" y="0">Атака</y:NodeLabel>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.name" fontFamily="Consolas" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="194" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="411.2" x="0" xml:space="preserve" y="0">entry/
+ОружиеМассовое.АтаковатьЦель()
+exit/
+</y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+      </graph>
+    </node>
+    <edge source="n0" target="n1::n2">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="-126.591438" sy="35.6219521" tx="0" ty="0" />
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#F5F5F5" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="centered" modelPosition="center" preferredPlacement="center_on_edge" ratio="5.0" textColor="#000000" verticalTextPosition="bottom" visible="true" xml:space="preserve">Сенсор.ЦельПолучена/
+<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="center" side="on_edge" sideReference="relative_to_edge_flow" /></y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge source="n1" target="n0">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="133.622757" sy="111.251678" tx="0" ty="0" />
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#F5F5F5" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="centered" modelPosition="center" preferredPlacement="center_on_edge" ratio="5.0" textColor="#000000" verticalTextPosition="bottom" visible="true" xml:space="preserve">АнализаторЦели.ЦельПотеряна/
+<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="center" side="on_edge" sideReference="relative_to_edge_flow" /></y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge source="n1" target="n0">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="-75.51555" sy="52.5166931" tx="0" ty="0" />
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#F5F5F5" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="centered" modelPosition="center" preferredPlacement="center_on_edge" ratio="5.0" textColor="#000000" verticalTextPosition="bottom" visible="true" xml:space="preserve">АнализаторЦели.ЦельУничтожена/
+<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="center" side="on_edge" sideReference="relative_to_edge_flow" /></y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge source="n1::n2" target="n1::n3">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="98.9124451" sy="22.0637741" tx="0" ty="0" />
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#F5F5F5" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="centered" modelPosition="center" preferredPlacement="center_on_edge" ratio="5.0" textColor="#000000" verticalTextPosition="bottom" visible="true" xml:space="preserve">ОружиеМассовое.ЦельВошлаВЗонуАтаки/
+<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="center" side="on_edge" sideReference="relative_to_edge_flow" /></y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge source="n1::n3" target="n1::n2">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="60.63992" sy="-31.5139179" tx="0" ty="0" />
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#F5F5F5" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="centered" modelPosition="center" preferredPlacement="center_on_edge" ratio="5.0" textColor="#000000" verticalTextPosition="bottom" visible="true" xml:space="preserve">ОружиеМассовое.ЦельВышлаИзЗоныАтаки/
+<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="center" side="on_edge" sideReference="relative_to_edge_flow" /></y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge source="" target="n0">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0" sy="0" tx="0" ty="0" />
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#F5F5F5" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="centered" modelPosition="center" preferredPlacement="center_on_edge" ratio="5.0" textColor="#000000" verticalTextPosition="bottom" visible="false" xml:space="preserve">
+            <y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="center" side="on_edge" sideReference="relative_to_edge_flow" />
+          </y:EdgeLabel>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+  </graph>
+</graphml>

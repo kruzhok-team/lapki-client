@@ -9,13 +9,12 @@ import {
   TreeRef,
 } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
-
 import './style-modern.css';
 
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { MyMouseEvent } from '@renderer/lib/common/MouseEventEmitter';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
 interface HierarchyProps {
   hierarchy: HierarchyItem;
@@ -25,6 +24,7 @@ interface HierarchyProps {
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
   const tree = useRef<TreeRef>(null);
+
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
@@ -32,13 +32,9 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
   const result = () => {
     if (!editor) return;
 
-    const onSubmit = (id: string | undefined) => {
-      if (id) {
-        editor?.container.machineController.selectState(id);
-        editor?.container.machineController.selectTransition(id);
-      } else {
-        console.log(id);
-      }
+    const onSubmit = (id: string) => {
+      editor?.container.machineController.selectState(id);
+      editor?.container.machineController.selectTransition(id);
     };
 
     const onRename = (id: string, name: string) => {
@@ -59,7 +55,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
               target.parentItem.toString(),
               value.index.toString()
             )
-          : editor.container.machineController.unlinkState(value.index.toString());
+          : editor.container.machineController.unlinkState({ id: value.index.toString() });
       });
     };
 
@@ -116,7 +112,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
             },
             onDragOver: (e) => {
               e.preventDefault(); // Разрешить удаление
-              console.log('Переместили');
             },
             onBlur: () => {
               actions.unselectItem();
@@ -137,6 +132,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
                 dx: e.pageX,
                 dy: e.pageY,
                 left: false,
+                right: false,
                 button: e.button,
                 stopPropagation: () => e.stopPropagation(),
                 nativeEvent: e.nativeEvent,

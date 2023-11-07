@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import CustomDataProvider from '@renderer/components/Hierarchy/Hierarchy2000';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
@@ -72,12 +71,6 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
     });
     return data;
   }, [states, transitions]);
-
-  useEffect(() => {
-    if (!manager) return;
-    const hi = new CustomDataProvider(hierarchy);
-    console.log(hi);
-  }, [hierarchy, manager]);
 
   return { hierarchy, editor, manager };
 };

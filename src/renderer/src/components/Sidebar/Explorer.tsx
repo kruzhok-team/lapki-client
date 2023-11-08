@@ -91,7 +91,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         />
       </div>
 
-      <ComponentAddModal {...addComponent} />
+      <ComponentAddModal editor={editor} {...addComponent} />
       <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
 

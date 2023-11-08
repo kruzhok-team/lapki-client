@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
-import { Modal } from './Modal/Modal';
-import { ScrollableList } from '@renderer/components/ScrollableList';
-import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import { ScrollableList } from '@renderer/components/ScrollableList';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable/Picto';
+import { Component as ComponentData } from '@renderer/types/diagram';
+
+import { ComponentFormFields } from './ComponentFormFields';
+import { Modal } from './Modal/Modal';
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 
@@ -14,9 +19,15 @@ interface ComponentAddModalProps {
   isOpen: boolean;
   onClose: () => void;
 
+  editor: CanvasEditor | null;
+
   vacantComponents: ComponentEntry[];
   existingComponents: Set<string>;
-  onSubmit: (compo: string, name?: string) => void;
+  onSubmit: (
+    idx: string,
+    name: string | undefined,
+    parameters: ComponentData['parameters']
+  ) => void;
 }
 
 export interface ComponentAddModalFormValues {
@@ -26,6 +37,7 @@ export interface ComponentAddModalFormValues {
 export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   onClose,
   onSubmit,
+  editor,
   vacantComponents,
   existingComponents,
   ...props
@@ -35,17 +47,16 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   const [compoName, setCompoName] = useState('');
   const [nameChanged, setNameChanged] = useState(false);
   const [isNameConflict, setIsNameConflict] = useState(false);
+  const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
   const handleSubmit = hookHandleSubmit(() => {
     if (!cursor) return;
     const name = cursor.singletone ? undefined : compoName ?? undefined;
-    onSubmit(cursor!.idx, name);
+    onSubmit(cursor.idx, name, parameters);
     onRequestClose();
   });
 
-  const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-
+  const onNameChange = (name: string) => {
     setCompoName(name);
     setIsNameConflict(existingComponents.has(name));
     setNameChanged(true);
@@ -65,9 +76,10 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
 
   const onCompClick = (entry: ComponentEntry) => {
     setCursor(entry);
+    setParameters({});
 
     if (!nameChanged || compoName.length == 0) {
-      var idx = 1;
+      let idx = 1;
       while (existingComponents.has(entry.idx + idx.toString())) {
         idx++;
       }
@@ -86,6 +98,11 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
     (cursor.singletone || (compoName.length > 0 && !isNameConflict))
   );
 
+  const proto =
+    editor && cursor
+      ? editor.container.machineController.platform.data.components[cursor.idx]
+      : null;
+
   return (
     <Modal
       {...props}
@@ -95,7 +112,12 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
       onSubmit={handleSubmit}
       submitDisabled={addIsBlocked}
     >
-      <div className="grid grid-cols-2">
+      <div
+        className={twMerge(
+          'grid grid-cols-2',
+          cursor && 'mb-2 border-b border-border-primary pb-2'
+        )}
+      >
         <ScrollableList
           className="max-h-[40vh]"
           listItems={vacantComponents}
@@ -121,20 +143,15 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
         <div className="pl-4">{description}</div>
       </div>
 
-      {cursor && !cursor.singletone && (
-        <div className="mt-4 flex items-center gap-2">
-          <label>Название:</label>
-          <input
-            className={twMerge(
-              'w-full rounded border bg-transparent px-2 py-[0.23rem] outline-none transition-colors placeholder:font-normal',
-              addIsBlocked && 'border-red-500 placeholder:text-red-500',
-              !addIsBlocked && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
-            )}
-            value={compoName}
-            onChange={onNameChange}
-            maxLength={20}
-          />
-        </div>
+      {cursor && (
+        <ComponentFormFields
+          showMainData={!cursor.singletone}
+          protoParameters={proto?.parameters ?? {}}
+          name={compoName}
+          setName={onNameChange}
+          parameters={parameters}
+          setParameters={setParameters}
+        />
       )}
     </Modal>
   );

@@ -753,12 +753,14 @@ export class MachineController {
   }
 
   addComponent(args: AddComponentParams, canUndo = true) {
-    const { name, type } = args;
+    const { name, type, parameters } = args;
 
     this.container.app.manager.addComponent(args);
 
     this.platform.nameToVisual.set(name, {
       component: type,
+      label: parameters?.['label'],
+      color: parameters?.['labelColor'],
     });
 
     this.container.isDirty = true;

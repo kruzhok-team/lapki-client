@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
@@ -15,10 +16,8 @@ interface ComponentEditModalProps {
   proto: ComponentProto;
   onEdit: (idx: string, data: ComponentData, newName?: string) => void;
   onDelete: (idx: string) => void;
-}
 
-export interface ComponentEditModalFormValues {
-  idx: string;
+  manager: EditorManager;
 }
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
@@ -29,7 +28,10 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onClose,
   onEdit,
   onDelete,
+  manager,
 }) => {
+  const components = manager.useData('elements.components');
+
   const [name, setName] = useState('');
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
@@ -49,7 +51,10 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const componentType = proto.name ?? data.type;
-  const componentName = proto.singletone ? componentType : `${componentType} ${idx}`;
+  const componentName = proto.singletone ? componentType : idx;
+
+  // Ограничение на повтор имён
+  const submitDisabled = useMemo(() => idx !== name && name in components, [components, idx, name]);
 
   useEffect(() => {
     setName(idx);
@@ -68,6 +73,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       onSubmit={handleSubmit}
       sideLabel="Удалить"
       onSide={handleDelete}
+      submitDisabled={submitDisabled}
     >
       <ComponentFormFields
         showMainData={!proto.singletone}

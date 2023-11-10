@@ -266,7 +266,7 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
   }
 
-  async save(): Promise<Either<FileError | null, null>> {
+  save = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
@@ -287,9 +287,9 @@ export class EditorManager {
         content: saveData[2],
       });
     }
-  }
+  };
 
-  async saveAs(): Promise<Either<FileError | null, null>> {
+  saveAs = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     const data = this.getDataSerialized();
     const saveData: [boolean, string | null, string | null] =
@@ -306,7 +306,7 @@ export class EditorManager {
       });
     }
     return makeLeft(null);
-  }
+  };
 
   createState(args: CreateStateParameters) {
     const { name, parentId, id, events = [], placeInCenter = false } = args;

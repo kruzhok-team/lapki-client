@@ -1,8 +1,8 @@
 import { Point } from '@renderer/types/graphics';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { GhostTransition } from '../drawable/GhostTransition';
 import { State } from '../drawable/State';
 import { Transition } from '../drawable/Transition';

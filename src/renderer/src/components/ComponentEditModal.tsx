@@ -51,7 +51,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const componentType = proto.name ?? data.type;
-  const componentName = proto.singletone ? componentType : idx;
+  const componentName = proto.singletone ? componentType : `${componentType} ${idx}`;
 
   // Ограничение на повтор имён
   const submitDisabled = useMemo(() => idx !== name && name in components, [components, idx, name]);

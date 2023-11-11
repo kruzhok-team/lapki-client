@@ -13,6 +13,7 @@ import {
   Component,
   Elements,
   EventData,
+  InitialState,
 } from '@renderer/types/diagram';
 import {
   emptyEditorData,
@@ -436,11 +437,11 @@ export class EditorManager {
     return true;
   }
 
-  changeInitialState(id: string) {
-    const state = this.data.elements.states[id];
+  changeInitialState(initialState: InitialState) {
+    const state = this.data.elements.states[initialState.target];
     if (!state) return false;
 
-    this.data.elements.initialState = id;
+    this.data.elements.initialState = initialState;
 
     return true;
   }

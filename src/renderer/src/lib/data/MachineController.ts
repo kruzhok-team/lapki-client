@@ -100,10 +100,11 @@ export class MachineController {
         },
         false
       );
+    }
 
-      if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.statesController.initInitialStateMark(id);
-      }
+    const initialState = this.container.app.manager.data.elements.initialState;
+    if (initialState) {
+      this.container.statesController.initInitialStateMark(initialState);
     }
   }
 
@@ -408,8 +409,8 @@ export class MachineController {
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
-    if (this.container.app.manager.data.elements.initialState === id) {
-      this.changeInitialState('', canUndo);
+    if (this.container.app.manager.data.elements.initialState?.target === id) {
+      this.removeInitialState(id, canUndo);
       numberOfConnectedActions += 1;
     }
 
@@ -429,16 +430,35 @@ export class MachineController {
     this.container.isDirty = true;
   };
 
-  changeInitialState = (id: string, canUndo = true) => {
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'changeInitialState',
-        args: { id, prevInitial: this.container.app.manager.data.elements.initialState },
-      });
-    }
+  setInitialState = (stateId: string, canUndo = true) => {
+    this.changeInitialState(
+      this.container.app.manager.data.elements.initialState?.target ?? null,
+      stateId,
+      canUndo
+    );
+  };
 
-    this.container.app.manager.changeInitialState(id);
-    this.container.statesController.initInitialStateMark(id);
+  removeInitialState = (stateId: string, canUndo = true) => {
+    for (const id of this.states.keys()) {
+      if (id === stateId) continue;
+
+      return this.changeInitialState(stateId, id, canUndo);
+    }
+  };
+
+  changeInitialState = (prevTragetId: string | null, newTragetId: string, canUndo = true) => {
+    // if (canUndo) {
+    //   this.undoRedo.do({
+    //     type: 'changeInitialState',
+    //     args: { id, prevInitial: this.container.app.manager.data.elements.initialState },
+    //   });
+    // }
+
+    this.container.statesController.initInitialStateMark({ target: newTragetId });
+    this.container.app.manager.changeInitialState({
+      target: newTragetId,
+      position: this.container.statesController.initialStateMark?.position as Point,
+    });
 
     this.container.isDirty = true;
   };

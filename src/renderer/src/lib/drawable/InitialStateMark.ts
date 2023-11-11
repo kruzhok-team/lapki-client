@@ -1,4 +1,6 @@
 import { getColor } from '@renderer/theme';
+import { WithOptional } from '@renderer/types/basic';
+import { InitialState } from '@renderer/types/diagram';
 
 import { Node } from './Node';
 
@@ -15,16 +17,23 @@ import {
 
 export class InitialStateMark extends Node {
   position = { x: 0, y: 0 };
+  targetId!: string;
 
-  constructor(container: Container, public sourceId: string) {
+  constructor(container: Container, data: WithOptional<InitialState, 'position'>) {
     super(container, 'InitialStateMark');
 
-    if (!this.state) return;
+    this.targetId = data.target;
 
-    this.position = {
-      x: this.state.compoundPosition.x - 100,
-      y: this.state.compoundPosition.y - 100,
-    };
+    if (data.position) {
+      this.position = data.position;
+    } else if (this.target) {
+      this.position = {
+        x: this.target.compoundPosition.x - 100,
+        y: this.target.compoundPosition.y - 100,
+      };
+    }
+
+    console.log('here', data, this.position);
   }
 
   get bounds() {
@@ -36,12 +45,12 @@ export class InitialStateMark extends Node {
     this.position.y = value.y;
   }
 
-  get state() {
-    return this.container.machineController.states.get(this.sourceId) ?? null;
+  get target() {
+    return this.container.machineController.states.get(this.targetId) ?? null;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (!this.state) return;
+    if (!this.target) return;
 
     const { x, y, width, height } = this.drawBounds;
 
@@ -62,7 +71,7 @@ export class InitialStateMark extends Node {
       fontSize: 24 / this.container.app.manager.data.scale,
     });
 
-    const line = getLine(this.state.drawBounds, this.drawBounds, 10, 3, 3);
+    const line = getLine(this.target.drawBounds, this.drawBounds, 10, 3, 3);
 
     const rounded = 12 / this.container.app.manager.data.scale; // нет защиты на максимальный радиус, так что просто его не ставь!
     ctx.strokeStyle = getColor('text-primary');

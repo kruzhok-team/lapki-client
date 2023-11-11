@@ -1,3 +1,5 @@
+import { WithOptional } from '@renderer/types/basic';
+import { InitialState } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
@@ -124,7 +126,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.edgeHandlers.unbindEvents();
   }
 
-  initInitialStateMark(stateId: string) {
-    this.initialStateMark = new InitialStateMark(this.container, stateId);
+  initInitialStateMark(data: WithOptional<InitialState, 'position'>) {
+    this.initialStateMark = new InitialStateMark(this.container, data);
   }
 }

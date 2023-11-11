@@ -129,6 +129,9 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   private getCapturedNode(position: Point) {
+    const node = this.statesController.initialStateMark?.getIntersection(position);
+    if (node) return node;
+
     const end = this.children.size - 1;
 
     for (let i = end; i >= 0; i--) {

@@ -207,7 +207,7 @@ const typeMap: any = {
         typ: u(undefined, u(r('CompilerSettings'), null)),
       },
       { json: 'components', js: 'components', typ: m(r('Component')) },
-      { json: 'initialState', js: 'initialState', typ: '' },
+      { json: 'initialState', js: 'initialState', typ: r('InitialState') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m('')) },
       { json: 'platform', js: 'platform', typ: '' },
       { json: 'states', js: 'states', typ: m(r('State')) },
@@ -227,6 +227,20 @@ const typeMap: any = {
     [
       { json: 'parameters', js: 'parameters', typ: m('') },
       { json: 'type', js: 'type', typ: '' },
+    ],
+    false
+  ),
+  InitialState: o(
+    [
+      { json: 'position', js: 'position', typ: r('Point') },
+      { json: 'target', js: 'target', typ: '' },
+    ],
+    false
+  ),
+  Point: o(
+    [
+      { json: 'x', js: 'x', typ: 3.14 },
+      { json: 'y', js: 'y', typ: 3.14 },
     ],
     false
   ),
@@ -295,13 +309,6 @@ const typeMap: any = {
       { json: 'args', js: 'args', typ: u(undefined, m('')) },
       { json: 'component', js: 'component', typ: '' },
       { json: 'method', js: 'method', typ: '' },
-    ],
-    false
-  ),
-  Point: o(
-    [
-      { json: 'x', js: 'x', typ: 3.14 },
-      { json: 'y', js: 'y', typ: 3.14 },
     ],
     false
   ),

@@ -47,7 +47,13 @@
       }
     }
   },
-  "initialState": "diod1",
+  "initialState": {
+    "target": "diod1",
+    "position": {
+      "x": -18,
+      "y": -43
+    }
+  },
   "transitions": [
     {
       "color": "#F29727",

@@ -287,9 +287,9 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
             </div>
           ))}
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-2">
           <button
-            className="btn-primary mb-2"
+            className="btn-primary mb-2 w-full"
             onClick={handleFlash}
             disabled={
               flashing ||

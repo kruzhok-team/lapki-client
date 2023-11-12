@@ -97,7 +97,13 @@
     }
   },
 
-  "initialState": "diod1_on",
+  "initialState": {
+    "target": "diod1_on",
+    "position": {
+      "x": -4,
+      "y": 164
+    }
+  },
 
   "transitions": [
     {

@@ -480,7 +480,7 @@ export class MachineController {
     };
 
     this.container.app.manager.changeInitialState(data);
-    this.container.statesController.initInitialStateMark(data);
+    this.container.statesController.initInitialStateMark();
 
     if (canUndo) {
       this.undoRedo.do({
@@ -508,7 +508,7 @@ export class MachineController {
       target: newTargetId,
       position,
     });
-    this.container.statesController.initInitialStateMark({ target: newTargetId, position });
+    this.container.statesController.initInitialStateMark();
 
     if (canUndo) {
       this.undoRedo.do({

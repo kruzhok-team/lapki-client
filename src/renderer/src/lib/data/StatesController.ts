@@ -1,4 +1,3 @@
-import { InitialState } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
@@ -140,10 +139,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.initialStateMark?.off('dragend', this.handleInitialStateDragEnd.bind(this));
   }
 
-  initInitialStateMark(data: InitialState) {
+  initInitialStateMark() {
     this.unwatchInitialState();
 
-    this.initialStateMark = new InitialStateMark(this.container, data);
+    this.initialStateMark = new InitialStateMark(this.container);
 
     this.watchInitialState();
   }

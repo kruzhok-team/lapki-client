@@ -102,7 +102,9 @@ export class Children {
 
     const index = list.findIndex((item) => id === item);
 
-    list.splice(list.length - 1, 0, list.splice(index, 1)[0]);
+    if (index !== -1) {
+      list.splice(list.length - 1, 0, list.splice(index, 1)[0]);
+    }
   }
 
   get size() {

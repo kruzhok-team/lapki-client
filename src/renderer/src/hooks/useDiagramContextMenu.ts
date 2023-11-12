@@ -108,7 +108,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                editor?.container.machineController.setInitialState(state.id as string);
+                editor?.container.machineController.setInitialState(state.id);
               },
             },
             {

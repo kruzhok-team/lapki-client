@@ -1,6 +1,4 @@
 import { getColor } from '@renderer/theme';
-import { WithOptional } from '@renderer/types/basic';
-import { InitialState } from '@renderer/types/diagram';
 
 import { Node } from './Node';
 
@@ -15,38 +13,31 @@ import {
   getLine,
 } from '../utils';
 
+/**
+ * Класс для отрисовки начального состояния
+ * плотно завязан на данные в EditorManager, то есть
+ * данные на момент создания этого класса уже должны существовать
+ */
 export class InitialStateMark extends Node {
-  position = { x: 0, y: 0 };
-  targetId!: string;
-
-  constructor(container: Container, data: WithOptional<InitialState, 'position'>) {
+  constructor(container: Container) {
     super(container, 'InitialStateMark');
+  }
 
-    this.targetId = data.target;
-
-    if (data.position) {
-      this.position = data.position;
-    } else if (this.target) {
-      this.position = {
-        x: this.target.compoundPosition.x - 100,
-        y: this.target.compoundPosition.y - 100,
-      };
-    }
-
-    console.log('here', data, this.position);
+  get data() {
+    return this.container.app.manager.data.elements.initialState;
   }
 
   get bounds() {
-    return { ...this.position, width: 130, height: 70 };
+    return { ...this.data!.position, width: 130, height: 70 };
   }
 
   set bounds(value) {
-    this.position.x = value.x;
-    this.position.y = value.y;
+    this.data!.position.x = value.x;
+    this.data!.position.y = value.y;
   }
 
   get target() {
-    return this.container.machineController.states.get(this.targetId) ?? null;
+    return this.container.machineController.states.get(this.data!.target) ?? null;
   }
 
   draw(ctx: CanvasRenderingContext2D) {

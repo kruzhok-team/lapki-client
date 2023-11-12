@@ -343,11 +343,6 @@ export class EditorManager {
       parent: parentId,
     };
 
-    // если у нас не было начального состояния, им станет новое
-    if (this.data.elements.initialState === '') {
-      this.data.elements.initialState = newId;
-    }
-
     return newId;
   }
 
@@ -442,6 +437,20 @@ export class EditorManager {
     if (!state) return false;
 
     this.data.elements.initialState = initialState;
+
+    return true;
+  }
+
+  changeInitialStatePosition(position: Point) {
+    if (!this.data.elements.initialState) return;
+
+    this.data.elements.initialState.position = position;
+
+    return true;
+  }
+
+  deleteInitialState() {
+    this.data.elements.initialState = null;
 
     return true;
   }

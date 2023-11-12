@@ -1,4 +1,3 @@
-import { WithOptional } from '@renderer/types/basic';
 import { InitialState } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
@@ -104,6 +103,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     );
   };
 
+  handleInitialStateDragEnd = (e: { dragStartPosition: Point; dragEndPosition: Point }) => {
+    this.container.machineController.changeInitialStatePosition(
+      e.dragStartPosition,
+      e.dragEndPosition
+    );
+  };
+
   watchState(state: State) {
     state.on('mousedown', this.handleStateClick.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
@@ -126,7 +132,19 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.edgeHandlers.unbindEvents();
   }
 
-  initInitialStateMark(data: WithOptional<InitialState, 'position'>) {
+  private watchInitialState() {
+    this.initialStateMark?.on('dragend', this.handleInitialStateDragEnd.bind(this));
+  }
+
+  private unwatchInitialState() {
+    this.initialStateMark?.off('dragend', this.handleInitialStateDragEnd.bind(this));
+  }
+
+  initInitialStateMark(data: InitialState) {
+    this.unwatchInitialState();
+
     this.initialStateMark = new InitialStateMark(this.container, data);
+
+    this.watchInitialState();
   }
 }

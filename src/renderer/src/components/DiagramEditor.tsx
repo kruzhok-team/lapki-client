@@ -61,8 +61,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       setNewTransition(undefined);
     };
 
-    //Перетаскиваем компонент в редактор
-    editor.container.on('stateDrop', (position) => {
+    editor.container.on('dblclick', (position) => {
       editor?.container.machineController.createState({
         name: 'Состояние',
         position,

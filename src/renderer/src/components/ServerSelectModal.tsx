@@ -6,11 +6,8 @@ import { Modal } from './Modal/Modal';
 
 import { TextInput } from './Modal/TextInput';
 
-import { SELECT_LOCAL, SELECT_REMOTE } from './Modal/TextSelectFlasher';
 import { TextSelectOptions } from './Modal/TextSelectOptions';
-
-const localStorageHost = 'host';
-const localStoragePort = 'port';
+import { twMerge } from 'tailwind-merge';
 
 interface ServerSelectModalProps {
   isOpen: boolean;
@@ -25,7 +22,14 @@ interface ServerSelectModalProps {
   defaultTitle: string;
   // название опции выбора пользовательского сервера
   customTitle: string;
+  // значение пользовательского порта по-умолчанию (при null или undefined пользователь увидит пустую строку)
+  customPortValue: string | undefined | null;
+  // значение пользовательского хоста по-умолчанию (при null или undefined пользователь увидит пустую строку)
+  customHostValue: string | undefined | null;
 }
+
+const SELECT_DEFAULT: string = 'DEFAULT_OPTION_VALUE';
+const SELECT_CUSTOM: string = 'CUSTOM_OPTION_VALUE';
 
 export interface selectModalFormValues {
   host: string;
@@ -39,31 +43,28 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { register, reset, handleSubmit: hookHandleSubmit } = useForm<selectModalFormValues>();
+  const { register, handleSubmit: hookHandleSubmit } = useForm<selectModalFormValues>();
 
   // настройка видимости текстовых полей
-  const [isHidden, setHidden] = useState(true);
+  const [isHidden, setHidden] = useState(false);
   const handleHidden = (event) => {
     // текстовые поля становятся видимыми, если выбран пользовательский хост
-    setHidden(event.target.value != SELECT_REMOTE);
+    setHidden(event.target.value != SELECT_CUSTOM);
   };
 
   const handleSubmit = hookHandleSubmit((data) => {
-    onRequestClose();
-    if (data.serverType == SELECT_LOCAL) {
+    if (data.serverType == SELECT_DEFAULT) {
       handleDefault();
     } else {
-      localStorage.setItem(localStorageHost, data.host);
-      localStorage.setItem(localStoragePort, data.port.toString());
       handleCustom(data.host, data.port);
     }
+    onRequestClose();
   });
 
   const onRequestClose = () => {
-    setHidden(true);
     onClose();
-    reset();
   };
+
   return (
     <Modal
       {...props}
@@ -83,12 +84,12 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           error={false}
           errorMessage={''}
           options={[
-            { value: SELECT_LOCAL, label: props.defaultTitle },
-            { value: SELECT_REMOTE, label: props.customTitle },
+            { value: SELECT_CUSTOM, label: props.customTitle },
+            { value: SELECT_DEFAULT, label: props.defaultTitle },
           ]}
         />
       </div>
-      <div className="flex">
+      <div className={twMerge('flex', isHidden && 'opacity-50')}>
         <TextInput
           label="Хост:"
           {...register('host')}
@@ -96,7 +97,8 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           isElse={isHidden}
           error={false}
           errorMessage={''}
-          defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+          defaultValue={props.customHostValue ?? ''}
+          //disabled={isLocal}
         />
         <TextInput
           label="Порт:"
@@ -114,7 +116,8 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
               );
             }
           }}
-          defaultValue={localStorage.getItem(localStoragePort) ?? ''}
+          defaultValue={props.customPortValue ?? ''}
+          //disabled={isLocal}
         />
       </div>
     </Modal>

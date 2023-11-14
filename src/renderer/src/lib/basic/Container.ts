@@ -1,4 +1,5 @@
 import { getColor } from '@renderer/theme';
+import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
@@ -21,7 +22,7 @@ export const MIN_SCALE = 0.2;
  * управление камерой, обработка событий и сериализация.
  */
 interface ContainerEvents {
-  stateDrop: Point;
+  dblclick: Point;
   contextMenu: Point;
 }
 
@@ -107,8 +108,9 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   private initEvents() {
-    this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
-    this.app.canvas.element.addEventListener('drop', this.handleDrop);
+    // ! Это на будущее
+    // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
+    // this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
@@ -128,14 +130,18 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.mouse.on('rightclick', this.handleRightMouseClick);
   }
 
-  private getCapturedNode(position: Point) {
-    const node = this.statesController.initialStateMark?.getIntersection(position);
+  getCapturedNode(args: getCapturedNodeArgs) {
+    const node = this.statesController.initialStateMark?.getIntersection(args);
     if (node) return node;
 
-    const end = this.children.size - 1;
+    const { type } = args;
 
-    for (let i = end; i >= 0; i--) {
-      const node = this.children.getByIndex(i)?.getIntersection(position);
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
+
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
 
       if (node) return node;
     }
@@ -151,24 +157,25 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.isDirty = true;
   }
 
-  handleDrop = (e: DragEvent) => {
-    e.preventDefault();
+  // ! Это на будущее
+  // handleDrop = (e: DragEvent) => {
+  //   e.preventDefault();
 
-    const rect = this.app.canvas.element.getBoundingClientRect();
-    const scale = this.app.manager.data.scale;
-    const offset = this.app.manager.data.offset;
-    const position = {
-      x: (e.clientX - rect.left) * scale - offset.x,
-      y: (e.clientY - rect.top) * scale - offset.y,
-    };
+  //   const rect = this.app.canvas.element.getBoundingClientRect();
+  //   const scale = this.app.manager.data.scale;
+  //   const offset = this.app.manager.data.offset;
+  //   const position = {
+  //     x: (e.clientX - rect.left) * scale - offset.x,
+  //     y: (e.clientY - rect.top) * scale - offset.y,
+  //   };
 
-    this.emit('stateDrop', position);
-  };
+  //   this.emit('stateDrop', position);
+  // };
 
   handleMouseDown = (e: MyMouseEvent) => {
     if (!e.left || this.isPan) return;
 
-    const node = this.getCapturedNode(e);
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseDown(e);
@@ -192,7 +199,7 @@ export class Container extends EventEmitter<ContainerEvents> {
       return;
     }
 
-    const node = this.getCapturedNode(e);
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseUp(e);
@@ -203,7 +210,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   };
 
   handleRightMouseClick = (e: MyMouseEvent) => {
-    const node = this.getCapturedNode(e);
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseContextMenu(e);
@@ -216,7 +223,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     if (e.left) this.handleLeftMouseMove(e);
     if (e.right) this.handleRightMouseMove(e);
 
-    this.isDirty = true;
+    if (e.left || e.right) this.isDirty = true;
   };
 
   private handleLeftMouseMove(e: MyMouseEvent) {
@@ -241,12 +248,12 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {
-    const node = this.getCapturedNode(e);
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseDoubleClick(e);
     } else {
-      this.emit('stateDrop', this.relativeMousePos({ x: e.x, y: e.y }));
+      this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
     }
   };
 

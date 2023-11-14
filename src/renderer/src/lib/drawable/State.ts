@@ -1,4 +1,4 @@
-import theme from '@renderer/theme';
+import theme, { getColor } from '@renderer/theme';
 
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
@@ -63,6 +63,10 @@ export class State extends Node {
     if (this.isSelected) {
       this.drawSelection(ctx);
       this.edgeHandlers.draw(ctx);
+    }
+
+    if (this.container.statesController.dragInfo?.parentId === this.id) {
+      this.drawHighlight(ctx);
     }
   }
 
@@ -176,6 +180,19 @@ export class State extends Node {
     ctx.fill();
     ctx.closePath();
     */
+  }
+
+  private drawHighlight(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+    ctx.canvas.hidden;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = getColor('primaryActive');
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);
+    ctx.stroke();
+    ctx.closePath();
   }
 
   //Дополнять внешними border при добавлении дочерних состояний

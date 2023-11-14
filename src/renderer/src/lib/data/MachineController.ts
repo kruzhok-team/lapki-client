@@ -300,6 +300,7 @@ export class MachineController {
       }
     }
 
+    this.container.children.remove('state', child.id);
     child.parent = parent;
     parent.children.add('state', child.id);
     // TODO Сделать удобный проход по переходам состояния

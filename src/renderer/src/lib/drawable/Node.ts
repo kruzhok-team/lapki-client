@@ -1,3 +1,4 @@
+import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point, Rectangle } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
@@ -30,6 +31,7 @@ interface NodeEvents {
   dblclick: { event: MyMouseEvent };
   contextmenu: { event: MyMouseEvent };
   longpress: { event: MyMouseEvent };
+  drag: { event: MyMouseEvent };
   dragend: { dragStartPosition: Point; dragEndPosition: Point };
 }
 
@@ -211,6 +213,8 @@ export abstract class Node extends EventEmitter<NodeEvents> {
         y: Math.max(0, this.bounds.y),
       };
     }
+
+    this.emit('drag', { event: e });
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
@@ -233,25 +237,45 @@ export abstract class Node extends EventEmitter<NodeEvents> {
     this.emit('contextmenu', { event: e });
   };
 
-  isUnderMouse<T extends Point>({ x, y }: T, withChildren?: boolean) {
+  isUnderMouse({ x, y }: Point, includeChildrenHeight?: boolean) {
     const drawBounds = this.drawBounds;
-    const bounds = !withChildren
+    const bounds = !includeChildrenHeight
       ? drawBounds
       : { ...drawBounds, height: drawBounds.height + drawBounds.childrenHeight };
     return isPointInRectangle(bounds, { x, y });
   }
 
-  getIntersection(position: Point): Node | null {
-    const drawBounds = this.drawBounds;
+  getCapturedNode(args: getCapturedNodeArgs) {
+    const { type } = args;
 
-    if (isPointInRectangle(drawBounds, position)) {
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
+
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
+
+      if (node) return node;
+    }
+
+    return null;
+  }
+
+  getIntersection(args: getCapturedNodeArgs): Node | null {
+    const { position, type, exclude, includeChildrenHeight } = args;
+
+    if (exclude?.includes(this.id)) return null;
+
+    if (this.isUnderMouse(position, includeChildrenHeight)) {
       return this;
     }
 
-    const end = this.children.size - 1;
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
 
-    for (let i = end; i >= 0; i--) {
-      const node = this.children.getByIndex(i)?.getIntersection(position);
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
 
       if (node) return node;
     }

@@ -1,10 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
-import { TextInput } from '../Modal/TextInput';
 import { Settings, CompilerSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
+import { ServerSelectModal } from '../ServerSelectModal';
 interface SettingProps {}
 
 const themeOptions = [
@@ -20,6 +20,13 @@ const themeOptions = [
 
 export const Setting: React.FC<SettingProps> = () => {
   const { setTheme, theme } = useThemeContext();
+
+  const [isCompilerModalOpen, setIsCompilerModalOpen] = useState(false);
+  const openCompilerModal = () => setIsCompilerModalOpen(true);
+  const closeCompilerModal = () => {
+    //Flasher.freezeReconnectionTimer(false);
+    setIsCompilerModalOpen(false);
+  };
 
   // ссылки для хранения значений хоста и порта
 
@@ -60,7 +67,19 @@ export const Setting: React.FC<SettingProps> = () => {
     setCompilerHost(window.api.DEFAULT_COMPILER_HOST);
     setCompilerPort(window.api.DEFAULT_COMPILER_PORT);
   };
+  const handleCompilerHostChange = () => {
+    //Flasher.freezeReconnectionTimer(true);
+    openCompilerModal();
+  };
 
+  const handleDefaultCompiler = () => {
+    console.log('DEFAULT', window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
+    //handleCompileReset();
+    //handleCompileConnect();
+  };
+  const handleCustomCompiler = (host: string, port: number) => {
+    console.log('CUSTOM', host, port);
+  };
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -79,41 +98,27 @@ export const Setting: React.FC<SettingProps> = () => {
         </div>
         <br></br>
         <div>
-          <TextInput
-            label="Хост"
-            isElse={false}
-            error={false}
-            errorMessage={''}
-            ref={compilerHostRef}
-            //defaultValue={Compiler.host}
-          />
-          <TextInput
-            label="Порт"
-            isElse={false}
-            error={false}
-            errorMessage={''}
-            ref={compilerPortRef}
-            //defaultValue={Compiler.port}
-          />
-          <button className="btn-primary mb-4" onClick={handleCompileConnect}>
-            {'⇨'}
-          </button>
-          <button className="btn-primary mb-4" onClick={handleCompileReset}>
-            {'↺'}
+          <button className="btn-primary mb-2" onClick={handleCompilerHostChange}>
+            {' '}
+            Компилятор
           </button>
         </div>
-        Адрес док-сервера
         <div>
-          <TextInput
-            label=""
-            //{...register('host')}
-            //placeholder="Напишите адрес компилятора"
-            isElse={false}
-            error={false}
-            errorMessage={''}
-          />
+          <button className="btn-primary mb-2"> Док-сервер</button>
         </div>
       </div>
+      <ServerSelectModal
+        isOpen={isCompilerModalOpen}
+        handleDefault={handleDefaultCompiler}
+        handleCustom={handleCustomCompiler}
+        onClose={closeCompilerModal}
+        topTitle={'Выберите компилятор'}
+        textSelectTitle={'Компилятор'}
+        defaultTitle={'Стандартный'}
+        customTitle={'Пользовательский'}
+        customHostValue={null}
+        customPortValue={null}
+      />
     </section>
   );
 };

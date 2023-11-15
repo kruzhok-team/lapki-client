@@ -1,28 +1,30 @@
-import React, { useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 
 import {
   Tree,
   TreeItem,
   DraggingPosition,
   ControlledTreeEnvironment,
-  TreeItemIndex,
   TreeRef,
+  TreeEnvironmentRef,
+  TreeItemIndex,
 } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
 import './style-modern.css';
 
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { ThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
-interface HierarchyProps {
-  hierarchy: HierarchyItem;
-  editor: CanvasEditor | null;
-  manager: EditorManager;
-}
+export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEditor | null }> = ({
+  hierarchy,
+  editor,
+}) => {
+  //Магия смены темы у данного компонента(На самом деле всё просто, он как ребёнок, получает все знания у своего родителя, которая связана со сменой темы)
+  const theme = useContext(ThemeContext);
 
-export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
+  const treeEnvironment = useRef<TreeEnvironmentRef>(null);
   const tree = useRef<TreeRef>(null);
 
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -61,6 +63,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
 
     return (
       <ControlledTreeEnvironment
+        ref={treeEnvironment}
         items={hierarchy}
         getItemTitle={(item) => item.data}
         canDragAndDrop
@@ -152,6 +155,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
             },
             onFocus: () => {
               actions.focusItem();
+              onSubmit(item?.index.toString());
             },
           }),
         }}
@@ -183,9 +187,5 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, editor }) => {
     );
   };
 
-  return (
-    <div className={twMerge(document.documentElement.dataset.theme !== 'light' && 'rct-dark')}>
-      {result()}
-    </div>
-  );
+  return <div className={twMerge(theme?.theme !== 'light' && 'rct-dark')}>{result()}</div>;
 };

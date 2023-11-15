@@ -41,6 +41,15 @@ export const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>('dark');
 
   const { editor, manager, setEditor } = useEditorManager();
+  const contextMenu = useDiagramContextMenu(editor, manager);
+
+  // const [update, setUpdate] = useState<CanvasEditor | null>(null);
+  // useEffect(() => {
+  //   setUpdate(editor);
+  // }, [editor]);
+
+  // const value = useMemo(() => ({ update, setUpdate }), [update]);
+  // console.log(value);
 
   const name = manager.useData('name');
   const platformName = manager.useData('elements.platform');
@@ -87,10 +96,8 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (!name || !platformName) return;
 
-    setTitle(`${name} [${platformName}] – Lapki IDE`);
+    setTitle(`${name} [${platformName}] - Lapki IDE`);
   }, [name, platformName]);
-
-  const contextMenu = useDiagramContextMenu(editor, manager);
 
   return (
     <DocumentTitle title={title}>

@@ -59,16 +59,16 @@ export class EditorManager {
 
     this.data = emptyEditorData();
 
-    const self = this;
-    this.data = new Proxy(this.data, {
-      set(target, prop, val, receiver) {
-        const result = Reflect.set(target, prop, val, receiver);
+    // const self = this;
+    // this.data = new Proxy(this.data, {
+    //   set(target, prop, val, receiver) {
+    //     const result = Reflect.set(target, prop, val, receiver);
 
-        self.dataListeners[prop].forEach((listener) => listener());
+    //     self.dataListeners[prop].forEach((listener) => listener());
 
-        return result;
-      },
-    });
+    //     return result;
+    //   },
+    // });
 
     this.data.basename = basename;
     this.data.name = name;
@@ -82,15 +82,17 @@ export class EditorManager {
     };
     this.data.isInitialized = true;
 
-    this.data.elements = new Proxy(this.data.elements, {
-      set(target, key, val, receiver) {
-        const result = Reflect.set(target, key, val, receiver);
+    this.triggerDataChange('basename', 'name', 'elements', 'isInitialized');
 
-        self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
+    // this.data.elements = new Proxy(this.data.elements, {
+    //   set(target, key, val, receiver) {
+    //     const result = Reflect.set(target, key, val, receiver);
 
-        return result;
-      },
-    });
+    //     self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
+
+    //     return result;
+    //   },
+    // });
 
     this.resetEditor?.();
   }
@@ -120,6 +122,25 @@ export class EditorManager {
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
+  }
+
+  triggerDataChange(...keys: EditorDataPropertyName[]) {
+    const isShallow = (propertyName: string): propertyName is keyof EditorData => {
+      return !propertyName.startsWith('elements.');
+    };
+
+    for (const key of keys) {
+      if (isShallow(key)) {
+        this.dataListeners[key].forEach((listener) => listener());
+        return;
+      }
+
+      const subKey = key.split('.')[1];
+
+      this.data.elements[subKey] = { ...this.data.elements[subKey] };
+
+      this.dataListeners[`elements.${subKey}`].forEach((listener) => listener());
+    }
   }
 
   newFile(platformIdx: string) {
@@ -341,6 +362,8 @@ export class EditorManager {
       name,
       parent: parentId,
     };
+
+    this.data.elements.states = { ...this.data.elements.states };
 
     // если у нас не было начального состояния, им станет новое
     if (this.data.elements.initialState === '') {

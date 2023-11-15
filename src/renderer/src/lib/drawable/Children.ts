@@ -25,6 +25,12 @@ export class Children {
     });
   }
 
+  forEachState(cb: (item: State) => void) {
+    this.statesList.forEach((id) => {
+      cb(this.stateMachine.states.get(id) as State);
+    });
+  }
+
   getTransitionIds() {
     return [...this.transitionsList];
   }
@@ -85,6 +91,12 @@ export class Children {
     }
   }
 
+  getStateByIndex(index: number) {
+    const id = this.statesList[index];
+
+    return this.stateMachine.states.get(id);
+  }
+
   getByIndex(index: number) {
     if (index < this.statesList.length) {
       const id = this.statesList[index];
@@ -111,5 +123,9 @@ export class Children {
 
   get isEmpty() {
     return this.size === 0;
+  }
+
+  get statesSize() {
+    return this.statesList.length;
   }
 }

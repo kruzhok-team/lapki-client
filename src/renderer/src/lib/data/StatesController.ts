@@ -1,3 +1,5 @@
+import throttle from 'lodash.throttle';
+
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
@@ -6,6 +8,13 @@ import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
 import { InitialStateMark } from '../drawable/InitialStateMark';
 import { State } from '../drawable/State';
+
+type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
+
+type DragInfo = {
+  parentId: string;
+  childId: string;
+} | null;
 
 /**
  * Контроллер {@link State|состояний}.
@@ -22,6 +31,7 @@ interface StatesControllerEvents {
 }
 
 export class StatesController extends EventEmitter<StatesControllerEvents> {
+  dragInfo: DragInfo = null;
   initialStateMark: InitialStateMark | null = null;
 
   constructor(public container: Container) {
@@ -95,19 +105,39 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   };
 
-  handleLongPress = (state: State, e: { event: MyMouseEvent }) => {
-    // если состояние вложено – отсоединяем
-    if (typeof state.parent !== 'undefined') {
-      this.container.machineController.unlinkState({ id: state.id });
+  // TODO: визуальная обратная связь
+  // если состояние вложено – отсоединяем
+  handleLongPress = (state: State) => {
+    if (typeof state.parent === 'undefined') return;
+
+    this.container.machineController.unlinkState({ id: state.id });
+  };
+
+  handleDrag: DragHandler = throttle<DragHandler>((state, e) => {
+    const possibleParent = (state.parent ?? this.container).getCapturedNode({
+      position: e.event,
+      exclude: [state.id],
+      includeChildrenHeight: false,
+      type: 'states',
+    });
+
+    this.dragInfo = null;
+
+    if (possibleParent) {
+      this.dragInfo = {
+        parentId: possibleParent.id,
+        childId: state.id,
+      };
+    }
+  }, 100);
+
+  handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
+    if (this.dragInfo) {
+      this.container.machineController.linkState(this.dragInfo.parentId, this.dragInfo.childId);
+      this.dragInfo = null;
       return;
     }
 
-    // если под курсором есть состояние – присоединить к нему
-    this.container.machineController.linkStateByPoint(state, e.event);
-    // TODO: визуальная обратная связь
-  };
-
-  handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     this.container.machineController.changeStatePosition(
       state.id,
       e.dragStartPosition,
@@ -120,8 +150,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleContextMenu.bind(this, state));
-    state.on('longpress', this.handleLongPress.bind(this, state));
+    state.on('drag', this.handleDrag.bind(this, state));
     state.on('dragend', this.handleDragEnd.bind(this, state));
+    state.on('longpress', this.handleLongPress.bind(this, state));
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
@@ -131,8 +162,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.off('contextmenu', this.handleContextMenu.bind(this, state));
-    state.off('longpress', this.handleLongPress.bind(this, state));
+    state.off('drag', this.handleDrag.bind(this, state));
     state.off('dragend', this.handleDragEnd.bind(this, state));
+    state.off('longpress', this.handleLongPress.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
   }

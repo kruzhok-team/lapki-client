@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
-import { useAddComponent, useEditDeleteComponent } from '@renderer/hooks';
+import { useComponents } from '@renderer/hooks';
 import { useHierarchyManager } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -21,9 +21,14 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const isInitialized = manager.useData('isInitialized');
   const components = manager.useData('elements.components');
 
-  const { onRequestAddComponent, ...addComponent } = useAddComponent(editor, manager);
-  const { onRequestEditComponent, onRequestDeleteComponent, editProps, deleteProps } =
-    useEditDeleteComponent(editor, manager);
+  const {
+    addProps,
+    editProps,
+    deleteProps,
+    onRequestAddComponent,
+    onRequestEditComponent,
+    onRequestDeleteComponent,
+  } = useComponents(editor, manager);
 
   const { ...hierarchyData } = useHierarchyManager(editor, manager);
 
@@ -100,8 +105,8 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         <Hierarchy {...hierarchyData} />
       </div>
 
-      <ComponentAddModal {...addComponent} />
-      <ComponentEditModal {...editProps} />
+      <ComponentAddModal manager={manager} {...addProps} />
+      <ComponentEditModal manager={manager} {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
     </section>
   );

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+
 import { twMerge } from 'tailwind-merge';
 
-import { Modal } from './Modal/Modal';
-import { ScrollableList } from '@renderer/components/ScrollableList';
-import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
+import { ScrollableList } from '@renderer/components/ScrollableList';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable/Picto';
+
+import { Modal } from './Modal/Modal';
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 
@@ -15,76 +17,56 @@ interface ComponentAddModalProps {
   onClose: () => void;
 
   vacantComponents: ComponentEntry[];
-  existingComponents: Set<string>;
-  onSubmit: (compo: string, name?: string) => void;
-}
+  onSubmit: (idx: string, name: string | undefined) => void;
 
-export interface ComponentAddModalFormValues {
-  compo: string;
+  manager: EditorManager;
 }
 
 export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   onClose,
   onSubmit,
   vacantComponents,
-  existingComponents,
+  manager,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm<ComponentAddModalFormValues>();
+  const components = manager.useData('elements.components');
+
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
-  const [compoName, setCompoName] = useState('');
-  const [nameChanged, setNameChanged] = useState(false);
-  const [isNameConflict, setIsNameConflict] = useState(false);
 
-  const handleSubmit = hookHandleSubmit(() => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!cursor) return;
-    const name = cursor.singletone ? undefined : compoName ?? undefined;
-    onSubmit(cursor!.idx, name);
+
+    const getName = () => {
+      let idx = 1;
+      while (`${cursor.idx}${idx}` in components) {
+        idx++;
+      }
+
+      return `${cursor.idx}${idx}`;
+    };
+
+    onSubmit(cursor.idx, cursor.singletone ? undefined : getName());
     onRequestClose();
-  });
-
-  const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-
-    setCompoName(name);
-    setIsNameConflict(existingComponents.has(name));
-    setNameChanged(true);
   };
 
   const onRequestClose = () => {
     onClose();
 
     setCursor(null);
-    setCompoName('');
-    setIsNameConflict(false);
-    setNameChanged(false);
   };
 
   // TODO: double click
   // TODO: arrow up, arrow down
-
   const onCompClick = (entry: ComponentEntry) => {
     setCursor(entry);
-
-    if (!nameChanged || compoName.length == 0) {
-      var idx = 1;
-      while (existingComponents.has(entry.idx + idx.toString())) {
-        idx++;
-      }
-      setCompoName(entry.idx + idx.toString());
-      setNameChanged(false);
-    }
   };
 
   const descriptionElement = stringToHTML('<div>' + (cursor?.description ?? '') + '</div>');
   const description = descriptionElement.childNodes
     ? convert(descriptionElement.childNodes[0])
     : '';
-
-  const addIsBlocked: boolean = !(
-    cursor &&
-    (cursor.singletone || (compoName.length > 0 && !isNameConflict))
-  );
 
   return (
     <Modal
@@ -93,7 +75,6 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
       title="Выберите компонент"
       submitLabel="Добавить"
       onSubmit={handleSubmit}
-      submitDisabled={addIsBlocked}
     >
       <div className="grid grid-cols-2">
         <ScrollableList
@@ -120,22 +101,6 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
         />
         <div className="pl-4">{description}</div>
       </div>
-
-      {cursor && !cursor.singletone && (
-        <div className="mt-4 flex items-center gap-2">
-          <label>Название:</label>
-          <input
-            className={twMerge(
-              'w-full rounded border bg-transparent px-2 py-[0.23rem] outline-none transition-colors placeholder:font-normal',
-              addIsBlocked && 'border-red-500 placeholder:text-red-500',
-              !addIsBlocked && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
-            )}
-            value={compoName}
-            onChange={onNameChange}
-            maxLength={20}
-          />
-        </div>
-      )}
     </Modal>
   );
 };

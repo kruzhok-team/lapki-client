@@ -22,6 +22,13 @@ import { searchPlatforms } from './PlatformSeacher';
 
 import icon from '../../resources/icon.png?asset';
 
+import {
+  COMPILER_SETTINGS_KEY,
+  DEFAULT_COMPILER_SETTINGS,
+  FLASHER_SETTINGS_KEY,
+  PLATFORMS_PATH_SETTINGS_KEY,
+} from './electron-settings-consts';
+
 /**
  * Создание главного окна редактора.
  */
@@ -81,17 +88,21 @@ function createWindow(): void {
 
 function initSettings(): void {
   console.log('getting settings from', settings.file());
-  if (!settings.hasSync('compiler')) {
-    settings.setSync('compiler', {
-      host: 'lapki.polyus-nt.ru',
-      port: 8081,
+  if (!settings.hasSync(COMPILER_SETTINGS_KEY)) {
+    settings.setSync(COMPILER_SETTINGS_KEY, DEFAULT_COMPILER_SETTINGS);
+  }
+
+  if (!settings.hasSync(PLATFORMS_PATH_SETTINGS_KEY)) {
+    settings.setSync(PLATFORMS_PATH_SETTINGS_KEY, {
+      path: '',
+      // path: `${process.cwd()}/src/renderer/public/platform`,
     });
   }
 
-  if (!settings.hasSync('PlatformsPath')) {
-    settings.setSync('PlatformsPath', {
-      path: '',
-      // path: `${process.cwd()}/src/renderer/public/platform`,
+  if (!settings.hasSync(FLASHER_SETTINGS_KEY)) {
+    settings.setSync(FLASHER_SETTINGS_KEY, {
+      host: null,
+      port: null,
     });
   }
 }
@@ -134,19 +145,9 @@ app.whenReady().then(() => {
     ModuleManager.startLocalModule(module);
   });
 
-  ipcMain.handle('Flasher:getPort', (_event) => {
-    return FLASHER_LOCAL_PORT;
-  });
-
   ipcMain.handle('Module:getStatus', (_event, module: string) => {
     const status: ModuleStatus = ModuleManager.getLocalStatus(module);
-    console.log(status.details, typeof status.details);
     return status;
-    /*const obj = {
-      code: status.code,
-      message: status.message,
-    };
-    return obj;*/
   });
 
   ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {
@@ -161,6 +162,14 @@ app.whenReady().then(() => {
   // main process
   ipcMain.handle('settings:get', (_event, key) => {
     return settings.get(key);
+  });
+  ipcMain.handle('settings:set', (_event, key, value) => {
+    return settings.set(key, value);
+  });
+
+  // получение локального порта
+  ipcMain.handle('Flasher:getPort', (_event) => {
+    return FLASHER_LOCAL_PORT;
   });
 
   // Горячие клавиши для режима разрабочика:

@@ -135,14 +135,7 @@ export class EditorManager {
   }
 
   compile() {
-    /**
-     Временное решение, чтобы выделить основную платформу
-     Все подплатформы имеют название вида:
-     MainPlatform-Subplatform
-    */
-    const main_platform = this.data.elements.platform.split('-');
-    console.log(main_platform[0]);
-    Compiler.compile(main_platform[0], {
+    Compiler.compile(this.data.elements.platform, {
       ...this.data.elements,
       transitions: Object.values(this.data.elements.transitions),
     });
@@ -272,7 +265,7 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
   }
 
-  async save(): Promise<Either<FileError | null, null>> {
+  save = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
@@ -293,9 +286,9 @@ export class EditorManager {
         content: saveData[2],
       });
     }
-  }
+  };
 
-  async saveAs(): Promise<Either<FileError | null, null>> {
+  saveAs = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     const data = this.getDataSerialized();
     const saveData: [boolean, string | null, string | null] =
@@ -312,7 +305,7 @@ export class EditorManager {
       });
     }
     return makeLeft(null);
-  }
+  };
 
   createState(args: CreateStateParameters) {
     const { name, parentId, id, events = [], placeInCenter = false } = args;
@@ -576,6 +569,8 @@ export class EditorManager {
 
   changeTransition({
     id,
+    source,
+    target,
     color,
     component,
     method,
@@ -585,6 +580,8 @@ export class EditorManager {
     const transition = this.data.elements.transitions[id] as Transition;
     if (!transition) return false;
 
+    transition.source = source;
+    transition.target = target;
     transition.color = color;
     transition.trigger.component = component;
     transition.trigger.method = method;

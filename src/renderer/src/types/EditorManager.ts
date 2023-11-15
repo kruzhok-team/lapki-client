@@ -53,6 +53,8 @@ export interface CreateTransitionParameters {
 
 export interface ChangeTransitionParameters {
   id: string;
+  source: string;
+  target: string;
   color: string;
   component: string;
   method: string;

@@ -19,9 +19,10 @@ import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
-} from '@renderer/types/StateMachine';
+  UnlinkStateParams,
+} from '@renderer/types/MachineController';
 
-import { StateMachine } from './StateMachine';
+import { MachineController } from './MachineController';
 
 import { EventSelection } from '../drawable/Events';
 import { Transition } from '../drawable/Transition';
@@ -32,7 +33,7 @@ export type PossibleActions = {
   changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
-  unlinkState: { parentId: string; childId: string };
+  unlinkState: { parentId: string; params: UnlinkStateParams };
   createTransition: { id: string; params: CreateTransitionParameters };
   deleteTransition: { transition: Transition; prevData: TransitionData };
   changeTransition: {
@@ -65,7 +66,7 @@ export type Action<T extends PossibleActionTypes> = {
 export type Stack = Array<Action<any>>;
 type ActionFunctions = {
   [Type in PossibleActionTypes]: (
-    sm: StateMachine,
+    sm: MachineController,
     args: PossibleActions[Type]
   ) => { undo: () => void; redo: () => void };
 };
@@ -113,11 +114,11 @@ export const actionFunctions: ActionFunctions = {
   }),
   linkState: (sM, { parentId, childId }) => ({
     redo: sM.linkState.bind(sM, parentId, childId, false),
-    undo: sM.unlinkState.bind(sM, childId, false),
+    undo: sM.unlinkState.bind(sM, { id: childId }, false),
   }),
-  unlinkState: (sM, { parentId, childId }) => ({
-    redo: sM.unlinkState.bind(sM, childId, false),
-    undo: sM.linkState.bind(sM, parentId, childId, false),
+  unlinkState: (sM, { parentId, params }) => ({
+    redo: sM.unlinkState.bind(sM, params, false),
+    undo: sM.linkState.bind(sM, parentId, params.id, false),
   }),
   createTransition: (sM, { id, params }) => ({
     redo: sM.createTransition.bind(sM, { ...params, id }, false),
@@ -144,6 +145,8 @@ export const actionFunctions: ActionFunctions = {
       sM,
       {
         id: transition.id,
+        source: prevData.source,
+        target: prevData.target,
         color: prevData.color,
         component: prevData.trigger.component,
         method: prevData.trigger.method,
@@ -224,11 +227,11 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   linkState: (args) => ({
     name: 'Присоединение состояния',
-    description: `Id: "${args.childId}"\nId родителя: "${args.childId}"`,
+    description: `Id: "${args.childId}"\nId родителя: "${args.parentId}"`,
   }),
   unlinkState: (args) => ({
     name: 'Отсоединение состояния',
-    description: `Id: "${args.childId}"\nId родителя: "${args.childId}"`,
+    description: `Id: "${args.params.id}"\nId родителя: "${args.parentId}"`,
   }),
   createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),
   deleteTransition: (args) => ({
@@ -301,7 +304,7 @@ export class UndoRedo {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(public stateMachine: StateMachine) {}
+  constructor(public stateMachine: MachineController) {}
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;

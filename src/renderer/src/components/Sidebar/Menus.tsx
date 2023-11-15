@@ -17,7 +17,7 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
   ]);
 
   const [width, setWidth] = useState(260);
-  const [minWidth, setMinWidth] = useState(200);
+  const [minWidth, setMinWidth] = useState(260);
   const [maxWidth, setMaxWidth] = useState('80vw');
 
   const handleResize = (e) => {
@@ -40,7 +40,7 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
       setMinWidth(5);
     } else {
       setMaxWidth('80vw');
-      setMinWidth(200);
+      setMinWidth(260);
     }
   }, [isCollapsed]);
 
@@ -52,9 +52,14 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
       maxWidth={maxWidth}
       onResize={handleResize}
       onResizeStop={handleResizeStop}
-      className="z-50 overflow-hidden border-r border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500"
+      className="z-50 overflow-hidden border-r border-border-primary bg-bg-secondary"
     >
-      <div className={twMerge('h-full w-full', isCollapsed && 'opacity-0')}>
+      <div
+        className={twMerge(
+          'h-full w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
+          isCollapsed && 'opacity-0'
+        )}
+      >
         {items.map((Element, i) => (
           <div key={i} className={twMerge('hidden h-full', i === activeTab && 'block')}>
             {Element}

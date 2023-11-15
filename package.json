@@ -15,6 +15,7 @@
     "type:platforms": "npm run schema:platforms && npm run quicktype:platforms",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "test": "vitest",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
@@ -42,6 +43,8 @@
     "fast-xml-parser": "^4.3.2",
     "find-free-port": "^2.0.0",
     "isomorphic-ws": "^5.0.0",
+    "lodash.throttle": "^4.1.1",
+    "lodash.debounce": "^4.0.8",
     "monaco-editor": "^0.39.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "nanoid": "^4.0.2",
@@ -61,6 +64,8 @@
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@electron/notarize": "^1.2.3",
+    "@types/lodash.throttle": "^4.1.8",
+    "@types/lodash.debounce": "^4.0.8",
     "@types/node": "^18.16.16",
     "@types/react": "^18.2.8",
     "@types/react-document-title": "^2.0.5",
@@ -81,6 +86,7 @@
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "jsdom": "^22.1.0",
     "postcss": "^8.4.24",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",
@@ -90,7 +96,8 @@
     "tailwind-scrollbar": "^3.0.5",
     "tailwindcss": "^3.3.2",
     "typescript": "^5.1.6",
-    "vite": "^4.3.9"
+    "vite": "^4.3.9",
+    "vitest": "^0.34.6"
   },
   "resolutions": {
     "@types/react": "^18.2.8",

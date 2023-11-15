@@ -16,6 +16,7 @@ import {
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device } from '@renderer/types/FlasherTypes';
+import { Settings } from '../Modules/Settings';
 
 const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
 
@@ -79,6 +80,10 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
     setFlasherIslocal(false);
     console.log('remote');
     Flasher.setAutoReconnect(true);
+    await Settings.setFlasherSettings({
+      port: port,
+      host: host,
+    });
     await Flasher.connect(host, port);
   };
 
@@ -164,18 +169,22 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   };
 
   useEffect(() => {
-    Flasher.bindReact(
-      setFlasherDevices,
-      setFlasherConnectionStatus,
-      setFlasherLog,
-      setFlasherFile,
-      setFlashing,
-      setFlasherError
-    );
-    const reader = new FileReader();
-    Flasher.initReader(reader);
-    console.log('CONNECTING TO FLASHER');
-    Flasher.connect();
+    Settings.getFlasherSettings().then((flasherSettings) => {
+      Flasher.bindReact(
+        setFlasherDevices,
+        setFlasherConnectionStatus,
+        setFlasherLog,
+        setFlasherFile,
+        setFlashing,
+        setFlasherError,
+        flasherSettings.host,
+        flasherSettings.port
+      );
+      const reader = new FileReader();
+      Flasher.initReader(reader);
+      console.log('CONNECTING TO FLASHER');
+      Flasher.connect();
+    });
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 
@@ -287,9 +296,9 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
             </div>
           ))}
         </div>
-        <div>
+        <div className="flex justify-between gap-2">
           <button
-            className="btn-primary mb-2"
+            className="btn-primary mb-2 w-full"
             onClick={handleFlash}
             disabled={
               flashing ||

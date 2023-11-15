@@ -1,8 +1,9 @@
 import { Point, Rectangle } from '@renderer/types/graphics';
 
-import { Container } from '../basic/Container';
-import { State } from './State';
 import { picto } from './Picto';
+import { State } from './State';
+
+import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
 
 export type EventSelection = {
@@ -145,7 +146,7 @@ export class Events {
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
 
-    const platform = this.container.machine.platform;
+    const platform = this.container.machineController.platform;
 
     let eventRow = 0;
     ctx.beginPath();

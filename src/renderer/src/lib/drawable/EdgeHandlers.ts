@@ -1,11 +1,11 @@
 import { Point } from '@renderer/types/graphics';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
+import { icons } from './Picto';
 import { State } from './State';
 
 import { CanvasEditor } from '../CanvasEditor';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { isPointInRectangle } from '../utils';
-import { icons } from './Picto';
 
 /**
  * «Хваталки» для ноды, надстройка над State, отрисовывающая

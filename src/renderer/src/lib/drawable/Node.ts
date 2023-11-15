@@ -1,10 +1,11 @@
+import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point, Rectangle } from '@renderer/types/graphics';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
-import { Events } from './Events';
+import { Children } from './Children';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { isPointInRectangle } from '../utils';
 
 /**
@@ -23,25 +24,22 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-interface DraggableEvents {
+interface NodeEvents {
   mousedown: { event: MyMouseEvent };
   mouseup: { event: MyMouseEvent };
   click: { event: MyMouseEvent };
   dblclick: { event: MyMouseEvent };
   contextmenu: { event: MyMouseEvent };
   longpress: { event: MyMouseEvent };
+  drag: { event: MyMouseEvent };
   dragend: { dragStartPosition: Point; dragEndPosition: Point };
 }
 
-export abstract class Draggable extends EventEmitter<DraggableEvents> {
+export abstract class Node extends EventEmitter<NodeEvents> {
   container!: Container;
-  statusevents!: Events;
-  // bounds!: Rectangle;
   id!: string;
-  parent?: Draggable;
-  children: Map<string, Draggable> = new Map();
-
-  dragging = false;
+  children!: Children;
+  parent?: Node;
 
   private dragStartPosition: Point | null = null;
 
@@ -52,36 +50,17 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
 
   childrenPadding = 15;
 
-  constructor(container: Container, id: string, parent?: Draggable) {
+  constructor(container: Container, id: string, parent?: Node) {
     super();
 
     this.container = container;
     this.id = id;
     this.parent = parent;
-
-    this.bindEvents();
+    this.children = new Children(this.container.machineController);
   }
 
   abstract get bounds(): Rectangle;
   abstract set bounds(bounds: Rectangle);
-
-  bindEvents() {
-    document.addEventListener('mouseup', this.globalMouseUp);
-    this.container.app.mouse.on('mouseup', this.handleMouseUp);
-    this.container.app.mouse.on('mousedown', this.handleMouseDown);
-    this.container.app.mouse.on('mousemove', this.handleMouseMove);
-    this.container.app.mouse.on('dblclick', this.handleMouseDoubleClick);
-    this.container.app.mouse.on('contextmenu', this.handleContextMenuClick);
-  }
-
-  unbindEvents() {
-    document.removeEventListener('mouseup', this.globalMouseUp);
-    this.container.app.mouse.off('mouseup', this.handleMouseUp);
-    this.container.app.mouse.off('mousedown', this.handleMouseDown);
-    this.container.app.mouse.off('mousemove', this.handleMouseMove);
-    this.container.app.mouse.off('dblclick', this.handleMouseDoubleClick);
-    this.container.app.mouse.off('contextmenu', this.handleContextMenuClick);
-  }
 
   // Позиция рассчитанная с возможным родителем
   get compoundPosition() {
@@ -109,8 +88,8 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
 
   get computedWidth() {
     let width = this.bounds.width / this.container.app.manager.data.scale;
-    if (this.children.size > 0) {
-      let rightChildren = this.children.values().next().value as Draggable;
+    if (!this.children.isEmpty) {
+      let rightChildren = this.children.getByIndex(0)!;
 
       this.children.forEach((children) => {
         const x = children.computedPosition.x;
@@ -141,29 +120,29 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
   }
 
   get childrenContainerHeight() {
-    if (this.children.size < 1) return 0;
+    if (this.children.isEmpty) return 0;
 
-    let bottomChildren = this.children.values().next().value as Draggable;
+    let bottomChild = this.children.getByIndex(0)!;
     let result = 0;
 
-    this.children.forEach((children) => {
-      const y = children.bounds.y;
-      const height = children.bounds.height;
-      const childrenContainerHeight = children.childrenContainerHeight;
+    this.children.forEach((child) => {
+      const y = child.bounds.y;
+      const height = child.bounds.height;
+      const childrenContainerHeight = child.childrenContainerHeight;
 
-      const bY = bottomChildren.bounds.y;
-      const bHeight = bottomChildren.bounds.height;
-      const bChildrenContainerHeight = bottomChildren.childrenContainerHeight;
+      const bY = bottomChild.bounds.y;
+      const bHeight = bottomChild.bounds.height;
+      const bChildrenContainerHeight = bottomChild.childrenContainerHeight;
 
       if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
-        bottomChildren = children;
+        bottomChild = child;
       }
     });
 
     result =
-      (bottomChildren.bounds.y + bottomChildren.bounds.height + this.childrenPadding * 2) /
+      (bottomChild.bounds.y + bottomChild.bounds.height + this.childrenPadding * 2) /
         this.container.app.manager.data.scale +
-      bottomChildren.childrenContainerHeight;
+      bottomChild.childrenContainerHeight;
 
     return result;
   }
@@ -198,16 +177,6 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
   }
 
   handleMouseDown = (e: MyMouseEvent) => {
-    if (!e.left) return;
-
-    const isUnderMouse = this.isUnderMouse(e);
-
-    if (!isUnderMouse) return;
-    document.body.style.cursor = 'grabbing';
-    // для того что-бы не хватать несколько элементов
-    e.stopPropagation();
-
-    this.dragging = true;
     this.isMouseDown = true;
     this.dragStartPosition = { x: this.bounds.x, y: this.bounds.y };
 
@@ -223,7 +192,7 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.dragging || this.container.isPan) return;
+    if (!this.isMouseDown) return;
 
     if (Math.abs(e.dx) > 1 && Math.abs(e.dy) > 1) {
       clearTimeout(this.mouseDownTimerId);
@@ -236,9 +205,6 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
       y: this.bounds.y + e.dy * this.container.app.manager.data.scale,
     };
 
-    // this.bounds.x += e.dx * this.container.app.manager.data.scale;
-    // this.bounds.y += e.dy * this.container.app.manager.data.scale;
-
     if (this.parent) {
       this.bounds = {
         width: this.bounds.width,
@@ -246,68 +212,89 @@ export abstract class Draggable extends EventEmitter<DraggableEvents> {
         x: Math.max(0, this.bounds.x),
         y: Math.max(0, this.bounds.y),
       };
-
-      // this.bounds.x = Math.max(0, this.bounds.x);
-      // this.bounds.y = Math.max(0, this.bounds.y);
     }
 
-    document.body.style.cursor = 'grabbing';
-    this.container.isDirty = true;
-  };
-
-  globalMouseUp = () => {
-    this.dragging = false;
-    clearTimeout(this.mouseDownTimerId);
-    // FIXME: перенести в общее поле (чтобы не вызывать N раз
-    document.body.style.cursor = 'default';
+    this.emit('drag', { event: e });
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
-    const prevDragging = this.dragging; // globalMouseUp убивает dragging, а для dragEnd он нужен, поэтому сохраняем
-
-    this.globalMouseUp();
-
-    if (prevDragging) {
-      this.dragEnd();
-    }
-
-    const isUnderMouse = this.isUnderMouse(e);
-    if (!isUnderMouse) return;
-
-    // Был баг с остановкой перетаскивания на другом элементе
-    // может привезти к новым багам (пока на карандаше)
-    // e.stopPropagation();
+    clearTimeout(this.mouseDownTimerId);
 
     this.emit('mouseup', { event: e });
 
     if (this.isMouseDown) {
       this.isMouseDown = false;
+      this.dragEnd();
       this.emit('click', { event: e });
     }
   };
 
   handleMouseDoubleClick = (e: MyMouseEvent) => {
-    const isUnderMouse = this.isUnderMouse(e);
-    if (!isUnderMouse) return;
-
-    // TODO: возможна коллизия с mouseup и click, нужно тестировать
     this.emit('dblclick', { event: e });
   };
 
-  handleContextMenuClick = (e: MyMouseEvent) => {
-    const isUnderMouse = this.isUnderMouse(e);
-    if (!isUnderMouse) return;
-
-    e.stopPropagation();
-
+  handleMouseContextMenu = (e: MyMouseEvent) => {
     this.emit('contextmenu', { event: e });
   };
 
-  isUnderMouse<T extends Point>({ x, y }: T, withChildren?: boolean) {
+  isUnderMouse({ x, y }: Point, includeChildrenHeight?: boolean) {
     const drawBounds = this.drawBounds;
-    const bounds = !withChildren
+    const bounds = !includeChildrenHeight
       ? drawBounds
       : { ...drawBounds, height: drawBounds.height + drawBounds.childrenHeight };
     return isPointInRectangle(bounds, { x, y });
+  }
+
+  getCapturedNode(args: getCapturedNodeArgs) {
+    const { type } = args;
+
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
+
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
+
+      if (node) return node;
+    }
+
+    return null;
+  }
+
+  getIntersection(args: getCapturedNodeArgs): Node | null {
+    const { position, type, exclude, includeChildrenHeight } = args;
+
+    if (exclude?.includes(this.id)) return null;
+
+    if (this.isUnderMouse(position, includeChildrenHeight)) {
+      return this;
+    }
+
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
+
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
+
+      if (node) return node;
+    }
+
+    return null;
+  }
+
+  /**
+   * Как глубоко нодв в дереве children
+   */
+  getDepth() {
+    let depth = 0;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    let node = this as Node;
+    while (node.parent) {
+      depth += 1;
+      node = node.parent;
+    }
+
+    return depth;
   }
 }

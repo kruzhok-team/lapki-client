@@ -9,8 +9,8 @@ import { Select, SelectOption } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { Condition } from '@renderer/lib/drawable/Condition';
 import { State } from '@renderer/lib/drawable/State';
+import { Transition } from '@renderer/lib/drawable/Transition';
 import {
   Action,
   Condition as ConditionData,
@@ -47,7 +47,7 @@ interface CreateModalProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
   isData: { state: State } | undefined;
-  isTransition: { target: Condition } | undefined;
+  isTransition: { target: Transition } | undefined;
   isCondition: Action[] | undefined;
   setIsCondition: React.Dispatch<React.SetStateAction<Action[]>>;
   onOpenEventsModal: () => void;
@@ -96,7 +96,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   //--------------------------------Работа со списком компонентов---------------------------------------
   const componentsData = manager.useData('elements.components');
-  const machine = editor!.container.machine;
+  const machine = editor!.container.machineController;
 
   const isEditingEvent = isData === undefined;
 
@@ -165,17 +165,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const optionsComponents = [
     ...sysCompoOption,
-    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx]) => compoEntry(idx)),
   ];
 
   const optionsParam1Components = [
     ...sysCompoOption,
-    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx]) => compoEntry(idx)),
   ];
 
   const optionsParam2Components = [
     ...sysCompoOption,
-    ...Array.from(Object.entries(componentsData)).map(([idx, _component]) => compoEntry(idx)),
+    ...Array.from(Object.entries(componentsData)).map(([idx]) => compoEntry(idx)),
   ];
 
   const [components, setComponents] = useState<SelectOption>(optionsComponents[0]);
@@ -195,7 +195,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     : machine.platform
         .getAvailableVariables(param1Components.value)
         .map(({ name }) => conditionEntry(name, param1Components.value));
-  console.log(machine.platform.name);
   const optionsParam2Methods = !components
     ? []
     : machine.platform
@@ -293,7 +292,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         }
       }
     } else if (props.isTransition) {
-      const d = props.isTransition.target.transition.data;
+      const d = props.isTransition.target.data;
       const compoName = d.trigger.component;
       const methodName = d.trigger.method;
       return {
@@ -308,7 +307,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const tryGetCondition: () => ConditionPreset | undefined = () => {
     if (props.isTransition) {
-      const c = props.isTransition.target.transition.data.condition;
+      const c = props.isTransition.target.data.condition;
       if (!c) return undefined;
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
@@ -832,7 +831,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             {...register('color', { required: 'Это поле обязательно к заполнению!' })}
             error={!!errors.color}
             errorMessage={errors.color?.message ?? ''}
-            defaultValue={props.isTransition?.target.transition.data.color ?? defaultTransColor}
+            defaultValue={props.isTransition?.target.data.color ?? defaultTransColor}
           />
         </>
       )}

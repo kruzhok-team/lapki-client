@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import {
   Tree,
@@ -14,7 +14,7 @@ import './style-modern.css';
 
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { ThemeContext } from '@renderer/store/ThemeContext';
+import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEditor | null }> = ({
@@ -22,7 +22,7 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
   editor,
 }) => {
   //Магия смены темы у данного компонента(На самом деле всё просто, он как ребёнок, получает все знания у своего родителя, которая связана со сменой темы)
-  const theme = useContext(ThemeContext);
+  const { theme } = useThemeContext();
 
   const treeEnvironment = useRef<TreeEnvironmentRef>(null);
   const tree = useRef<TreeRef>(null);
@@ -31,37 +31,37 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
 
-  const result = () => {
+  if (!editor) return;
+
+  const onSubmit = (id: string) => {
+    editor?.container.machineController.selectState(id);
+    editor?.container.machineController.selectTransition(id);
+  };
+
+  const onRename = (id: string, name: string) => {
+    editor?.container.machineController.changeStateName(id, name);
+  };
+
+  //Здесь мы напрямую работаем с родителями и дочерними элементами
+  const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
     if (!editor) return;
+    items.map((value) => {
+      target.targetItem !== undefined
+        ? editor.container.machineController.linkState(
+            target.targetItem.toString(),
+            value.index.toString()
+          )
+        : target.targetType === 'between-items' && target.parentItem !== 'root'
+        ? editor.container.machineController.linkState(
+            target.parentItem.toString(),
+            value.index.toString()
+          )
+        : editor.container.machineController.unlinkState({ id: value.index.toString() });
+    });
+  };
 
-    const onSubmit = (id: string) => {
-      editor?.container.machineController.selectState(id);
-      editor?.container.machineController.selectTransition(id);
-    };
-
-    const onRename = (id: string, name: string) => {
-      editor?.container.machineController.changeStateName(id, name);
-    };
-
-    //Здесь мы напрямую работаем с родителями и дочерними элементами
-    const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
-      if (!editor) return;
-      items.map((value) => {
-        target.targetItem.toString() !== undefined
-          ? editor.container.machineController.linkState(
-              target.targetItem.toString(),
-              value.index.toString()
-            )
-          : target.targetType === 'between-items' && target.parentItem !== 'root'
-          ? editor.container.machineController.linkState(
-              target.parentItem.toString(),
-              value.index.toString()
-            )
-          : editor.container.machineController.unlinkState({ id: value.index.toString() });
-      });
-    };
-
-    return (
+  return (
+    <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <ControlledTreeEnvironment
         ref={treeEnvironment}
         items={hierarchy}
@@ -155,7 +155,6 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
             },
             onFocus: () => {
               actions.focusItem();
-              onSubmit(item?.index.toString());
             },
           }),
         }}
@@ -184,8 +183,6 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
         </div>
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
-    );
-  };
-
-  return <div className={twMerge(theme?.theme !== 'light' && 'rct-dark')}>{result()}</div>;
+    </div>
+  );
 };

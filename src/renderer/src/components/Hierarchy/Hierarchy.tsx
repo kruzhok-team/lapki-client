@@ -46,7 +46,6 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
   const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
     if (!editor) return;
 
-    console.log(target.targetItem);
     items.map((value) => {
       target.targetType.toString() === 'item'
         ? editor.container.machineController.linkState(

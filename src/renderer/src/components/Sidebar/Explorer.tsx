@@ -30,7 +30,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     onRequestDeleteComponent,
   } = useComponents(editor, manager);
 
-  const { ...hierarchyData } = useHierarchyManager(editor, manager);
+  const hierarchyData = useHierarchyManager(editor, manager);
 
   const [cursor, setCursor] = useState<string | null>(null);
 

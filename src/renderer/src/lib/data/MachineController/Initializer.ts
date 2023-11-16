@@ -6,7 +6,7 @@ import { loadPlatform } from '../PlatformLoader';
 
 /**
  * Класс инкапсулирующий логику инициализации {@link MachineController|контроллера машины состояний}
- * который эджектится в конструкторе. Наружу отдаёт только метод init
+ * который эджектится (https://en.wikipedia.org/wiki/Dependency_injection#Constructor_injection) в конструкторе. Наружу отдаёт только метод init
  */
 export class Initializer {
   constructor(private machineController: MachineController) {}

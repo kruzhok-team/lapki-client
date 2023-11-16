@@ -13,20 +13,20 @@
     "n1": {
       "name": "diod2",
       "events": [
-          {
-            "trigger": {
-              "component": "btn1",
-              "method": "isPressed",
-              "args": []
-            },
-            "do": [
-              {
-                  "component": "diod2",
-                  "method":"fadeOut",
-                  "args": [5]
-              }
-            ]
-          }
+        {
+          "trigger": {
+            "component": "btn1",
+            "method": "isPressed",
+            "args": []
+          },
+          "do": [
+            {
+              "component": "diod2",
+              "method": "fadeOut",
+              "args": [5]
+            }
+          ]
+        }
       ],
       "bounds": {
         "x": 196,
@@ -134,12 +134,17 @@
         "y": 134,
         "height": 228,
         "width": 228
-        
       }
     }
   },
 
-  "initialState": "n2",
+  "initialState": {
+    "target": "n2",
+    "position": {
+      "x": -4,
+      "y": 164
+    }
+  },
 
   "transitions": [
     {
@@ -154,7 +159,7 @@
         "component": "btn1",
         "method": "clicked"
       },
-      "do":[
+      "do": [
         {
           "component": "diod1",
           "method": "fadeOut",
@@ -174,7 +179,7 @@
         "component": "btn1",
         "method": "clicked"
       },
-      "do":[]
+      "do": []
     },
     {
       "source": "n0",
@@ -188,7 +193,7 @@
         "component": "btn2",
         "method": "clicked"
       },
-      "do":[]
+      "do": []
     },
     {
       "source": "n4",
@@ -202,7 +207,7 @@
         "component": "btn1",
         "method": "clicked"
       },
-      "do":[]
+      "do": []
     },
     {
       "source": "n5",
@@ -216,7 +221,7 @@
         "component": "btn1",
         "method": "clicked"
       },
-      "do":[]
+      "do": []
     },
     {
       "source": "n1",
@@ -230,37 +235,37 @@
         "component": "btn2",
         "method": "clicked"
       },
-      "do":[]
+      "do": []
     }
   ],
 
   "components": {
-      "btn1": {
-          "type": "Button",
-          "parameters": {
-            "pin": "10",
-            "mode": "BUTTON_PULLDOWN"
-          }
-        },
-        "btn2": {
-          "type": "Button",
-          "parameters": {
-            "pin": "11",
-            "mode": "BUTTON_PULLDOWN"
-          }
-        },
-        "diod1": {
-          "type": "LED",
-          "parameters": {
-            "pin": "12"
-          }
-        },
-        "diod2": {
-          "type": "LED",
-          "parameters": {
-            "pin": "13"
-          }
-        }
+    "btn1": {
+      "type": "Button",
+      "parameters": {
+        "pin": "10",
+        "mode": "BUTTON_PULLDOWN"
+      }
+    },
+    "btn2": {
+      "type": "Button",
+      "parameters": {
+        "pin": "11",
+        "mode": "BUTTON_PULLDOWN"
+      }
+    },
+    "diod1": {
+      "type": "LED",
+      "parameters": {
+        "pin": "12"
+      }
+    },
+    "diod2": {
+      "type": "LED",
+      "parameters": {
+        "pin": "13"
+      }
+    }
   },
   "parameters": {},
   "platform": "ArduinoUno"

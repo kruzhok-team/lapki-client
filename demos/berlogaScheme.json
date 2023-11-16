@@ -169,7 +169,13 @@
       }
     }
   },
-  "initialState": "n3",
+  "initialState": {
+    "target": "n3",
+    "position": {
+      "x": 345,
+      "y": -1282
+    }
+  },
   "transitions": [
     {
       "source": "n0",

@@ -65,10 +65,6 @@ export class Initializer {
 
     for (const id in items) {
       this.createStateView(id);
-
-      if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.statesController.initInitialStateMark(id);
-      }
     }
 
     for (const id in items) {
@@ -77,6 +73,11 @@ export class Initializer {
       if (!data.parent) continue;
 
       this.linkStateView(data.parent, id);
+    }
+
+    const initialState = this.container.app.manager.data.elements.initialState;
+    if (initialState) {
+      this.machineController.createInitialState(initialState.target, initialState.position, false);
     }
   }
 

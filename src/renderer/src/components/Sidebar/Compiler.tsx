@@ -99,8 +99,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     console.log('CONNECTING TO COMPILER');
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
     Settings.getCompilerSettings().then((compiler) => {
+      Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
       Compiler.connect(compiler.host, compiler.port);
     });
   }, []);

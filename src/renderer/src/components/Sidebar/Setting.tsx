@@ -4,7 +4,7 @@ import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { Settings, CompilerSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
-import { ServerSelectModal } from '../ServerSelectModal';
+import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 interface SettingProps {}
 
 const themeOptions = [

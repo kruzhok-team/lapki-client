@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
-import { FlasherSelectModal } from '@renderer/components/FlasherSelectModal';
+import { FlasherSelectModal } from '@renderer/components/serverSelect/FlasherSelectModal';
 import {
   FLASHER_CONNECTED,
   FLASHER_CONNECTING,

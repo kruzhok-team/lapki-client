@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { Modal } from './Modal/Modal';
+import { Modal } from '../Modal/Modal';
 
-import { TextInput } from './Modal/TextInput';
+import { TextInput } from '../Modal/TextInput';
 
-import { TextSelectOptions } from './Modal/TextSelectOptions';
+import { TextSelectOptions } from '../Modal/TextSelectOptions';
 import { twMerge } from 'tailwind-merge';
 
 interface ServerSelectModalProps {

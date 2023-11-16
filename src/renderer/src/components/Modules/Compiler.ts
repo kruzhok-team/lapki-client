@@ -225,7 +225,7 @@ export class Compiler {
             this.timeout += 2000;
           }
           this.curReconnectAttemps++;
-          this.connectRoute(route);
+          this.reconnect();
           this.timeoutSetted = false;
         }, this.timeout);
       }

@@ -5,6 +5,7 @@ import { useThemeContext } from '@renderer/store/ThemeContext';
 import { Settings, CompilerSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
+import { DocSelectModal } from '../serverSelect/DocSelectModal';
 interface SettingProps {}
 
 const themeOptions = [
@@ -20,6 +21,40 @@ const themeOptions = [
 
 export const Setting: React.FC<SettingProps> = () => {
   const { setTheme, theme } = useThemeContext();
+
+  // для док-сервера
+
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const openDocModal = () => setIsDocModalOpen(true);
+  const closeDocModal = () => {
+    //Compiler.freezeReconnectionTimer(false);
+    setIsDocModalOpen(false);
+  };
+
+  // подключение к серверу компилятора
+  const handleDocConnect = async (host: string) => {
+    console.log('HOST CONNECTING', host);
+    //await Settings.setDocSettings({ host, port } as CompilerSettings);
+    //await Compiler.connect(host, port);
+  };
+  // действие при нажатии кнопки меню выбора сервера компилятора
+  const handleDocHostChange = () => {
+    //Flasher.freezeReconnectionTimer(true);
+    openDocModal();
+  };
+  // подключение к серверу по-умолчанию
+  const handleDefaultDoc = async () => {
+    console.log('DEFAULT');
+    //console.log('DEFAULT', window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
+    //await handleCompileConnect(window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
+  };
+  // подключение к серверу компилятора
+  const handleCustomDoc = async (host: string) => {
+    console.log('CUSTOM', host);
+    //await handleCompileConnect(host, port);
+  };
+
+  // для компилятора
 
   const [isCompilerModalOpen, setIsCompilerModalOpen] = useState(false);
   const openCompilerModal = () => setIsCompilerModalOpen(true);
@@ -49,6 +84,7 @@ export const Setting: React.FC<SettingProps> = () => {
     console.log('CUSTOM', host, port);
     await handleCompileConnect(host, port);
   };
+
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -73,7 +109,10 @@ export const Setting: React.FC<SettingProps> = () => {
           </button>
         </div>
         <div>
-          <button className="btn-primary mb-2"> Док-сервер</button>
+          <button className="btn-primary mb-2" onClick={handleDocHostChange}>
+            {' '}
+            Док-сервер
+          </button>
         </div>
       </div>
       <ServerSelectModal
@@ -87,6 +126,18 @@ export const Setting: React.FC<SettingProps> = () => {
         customTitle={'Пользовательский'}
         customHostValue={Compiler.host}
         customPortValue={String(Compiler.port)}
+      />
+
+      <DocSelectModal
+        isOpen={isDocModalOpen}
+        handleDefault={handleDefaultDoc}
+        handleCustom={handleCustomDoc}
+        onClose={closeDocModal}
+        topTitle={'Выберите док-сервер'}
+        textSelectTitle={'Док-сервер'}
+        defaultTitle={'Стандартный'}
+        customTitle={'Пользовательский'}
+        customHostValue={null}
       />
     </section>
   );

@@ -363,7 +363,7 @@ export class EditorManager {
       parent: parentId,
     };
 
-    this.data.elements.states = { ...this.data.elements.states };
+    this.triggerDataChange('elements.states');
 
     // если у нас не было начального состояния, им станет новое
     if (this.data.elements.initialState === '') {
@@ -413,6 +413,8 @@ export class EditorManager {
 
     this.data.elements.states[id].name = name;
 
+    this.triggerDataChange('elements.states');
+
     return true;
   }
 
@@ -433,6 +435,8 @@ export class EditorManager {
 
     child.parent = parentId;
 
+    this.triggerDataChange('elements.states');
+
     return true;
   }
 
@@ -447,6 +451,8 @@ export class EditorManager {
 
     delete state.parent;
 
+    this.triggerDataChange('elements.states');
+
     return true;
   }
 
@@ -456,6 +462,8 @@ export class EditorManager {
 
     delete this.data.elements.states[id];
 
+    this.triggerDataChange('elements.states');
+
     return true;
   }
 
@@ -464,6 +472,8 @@ export class EditorManager {
     if (!state) return false;
 
     this.data.elements.initialState = id;
+
+    this.triggerDataChange('elements.initialState');
 
     return true;
   }
@@ -588,6 +598,8 @@ export class EditorManager {
       condition,
     };
 
+    this.triggerDataChange('elements.transitions');
+
     return String(newId);
   }
 
@@ -612,6 +624,8 @@ export class EditorManager {
     transition.do = doAction;
     transition.condition = condition;
 
+    this.triggerDataChange('elements.transitions');
+
     return true;
   }
 
@@ -629,6 +643,8 @@ export class EditorManager {
     if (!transition) return false;
 
     delete this.data.elements.transitions[id];
+
+    this.triggerDataChange('elements.transitions');
 
     return true;
   }

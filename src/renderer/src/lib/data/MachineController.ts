@@ -100,10 +100,11 @@ export class MachineController {
         },
         false
       );
+    }
 
-      if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.statesController.initInitialStateMark(id);
-      }
+    const initialState = this.container.app.manager.data.elements.initialState;
+    if (initialState) {
+      this.createInitialState(initialState.target, initialState.position, false);
     }
   }
 
@@ -177,6 +178,12 @@ export class MachineController {
       if (linkByPoint) {
         this.linkStateByPoint(state, position);
       }
+    }
+
+    // Если не было начального состояния, им станет новое
+    if (!this.container.app.manager.data.elements.initialState) {
+      this.setInitialState(state.id, canUndo);
+      numberOfConnectedActions += 1;
     }
 
     this.container.statesController.watchState(state);
@@ -409,8 +416,8 @@ export class MachineController {
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
-    if (this.container.app.manager.data.elements.initialState === id) {
-      this.changeInitialState('', canUndo);
+    if (this.container.app.manager.data.elements.initialState?.target === id) {
+      this.removeInitialState(id, canUndo);
       numberOfConnectedActions += 1;
     }
 
@@ -430,16 +437,123 @@ export class MachineController {
     this.container.isDirty = true;
   };
 
-  changeInitialState = (id: string, canUndo = true) => {
+  /**
+   * Обёртка для удобного создания {@link InitialStateMark|маркера начального состояния}
+   * или перестановки его на другое {@link State|состояние}
+   */
+  setInitialState = (stateId: string, canUndo = true) => {
+    const initialState = this.container.app.manager.data.elements.initialState;
+
+    if (!initialState) {
+      return this.createInitialState(stateId, undefined, canUndo);
+    }
+
+    if (initialState.target === stateId) return;
+
+    return this.changeInitialState(initialState.target, stateId, canUndo);
+  };
+
+  /**
+   * Вызывается при удлении {@link State|состояния} чтобы
+   * {@link InitialStateMark|маркер начального состояния} перепрыгнул на другое состояние
+   * или удалился если состояний нет
+   */
+  removeInitialState = (stateId: string, canUndo = true) => {
+    for (const id of this.states.keys()) {
+      if (id === stateId) continue;
+
+      return this.changeInitialState(stateId, id, canUndo);
+    }
+
+    this.deleteInitialState(canUndo);
+  };
+
+  createInitialState = (targetId: string, initialPosition?: Point, canUndo = true) => {
+    const target = this.states.get(targetId);
+    if (!target) return;
+
+    const data = {
+      target: targetId,
+      position: initialPosition ?? {
+        x: target.compoundPosition.x - 100,
+        y: target.compoundPosition.y - 100,
+      },
+    };
+
+    this.container.app.manager.changeInitialState(data);
+    this.container.statesController.initInitialStateMark();
+
     if (canUndo) {
       this.undoRedo.do({
-        type: 'changeInitialState',
-        args: { id, prevInitial: this.container.app.manager.data.elements.initialState },
+        type: 'createInitialState',
+        args: data,
       });
     }
 
-    this.container.app.manager.changeInitialState(id);
-    this.container.statesController.initInitialStateMark(id);
+    this.container.isDirty = true;
+  };
+
+  /**
+   * Перемещение {@link InitialStateMark|маркера начального состояния}
+   * с одного {@link State|состояния} на другое
+   */
+  changeInitialState = (prevTargetId: string, newTargetId: string, canUndo = true) => {
+    const target = this.states.get(newTargetId);
+    if (!target) return;
+
+    const position = {
+      x: target.compoundPosition.x - 100,
+      y: target.compoundPosition.y - 100,
+    };
+    this.container.app.manager.changeInitialState({
+      target: newTargetId,
+      position,
+    });
+    this.container.statesController.initInitialStateMark();
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeInitialState',
+        args: { prevTargetId, newTargetId },
+      });
+    }
+
+    this.container.isDirty = true;
+  };
+
+  /**
+   * Изменение позиции {@link InitialStateMark|маркера начального состояния}
+   */
+  changeInitialStatePosition = (startPosition: Point, endPosition: Point, canUndo = true) => {
+    const initialState = this.container.app.manager.data.elements.initialState;
+    if (!initialState) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeInitialStatePosition',
+        args: { startPosition, endPosition },
+      });
+    }
+
+    this.container.app.manager.changeInitialStatePosition(endPosition);
+
+    this.container.isDirty = true;
+  };
+
+  deleteInitialState = (canUndo = true) => {
+    const initialStateData = this.container.app.manager.data.elements.initialState;
+
+    if (!initialStateData) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'deleteInitialState',
+        args: initialStateData,
+      });
+    }
+
+    this.container.statesController.initialStateMark = null;
+    this.container.app.manager.deleteInitialState();
 
     this.container.isDirty = true;
   };

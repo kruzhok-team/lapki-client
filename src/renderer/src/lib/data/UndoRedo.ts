@@ -7,6 +7,7 @@ import {
   Transition as TransitionData,
   EventData,
   State as StateData,
+  InitialState,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
@@ -41,7 +42,10 @@ export type PossibleActions = {
     args: ChangeTransitionParameters;
     prevData: TransitionData;
   };
-  changeInitialState: { id: string; prevInitial: string };
+  createInitialState: InitialState;
+  changeInitialState: { prevTargetId: string; newTargetId: string };
+  changeInitialStatePosition: { startPosition: Point; endPosition: Point };
+  deleteInitialState: InitialState;
   changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   changeTransitionPosition: { id: string; startPosition: Point; endPosition: Point };
   changeEvent: { stateId: string; event: EventSelection; newValue: Event; prevValue: Event };
@@ -156,9 +160,21 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  changeInitialState: (sM, { id, prevInitial }) => ({
-    redo: sM.changeInitialState.bind(sM, id, false),
-    undo: sM.changeInitialState.bind(sM, prevInitial, false),
+  createInitialState: (sM, { target, position }) => ({
+    redo: sM.createInitialState.bind(sM, target, position, false),
+    undo: sM.deleteInitialState.bind(sM, false),
+  }),
+  changeInitialState: (sM, { prevTargetId, newTargetId }) => ({
+    redo: sM.changeInitialState.bind(sM, prevTargetId, newTargetId, false),
+    undo: sM.changeInitialState.bind(sM, newTargetId, prevTargetId, false),
+  }),
+  changeInitialStatePosition: (sM, { startPosition, endPosition }) => ({
+    redo: sM.changeInitialStatePosition.bind(sM, startPosition, endPosition, false),
+    undo: sM.changeInitialStatePosition.bind(sM, endPosition, startPosition, false),
+  }),
+  deleteInitialState: (sM, { target, position }) => ({
+    redo: sM.deleteInitialState.bind(sM, false),
+    undo: sM.createInitialState.bind(sM, target, position, false),
   }),
   changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
     redo: sM.changeStatePosition.bind(sM, id, startPosition, endPosition, false),
@@ -239,9 +255,21 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id: ${args.transition.id}`,
   }),
   changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
+  createInitialState: (args) => ({
+    name: 'Создание начального состояния',
+    description: `На состояние ${args.target}`,
+  }),
+  deleteInitialState: (args) => ({
+    name: 'Удаление начального состояния',
+    description: `Из состояния ${args.target}`,
+  }),
   changeInitialState: (args) => ({
     name: 'Изменение начального состояния',
-    description: `Было: "${args.prevInitial}"\nСтало: ${args.id}`,
+    description: `Было: "${args.prevTargetId}"\nСтало: ${args.newTargetId}`,
+  }),
+  changeInitialStatePosition: (args) => ({
+    name: 'Перемещение начального состояния',
+    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
   }),
   changeStatePosition: (args) => ({
     name: 'Перемещение состояния',

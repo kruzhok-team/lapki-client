@@ -44,22 +44,19 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
 
   //Здесь мы напрямую работаем с родителями и дочерними элементами
   const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
-    if (!editor) return;
-    console.log(target);
+    const parent = tree.current?.dragAndDropContext.draggingPosition?.targetItem;
 
     items.map((value) => {
-      target.targetType.toString() === 'item'
-        ? editor.container.machineController.linkState(
-            target.targetItem.toString(),
-            value.index.toString()
-          )
-        : target.targetType.toString() === 'between-items' && target.targetItem !== undefined
-        ? editor.container.machineController.linkState(
-            target.targetItem.toString(),
-            value.index.toString()
-          )
-        : editor.container.machineController.unlinkState({ id: value.index.toString() });
+      if (parent) {
+        target.targetType.toString() === 'item'
+          ? editor.container.machineController.linkState(parent.toString(), value.index.toString())
+          : target.targetType.toString() === 'between-items' &&
+            editor.container.machineController.linkState(parent.toString(), value.index.toString());
+      } else {
+        editor.container.machineController.unlinkState({ id: value.index.toString() });
+      }
     });
+    console.log();
   };
 
   return (
@@ -108,21 +105,6 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
                 actions.toggleExpandedState();
               }
             },
-            onDragStart: (e) => {
-              //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
-              if (item.canMove) {
-                e.dataTransfer.dropEffect = 'move';
-                actions.startDragging();
-              }
-            },
-            onDragOver: (e) => {
-              e.preventDefault(); // Разрешить удаление
-            },
-            onBlur: () => {
-              actions.unselectItem();
-            },
-            //Разрешаем перемещение
-            draggable: renderFlags.canDrag && !renderFlags.isRenaming,
             onDoubleClick: () => {
               if (item.canRename) {
                 actions.startRenamingItem();
@@ -155,8 +137,25 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
                 }
               });
             },
+
+            onBlur: () => {
+              actions.unselectItem();
+            },
             onFocus: () => {
               actions.focusItem();
+            },
+
+            onDragStart: (e) => {
+              //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
+              if (item.canMove) {
+                e.dataTransfer.dropEffect = 'move';
+                actions.startDragging();
+              }
+            },
+            //Разрешаем перемещение
+            draggable: renderFlags.canDrag && !renderFlags.isRenaming,
+            onDragOver: (e) => {
+              e.preventDefault(); // Разрешить удаление
             },
           }),
         }}

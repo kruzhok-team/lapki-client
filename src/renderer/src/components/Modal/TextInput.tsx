@@ -22,7 +22,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           )}
           ref={ref}
           {...props}
-          maxLength={20}
+          maxLength={80}
         />
         <p className="min-h-[24px] text-[14px] text-red-500">{errorMessage}</p>
       </label>

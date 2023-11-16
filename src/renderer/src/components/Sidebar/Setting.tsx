@@ -6,6 +6,7 @@ import { Settings, CompilerSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
+import { setURL } from '../Documentation/Documentation';
 interface SettingProps {}
 
 const themeOptions = [
@@ -52,6 +53,7 @@ export const Setting: React.FC<SettingProps> = () => {
   const handleCustomDoc = async (host: string) => {
     console.log('CUSTOM', host);
     //await handleCompileConnect(host, port);
+    setURL(host);
   };
 
   // для компилятора

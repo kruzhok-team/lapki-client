@@ -14,26 +14,37 @@ interface DocumentationsProps {
   topOffset?: boolean;
 }
 
+// TODO: используется для того, чтобы задать значение переменной извне, но это выглядит костыльно
+var SET_URL;
+var SET_DATA;
+export function setURL(url) {
+  SET_URL(url);
+  getData(url);
+}
+
+function getData(url) {
+  fetch(url)
+    .then((data) => data.json())
+    .then((data) => {
+      SET_DATA(data);
+    });
+}
+
 export function Documentations({ baseUrl, topOffset = false }: DocumentationsProps) {
+  const [url, setUrl] = useState(baseUrl);
+  SET_URL = setUrl;
   const [activeTab, setActiveTab] = useState<number>(0);
   const [data, setData] = useState<{ body: File }>();
+  SET_DATA = setData;
   const [html, setHtml] = useState('');
   const [documentLink, setDocumentLink] = useState('');
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
-  const getData = () => {
-    fetch(baseUrl)
-      .then((data) => data.json())
-      .then((data) => {
-        setData(data);
-      });
-  };
-
   const onItemClicked = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, item) => {
     event.stopPropagation();
     if (item.path.endsWith('html')) {
-      fetch(encodeURI(`${baseUrl}${item.path}`))
+      fetch(encodeURI(`${url}${item.path}`))
         .then((data) => data.text())
         .then((html) => {
           setHtml(html);
@@ -41,13 +52,13 @@ export function Documentations({ baseUrl, topOffset = false }: DocumentationsPro
         });
     } else {
       setHtml('');
-      setDocumentLink(`${baseUrl}${item.path}`);
+      setDocumentLink(`${url}${item.path}`);
       setActiveTab(1);
     }
   };
 
   useEffect(() => {
-    getData();
+    getData(url);
   }, []);
 
   return (

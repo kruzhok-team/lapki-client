@@ -1,7 +1,39 @@
 {
+  "components": {
+    "diod1": {
+      "parameters": {
+        "pin": "12",
+        "labelColor": "#0008f5",
+        "label": "1"
+      },
+      "type": "LED"
+    },
+    "button1": {
+      "parameters": {
+        "pin": "4",
+        "labelColor": "#c70000",
+        "label": "1"
+      },
+      "type": "Button"
+    }
+  },
+  "initialState": {
+    "target": "diod1",
+    "position": {
+      "x": -180.56000000000003,
+      "y": 569.0000000000002
+    }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno",
   "states": {
     "diod1": {
-      "name": "state1",
+      "bounds": {
+        "height": 95,
+        "width": 450,
+        "x": 50,
+        "y": 431
+      },
       "events": [
         {
           "do": [
@@ -16,15 +48,15 @@
           }
         }
       ],
-      "bounds": {
-        "height": 95,
-        "width": 450,
-        "x": 50,
-        "y": 431
-      }
+      "name": "state1"
     },
     "diod2": {
-      "name": "state2",
+      "bounds": {
+        "height": 245,
+        "width": 450,
+        "x": 195,
+        "y": 141
+      },
       "events": [
         {
           "do": [
@@ -75,15 +107,15 @@
           }
         }
       ],
-      "bounds": {
-        "height": 245,
-        "width": 450,
-        "x": 195,
-        "y": 141
-      }
+      "name": "state2"
     },
     "diod3": {
-      "name": "state3",
+      "bounds": {
+        "height": 95,
+        "width": 450,
+        "x": 188,
+        "y": 21
+      },
       "events": [
         {
           "do": [
@@ -98,57 +130,62 @@
           }
         }
       ],
-      "bounds": {
-        "height": 95,
-        "width": 450,
-        "x": 188,
-        "y": 21
-      }
+      "name": "state3"
     },
     "childState": {
-      "parent": "diod1",
-      "name": "child state1",
-      "events": [],
       "bounds": {
         "height": 85,
         "width": 450,
         "x": 0,
         "y": 117
-      }
+      },
+      "events": [],
+      "name": "child state1",
+      "parent": "diod1"
     },
     "childState2": {
-      "parent": "childState",
-      "name": "child state2",
-      "events": [],
       "bounds": {
         "height": 85,
         "width": 450,
         "x": 0,
         "y": 0
-      }
+      },
+      "events": [],
+      "name": "child state2",
+      "parent": "childState"
     },
     "childState3": {
-      "parent": "diod1",
-      "name": "child state3",
-      "events": [],
       "bounds": {
         "height": 85,
         "width": 450,
         "x": 291,
         "y": 0
-      }
-    }
-  },
-  "initialState": {
-    "target": "diod1",
-    "position": {
-      "x": -50,
-      "y": 331
+      },
+      "events": [],
+      "name": "child state3",
+      "parent": "diod1"
     }
   },
   "transitions": [
     {
       "color": "#F24C3D",
+      "condition": {
+        "type": "greater",
+        "value": [
+          {
+            "type": "component",
+            "value": {
+              "args": {},
+              "component": "diod1",
+              "method": "value"
+            }
+          },
+          {
+            "type": "value",
+            "value": "1234"
+          }
+        ]
+      },
       "do": [
         {
           "component": "diod1",
@@ -171,23 +208,6 @@
         "x": 16,
         "y": 175
       },
-      "condition": {
-        "type": "greater",
-        "value": [
-          {
-            "type": "component",
-            "value": {
-              "component": "diod1",
-              "method": "value",
-              "args": {}
-            }
-          },
-          {
-            "type": "value",
-            "value": "1234"
-          }
-        ]
-      },
       "source": "diod2",
       "target": "diod1",
       "trigger": {
@@ -208,25 +228,5 @@
         "method": "clicked"
       }
     }
-  ],
-  "components": {
-    "diod1": {
-      "parameters": {
-        "pin": "12",
-        "labelColor": "#0008f5",
-        "label": "1"
-      },
-      "type": "LED"
-    },
-    "button1": {
-      "parameters": {
-        "pin": "4",
-        "labelColor": "#c70000",
-        "label": "1"
-      },
-      "type": "Button"
-    }
-  },
-  "parameters": {},
-  "platform": "ArduinoUno"
+  ]
 }

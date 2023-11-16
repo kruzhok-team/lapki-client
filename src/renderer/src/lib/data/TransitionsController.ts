@@ -50,7 +50,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
     this.container.machineController.removeSelection();
     transition.setIsSelected(true);
-    const offset = this.container.app.mouse.getOffset();
 
     this.emit('transitionContextMenu', {
       transition,

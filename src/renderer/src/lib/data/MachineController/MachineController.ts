@@ -22,14 +22,14 @@ import {
 } from '@renderer/types/MachineController';
 import { indexOfMin } from '@renderer/utils';
 
-import { loadPlatform } from './PlatformLoader';
-import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
-import { UndoRedo } from './UndoRedo';
+import { Initializer } from './Initializer';
 
-import { Container } from '../basic/Container';
-import { EventSelection } from '../drawable/Events';
-import { State } from '../drawable/State';
-import { Transition } from '../drawable/Transition';
+import { Container } from '../../basic/Container';
+import { EventSelection } from '../../drawable/Events';
+import { State } from '../../drawable/State';
+import { Transition } from '../../drawable/Transition';
+import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
+import { UndoRedo } from '../UndoRedo';
 
 /**
  * Контроллер машины состояний.
@@ -48,6 +48,8 @@ import { Transition } from '../drawable/Transition';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
 export class MachineController {
+  initializer = new Initializer(this);
+
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
 
@@ -57,103 +59,10 @@ export class MachineController {
 
   constructor(public container: Container) {}
 
-  resetEntities() {
-    this.container.children.clear();
-    this.transitions.forEach((value) => {
-      this.container.transitionsController.unwatchTransition(value);
-    });
-
-    this.states.forEach((value) => {
-      this.container.statesController.unwatchState(value);
-    });
-    this.states.clear();
-    this.transitions.clear();
-    this.undoRedo.clear();
-  }
-
   loadData() {
-    this.resetEntities();
-
-    this.initStates();
-    this.initTransitions();
-    this.initPlatform();
-    this.initComponents();
-
-    // Центрирование камеры после открытия новой схемы
-    this.container.viewCentering();
+    this.initializer.init();
 
     this.container.isDirty = true;
-  }
-
-  initStates() {
-    const items = this.container.app.manager.data.elements.states;
-
-    for (const id in items) {
-      const data = items[id];
-      this.createState(
-        {
-          id,
-          name: data.name,
-          position: data.bounds,
-          events: data.events,
-          parentId: data.parent,
-        },
-        false
-      );
-
-      if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.statesController.initInitialStateMark(id);
-      }
-    }
-  }
-
-  initTransitions() {
-    const items = this.container.app.manager.data.elements.transitions;
-
-    for (const id in items) {
-      const data = items[id];
-
-      this.createTransition(
-        {
-          id,
-          color: data.color,
-          condition: data.condition ?? undefined,
-          position: data.position,
-          source: data.source,
-          target: data.target,
-          doAction: data.do ?? [],
-          component: data.trigger.component,
-          method: data.trigger.method,
-        },
-        false
-      );
-    }
-  }
-
-  initComponents() {
-    const items = this.container.app.manager.data.elements.components;
-
-    for (const name in items) {
-      const component = items[name];
-      // this.components.set(name, new Component(component));
-      this.platform.nameToVisual.set(name, {
-        component: component.type,
-        label: component.parameters['label'],
-        color: component.parameters['labelColor'],
-      });
-    }
-  }
-
-  initPlatform() {
-    const platformName = this.container.app.manager.data.elements.platform;
-
-    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformName);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
-    }
-
-    this.platform = platform;
   }
 
   createState = (args: CreateStateParameters, canUndo = true) => {

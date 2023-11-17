@@ -45,23 +45,20 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
 
   //Здесь мы напрямую работаем с родителями и дочерними элементами
   const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
-    const parent = tree.current?.dragAndDropContext.draggingPosition as DraggingPosition;
+    const parent = tree.current?.dragAndDropContext.draggingPosition as DraggingPositionItem;
 
     items.map((value) => {
-      if (parent) {
-        target.targetType.toString() === 'item'
-          ? editor.container.machineController.linkState(
-              parent.targetItem.toString(),
-              value.index.toString()
-            )
-          : target.targetType.toString() === 'between-items' &&
-            editor.container.machineController.linkState(
-              parent.targetItem.toString(),
-              value.index.toString()
-            );
-      } else {
-        editor.container.machineController.unlinkState({ id: value.index.toString() });
-      }
+      target.targetType.toString() === 'item'
+        ? editor.container.machineController.linkState(
+            parent.targetItem.toString(),
+            value.index.toString()
+          )
+        : target.targetType.toString() === 'between-items' && parent.parentItem !== 'root'
+        ? editor.container.machineController.linkState(
+            parent.parentItem.toString(),
+            value.index.toString()
+          )
+        : editor.container.machineController.unlinkState({ id: value.index.toString() });
     });
   };
 

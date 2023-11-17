@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
@@ -21,6 +21,17 @@ const themeOptions = [
 ];
 
 export const Setting: React.FC<SettingProps> = () => {
+  const [compilerSettings, setCompilerSettings] = useState<CompilerSettings>();
+  const [docSettings, setDocSettings] = useState<DocSettings>();
+  useEffect(() => {
+    Settings.getCompilerSettings().then((compiler) => {
+      setCompilerSettings(compiler);
+    });
+    Settings.getDocSettings().then((doc) => {
+      setDocSettings(doc);
+    });
+  }, []);
+
   const { setTheme, theme } = useThemeContext();
 
   // для док-сервера
@@ -115,8 +126,8 @@ export const Setting: React.FC<SettingProps> = () => {
         textSelectTitle={'Компилятор'}
         defaultTitle={'Стандартный'}
         customTitle={'Пользовательский'}
-        customHostValue={Compiler.host}
-        customPortValue={String(Compiler.port)}
+        customHostValue={compilerSettings?.host}
+        customPortValue={String(compilerSettings?.port)}
       />
 
       <DocSelectModal
@@ -128,7 +139,7 @@ export const Setting: React.FC<SettingProps> = () => {
         textSelectTitle={'Док-сервер'}
         defaultTitle={'Стандартный'}
         customTitle={'Пользовательский'}
-        customHostValue={null}
+        customHostValue={docSettings?.host}
       />
     </section>
   );

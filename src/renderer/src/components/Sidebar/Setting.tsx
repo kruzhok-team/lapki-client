@@ -32,13 +32,13 @@ export const Setting: React.FC<SettingProps> = () => {
     setIsDocModalOpen(false);
   };
 
-  // подключение к серверу компилятора
+  // подключение к серверу документации
   const handleDocConnect = async (host: string) => {
     console.log('HOST CONNECTING', host);
     //await Settings.setDocSettings({ host, port } as CompilerSettings);
     //await Compiler.connect(host, port);
   };
-  // действие при нажатии кнопки меню выбора сервера компилятора
+  // действие при нажатии кнопки меню выбора сервера документации
   const handleDocHostChange = () => {
     //Flasher.freezeReconnectionTimer(true);
     openDocModal();
@@ -49,7 +49,7 @@ export const Setting: React.FC<SettingProps> = () => {
     //console.log('DEFAULT', window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
     //await handleCompileConnect(window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
   };
-  // подключение к серверу компилятора
+  // подключение к пользовательскому серверу документации
   const handleCustomDoc = async (host: string) => {
     console.log('CUSTOM', host);
     //await handleCompileConnect(host, port);

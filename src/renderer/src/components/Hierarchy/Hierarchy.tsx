@@ -8,7 +8,6 @@ import {
   TreeRef,
   TreeEnvironmentRef,
   TreeItemIndex,
-  DraggingPositionBetweenItems,
   DraggingPositionItem,
 } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';

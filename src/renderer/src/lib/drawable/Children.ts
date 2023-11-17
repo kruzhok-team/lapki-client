@@ -25,6 +25,25 @@ export class Children {
     });
   }
 
+  forEachState(cb: (item: State) => void) {
+    this.statesList.forEach((id) => {
+      cb(this.stateMachine.states.get(id) as State);
+    });
+  }
+
+  getTransitionIds() {
+    return [...this.transitionsList];
+  }
+
+  clearTransitions() {
+    this.transitionsList.length = 0;
+  }
+
+  clear() {
+    this.statesList.length = 0;
+    this.transitionsList.length = 0;
+  }
+
   // Для того чтобы можно было перебрать экземпляр класса с помощью for of
   [Symbol.iterator]() {
     let i = 0;
@@ -67,7 +86,15 @@ export class Children {
     const list = type === 'state' ? this.statesList : this.transitionsList;
     const index = list.findIndex((item) => id === item);
 
-    list.splice(index, 1);
+    if (index !== -1) {
+      list.splice(index, 1);
+    }
+  }
+
+  getStateByIndex(index: number) {
+    const id = this.statesList[index];
+
+    return this.stateMachine.states.get(id);
   }
 
   getByIndex(index: number) {
@@ -87,7 +114,9 @@ export class Children {
 
     const index = list.findIndex((item) => id === item);
 
-    list.splice(list.length - 1, 0, list.splice(index, 1)[0]);
+    if (index !== -1) {
+      list.splice(list.length - 1, 0, list.splice(index, 1)[0]);
+    }
   }
 
   get size() {
@@ -96,5 +125,9 @@ export class Children {
 
   get isEmpty() {
     return this.size === 0;
+  }
+
+  get statesSize() {
+    return this.statesList.length;
   }
 }

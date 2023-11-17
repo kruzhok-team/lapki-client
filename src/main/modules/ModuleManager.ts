@@ -1,10 +1,10 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { findFreePort } from './freePortFinder';
 import path from 'path';
-export var FLASHER_LOCAL_HOST = 'localhost';
-export var FLASHER_LOCAL_PORT;
+export var FLASHER_LOCAL_HOST: string = 'localhost';
+export var FLASHER_LOCAL_PORT: number;
 // название локального загрузчика
-export const LAPKI_FLASHER = 'lapki-flasher';
+export const LAPKI_FLASHER: string = 'lapki-flasher';
 
 export class ModuleStatus {
   /* 
@@ -38,9 +38,11 @@ export class ModuleManager {
   static async startLocalModule(module: string) {
     this.moduleStatus[module] = new ModuleStatus();
     if (!this.localProccesses.has(module)) {
-      await findFreePort((port) => {
-        FLASHER_LOCAL_PORT = port;
-      });
+      if (module == LAPKI_FLASHER) {
+        await findFreePort((port) => {
+          FLASHER_LOCAL_PORT = port;
+        });
+      }
       const platform = process.platform;
       const basePath = path
         .join(__dirname, '../../resources')

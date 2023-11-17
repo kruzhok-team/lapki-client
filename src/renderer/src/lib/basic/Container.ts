@@ -1,9 +1,10 @@
 import { getColor } from '@renderer/theme';
+import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point } from '@renderer/types/graphics';
+import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
-import { MyMouseEvent } from '../common/MouseEventEmitter';
 import { MachineController } from '../data/MachineController';
 import { StatesController } from '../data/StatesController';
 import { TransitionsController } from '../data/TransitionsController';
@@ -21,7 +22,7 @@ export const MIN_SCALE = 0.2;
  * управление камерой, обработка событий и сериализация.
  */
 interface ContainerEvents {
-  stateDrop: Point;
+  dblclick: Point;
   contextMenu: Point;
 }
 
@@ -31,11 +32,8 @@ export class Container extends EventEmitter<ContainerEvents> {
   isDirty = true;
 
   machineController!: MachineController;
-
   statesController!: StatesController;
   transitionsController!: TransitionsController;
-
-  isPan = false;
 
   children: Children;
   private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать
@@ -54,6 +52,10 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.initEvents();
     this.transitionsController.initEvents();
     this.machineController.loadData();
+  }
+
+  get isPan() {
+    return this.app.keyboard.spacePressed;
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -106,32 +108,40 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   private initEvents() {
-    this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
-    this.app.canvas.element.addEventListener('drop', this.handleDrop);
+    // ! Это на будущее
+    // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
+    // this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('delete', this.handleDelete);
+    this.app.keyboard.on('delete', this.machineController.deleteSelected);
     this.app.keyboard.on('ctrlz', this.machineController.undoRedo.undo);
     this.app.keyboard.on('ctrly', this.machineController.undoRedo.redo);
-    this.app.keyboard.on('ctrlc', this.handleCopy);
-    this.app.keyboard.on('ctrlv', this.handlePaste);
-    this.app.keyboard.on('ctrls', this.handleSaveFile);
-    this.app.keyboard.on('ctrlshifta', this.handleSaveAsFile);
+    this.app.keyboard.on('ctrlc', this.machineController.copySelected);
+    this.app.keyboard.on('ctrlv', this.machineController.pasteSelected);
+    this.app.keyboard.on('ctrls', this.app.manager.save);
+    this.app.keyboard.on('ctrlshifta', this.app.manager.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);
-    this.app.mouse.on('contextmenu', this.handleMouseContextMenu);
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
+    this.app.mouse.on('rightclick', this.handleRightMouseClick);
   }
 
-  private getCapturedNode(position: Point) {
-    const end = this.children.size - 1;
+  getCapturedNode(args: getCapturedNodeArgs) {
+    const node = this.statesController.initialStateMark?.getIntersection(args);
+    if (node) return node;
 
-    for (let i = end; i >= 0; i--) {
-      const node = this.children.getByIndex(i)?.getIntersection(position);
+    const { type } = args;
+
+    const end = type === 'states' ? this.children.statesSize : this.children.size;
+
+    for (let i = end - 1; i >= 0; i--) {
+      const node = (
+        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+      )?.getIntersection(args);
 
       if (node) return node;
     }
@@ -147,24 +157,25 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.isDirty = true;
   }
 
-  handleDrop = (e: DragEvent) => {
-    e.preventDefault();
+  // ! Это на будущее
+  // handleDrop = (e: DragEvent) => {
+  //   e.preventDefault();
 
-    const rect = this.app.canvas.element.getBoundingClientRect();
-    const scale = this.app.manager.data.scale;
-    const offset = this.app.manager.data.offset;
-    const position = {
-      x: (e.clientX - rect.left) * scale - offset.x,
-      y: (e.clientY - rect.top) * scale - offset.y,
-    };
+  //   const rect = this.app.canvas.element.getBoundingClientRect();
+  //   const scale = this.app.manager.data.scale;
+  //   const offset = this.app.manager.data.offset;
+  //   const position = {
+  //     x: (e.clientX - rect.left) * scale - offset.x,
+  //     y: (e.clientY - rect.top) * scale - offset.y,
+  //   };
 
-    this.emit('stateDrop', position);
-  };
+  //   this.emit('stateDrop', position);
+  // };
 
   handleMouseDown = (e: MyMouseEvent) => {
-    if (!e.left) return;
+    if (!e.left || this.isPan) return;
 
-    const node = this.getCapturedNode(e);
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseDown(e);
@@ -174,13 +185,21 @@ export class Container extends EventEmitter<ContainerEvents> {
       parent.children.moveToEnd(type, node.id);
 
       this.mouseDownNode = node;
-    } else {
-      this.isPan = true;
     }
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
-    const node = this.getCapturedNode(e);
+    this.app.canvas.element.style.cursor = 'default';
+    this.mouseDownNode = null;
+
+    if (!e.left) return;
+
+    if (this.isPan) {
+      this.app.canvas.element.style.cursor = 'grab';
+      return;
+    }
+
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseUp(e);
@@ -188,40 +207,10 @@ export class Container extends EventEmitter<ContainerEvents> {
       this.transitionsController.handleMouseUp();
       this.machineController.removeSelection();
     }
-
-    this.mouseDownNode = null;
-
-    this.isPan = false;
-    this.app.canvas.element.style.cursor = 'default';
   };
 
-  handleMouseMove = (e: MyMouseEvent) => {
-    if (!e.left) return;
-
-    if (this.isPan) {
-      // TODO Много раз такие операции повторяются, нужно переделать на функции
-      this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
-      this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
-    } else if (this.mouseDownNode) {
-      this.mouseDownNode.handleMouseMove(e);
-    }
-
-    this.app.canvas.element.style.cursor = 'grabbing';
-    this.isDirty = true;
-  };
-
-  handleMouseDoubleClick = (e: MyMouseEvent) => {
-    const node = this.getCapturedNode(e);
-
-    if (node) {
-      node.handleMouseDoubleClick(e);
-    } else {
-      this.emit('stateDrop', this.relativeMousePos({ x: e.x, y: e.y }));
-    }
-  };
-
-  handleMouseContextMenu = (e: MyMouseEvent) => {
-    const node = this.getCapturedNode(e);
+  handleRightMouseClick = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode({ position: e });
 
     if (node) {
       node.handleMouseContextMenu(e);
@@ -230,9 +219,61 @@ export class Container extends EventEmitter<ContainerEvents> {
     }
   };
 
+  handleMouseMove = (e: MyMouseEvent) => {
+    if (e.left) this.handleLeftMouseMove(e);
+    if (e.right) this.handleRightMouseMove(e);
+
+    if (e.left || e.right) this.isDirty = true;
+  };
+
+  private handleLeftMouseMove(e: MyMouseEvent) {
+    if (this.isPan || this.mouseDownNode) {
+      this.app.canvas.element.style.cursor = 'grabbing';
+    }
+
+    if (this.isPan) {
+      // TODO Много раз такие операции повторяются, нужно переделать на функции
+      this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
+      this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+    } else if (this.mouseDownNode) {
+      this.mouseDownNode.handleMouseMove(e);
+    }
+  }
+
+  private handleRightMouseMove(e: MyMouseEvent) {
+    this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
+    this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+
+    this.app.canvas.element.style.cursor = 'grabbing';
+  }
+
+  handleMouseDoubleClick = (e: MyMouseEvent) => {
+    const node = this.getCapturedNode({ position: e });
+
+    if (node) {
+      node.handleMouseDoubleClick(e);
+    } else {
+      this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
+    }
+  };
+
   handleMouseWheel = (e: MyMouseEvent & { nativeEvent: WheelEvent }) => {
     e.nativeEvent.preventDefault();
 
+    if (this.app.keyboard.ctrlPressed) {
+      this.handleChangeScale(e);
+    } else {
+      if (this.app.keyboard.shiftPressed) {
+        this.app.manager.data.offset.x -= e.nativeEvent.deltaY * 0.1;
+      } else {
+        this.app.manager.data.offset.y -= e.nativeEvent.deltaY * 0.1;
+      }
+
+      this.isDirty = true;
+    }
+  };
+
+  private handleChangeScale(e: MyMouseEvent & { nativeEvent: WheelEvent }) {
     const prevScale = this.app.manager.data.scale;
     const newScale = Number(
       clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
@@ -241,37 +282,13 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.manager.data.offset.y -= e.y * prevScale - e.y * newScale;
 
     this.setScale(newScale);
-  };
-
-  handleDelete = () => {
-    this.machineController.deleteSelected();
-  };
-
-  handleCopy = () => {
-    this.machineController.copySelected();
-  };
-
-  handlePaste = () => {
-    this.machineController.pasteSelected();
-  };
-
-  handleSaveFile = () => {
-    this.app.manager.save();
-  };
-
-  handleSaveAsFile = () => {
-    this.app.manager.saveAs();
-  };
+  }
 
   handleSpaceDown = () => {
-    this.isPan = true;
-
     this.app.canvas.element.style.cursor = 'grab';
   };
 
   handleSpaceUp = () => {
-    this.isPan = false;
-
     this.app.canvas.element.style.cursor = 'default';
   };
 

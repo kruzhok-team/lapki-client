@@ -11,8 +11,8 @@ interface TextSelectProps extends ComponentProps<'select'> {
 export const SELECT_LOCAL = 'local';
 export const SELECT_REMOTE = 'remote';
 const options = [
-  { value: SELECT_LOCAL, label: 'Локальный' },
   { value: SELECT_REMOTE, label: 'Удалённый' },
+  { value: SELECT_LOCAL, label: 'Локальный' },
 ];
 export const TextSelectFlasher = forwardRef<HTMLSelectElement, TextSelectProps>(
   ({ label, isElse, error, errorMessage, ...props }, ref) => {

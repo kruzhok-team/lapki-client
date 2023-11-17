@@ -23,11 +23,11 @@ import { searchPlatforms } from './PlatformSeacher';
 import icon from '../../resources/icon.png?asset';
 
 import {
-  COMPILER_SETTINGS,
-  DEFAULT_COMPILER_HOST,
-  DEFAULT_COMPILER_PORT,
-  PLATFORMS_PATH_SETTINGS,
-} from './consts';
+  COMPILER_SETTINGS_KEY,
+  DEFAULT_COMPILER_SETTINGS,
+  FLASHER_SETTINGS_KEY,
+  PLATFORMS_PATH_SETTINGS_KEY,
+} from './electron-settings-consts';
 
 /**
  * Создание главного окна редактора.
@@ -88,17 +88,21 @@ function createWindow(): void {
 
 function initSettings(): void {
   console.log('getting settings from', settings.file());
-  if (!settings.hasSync(COMPILER_SETTINGS)) {
-    settings.setSync(COMPILER_SETTINGS, {
-      host: DEFAULT_COMPILER_HOST,
-      port: DEFAULT_COMPILER_PORT,
+  if (!settings.hasSync(COMPILER_SETTINGS_KEY)) {
+    settings.setSync(COMPILER_SETTINGS_KEY, DEFAULT_COMPILER_SETTINGS);
+  }
+
+  if (!settings.hasSync(PLATFORMS_PATH_SETTINGS_KEY)) {
+    settings.setSync(PLATFORMS_PATH_SETTINGS_KEY, {
+      path: '',
+      // path: `${process.cwd()}/src/renderer/public/platform`,
     });
   }
 
-  if (!settings.hasSync(PLATFORMS_PATH_SETTINGS)) {
-    settings.setSync(PLATFORMS_PATH_SETTINGS, {
-      path: '',
-      // path: `${process.cwd()}/src/renderer/public/platform`,
+  if (!settings.hasSync(FLASHER_SETTINGS_KEY)) {
+    settings.setSync(FLASHER_SETTINGS_KEY, {
+      host: null,
+      port: null,
     });
   }
 }
@@ -141,10 +145,6 @@ app.whenReady().then(() => {
     ModuleManager.startLocalModule(module);
   });
 
-  ipcMain.handle('Flasher:getPort', (_event) => {
-    return FLASHER_LOCAL_PORT;
-  });
-
   ipcMain.handle('Module:getStatus', (_event, module: string) => {
     const status: ModuleStatus = ModuleManager.getLocalStatus(module);
     return status;
@@ -165,6 +165,11 @@ app.whenReady().then(() => {
   });
   ipcMain.handle('settings:set', (_event, key, value) => {
     return settings.set(key, value);
+  });
+
+  // получение локального порта
+  ipcMain.handle('Flasher:getPort', (_event) => {
+    return FLASHER_LOCAL_PORT;
   });
 
   // Горячие клавиши для режима разрабочика:

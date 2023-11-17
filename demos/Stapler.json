@@ -1,193 +1,4 @@
 {
-  "states": {
-    "n0": {
-      "name": "Бой",
-      "events": [
-        {
-          "do": [],
-          "trigger": {
-            "component": "System",
-            "method": "onEnter"
-          }
-        },
-        {
-          "do": [],
-          "trigger": {
-            "component": "System",
-            "method": "onExit"
-          }
-        }
-      ],
-      "bounds": {
-        "height": 145,
-        "width": 450,
-        "x": 267,
-        "y": -149
-      }
-    },
-    "n1": {
-      "parent": "n0",
-      "name": "Сближение",
-      "events": [
-        {
-          "do": [
-            {
-              "args": {},
-              "component": "МодульДвижения",
-              "method": "ДвигатьсяКЦели"
-            }
-          ],
-          "trigger": {
-            "component": "System",
-            "method": "onEnter"
-          }
-        },
-        {
-          "do": [],
-          "trigger": {
-            "component": "System",
-            "method": "onExit"
-          }
-        }
-      ],
-      "bounds": {
-        "height": 145,
-        "width": 450,
-        "x": 550.625,
-        "y": 206.5
-      }
-    },
-    "n2": {
-      "parent": "n0",
-      "name": "Атака",
-      "events": [
-        {
-          "do": [
-            {
-              "args": {},
-              "component": "ОружиеЦелевое",
-              "method": "АтаковатьЦель"
-            }
-          ],
-          "trigger": {
-            "component": "System",
-            "method": "onEnter"
-          }
-        },
-        {
-          "do": [],
-          "trigger": {
-            "component": "System",
-            "method": "onExit"
-          }
-        }
-      ],
-      "bounds": {
-        "height": 145,
-        "width": 450,
-        "x": 34.875,
-        "y": 9.375
-      }
-    },
-    "n3": {
-      "name": "Скан",
-      "events": [
-        {
-          "do": [
-            {
-              "args": {
-                "Направление поиска": "мин"
-              },
-              "component": "Сенсор",
-              "method": "ПоискВрагаПоДистанции"
-            }
-          ],
-          "trigger": {
-            "component": "System",
-            "method": "onEnter"
-          }
-        },
-        {
-          "do": [
-            {
-              "args": {},
-              "component": "Сенсор",
-              "method": "ОстановкаПоиска"
-            }
-          ],
-          "trigger": {
-            "component": "System",
-            "method": "onExit"
-          }
-        }
-      ],
-      "bounds": {
-        "height": 145,
-        "width": 450,
-        "x": 462.75,
-        "y": -489.5
-      }
-    }
-  },
-  "initialState": "n3",
-  "transitions": [
-    {
-      "color": "#be4b8e",
-      "do": [],
-      "position": {
-        "x": 551.875,
-        "y": -246.75
-      },
-      "source": "n0",
-      "target": "n3",
-      "trigger": {
-        "component": "АнализаторЦели",
-        "method": "ЦельПотеряна"
-      }
-    },
-    {
-      "color": "#fb1aff",
-      "do": [],
-      "position": {
-        "x": 1048.375,
-        "y": -225.75
-      },
-      "source": "n3",
-      "target": "n1",
-      "trigger": {
-        "component": "Сенсор",
-        "method": "ЦельПолучена"
-      }
-    },
-    {
-      "color": "#22a4f5",
-      "do": [],
-      "position": {
-        "x": 549.125,
-        "y": 206.375
-      },
-      "source": "n1",
-      "target": "n2",
-      "trigger": {
-        "component": "ОружиеЦелевое",
-        "method": "Атаковали"
-      }
-    },
-    {
-      "color": "#22a4f5",
-      "do": [],
-      "position": {
-        "x": 253.75,
-        "y": 234
-      },
-      "source": "n2",
-      "target": "n1",
-      "trigger": {
-        "component": "ОружиеЦелевое",
-        "method": "Атаковали"
-      }
-    }
-  ],
   "components": {
     "Сенсор": {
       "parameters": {},
@@ -246,6 +57,201 @@
       "type": "СпособностьСамоуничтожение"
     }
   },
+  "initialState": {
+    "target": "n3",
+    "position": {
+      "x": 328.4000000000001,
+      "y": -590.2000000000002
+    }
+  },
   "parameters": {},
-  "platform": "BearlogaDefend"
+  "platform": "BearlogaDefend-Stapler",
+  "states": {
+    "n0": {
+      "bounds": {
+        "height": 145,
+        "width": 450,
+        "x": 267,
+        "y": -149
+      },
+      "events": [
+        {
+          "do": [],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        },
+        {
+          "do": [],
+          "trigger": {
+            "component": "System",
+            "method": "onExit"
+          }
+        }
+      ],
+      "name": "Бой"
+    },
+    "n1": {
+      "bounds": {
+        "height": 145,
+        "width": 450,
+        "x": 16.625,
+        "y": 214.5
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {},
+              "component": "МодульДвижения",
+              "method": "ДвигатьсяКЦели"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        },
+        {
+          "do": [],
+          "trigger": {
+            "component": "System",
+            "method": "onExit"
+          }
+        }
+      ],
+      "name": "Сближение",
+      "parent": "n0"
+    },
+    "n2": {
+      "bounds": {
+        "height": 145,
+        "width": 450,
+        "x": 0,
+        "y": 17.375
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {},
+              "component": "ОружиеЦелевое",
+              "method": "АтаковатьЦель"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        },
+        {
+          "do": [],
+          "trigger": {
+            "component": "System",
+            "method": "onExit"
+          }
+        }
+      ],
+      "name": "Атака",
+      "parent": "n0"
+    },
+    "n3": {
+      "bounds": {
+        "height": 145,
+        "width": 450,
+        "x": 462.75,
+        "y": -489.5
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "Направление поиска": "мин"
+              },
+              "component": "Сенсор",
+              "method": "ПоискВрагаПоДистанции"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        },
+        {
+          "do": [
+            {
+              "args": {},
+              "component": "Сенсор",
+              "method": "ОстановкаПоиска"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onExit"
+          }
+        }
+      ],
+      "name": "Скан"
+    }
+  },
+  "transitions": [
+    {
+      "source": "n0",
+      "target": "n3",
+      "color": "#be4b8e",
+      "position": {
+        "x": 551.875,
+        "y": -246.75
+      },
+      "trigger": {
+        "component": "АнализаторЦели",
+        "method": "ЦельПотеряна"
+      },
+      "do": []
+    },
+    {
+      "source": "n3",
+      "target": "n1",
+      "color": "#fb1aff",
+      "position": {
+        "x": 1048.375,
+        "y": -225.75
+      },
+      "trigger": {
+        "component": "Сенсор",
+        "method": "ЦельПолучена"
+      },
+      "do": []
+    },
+    {
+      "source": "n1",
+      "target": "n2",
+      "color": "#22a4f5",
+      "position": {
+        "x": 549.125,
+        "y": 206.375
+      },
+      "trigger": {
+        "component": "ОружиеЦелевое",
+        "method": "Атаковали"
+      },
+      "do": []
+    },
+    {
+      "source": "n2",
+      "target": "n1",
+      "color": "#22a4f5",
+      "position": {
+        "x": 253.75,
+        "y": 234
+      },
+      "trigger": {
+        "component": "ОружиеЦелевое",
+        "method": "Атаковали"
+      },
+      "do": []
+    }
+  ]
 }

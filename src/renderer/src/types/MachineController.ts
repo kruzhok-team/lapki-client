@@ -17,3 +17,7 @@ export interface RemoveComponentParams {
   name: string;
   purge?: boolean;
 }
+
+export interface UnlinkStateParams {
+  id: string;
+}

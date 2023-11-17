@@ -13,6 +13,7 @@ import {
   Component,
   Elements,
   EventData,
+  InitialState,
 } from '@renderer/types/diagram';
 import {
   emptyEditorData,
@@ -134,14 +135,7 @@ export class EditorManager {
   }
 
   compile() {
-    /**
-     Временное решение, чтобы выделить основную платформу
-     Все подплатформы имеют название вида:
-     MainPlatform-Subplatform
-    */
-    const main_platform = this.data.elements.platform.split('-');
-    console.log(main_platform[0]);
-    Compiler.compile(main_platform[0], {
+    Compiler.compile(this.data.elements.platform, {
       ...this.data.elements,
       transitions: Object.values(this.data.elements.transitions),
     });
@@ -196,7 +190,8 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile', platform);
     if (openData[0]) {
-      Compiler.compile(`${platform}Import`, openData[3]);
+      console.log(openData);
+      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
       setImportData(openData);
     }
   }
@@ -272,7 +267,7 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
   }
 
-  async save(): Promise<Either<FileError | null, null>> {
+  save = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
@@ -293,9 +288,9 @@ export class EditorManager {
         content: saveData[2],
       });
     }
-  }
+  };
 
-  async saveAs(): Promise<Either<FileError | null, null>> {
+  saveAs = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     const data = this.getDataSerialized();
     const saveData: [boolean, string | null, string | null] =
@@ -312,7 +307,7 @@ export class EditorManager {
       });
     }
     return makeLeft(null);
-  }
+  };
 
   createState(args: CreateStateParameters) {
     const { name, parentId, id, events = [], placeInCenter = false } = args;
@@ -347,11 +342,6 @@ export class EditorManager {
       name,
       parent: parentId,
     };
-
-    // если у нас не было начального состояния, им станет новое
-    if (this.data.elements.initialState === '') {
-      this.data.elements.initialState = newId;
-    }
 
     return newId;
   }
@@ -442,11 +432,25 @@ export class EditorManager {
     return true;
   }
 
-  changeInitialState(id: string) {
-    const state = this.data.elements.states[id];
+  changeInitialState(initialState: InitialState) {
+    const state = this.data.elements.states[initialState.target];
     if (!state) return false;
 
-    this.data.elements.initialState = id;
+    this.data.elements.initialState = initialState;
+
+    return true;
+  }
+
+  changeInitialStatePosition(position: Point) {
+    if (!this.data.elements.initialState) return;
+
+    this.data.elements.initialState.position = position;
+
+    return true;
+  }
+
+  deleteInitialState() {
+    this.data.elements.initialState = null;
 
     return true;
   }

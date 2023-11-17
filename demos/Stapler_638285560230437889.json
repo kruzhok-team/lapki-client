@@ -37,9 +37,15 @@
       "type": "СпособностьНаМаксимум"
     }
   },
-  "initialState": "n5",
+  "initialState": {
+    "target": "n5",
+    "position": {
+      "x": -1100,
+      "y": 488
+    }
+  },
   "parameters": {},
-  "platform": "BearlogaDefend-Stepler",
+  "platform": "BearlogaDefend-Stapler",
   "states": {
     "n0": {
       "bounds": {

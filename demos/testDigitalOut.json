@@ -1,134 +1,140 @@
 {
-    "states": {
-      "n0": {
-        "name": "add",
-        "events": [
+  "states": {
+    "n0": {
+      "name": "add",
+      "events": [
+        {
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          },
+          "do": [
             {
-                "trigger": {
-                    "component": "System",
-                    "method": "onEnter"
-                },
-                "do": [
-                    {
-                        "component": "timer",
-                        "method": "start",
-                        "args": {
-                            "interval": "2000"
-                        }
-                    },
-                    {
-                        "component": "digitalOut",
-                        "method": "high"
-                    },
-                    {
-                        "component": "serial",
-                        "method": "println",
-                        "args": {
-                            "value": "\"High!\""
-                        }
-                    }
-                ]
-            }
-        ],
-        "bounds": {
-            "x": 296,
-            "y": 464,
-            "height": 95,
-            "width": 450
-        }
-      },
-      "n1": {
-        "name": "sub",
-        "events": [
+              "component": "timer",
+              "method": "start",
+              "args": {
+                "interval": "2000"
+              }
+            },
             {
-                "trigger":{
-                    "component": "System",
-                    "method": "onEnter"
-                },
-                "do": [
-                    {
-                        "component": "digitalOut",
-                        "method": "low"
-                    },
-                    {
-                        "component": "serial",
-                        "method": "println",
-                        "args": {
-                            "value": "\"Low!\""    
-                        }
-                    }
-                ]
+              "component": "digitalOut",
+              "method": "high"
+            },
+            {
+              "component": "serial",
+              "method": "println",
+              "args": {
+                "value": "\"High!\""
+              }
             }
-        ],
-        "bounds": {
-            "x": 196,
-            "y": 364,
-            "height": 95,
-            "width": 450
+          ]
         }
+      ],
+      "bounds": {
+        "x": 296,
+        "y": 464,
+        "height": 95,
+        "width": 450
       }
     },
-  
-    "initialState": "n0",
-  
-    "transitions": [
-      {
-        "source": "n0",
-        "target": "n1",
-        "color": "#F29727",
-        "position": {
-          "x": 361,
-          "y": 127
-        },
-        "trigger": {
-          "component": "timer",
-          "method": "timeout"
-        },
-        "condition": null,
-        "do":[]
-      },
-      {
-        "source": "n1",
-        "target": "n0",
-        "color": "#F29727",
-        "position": {
-          "x": 361,
-          "y": 127
-        },
-        "trigger": {
-          "component": "timer",
-          "method": "timeout"
-        },
-        "condition": null,
-        "do":[]
-      }
-    ],
-  
-    "components": {
-        "timer": {
-            "type": "Timer",
-            "parameters": {}
-        },
-
-        "serial": {
-            "type": "QHsmSerial",
-            "parameters": {
-                "baud": "9600"
+    "n1": {
+      "name": "sub",
+      "events": [
+        {
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          },
+          "do": [
+            {
+              "component": "digitalOut",
+              "method": "low"
+            },
+            {
+              "component": "serial",
+              "method": "println",
+              "args": {
+                "value": "\"Low!\""
+              }
             }
-        },
-
-        "digitalOut": {
-            "type": "DigitalOut",
-            "parameters": {
-                "pin": "6"
-            }
+          ]
         }
+      ],
+      "bounds": {
+        "x": 196,
+        "y": 364,
+        "height": 95,
+        "width": 450
+      }
+    }
+  },
+
+  "initialState": {
+    "target": "n0",
+    "position": {
+      "x": 196,
+      "y": 364
+    }
+  },
+
+  "transitions": [
+    {
+      "source": "n0",
+      "target": "n1",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "timer",
+        "method": "timeout"
+      },
+      "condition": null,
+      "do": []
     },
-    "compilerSettings": {
-        "filename": "ExampleSketch",
-        "compiler": "arduino-cli",
-        "flags": ["-b", "arduino:avr:uno"]
+    {
+      "source": "n1",
+      "target": "n0",
+      "color": "#F29727",
+      "position": {
+        "x": 361,
+        "y": 127
+      },
+      "trigger": {
+        "component": "timer",
+        "method": "timeout"
+      },
+      "condition": null,
+      "do": []
+    }
+  ],
+
+  "components": {
+    "timer": {
+      "type": "Timer",
+      "parameters": {}
     },
-    "platform": "ArduinoUno",
-    "parameters": {}
+
+    "serial": {
+      "type": "QHsmSerial",
+      "parameters": {
+        "baud": "9600"
+      }
+    },
+
+    "digitalOut": {
+      "type": "DigitalOut",
+      "parameters": {
+        "pin": "6"
+      }
+    }
+  },
+  "compilerSettings": {
+    "filename": "ExampleSketch",
+    "compiler": "arduino-cli",
+    "flags": ["-b", "arduino:avr:uno"]
+  },
+  "platform": "ArduinoUno",
+  "parameters": {}
 }

@@ -6,10 +6,10 @@ import { Modal } from '../Modal/Modal';
 
 import { TextInput } from '../Modal/TextInput';
 
-import { SELECT_LOCAL, SELECT_REMOTE, TextSelectFlasher } from '../Modal/TextSelectFlasher';
+import { SELECT_LOCAL, TextSelectFlasher } from '../Modal/TextSelectFlasher';
 
-const localStorageHost = 'host';
-const localStoragePort = 'port';
+import { Flasher } from '../Modules/Flasher';
+import { twMerge } from 'tailwind-merge';
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
@@ -30,35 +30,28 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   handleRemote,
   ...props
 }) => {
-  const {
-    register,
-    reset,
-    handleSubmit: hookHandleSubmit,
-  } = useForm<FlasherSelectModalFormValues>();
+  const { register, handleSubmit: hookHandleSubmit } = useForm<FlasherSelectModalFormValues>();
 
-  // настройка видимости текстовых полей
-  const [isHidden, setHidden] = useState(true);
+  // октрыта ли опция выбора локального загрузчика
+  const [isLocal, setLocal] = useState(false);
   const handleHidden = (event) => {
     // текстовые поля становятся видимыми, если выбран удалённый хост
-    setHidden(event.target.value != SELECT_REMOTE);
+    setLocal(event.target.value == SELECT_LOCAL);
   };
 
   const handleSubmit = hookHandleSubmit((data) => {
-    onRequestClose();
     if (data.flasherType == SELECT_LOCAL) {
       handleLocal();
     } else {
-      localStorage.setItem(localStorageHost, data.host);
-      localStorage.setItem(localStoragePort, data.port.toString());
       handleRemote(data.host, data.port);
     }
+    onRequestClose();
   });
 
   const onRequestClose = () => {
-    setHidden(true);
     onClose();
-    reset();
   };
+
   return (
     <Modal
       {...props}
@@ -79,21 +72,22 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           errorMessage={''}
         />
       </div>
-      <div className="flex">
+      <div className={twMerge('flex', isLocal && 'opacity-50')}>
         <TextInput
           label="Хост:"
           {...register('host')}
           placeholder="Напишите адрес хоста"
-          isElse={isHidden}
+          isElse={isLocal}
           error={false}
           errorMessage={''}
-          defaultValue={localStorage.getItem(localStorageHost) ?? ''}
+          defaultValue={Flasher.remoteHost ?? ''}
+          //disabled={isLocal}
         />
         <TextInput
           label="Порт:"
           {...register('port')}
           placeholder="Напишите порт"
-          isElse={isHidden}
+          isElse={isLocal}
           error={false}
           errorMessage={''}
           onInput={(event) => {
@@ -105,7 +99,8 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
               );
             }
           }}
-          defaultValue={localStorage.getItem(localStoragePort) ?? ''}
+          defaultValue={Flasher.remotePort ?? ''}
+          //disabled={isLocal}
         />
       </div>
     </Modal>

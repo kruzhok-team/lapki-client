@@ -1,14 +1,17 @@
-import Websocket from 'isomorphic-ws';
 import { Dispatch, SetStateAction } from 'react';
+
 import { base64StringToBlob } from 'blob-util';
+import Websocket from 'isomorphic-ws';
+
 import { Buffer } from 'buffer';
-import { Elements } from '@renderer/types/diagram';
+
 import {
   CompilerSettings,
   CompilerResult,
   Binary,
   SourceFile,
 } from '@renderer/types/CompilerTypes';
+import { Elements } from '@renderer/types/diagram';
 
 export class Compiler {
   // сохранённые значения хоста и порта, если значения пусты, то используются значения по-умолчанию
@@ -200,6 +203,7 @@ export class Compiler {
               },
             ],
           });
+          break;
         default:
           break;
       }
@@ -239,7 +243,9 @@ export class Compiler {
     const route = `${this.base_address}main`;
     const ws: Websocket = this.connectRoute(route);
     let compilerSettings: CompilerSettings;
-    switch (platform) {
+    const [mainPlatform, subPlatform] = platform.split('-');
+    console.log(mainPlatform, subPlatform);
+    switch (mainPlatform) {
       case 'ArduinoUno':
         ws.send('arduino');
         this.mode = 'compile';
@@ -257,18 +263,23 @@ export class Compiler {
       case 'BearlogaDefendImport':
         ws.send('berlogaImport');
         ws.send(data);
+        ws.send(subPlatform);
         console.log('import!');
         this.mode = 'import';
         break;
       case 'BearlogaDefend':
         ws.send('berlogaExport');
         ws.send(JSON.stringify(data));
-        ws.send(this.filename);
+        if (subPlatform !== undefined) {
+          ws.send(subPlatform);
+        } else {
+          ws.send('Robot');
+        }
         console.log('export!');
         this.mode = 'export';
         break;
       default:
-        console.log('unknown platform');
+        console.log(`unknown platform ${platform}`);
         return;
     }
 

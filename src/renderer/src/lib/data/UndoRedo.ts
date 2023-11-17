@@ -1,18 +1,13 @@
 import { useSyncExternalStore } from 'react';
 
 import {
-  CreateTransitionParameters,
-  EditComponentParams,
-  RemoveComponentParams,
-} from '@renderer/types/MachineController';
-
-import {
   Action as EventAction,
   Event,
   Component,
   Transition as TransitionData,
   EventData,
   State as StateData,
+  InitialState,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
@@ -21,6 +16,12 @@ import {
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
+import {
+  CreateTransitionParameters,
+  EditComponentParams,
+  RemoveComponentParams,
+  UnlinkStateParams,
+} from '@renderer/types/MachineController';
 
 import { MachineController } from './MachineController';
 
@@ -33,7 +34,7 @@ export type PossibleActions = {
   changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
-  unlinkState: { parentId: string; childId: string };
+  unlinkState: { parentId: string; params: UnlinkStateParams };
   createTransition: { id: string; params: CreateTransitionParameters };
   deleteTransition: { transition: Transition; prevData: TransitionData };
   changeTransition: {
@@ -41,7 +42,10 @@ export type PossibleActions = {
     args: ChangeTransitionParameters;
     prevData: TransitionData;
   };
-  changeInitialState: { id: string; prevInitial: string };
+  createInitialState: InitialState;
+  changeInitialState: { prevTargetId: string; newTargetId: string };
+  changeInitialStatePosition: { startPosition: Point; endPosition: Point };
+  deleteInitialState: InitialState;
   changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   changeTransitionPosition: { id: string; startPosition: Point; endPosition: Point };
   changeEvent: { stateId: string; event: EventSelection; newValue: Event; prevValue: Event };
@@ -114,11 +118,11 @@ export const actionFunctions: ActionFunctions = {
   }),
   linkState: (sM, { parentId, childId }) => ({
     redo: sM.linkState.bind(sM, parentId, childId, false),
-    undo: sM.unlinkState.bind(sM, childId, false),
+    undo: sM.unlinkState.bind(sM, { id: childId }, false),
   }),
-  unlinkState: (sM, { parentId, childId }) => ({
-    redo: sM.unlinkState.bind(sM, childId, false),
-    undo: sM.linkState.bind(sM, parentId, childId, false),
+  unlinkState: (sM, { parentId, params }) => ({
+    redo: sM.unlinkState.bind(sM, params, false),
+    undo: sM.linkState.bind(sM, parentId, params.id, false),
   }),
   createTransition: (sM, { id, params }) => ({
     redo: sM.createTransition.bind(sM, { ...params, id }, false),
@@ -156,9 +160,21 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  changeInitialState: (sM, { id, prevInitial }) => ({
-    redo: sM.changeInitialState.bind(sM, id, false),
-    undo: sM.changeInitialState.bind(sM, prevInitial, false),
+  createInitialState: (sM, { target, position }) => ({
+    redo: sM.createInitialState.bind(sM, target, position, false),
+    undo: sM.deleteInitialState.bind(sM, false),
+  }),
+  changeInitialState: (sM, { prevTargetId, newTargetId }) => ({
+    redo: sM.changeInitialState.bind(sM, prevTargetId, newTargetId, false),
+    undo: sM.changeInitialState.bind(sM, newTargetId, prevTargetId, false),
+  }),
+  changeInitialStatePosition: (sM, { startPosition, endPosition }) => ({
+    redo: sM.changeInitialStatePosition.bind(sM, startPosition, endPosition, false),
+    undo: sM.changeInitialStatePosition.bind(sM, endPosition, startPosition, false),
+  }),
+  deleteInitialState: (sM, { target, position }) => ({
+    redo: sM.deleteInitialState.bind(sM, false),
+    undo: sM.createInitialState.bind(sM, target, position, false),
   }),
   changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
     redo: sM.changeStatePosition.bind(sM, id, startPosition, endPosition, false),
@@ -227,11 +243,11 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   linkState: (args) => ({
     name: 'Присоединение состояния',
-    description: `Id: "${args.childId}"\nId родителя: "${args.childId}"`,
+    description: `Id: "${args.childId}"\nId родителя: "${args.parentId}"`,
   }),
   unlinkState: (args) => ({
     name: 'Отсоединение состояния',
-    description: `Id: "${args.childId}"\nId родителя: "${args.childId}"`,
+    description: `Id: "${args.params.id}"\nId родителя: "${args.parentId}"`,
   }),
   createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),
   deleteTransition: (args) => ({
@@ -239,9 +255,21 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id: ${args.transition.id}`,
   }),
   changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
+  createInitialState: (args) => ({
+    name: 'Создание начального состояния',
+    description: `На состояние ${args.target}`,
+  }),
+  deleteInitialState: (args) => ({
+    name: 'Удаление начального состояния',
+    description: `Из состояния ${args.target}`,
+  }),
   changeInitialState: (args) => ({
     name: 'Изменение начального состояния',
-    description: `Было: "${args.prevInitial}"\nСтало: ${args.id}`,
+    description: `Было: "${args.prevTargetId}"\nСтало: ${args.newTargetId}`,
+  }),
+  changeInitialStatePosition: (args) => ({
+    name: 'Перемещение начального состояния',
+    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
   }),
   changeStatePosition: (args) => ({
     name: 'Перемещение состояния',

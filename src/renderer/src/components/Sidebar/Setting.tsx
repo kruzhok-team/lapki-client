@@ -132,14 +132,11 @@ export const Setting: React.FC<SettingProps> = () => {
 
       <DocSelectModal
         isOpen={isDocModalOpen}
-        handleDefault={handleDefaultDoc}
         handleCustom={handleDocConnect}
         onClose={closeDocModal}
         topTitle={'Выберите док-сервер'}
-        textSelectTitle={'Док-сервер'}
-        defaultTitle={'Стандартный'}
-        customTitle={'Пользовательский'}
-        customHostValue={docSettings?.host}
+        savedHostValue={docSettings?.host}
+        originaltHostValue={window.api.DEFAULT_DOC_SETTINGS.host}
       />
     </section>
   );

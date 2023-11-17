@@ -1,5 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+
 export interface MenuProps {
   onRequestNewFile: () => void;
   onRequestOpenFile: () => void;
@@ -7,6 +9,7 @@ export interface MenuProps {
   onRequestSaveAsFile: () => void;
   onRequestImport: (platform: string) => void;
   compilerStatus: string;
+  editor: CanvasEditor | null;
   // TODO: isModified: boolean;
 }
 
@@ -23,12 +26,13 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
+      disabled: props.editor ? false : true,
       // TODO: disabled: !props.isModified,
     },
     {
       text: 'Сохранить как...',
       onClick: props.onRequestSaveAsFile,
-      disabled: false,
+      disabled: props.editor ? false : true,
     },
     {
       text: 'Импорт...',

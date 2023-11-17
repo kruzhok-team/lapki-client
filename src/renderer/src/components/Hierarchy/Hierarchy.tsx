@@ -8,6 +8,7 @@ import {
   TreeRef,
   TreeEnvironmentRef,
   TreeItemIndex,
+  DraggingPositionBetweenItems,
 } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
 import './style-modern.css';
@@ -44,7 +45,8 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
 
   //Здесь мы напрямую работаем с родителями и дочерними элементами
   const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
-    const parent = tree.current?.dragAndDropContext.draggingPosition?.targetItem;
+    const parent = tree.current?.dragAndDropContext.draggingPosition
+      ?.targetItem as unknown as DraggingPositionBetweenItems;
 
     items.map((value) => {
       if (parent) {
@@ -56,7 +58,6 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
         editor.container.machineController.unlinkState({ id: value.index.toString() });
       }
     });
-    console.log();
   };
 
   return (

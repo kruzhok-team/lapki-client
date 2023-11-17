@@ -1,5 +1,5 @@
 // TODO: нужно как-то объединить файлы FlasherSelectModal.tsx, ServerSelectModal.tsx, DocSelectModal.tsx, чтобы уменьшить повторения кода
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 

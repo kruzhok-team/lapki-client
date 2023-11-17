@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
 import { Modal } from '../Modal/Modal';
 
 import { TextInput } from '../Modal/TextInput';
+import { Settings } from '../Modules/Settings';
 
 interface ServerSelectModalProps {
   isOpen: boolean;
@@ -15,13 +16,15 @@ interface ServerSelectModalProps {
   // надпись над меню выбора типа сервера
   textSelectTitle: string;
   // значение порта, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
-  savedPortValue: string | undefined | null;
+  //savedPortValue: string | undefined | null;
   // значение хоста, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
-  savedHostValue: string | undefined | null;
+  //savedHostValue: string | undefined | null;
   // значение хоста к которому клиент подключается при первом запуске
   originaltHostValue: string;
   // значение порта к которому клиент подключается при первом запуске
   originaltPortValue: string;
+  // ключ для извлечения настроек
+  electronSettingsKey: string;
 }
 
 export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
@@ -29,11 +32,17 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm<{}>();
-
   // хост, отображаемый пользователю на форме ввода данных
-  const [hostInput, setInputHost] = useState(props.savedHostValue);
-  const [portInput, setInputPort] = useState(props.savedPortValue);
+  const [hostInput, setInputHost] = useState('');
+  const [portInput, setInputPort] = useState('');
+
+  useEffect(() => {
+    Settings.get(props.electronSettingsKey).then((server) => {
+      setInputHost(server.host);
+      setInputPort(String(server.port));
+    });
+  }, []);
+  const { handleSubmit: hookHandleSubmit } = useForm<{}>();
 
   const handleSubmit = hookHandleSubmit(() => {
     handleCustom(String(hostInput), Number(portInput));

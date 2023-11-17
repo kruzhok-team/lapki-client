@@ -21,12 +21,12 @@ const themeOptions = [
 ];
 
 export const Setting: React.FC<SettingProps> = () => {
-  const [compilerSettings, setCompilerSettings] = useState<CompilerSettings>();
+  //const [compilerSettings, setCompilerSettings] = useState<CompilerSettings>();
   const [docSettings, setDocSettings] = useState<DocSettings>();
   useEffect(() => {
-    Settings.getCompilerSettings().then((compiler) => {
+    /*Settings.getCompilerSettings().then((compiler) => {
       setCompilerSettings(compiler);
-    });
+    });*/
     Settings.getDocSettings().then((doc) => {
       setDocSettings(doc);
     });
@@ -112,10 +112,11 @@ export const Setting: React.FC<SettingProps> = () => {
         onClose={closeCompilerModal}
         topTitle={'Выберите компилятор'}
         textSelectTitle={'Компилятор'}
-        savedHostValue={compilerSettings?.host}
-        savedPortValue={String(compilerSettings?.port)}
+        //savedHostValue={compilerSettings?.host}
+        //savedPortValue={String(compilerSettings?.port)}
         originaltHostValue={window.api.DEFAULT_COMPILER_SETTINGS.host}
         originaltPortValue={window.api.DEFAULT_COMPILER_SETTINGS.port}
+        electronSettingsKey={window.api.COMPILER_SETTINGS_KEY}
       />
 
       <DocSelectModal

@@ -72,7 +72,9 @@ export class EditorManager {
     // });
 
     this.data.basename = basename;
+    this.triggerDataChange('basename');
     this.data.name = name;
+    this.triggerDataChange('name');
     this.data.elements = {
       ...elements,
       transitions: elements.transitions.reduce((acc, cur, i) => {
@@ -81,9 +83,9 @@ export class EditorManager {
         return acc;
       }, {}),
     };
+    this.triggerDataChange('elements');
     this.data.isInitialized = true;
-
-    this.triggerDataChange('basename', 'name', 'elements', 'isInitialized');
+    this.triggerDataChange('isInitialized');
 
     // this.data.elements = new Proxy(this.data.elements, {
     //   set(target, key, val, receiver) {
@@ -125,23 +127,21 @@ export class EditorManager {
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
-  triggerDataChange(...keys: EditorDataPropertyName[]) {
+  triggerDataChange(keys: EditorDataPropertyName) {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
       return !propertyName.startsWith('elements.');
     };
 
-    for (const key of keys) {
-      if (isShallow(key)) {
-        this.dataListeners[key].forEach((listener) => listener());
-        return;
-      }
-
-      const subKey = key.split('.')[1];
-
-      this.data.elements[subKey] = { ...this.data.elements[subKey] };
-
-      this.dataListeners[`elements.${subKey}`].forEach((listener) => listener());
+    if (isShallow(keys)) {
+      this.dataListeners[keys].forEach((listener) => listener());
+      return;
     }
+
+    const subKey = keys.split('.')[1];
+
+    this.data.elements[subKey] = { ...this.data.elements[subKey] };
+
+    this.dataListeners[`elements.${subKey}`].forEach((listener) => listener());
   }
 
   newFile(platformIdx: string) {

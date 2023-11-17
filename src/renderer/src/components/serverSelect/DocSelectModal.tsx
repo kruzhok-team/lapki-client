@@ -1,5 +1,5 @@
 // TODO: нужно как-то объединить файлы FlasherSelectModal.tsx, ServerSelectModal.tsx, DocSelectModal.tsx, чтобы уменьшить повторения кода
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -8,6 +8,7 @@ import { Modal } from '../Modal/Modal';
 import { TextInput } from '../Modal/TextInput';
 
 import { twMerge } from 'tailwind-merge';
+import { Settings } from '../Modules/Settings';
 
 interface DocSelectModalProps {
   isOpen: boolean;
@@ -16,9 +17,11 @@ interface DocSelectModalProps {
   // надпись на самом верху
   topTitle: string;
   // значение пользовательского хоста, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
-  savedHostValue: string | undefined | null;
+  //savedHostValue: string | undefined | null;
   // значение хоста к которому клиент подключается при первом запуске
   originaltHostValue: string;
+  // ключ для извлечения настроек
+  electronSettingsKey: string;
 }
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({
@@ -29,10 +32,12 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   const { handleSubmit: hookHandleSubmit } = useForm<{}>();
 
   // хост, отображаемый пользователю на форме ввода данных
-  const [hostInput, setInputHost] = useState(props.savedHostValue);
-
-  //const hostRef = useRef(props.customHostValue);
-  //const hostRef = useRef<HTMLInputElement>(null);
+  const [hostInput, setInputHost] = useState('');
+  useEffect(() => {
+    Settings.get(props.electronSettingsKey).then((server) => {
+      setInputHost(server.host);
+    });
+  }, []);
 
   const handleSubmit = hookHandleSubmit(() => {
     //console.log('SUBMIT', hostInput, hostCur);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
@@ -21,16 +21,16 @@ const themeOptions = [
 ];
 
 export const Setting: React.FC<SettingProps> = () => {
-  //const [compilerSettings, setCompilerSettings] = useState<CompilerSettings>();
+  /*const [compilerSettings, setCompilerSettings] = useState<CompilerSettings>();
   const [docSettings, setDocSettings] = useState<DocSettings>();
   useEffect(() => {
-    /*Settings.getCompilerSettings().then((compiler) => {
+    Settings.getCompilerSettings().then((compiler) => {
       setCompilerSettings(compiler);
-    });*/
+    });
     Settings.getDocSettings().then((doc) => {
       setDocSettings(doc);
     });
-  }, []);
+  }, []);*/
 
   const { setTheme, theme } = useThemeContext();
 
@@ -124,8 +124,9 @@ export const Setting: React.FC<SettingProps> = () => {
         handleCustom={handleDocConnect}
         onClose={closeDocModal}
         topTitle={'Выберите док-сервер'}
-        savedHostValue={docSettings?.host}
+        //savedHostValue={docSettings?.host}
         originaltHostValue={window.api.DEFAULT_DOC_SETTINGS.host}
+        electronSettingsKey={window.api.DOC_SETTINGS_KEY}
       />
     </section>
   );

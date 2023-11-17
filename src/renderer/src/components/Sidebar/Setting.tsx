@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
-import { Settings, CompilerSettings } from '../Modules/Settings';
+import { Settings, CompilerSettings, DocSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
@@ -35,9 +35,8 @@ export const Setting: React.FC<SettingProps> = () => {
   // подключение к серверу документации
   const handleDocConnect = async (host: string) => {
     console.log('HOST CONNECTING', host);
+    await Settings.setDocSettings({ host } as DocSettings);
     setURL(host);
-    //await Settings.setDocSettings({ host, port } as CompilerSettings);
-    //await Compiler.connect(host, port);
   };
   // действие при нажатии кнопки меню выбора сервера документации
   const handleDocHostChange = () => {
@@ -47,10 +46,6 @@ export const Setting: React.FC<SettingProps> = () => {
   // подключение к серверу по-умолчанию
   const handleDefaultDoc = async () => {
     await handleDocConnect(window.api.DEFAULT_DOC_SETTINGS.host);
-  };
-  // подключение к пользовательскому серверу документации
-  const handleCustomDoc = async (host: string) => {
-    //await
   };
 
   // для компилятора
@@ -75,20 +70,10 @@ export const Setting: React.FC<SettingProps> = () => {
   };
   // подключение к серверу по-умолчанию
   const handleDefaultCompiler = async () => {
-    /*console.log(
-      'DEFAULT',
-      window.api.DEFAULT_COMPILER_SETTINGS.host,
-      window.api.DEFAULT_COMPILER_SETTINGS.port
-    );*/
     await handleCompileConnect(
       window.api.DEFAULT_COMPILER_SETTINGS.host,
       window.api.DEFAULT_COMPILER_SETTINGS.port
     );
-  };
-  // подключение к серверу компилятора
-  const handleCustomCompiler = async (host: string, port: number) => {
-    //console.log('CUSTOM', host, port);
-    await handleCompileConnect(host, port);
   };
 
   return (
@@ -124,7 +109,7 @@ export const Setting: React.FC<SettingProps> = () => {
       <ServerSelectModal
         isOpen={isCompilerModalOpen}
         handleDefault={handleDefaultCompiler}
-        handleCustom={handleCustomCompiler}
+        handleCustom={handleCompileConnect}
         onClose={closeCompilerModal}
         topTitle={'Выберите компилятор'}
         textSelectTitle={'Компилятор'}
@@ -137,7 +122,7 @@ export const Setting: React.FC<SettingProps> = () => {
       <DocSelectModal
         isOpen={isDocModalOpen}
         handleDefault={handleDefaultDoc}
-        handleCustom={handleCustomDoc}
+        handleCustom={handleDocConnect}
         onClose={closeDocModal}
         topTitle={'Выберите док-сервер'}
         textSelectTitle={'Док-сервер'}

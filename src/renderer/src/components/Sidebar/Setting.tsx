@@ -78,12 +78,19 @@ export const Setting: React.FC<SettingProps> = () => {
   };
   // подключение к серверу по-умолчанию
   const handleDefaultCompiler = async () => {
-    console.log('DEFAULT', window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
-    await handleCompileConnect(window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
+    /*console.log(
+      'DEFAULT',
+      window.api.DEFAULT_COMPILER_SETTINGS.host,
+      window.api.DEFAULT_COMPILER_SETTINGS.port
+    );*/
+    await handleCompileConnect(
+      window.api.DEFAULT_COMPILER_SETTINGS.host,
+      window.api.DEFAULT_COMPILER_SETTINGS.port
+    );
   };
   // подключение к серверу компилятора
   const handleCustomCompiler = async (host: string, port: number) => {
-    console.log('CUSTOM', host, port);
+    //console.log('CUSTOM', host, port);
     await handleCompileConnect(host, port);
   };
 

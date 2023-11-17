@@ -3,6 +3,7 @@ import { contextBridge } from 'electron';
 import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
 import {
   COMPILER_SETTINGS_KEY,
+  DEFAULT_COMPILER_SETTINGS,
   FLASHER_SETTINGS_KEY,
   PLATFORMS_PATH_SETTINGS_KEY,
 } from '../main/electron-settings-consts';
@@ -12,9 +13,10 @@ const api = {
   FLASHER_LOCAL_HOST,
   FLASHER_SETTINGS_KEY,
   COMPILER_SETTINGS_KEY,
+  DEFAULT_COMPILER_SETTINGS,
   PLATFORMS_PATH_SETTINGS_KEY,
 };
-console.log('COMPILER_SETTINGS', COMPILER_SETTINGS);
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.

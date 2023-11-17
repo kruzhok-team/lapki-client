@@ -6,11 +6,11 @@ import Show from './components/Show';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { useDoc } from '@renderer/store/useDoc';
+import { Settings } from '../Modules/Settings';
 
 /*Загрузка документации*/
 
 interface DocumentationsProps {
-  baseUrl: string;
   topOffset?: boolean;
 }
 
@@ -30,8 +30,8 @@ function getData(url) {
     });
 }
 
-export function Documentations({ baseUrl, topOffset = false }: DocumentationsProps) {
-  const [url, setUrl] = useState(baseUrl);
+export function Documentations({ topOffset = false }: DocumentationsProps) {
+  const [url, setUrl] = useState('');
   SET_URL = setUrl;
   const [activeTab, setActiveTab] = useState<number>(0);
   const [data, setData] = useState<{ body: File }>();
@@ -58,7 +58,9 @@ export function Documentations({ baseUrl, topOffset = false }: DocumentationsPro
   };
 
   useEffect(() => {
-    getData(url);
+    Settings.getDocSettings().then((doc) => {
+      setURL(doc.host);
+    });
   }, []);
 
   return (

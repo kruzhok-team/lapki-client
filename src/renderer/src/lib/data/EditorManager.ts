@@ -364,6 +364,8 @@ export class EditorManager {
       parent: parentId,
     };
 
+    this.triggerDataChange('elements.states');
+
     return newId;
   }
 

@@ -100,7 +100,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
         />
       </div>
       <button type="button" className="btn-secondary" onClick={handleReset}>
-        Сброс настроек
+        Сбросить настройки
       </button>
     </Modal>
   );

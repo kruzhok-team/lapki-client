@@ -82,7 +82,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
         />
       </div>
       <button type="button" className="btn-secondary" onClick={handleReset}>
-        Сброс настроек
+        Сбросить настройки
       </button>
     </Modal>
   );

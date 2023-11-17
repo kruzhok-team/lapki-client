@@ -35,6 +35,7 @@ export const Setting: React.FC<SettingProps> = () => {
   // подключение к серверу документации
   const handleDocConnect = async (host: string) => {
     console.log('HOST CONNECTING', host);
+    setURL(host);
     //await Settings.setDocSettings({ host, port } as CompilerSettings);
     //await Compiler.connect(host, port);
   };
@@ -45,15 +46,11 @@ export const Setting: React.FC<SettingProps> = () => {
   };
   // подключение к серверу по-умолчанию
   const handleDefaultDoc = async () => {
-    console.log('DEFAULT');
-    //console.log('DEFAULT', window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
-    //await handleCompileConnect(window.api.DEFAULT_COMPILER_HOST, window.api.DEFAULT_COMPILER_PORT);
+    await handleDocConnect(window.api.DEFAULT_DOC_SETTINGS.host);
   };
   // подключение к пользовательскому серверу документации
   const handleCustomDoc = async (host: string) => {
-    console.log('CUSTOM', host);
-    //await handleCompileConnect(host, port);
-    setURL(host);
+    //await
   };
 
   // для компилятора

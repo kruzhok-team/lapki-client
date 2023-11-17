@@ -1,10 +1,5 @@
 import { ElectronAPI } from '@electron-toolkit/preload';
 
-export interface ServerSettings {
-  port: number;
-  host: string;
-}
-
 declare global {
   interface Window {
     electron: ElectronAPI;
@@ -14,7 +9,9 @@ declare global {
       FLASHER_SETTINGS_KEY: string;
       COMPILER_SETTINGS_KEY: string;
       PLATFORMS_PATH_SETTINGS_KEY: string;
-      DEFAULT_COMPILER_SETTINGS: ServerSettings;
+      DEFAULT_COMPILER_SETTINGS;
+      DOC_SETTINGS_KEY: string;
+      DEFAULT_DOC_SETTINGS;
     };
   }
 }

@@ -22,14 +22,14 @@ import {
 } from '@renderer/types/MachineController';
 import { indexOfMin } from '@renderer/utils';
 
-import { loadPlatform } from './PlatformLoader';
-import { ComponentEntry, PlatformManager, operatorSet } from './PlatformManager';
-import { UndoRedo } from './UndoRedo';
+import { Initializer } from './Initializer';
 
-import { Container } from '../basic/Container';
-import { EventSelection } from '../drawable/Events';
-import { State } from '../drawable/State';
-import { Transition } from '../drawable/Transition';
+import { Container } from '../../basic/Container';
+import { EventSelection } from '../../drawable/Events';
+import { State } from '../../drawable/State';
+import { Transition } from '../../drawable/Transition';
+import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
+import { UndoRedo } from '../UndoRedo';
 
 /**
  * Контроллер машины состояний.
@@ -48,6 +48,8 @@ import { Transition } from '../drawable/Transition';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
 export class MachineController {
+  initializer = new Initializer(this);
+
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
 
@@ -57,103 +59,10 @@ export class MachineController {
 
   constructor(public container: Container) {}
 
-  resetEntities() {
-    this.container.children.clear();
-    this.transitions.forEach((value) => {
-      this.container.transitionsController.unwatchTransition(value);
-    });
-
-    this.states.forEach((value) => {
-      this.container.statesController.unwatchState(value);
-    });
-    this.states.clear();
-    this.transitions.clear();
-    this.undoRedo.clear();
-  }
-
   loadData() {
-    this.resetEntities();
-
-    this.initStates();
-    this.initTransitions();
-    this.initPlatform();
-    this.initComponents();
-
-    // Центрирование камеры после открытия новой схемы
-    this.container.viewCentering();
+    this.initializer.init();
 
     this.container.isDirty = true;
-  }
-
-  initStates() {
-    const items = this.container.app.manager.data.elements.states;
-
-    for (const id in items) {
-      const data = items[id];
-      this.createState(
-        {
-          id,
-          name: data.name,
-          position: data.bounds,
-          events: data.events,
-          parentId: data.parent,
-        },
-        false
-      );
-
-      if (this.container.app.manager.data.elements.initialState === id) {
-        this.container.statesController.initInitialStateMark(id);
-      }
-    }
-  }
-
-  initTransitions() {
-    const items = this.container.app.manager.data.elements.transitions;
-
-    for (const id in items) {
-      const data = items[id];
-
-      this.createTransition(
-        {
-          id,
-          color: data.color,
-          condition: data.condition ?? undefined,
-          position: data.position,
-          source: data.source,
-          target: data.target,
-          doAction: data.do ?? [],
-          component: data.trigger.component,
-          method: data.trigger.method,
-        },
-        false
-      );
-    }
-  }
-
-  initComponents() {
-    const items = this.container.app.manager.data.elements.components;
-
-    for (const name in items) {
-      const component = items[name];
-      // this.components.set(name, new Component(component));
-      this.platform.nameToVisual.set(name, {
-        component: component.type,
-        label: component.parameters['label'],
-        color: component.parameters['labelColor'],
-      });
-    }
-  }
-
-  initPlatform() {
-    const platformName = this.container.app.manager.data.elements.platform;
-
-    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformName);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
-    }
-
-    this.platform = platform;
   }
 
   createState = (args: CreateStateParameters, canUndo = true) => {
@@ -177,6 +86,12 @@ export class MachineController {
       if (linkByPoint) {
         this.linkStateByPoint(state, position);
       }
+    }
+
+    // Если не было начального состояния, им станет новое
+    if (!this.container.app.manager.data.elements.initialState) {
+      this.setInitialState(state.id, canUndo);
+      numberOfConnectedActions += 1;
     }
 
     this.container.statesController.watchState(state);
@@ -409,8 +324,8 @@ export class MachineController {
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
-    if (this.container.app.manager.data.elements.initialState === id) {
-      this.changeInitialState('', canUndo);
+    if (this.container.app.manager.data.elements.initialState?.target === id) {
+      this.removeInitialState(id, canUndo);
       numberOfConnectedActions += 1;
     }
 
@@ -430,16 +345,123 @@ export class MachineController {
     this.container.isDirty = true;
   };
 
-  changeInitialState = (id: string, canUndo = true) => {
+  /**
+   * Обёртка для удобного создания {@link InitialStateMark|маркера начального состояния}
+   * или перестановки его на другое {@link State|состояние}
+   */
+  setInitialState = (stateId: string, canUndo = true) => {
+    const initialState = this.container.app.manager.data.elements.initialState;
+
+    if (!initialState) {
+      return this.createInitialState(stateId, undefined, canUndo);
+    }
+
+    if (initialState.target === stateId) return;
+
+    return this.changeInitialState(initialState.target, stateId, canUndo);
+  };
+
+  /**
+   * Вызывается при удлении {@link State|состояния} чтобы
+   * {@link InitialStateMark|маркер начального состояния} перепрыгнул на другое состояние
+   * или удалился если состояний нет
+   */
+  removeInitialState = (stateId: string, canUndo = true) => {
+    for (const id of this.states.keys()) {
+      if (id === stateId) continue;
+
+      return this.changeInitialState(stateId, id, canUndo);
+    }
+
+    this.deleteInitialState(canUndo);
+  };
+
+  createInitialState = (targetId: string, initialPosition?: Point, canUndo = true) => {
+    const target = this.states.get(targetId);
+    if (!target) return;
+
+    const data = {
+      target: targetId,
+      position: initialPosition ?? {
+        x: target.compoundPosition.x - 100,
+        y: target.compoundPosition.y - 100,
+      },
+    };
+
+    this.container.app.manager.changeInitialState(data);
+    this.container.statesController.initInitialStateMark();
+
     if (canUndo) {
       this.undoRedo.do({
-        type: 'changeInitialState',
-        args: { id, prevInitial: this.container.app.manager.data.elements.initialState },
+        type: 'createInitialState',
+        args: data,
       });
     }
 
-    this.container.app.manager.changeInitialState(id);
-    this.container.statesController.initInitialStateMark(id);
+    this.container.isDirty = true;
+  };
+
+  /**
+   * Перемещение {@link InitialStateMark|маркера начального состояния}
+   * с одного {@link State|состояния} на другое
+   */
+  changeInitialState = (prevTargetId: string, newTargetId: string, canUndo = true) => {
+    const target = this.states.get(newTargetId);
+    if (!target) return;
+
+    const position = {
+      x: target.compoundPosition.x - 100,
+      y: target.compoundPosition.y - 100,
+    };
+    this.container.app.manager.changeInitialState({
+      target: newTargetId,
+      position,
+    });
+    this.container.statesController.initInitialStateMark();
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeInitialState',
+        args: { prevTargetId, newTargetId },
+      });
+    }
+
+    this.container.isDirty = true;
+  };
+
+  /**
+   * Изменение позиции {@link InitialStateMark|маркера начального состояния}
+   */
+  changeInitialStatePosition = (startPosition: Point, endPosition: Point, canUndo = true) => {
+    const initialState = this.container.app.manager.data.elements.initialState;
+    if (!initialState) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeInitialStatePosition',
+        args: { startPosition, endPosition },
+      });
+    }
+
+    this.container.app.manager.changeInitialStatePosition(endPosition);
+
+    this.container.isDirty = true;
+  };
+
+  deleteInitialState = (canUndo = true) => {
+    const initialStateData = this.container.app.manager.data.elements.initialState;
+
+    if (!initialStateData) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'deleteInitialState',
+        args: initialStateData,
+      });
+    }
+
+    this.container.statesController.initialStateMark = null;
+    this.container.app.manager.deleteInitialState();
 
     this.container.isDirty = true;
   };

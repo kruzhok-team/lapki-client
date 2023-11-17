@@ -131,6 +131,9 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   getCapturedNode(args: getCapturedNodeArgs) {
+    const node = this.statesController.initialStateMark?.getIntersection(args);
+    if (node) return node;
+
     const { type } = args;
 
     const end = type === 'states' ? this.children.statesSize : this.children.size;

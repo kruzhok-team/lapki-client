@@ -6,63 +6,47 @@ import { Modal } from '../Modal/Modal';
 
 import { TextInput } from '../Modal/TextInput';
 
-import { TextSelectOptions } from '../Modal/TextSelectOptions';
-import { twMerge } from 'tailwind-merge';
-
 interface ServerSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  handleDefault: () => void;
   handleCustom: (host: string, port: number) => void;
   // надпись на самом верху
   topTitle: string;
   // надпись над меню выбора типа сервера
   textSelectTitle: string;
-  // название опции выбора сервера по-умолчанию
-  defaultTitle: string;
-  // название опции выбора пользовательского сервера
-  customTitle: string;
-  // значение пользовательского порта по-умолчанию (при null или undefined пользователь увидит пустую строку)
-  customPortValue: string | undefined | null;
-  // значение пользовательского хоста по-умолчанию (при null или undefined пользователь увидит пустую строку)
-  customHostValue: string | undefined | null;
-}
-
-const SELECT_DEFAULT: string = 'DEFAULT_OPTION_VALUE';
-const SELECT_CUSTOM: string = 'CUSTOM_OPTION_VALUE';
-
-export interface selectModalFormValues {
-  host: string;
-  port: number;
-  serverType: string;
+  // значение порта, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
+  savedPortValue: string | undefined | null;
+  // значение хоста, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
+  savedHostValue: string | undefined | null;
+  // значение хоста к которому клиент подключается при первом запуске
+  originaltHostValue: string;
+  // значение порта к которому клиент подключается при первом запуске
+  originaltPortValue: string;
 }
 
 export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   onClose,
-  handleDefault: handleDefault,
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { register, handleSubmit: hookHandleSubmit } = useForm<selectModalFormValues>();
+  const { handleSubmit: hookHandleSubmit } = useForm<{}>();
 
-  // настройка видимости текстовых полей
-  const [isHidden, setHidden] = useState(false);
-  const handleHidden = (event) => {
-    // текстовые поля становятся видимыми, если выбран пользовательский хост
-    setHidden(event.target.value != SELECT_CUSTOM);
-  };
+  // хост, отображаемый пользователю на форме ввода данных
+  const [hostInput, setInputHost] = useState(props.savedHostValue);
+  const [portInput, setInputPort] = useState(props.savedPortValue);
 
-  const handleSubmit = hookHandleSubmit((data) => {
-    if (data.serverType == SELECT_DEFAULT) {
-      handleDefault();
-    } else {
-      handleCustom(data.host, data.port);
-    }
+  const handleSubmit = hookHandleSubmit(() => {
+    handleCustom(String(hostInput), Number(portInput));
     onRequestClose();
   });
 
   const onRequestClose = () => {
     onClose();
+  };
+
+  const handleReset = () => {
+    setInputHost(props.originaltHostValue);
+    setInputPort(props.originaltPortValue);
   };
 
   return (
@@ -73,38 +57,22 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
     >
-      <div className="flex items-center">
-        <TextSelectOptions
-          label={props.textSelectTitle}
-          {...register('serverType', {
-            required: 'Это поле обязательно к заполнению!',
-          })}
-          onChange={handleHidden}
+      <div className={'flex'}>
+        <TextInput
+          label="Хост:"
+          placeholder="Напишите адрес хоста"
           isElse={false}
           error={false}
           errorMessage={''}
-          options={[
-            { value: SELECT_CUSTOM, label: props.customTitle },
-            { value: SELECT_DEFAULT, label: props.defaultTitle },
-          ]}
-        />
-      </div>
-      <div className={twMerge('flex', isHidden && 'opacity-50')}>
-        <TextInput
-          label="Хост:"
-          {...register('host')}
-          placeholder="Напишите адрес хоста"
-          isElse={isHidden}
-          error={false}
-          errorMessage={''}
-          defaultValue={props.customHostValue ?? ''}
+          value={hostInput ?? ''}
+          //defaultValue={props.savedHostValue ?? ''}
+          onChange={(e) => setInputHost(e.target.value)}
           //disabled={isLocal}
         />
         <TextInput
           label="Порт:"
-          {...register('port')}
           placeholder="Напишите порт"
-          isElse={isHidden}
+          isElse={false}
           error={false}
           errorMessage={''}
           onInput={(event) => {
@@ -116,10 +84,15 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
               );
             }
           }}
-          defaultValue={props.customPortValue ?? ''}
+          value={portInput ?? ''}
+          onChange={(e) => setInputPort(e.target.value)}
+          //defaultValue={props.savedPortValue ?? ''}
           //disabled={isLocal}
         />
       </div>
+      <button type="button" className="btn-secondary" onClick={handleReset}>
+        Сброс настроек
+      </button>
     </Modal>
   );
 };

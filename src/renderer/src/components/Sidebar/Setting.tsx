@@ -54,10 +54,6 @@ export const Setting: React.FC<SettingProps> = () => {
     //Flasher.freezeReconnectionTimer(true);
     openDocModal();
   };
-  // подключение к серверу по-умолчанию
-  const handleDefaultDoc = async () => {
-    await handleDocConnect(window.api.DEFAULT_DOC_SETTINGS.host);
-  };
 
   // для компилятора
 
@@ -78,13 +74,6 @@ export const Setting: React.FC<SettingProps> = () => {
   const handleCompilerHostChange = () => {
     //Flasher.freezeReconnectionTimer(true);
     openCompilerModal();
-  };
-  // подключение к серверу по-умолчанию
-  const handleDefaultCompiler = async () => {
-    await handleCompileConnect(
-      window.api.DEFAULT_COMPILER_SETTINGS.host,
-      window.api.DEFAULT_COMPILER_SETTINGS.port
-    );
   };
 
   return (
@@ -119,15 +108,14 @@ export const Setting: React.FC<SettingProps> = () => {
       </div>
       <ServerSelectModal
         isOpen={isCompilerModalOpen}
-        handleDefault={handleDefaultCompiler}
         handleCustom={handleCompileConnect}
         onClose={closeCompilerModal}
         topTitle={'Выберите компилятор'}
         textSelectTitle={'Компилятор'}
-        defaultTitle={'Стандартный'}
-        customTitle={'Пользовательский'}
-        customHostValue={compilerSettings?.host}
-        customPortValue={String(compilerSettings?.port)}
+        savedHostValue={compilerSettings?.host}
+        savedPortValue={String(compilerSettings?.port)}
+        originaltHostValue={window.api.DEFAULT_COMPILER_SETTINGS.host}
+        originaltPortValue={window.api.DEFAULT_COMPILER_SETTINGS.port}
       />
 
       <DocSelectModal

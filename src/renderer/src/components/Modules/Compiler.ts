@@ -14,11 +14,6 @@ import {
 import { Elements } from '@renderer/types/diagram';
 
 export class Compiler {
-  // сохранённые значения хоста и порта, если значения пусты, то используются значения по-умолчанию
-
-  static LOCAL_STORAGE_HOST = 'compiler host';
-  static LOCAL_STORAGE_PORT = 'compiler port';
-
   static port = 8081;
   static host = 'localhost';
   static base_address = `ws://${this.host}:${this.port}/`;

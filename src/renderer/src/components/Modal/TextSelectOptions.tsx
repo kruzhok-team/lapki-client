@@ -1,4 +1,5 @@
 import { ComponentProps, forwardRef } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
 interface option {
@@ -14,8 +15,7 @@ interface TextSelectProps extends ComponentProps<'select'> {
   errorMessage: string;
   options: option[];
 }
-export const SELECT_LOCAL = 'local';
-export const SELECT_REMOTE = 'remote';
+
 export const TextSelectOptions = forwardRef<HTMLSelectElement, TextSelectProps>(
   ({ label, isElse, error, errorMessage, ...props }, ref) => {
     return (

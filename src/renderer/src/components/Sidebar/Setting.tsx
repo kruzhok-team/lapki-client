@@ -4,8 +4,8 @@ import { Select } from '@renderer/components/UI';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { Settings, CompilerSettings, DocSettings } from '../Modules/Settings';
 import { Compiler } from '../Modules/Compiler';
-import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
+import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 import { setURL } from '../Documentation/Documentation';
 interface SettingProps {}
 

@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
 import { Modal } from '../Modal/Modal';
-
 import { TextInput } from '../Modal/TextInput';
-
-import { SELECT_LOCAL, TextSelectFlasher } from '../Modal/TextSelectFlasher';
-
+import { TextSelectOptions } from '../Modal/TextSelectOptions';
 import { Flasher } from '../Modules/Flasher';
-import { twMerge } from 'tailwind-merge';
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
@@ -31,6 +28,9 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   ...props
 }) => {
   const { register, handleSubmit: hookHandleSubmit } = useForm<FlasherSelectModalFormValues>();
+
+  const SELECT_LOCAL = 'local';
+  const SELECT_REMOTE = 'remote';
 
   // октрыта ли опция выбора локального загрузчика
   const [isLocal, setLocal] = useState(false);
@@ -61,7 +61,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       onSubmit={handleSubmit}
     >
       <div className="flex items-center">
-        <TextSelectFlasher
+        <TextSelectOptions
           label="Загрузчик"
           {...register('flasherType', {
             required: 'Это поле обязательно к заполнению!',
@@ -70,6 +70,10 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           isElse={false}
           error={false}
           errorMessage={''}
+          options={[
+            { value: SELECT_REMOTE, label: 'Удалённый' },
+            { value: SELECT_LOCAL, label: 'Локальный' },
+          ]}
         />
       </div>
       <div className={twMerge('flex', isLocal && 'opacity-50')}>

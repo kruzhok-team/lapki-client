@@ -15,7 +15,7 @@ interface FlasherSelectModalProps {
   handleRemote: (host: string, port: number) => void;
 }
 
-export interface FlasherSelectModalFormValues {
+interface FlasherSelectModalFormValues {
   host: string;
   port: number;
   flasherType: string;

@@ -2,12 +2,10 @@
 import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
 import { Modal } from '../Modal/Modal';
-
 import { TextInput } from '../Modal/TextInput';
-
-import { twMerge } from 'tailwind-merge';
 import { Settings } from '../Modules/Settings';
 
 interface DocSelectModalProps {
@@ -29,7 +27,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm<{}>();
+  const { handleSubmit: hookHandleSubmit } = useForm<Record<string, never>>();
 
   // хост, отображаемый пользователю на форме ввода данных
   const [hostInput, setInputHost] = useState('');

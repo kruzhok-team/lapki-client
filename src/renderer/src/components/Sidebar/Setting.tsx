@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-
 import { Select } from '@renderer/components/UI';
+import { useModal } from '@renderer/hooks/useModal';
 import { useThemeContext } from '@renderer/store/ThemeContext';
-import { Settings, CompilerSettings, DocSettings } from '../Modules/Settings';
+
+import { setURL } from '../Documentation/Documentation';
 import { Compiler } from '../Modules/Compiler';
+import { Settings, CompilerSettings, DocSettings } from '../Modules/Settings';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
-import { setURL } from '../Documentation/Documentation';
 interface SettingProps {}
 
 const themeOptions = [
@@ -21,6 +21,7 @@ const themeOptions = [
 ];
 
 export const Setting: React.FC<SettingProps> = () => {
+  // TODO: было неплохо, если бы загрузка параметов для модалок док-сервера и компилятора происходила бы здесь, а не внутри самих модалок, но код ниже не может этого сделать, до того как инициализируются эти модалки
   /*const [compilerSettings, setCompilerSettings] = useState<CompilerSettings>();
   const [docSettings, setDocSettings] = useState<DocSettings>();
   useEffect(() => {
@@ -36,12 +37,7 @@ export const Setting: React.FC<SettingProps> = () => {
 
   // для док-сервера
 
-  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
-  const openDocModal = () => setIsDocModalOpen(true);
-  const closeDocModal = () => {
-    //Compiler.freezeReconnectionTimer(false);
-    setIsDocModalOpen(false);
-  };
+  const [isDocOpen, openDoc, closeDoc] = useModal(false);
 
   // подключение к серверу документации
   const handleDocConnect = async (host: string) => {
@@ -52,17 +48,12 @@ export const Setting: React.FC<SettingProps> = () => {
   // действие при нажатии кнопки меню выбора сервера документации
   const handleDocHostChange = () => {
     //Flasher.freezeReconnectionTimer(true);
-    openDocModal();
+    openDoc();
   };
 
   // для компилятора
 
-  const [isCompilerModalOpen, setIsCompilerModalOpen] = useState(false);
-  const openCompilerModal = () => setIsCompilerModalOpen(true);
-  const closeCompilerModal = () => {
-    //Compiler.freezeReconnectionTimer(false);
-    setIsCompilerModalOpen(false);
-  };
+  const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
 
   // подключение к серверу компилятора
   const handleCompileConnect = async (host: string, port: number) => {
@@ -73,7 +64,7 @@ export const Setting: React.FC<SettingProps> = () => {
   // действие при нажатии кнопки меню выбора сервера компилятора
   const handleCompilerHostChange = () => {
     //Flasher.freezeReconnectionTimer(true);
-    openCompilerModal();
+    openCompiler();
   };
 
   return (
@@ -107,9 +98,9 @@ export const Setting: React.FC<SettingProps> = () => {
         </div>
       </div>
       <ServerSelectModal
-        isOpen={isCompilerModalOpen}
+        isOpen={isCompilerOpen}
         handleCustom={handleCompileConnect}
-        onClose={closeCompilerModal}
+        onClose={closeCompiler}
         topTitle={'Выберите компилятор'}
         textSelectTitle={'Компилятор'}
         //savedHostValue={compilerSettings?.host}
@@ -120,9 +111,9 @@ export const Setting: React.FC<SettingProps> = () => {
       />
 
       <DocSelectModal
-        isOpen={isDocModalOpen}
+        isOpen={isDocOpen}
         handleCustom={handleDocConnect}
-        onClose={closeDocModal}
+        onClose={closeDoc}
         topTitle={'Выберите док-сервер'}
         //savedHostValue={docSettings?.host}
         originaltHostValue={window.api.DEFAULT_DOC_SETTINGS.host}

@@ -56,7 +56,7 @@ export class EditorManager {
   resetEditor?: () => void;
 
   init(basename: string | null, name: string, elements: Elements) {
-    this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
+    this.data.isInitialized = false; // Для того чтобы весь интерфейс обновился
 
     this.data = emptyEditorData();
 
@@ -131,6 +131,14 @@ export class EditorManager {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
       return !propertyName.startsWith('elements.');
     };
+    //TODO: Требуется исправить изменение isStale, потому что это ломает логику появления модального окна сохранения
+    //При нажатии на кнопку открыть проект или создать новый поверх открытого проекта,
+    //модальное окно сохранения начинает появляться, даже если в открытом проекте не было изменений
+    if (!this.data.isStale) {
+      this.data.isStale = true;
+      this.triggerDataChange('isStale');
+      console.log('sdbnhgn gbfvdcs', this.data.isStale);
+    }
 
     if (isShallow(keys)) {
       this.dataListeners[keys].forEach((listener) => listener());

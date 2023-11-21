@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -9,11 +9,14 @@ export interface MenuProps {
   onRequestSaveAsFile: () => void;
   onRequestImport: (platform: string) => void;
   compilerStatus: string;
-  editor: CanvasEditor | null;
+  manager: EditorManager;
   // TODO: isModified: boolean;
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
+  const isStale = props.manager.useData('isStale');
+  const isInitialized = props.manager.useData('isInitialized');
+
   const items = [
     {
       text: 'Создать...',
@@ -26,13 +29,13 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
-      disabled: props.editor ? false : true,
+      disabled: !isStale || !isInitialized,
       // TODO: disabled: !props.isModified,
     },
     {
       text: 'Сохранить как...',
       onClick: props.onRequestSaveAsFile,
-      disabled: props.editor ? false : true,
+      disabled: !isStale || !isInitialized,
     },
     {
       text: 'Импорт...',

@@ -34,6 +34,11 @@ export type State = {
   events: EventData[];
 };
 
+export type InitialState = {
+  target: string;
+  position: Point;
+};
+
 export type Variable = {
   component: string;
   method: string;
@@ -67,7 +72,7 @@ export type Elements = {
   transitions: Transition[];
   components: { [id: string]: Component };
 
-  initialState: string;
+  initialState: InitialState | null;
 
   platform: string;
   parameters?: { [key: string]: string };
@@ -84,7 +89,7 @@ export function emptyElements(): InnerElements {
     states: {},
     transitions: {},
     components: {},
-    initialState: '',
+    initialState: null,
 
     platform: '',
     parameters: {},

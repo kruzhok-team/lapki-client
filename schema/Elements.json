@@ -118,7 +118,7 @@
           "type": "object"
         },
         "initialState": {
-          "type": "string"
+          "$ref": "#/definitions/InitialState"
         },
         "parameters": {
           "additionalProperties": {
@@ -189,6 +189,22 @@
       "required": [
         "trigger",
         "do"
+      ],
+      "type": "object"
+    },
+    "InitialState": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "$ref": "#/definitions/Point"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "position"
       ],
       "type": "object"
     },

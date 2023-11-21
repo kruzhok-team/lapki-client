@@ -132,6 +132,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     );
   };
 
+  handleInitialStateDragEnd = (e: { dragStartPosition: Point; dragEndPosition: Point }) => {
+    this.container.machineController.changeInitialStatePosition(
+      e.dragStartPosition,
+      e.dragEndPosition
+    );
+  };
+
   watchState(state: State) {
     state.on('mousedown', this.handleStateClick.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
@@ -156,7 +163,19 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.edgeHandlers.unbindEvents();
   }
 
-  initInitialStateMark(stateId: string) {
-    this.initialStateMark = new InitialStateMark(this.container, stateId);
+  private watchInitialState() {
+    this.initialStateMark?.on('dragend', this.handleInitialStateDragEnd.bind(this));
+  }
+
+  private unwatchInitialState() {
+    this.initialStateMark?.off('dragend', this.handleInitialStateDragEnd.bind(this));
+  }
+
+  initInitialStateMark() {
+    this.unwatchInitialState();
+
+    this.initialStateMark = new InitialStateMark(this.container);
+
+    this.watchInitialState();
   }
 }

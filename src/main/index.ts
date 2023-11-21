@@ -5,6 +5,12 @@ import settings from 'electron-settings';
 import { join } from 'path';
 
 import {
+  COMPILER_SETTINGS_KEY,
+  DEFAULT_COMPILER_SETTINGS,
+  FLASHER_SETTINGS_KEY,
+  PLATFORMS_PATH_SETTINGS_KEY,
+} from './electron-settings-consts';
+import {
   handleFileOpen,
   handleFileSave,
   handleFileSaveAs,
@@ -21,13 +27,6 @@ import {
 import { searchPlatforms } from './PlatformSeacher';
 
 import icon from '../../resources/icon.png?asset';
-
-import {
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  FLASHER_SETTINGS_KEY,
-  PLATFORMS_PATH_SETTINGS_KEY,
-} from './electron-settings-consts';
 
 /**
  * Создание главного окна редактора.
@@ -62,6 +61,22 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+  });
+
+  //Запрос в область рендера
+  mainWindow.on('close', (e) => {
+    if (mainWindow) {
+      e.preventDefault();
+      mainWindow.webContents.send('app-close');
+    }
+  });
+
+  //Получаем ответ из рендера и закрываем приложение
+  ipcMain.on('closed', (_) => {
+    ModuleManager.stopModule(LAPKI_FLASHER);
+    if (process.platform !== 'darwin') {
+      app.exit(0);
+    }
   });
 
   // Вместо создания новых окон мы передаём ссылку в систему.

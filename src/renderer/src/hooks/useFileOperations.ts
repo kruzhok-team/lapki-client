@@ -15,9 +15,8 @@ interface useFileOperationsArgs {
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { manager, openLoadError, openSaveError, openPlatformModal } = args;
 
-  const isStale = manager.useData('isStale');
   const name = manager.useData('name');
-
+  const isStale = manager.useData('isStale');
   const clearTabs = useTabs((state) => state.clearTabs);
 
   const [data, setData] = useState<SaveModalData | null>(null);
@@ -33,6 +32,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
         onConfirm: performOpenFile,
         onSave: handleSaveFile,
+        onOpen: async () => await performOpenFile(path),
       });
       openSaveModal();
     } else {
@@ -62,6 +62,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         question: 'Хотите сохранить файл перед тем, как создать новый?',
         onConfirm: openPlatformModal,
         onSave: handleSaveFile,
+        onOpen: () => openPlatformModal(),
       });
       openSaveModal();
     } else {
@@ -72,16 +73,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const performNewFile = (idx: string) => {
     manager?.newFile(idx);
     clearTabs();
-  };
-
-  const handleSaveAsFile = async () => {
-    const result = await manager?.saveAs();
-    if (result && isLeft(result)) {
-      const cause = unwrapEither(result);
-      if (cause) {
-        openSaveError(cause);
-      }
-    }
   };
 
   const handleSaveFile = async () => {
@@ -95,6 +86,40 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       // TODO: информировать об успешном сохранении
     }
   };
+
+  //console.log(isStale);
+  const handleSaveAsFile = async () => {
+    const result = await manager?.saveAs();
+    if (result && isLeft(result)) {
+      const cause = unwrapEither(result);
+      if (cause) {
+        openSaveError(cause);
+      }
+    }
+  };
+
+  //Сохранение проекта после закрытия редактора
+  window.electron.ipcRenderer.on('app-close', () => {
+    //Данное условие будет всегда работать(проект будет закрываться), потому что
+    //isStale работает неправильно. Если же заккоментировать код в else, то можно проверить работоспособность условия.
+    if (isStale) {
+      setData({
+        shownName: name,
+        question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
+        //При нажатии на любую из кнопок, он должен закрывать редактор
+        onConfirm: () => {
+          return window.electron.ipcRenderer.send('closed');
+        },
+        onSave: handleSaveFile,
+        onOpen: () => {
+          return window.electron.ipcRenderer.send('closed');
+        },
+      });
+      openSaveModal();
+    } else {
+      window.electron.ipcRenderer.send('closed');
+    }
+  });
 
   return {
     saveModalProps: { isOpen, onClose, data },

@@ -1,0 +1,38 @@
+name: 'tagged-release'
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  gh_tagged_release:
+    runs-on: 'ubuntu-latest'
+
+    permissions: write-all
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Run the build process with Docker
+        uses: addnab/docker-run-action@v3
+        with:
+          image: electronuserland/builder:wine
+          options: -v ${{ github.workspace }}:/project
+          run: |
+            npm ci
+            npm run build
+            npm run bundle:linux
+            npm run bundle:win
+
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          prerelease: false
+          files: |
+            dist/*.deb
+            dist/*.snap
+            dist/*.AppImage
+            dist/*.exe
+        id: 'automatic_releases'

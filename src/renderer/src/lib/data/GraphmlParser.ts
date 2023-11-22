@@ -1,4 +1,4 @@
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 import {
   State,
@@ -10,6 +10,7 @@ import {
   ArgList,
   Elements,
   Condition,
+  emptyElements,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -24,6 +25,7 @@ type Node = {
 type OuterComponent = {
   id: string;
   name: string;
+  humanName?: string;
   type: string;
   parameters: {
     [key: string]: string;
@@ -88,7 +90,6 @@ const dataNodeProcess = new Map<
   [
     'gFormat',
     ({ meta, node }) => {
-      console.log(node);
       meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
     },
   ],
@@ -123,9 +124,9 @@ const dataNodeProcess = new Map<
           if (data.meta.platform == '') {
             data.meta.platform = data.node.content;
           } else {
-            console.log(
+            throw new Error(
               `Повторное указание платформы! Старое значение: ${data.meta.platform}. Новое значение: ${data.node.content}`
-            ); //TODO Модалкой
+            );
           }
         } else {
           if (data.component !== undefined) {
@@ -135,7 +136,7 @@ const dataNodeProcess = new Map<
           }
         }
       } else {
-        console.log('Непредвиденный вызов функции dName');
+        throw new Error('Непредвиденный вызов функции dName');
       }
     },
   ],
@@ -143,9 +144,11 @@ const dataNodeProcess = new Map<
     'dInitial',
     (data: DataNodeProcessArgs) => {
       if (data.parentNode !== undefined) {
-        data.elements.initialState = data.parentNode?.id;
+        if (data.elements.initialState !== null) {
+          data.elements.initialState.target = data.parentNode?.id;
+        }
       } else {
-        console.log('Непредвиденный вызов функции dInitial');
+        throw new Error('Непредвиденный вызов функции dInitial');
       }
     },
   ],
@@ -156,8 +159,7 @@ const dataNodeProcess = new Map<
         const x = data.node['x'];
         const y = data.node['y'];
         if (x == undefined || y == undefined) {
-          console.log('Не указаны x или y для узла data с ключом dGeometry');
-          return;
+          throw new Error('Не указаны x или y для узла data с ключом dGeometry');
         } else {
           data.state.bounds = {
             x: data.node['x'] / 2,
@@ -166,8 +168,19 @@ const dataNodeProcess = new Map<
             height: data.node['height'] ? data.node['height'] : 0,
           };
         }
+      } else if (data.transition !== undefined) {
+        const x = data.node['x'];
+        const y = data.node['y'];
+        if (x == undefined || y == undefined) {
+          throw new Error('Не указаны x или y для узла data с ключом dGeometry');
+        } else {
+          data.transition.position = {
+            x: data.node['x'] / 2,
+            y: data.node['y'] / 2,
+          };
+        }
       } else {
-        console.log('Непредвиденный вызов функции dGeometry');
+        throw new Error('Непредвиденный вызов функции dGeometry');
       }
     },
   ],
@@ -223,17 +236,13 @@ function parseCondition(condition: string): Condition | undefined {
       value: [lval, rval],
     };
   }
-
-  console.log(`Неизвестный оператор ${operator}`);
-
-  return;
+  throw new Error(`Неизвестный оператор ${operator}`);
 }
 
 // Функция извлекает события и действия из дата-ноды
 function parseNodeData(elements: Elements, content: string, meta: Meta, state: State) {
   // По формату CyberiadaGraphML события разделены пустой строкой.
   const unprocessedEventsAndActions = content.split('\n\n');
-  console.log(unprocessedEventsAndActions);
   for (const event of unprocessedEventsAndActions) {
     const result = parseEvent(elements, event);
     if (result !== undefined) {
@@ -244,14 +253,12 @@ function parseNodeData(elements: Elements, content: string, meta: Meta, state: S
 
 function parseComponentNode(content: string, component: OuterComponent) {
   const unprocessedParameters = content.split('\n');
-
   const checkType = (componentType): boolean => {
     if (platform !== undefined) {
       return platform.components[componentType] !== undefined;
     } else {
-      console.log('Платформа не определена!');
+      throw new Error(`Платформа не определена!`);
     }
-    return false;
   };
 
   const checkParameter = (parameterName, componentType): boolean => {
@@ -259,22 +266,18 @@ function parseComponentNode(content: string, component: OuterComponent) {
   };
 
   for (const parameter of unprocessedParameters) {
-    console.log(parameter);
-    console.log(parameter.split('/'));
     let [parameterName, value] = parameter.split('/');
     parameterName = parameterName.trim();
     value = value.trim();
-    console.log(parameterName, value);
     switch (parameterName) {
       case 'type': {
         if (component.type == '') {
           if (checkType(value)) component.type = value;
           else {
-            console.log(`Неизвестный тип компонента ${value} в платформе ${platform?.name}`);
-            return;
+            throw new Error(`Неизвестный тип компонента ${value} в платформе ${platform?.name}`);
           }
         } else {
-          console.log(
+          throw new Error(
             `Тип компонента ${component.name} уже указан! Предыдущий тип ${component.type}, новый - ${value}`
           );
         }
@@ -284,18 +287,27 @@ function parseComponentNode(content: string, component: OuterComponent) {
         if (component.description == undefined) {
           component.description = value;
         } else {
-          console.log(
+          throw new Error(
             `Описание компонента ${component.name} уже указано! Предыдущее описание ${component.description}, новое - ${value}`
+          );
+        }
+        break;
+      }
+      case 'name': {
+        if (component.humanName == undefined || component.humanName == '') {
+          component.humanName = value;
+        } else {
+          throw new Error(
+            `Имя компонента ${component.humanName} уже указано! Предыдущее имя ${component.humanName}, новое - ${value}`
           );
         }
         break;
       }
       default:
         if (checkParameter(parameterName, component.type)) {
-          console.log(parameterName, value);
           component.parameters[parameterName] = value;
         } else {
-          console.log(
+          throw new Error(
             `Неизвестный параметр ${parameterName} для компонента типа ${component.type}`
           );
         }
@@ -306,7 +318,6 @@ function parseComponentNode(content: string, component: OuterComponent) {
 function parseEvent(elements: Elements, event: string): [EventData, Condition?] | undefined {
   if (event.includes('/')) {
     const eventAndAction = event.split('/'); // заменить на [event, action]
-    console.log(eventAndAction);
     let trigger = eventAndAction[0].trim();
     let condition: Condition | undefined;
     const actions = parseActions(elements, eventAndAction[1].trim());
@@ -315,7 +326,6 @@ function parseEvent(elements: Elements, event: string): [EventData, Condition?] 
         const event = trigger.split('[');
         trigger = event[0];
         condition = parseCondition(event[1].replace(']', ''));
-        console.log(condition);
       }
       let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
 
@@ -335,8 +345,7 @@ function parseEvent(elements: Elements, event: string): [EventData, Condition?] 
       ];
     }
   } else {
-    console.log(`Не определен триггер для действий ${event}`);
-    return;
+    throw new Error(`Не определен триггер для действий ${event}`);
   }
 
   return;
@@ -346,12 +355,10 @@ function parseTransitionData(elements: Elements, content: string, transition: Tr
   const unprocessedEventsAndActions = content.split('\n\n');
   // TODO: сделать проверку, что триггер всего один.
   for (const event of unprocessedEventsAndActions) {
-    console.log(event);
     const result = parseEvent(elements, event);
     if (result !== undefined) {
       const eventData = result[0];
       const condition = result[1];
-      console.log(eventData);
       if (eventData !== undefined) {
         transition.trigger = eventData.trigger;
         transition.do = eventData.do;
@@ -376,75 +383,60 @@ function getAllComponents(elements: Elements, meta: Meta) {
 }
 
 function parseAction(elements: Elements, unproccessedAction: string): Action | undefined {
-  try {
-    const [component_name, action] = unproccessedAction.trim().split('.');
-    const bracketPos = action.indexOf('(');
-    console.log(bracketPos);
-    console.log(component_name, action);
-    const args = action
-      .slice(bracketPos + 1, action.length - 1)
-      .split(',')
-      .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-    const method = action.slice(0, bracketPos);
-    console.log(args);
-    const resultAction: Action = {
-      component: component_name,
-      method: method,
-    };
+  const [component_name, action] = unproccessedAction.trim().split('.');
+  const bracketPos = action.indexOf('(');
+  const args = action
+    .slice(bracketPos + 1, action.length - 1)
+    .split(',')
+    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+  const method = action.slice(0, bracketPos);
+  const resultAction: Action = {
+    component: component_name,
+    method: method,
+  };
 
-    const component = elements.components[component_name];
-    // console.log(components);
-    const argList: ArgList = {};
-    // Если параметров у метода нет, то methodParameters будет равен undefined
-    console.log(component_name);
-    if (component !== undefined) {
-      const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
-      if (
-        platform?.components[component.type] !== undefined &&
-        platform?.components[component.type].methods[method] !== undefined
-      ) {
-        for (const index in methodParameters) {
-          const parameter: ArgumentProto = methodParameters[index];
-          console.log(args[index]);
-          if (args[index] !== undefined && args[index] !== '') {
-            argList[parameter.name] = args[index];
-          } else {
-            console.log(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
-            return;
-          }
-        }
-        if (methodParameters == undefined) {
-          console.log(args);
-          if (args.length == 0) {
-            resultAction.args = argList;
-          } else {
-            console.log(
-              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
-            );
-            return;
-          }
+  const component = elements.components[component_name];
+  const argList: ArgList = {};
+  // Если параметров у метода нет, то methodParameters будет равен undefined
+  if (component !== undefined) {
+    const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
+    if (
+      platform?.components[component.type] !== undefined &&
+      platform?.components[component.type].methods[method] !== undefined
+    ) {
+      for (const index in methodParameters) {
+        const parameter: ArgumentProto = methodParameters[index];
+        if (args[index] !== undefined && args[index] !== '') {
+          argList[parameter.name] = args[index];
         } else {
-          if (Object.keys(argList).length == Object.keys(methodParameters).length) {
-            resultAction.args = argList;
-          } else {
-            console.log(
-              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
-                Object.keys(methodParameters).length
-              }, получено: ${args.length}`
-            );
-          }
+          throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
         }
-        return resultAction;
-      } else {
-        console.log(`Неизвестный метод ${method} у компонента ${component_name}`);
-        return;
       }
+      if (methodParameters == undefined) {
+        if (args.length == 0) {
+          resultAction.args = argList;
+        } else {
+          throw new Error(
+            `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
+          );
+        }
+      } else {
+        if (Object.keys(argList).length == Object.keys(methodParameters).length) {
+          resultAction.args = argList;
+        } else {
+          throw new Error(
+            `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
+              Object.keys(methodParameters).length
+            }, получено: ${args.length}`
+          );
+        }
+      }
+      return resultAction;
     } else {
-      console.log(`Неизвестный компонент ${component_name}`);
+      throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
     }
-  } catch (error) {
-    console.log(error);
-    return;
+  } else {
+    throw new Error(`Неизвестный компонент ${component_name}`);
   }
 }
 
@@ -463,16 +455,15 @@ function parseActions(elements: Elements, unsplitedActions: string): Action[] | 
   } else {
     console.log('Отсутствуют действия на событие');
   }
-  return;
 }
 
 function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
   let foundInitial = false;
   for (const idx in edges) {
     const edge = edges[idx];
-    if (!foundInitial && edge.source == elements.initialState) {
+    if (!foundInitial && edge.source == elements.initialState?.target) {
       delete elements.states[edge.source];
-      elements.initialState = edge.target;
+      elements.initialState.target = edge.target;
       foundInitial = true;
     }
     const transition: Transition = {
@@ -488,7 +479,6 @@ function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
         y: 0,
       },
     };
-    console.log(edge);
     for (const dataNodeIndex in edge.data) {
       const dataNode: DataNode = edge.data[dataNodeIndex];
       const func = dataNodeProcess.get(dataNode.key);
@@ -543,7 +533,7 @@ function parseMeta(meta: Meta, unproccessedMeta: string) {
   if (isPlatformAvailable(meta.platform)) {
     platform = getPlatform(meta.platform);
   } else {
-    console.log(`Неизвестная платформа ${meta.platform}`);
+    throw new Error(`Неизвестная платформа ${meta.platform}`);
   }
 }
 
@@ -565,7 +555,6 @@ function processNode(
   component?: OuterComponent
 ): State {
   const state: State = createEmptyState();
-  console.log(node);
   if (node.data !== undefined) {
     for (const dataNode of node.data) {
       if (awailableDataProperties.get('node')?.has(dataNode.key)) {
@@ -581,7 +570,7 @@ function processNode(
           });
         }
       } else {
-        console.log(`Неизвестный key "${dataNode.key}" для узла node!`);
+        throw new Error(`Неизвестный key "${dataNode.key}" для узла node!`);
       }
     }
   }
@@ -601,6 +590,7 @@ function emptyOuterComponent(): OuterComponent {
   return {
     id: '',
     name: '',
+    humanName: '',
     type: '',
     parameters: {},
   };
@@ -633,7 +623,6 @@ function processGraph(
         const component = emptyOuterComponent();
         component.id = node.id;
         processNode(elements, node, meta, awailableDataProperties, parent, component);
-        // components[component.name] = component;
         delete graph.node[idx];
 
         if (!elements.components[component.name]) {
@@ -642,11 +631,10 @@ function processGraph(
             parameters: component.parameters,
           };
         } else {
-          console.log(`Компонент с именем ${component.name} уже существует!`);
+          throw new Error(`Компонент с именем ${component.name} уже существует!`);
         }
       }
     }
-    // console.log(components);
   }
 
   for (const idx in graph.node) {
@@ -657,8 +645,6 @@ function processGraph(
   if (graph.edge) {
     processTransitions(elements, meta, graph.edge);
   }
-
-  console.log(elements);
 
   return new Map<string, State>();
 }
@@ -685,7 +671,7 @@ function addPropertiesFromKeyNode(
 
       // Если есть такое свойство - вывести ошибку, иначе - добавить!
       if (nodeProperties?.has(keyNode.id)) {
-        console.log(`Дублирование свойства ${keyNode.id} для узла ${keyNode.for}!`);
+        throw new Error(`Дублирование свойства ${keyNode.id} для узла ${keyNode.for}!`);
       } else {
         nodeProperties?.set(keyNode.id, keyNode.properties);
       }
@@ -709,68 +695,70 @@ const systemComponentAlias = new Map<string, Event>([
 ]);
 
 export function importGraphml(expression: string) {
-  platform = undefined;
-  components_id.splice(0);
-  const parser = new XMLParser({
-    textNodeName: 'content',
-    ignoreAttributes: false,
-    attributeNamePrefix: '',
-    isArray: (_name, _jpath, isLeafNode, isAttribute) => {
-      return isLeafNode && !isAttribute;
-    },
-  });
+  try {
+    platform = undefined;
+    components_id.splice(0);
+    const parser = new XMLParser({
+      textNodeName: 'content',
+      ignoreAttributes: false,
+      attributeNamePrefix: '',
+      isArray: (_name, _jpath, isLeafNode, isAttribute) => {
+        return isLeafNode && !isAttribute;
+      },
+    });
 
-  const meta: Meta = {
-    format: '',
-    platform: '',
-  };
-  const elements: Elements = {
-    states: {},
-    transitions: [],
-    initialState: '',
-    components: {},
-    platform: '',
-  };
+    const meta: Meta = {
+      format: '',
+      platform: '',
+    };
+    const elements: Elements = {
+      states: {},
+      transitions: [],
+      initialState: {
+        target: '',
+        position: { x: 0, y: 0 },
+      },
+      components: {},
+      platform: '',
+    };
 
-  const awailableDataProperties = new Map<string, Map<string, KeyProperties>>();
-  const xml = parser.parse(expression);
-  console.log(xml);
-  setFormatToMeta(elements, xml, meta);
-  addPropertiesFromKeyNode(xml, awailableDataProperties);
-  switch (meta.format) {
-    case 'Cyberiada-GraphML': {
-      const indexOfMetaNode = (xml.graphml.graph.node as Array<Node>).findIndex(
-        (node) => node.id == ''
-      );
-      if (indexOfMetaNode !== -1) {
-        processNode(
-          elements,
-          xml.graphml.graph.node[indexOfMetaNode],
-          meta,
-          awailableDataProperties
+    const awailableDataProperties = new Map<string, Map<string, KeyProperties>>();
+    const xml = parser.parse(expression);
+    setFormatToMeta(elements, xml, meta);
+    addPropertiesFromKeyNode(xml, awailableDataProperties);
+    switch (meta.format) {
+      case 'Cyberiada-GraphML': {
+        const indexOfMetaNode = (xml.graphml.graph.node as Array<Node>).findIndex(
+          (node) => node.id == ''
         );
-        xml.graphml.graph.node = (xml.graphml.graph.node as Array<Node>).filter(
-          (value) => value.id !== ''
-        );
-        getAllComponents(elements, meta);
-        processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
-      } else {
-        console.log('Отсутствует мета-узел!');
+        if (indexOfMetaNode !== -1) {
+          processNode(
+            elements,
+            xml.graphml.graph.node[indexOfMetaNode],
+            meta,
+            awailableDataProperties
+          );
+          xml.graphml.graph.node = (xml.graphml.graph.node as Array<Node>).filter(
+            (value) => value.id !== ''
+          );
+          getAllComponents(elements, meta);
+          processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
+        } else {
+          throw new Error('Отсутствует мета-узел!');
+        }
+
+        break;
       }
-      // getAllComponents(elements, meta);
-      // processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
-
-      break;
+      default: {
+        // TODO сделать модалкой
+        throw new Error(`ОШИБКА! НЕИЗВЕСТНЫЙ ФОРМАТ "${meta.format}"!`);
+      }
     }
-    default: {
-      // TODO сделать модалкой
-      console.log(`ОШИБКА! НЕИЗВЕСТНЫЙ ФОРМАТ "${meta.format}"!`);
-    }
+    delete elements.states[''];
+    elements.platform = meta.platform;
+    return elements;
+  } catch (error) {
+    console.log(error);
+    return emptyElements();
   }
-  // console.log('here');
-  console.log(components_id);
-  delete elements.states[''];
-  elements.platform = meta.platform;
-  console.log(elements);
-  return elements;
 }

@@ -22,8 +22,9 @@ jobs:
           options: -v ${{ github.workspace }}:/project
           run: |
             npm ci
-            npm run build:linux
-            npm run build:win
+            npm run build
+            npm run bundle:linux
+            npm run bundle:win
 
       - uses: 'marvinpinto/action-automatic-releases@latest'
         with:

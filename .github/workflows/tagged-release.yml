@@ -11,21 +11,28 @@ jobs:
 
     permissions: write-all
 
-    strategy:
-      matrix:
-        node-version: [18.x]
+    # strategy:
+    #   matrix:
+    #     node-version: [18.x]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      # - uses: actions/checkout@v3
+      # - name: Use Node.js ${{ matrix.node-version }}
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: ${{ matrix.node-version }}
+      #     cache: 'npm'
 
-      - run: npm ci
-      - run: npm run build:win
-      - run: npm run build:linux
+      - name: Run the build process with Docker
+        uses: addnab/docker-run-action@v3
+        with:
+          image: electronuserland/builder:wine
+          options: -v ${{ github.workspace }}:/project
+          run: |
+            npm ci
+            npm run build:win
 
       - uses: 'marvinpinto/action-automatic-releases@latest'
         with:
@@ -35,4 +42,5 @@ jobs:
             dist/*.deb
             dist/*.snap
             dist/*.AppImage
+            dist/*.exe
         id: 'automatic_releases'

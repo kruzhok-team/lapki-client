@@ -11,19 +11,9 @@ jobs:
 
     permissions: write-all
 
-    # strategy:
-    #   matrix:
-    #     node-version: [18.x]
-
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      # - uses: actions/checkout@v3
-      # - name: Use Node.js ${{ matrix.node-version }}
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: ${{ matrix.node-version }}
-      #     cache: 'npm'
 
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
@@ -32,6 +22,7 @@ jobs:
           options: -v ${{ github.workspace }}:/project
           run: |
             npm ci
+            npm run build:linux
             npm run build:win
 
       - uses: 'marvinpinto/action-automatic-releases@latest'

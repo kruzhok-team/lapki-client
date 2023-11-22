@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-      # - run: npm run build:win
+      - run: npm run build:win
       - run: npm run build:linux
 
       - uses: 'marvinpinto/action-automatic-releases@latest'

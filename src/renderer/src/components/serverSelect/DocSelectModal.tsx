@@ -19,7 +19,10 @@ interface DocSelectModalProps {
 }
 
 interface formValues {
-  host: string;
+  // значения поля ввода для адреса
+  inputHost: string;
+  // текущий адрес к которому подключен клиент
+  connectedHost: string;
 }
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({
@@ -31,18 +34,21 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     register,
     handleSubmit: hookHandleSubmit,
     setValue,
+    watch,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
         return {
-          host: server.host ?? '',
+          inputHost: server.host ?? '',
+          connectedHost: server.host ?? '',
         };
       });
     },
   });
-
+  // текущий адрес к которому подключен клиент
   const handleSubmit = hookHandleSubmit((data) => {
-    handleCustom(String(data.host));
+    setValue('connectedHost', data.inputHost);
+    handleCustom(String(data.inputHost));
     onRequestClose();
   });
 
@@ -51,8 +57,13 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   };
 
   const handleReturnOriginalValues = () => {
-    setValue('host', props.originaltHostValue);
+    setValue('inputHost', props.originaltHostValue);
   };
+
+  function handleSubmitDisabled(): boolean | undefined {
+    const values = watch();
+    return values.connectedHost == values.inputHost;
+  }
 
   return (
     <Modal
@@ -61,10 +72,11 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      submitDisabled={handleSubmitDisabled()}
     >
       <div className={twMerge('flex')}>
         <TextInput
-          {...register('host')}
+          {...register('inputHost')}
           label="Адрес:"
           placeholder="Напишите адрес"
           isElse={false}

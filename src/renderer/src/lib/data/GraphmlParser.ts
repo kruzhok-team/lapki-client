@@ -756,9 +756,122 @@ export function importGraphml(expression: string) {
     }
     delete elements.states[''];
     elements.platform = meta.platform;
+    exportGraphml(elements);
     return elements;
   } catch (error) {
     console.log(error);
     return emptyElements();
   }
+}
+
+type ExportKeyNode = {
+  '@id': string;
+  '@for': string;
+  '@attr.name'?: string;
+  '@attr.type'?: string;
+};
+
+type ExportDataNode = {
+  '@key': string;
+  '@x'?: string;
+  '@y'?: string;
+  content: string;
+};
+
+type ExportEdge = {
+  '@id': string;
+  '@source': string;
+  '@target': string;
+  data: Array<ExportDataNode>;
+};
+
+type ExportGraph = {
+  '@id': string;
+  node: Array<ExportNode>;
+  edge: Array<ExportEdge>;
+};
+
+type ExportNode = {
+  '@id': string;
+  data: Array<ExportDataNode>;
+};
+
+export function exportGraphml(elements: Elements) {
+  const builder = new XMLBuilder({
+    textNodeName: 'content',
+    ignoreAttributes: false,
+    attributeNamePrefix: '@',
+  });
+
+  const keyNodes: Array<ExportKeyNode> = [
+    {
+      '@id': 'dName',
+      '@for': 'node',
+      '@attr.name': 'name',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dData',
+      '@for': 'node',
+      '@attr.name': 'data',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dData',
+      '@for': 'edge',
+      '@attr.name': 'data',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dInitial',
+      '@for': 'node',
+      '@attr.name': 'initial',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dGeometry',
+      '@for': 'edge',
+    },
+    {
+      '@id': 'dGeometry',
+      '@for': 'node',
+    },
+    {
+      '@id': 'dColor',
+      '@for': 'edge',
+    },
+  ];
+
+  const nodes: Array<ExportNode> = [
+    {
+      '@id': '',
+      data: [
+        {
+          '@key': 'dName',
+          content: elements.platform,
+        },
+        {
+          '@key': 'dData',
+          content: `/description Схема`,
+        },
+      ],
+    },
+  ];
+
+  const testObj = {
+    '?xml': {
+      '@version': 1.0,
+      '@encoding': 'UTF-8',
+    },
+    graphml: {
+      data: {
+        '@key': 'gFormat',
+        content: 'Cyberiada-Graphml',
+      },
+      key: keyNodes,
+      node: [],
+    },
+  };
+
+  console.log(builder.build(testObj));
 }

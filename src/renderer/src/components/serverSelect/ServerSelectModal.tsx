@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
-
 import { useForm } from 'react-hook-form';
 
 import { Modal } from '../Modal/Modal';
-
 import { TextInput } from '../Modal/TextInput';
 import { Settings } from '../Modules/Settings';
 
@@ -15,10 +12,6 @@ interface ServerSelectModalProps {
   topTitle: string;
   // надпись над меню выбора типа сервера
   textSelectTitle: string;
-  // значение порта, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
-  //savedPortValue: string | undefined | null;
-  // значение хоста, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
-  //savedHostValue: string | undefined | null;
   // значение хоста к которому клиент подключается при первом запуске
   originaltHostValue: string;
   // значение порта к которому клиент подключается при первом запуске
@@ -27,25 +20,41 @@ interface ServerSelectModalProps {
   electronSettingsKey: string;
 }
 
+interface formValues {
+  // текущее значение поля ввода для хоста
+  inputHost: string;
+  // текущее значение поля ввода для порта
+  inputPort: string;
+  // текущий адрес к которому подключен клиент
+  //connectedHost: string;
+  // текущий порт к которому подключен клиент
+  //connectedPort: string;
+}
+
 export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   onClose,
   handleCustom: handleCustom,
   ...props
 }) => {
-  // хост, отображаемый пользователю на форме ввода данных
-  const [hostInput, setInputHost] = useState('');
-  const [portInput, setInputPort] = useState('');
+  const {
+    handleSubmit: hookHandleSubmit,
+    setValue,
+    register,
+  } = useForm<formValues>({
+    defaultValues: async () => {
+      return Settings.get(props.electronSettingsKey).then((server) => {
+        return {
+          inputHost: server.host,
+          inputPort: server.port,
+          //connectedHost: server.host,
+          //connectedPort: server.port,
+        };
+      });
+    },
+  });
 
-  useEffect(() => {
-    Settings.get(props.electronSettingsKey).then((server) => {
-      setInputHost(server.host);
-      setInputPort(String(server.port));
-    });
-  }, []);
-  const { handleSubmit: hookHandleSubmit } = useForm<{}>();
-
-  const handleSubmit = hookHandleSubmit(() => {
-    handleCustom(String(hostInput), Number(portInput));
+  const handleSubmit = hookHandleSubmit((data) => {
+    handleCustom(data.inputHost, Number(data.inputPort));
     onRequestClose();
   });
 
@@ -53,9 +62,9 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     onClose();
   };
 
-  const handleReset = () => {
-    setInputHost(props.originaltHostValue);
-    setInputPort(props.originaltPortValue);
+  const handleReturnOriginalValues = () => {
+    setValue('inputHost', props.originaltHostValue);
+    setValue('inputPort', props.originaltPortValue);
   };
 
   return (
@@ -68,17 +77,15 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     >
       <div className={'flex'}>
         <TextInput
+          {...register('inputHost')}
           label="Хост:"
           placeholder="Напишите адрес хоста"
           isElse={false}
           error={false}
           errorMessage={''}
-          value={hostInput ?? ''}
-          //defaultValue={props.savedHostValue ?? ''}
-          onChange={(e) => setInputHost(e.target.value)}
-          //disabled={isLocal}
         />
         <TextInput
+          {...register('inputPort')}
           label="Порт:"
           placeholder="Напишите порт"
           isElse={false}
@@ -93,13 +100,9 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
               );
             }
           }}
-          value={portInput ?? ''}
-          onChange={(e) => setInputPort(e.target.value)}
-          //defaultValue={props.savedPortValue ?? ''}
-          //disabled={isLocal}
         />
       </div>
-      <button type="button" className="btn-secondary" onClick={handleReset}>
+      <button type="button" className="btn-secondary" onClick={handleReturnOriginalValues}>
         Сбросить настройки
       </button>
     </Modal>

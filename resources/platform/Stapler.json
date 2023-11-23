@@ -173,12 +173,12 @@
               "description": "Единиц дистанции до целевого юнита."
             },
             "ВидПротивника": {
-              "img": "",
-              "description": ""
+              "img": "bearloga/enemy_view.svg",
+              "description": "Вид противника"
             },
             "ТипПротивника": {
-              "img": "",
-              "description": ""
+              "img": "bearloga/enemy_type.svg",
+              "description": "Тип противника"
             }
           },
           "parameters": {},
@@ -355,12 +355,12 @@
               "description": "Показывает текущее значение таймера в секундах."
             },
             "Тик": {
-              "img": "",
-              "description": ""
+              "img": "bearloga/tick.svg",
+              "description": "Вобытие вызывается каждый игровой тик"
             },
-            "Так1Секунда": {
-              "img": "",
-              "description": ""
+            "Тик1Секунда": {
+              "img": "bearloga/tick_1s.svg",
+              "description": "Событие вызывается каждую секунду"
             }
           },
           "parameters": {},

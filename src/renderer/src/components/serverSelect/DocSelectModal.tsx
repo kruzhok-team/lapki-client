@@ -19,7 +19,7 @@ interface DocSelectModalProps {
 }
 
 interface formValues {
-  // значения поля ввода для адреса
+  // текущее значение поля ввода для адреса
   inputHost: string;
   // текущий адрес к которому подключен клиент
   connectedHost: string;

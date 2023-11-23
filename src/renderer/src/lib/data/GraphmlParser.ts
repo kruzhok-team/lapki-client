@@ -773,16 +773,17 @@ type ExportKeyNode = {
 
 type ExportDataNode = {
   '@key': string;
-  '@x'?: string;
-  '@y'?: string;
+  '@x'?: number;
+  '@y'?: number;
+  '@width'?: number;
+  '@height'?: number;
   content: string;
 };
 
 type ExportEdge = {
-  '@id': string;
   '@source': string;
   '@target': string;
-  data: Array<ExportDataNode>;
+  data?: Array<ExportDataNode>;
 };
 
 type ExportGraph = {
@@ -794,13 +795,23 @@ type ExportGraph = {
 type ExportNode = {
   '@id': string;
   data: Array<ExportDataNode>;
+  graph?: ExportGraph;
 };
+
+function getArgsString(args: ArgList | undefined): string {
+  if (args !== undefined) {
+    return Object.values(args).join(', ');
+  }
+
+  return '';
+}
 
 export function exportGraphml(elements: Elements) {
   const builder = new XMLBuilder({
     textNodeName: 'content',
     ignoreAttributes: false,
     attributeNamePrefix: '@',
+    format: true,
   });
 
   const keyNodes: Array<ExportKeyNode> = [
@@ -852,11 +863,105 @@ export function exportGraphml(elements: Elements) {
         },
         {
           '@key': 'dData',
-          content: `/description Схема`,
+          content: `description/ Схема, сгенерированная с помощью Lapki IDE\nname/ Схема`,
         },
       ],
     },
   ];
+
+  const graph: ExportGraph = {
+    '@id': 'G',
+    node: nodes,
+    edge: [],
+  };
+
+  for (const component_idx in elements.components) {
+    const component = elements.components[component_idx];
+    let content = `type/ ${component.type}\n`;
+    for (const parameter_idx in component.parameters) {
+      const parameter = component.parameters[parameter_idx];
+      content += `${parameter_idx}/ ${parameter}\n`;
+    }
+    nodes.push({
+      '@id': component_idx,
+      data: [
+        {
+          '@key': 'dName',
+          content: component_idx,
+        },
+        {
+          '@key': 'dData',
+          content: content,
+        },
+      ],
+    });
+    const edge: ExportEdge = {
+      '@source': '',
+      '@target': component_idx,
+    };
+    graph.edge.push(edge);
+  }
+
+  for (const state_id in elements.states) {
+    const state = elements.states[state_id];
+    const node: ExportNode = {
+      '@id': state_id,
+      data: [],
+    };
+
+    node.data.push({
+      '@key': 'dName',
+      content: state.name,
+    });
+
+    node.data.push({
+      '@key': 'dGeometry',
+      '@x': state.bounds.x,
+      '@y': state.bounds.y,
+      '@width': state.bounds.width,
+      '@height': state.bounds.height,
+      content: '',
+    });
+
+    let content = '';
+
+    for (const event of state.events) {
+      const trigger = `${event.trigger.component}.${event.trigger.method}(${getArgsString(
+        event.trigger.args
+      )})`;
+
+      let content_action = '';
+      
+      
+      let component = event.trigger.component;
+      let method = event.trigger.method;
+      let trig 
+      if (component == 'System') {
+        if (method == 'onEnter') {
+          
+        }
+        else if (method == 'onExit') {
+
+        }
+      }
+      
+      for (const action of event.do) {
+        content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
+      }
+
+      content += `${trigger}/${content_action}\n`;
+    }
+
+    node.data.push({
+      '@key': 'dData',
+      content: content,
+    });
+
+    nodes.push(node);
+    // if (state.parent !== undefined) {
+      
+    // }
+  }
 
   const testObj = {
     '?xml': {
@@ -869,7 +974,7 @@ export function exportGraphml(elements: Elements) {
         content: 'Cyberiada-Graphml',
       },
       key: keyNodes,
-      node: [],
+      graph: graph,
     },
   };
 

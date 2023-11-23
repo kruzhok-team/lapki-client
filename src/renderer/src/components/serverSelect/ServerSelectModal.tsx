@@ -26,9 +26,9 @@ interface formValues {
   // текущее значение поля ввода для порта
   inputPort: string;
   // текущий адрес к которому подключен клиент
-  //connectedHost: string;
+  connectedHost: string;
   // текущий порт к которому подключен клиент
-  //connectedPort: string;
+  connectedPort: string;
 }
 
 export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
@@ -40,14 +40,15 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     setValue,
     register,
+    watch,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
         return {
           inputHost: server.host,
           inputPort: server.port,
-          //connectedHost: server.host,
-          //connectedPort: server.port,
+          connectedHost: server.host,
+          connectedPort: server.port,
         };
       });
     },
@@ -55,6 +56,8 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
 
   const handleSubmit = hookHandleSubmit((data) => {
     handleCustom(data.inputHost, Number(data.inputPort));
+    setValue('connectedHost', data.inputHost);
+    setValue('connectedPort', data.inputPort);
     onRequestClose();
   });
 
@@ -67,6 +70,11 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     setValue('inputPort', props.originaltPortValue);
   };
 
+  function handleSubmitDisabled(): boolean | undefined {
+    const values = watch();
+    return values.connectedHost == values.inputHost && values.connectedPort == values.inputPort;
+  }
+
   return (
     <Modal
       {...props}
@@ -74,6 +82,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      submitDisabled={handleSubmitDisabled()}
     >
       <div className={'flex'}>
         <TextInput

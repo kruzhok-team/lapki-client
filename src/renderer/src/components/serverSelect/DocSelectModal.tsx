@@ -1,6 +1,4 @@
 // TODO: нужно как-то объединить файлы FlasherSelectModal.tsx, ServerSelectModal.tsx, DocSelectModal.tsx, чтобы уменьшить повторения кода
-import React, { useEffect, useState } from 'react';
-
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
@@ -14,12 +12,14 @@ interface DocSelectModalProps {
   handleCustom: (host: string) => void;
   // надпись на самом верху
   topTitle: string;
-  // значение пользовательского хоста, которое сохранилось в electron-settings (при null или undefined пользователь увидит пустую строку)
-  //savedHostValue: string | undefined | null;
   // значение хоста к которому клиент подключается при первом запуске
   originaltHostValue: string;
   // ключ для извлечения настроек
   electronSettingsKey: string;
+}
+
+interface formValues {
+  host: string;
 }
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({
@@ -27,36 +27,33 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm<Record<string, never>>();
+  const {
+    register,
+    handleSubmit: hookHandleSubmit,
+    setValue,
+  } = useForm<formValues>({
+    defaultValues: async () => {
+      return Settings.get(props.electronSettingsKey).then((server) => {
+        return {
+          host: server.host ?? '',
+        };
+      });
+    },
+  });
 
-  // хост, отображаемый пользователю на форме ввода данных
-  const [hostInput, setInputHost] = useState('');
-  useEffect(() => {
-    Settings.get(props.electronSettingsKey).then((server) => {
-      setInputHost(server.host);
-    });
-  }, []);
-
-  const handleSubmit = hookHandleSubmit(() => {
-    //console.log('SUBMIT', hostInput, hostCur);
-    //setCurHost(hostInput);
-    handleCustom(String(hostInput));
+  const handleSubmit = hookHandleSubmit((data) => {
+    handleCustom(String(data.host));
     onRequestClose();
   });
 
   const onRequestClose = () => {
-    //console.log('CLOSE', hostInput, hostCur);
-    //setInputHost(hostCur);
     onClose();
   };
 
-  const handleReset = () => {
-    setInputHost(props.originaltHostValue);
+  const handleReturnOriginalValues = () => {
+    setValue('host', props.originaltHostValue);
   };
 
-  const handleInput = (e) => {
-    setInputHost(e.target.value);
-  };
   return (
     <Modal
       {...props}
@@ -64,22 +61,18 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      //submitDisabled={hostCur == hostInput}
     >
       <div className={twMerge('flex')}>
         <TextInput
+          {...register('host')}
           label="Адрес:"
           placeholder="Напишите адрес"
           isElse={false}
           error={false}
           errorMessage={''}
-          //defaultValue={props.customHostValue ?? ''}
-          value={hostInput ?? ''}
-          onChange={handleInput}
-          //disabled={isLocal}
         />
       </div>
-      <button type="button" className="btn-secondary" onClick={handleReset}>
+      <button type="button" className="btn-secondary" onClick={handleReturnOriginalValues}>
         Сбросить настройки
       </button>
     </Modal>

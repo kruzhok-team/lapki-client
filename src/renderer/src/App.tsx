@@ -76,10 +76,6 @@ export const App: React.FC = () => {
         openPlatformError(errs);
       }
     });
-
-    console.log(platformName);
-    console.log(manager);
-    console.log(editor);
   }, []);
 
   // Переименование вынес сюда из EditorManager.

@@ -30,7 +30,7 @@ import {
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
-import { importGraphml } from './GraphmlParser';
+import { importGraphml, exportGraphml } from './GraphmlParser';
 import { isPlatformAvailable } from './PlatformLoader';
 
 import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
@@ -41,6 +41,8 @@ export type FileError = {
   name: string;
   content: string;
 };
+
+type SaveMode = 'JSON' | 'Cyberiada';
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
@@ -243,12 +245,20 @@ export class EditorManager {
     await window.electron.ipcRenderer.invoke('Module:startLocalModule', module);
   }
 
-  getDataSerialized() {
-    return JSON.stringify(
-      { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
-      undefined,
-      2
-    );
+  getDataSerialized(saveMode: SaveMode) {
+    switch (saveMode) {
+      case 'JSON':
+        return JSON.stringify(
+          { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
+          undefined,
+          2
+        );
+      case 'Cyberiada':
+        return exportGraphml({
+          ...this.data.elements,
+          transitions: Object.values(this.data.elements.transitions),
+        });
+    }
   }
 
   getStateSerialized(id: string) {
@@ -277,7 +287,7 @@ export class EditorManager {
     const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
       'dialog:saveFile',
       this.data.basename,
-      this.getDataSerialized()
+      this.getDataSerialized('Cyberiada')
     );
     if (saveData[0]) {
       this.data.basename = saveData[1];
@@ -294,7 +304,7 @@ export class EditorManager {
 
   saveAs = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
-    const data = this.getDataSerialized();
+    const data = this.getDataSerialized('Cyberiada');
     const saveData: [boolean, string | null, string | null] =
       await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
     if (saveData[0]) {

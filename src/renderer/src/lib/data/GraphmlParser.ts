@@ -9,6 +9,7 @@ import {
   ArgList,
   Elements,
   Condition,
+  Variable,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -198,7 +199,7 @@ const operatorAlias = new Map<string, string>([
   ['!=', 'notEquals'],
   ['>', 'greater'],
   ['<', 'less'],
-  ['>=', 'greaterOfEqual'],
+  ['>=', 'greaterOrEqual'],
   ['<=', 'lessOrEqual'],
 ]);
 
@@ -207,8 +208,8 @@ const invertOperatorAlias = new Map<string, string>([
   ['notEquals', '!='],
   ['greater', '>'],
   ['less', '<'],
-  ['greaterOfEqual', '>='],
-  ['<=', 'lessOrEqual'],
+  ['greaterOrEqual', '>='],
+  ['lessOrEqual', '<='],
 ]);
 
 function checkConditionTokenType(token: string): Condition {
@@ -391,59 +392,63 @@ function getAllComponents(elements: Elements, meta: Meta) {
 
 function parseAction(elements: Elements, unproccessedAction: string): Action | undefined {
   const [component_name, action] = unproccessedAction.trim().split('.');
-  const bracketPos = action.indexOf('(');
-  const args = action
-    .slice(bracketPos + 1, action.length - 1)
-    .split(',')
-    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-  const method = action.slice(0, bracketPos);
-  const resultAction: Action = {
-    component: component_name,
-    method: method,
-  };
+  if (action !== undefined) { // На случай, если действий у события нет
+    const bracketPos = action.indexOf('(');
+    const args = action
+      .slice(bracketPos + 1, action.length - 1)
+      .split(',')
+      .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+    const method = action.slice(0, bracketPos);
+    const resultAction: Action = {
+      component: component_name,
+      method: method,
+    };
 
-  const component = elements.components[component_name];
-  const argList: ArgList = {};
-  // Если параметров у метода нет, то methodParameters будет равен undefined
-  if (component !== undefined) {
-    const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
-    if (
-      platform?.components[component.type] !== undefined &&
-      platform?.components[component.type].methods[method] !== undefined
-    ) {
-      for (const index in methodParameters) {
-        const parameter: ArgumentProto = methodParameters[index];
-        if (args[index] !== undefined && args[index] !== '') {
-          argList[parameter.name] = args[index];
-        } else {
-          throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
+    const component = elements.components[component_name];
+    const argList: ArgList = {};
+    // Если параметров у метода нет, то methodParameters будет равен undefined
+    if (component !== undefined) {
+      const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
+      if (
+        platform?.components[component.type] !== undefined &&
+        platform?.components[component.type].methods[method] !== undefined
+      ) {
+        for (const index in methodParameters) {
+          const parameter: ArgumentProto = methodParameters[index];
+          if (args[index] !== undefined && args[index] !== '') {
+            argList[parameter.name] = args[index];
+          } else {
+            throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
+          }
         }
-      }
-      if (methodParameters == undefined) {
-        if (args.length == 0) {
-          resultAction.args = argList;
+        if (methodParameters == undefined) {
+          if (args.length == 0) {
+            resultAction.args = argList;
+          } else {
+            throw new Error(
+              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
+            );
+          }
         } else {
-          throw new Error(
-            `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
-          );
+          if (Object.keys(argList).length == Object.keys(methodParameters).length) {
+            resultAction.args = argList;
+          } else {
+            throw new Error(
+              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
+                Object.keys(methodParameters).length
+              }, получено: ${args.length}`
+            );
+          }
         }
+        return resultAction;
       } else {
-        if (Object.keys(argList).length == Object.keys(methodParameters).length) {
-          resultAction.args = argList;
-        } else {
-          throw new Error(
-            `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
-              Object.keys(methodParameters).length
-            }, получено: ${args.length}`
-          );
-        }
+        throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
       }
-      return resultAction;
     } else {
-      throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
+      throw new Error(`Неизвестный компонент ${component_name}`);
     }
   } else {
-    throw new Error(`Неизвестный компонент ${component_name}`);
+    return;
   }
 }
 
@@ -767,7 +772,7 @@ export function importGraphml(
     }
     delete elements.states[''];
     elements.platform = meta.platform;
-    // exportGraphml(elements);
+    exportGraphml(elements);
     return elements;
   } catch (error) {
     console.log(error);
@@ -827,6 +832,19 @@ function getArgsString(args: ArgList | undefined): string {
   return '';
 }
 
+function isVariable(object: any) {
+  return object.component !== undefined;
+}
+
+function getOperandString(operand: Variable | string | Condition[] | number) {
+  console.log(operand, isVariable(operand));
+  if (isVariable(operand)) {
+    return `${(operand as Variable).component}.${(operand as Variable).method}`;
+  } else {
+    return operand;
+  }
+}
+
 export function exportGraphml(elements: Elements): string {
   const builder = new XMLBuilder({
     textNodeName: 'content',
@@ -874,6 +892,14 @@ export function exportGraphml(elements: Elements): string {
     },
   ];
 
+  let mainPlatform = elements.platform;
+  let description = 'description/ Схема, сгенерированная с помощью Lapki IDE\nname/ Схема\n';
+  let subplatform = '';
+  if (mainPlatform.startsWith('BearlogaDefend')) {
+    [mainPlatform, subplatform] = mainPlatform.split('-');
+    description += `unit/ ${subplatform}`;
+  }
+
   const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
     [
       '',
@@ -882,11 +908,11 @@ export function exportGraphml(elements: Elements): string {
         data: [
           {
             '@key': 'dName',
-            content: elements.platform,
+            content: mainPlatform,
           },
           {
             '@key': 'dData',
-            content: `description/ Схема, сгенерированная с помощью Lapki IDE\nname/ Схема`,
+            content: description,
           },
         ],
       },
@@ -949,7 +975,7 @@ export function exportGraphml(elements: Elements): string {
       '@y': state.bounds.y,
       '@width': state.bounds.width,
       '@height': state.bounds.height,
-      content: '1 > 2',
+      content: '',
     });
 
     let content = '';
@@ -1035,14 +1061,15 @@ export function exportGraphml(elements: Elements): string {
     }
     let condition = '';
     if (transition.condition?.type !== undefined) {
-      condition = `[${transition.condition.value[0]} ${
-        invertOperatorAlias[transition.condition.type]
-      } ${transition.condition.value[1]}]`;
+      condition = `[${getOperandString(
+        transition.condition.value[0].value
+      )} ${invertOperatorAlias.get(transition.condition.type)} ${getOperandString(
+        transition.condition.value[1].value
+      )}]`;
     }
 
     let string_action = '';
     if (transition.do !== undefined) {
-      console.log(elements.platform, elements.platform.startsWith('BearlogaDefend'));
       if (!elements.platform.startsWith('BearlogaDefend')) {
         for (const action of transition.do) {
           string_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
@@ -1062,22 +1089,6 @@ export function exportGraphml(elements: Elements): string {
   }
 
   graph.node.push(...nodes.values());
-  console.log(
-    builder.build({
-      '?xml': {
-        '@version': 1.0,
-        '@encoding': 'UTF-8',
-      },
-      graphml: {
-        data: {
-          '@key': 'gFormat',
-          content: 'Cyberiada-Graphml',
-        },
-        key: keyNodes,
-        graph: graph,
-      },
-    })
-  );
   return builder.build({
     '?xml': {
       '@version': 1.0,
@@ -1086,7 +1097,7 @@ export function exportGraphml(elements: Elements): string {
     graphml: {
       data: {
         '@key': 'gFormat',
-        content: 'Cyberiada-Graphml',
+        content: 'Cyberiada-GraphML',
       },
       key: keyNodes,
       graph: graph,

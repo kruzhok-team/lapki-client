@@ -21,8 +21,6 @@ interface DocSelectModalProps {
 interface formValues {
   // текущее значение поля ввода для адреса
   inputHost: string;
-  // текущий адрес к которому подключен клиент
-  connectedHost: string;
 }
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({
@@ -34,7 +32,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     register,
     handleSubmit: hookHandleSubmit,
     setValue,
-    watch,
+    formState: { isDirty },
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
@@ -47,7 +45,6 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   });
   // текущий адрес к которому подключен клиент
   const handleSubmit = hookHandleSubmit((data) => {
-    setValue('connectedHost', data.inputHost);
     handleCustom(String(data.inputHost));
     onRequestClose();
   });
@@ -60,11 +57,6 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     setValue('inputHost', props.originaltHostValue);
   };
 
-  function handleSubmitDisabled(): boolean | undefined {
-    const values = watch();
-    return values.connectedHost == values.inputHost;
-  }
-
   return (
     <Modal
       {...props}
@@ -72,14 +64,14 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      submitDisabled={handleSubmitDisabled()}
+      submitDisabled={!isDirty}
     >
       <div className={twMerge('flex')}>
         <TextInput
           {...register('inputHost')}
           label="Адрес:"
           placeholder="Напишите адрес"
-          isElse={false}
+          isHidden={false}
           error={false}
           errorMessage={''}
         />

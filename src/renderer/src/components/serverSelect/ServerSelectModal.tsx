@@ -73,6 +73,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     >
       <div className={'flex'}>
         <TextInput
+          maxLength={80}
           {...register('inputHost')}
           label="Хост:"
           placeholder="Напишите адрес хоста"

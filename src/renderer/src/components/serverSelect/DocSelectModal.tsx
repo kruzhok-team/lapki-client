@@ -68,6 +68,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     >
       <div className={twMerge('flex')}>
         <TextInput
+          maxLength={80}
           {...register('inputHost')}
           label="Адрес:"
           placeholder="Напишите адрес"

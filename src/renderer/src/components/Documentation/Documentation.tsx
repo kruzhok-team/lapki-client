@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { twMerge } from 'tailwind-merge';
 
-import { Tree } from './components/Tree';
-import Show from './components/Show';
+import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { useDoc } from '@renderer/store/useDoc';
+
+import Show from './components/Show';
+import { Tree } from './components/Tree';
+
 import { Settings } from '../Modules/Settings';
 
 /*Загрузка документации*/
@@ -15,8 +17,8 @@ interface DocumentationsProps {
 }
 
 // TODO: используется для того, чтобы задать значение переменной извне, но это выглядит костыльно
-var SET_URL;
-var SET_DATA;
+let SET_URL;
+let SET_DATA;
 export function setURL(url) {
   SET_URL(url);
   getData(url);

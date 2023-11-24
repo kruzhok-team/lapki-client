@@ -38,7 +38,6 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       return Settings.get(props.electronSettingsKey).then((server) => {
         return {
           inputHost: server.host ?? '',
-          connectedHost: server.host ?? '',
         };
       });
     },

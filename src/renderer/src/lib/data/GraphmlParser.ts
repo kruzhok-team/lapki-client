@@ -853,61 +853,69 @@ export function exportGraphml(elements: Elements) {
     },
   ];
 
-  const nodes: Array<ExportNode> = [
-    {
-      '@id': '',
-      data: [
-        {
-          '@key': 'dName',
-          content: elements.platform,
-        },
-        {
-          '@key': 'dData',
-          content: `description/ Схема, сгенерированная с помощью Lapki IDE\nname/ Схема`,
-        },
-      ],
-    },
-  ];
+  const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
+    [
+      '',
+      {
+        '@id': '',
+        data: [
+          {
+            '@key': 'dName',
+            content: elements.platform,
+          },
+          {
+            '@key': 'dData',
+            content: `description/ Схема, сгенерированная с помощью Lapki IDE\nname/ Схема`,
+          },
+        ],
+      },
+    ],
+  ]);
 
   const graph: ExportGraph = {
     '@id': 'G',
-    node: nodes,
+    node: [],
     edge: [],
   };
+  if (!elements.platform.includes('Bearloga')) {
+    for (const component_idx in elements.components) {
+      const component = elements.components[component_idx];
+      let content = `type/ ${component.type}\n`;
+      for (const parameter_idx in component.parameters) {
+        const parameter = component.parameters[parameter_idx];
+        content += `${parameter_idx}/ ${parameter}\n`;
+      }
 
-  for (const component_idx in elements.components) {
-    const component = elements.components[component_idx];
-    let content = `type/ ${component.type}\n`;
-    for (const parameter_idx in component.parameters) {
-      const parameter = component.parameters[parameter_idx];
-      content += `${parameter_idx}/ ${parameter}\n`;
+      nodes.set(component_idx, {
+        '@id': component_idx,
+        data: [
+          {
+            '@key': 'dName',
+            content: component_idx,
+          },
+          {
+            '@key': 'dData',
+            content: content,
+          },
+        ],
+      });
+      const edge: ExportEdge = {
+        '@source': '',
+        '@target': component_idx,
+      };
+      graph.edge.push(edge);
     }
-    nodes.push({
-      '@id': component_idx,
-      data: [
-        {
-          '@key': 'dName',
-          content: component_idx,
-        },
-        {
-          '@key': 'dData',
-          content: content,
-        },
-      ],
-    });
-    const edge: ExportEdge = {
-      '@source': '',
-      '@target': component_idx,
-    };
-    graph.edge.push(edge);
   }
 
   for (const state_id in elements.states) {
     const state = elements.states[state_id];
-    const node: ExportNode = {
-      '@id': state_id,
-      data: [],
-    };
+    let node = nodes.get(state_id);
+    if (node == undefined) {
+      node = {
+        '@id': state_id,
+        data: [],
+      };
+    }
 
     node.data.push({
       '@key': 'dName',
@@ -926,25 +934,19 @@ export function exportGraphml(elements: Elements) {
     let content = '';
 
     for (const event of state.events) {
-      const trigger = `${event.trigger.component}.${event.trigger.method}(${getArgsString(
-        event.trigger.args
-      )})`;
-
       let content_action = '';
-      
-      
-      let component = event.trigger.component;
-      let method = event.trigger.method;
-      let trig 
+      const component = event.trigger.component;
+      const method = event.trigger.method;
+      const args = getArgsString(event.trigger.args);
+      let trigger = `${component}.${method}(${args})`;
       if (component == 'System') {
         if (method == 'onEnter') {
-          
-        }
-        else if (method == 'onExit') {
-
+          trigger = 'entry';
+        } else if (method == 'onExit') {
+          trigger = 'exit';
         }
       }
-      
+
       for (const action of event.do) {
         content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
       }
@@ -957,12 +959,34 @@ export function exportGraphml(elements: Elements) {
       content: content,
     });
 
-    nodes.push(node);
-    // if (state.parent !== undefined) {
-      
-    // }
+    if (state.parent !== undefined) {
+      const parent = nodes.get(state.parent);
+      if (parent !== undefined) {
+        if (parent.graph !== undefined) {
+          parent.graph.node.push(node);
+        } else {
+          parent.graph = {
+            '@id': parent['@id'],
+            node: [node],
+            edge: [],
+          };
+        }
+      } else {
+        nodes.set(state.parent, {
+          '@id': state.parent,
+          data: [],
+          graph: {
+            '@id': state.parent,
+            node: [node],
+            edge: [],
+          },
+        });
+      }
+    } else {
+      nodes.set(node['@id'], node);
+    }
   }
-
+  graph.node.push(...nodes.values());
   const testObj = {
     '?xml': {
       '@version': 1.0,
@@ -978,5 +1002,5 @@ export function exportGraphml(elements: Elements) {
     },
   };
 
-  console.log(builder.build(testObj));
+  return builder.build(testObj);
 }

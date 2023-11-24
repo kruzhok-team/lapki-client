@@ -26,7 +26,6 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
   const handleSubmit = hookHandleSubmit(() => {
     // data.id = data?.state.target.id;
     data?.onConfirm();
-    data?.onOpen();
     onRequestClose();
   });
 
@@ -37,6 +36,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
 
   const handleSave = () => {
     data?.onSave();
+    data?.onOpen();
     // FIXME: не выполняет подтверждаемое действие после сохранения
     onRequestClose();
   };

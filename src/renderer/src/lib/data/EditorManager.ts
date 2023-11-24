@@ -146,10 +146,13 @@ export class EditorManager {
     Flasher.getList();
   }
 
-  parseImportData(openData: [boolean, string | null, string | null, string]) {
+  parseImportData(
+    openData: [boolean, string | null, string | null, string],
+    openImportError: (error: string) => void
+  ) {
     if (openData[0]) {
       try {
-        const data = importGraphml(openData[3]!);
+        const data = importGraphml(openData[3]!, openImportError);
         console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({

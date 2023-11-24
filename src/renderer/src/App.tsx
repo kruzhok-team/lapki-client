@@ -44,7 +44,8 @@ export const App: React.FC = () => {
   const openPlatformModal = () => setIsPlatformModalOpen(true);
   const closePlatformModal = () => setIsPlatformModalOpen(false);
 
-  const { errorModalProps, openLoadError, openPlatformError, openSaveError } = useErrorModal();
+  const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
+    useErrorModal();
   const { saveModalProps, operations, performNewFile } = useFileOperations({
     manager,
     openLoadError,
@@ -93,7 +94,12 @@ export const App: React.FC = () => {
       <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
         <div className="h-screen select-none">
           <div className="flex h-full w-full flex-row overflow-hidden">
-            <Sidebar manager={manager} editor={editor} callbacks={operations} />
+            <Sidebar
+              manager={manager}
+              editor={editor}
+              callbacks={operations}
+              openImportError={openImportError}
+            />
 
             <MainContainer
               manager={manager}

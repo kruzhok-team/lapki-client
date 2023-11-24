@@ -62,10 +62,22 @@ export const useErrorModal = () => {
     });
   };
 
+  const openImportError = (error: string) => {
+    openMsgModal({
+      caption: 'Ошибка импорта',
+      text: (
+        <div>
+          <p>{error}</p>
+        </div>
+      ),
+    });
+  };
+
   return {
     errorModalProps: { isOpen, onClose, data },
     openSaveError,
     openLoadError,
     openPlatformError,
+    openImportError,
   };
 };

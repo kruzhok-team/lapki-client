@@ -3,7 +3,6 @@ import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 import {
   State,
   Transition,
-  Component,
   Action,
   Event,
   EventData,
@@ -201,7 +200,16 @@ const operatorAlias = new Map<string, string>([
   ['>', 'greater'],
   ['<', 'less'],
   ['>=', 'greaterOfEqual'],
-  ['lessOrEqual', '<='],
+  ['<=', 'lessOrEqual'],
+]);
+
+const invertOperatorAlias = new Map<string, string>([
+  ['equals', '=='],
+  ['notEquals', '!='],
+  ['greater', '>'],
+  ['less', '<'],
+  ['greaterOfEqual', '>='],
+  ['<=', 'lessOrEqual'],
 ]);
 
 function checkConditionTokenType(token: string): Condition {
@@ -694,7 +702,7 @@ const systemComponentAlias = new Map<string, Event>([
   ['exit', { component: 'System', method: 'onExit' }],
 ]);
 
-export function importGraphml(expression: string) {
+export function importGraphml(expression: string, openImportError: (error: string) => void) {
   try {
     platform = undefined;
     components_id.splice(0);
@@ -756,10 +764,11 @@ export function importGraphml(expression: string) {
     }
     delete elements.states[''];
     elements.platform = meta.platform;
-    exportGraphml(elements);
+    // exportGraphml(elements);
     return elements;
   } catch (error) {
     console.log(error);
+    openImportError((error as any).message);
     return emptyElements();
   }
 }
@@ -806,7 +815,7 @@ function getArgsString(args: ArgList | undefined): string {
   return '';
 }
 
-export function exportGraphml(elements: Elements) {
+export function exportGraphml(elements: Elements): string {
   const builder = new XMLBuilder({
     textNodeName: 'content',
     ignoreAttributes: false,
@@ -928,7 +937,7 @@ export function exportGraphml(elements: Elements) {
       '@y': state.bounds.y,
       '@width': state.bounds.width,
       '@height': state.bounds.height,
-      content: '',
+      content: '1 > 2',
     });
 
     let content = '';
@@ -986,8 +995,78 @@ export function exportGraphml(elements: Elements) {
       nodes.set(node['@id'], node);
     }
   }
+
+  for (const transition of elements.transitions) {
+    const edge: ExportEdge = {
+      '@source': transition.source,
+      '@target': transition.target,
+      data: [],
+    };
+    edge.data?.push({
+      '@key': 'dGeometry',
+      '@x': transition.position.x,
+      '@y': transition.position.y,
+      content: '',
+    });
+    edge.data?.push({
+      '@key': 'dColor',
+      content: transition.color,
+    });
+
+    let trigger = '';
+    if (!elements.platform.startsWith('BearlogaDefend')) {
+      trigger = `${transition.trigger.component}.${transition.trigger.method}(${getArgsString(
+        transition.trigger.args
+      )})`;
+    } else {
+      trigger = `${transition.trigger.component}.${transition.trigger.method}`;
+    }
+    let condition = '';
+    if (transition.condition?.type !== undefined) {
+      condition = `[${transition.condition.value[0]} ${
+        invertOperatorAlias[transition.condition.type]
+      } ${transition.condition.value[1]}]`;
+    }
+
+    let string_action = '';
+    if (transition.do !== undefined) {
+      console.log(elements.platform, elements.platform.startsWith('BearlogaDefend'));
+      if (!elements.platform.startsWith('BearlogaDefend')) {
+        for (const action of transition.do) {
+          string_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
+        }
+      } else {
+        for (const action of transition.do) {
+          string_action += `${action.component}.${action.method}\n`;
+        }
+      }
+    }
+    edge.data?.push({
+      '@key': 'dData',
+      content: `${trigger}/${condition}\n${string_action}`,
+    });
+
+    graph.edge.push(edge);
+  }
+
   graph.node.push(...nodes.values());
-  const testObj = {
+  console.log(
+    builder.build({
+      '?xml': {
+        '@version': 1.0,
+        '@encoding': 'UTF-8',
+      },
+      graphml: {
+        data: {
+          '@key': 'gFormat',
+          content: 'Cyberiada-Graphml',
+        },
+        key: keyNodes,
+        graph: graph,
+      },
+    })
+  );
+  return builder.build({
     '?xml': {
       '@version': 1.0,
       '@encoding': 'UTF-8',
@@ -1000,7 +1079,5 @@ export function exportGraphml(elements: Elements) {
       key: keyNodes,
       graph: graph,
     },
-  };
-
-  return builder.build(testObj);
+  });
 }

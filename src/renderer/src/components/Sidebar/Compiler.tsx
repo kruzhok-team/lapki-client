@@ -18,6 +18,7 @@ export interface CompilerProps {
   setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
+  openImportError: (error: string) => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
@@ -27,6 +28,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
+  openImportError,
 }) => {
   const [importData, setImportData] = useState<string | undefined>(undefined);
 
@@ -92,10 +94,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (openData) {
-      manager.parseImportData(openData!);
+      manager.parseImportData(openData!, openImportError);
       setImportData(undefined);
     }
-  }, [openData]);
+  }, [manager, openData]);
 
   useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);

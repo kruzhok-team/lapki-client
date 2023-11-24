@@ -103,8 +103,6 @@ export const Setting: React.FC<SettingProps> = () => {
         onClose={closeCompiler}
         topTitle={'Выберите компилятор'}
         textSelectTitle={'Компилятор'}
-        //savedHostValue={compilerSettings?.host}
-        //savedPortValue={String(compilerSettings?.port)}
         originaltHostValue={window.api.DEFAULT_COMPILER_SETTINGS.host}
         originaltPortValue={window.api.DEFAULT_COMPILER_SETTINGS.port}
         electronSettingsKey={window.api.COMPILER_SETTINGS_KEY}
@@ -115,7 +113,6 @@ export const Setting: React.FC<SettingProps> = () => {
         handleCustom={handleDocConnect}
         onClose={closeDoc}
         topTitle={'Выберите док-сервер'}
-        //savedHostValue={docSettings?.host}
         originaltHostValue={window.api.DEFAULT_DOC_SETTINGS.host}
         electronSettingsKey={window.api.DOC_SETTINGS_KEY}
       />

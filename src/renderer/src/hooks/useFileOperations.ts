@@ -101,7 +101,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
-      console.log(isStale);
       //Данное условие будет всегда работать(проект будет закрываться), потому что
       //isStale работает неправильно. Если же заккоментировать код в else, то можно проверить работоспособность условия.
       if (isStale) {
@@ -119,7 +118,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         });
         openSaveModal();
       } else {
-        //window.electron.ipcRenderer.send('closed');
+        window.electron.ipcRenderer.send('closed');
       }
     });
 

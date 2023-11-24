@@ -87,7 +87,6 @@ export class EditorManager {
       set(target, key, val, receiver) {
         const result = Reflect.set(target, key, val, receiver);
         self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
-        console.log(String(key));
 
         self.data.isStale = true;
 

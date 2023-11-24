@@ -9,7 +9,6 @@ import {
   ArgList,
   Elements,
   Condition,
-  emptyElements,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -103,7 +102,7 @@ const dataNodeProcess = new Map<
           if (component !== undefined) {
             parseComponentNode(node.content, component);
           } else if (state !== undefined) {
-            parseNodeData(elements, node.content, meta, state);
+            parseNodeData(elements, node.content, state);
           }
         }
       } else {
@@ -248,7 +247,7 @@ function parseCondition(condition: string): Condition | undefined {
 }
 
 // Функция извлекает события и действия из дата-ноды
-function parseNodeData(elements: Elements, content: string, meta: Meta, state: State) {
+function parseNodeData(elements: Elements, content: string, state: State) {
   // По формату CyberiadaGraphML события разделены пустой строкой.
   const unprocessedEventsAndActions = content.split('\n\n');
   for (const event of unprocessedEventsAndActions) {
@@ -462,6 +461,7 @@ function parseActions(elements: Elements, unsplitedActions: string): Action[] | 
     return resultActions;
   } else {
     console.log('Отсутствуют действия на событие');
+    return;
   }
 }
 
@@ -702,7 +702,10 @@ const systemComponentAlias = new Map<string, Event>([
   ['exit', { component: 'System', method: 'onExit' }],
 ]);
 
-export function importGraphml(expression: string, openImportError: (error: string) => void) {
+export function importGraphml(
+  expression: string,
+  openImportError: (error: string) => void
+): Elements {
   try {
     platform = undefined;
     components_id.splice(0);
@@ -769,7 +772,16 @@ export function importGraphml(expression: string, openImportError: (error: strin
   } catch (error) {
     console.log(error);
     openImportError((error as any).message);
-    return emptyElements();
+    return {
+      states: {},
+      transitions: [],
+      initialState: {
+        target: '',
+        position: { x: 0, y: 0 },
+      },
+      components: {},
+      platform: '',
+    };
   }
 }
 

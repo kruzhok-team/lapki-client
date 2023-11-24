@@ -2,11 +2,6 @@ import React from 'react';
 
 import { Modal } from './Modal/Modal';
 
-export type ErrorModalData = {
-  text: JSX.Element;
-  caption: string;
-};
-
 interface AboutTheProgramModalProps {
   isOpen: boolean;
   onClose: () => void;

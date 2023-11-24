@@ -36,7 +36,6 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     setValue,
     register,
-    formState: { isDirty },
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
@@ -69,7 +68,6 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      submitDisabled={!isDirty}
     >
       <div className={'flex'}>
         <TextInput

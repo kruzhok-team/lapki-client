@@ -32,7 +32,6 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     register,
     handleSubmit: hookHandleSubmit,
     setValue,
-    formState: { isDirty },
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
@@ -63,7 +62,6 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      submitDisabled={!isDirty}
     >
       <div className={twMerge('flex')}>
         <TextInput

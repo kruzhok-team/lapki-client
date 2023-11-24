@@ -15,6 +15,7 @@ export type SaveModalData = {
   question?: string;
   onConfirm: () => void;
   onSave: () => void;
+  onOpen: () => void;
 };
 
 export interface SaveRemindModalFormValues {}
@@ -25,6 +26,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
   const handleSubmit = hookHandleSubmit(() => {
     // data.id = data?.state.target.id;
     data?.onConfirm();
+    data?.onOpen();
     onRequestClose();
   });
 

@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-
-import { useForm } from 'react-hook-form';
-import { twMerge } from 'tailwind-merge';
+import { Controller, useForm } from 'react-hook-form';
 
 import { Modal } from '../Modal/Modal';
 import { TextInput } from '../Modal/TextInput';
-import { TextSelectOptions } from '../Modal/TextSelectOptions';
-import { Flasher } from '../Modules/Flasher';
+import { Settings } from '../Modules/Settings';
+import { Select } from '../UI';
+
+const SELECT_LOCAL = 'local';
+const SELECT_REMOTE = 'remote';
+
+const options = [
+  { value: SELECT_REMOTE, label: 'Удалённый' },
+  { value: SELECT_LOCAL, label: 'Локальный' },
+];
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
@@ -15,7 +20,7 @@ interface FlasherSelectModalProps {
   handleRemote: (host: string, port: number) => void;
 }
 
-interface FlasherSelectModalFormValues {
+interface formValues {
   host: string;
   port: number;
   flasherType: string;
@@ -27,17 +32,25 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   handleRemote,
   ...props
 }) => {
-  const { register, handleSubmit: hookHandleSubmit } = useForm<FlasherSelectModalFormValues>();
-
-  const SELECT_LOCAL = 'local';
-  const SELECT_REMOTE = 'remote';
+  const {
+    register,
+    control,
+    handleSubmit: hookHandleSubmit,
+    watch,
+  } = useForm<formValues>({
+    defaultValues: async () => {
+      return Settings.getFlasherSettings().then((server) => {
+        return {
+          host: String(server.host),
+          port: Number(server.port),
+          flasherType: SELECT_REMOTE,
+        };
+      });
+    },
+  });
 
   // октрыта ли опция выбора локального загрузчика
-  const [isLocal, setLocal] = useState(false);
-  const handleHidden = (event) => {
-    // текстовые поля становятся видимыми, если выбран удалённый хост
-    setLocal(event.target.value == SELECT_LOCAL);
-  };
+  const showSecondaryField = watch('flasherType') === SELECT_REMOTE;
 
   const handleSubmit = hookHandleSubmit((data) => {
     if (data.flasherType == SELECT_LOCAL) {
@@ -61,37 +74,39 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       onSubmit={handleSubmit}
     >
       <div className="flex items-center">
-        <TextSelectOptions
-          label="Загрузчик"
-          {...register('flasherType', {
-            required: 'Это поле обязательно к заполнению!',
-          })}
-          onChange={handleHidden}
-          isElse={false}
-          error={false}
-          errorMessage={''}
-          options={[
-            { value: SELECT_REMOTE, label: 'Удалённый' },
-            { value: SELECT_LOCAL, label: 'Локальный' },
-          ]}
+        <Controller
+          control={control}
+          name="flasherType"
+          render={({ field: { value, onChange } }) => (
+            <div>
+              Тип
+              <Select
+                value={options.find((opt) => opt.value === value)}
+                onChange={(v) => onChange((v as any).value)}
+                options={options}
+              />
+            </div>
+          )}
         />
       </div>
-      <div className={twMerge('flex', isLocal && 'opacity-50')}>
+      <div className="flex">
         <TextInput
+          maxLength={80}
+          className="disabled:opacity-50"
           label="Хост:"
           {...register('host')}
           placeholder="Напишите адрес хоста"
-          isElse={isLocal}
+          isHidden={false}
           error={false}
           errorMessage={''}
-          defaultValue={Flasher.remoteHost ?? ''}
-          //disabled={isLocal}
+          disabled={!showSecondaryField}
         />
         <TextInput
+          className="disabled:opacity-50"
           label="Порт:"
           {...register('port')}
           placeholder="Напишите порт"
-          isElse={isLocal}
+          isHidden={false}
           error={false}
           errorMessage={''}
           onInput={(event) => {
@@ -103,8 +118,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
               );
             }
           }}
-          defaultValue={Flasher.remotePort ?? ''}
-          //disabled={isLocal}
+          disabled={!showSecondaryField}
         />
       </div>
     </Modal>

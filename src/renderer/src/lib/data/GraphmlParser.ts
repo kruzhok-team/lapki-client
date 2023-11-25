@@ -156,8 +156,8 @@ const dataNodeProcess: DataNodeProcess = {
     }
     if (data.state !== undefined) {
       data.state.bounds = {
-        x: data.node['x'] / 2,
-        y: data.node['y'] / 2,
+        x: data.node['x'],
+        y: data.node['y'],
         width: data.node['width'] ? data.node['width'] : 0,
         height: data.node['height'] ? data.node['height'] : 0,
       };
@@ -238,11 +238,13 @@ function parseCondition(condition: string): Condition {
 // Функция извлекает события и действия из дата-ноды
 function parseNodeData(elements: Elements, content: string, state: State) {
   // По формату CyberiadaGraphML события разделены пустой строкой.
-  const unprocessedEventsAndActions = content.split('\n\n');
-  for (const event of unprocessedEventsAndActions) {
-    const result = parseEvent(elements, event);
-    if (result !== undefined) {
-      state.events.push(result[0]);
+  if (content !== undefined) {
+    const unprocessedEventsAndActions = content.split('\n\n');
+    for (const event of unprocessedEventsAndActions) {
+      const result = parseEvent(elements, event);
+      if (result !== undefined) {
+        state.events.push(result[0]);
+      }
     }
   }
 }
@@ -316,7 +318,7 @@ function parseEvent(elements: Elements, event: string): [EventData, Condition?] 
     let [trigger, stringActions] = event.split('/');
     trigger = trigger.trim();
     let condition: Condition | undefined;
-    let actions = parseActions(elements, stringActions.trim());
+    const actions = parseActions(elements, stringActions.trim());
     if (trigger !== undefined) {
       if (trigger.includes('[')) {
         const event = trigger.split('[');

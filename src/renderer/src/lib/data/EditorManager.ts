@@ -204,7 +204,6 @@ export class EditorManager {
     if (openData[0]) {
       try {
         const data = importGraphml(openData[3], openImportError);
-        // const data = ElementsJSONCodec.toElements(openData[3]);
 
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({

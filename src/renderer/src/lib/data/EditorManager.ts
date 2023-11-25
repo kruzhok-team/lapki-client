@@ -148,13 +148,12 @@ export class EditorManager {
     Flasher.getList();
   }
 
-  parseImportData(
-    openData: [boolean, string | null, string | null, string],
-    openImportError: (error: string) => void
-  ) {
+  parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
-        const data = importGraphml(openData[3]!, openImportError);
+        console.log(importData);
+        const data = ElementsJSONCodec.toElements(importData);
+        console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,
@@ -193,7 +192,7 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada');
     if (openData[0]) {
-      Compiler.compile(`BearlogaDefendImport`, openData[3]);
+      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
       setImportData(openData);
     }
   }

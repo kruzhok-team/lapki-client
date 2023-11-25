@@ -35,7 +35,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: () => {
         props.onRequestImport();
       },
-      disabled: false,
+      disabled: props.compilerStatus !== 'Подключен',
     },
     // {
     //   text: 'Примеры',

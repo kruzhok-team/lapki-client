@@ -28,9 +28,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
-  openImportError,
 }) => {
-  const setImportData = useState<string | undefined>(undefined)[1];
+  const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -92,11 +91,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   useEffect(() => {
-    if (openData) {
-      manager.parseImportData(openData!, openImportError);
+    if (importData && openData) {
+      manager.parseImportData(importData, openData!);
       setImportData(undefined);
     }
-  }, [manager, openData]);
+  }, [importData]);
 
   useEffect(() => {
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);

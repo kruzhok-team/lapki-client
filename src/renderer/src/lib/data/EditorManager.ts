@@ -151,9 +151,7 @@ export class EditorManager {
   parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
-        console.log(importData);
         const data = ElementsJSONCodec.toElements(importData);
-        console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,

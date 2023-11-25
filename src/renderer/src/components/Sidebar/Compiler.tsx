@@ -30,7 +30,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
   openImportError,
 }) => {
-  const [importData, setImportData] = useState<string | undefined>(undefined);
+  const setImportData = useState<string | undefined>(undefined)[1];
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 

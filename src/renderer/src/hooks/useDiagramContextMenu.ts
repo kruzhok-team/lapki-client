@@ -65,7 +65,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'code',
               name: manager.data.name ?? 'Безымянная',
-              code: manager.getDataSerialized(),
+              code: manager.getDataSerialized('JSON'),
               language: 'json',
             });
           },

@@ -155,7 +155,6 @@ export class EditorManager {
     if (openData[0]) {
       try {
         const data = importGraphml(openData[3]!, openImportError);
-        console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,
@@ -205,7 +204,6 @@ export class EditorManager {
     if (openData[0]) {
       try {
         const data = ElementsJSONCodec.toElements(openData[3]);
-        console.log(data);
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,

@@ -71,6 +71,7 @@ type KeyNode = {
   properties: KeyProperties;
 };
 
+type DataNodeProcess = { [key in DataKey]: (data: DataNodeProcessArgs) => void };
 interface DataNodeProcessArgs {
   elements: Elements;
   meta: Meta;
@@ -81,109 +82,100 @@ interface DataNodeProcessArgs {
   transition?: Transition;
 }
 
-type DataKey = 'gFormat' | 'dData' | 'dName' | 'dInitial' | 'dGeometry';
+const dataKeys = ['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry', 'dColor'] as const;
+type DataKey = (typeof dataKeys)[number];
 
-function isDataKey(key: string): boolean {
-  if (['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry'].includes(key)) return true;
-  else throw new Error(`К сожалению, в данный момент не предусмотрена обработка data-узла с ключом ${key}`)
+function isDataKey(key: string): key is DataKey {
+  if (dataKeys.includes(key as DataKey)) return true;
+  else
+    throw new Error(
+      `К сожалению, в данный момент не предусмотрена обработка data-узла с ключом ${key}`
+    );
 }
 
 // Набор функций, обрабатывающих data-узлы в зависимости от их ключа.
-const dataNodeProcess = new Map<
-  DataKey,
-  (data: DataNodeProcessArgs) => void // Вынести в отдельный интерфейс?
->([
-  [
-    'gFormat',
-    ({ meta, node }) => {
-      meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
-    },
-  ],
-  [
-    'dData',
-    ({ elements, state, parentNode, meta, node, component, transition }) => {
-      if (parentNode !== undefined) {
-        // Если это мета-компонент, то извлекаем мета-информацию
-        if (parentNode.id === '') {
-          parseMeta(meta, node.content);
+const dataNodeProcess: DataNodeProcess = {
+  gFormat({ meta, node }) {
+    meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
+  },
+  dData({ elements, state, parentNode, meta, node, component, transition }) {
+    if (parentNode !== undefined) {
+      // Если это мета-компонент, то извлекаем мета-информацию
+      if (parentNode.id === '') {
+        parseMeta(meta, node.content);
+      } else {
+        if (component !== undefined) {
+          parseComponentNode(node.content, component);
+        } else if (state !== undefined) {
+          parseNodeData(elements, node.content, state);
+        }
+      }
+    } else {
+      if (transition !== undefined) {
+        parseTransitionData(elements, node.content, transition);
+        elements.transitions.push(transition);
+      }
+    }
+  },
+  dName(data: DataNodeProcessArgs) {
+    if (data.parentNode !== undefined) {
+      // В мета-состоянии dName означает название платформы
+      if (data.parentNode.id === '') {
+        if (data.meta.platform === '') {
+          data.meta.platform = data.node.content;
         } else {
-          if (component !== undefined) {
-            parseComponentNode(node.content, component);
-          } else if (state !== undefined) {
-            parseNodeData(elements, node.content, state);
-          }
+          throw new Error(
+            `Повторное указание платформы! Старое значение: ${data.meta.platform}. Новое значение: ${data.node.content}`
+          );
         }
       } else {
-        if (transition !== undefined) {
-          parseTransitionData(elements, node.content, transition);
-          elements.transitions.push(transition);
+        if (data.component !== undefined) {
+          data.component.name = data.node.content;
+        } else if (data.state != undefined) {
+          data.state.name = data.node.content;
         }
       }
-    },
-  ],
-  [
-    'dName',
-    (data: DataNodeProcessArgs) => {
-      if (data.parentNode !== undefined) {
-        // В мета-состоянии dName означает название платформы
-        if (data.parentNode.id === '') {
-          if (data.meta.platform === '') {
-            data.meta.platform = data.node.content;
-          } else {
-            throw new Error(
-              `Повторное указание платформы! Старое значение: ${data.meta.platform}. Новое значение: ${data.node.content}`
-            );
-          }
-        } else {
-          if (data.component !== undefined) {
-            data.component.name = data.node.content;
-          } else if (data.state != undefined) {
-            data.state.name = data.node.content;
-          }
-        }
-      } else {
-        throw new Error('Непредвиденный вызов функции dName');
+    } else {
+      throw new Error('Непредвиденный вызов функции dName');
+    }
+  },
+  dInitial(data: DataNodeProcessArgs) {
+    if (data.parentNode !== undefined) {
+      if (data.elements.initialState !== null) {
+        data.elements.initialState.target = data.parentNode?.id;
       }
-    },
-  ],
-  [
-    'dInitial',
-    (data: DataNodeProcessArgs) => {
-      if (data.parentNode !== undefined) {
-        if (data.elements.initialState !== null) {
-          data.elements.initialState.target = data.parentNode?.id;
-        }
-      } else {
-        throw new Error('Непредвиденный вызов функции dInitial');
-      }
-    },
-  ],
-  [
-    'dGeometry',
-    (data: DataNodeProcessArgs) => {
-      const x = data.node['x'];
-      const y = data.node['y'];
-      if (x === undefined || y === undefined) {
-        throw new Error('Не указаны x или y для узла data с ключом dGeometry');
-      }
-      if (data.state !== undefined) {
-        data.state.bounds = {
-          x: data.node['x'] / 2,
-          y: data.node['y'] / 2,
-          width: data.node['width'] ? data.node['width'] : 0,
-          height: data.node['height'] ? data.node['height'] : 0,
-        };
-      } else if (data.transition !== undefined) {
-        data.transition.position = {
-          x: data.node['x'],
-          y: data.node['y'],
-        };
-      } else {
-        throw new Error('Непредвиденный вызов функции dGeometry');
-      }
-    },
-  ],
-]);
+    } else {
+      throw new Error('Непредвиденный вызов функции dInitial');
+    }
+  },
+  dGeometry(data: DataNodeProcessArgs) {
+    const x = data.node['x'];
+    const y = data.node['y'];
+    if (x === undefined || y === undefined) {
+      throw new Error('Не указаны x или y для узла data с ключом dGeometry');
+    }
+    if (data.state !== undefined) {
+      data.state.bounds = {
+        x: data.node['x'] / 2,
+        y: data.node['y'] / 2,
+        width: data.node['width'] ? data.node['width'] : 0,
+        height: data.node['height'] ? data.node['height'] : 0,
+      };
+    } else if (data.transition !== undefined) {
+      data.transition.position = {
+        x: data.node['x'],
+        y: data.node['y'],
+      };
+    } else {
+      throw new Error('Непредвиденный вызов функции dGeometry');
+    }
+  },
+  dColor(data: DataNodeProcessArgs) {
+    if (data.transition !== undefined) {
+      data.transition.color = data.node.content;
+    }
+  },
+};
 
 const randomColor = (): string => {
   let result = '';
@@ -204,7 +196,7 @@ const operatorAlias = new Map<string, string>([
 ]);
 
 const invertOperatorAlias = new Map<string, string>(
-  [...operatorAlias.entries()].map((a, b) => [a[1], a[0]])
+  [...operatorAlias.entries()].map((a) => [a[1], a[0]])
 );
 
 function checkConditionTokenType(token: string): Condition {
@@ -492,7 +484,7 @@ function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
     for (const dataNodeIndex in edge.data) {
       const dataNode: DataNode = edge.data[dataNodeIndex];
       if (isDataKey(dataNode.key)) {
-        const func = dataNodeProcess.get(dataNode.key as DataKey);
+        const func = dataNodeProcess[dataNode.key];
         func({
           elements: elements,
           meta: meta,
@@ -510,7 +502,7 @@ function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
 function setFormatToMeta(elements: Elements, xml: any, meta: Meta) {
   for (const node of xml.graphml.data as DataNode[]) {
     if (isDataKey(node.key)) {
-      const func: CallableFunction | undefined = dataNodeProcess.get(node.key as DataKey);
+      const func = dataNodeProcess[node.key];
       func({ elements, meta, node });
     }
   }
@@ -568,7 +560,7 @@ function processNode(
     for (const dataNode of node.data) {
       if (awailableDataProperties.get('node')?.has(dataNode.key)) {
         if (isDataKey(dataNode.key)) {
-          const func = dataNodeProcess.get(dataNode.key as DataKey);
+          const func = dataNodeProcess[dataNode.key];
           func({
             elements: elements,
             meta: meta,

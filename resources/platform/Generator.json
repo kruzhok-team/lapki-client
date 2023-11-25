@@ -171,6 +171,14 @@
             "ДистанцияДоЦели": {
               "img": "bearloga/target_distance.svg",
               "description": "Единиц дистанции до целевого юнита."
+            },
+            "ВидПротивника": {
+              "img": "bearloga/enemy_view.svg",
+              "description": "Вид противника"
+            },
+            "ТипПротивника": {
+              "img": "bearloga/enemy_type.svg",
+              "description": "Тип противника"
             }
           },
           "parameters": {},
@@ -202,6 +210,10 @@
             "ДистанцияПоПоследнейКоманде": {
               "img": "bearloga/distance.svg",
               "description": "Текущая пройденная дистанция после активации движения по координатам."
+            },
+            "Скорость": {
+              "img": "",
+              "description": ""
             }
           },
           "parameters": {},
@@ -341,6 +353,14 @@
             "ТекущееЗначениеТаймера": {
               "img": "bearloga/timer_current.svg",
               "description": "Показывает текущее значение таймера в секундах."
+            },
+            "Тик": {
+              "img": "bearloga/tick.svg",
+              "description": "Вобытие вызывается каждый игровой тик"
+            },
+            "Тик1Секунда": {
+              "img": "bearloga/tick_1s.svg",
+              "description": "Событие вызывается каждую секунду"
             }
           },
           "parameters": {},

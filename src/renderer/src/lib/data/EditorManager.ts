@@ -193,17 +193,22 @@ export class EditorManager {
     const openData: [boolean, string | null, string | null, string] =
       await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada');
     if (openData[0]) {
-      // Compiler.compile(`${platform}Import`, openData[3]);
+      Compiler.compile(`BearlogaDefendImport`, openData[3]);
       setImportData(openData);
     }
   }
 
-  async open(path?: string): Promise<Either<FileError | null, null>> {
+  async open(
+    openImportError: (error: string) => void,
+    path?: string
+  ): Promise<Either<FileError | null, null>> {
     const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'ide', path);
+      await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada', path);
     if (openData[0]) {
       try {
-        const data = ElementsJSONCodec.toElements(openData[3]);
+        const data = importGraphml(openData[3], openImportError);
+        // const data = ElementsJSONCodec.toElements(openData[3]);
+
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,

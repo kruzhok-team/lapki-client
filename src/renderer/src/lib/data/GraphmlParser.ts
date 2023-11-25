@@ -1063,7 +1063,7 @@ export function exportGraphml(elements: Elements): string {
     }
     edge.data?.push({
       '@key': 'dData',
-      content: `${trigger}/${condition}\n${string_action}`,
+      content: `${trigger}${condition}/\n${string_action}`,
     });
 
     graph.edge.push(edge);

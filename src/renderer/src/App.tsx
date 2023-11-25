@@ -51,6 +51,7 @@ export const App: React.FC = () => {
     openLoadError,
     openPlatformModal,
     openSaveError,
+    openImportError,
   });
 
   const handleChangeTheme = (theme: Theme) => {

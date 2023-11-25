@@ -10,10 +10,11 @@ interface useFileOperationsArgs {
   openLoadError: (cause: any) => void;
   openSaveError: (cause: any) => void;
   openPlatformModal: () => void;
+  openImportError: (error: string) => void;
 }
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
-  const { manager, openLoadError, openSaveError, openPlatformModal } = args;
+  const { manager, openLoadError, openSaveError, openPlatformModal, openImportError } = args;
 
   const isStale = manager.useData('isStale');
   const name = manager.useData('name');
@@ -41,7 +42,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performOpenFile = async (path?: string) => {
-    const result = await manager?.open(path);
+    const result = await manager?.open(openImportError, path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);

@@ -142,7 +142,7 @@ const dataNodeProcess: DataNodeProcess = {
   dInitial(data: DataNodeProcessArgs) {
     if (data.parentNode !== undefined) {
       if (data.elements.initialState !== null) {
-        data.elements.initialState.target = data.parentNode?.id;
+        initialId = data.parentNode.id;
       }
     } else {
       throw new Error('Непредвиденный вызов функции dInitial');
@@ -154,17 +154,22 @@ const dataNodeProcess: DataNodeProcess = {
     if (x === undefined || y === undefined) {
       throw new Error('Не указаны x или y для узла data с ключом dGeometry');
     }
-    if (data.state !== undefined) {
+    if (data.parentNode !== undefined && data.parentNode.id == initialId) {
+      data.elements.initialState.position = {
+        x: +data.node['x'],
+        y: +data.node['y'],
+      };
+    } else if (data.state !== undefined) {
       data.state.bounds = {
-        x: data.node['x'],
-        y: data.node['y'],
-        width: data.node['width'] ? data.node['width'] : 0,
-        height: data.node['height'] ? data.node['height'] : 0,
+        x: +data.node['x'],
+        y: +data.node['y'],
+        width: data.node['width'] ? +data.node['width'] : 0,
+        height: data.node['height'] ? +data.node['height'] : 0,
       };
     } else if (data.transition !== undefined) {
       data.transition.position = {
-        x: data.node['x'],
-        y: data.node['y'],
+        x: +data.node['x'],
+        y: +data.node['y'],
       };
     } else {
       throw new Error('Непредвиденный вызов функции dGeometry');
@@ -465,7 +470,7 @@ function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
   let foundInitial = false;
   for (const idx in edges) {
     const edge = edges[idx];
-    if (!foundInitial && edge.source === elements.initialState?.target) {
+    if (!foundInitial && edge.source === initialId) {
       delete elements.states[edge.source];
       elements.initialState.target = edge.target;
       foundInitial = true;
@@ -684,10 +689,9 @@ function addPropertiesFromKeyNode(
   }
 }
 
+let initialId = '';
 let platform: Platform | undefined;
 const components_id = new Array<string>();
-// Ключ - id компонента, значение - компонент
-// const components = new Map<string, Component | OuterComponent>();
 
 const systemComponentAlias = new Map<string, Event>([
   ['entry', { component: 'System', method: 'onEnter' }],
@@ -700,6 +704,7 @@ export function importGraphml(
 ): Elements {
   try {
     platform = undefined;
+    initialId = '';
     components_id.splice(0);
     const parser = new XMLParser({
       textNodeName: 'content',

@@ -149,27 +149,27 @@ const dataNodeProcess: DataNodeProcess = {
     }
   },
   dGeometry(data: DataNodeProcessArgs) {
-    const x = data.node['x'];
-    const y = data.node['y'];
+    const x = +data.node['x'];
+    const y = +data.node['y'];
     if (x === undefined || y === undefined) {
       throw new Error('Не указаны x или y для узла data с ключом dGeometry');
     }
     if (data.parentNode !== undefined && data.parentNode.id == initialId) {
       data.elements.initialState.position = {
-        x: +data.node['x'],
-        y: +data.node['y'],
+        x: x,
+        y: y,
       };
     } else if (data.state !== undefined) {
       data.state.bounds = {
-        x: +data.node['x'],
-        y: +data.node['y'],
+        x: x,
+        y: y,
         width: data.node['width'] ? +data.node['width'] : 0,
         height: data.node['height'] ? +data.node['height'] : 0,
       };
     } else if (data.transition !== undefined) {
       data.transition.position = {
-        x: +data.node['x'],
-        y: +data.node['y'],
+        x: x,
+        y: y,
       };
     } else {
       throw new Error('Непредвиденный вызов функции dGeometry');
@@ -787,7 +787,7 @@ type ExportKeyNode = {
 };
 
 type ExportDataNode = {
-  '@key': string;
+  '@key': DataKey;
   '@x'?: number;
   '@y'?: number;
   '@width'?: number;
@@ -881,7 +881,7 @@ export function exportGraphml(elements: Elements): string {
   ];
 
   let mainPlatform = elements.platform;
-  let description = 'description/ Схема, сгенерированная с помощью Lapki IDE\nname/ Схема\n';
+  let description = 'name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n';
   let subplatform = '';
   if (mainPlatform.startsWith('BearlogaDefend')) {
     [mainPlatform, subplatform] = mainPlatform.split('-');
@@ -905,12 +905,37 @@ export function exportGraphml(elements: Elements): string {
         ],
       },
     ],
+    [
+      'init',
+      {
+        '@id': 'init',
+        data: [
+          {
+            '@key': 'dInitial',
+            content: '',
+          },
+          {
+            '@key': 'dGeometry',
+            '@x': elements.initialState.position.x,
+            '@y': elements.initialState.position.y,
+            '@width': 450,
+            '@height': 95,
+            content: '',
+          },
+        ],
+      },
+    ],
   ]);
 
   const graph: ExportGraph = {
     '@id': 'G',
     node: [],
-    edge: [],
+    edge: [
+      {
+        '@source': 'init',
+        '@target': elements.initialState.target,
+      },
+    ],
   };
   if (!elements.platform.includes('Bearloga')) {
     for (const component_idx in elements.components) {
@@ -986,7 +1011,7 @@ export function exportGraphml(elements: Elements): string {
         content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
       }
 
-      content += `${trigger}/${content_action}\n`;
+      content += `${trigger}/\n${content_action}\n`;
     }
 
     node.data.push({

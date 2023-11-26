@@ -762,6 +762,7 @@ export function importGraphml(
       }
     }
     elements.platform = meta.platform;
+    console.log(structuredClone(elements));
     return elements;
   } catch (error) {
     console.log(error);
@@ -833,15 +834,13 @@ function getOperandString(operand: Variable | string | Condition[] | number) {
   }
 }
 
-export function exportGraphml(elements: Elements): string {
-  const builder = new XMLBuilder({
-    textNodeName: 'content',
-    ignoreAttributes: false,
-    attributeNamePrefix: '@',
-    format: true,
-  });
-
-  const keyNodes: Array<ExportKeyNode> = [
+type Platforms = 'ArduinoUno' | 'BearlogaDefend';
+type PlatformDataKeys = { [key in Platforms]: ExportKeyNode[] };
+type ProcessDependPlatform = {
+  [key in Platforms]: (elements: Elements, subplatform?: string) => CyberiadaXML;
+};
+const PlatformKeys: PlatformDataKeys = {
+  ArduinoUno: [
     {
       '@id': 'dName',
       '@for': 'node',
@@ -878,66 +877,116 @@ export function exportGraphml(elements: Elements): string {
       '@id': 'dColor',
       '@for': 'edge',
     },
-  ];
+  ],
+  BearlogaDefend: [
+    {
+      '@id': 'dName',
+      '@for': 'node',
+      '@attr.name': 'name',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dData',
+      '@for': 'node',
+      '@attr.name': 'data',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dData',
+      '@for': 'edge',
+      '@attr.name': 'data',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dInitial',
+      '@for': 'node',
+      '@attr.name': 'initial',
+      '@attr.type': 'string',
+    },
+    {
+      '@id': 'dGeometry',
+      '@for': 'edge',
+    },
+    {
+      '@id': 'dGeometry',
+      '@for': 'node',
+    },
+  ],
+};
 
-  let mainPlatform = elements.platform;
-  let description = 'name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n';
-  let subplatform = '';
-  if (mainPlatform.startsWith('BearlogaDefend')) {
-    [mainPlatform, subplatform] = mainPlatform.split('-');
-    description += `unit/ ${subplatform}`;
-  }
+type XMLNode = {
+  '@version': string;
+  '@encoding': string;
+};
 
-  const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
-    [
-      '',
-      {
-        '@id': '',
-        data: [
-          {
-            '@key': 'dName',
-            content: mainPlatform,
-          },
-          {
-            '@key': 'dData',
-            content: description,
-          },
-        ],
-      },
-    ],
-    [
-      'init',
-      {
-        '@id': 'init',
-        data: [
-          {
-            '@key': 'dInitial',
-            content: '',
-          },
-          {
-            '@key': 'dGeometry',
-            '@x': elements.initialState.position.x,
-            '@y': elements.initialState.position.y,
-            '@width': 450,
-            '@height': 95,
-            content: '',
-          },
-        ],
-      },
-    ],
-  ]);
+type GraphMLNode = {
+  '@xmlns': string;
+  data: ExportDataNode;
+  key: ExportKeyNode[];
+  graph: ExportGraph;
+};
 
-  const graph: ExportGraph = {
-    '@id': 'G',
-    node: [],
-    edge: [
-      {
-        '@source': 'init',
-        '@target': elements.initialState.target,
-      },
-    ],
-  };
-  if (!elements.platform.includes('Bearloga')) {
+type CyberiadaXML = {
+  '?xml': XMLNode;
+  graphml: GraphMLNode;
+};
+
+// Пока что это копипаст, с небольшими изменениями
+// Но, думаю, в целом это правильное решение разделить обработку каждой платформы
+// TODO: Разбить этот монолит на функции
+const processDependPlatform: ProcessDependPlatform = {
+  ArduinoUno(elements: Elements): CyberiadaXML {
+    const keyNodes = PlatformKeys.ArduinoUno;
+    const description = 'name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n';
+    const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
+      [
+        '',
+        {
+          '@id': '',
+          data: [
+            {
+              '@key': 'dName',
+              content: 'ArduinoUno',
+            },
+            {
+              '@key': 'dData',
+              content: description,
+            },
+          ],
+        },
+      ],
+      [
+        'init',
+        {
+          '@id': 'init',
+          data: [
+            {
+              '@key': 'dInitial',
+              content: '',
+            },
+            {
+              '@key': 'dGeometry',
+              '@x': elements.initialState.position.x,
+              '@y': elements.initialState.position.y,
+              '@width': 450,
+              '@height': 95,
+              content: '',
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const graph: ExportGraph = {
+      '@id': 'G',
+      node: [],
+      edge: [
+        {
+          '@source': 'init',
+          '@target': elements.initialState.target,
+        },
+      ],
+    };
     for (const component_idx in elements.components) {
       const component = elements.components[component_idx];
       let content = `type/ ${component.type}\n`;
@@ -965,155 +1014,350 @@ export function exportGraphml(elements: Elements): string {
       };
       graph.edge.push(edge);
     }
-  }
+    for (const state_id in elements.states) {
+      const state = elements.states[state_id];
+      let node = nodes.get(state_id);
+      if (node === undefined) {
+        node = {
+          '@id': state_id,
+          data: [],
+        };
+      }
 
-  for (const state_id in elements.states) {
-    const state = elements.states[state_id];
-    let node = nodes.get(state_id);
-    if (node === undefined) {
-      node = {
-        '@id': state_id,
-        data: [],
-      };
-    }
+      node.data.push({
+        '@key': 'dName',
+        content: state.name,
+      });
 
-    node.data.push({
-      '@key': 'dName',
-      content: state.name,
-    });
+      node.data.push({
+        '@key': 'dGeometry',
+        '@x': state.bounds.x,
+        '@y': state.bounds.y,
+        '@width': state.bounds.width,
+        '@height': state.bounds.height,
+        content: '',
+      });
 
-    node.data.push({
-      '@key': 'dGeometry',
-      '@x': state.bounds.x,
-      '@y': state.bounds.y,
-      '@width': state.bounds.width,
-      '@height': state.bounds.height,
-      content: '',
-    });
+      let content = '';
 
-    let content = '';
-
-    for (const event of state.events) {
-      let content_action = '';
-      const component = event.trigger.component;
-      const method = event.trigger.method;
-      const args = getArgsString(event.trigger.args);
-      let trigger = `${component}.${method}(${args})`;
-      if (component === 'System') {
-        if (method === 'onEnter') {
-          trigger = 'entry';
-        } else if (method === 'onExit') {
-          trigger = 'exit';
+      for (const event of state.events) {
+        let content_action = '';
+        const component = event.trigger.component;
+        const method = event.trigger.method;
+        const args = getArgsString(event.trigger.args);
+        let trigger = `${component}.${method}(${args})`;
+        if (component === 'System') {
+          if (method === 'onEnter') {
+            trigger = 'entry';
+          } else if (method === 'onExit') {
+            trigger = 'exit';
+          }
         }
+
+        for (const action of event.do) {
+          content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
+        }
+
+        content += `${trigger}/\n${content_action}\n`;
       }
 
-      for (const action of event.do) {
-        content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
-      }
+      node.data.push({
+        '@key': 'dData',
+        content: content,
+      });
 
-      content += `${trigger}/\n${content_action}\n`;
-    }
-
-    node.data.push({
-      '@key': 'dData',
-      content: content,
-    });
-
-    if (state.parent !== undefined) {
-      const parent = nodes.get(state.parent);
-      if (parent !== undefined) {
-        if (parent.graph !== undefined) {
-          parent.graph.node.push(node);
+      if (state.parent !== undefined) {
+        const parent = nodes.get(state.parent);
+        if (parent !== undefined) {
+          if (parent.graph !== undefined) {
+            parent.graph.node.push(node);
+          } else {
+            parent.graph = {
+              '@id': parent['@id'],
+              node: [node],
+              edge: [],
+            };
+          }
         } else {
-          parent.graph = {
-            '@id': parent['@id'],
-            node: [node],
-            edge: [],
-          };
+          nodes.set(state.parent, {
+            '@id': state.parent,
+            data: [],
+            graph: {
+              '@id': state.parent,
+              node: [node],
+              edge: [],
+            },
+          });
         }
       } else {
-        nodes.set(state.parent, {
-          '@id': state.parent,
-          data: [],
-          graph: {
-            '@id': state.parent,
-            node: [node],
-            edge: [],
-          },
-        });
+        nodes.set(node['@id'], node);
       }
-    } else {
-      nodes.set(node['@id'], node);
-    }
-  }
-
-  for (const transition of elements.transitions) {
-    const edge: ExportEdge = {
-      '@source': transition.source,
-      '@target': transition.target,
-      data: [],
-    };
-    edge.data?.push({
-      '@key': 'dGeometry',
-      '@x': transition.position.x,
-      '@y': transition.position.y,
-      content: '',
-    });
-    edge.data?.push({
-      '@key': 'dColor',
-      content: transition.color,
-    });
-
-    let trigger = '';
-    if (!elements.platform.startsWith('BearlogaDefend')) {
-      trigger = `${transition.trigger.component}.${transition.trigger.method}(${getArgsString(
-        transition.trigger.args
-      )})`;
-    } else {
-      trigger = `${transition.trigger.component}.${transition.trigger.method}`;
-    }
-    let condition = '';
-    if (transition.condition?.type !== undefined) {
-      condition = `[${getOperandString(
-        transition.condition.value[0].value
-      )} ${invertOperatorAlias.get(transition.condition.type)} ${getOperandString(
-        transition.condition.value[1].value
-      )}]`;
     }
 
-    let string_action = '';
-    if (transition.do !== undefined) {
-      if (!elements.platform.startsWith('BearlogaDefend')) {
+    for (const transition of elements.transitions) {
+      const edge: ExportEdge = {
+        '@source': transition.source,
+        '@target': transition.target,
+        data: [],
+      };
+      edge.data?.push({
+        '@key': 'dGeometry',
+        '@x': transition.position.x,
+        '@y': transition.position.y,
+        content: '',
+      });
+      edge.data?.push({
+        '@key': 'dColor',
+        content: transition.color,
+      });
+
+      const trigger = `${transition.trigger.component}.${transition.trigger.method}`;
+      let condition = '';
+      if (transition.condition?.type !== undefined) {
+        condition = `[${getOperandString(
+          transition.condition.value[0].value
+        )} ${invertOperatorAlias.get(transition.condition.type)} ${getOperandString(
+          transition.condition.value[1].value
+        )}]`;
+      }
+
+      let string_action = '';
+      if (transition.do !== undefined) {
         for (const action of transition.do) {
           string_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
         }
+      }
+      edge.data?.push({
+        '@key': 'dData',
+        content: `${trigger}${condition}/\n${string_action}`,
+      });
+
+      graph.edge.push(edge);
+    }
+
+    graph.node.push(...nodes.values());
+    return {
+      '?xml': {
+        '@version': '1.0',
+        '@encoding': 'UTF-8',
+      },
+      graphml: {
+        '@xmlns': 'http://graphml.graphdrawing.org/xmlns',
+        data: {
+          '@key': 'gFormat',
+          content: 'Cyberiada-GraphML',
+        },
+        key: keyNodes,
+        graph: graph,
+      },
+    };
+  },
+
+  BearlogaDefend(elements: Elements, subplatform?: string): CyberiadaXML {
+    const keyNodes = PlatformKeys.BearlogaDefend;
+    let description = '';
+    if (subplatform !== undefined) {
+      description = `name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\nunit/ ${subplatform}`;
+    } else {
+      description = `name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n`;
+    }
+
+    const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
+      [
+        '',
+        {
+          '@id': '',
+          data: [
+            {
+              '@key': 'dName',
+              content: 'BearlogaDefend',
+            },
+            {
+              '@key': 'dData',
+              content: description,
+            },
+          ],
+        },
+      ],
+      [
+        'init',
+        {
+          '@id': 'init',
+          data: [
+            {
+              '@key': 'dInitial',
+              content: '',
+            },
+            {
+              '@key': 'dGeometry',
+              '@x': elements.initialState.position.x,
+              '@y': elements.initialState.position.y,
+              '@width': 450,
+              '@height': 95,
+              content: '',
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const graph: ExportGraph = {
+      '@id': 'G',
+      node: [],
+      edge: [
+        {
+          '@source': 'init',
+          '@target': elements.initialState.target,
+        },
+      ],
+    };
+    for (const state_id in elements.states) {
+      const state = elements.states[state_id];
+      let node = nodes.get(state_id);
+      if (node === undefined) {
+        node = {
+          '@id': state_id,
+          data: [],
+        };
+      }
+
+      node.data.push({
+        '@key': 'dName',
+        content: state.name,
+      });
+
+      node.data.push({
+        '@key': 'dGeometry',
+        '@x': state.bounds.x,
+        '@y': state.bounds.y,
+        '@width': state.bounds.width,
+        '@height': state.bounds.height,
+        content: '',
+      });
+
+      let content = '';
+
+      for (const event of state.events) {
+        let content_action = '';
+        const component = event.trigger.component;
+        const method = event.trigger.method;
+        const args = getArgsString(event.trigger.args);
+        let trigger = `${component}.${method}(${args})`;
+        if (component === 'System') {
+          if (method === 'onEnter') {
+            trigger = 'entry';
+          } else if (method === 'onExit') {
+            trigger = 'exit';
+          }
+        }
+
+        for (const action of event.do) {
+          content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
+        }
+
+        content += `${trigger}/\n${content_action}\n`;
+      }
+
+      node.data.push({
+        '@key': 'dData',
+        content: content,
+      });
+
+      if (state.parent !== undefined) {
+        const parent = nodes.get(state.parent);
+        if (parent !== undefined) {
+          if (parent.graph !== undefined) {
+            parent.graph.node.push(node);
+          } else {
+            parent.graph = {
+              '@id': parent['@id'],
+              node: [node],
+              edge: [],
+            };
+          }
+        } else {
+          nodes.set(state.parent, {
+            '@id': state.parent,
+            data: [],
+            graph: {
+              '@id': state.parent,
+              node: [node],
+              edge: [],
+            },
+          });
+        }
       } else {
+        nodes.set(node['@id'], node);
+      }
+    }
+
+    for (const transition of elements.transitions) {
+      const edge: ExportEdge = {
+        '@source': transition.source,
+        '@target': transition.target,
+        data: [],
+      };
+
+      const trigger = `${transition.trigger.component}.${transition.trigger.method}`;
+      let condition = '';
+      if (transition.condition?.type !== undefined) {
+        condition = `[${getOperandString(
+          transition.condition.value[0].value
+        )} ${invertOperatorAlias.get(transition.condition.type)} ${getOperandString(
+          transition.condition.value[1].value
+        )}]`;
+      }
+
+      let string_action = '';
+      if (transition.do !== undefined) {
         for (const action of transition.do) {
           string_action += `${action.component}.${action.method}\n`;
         }
       }
+      edge.data?.push({
+        '@key': 'dData',
+        content: `${trigger}${condition}/\n${string_action}`,
+      });
+
+      graph.edge.push(edge);
     }
-    edge.data?.push({
-      '@key': 'dData',
-      content: `${trigger}${condition}/\n${string_action}`,
-    });
 
-    graph.edge.push(edge);
-  }
-
-  graph.node.push(...nodes.values());
-  return builder.build({
-    '?xml': {
-      '@version': 1.0,
-      '@encoding': 'UTF-8',
-    },
-    graphml: {
-      data: {
-        '@key': 'gFormat',
-        content: 'Cyberiada-GraphML',
+    graph.node.push(...nodes.values());
+    return {
+      '?xml': {
+        '@version': '1.0',
+        '@encoding': 'UTF-8',
       },
-      key: keyNodes,
-      graph: graph,
-    },
+      graphml: {
+        '@xmlns': 'http://graphml.graphdrawing.org/xmlns',
+        data: {
+          '@key': 'gFormat',
+          content: 'Cyberiada-GraphML',
+        },
+        key: keyNodes,
+        graph: graph,
+      },
+    };
+  },
+};
+
+export function exportGraphml(elements: Elements): string {
+  const builder = new XMLBuilder({
+    textNodeName: 'content',
+    ignoreAttributes: false,
+    attributeNamePrefix: '@',
+    format: true,
   });
+  console.log(structuredClone(elements));
+  let xml = {};
+  if (elements.platform == 'ArduinoUno') {
+    xml = processDependPlatform.ArduinoUno(elements);
+  } else if (elements.platform.startsWith('BearlogaDefend')) {
+    const subplatform = elements.platform.split('-')[1];
+    xml = processDependPlatform.BearlogaDefend(elements, subplatform);
+  } else {
+    console.log('Неизвестная платформа');
+  }
+  console.log(structuredClone(xml));
+  return builder.build(xml);
 }

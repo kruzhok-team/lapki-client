@@ -155,10 +155,14 @@ const dataNodeProcess: DataNodeProcess = {
       throw new Error('Не указаны x или y для узла data с ключом dGeometry');
     }
     if (data.parentNode !== undefined && data.parentNode.id == initialId) {
-      data.elements.initialState.position = {
-        x: x,
-        y: y,
-      };
+      if (data.elements.initialState !== null) {
+        data.elements.initialState.position = {
+          x: x,
+          y: y,
+        };
+      } else {
+        throw new Error('Непредвиденная ошибка. dataNodeProcess.dGeometry: initialState == null');
+      }
     } else if (data.state !== undefined) {
       data.state.bounds = {
         x: x,
@@ -472,7 +476,11 @@ function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
     const edge = edges[idx];
     if (!foundInitial && edge.source === initialId) {
       delete elements.states[edge.source];
-      elements.initialState.target = edge.target;
+      if (elements.initialState !== null) {
+        elements.initialState.target = edge.target;
+      } else {
+        throw new Error('Непредвиденная ошибка. processTransitions: initialState == null');
+      }
       foundInitial = true;
     }
     const transition: Transition = {
@@ -955,38 +963,38 @@ const processDependPlatform: ProcessDependPlatform = {
           ],
         },
       ],
-      [
-        'init',
-        {
-          '@id': 'init',
-          data: [
-            {
-              '@key': 'dInitial',
-              content: '',
-            },
-            {
-              '@key': 'dGeometry',
-              '@x': elements.initialState.position.x,
-              '@y': elements.initialState.position.y,
-              '@width': 450,
-              '@height': 95,
-              content: '',
-            },
-          ],
-        },
-      ],
     ]);
 
     const graph: ExportGraph = {
       '@id': 'G',
       node: [],
-      edge: [
-        {
-          '@source': 'init',
-          '@target': elements.initialState.target,
-        },
-      ],
+      edge: [],
     };
+
+    if (elements.initialState !== null) {
+      graph.edge.push({
+        '@source': 'init',
+        '@target': elements.initialState.target,
+      });
+      nodes.set('init', {
+        '@id': 'init',
+        data: [
+          {
+            '@key': 'dInitial',
+            content: '',
+          },
+          {
+            '@key': 'dGeometry',
+            '@x': elements.initialState.position.x,
+            '@y': elements.initialState.position.y,
+            '@width': 450,
+            '@height': 95,
+            content: '',
+          },
+        ],
+      });
+    }
+
     for (const component_idx in elements.components) {
       const component = elements.components[component_idx];
       let content = `type/ ${component.type}\n`;
@@ -1179,38 +1187,38 @@ const processDependPlatform: ProcessDependPlatform = {
           ],
         },
       ],
-      [
-        'init',
-        {
-          '@id': 'init',
-          data: [
-            {
-              '@key': 'dInitial',
-              content: '',
-            },
-            {
-              '@key': 'dGeometry',
-              '@x': elements.initialState.position.x,
-              '@y': elements.initialState.position.y,
-              '@width': 450,
-              '@height': 95,
-              content: '',
-            },
-          ],
-        },
-      ],
     ]);
 
     const graph: ExportGraph = {
       '@id': 'G',
       node: [],
-      edge: [
-        {
-          '@source': 'init',
-          '@target': elements.initialState.target,
-        },
-      ],
+      edge: [],
     };
+
+    if (elements.initialState !== null) {
+      graph.edge.push({
+        '@source': 'init',
+        '@target': elements.initialState.target,
+      });
+      nodes.set('init', {
+        '@id': 'init',
+        data: [
+          {
+            '@key': 'dInitial',
+            content: '',
+          },
+          {
+            '@key': 'dGeometry',
+            '@x': elements.initialState.position.x,
+            '@y': elements.initialState.position.y,
+            '@width': 450,
+            '@height': 95,
+            content: '',
+          },
+        ],
+      });
+    }
+
     for (const state_id in elements.states) {
       const state = elements.states[state_id];
       let node = nodes.get(state_id);

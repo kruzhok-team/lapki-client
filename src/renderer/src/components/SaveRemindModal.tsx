@@ -15,6 +15,7 @@ export type SaveModalData = {
   question?: string;
   onConfirm: () => void;
   onSave: () => void;
+  onOpen: () => void;
 };
 
 export interface SaveRemindModalFormValues {}
@@ -35,6 +36,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
 
   const handleSave = () => {
     data?.onSave();
+    data?.onOpen();
     // FIXME: не выполняет подтверждаемое действие после сохранения
     onRequestClose();
   };

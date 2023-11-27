@@ -62,6 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onRequestSaveAsFile={onRequestSaveAsFile}
         onRequestImport={handleImport}
         compilerStatus={compilerStatus}
+        manager={manager}
       />,
       <Explorer editor={editor} manager={manager} />,
       <CompilerTab

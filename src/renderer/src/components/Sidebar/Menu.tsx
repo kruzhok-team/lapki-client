@@ -1,5 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+
 export interface MenuProps {
   onRequestNewFile: () => void;
   onRequestOpenFile: () => void;
@@ -7,10 +9,14 @@ export interface MenuProps {
   onRequestSaveAsFile: () => void;
   onRequestImport: () => void;
   compilerStatus: string;
+  manager: EditorManager;
   // TODO: isModified: boolean;
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
+  const isStale = props.manager.useData('isStale');
+  const isInitialized = props.manager.useData('isInitialized');
+
   const items = [
     {
       text: 'Создать...',
@@ -23,12 +29,12 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
-      // TODO: disabled: !props.isModified,
+      disabled: !isStale || !isInitialized,
     },
     {
       text: 'Сохранить как...',
       onClick: props.onRequestSaveAsFile,
-      disabled: false,
+      disabled: !isStale || !isInitialized,
     },
     {
       text: 'Импорт...',

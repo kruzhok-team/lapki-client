@@ -1,7 +1,10 @@
+import React, { useState } from 'react';
+
 import { Select } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 
+import { AboutTheProgramModal } from '../AboutTheProgramModal';
 import { setURL } from '../Documentation/Documentation';
 import { Compiler } from '../Modules/Compiler';
 import { Settings, CompilerSettings, DocSettings } from '../Modules/Settings';
@@ -34,7 +37,8 @@ export const Setting: React.FC<SettingProps> = () => {
   }, []);*/
 
   const { setTheme, theme } = useThemeContext();
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const closeModal = () => setIsModalOpen(false);
   // для док-сервера
 
   const [isDocOpen, openDoc, closeDoc] = useModal(false);
@@ -73,8 +77,8 @@ export const Setting: React.FC<SettingProps> = () => {
         Настройки
       </h3>
 
-      <div className="px-4">
-        <div>
+      <div className="flex flex-col px-4">
+        <div className="mb-4">
           Тема
           <Select
             options={themeOptions}
@@ -83,7 +87,9 @@ export const Setting: React.FC<SettingProps> = () => {
             isSearchable={false}
           />
         </div>
-        <br></br>
+        <button className="btn-primary mb-2" onClick={() => setIsModalOpen(true)}>
+          О программе
+        </button>
         <div>
           <button className="btn-primary mb-2" onClick={handleCompilerHostChange}>
             {' '}
@@ -116,6 +122,8 @@ export const Setting: React.FC<SettingProps> = () => {
         originaltHostValue={window.api.DEFAULT_DOC_SETTINGS.host}
         electronSettingsKey={window.api.DOC_SETTINGS_KEY}
       />
+
+      <AboutTheProgramModal isOpen={isModalOpen} onClose={closeModal} />
     </section>
   );
 };

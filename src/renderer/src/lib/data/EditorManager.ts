@@ -89,8 +89,9 @@ export class EditorManager {
     this.data.elements = new Proxy(this.data.elements, {
       set(target, key, val, receiver) {
         const result = Reflect.set(target, key, val, receiver);
-
         self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
+
+        self.data.isStale = true;
 
         return result;
       },

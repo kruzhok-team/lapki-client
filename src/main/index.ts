@@ -7,6 +7,7 @@ import { join } from 'path';
 import {
   COMPILER_SETTINGS_KEY,
   DEFAULT_COMPILER_SETTINGS,
+  DOC_SETTINGS_KEY,
   FLASHER_SETTINGS_KEY,
   PLATFORMS_PATH_SETTINGS_KEY,
 } from './electron-settings-consts';
@@ -119,6 +120,10 @@ function initSettings(): void {
       host: null,
       port: null,
     });
+  }
+
+  if (!settings.hasSync(DOC_SETTINGS_KEY)) {
+    settings.setSync(DOC_SETTINGS_KEY, DEFAULT_DOC_SETTINGS);
   }
 }
 

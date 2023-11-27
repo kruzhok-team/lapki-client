@@ -1,0 +1,111 @@
+{
+  "compilerSettings": {
+    "compiler": "arduino-cli",
+    "filename": "ExampleSketch",
+    "flags": [
+      "-b",
+      "arduino:avr:uno"
+    ]
+  },
+  "components": {
+    "timer": {
+      "parameters": {},
+      "type": "Timer"
+    }
+  },
+  "initialState": {
+    "target": "n0",
+    "position": {
+      "x": 88,
+      "y": 321
+    }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno",
+  "states": {
+    "n0": {
+      "bounds": {
+        "x": 206,
+        "y": 417,
+        "width": 450,
+        "height": 95
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "interval": "5000"
+              },
+              "component": "timer",
+              "method": "start"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        }
+      ],
+      "name": "state1"
+    },
+    "n1": {
+      "bounds": {
+        "x": 553,
+        "y": 232,
+        "width": 450,
+        "height": 95
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "interval": "5000"
+              },
+              "component": "timer",
+              "method": "start"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        }
+      ],
+      "name": "state2"
+    }
+  },
+  "transitions": [
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 358,
+        "y": 273
+      },
+      "source": "n0",
+      "target": "n1",
+      "trigger": {
+        "component": "timer",
+        "method": "timeout"
+      }
+    },
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 730,
+        "y": 426
+      },
+      "source": "n1",
+      "target": "n0",
+      "trigger": {
+        "component": "timer",
+        "method": "timeout"
+      }
+    }
+  ]
+}

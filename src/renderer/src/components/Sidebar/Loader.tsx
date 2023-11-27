@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
-import { FlasherSelectModal } from '@renderer/components/FlasherSelectModal';
 import {
   FLASHER_CONNECTED,
   FLASHER_CONNECTING,
@@ -13,9 +12,11 @@ import {
   FLASHER_NO_CONNECTION,
   Flasher,
 } from '@renderer/components/Modules/Flasher';
+import { FlasherSelectModal } from '@renderer/components/serverSelect/FlasherSelectModal';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device } from '@renderer/types/FlasherTypes';
+
 import { Settings } from '../Modules/Settings';
 
 const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
@@ -169,22 +170,18 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   };
 
   useEffect(() => {
-    Settings.getFlasherSettings().then((flasherSettings) => {
-      Flasher.bindReact(
-        setFlasherDevices,
-        setFlasherConnectionStatus,
-        setFlasherLog,
-        setFlasherFile,
-        setFlashing,
-        setFlasherError,
-        flasherSettings.host,
-        flasherSettings.port
-      );
-      const reader = new FileReader();
-      Flasher.initReader(reader);
-      console.log('CONNECTING TO FLASHER');
-      Flasher.connect();
-    });
+    Flasher.bindReact(
+      setFlasherDevices,
+      setFlasherConnectionStatus,
+      setFlasherLog,
+      setFlasherFile,
+      setFlashing,
+      setFlasherError
+    );
+    const reader = new FileReader();
+    Flasher.initReader(reader);
+    console.log('CONNECTING TO FLASHER');
+    Flasher.connect();
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 

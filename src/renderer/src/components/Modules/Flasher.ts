@@ -1,3 +1,7 @@
+import { Dispatch, SetStateAction } from 'react';
+
+import Websocket from 'isomorphic-ws';
+
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   Device,
@@ -6,8 +10,7 @@ import {
   FlasherMessage,
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
-import Websocket from 'isomorphic-ws';
-import { Dispatch, SetStateAction } from 'react';
+
 export const FLASHER_CONNECTING = 'Идет подключение...';
 export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
@@ -17,8 +20,6 @@ export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке по
 export class Flasher {
   static port: number;
   static host: string;
-  static remotePort: number | null;
-  static remoteHost: string | null;
   static base_address;
   static connection: Websocket | undefined;
   static connecting: boolean = false;
@@ -75,8 +76,8 @@ export class Flasher {
   }
 
   static async sendBlob(): Promise<void> {
-    var first = this.filePos;
-    var last = first + this.blobSize;
+    const first = this.filePos;
+    let last = first + this.blobSize;
     if (last >= this.binary.size) {
       last = this.binary.size;
     }
@@ -90,9 +91,7 @@ export class Flasher {
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     setFlashing: Dispatch<SetStateAction<boolean>>,
-    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    remoteHost: string | null,
-    remotePort: number | null
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -100,8 +99,6 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
-    this.remoteHost = remoteHost;
-    this.remotePort = remotePort;
   }
   /*
     Добавляет устройство в список устройств
@@ -112,7 +109,6 @@ export class Flasher {
   static addDevice(device: Device): boolean {
     let isNew: boolean = false;
     this.setFlasherDevices((oldValue) => {
-      //console.log(device);
       if (!oldValue.has(device.deviceID)) {
         isNew = true;
       }
@@ -134,10 +130,6 @@ export class Flasher {
   static updatePort(port: FlashUpdatePort): void {
     this.setFlasherDevices((oldValue) => {
       const newValue = new Map(oldValue);
-      /*console.log(port.deviceID);
-      console.log(oldValue);
-      console.log(newValue.get(port.deviceID));
-      console.log(oldValue.get(port.deviceID));*/
       const device = newValue.get(port.deviceID)!;
       device.portName = port.portName;
       newValue.set(port.deviceID, device);
@@ -182,14 +174,12 @@ export class Flasher {
     } else {
       if (host != undefined) {
         Flasher.host = host;
-        Flasher.remoteHost = host;
       }
       if (port != undefined) {
         Flasher.port = port;
-        Flasher.remotePort = port;
       }
     }
-    let new_address = Flasher.makeAddress(Flasher.host, Flasher.port);
+    const new_address = Flasher.makeAddress(Flasher.host, Flasher.port);
     // означает, что хост должен смениться
     if (new_address != Flasher.base_address) {
       Flasher.curReconnectAttemps = 1;
@@ -202,7 +192,7 @@ export class Flasher {
     this.setFlasherDevices(new Map());
     Flasher.connectionCanceled = false;
 
-    var ws: Websocket;
+    let ws: Websocket;
     try {
       ws = new Websocket(this.base_address);
       this.connection = ws;
@@ -214,7 +204,7 @@ export class Flasher {
       this.end();
       return;
     }
-    //console.log(`TIMEOUT=${timeout}, ROUTE=${route}`);
+
     ws.onopen = () => {
       Flasher.curReconnectAttemps = 0;
       console.log(`Flasher: connected to ${Flasher.host}:${Flasher.port}!`);
@@ -226,7 +216,6 @@ export class Flasher {
       this.connecting = false;
       this.setFlasherDevices(new Map());
       ws.onmessage = (msg: MessageEvent) => {
-        //console.log(msg.data);
         const response = JSON.parse(msg.data) as FlasherMessage;
         switch (response.type) {
           case 'flash-next-block': {
@@ -374,10 +363,7 @@ export class Flasher {
 
   static async setBinary(binaries: Array<Binary>) {
     binaries.map((bin) => {
-      //console.log(bin.filename);
       if (bin.extension.endsWith('ino.hex')) {
-        //console.log(bin.extension);
-        //console.log(bin.fileContent);
         Flasher.binary = bin.fileContent as Blob;
         return;
       }
@@ -385,7 +371,6 @@ export class Flasher {
   }
 
   static async setFile() {
-    //console.log('set file (flasher)');
     /* 
     openData[0] - удалось ли открыть и прочитать файл
     openData[1] путь к файлу
@@ -395,7 +380,7 @@ export class Flasher {
     const openData: [boolean, string | null, string | null, any] =
       await window.electron.ipcRenderer.invoke('dialog:openBinFile');
     if (openData[0]) {
-      let buffer: Buffer = openData[3];
+      const buffer: Buffer = openData[3];
       //console.log(buffer.toString());
       Flasher.binary = new Blob([buffer]);
       this.setFlasherFile(openData[2]);
@@ -407,12 +392,8 @@ export class Flasher {
 
   static flashCompiler(binaries: Array<Binary>, deviceID: string): void {
     binaries.map((bin) => {
-      //console.log(bin.filename);
       if (bin.extension.endsWith('ino.hex')) {
-        //console.log(bin.extension);
-        //console.log(bin.fileContent);
         Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
-        //console.log(Flasher.binary);
         return;
       }
     });
@@ -429,7 +410,6 @@ export class Flasher {
       type: 'flash-start',
       payload: payload,
     } as FlasherMessage;
-    //console.log(request);
     this.connection.send(JSON.stringify(request));
     this.setFlasherLog('Идет загрузка...');
   }

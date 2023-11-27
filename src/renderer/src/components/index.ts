@@ -5,7 +5,7 @@ export * from './DiagramEditor';
 export * from './Documentation/Documentation';
 export * from './SaveRemindModal';
 export * from './PlatformSelectModal';
-export * from './FlasherSelectModal';
+export * from './serverSelect/FlasherSelectModal';
 export * from './ErrorModal';
 export * from './Sidebar';
 export * from './Tabs';

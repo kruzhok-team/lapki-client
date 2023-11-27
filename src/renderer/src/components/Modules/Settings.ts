@@ -1,3 +1,6 @@
+export interface PlatfromDirectory {
+  path: string;
+}
 export interface CompilerSettings {
   host: string;
   port: number;
@@ -8,8 +11,9 @@ export interface FlasherSettings {
   port: number | null;
 }
 
-export interface PlatfromDirectory {
-  path: string;
+// возможно понадобится больше одного поля в будущем
+export interface DocSettings {
+  host: string;
 }
 export class Settings {
   static async get(key: string): Promise<any> {
@@ -38,5 +42,13 @@ export class Settings {
 
   static async setFlasherSettings(value: FlasherSettings) {
     await this.set(window.api.FLASHER_SETTINGS_KEY, value);
+  }
+
+  static async getDocSettings(): Promise<DocSettings> {
+    return await this.get(window.api.DOC_SETTINGS_KEY);
+  }
+
+  static async setDocSettings(value: DocSettings) {
+    await this.set(window.api.DOC_SETTINGS_KEY, value);
   }
 }

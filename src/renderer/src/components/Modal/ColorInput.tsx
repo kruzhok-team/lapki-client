@@ -12,7 +12,7 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
   ({ label, error, errorMessage, ...props }, ref) => {
     return (
       <label className={twMerge('m-2 flex', error && 'text-red-500')}>
-        {label}
+        <span className="font-bold">{label}</span>
         <input
           className={twMerge(
             'ml-2 rounded border bg-transparent outline-none transition-colors',

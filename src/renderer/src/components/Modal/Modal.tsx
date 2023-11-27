@@ -37,7 +37,7 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary bg-neutral-800 p-6 outline-none"
+      className="absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
       overlayClassName="bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-50"
       closeTimeoutMS={100}
     >
@@ -67,12 +67,7 @@ export const Modal: React.FC<ModalProps> = ({
           <button type="button" className="btn-secondary" onClick={props.onRequestClose}>
             {cancelLabel ?? 'Закрыть'}
           </button>
-          <button
-            type="button"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:bg-neutral-600"
-            hidden={!extraLabel}
-            onClick={onExtra}
-          >
+          <button type="button" className="btn-primary" hidden={!extraLabel} onClick={onExtra}>
             {extraLabel ?? ''}
           </button>
           <button

@@ -616,17 +616,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       submitLabel="Сохранить"
     >
       {/*---------------------------------Добавление основного события-------------------------------------*/}
-      <div className="flex items-center">
-        <label className="mx-1">Когда: </label>
+      <div className="my-5 flex items-center">
+        <label className="mx-1 align-middle font-bold">Когда: </label>
         <Select
-          className="mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]"
+          className="mx-1 h-[34px] w-[200px] max-w-[200px] align-middle"
           options={optionsComponents}
           onChange={onSelect(setComponents)}
           value={components}
           isSearchable={false}
         />
         <Select
-          className="mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]"
+          className="mx-1 h-[34px] w-[200px] max-w-[200px]"
           options={optionsMethods}
           onChange={onSelect(setMethods)}
           value={methods}
@@ -634,21 +634,21 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         />
         {isData &&
           (dataDo ? (
-            <p className="text-success">Событие существует!</p>
+            <p className="text-success">✔</p>
           ) : (
-            <p className="text-orange-500">Событие отсутствует!</p>
+            <p className="text-orange-500">(новое событие)</p>
           ))}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
       {/*--------------------------------------Добавление условия------------------------------------------*/}
       {isData !== undefined || (
-        <div className="flex items-start">
-          <div className="my-3 flex items-center">
-            <label className="mx-1">Если: </label>
+        <div className="my-3 flex items-start">
+          <div className="flex items-center">
+            <label className="mx-1 font-bold">Если: </label>
             <label
               className={twMerge(
-                'my-2 ml-3 select-none rounded bg-neutral-700 px-3 py-2 transition-colors hover:bg-neutral-500',
+                'btn-primary ml-3 select-none rounded bg-neutral-700 px-3 py-2 transition-colors hover:bg-neutral-500',
                 !isElse && 'bg-neutral-500'
               )}
             >
@@ -770,8 +770,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       )}
 
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
-      <div className="flex">
-        <label className="mx-1">Делай: </label>
+      <div className="my-1 flex">
+        <label className="mx-1 mt-2 font-bold">Делай: </label>
         <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
           {method.length === 0 ||
             method.map((data, key) => (
@@ -804,7 +804,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
-          {method.length === 0 && <div className="flex text-error">Вы не выбрали действия!</div>}
+          {method.length === 0 && <div className="mx-2 my-2 flex text-error">(нет действий)</div>}
         </div>
         <div className="flex flex-col">
           <button

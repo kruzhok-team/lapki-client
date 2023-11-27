@@ -770,7 +770,6 @@ export function importGraphml(
       }
     }
     elements.platform = meta.platform;
-    console.log(structuredClone(elements));
     return elements;
   } catch (error) {
     console.log(error);
@@ -1356,7 +1355,6 @@ export function exportGraphml(elements: Elements): string {
     attributeNamePrefix: '@',
     format: true,
   });
-  console.log(structuredClone(elements));
   let xml = {};
   if (elements.platform == 'ArduinoUno') {
     xml = processDependPlatform.ArduinoUno(elements);
@@ -1366,6 +1364,5 @@ export function exportGraphml(elements: Elements): string {
   } else {
     console.log('Неизвестная платформа');
   }
-  console.log(structuredClone(xml));
   return builder.build(xml);
 }

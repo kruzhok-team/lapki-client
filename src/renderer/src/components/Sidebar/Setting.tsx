@@ -10,7 +10,6 @@ import { Compiler } from '../Modules/Compiler';
 import { Settings, CompilerSettings, DocSettings } from '../Modules/Settings';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
-
 interface SettingProps {}
 
 const themeOptions = [

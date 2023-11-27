@@ -87,21 +87,17 @@ export const Setting: React.FC<SettingProps> = () => {
             isSearchable={false}
           />
         </div>
+        <br></br>
+        <button className="btn-primary mb-2" onClick={handleCompilerHostChange}>
+          Компилятор…
+        </button>
+        <button className="btn-primary mb-2" onClick={handleDocHostChange}>
+          Док-сервер…
+        </button>
+        <br></br>
         <button className="btn-primary mb-2" onClick={() => setIsModalOpen(true)}>
           О программе
         </button>
-        <div>
-          <button className="btn-primary mb-2" onClick={handleCompilerHostChange}>
-            {' '}
-            Компилятор
-          </button>
-        </div>
-        <div>
-          <button className="btn-primary mb-2" onClick={handleDocHostChange}>
-            {' '}
-            Док-сервер
-          </button>
-        </div>
       </div>
       <ServerSelectModal
         isOpen={isCompilerOpen}

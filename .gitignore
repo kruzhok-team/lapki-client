@@ -4,7 +4,6 @@ out
 *.log*
 
 # custom
-build
 pnpm-lock.yaml
 *.tsbuildinfo
 qt-temp.ts

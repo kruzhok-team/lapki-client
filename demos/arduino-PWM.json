@@ -1,0 +1,180 @@
+{
+  "compilerSettings": {
+    "compiler": "arduino-cli",
+    "filename": "ExampleSketch",
+    "flags": [
+      "-b",
+      "arduino:avr:uno"
+    ]
+  },
+  "components": {
+    "timer": {
+      "parameters": {},
+      "type": "Timer"
+    },
+    "counter": {
+      "parameters": {},
+      "type": "Counter"
+    },
+    "serial": {
+      "parameters": {
+        "baud": "9600"
+      },
+      "type": "QHsmSerial"
+    },
+    "pwm": {
+      "parameters": {
+        "pin": "6"
+      },
+      "type": "PWM"
+    }
+  },
+  "initialState": {
+    "target": "n0",
+    "position": {
+      "x": 96,
+      "y": 264
+    }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno",
+  "states": {
+    "n0": {
+      "bounds": {
+        "x": -73,
+        "y": 448,
+        "width": 450,
+        "height": 145
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "interval": "500"
+              },
+              "component": "timer",
+              "method": "start"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        },
+        {
+          "do": [
+            {
+              "args": {
+                "value": "5"
+              },
+              "component": "counter",
+              "method": "add"
+            },
+            {
+              "args": {
+                "component": "counter",
+                "method": "value"
+              },
+              "component": "pwm",
+              "method": "write"
+            },
+            {
+              "args": {
+                "component": "counter",
+                "method": "value"
+              },
+              "component": "serial",
+              "method": "println"
+            }
+          ],
+          "trigger": {
+            "component": "timer",
+            "method": "timeout"
+          }
+        }
+      ],
+      "name": "add"
+    },
+    "n1": {
+      "bounds": {
+        "x": 90.48,
+        "y": 747.76,
+        "width": 450,
+        "height": 95
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "value": "5"
+              },
+              "component": "counter",
+              "method": "sub"
+            },
+            {
+              "args": {
+                "component": "counter",
+                "method": "value"
+              },
+              "component": "pwm",
+              "method": "write"
+            },
+            {
+              "args": {
+                "component": "counter",
+                "method": "value"
+              },
+              "component": "serial",
+              "method": "println"
+            }
+          ],
+          "trigger": {
+            "component": "timer",
+            "method": "timeout"
+          }
+        }
+      ],
+      "name": "sub"
+    }
+  },
+  "transitions": [
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": -22.04000000000014,
+        "y": 637.7200000000001
+      },
+      "source": "n0",
+      "target": "n1",
+      "trigger": {
+        "args": {
+          "value": "255"
+        },
+        "component": "counter",
+        "method": "isEqual"
+      }
+    },
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 531.2400000000001,
+        "y": 559.3200000000002
+      },
+      "source": "n1",
+      "target": "n0",
+      "trigger": {
+        "args": {
+          "value": "0"
+        },
+        "component": "counter",
+        "method": "isEqual"
+      }
+    }
+  ]
+}

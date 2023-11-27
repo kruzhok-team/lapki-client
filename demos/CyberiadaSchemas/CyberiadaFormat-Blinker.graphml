@@ -20,6 +20,7 @@ description/ Включение и выключение лампочки по т
 
     <node id="init">
         <data key="dInitial"></data>
+        <data key="dGeometry" x="311" y="-94"></data>
     </node>
     
     <node id="LED1">
@@ -41,17 +42,17 @@ description/ Программный таймер.
 
     <node id="diod1">
         <data key="dName">Включен</data>
-        <data key="dData">System.onEnter/
+        <data key="dData">entry/
 LED1.on()
 timer1.start(1000)
         </data>
         <data key="dGeometry" x="82" y="57"
-            width="450" height="95" />
+            width="450.0" height="95" />
     </node>
 
     <node id="diod2">
-        <data key="dName">Включен</data>
-        <data key="dData">System.onEnter/
+        <data key="dName">Выключен</data>
+        <data key="dData">exit/
 LED1.off()
 timer1.start(1000)
         </data>

@@ -1,7 +1,31 @@
 {
+  "components": {
+    "timer": {
+      "parameters": {},
+      "type": "Timer"
+    },
+    "counter": {
+      "parameters": {},
+      "type": "Counter"
+    }
+  },
+  "initialState": {
+    "target": "n0",
+    "position": {
+      "x": -38,
+      "y": 274
+    }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno",
   "states": {
     "n0": {
-      "name": "add",
+      "bounds": {
+        "height": 145,
+        "width": 450,
+        "x": 62,
+        "y": 374
+      },
       "events": [
         {
           "do": [
@@ -34,15 +58,15 @@
           }
         }
       ],
-      "bounds": {
-        "height": 145,
-        "width": 450,
-        "x": 62,
-        "y": 374
-      }
+      "name": "add"
     },
     "n1": {
-      "name": "sub",
+      "bounds": {
+        "height": 95,
+        "width": 450,
+        "x": 613,
+        "y": 240
+      },
       "events": [
         {
           "do": [
@@ -60,19 +84,7 @@
           }
         }
       ],
-      "bounds": {
-        "height": 95,
-        "width": 450,
-        "x": 613,
-        "y": 240
-      }
-    }
-  },
-  "initialState": {
-    "target": "n0",
-    "position": {
-      "x": -38,
-      "y": 274
+      "name": "sub"
     }
   },
   "transitions": [
@@ -81,8 +93,8 @@
       "condition": null,
       "do": [],
       "position": {
-        "x": 361,
-        "y": 127
+        "x": 700.7600000000003,
+        "y": 432.04000000000013
       },
       "source": "n0",
       "target": "n1",
@@ -99,8 +111,8 @@
       "condition": null,
       "do": [],
       "position": {
-        "x": 361,
-        "y": 127
+        "x": 229.55999999999986,
+        "y": 223.71999999999997
       },
       "source": "n1",
       "target": "n0",
@@ -112,17 +124,5 @@
         "method": "isEqual"
       }
     }
-  ],
-  "components": {
-    "timer": {
-      "parameters": {},
-      "type": "Timer"
-    },
-    "counter": {
-      "parameters": {},
-      "type": "Counter"
-    }
-  },
-  "parameters": {},
-  "platform": "ArduinoUno"
+  ]
 }

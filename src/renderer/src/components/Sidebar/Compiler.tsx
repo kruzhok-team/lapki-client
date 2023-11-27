@@ -18,6 +18,7 @@ export interface CompilerProps {
   setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
+  openImportError: (error: string) => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
@@ -29,7 +30,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
 }) => {
   const [importData, setImportData] = useState<string | undefined>(undefined);
-
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 

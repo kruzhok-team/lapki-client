@@ -162,8 +162,6 @@ export class Compiler {
       switch (this.mode) {
         case 'compile':
           data = JSON.parse(msg.data);
-          console.log(msg.data);
-          console.log(typeof data);
           if (data.binary.length > 0) {
             this.binary = [];
             this.decodeBinaries(data.binary);
@@ -180,6 +178,7 @@ export class Compiler {
           break;
         case 'import':
           data = JSON.parse(msg.data);
+          console.log(data);
           // TODO: Сразу распарсить как Elements.
           this.setImportData(JSON.stringify(data.source[0].fileContent));
           break;

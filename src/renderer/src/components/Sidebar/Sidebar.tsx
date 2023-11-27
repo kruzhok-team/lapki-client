@@ -32,12 +32,14 @@ interface SidebarProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
   callbacks: SidebarCallbacks;
+  openImportError: (error: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   editor,
   manager,
   callbacks: { onRequestNewFile, onRequestOpenFile, onRequestSaveFile, onRequestSaveAsFile },
+  openImportError,
 }) => {
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
@@ -47,8 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isEditorDataStale = manager.useData('isStale');
 
-  const handleImport = async (platform: string) => {
-    await manager.import(platform, setOpenData);
+  const handleImport = async () => {
+    await manager.import(setOpenData);
   };
 
   const menus = useMemo(
@@ -70,6 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerData={setCompilerData}
         compilerStatus={compilerStatus}
         setCompilerStatus={setCompilerStatus}
+        openImportError={openImportError}
       />,
       <Loader manager={manager} compilerData={compilerData} />,
       <History editor={editor} />,

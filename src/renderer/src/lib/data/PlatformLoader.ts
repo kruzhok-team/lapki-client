@@ -104,6 +104,10 @@ export function getAvailablePlatforms(): PlatformInfo[] {
   });
 }
 
+export function getPlatform(idx: string) {
+  return platforms.get(idx);
+}
+
 export function loadPlatform(idx: string): PlatformManager | undefined {
   const pfm = platforms.get(idx);
   if (typeof pfm === 'undefined') return undefined;

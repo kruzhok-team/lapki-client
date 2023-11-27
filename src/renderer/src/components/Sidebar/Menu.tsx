@@ -5,7 +5,7 @@ export interface MenuProps {
   onRequestOpenFile: () => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
-  onRequestImport: (platform: string) => void;
+  onRequestImport: () => void;
   compilerStatus: string;
   // TODO: isModified: boolean;
 }
@@ -33,7 +33,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Импорт...',
       onClick: () => {
-        props.onRequestImport('BearlogaDefend');
+        props.onRequestImport();
       },
       disabled: props.compilerStatus !== 'Подключен',
     },
@@ -57,7 +57,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         return props.onRequestOpenFile();
       }
       if (e.code === 'KeyI') {
-        return props.onRequestImport('BearlogaDefend');
+        return props.onRequestImport();
       }
     }
   };

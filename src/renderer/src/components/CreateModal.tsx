@@ -695,7 +695,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   {...register('argsOneElse', {
                     required: 'Это поле обязательно к заполнению!',
                   })}
-                  isElse={isElse}
+                  isHidden={isElse}
                   error={!!errors.argsOneElse}
                   errorMessage={errors.argsOneElse?.message ?? ''}
                 />
@@ -759,7 +759,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   {...register('argsTwoElse', {
                     required: 'Это поле обязательно к заполнению!',
                   })}
-                  isElse={isElse}
+                  isHidden={isElse}
                   error={!!errors.argsTwoElse}
                   errorMessage={errors.argsTwoElse?.message ?? ''}
                 />

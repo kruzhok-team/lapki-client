@@ -40,9 +40,11 @@ export class Compiler {
   private static curReconnectAttemps: number = 1;
   /*  
     максимальное количество автоматических попыток переподключения
-    значение меньше нуля означает, что ограничения на попытки отсутствует
+    значение меньше нуля означает, что ограничение на попытки отсутствует
   */
   private static maxReconnectAttempts: number = 3;
+  // true = пробовать переподключиться
+  private static shouldReconnect: boolean = true;
   static filename: string;
 
   static setDefaultStatus() {
@@ -102,40 +104,57 @@ export class Compiler {
     return result;
   }
 
-  static connect(host: string, port: number, timeout = this.startTimeout) {
+  // Устанавливает новое соединение, закрывая старое. Ничего не делает, если заданный адрес совпадает с текущим и соединение установлено или устанавливается.
+  static async connect(host: string, port: number, timeout = this.startTimeout) {
+    if (this.host == host && this.port == port && (this.connecting || this.checkConnection())) {
+      return;
+    }
     this.timeout = timeout;
     this.host = host;
     this.port = port;
     this.base_address = `ws://${this.host}:${this.port}/main`;
-    Compiler.connectRoute(this.base_address);
+    await Compiler.close();
+    await Compiler.connectRoute(this.base_address);
+  }
+
+  static async close() {
+    this.shouldReconnect = false;
+    await this.connection?.close();
+    clearTimeout(this.timerReconnectID);
+    this.timeoutSetted = false;
+    this.connection = undefined;
+    //console.log('DISCONNECTED');
   }
 
   static reconnect() {
     this.connectRoute(this.base_address);
   }
 
-  static connectRoute(route: string): Websocket {
+  static async connectRoute(route: string): Websocket {
     if (this.checkConnection()) return this.connection!;
     if (this.connecting) return;
+    //console.log('CONNECTING');
     clearTimeout(this.timerReconnectID);
     this.timeoutSetted = false;
     this.setCompilerStatus('Идет подключение...');
     // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
     //   асинхронную ошибку, и никто с этим ничего не может сделать.
-    const ws = new WebSocket(route);
+    console.log('CONNECTING TO', route);
+    //const ws = new WebSocket(route);
+    this.connection = new WebSocket(route);
     this.connecting = true;
 
-    ws.onopen = () => {
+    this.connection.onopen = () => {
       console.log('Compiler: connected');
       this.setCompilerStatus('Подключен');
-      this.connection = ws;
       this.connecting = false;
       this.timeoutSetted = false;
       this.timeout = this.startTimeout;
       this.curReconnectAttemps = 0;
+      this.shouldReconnect = true;
     };
 
-    ws.onmessage = (msg) => {
+    this.connection.onmessage = (msg) => {
       // console.log(msg);
       this.setCompilerStatus('Подключен');
       clearTimeout(this.timerOutID);
@@ -185,7 +204,8 @@ export class Compiler {
       }
     };
 
-    ws.onclose = () => {
+    this.connection.onclose = async () => {
+      //console.log('ROUTE', route, this.base_address, 'SHOULD RECONNECT', this.shouldReconnect);
       if (this.connection) {
         console.log('Compiler: connection closed');
       }
@@ -193,6 +213,7 @@ export class Compiler {
       this.connection = undefined;
       this.connecting = false;
       if (
+        this.shouldReconnect &&
         !this.timeoutSetted &&
         (this.maxReconnectAttempts < 0 || this.curReconnectAttemps < this.maxReconnectAttempts)
       ) {
@@ -203,13 +224,14 @@ export class Compiler {
             this.timeout += 2000;
           }
           this.curReconnectAttemps++;
-          this.connectRoute(route);
+          this.reconnect();
           this.timeoutSetted = false;
         }, this.timeout);
       }
+      //console.log('full disconnection');
     };
 
-    return ws;
+    return this.connection;
   }
 
   static compile(platform: string, data: Elements | string) {

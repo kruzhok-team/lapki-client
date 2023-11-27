@@ -1,0 +1,138 @@
+{
+  "compilerSettings": {
+    "compiler": "arduino-cli",
+    "filename": "ExampleSketch",
+    "flags": [
+      "-b",
+      "arduino:avr:uno"
+    ]
+  },
+  "components": {
+    "timer": {
+      "parameters": {},
+      "type": "Timer"
+    },
+    "serial": {
+      "parameters": {
+        "baud": "9600"
+      },
+      "type": "QHsmSerial"
+    },
+    "digitalOut": {
+      "parameters": {
+        "pin": "6"
+      },
+      "type": "DigitalOut"
+    }
+  },
+  "initialState": {
+    "target": "n0",
+    "position": {
+      "x": 114,
+      "y": 344
+    }
+  },
+  "parameters": {},
+  "platform": "ArduinoUno",
+  "states": {
+    "n0": {
+      "bounds": {
+        "x": 222,
+        "y": 510,
+        "width": 450,
+        "height": 95
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "args": {
+                "interval": "2000"
+              },
+              "component": "timer",
+              "method": "start"
+            },
+            {
+              "component": "digitalOut",
+              "method": "high"
+            },
+            {
+              "args": {
+                "value": "\"High!\""
+              },
+              "component": "serial",
+              "method": "println"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        }
+      ],
+      "name": "add"
+    },
+    "n1": {
+      "bounds": {
+        "x": 545,
+        "y": 324,
+        "width": 450,
+        "height": 95
+      },
+      "events": [
+        {
+          "do": [
+            {
+              "component": "digitalOut",
+              "method": "low"
+            },
+            {
+              "args": {
+                "value": "\"Low!\""
+              },
+              "component": "serial",
+              "method": "println"
+            }
+          ],
+          "trigger": {
+            "component": "System",
+            "method": "onEnter"
+          }
+        }
+      ],
+      "name": "sub"
+    }
+  },
+  "transitions": [
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 309,
+        "y": 345
+      },
+      "source": "n0",
+      "target": "n1",
+      "trigger": {
+        "component": "timer",
+        "method": "timeout"
+      }
+    },
+    {
+      "color": "#F29727",
+      "condition": null,
+      "do": [],
+      "position": {
+        "x": 821,
+        "y": 501
+      },
+      "source": "n1",
+      "target": "n0",
+      "trigger": {
+        "component": "timer",
+        "method": "timeout"
+      }
+    }
+  ]
+}

@@ -14,11 +14,11 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   return (
     <Modal {...props} onRequestClose={onClose} title="О программе">
       <div>
-        Версия: electron v27.1.2
+        <b>Версия:</b> 0.1.0 «Abyssinian»
         <br />
-        Дата релиза: 22 ноября 2023 года
+        <b>Дата релиза:</b> 28 ноября 2023 года
         <br />
-        Ссылка на проект:{' '}
+        <b>Ссылка на проект:</b>{' '}
         <a
           className="text-blue-600 transition duration-150 ease-in-out hover:text-blue-500 focus:text-blue-500 active:text-blue-700"
           href="https://github.com/kruzhok-team/lapki-client"
@@ -26,6 +26,16 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
           rel="noopener noreferrer"
         >
           https://github.com/kruzhok-team/lapki-client
+        </a>
+        <br />
+        <b>Обратная связь:</b>{' '}
+        <a
+          className="text-blue-600 transition duration-150 ease-in-out hover:text-blue-500 focus:text-blue-500 active:text-blue-700"
+          href="https://github.com/kruzhok-team/lapki-client/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          баг-трекер
         </a>
         <br />
       </div>

@@ -233,9 +233,9 @@ export class Compiler {
     return this.connection;
   }
 
-  static compile(platform: string, data: Elements | string) {
-    const route = `${this.base_address}main`;
-    const ws: Websocket = this.connectRoute(route);
+  static async compile(platform: string, data: Elements | string) {
+    const route = this.base_address;
+    const ws: Websocket = await this.connectRoute(route);
     let compilerSettings: CompilerSettings;
     const [mainPlatform, subPlatform] = platform.split('-');
     console.log(mainPlatform, subPlatform);

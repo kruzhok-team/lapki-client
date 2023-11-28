@@ -2,24 +2,25 @@
   "platform": {
     "ArduinoUno": {
       "name": "Arduino Uno",
+      "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!", 
       "components": {
         "Button": {
-          "description": "Hardware Abstraction for Buttons. It provides an easy way of handling buttons.",
+          "description": "Компонент для взаимодействия с физической кнопкой",
           "img": "arduino/button.svg",
           "signals": {
             "isPressed": {
               "img": "arduino/isPressed.svg",
-              "description": "Return true if the button has been pressed"
+              "description": "Создает сигнал, если кнопка была нажата"
             },
             "clicked": {
               "img": "arduino/clicked.svg",
-              "description": "Return > 0 if the button is clicked, or 0 if not."
+              "description": "Создает сигнал, если кнопка была кликнута"
             }
           },
           "parameters": {
             "pin": {
               "type": "uint8_t",
-              "description": "sets the pin that this switch is connected to"
+              "description": "Пин, к которому подключена кнопка"
             },
             "buttonMode": {
               "type": "uint8_t",
@@ -38,13 +39,13 @@
         },
 
         "LED": {
-          "description": "Hardware Abstraction for LEDs. It provides an easy way of handling LEDs.",
+          "description": "Компонент для взаимодействия со светодиодом",
           "img": "arduino/led.svg",
           "signals": {},
           "parameters": {
             "pin": {
               "type": "uint8_t",
-              "description": "pin - the pin connected to this LED"
+              "description": "Пин, к которому подключен светодиод"
             }
           },
           "variables": {
@@ -57,15 +58,15 @@
           "methods": {
             "on": {
               "img": "arduino/switch-on.svg",
-              "description": "Set this LED on"
+              "description": "Зажечь светодиод"
             },
             "off": {
               "img": "arduino/switch-off.svg",
-              "description": "Set this LED off"
+              "description": "Выключить светодиод"
             },
             "toggle": {
               "img": "arduino/toggle.svg",
-              "description": "It will change state from on to off, or off to on"
+              "description": "Меняет состояние кнопки на противоположное"
             },
             "blink": {
               "img": "arduino/blink.svg",
@@ -73,22 +74,22 @@
                 {
                   "name": "times",
                   "type": "byte",
-                  "description": "times the number of blinks"
+                  "description": "Количество миганий"
                 },
                 {
                   "name": "interval",
                   "type": "unsigned int",
-                  "description": "the time each blink will take"
+                  "description": "Длительность мигания"
                 }
               ],
-              "description": "Bling this led a number of times, with the duration of time each blink"
+              "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания"
             }
           },
           "singletone": false
         },
 
         "Timer": {
-          "description": "Программный таймер.",
+          "description": "Программный таймер",
           "img": "arduino/timer.svg",
           "signals": {
             "timeout": {
@@ -236,7 +237,7 @@
             },
             "print": {
               "img": "arduino/print.svg",
-              "description": "Вывести данные в Serial монитор с добавлением.",
+              "description": "Вывести данные в Serial монитор.",
               "parameters": [
                 {
                   "name": "data",

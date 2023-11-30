@@ -258,11 +258,11 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-12 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
+      className="absolute left-1/2 top-12 w-full max-w-sm -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
       overlayClassName="bg-[rgba(0,0,0,0.6)] z-[60] fixed inset-0 backdrop-blur"
       onRequestClose={onClose}
     >
-      <div className="relative mb-3 justify-between border-b border-neutral-400 pb-1">
+      <div className="relative mb-3 justify-between border-b border-border-primary pb-1">
         <h1 className="text-2xl font-bold">Выберите {isEditingEvent ? 'событие' : 'действие'}</h1>
       </div>
       <form onSubmit={handleSubmit}>
@@ -284,19 +284,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
           {parameters?.length > 0 ? <div className="mb-6">{parameters}</div> : ''}
         </div>
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
-            onClick={onClose}
-          >
+          <button type="button" className="btn-secondary" onClick={onClose}>
             {cancelLabel ?? 'Закрыть'}
           </button>
-          <button
-            type="submit"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:enabled:bg-neutral-600"
-            hidden={!onSubmit}
-            disabled={!methods}
-          >
+          <button type="submit" className="btn-primary" hidden={!onSubmit} disabled={!methods}>
             {submitLabel ?? 'Сохранить'}
           </button>
         </div>

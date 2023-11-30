@@ -1,9 +1,10 @@
 import { Controller, useForm } from 'react-hook-form';
 
+import { Select } from '@renderer/components/UI';
+
 import { Modal } from '../Modal/Modal';
 import { TextInput } from '../Modal/TextInput';
 import { Settings } from '../Modules/Settings';
-import { Select } from '../UI';
 
 const SELECT_LOCAL = 'local';
 const SELECT_REMOTE = 'remote';

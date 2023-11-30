@@ -10,7 +10,7 @@
 
 @layer components {
   .btn {
-    @apply rounded border border-transparent px-8 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
+    @apply cursor-pointer select-none rounded border border-transparent px-8 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
   }
 
   .btn-primary {

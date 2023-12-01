@@ -35,6 +35,7 @@
     "@floating-ui/react-dom": "^2.0.1",
     "@headlessui/react": "^1.7.15",
     "@monaco-editor/react": "^4.5.1",
+    "@types/ws": "^8.5.10",
     "@uiw/react-codesandbox": "^1.1.5",
     "blob-util": "^2.0.2",
     "buffer": "^6.0.3",
@@ -58,7 +59,7 @@
     "tailwind-merge": "^1.13.2",
     "ts-json-schema-generator": "^1.2.0",
     "vite-plugin-svgr": "^3.2.0",
-    "ws": "^8.13.0",
+    "ws": "^8.14.2",
     "zustand": "^4.4.1"
   },
   "devDependencies": {

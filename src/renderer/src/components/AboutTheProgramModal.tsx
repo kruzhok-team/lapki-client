@@ -16,7 +16,7 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
       <div>
         <b>Версия:</b> 0.1.0 «Abyssinian»
         <br />
-        <b>Дата релиза:</b> 28 ноября 2023 года
+        <b>Дата релиза:</b> 1 декабря 2023 года
         <br />
         <b>Ссылка на проект:</b>{' '}
         <a

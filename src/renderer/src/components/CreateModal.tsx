@@ -24,6 +24,33 @@ import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
 
+const operandOptions = [
+  {
+    value: 'greater',
+    label: '>',
+  },
+  {
+    value: 'less',
+    label: '<',
+  },
+  {
+    value: 'equals',
+    label: '=',
+  },
+  {
+    value: 'notEquals',
+    label: '!=',
+  },
+  {
+    value: 'greaterOrEqual',
+    label: '>=',
+  },
+  {
+    value: 'lessOrEqual',
+    label: '<=',
+  },
+];
+
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
 type ArgForm = ArgFormEntry[];
@@ -369,7 +396,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <label className="mx-1 flex flex-col">
           {name}
           <input
-            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            className="w-[250px] max-w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none transition-colors"
             value={data}
             name={name}
             onChange={(e) => handleInputChange(e)}
@@ -538,32 +565,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   });
   //-----------------------------------------------------------------------------------------------------
 
-  const selectElse = [
-    {
-      type: 'greater',
-      icon: '>',
-    },
-    {
-      type: 'less',
-      icon: '<',
-    },
-    {
-      type: 'equals',
-      icon: '=',
-    },
-    {
-      type: 'notEquals',
-      icon: '!=',
-    },
-    {
-      type: 'greaterOrEqual',
-      icon: '>=',
-    },
-    {
-      type: 'lessOrEqual',
-      icon: '<=',
-    },
-  ];
   //Срабатывания клика по элементу списка действий и удаление выбранного действия
   const [clickList, setClickList] = useState<number>(0);
 
@@ -646,12 +647,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <div className="my-3 flex items-start">
           <div className="flex items-center">
             <label className="mx-1 font-bold">Если: </label>
-            <label
-              className={twMerge(
-                'btn-primary ml-3 select-none rounded bg-neutral-700 px-3 py-2 transition-colors hover:bg-neutral-500',
-                !isElse && 'bg-neutral-500'
-              )}
-            >
+            <label className={twMerge('btn ml-3 border-primary px-3', !isElse && 'btn-primary')}>
               <input type="checkbox" onChange={handleIsElse} className="h-0 w-0 opacity-0" />
               <span>Условие</span>
             </label>
@@ -701,26 +697,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 />
               )}
             </div>
-            <select
-              className={twMerge(
-                'mb-4 ml-8 w-[60px] rounded border bg-transparent px-1 py-1 text-white',
-                isElse && 'hidden'
-              )}
-              ref={(event) => {
-                if (event !== null) {
-                  setCondOperator(event.value);
-                }
-              }}
-            >
-              {selectElse.map((content) => (
-                <option
-                  key={'option' + content.type}
-                  className="bg-neutral-800"
-                  value={content.type}
-                  label={content.icon}
-                ></option>
-              ))}
-            </select>
+            <Select
+              className={twMerge('max-w-[200px]', isElse && 'hidden')}
+              options={operandOptions}
+              onChange={(v) => setCondOperator((v as any).value)}
+              value={operandOptions.find((opt) => opt.value === condOperator)}
+            />
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -772,12 +754,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
       <div className="my-1 flex">
         <label className="mx-1 mt-2 font-bold">Делай: </label>
-        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
+        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {method.length === 0 ||
             method.map((data, key) => (
               <div
                 key={'Methods' + key}
-                className={twMerge('flex hover:bg-primary', clickList === key && 'bg-primary')}
+                className={twMerge('flex hover:bg-bg-hover', clickList === key && 'bg-bg-active')}
                 onClick={() => setClickList(key)}
                 draggable={true}
                 onDragOver={(event) => event.preventDefault()}
@@ -786,11 +768,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               >
                 <div
                   className={twMerge(
-                    'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-lg border-2 bg-neutral-700 px-1'
+                    'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
                   )}
                 >
                   {machine.platform.getFullComponentIcon(data.component)}
-                  <div className="h-full border-2 border-white"></div>
+                  <div className="h-full w-[2px] bg-border-primary"></div>
                   <img
                     style={{ height: '32px', width: '32px' }}
                     src={machine.platform.getActionIconUrl(data.component, data.method, true)}
@@ -806,19 +788,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             ))}
           {method.length === 0 && <div className="mx-2 my-2 flex text-error">(нет действий)</div>}
         </div>
-        <div className="flex flex-col">
-          <button
-            type="button"
-            className="rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={onOpenEventsModal}
-          >
+        <div className="flex flex-col gap-2">
+          <button type="button" className="btn-secondary p-1" onClick={onOpenEventsModal}>
             <AddIcon />
           </button>
-          <button
-            type="button"
-            className="my-2 rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={deleteMethod}
-          >
+          <button type="button" className="btn-secondary p-1" onClick={deleteMethod}>
             <SubtractIcon />
           </button>
         </div>

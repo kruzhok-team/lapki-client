@@ -12,20 +12,19 @@ interface TextInputProps extends ComponentProps<'input'> {
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   ({ label, isHidden: isElse, error, errorMessage, className, ...props }, ref) => {
     return (
-      <label className={twMerge('mx-1 flex flex-col', error && 'text-red-500', isElse && 'hidden')}>
+      <label className={twMerge('mx-1 flex flex-col', error && 'text-error', isElse && 'hidden')}>
         {label}
         <input
           className={twMerge(
-            'w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal',
-            error && 'border-red-500 placeholder:text-red-500',
-            !error && 'border-neutral-200 text-neutral-50 focus:border-neutral-50',
+            'w-[250px] max-w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none transition-colors',
+            error && 'border-error placeholder:text-error',
             className
           )}
           ref={ref}
           maxLength={20}
           {...props}
         />
-        <p className="min-h-[24px] text-[14px] text-red-500">{errorMessage}</p>
+        <p className="min-h-[24px] text-[14px] text-error">{errorMessage}</p>
       </label>
     );
   }

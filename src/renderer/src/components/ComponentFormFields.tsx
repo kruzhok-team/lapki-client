@@ -37,7 +37,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         <>
           <ComponentFormFieldLabel label="Название:">
             <input
-              className="w-[250px] rounded border bg-transparent px-2 py-1 outline-none"
+              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               maxLength={20}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -46,7 +46,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
           <ComponentFormFieldLabel label="Метка:">
             <input
-              className="w-[250px] rounded border bg-transparent px-2 py-1 outline-none"
+              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               value={parameters['label'] ?? ''}
               name={'label'}
               maxLength={3}
@@ -56,7 +56,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
           <ComponentFormFieldLabel label="Цвет метки:">
             <input
-              className="rounded border bg-transparent outline-none"
+              className="rounded border border-border-primary bg-transparent text-text-primary outline-none"
               value={parameters['labelColor'] ?? '#FFFFFF'}
               name={'labelColor'}
               type="color"
@@ -72,7 +72,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         return (
           <ComponentFormFieldLabel key={idx} label={name + ':'}>
             <input
-              className="w-[250px] rounded border bg-transparent px-2 py-1 outline-none"
+              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               value={value}
               name={name}
               onChange={handleInputChange}

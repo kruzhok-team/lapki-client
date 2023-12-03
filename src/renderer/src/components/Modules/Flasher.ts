@@ -69,7 +69,7 @@ export class Flasher {
     this.reader.onloadend = function (evt) {
       if (evt.target?.readyState == FileReader.DONE) {
         console.log('BLOB');
-        Flasher.connection.send(Flasher.currentBlob);
+        Flasher.connection?.send(this.result as ArrayBuffer);
         Flasher.filePos += Flasher.currentBlob.size;
       }
     };
@@ -139,7 +139,7 @@ export class Flasher {
   }
 
   static getList(): void {
-    this.connection.send(
+    this.connection?.send(
       JSON.stringify({
         type: 'get-list',
         payload: undefined,
@@ -161,7 +161,7 @@ export class Flasher {
   static async connect(
     host: string | undefined = undefined,
     port: number | undefined = undefined
-  ): Websocket {
+  ): Promise<Websocket | undefined> {
     if (this.connecting) return;
     this.connecting = true;
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
@@ -215,8 +215,8 @@ export class Flasher {
 
       this.connecting = false;
       this.setFlasherDevices(new Map());
-      ws.onmessage = (msg: MessageEvent) => {
-        const response = JSON.parse(msg.data) as FlasherMessage;
+      ws.onmessage = (msg: Websocket.MessageEvent) => {
+        const response = JSON.parse(msg.data as string) as FlasherMessage;
         switch (response.type) {
           case 'flash-next-block': {
             this.setFlashing(true);
@@ -410,7 +410,7 @@ export class Flasher {
       type: 'flash-start',
       payload: payload,
     } as FlasherMessage;
-    this.connection.send(JSON.stringify(request));
+    this.connection?.send(JSON.stringify(request));
     this.setFlasherLog('Идет загрузка...');
   }
 
@@ -450,7 +450,7 @@ export class Flasher {
 
   // отмена подключения
   static cancelConnection() {
-    this?.connection.close();
+    this.connection?.close();
     this.clearTimer();
     this.connectionCanceled = true;
     Flasher.curReconnectAttemps = 0;

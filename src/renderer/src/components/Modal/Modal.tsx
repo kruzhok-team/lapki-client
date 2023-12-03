@@ -5,10 +5,11 @@ import ReactModal, { Props } from 'react-modal';
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 
 import './style.css';
+import { twMerge } from 'tailwind-merge';
 
 ReactModal.setAppElement('#root');
 
-interface ModalProps extends Props {
+interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   title: string;
   cancelLabel?: string;
   submitLabel?: string;
@@ -19,6 +20,8 @@ interface ModalProps extends Props {
   onSide?: React.FormEventHandler;
   onSubmit?: React.FormEventHandler;
   submitDisabled?: boolean;
+  className?: string;
+  overlayClassName?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -32,13 +35,21 @@ export const Modal: React.FC<ModalProps> = ({
   onExtra,
   onSide,
   submitDisabled,
+  className,
+  overlayClassName,
   ...props
 }) => {
   return (
     <ReactModal
       {...props}
-      className="absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none"
-      overlayClassName="bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-50"
+      className={twMerge(
+        'absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none',
+        className
+      )}
+      overlayClassName={twMerge(
+        'bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-50',
+        overlayClassName
+      )}
       closeTimeoutMS={100}
     >
       <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">

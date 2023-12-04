@@ -64,10 +64,9 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     const proto = editor?.container.machineController.platform.getComponent(name);
 
     return (
-      <WithHint hint={proto?.description ?? ''} placement="right">
+      <WithHint key={name} hint={proto?.description ?? ''} placement="right">
         {(props) => (
           <div
-            key={name}
             className={twMerge('flex items-center p-1', name == cursor && 'bg-bg-active')}
             onClick={() => onClick(name)}
             onAuxClick={() => onAuxClick(name)}

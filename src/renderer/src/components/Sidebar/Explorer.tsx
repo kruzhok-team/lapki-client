@@ -9,6 +9,8 @@ import { useComponents } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
+import { WithHint } from '../WithHint';
+
 interface ExplorerProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
@@ -58,6 +60,29 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     onRequestAddComponent();
   };
 
+  const renderComponent = (name: string) => {
+    const proto = editor?.container.machineController.platform.getComponent(name);
+
+    return (
+      <WithHint hint={proto?.description ?? ''} placement="right">
+        {(props) => (
+          <div
+            key={name}
+            className={twMerge('flex items-center p-1', name == cursor && 'bg-bg-active')}
+            onClick={() => onClick(name)}
+            onAuxClick={() => onAuxClick(name)}
+            onDoubleClick={() => onCompDblClick(name)}
+            onContextMenu={() => onCompRightClick(name)}
+            {...props}
+          >
+            {editor?.container.machineController.platform?.getFullComponentIcon(name)}
+            <p className="ml-2 line-clamp-1">{name}</p>
+          </div>
+        )}
+      </WithHint>
+    );
+  };
+
   return (
     <section className="flex flex-col" onClick={() => onUnClick()}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -80,19 +105,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
           listItems={Object.keys(components)}
           heightOfItem={10}
           maxItemsToRender={50}
-          renderItem={(key) => (
-            <div
-              key={key}
-              className={twMerge('flex items-center p-1', key == cursor && 'bg-bg-active')}
-              onClick={() => onClick(key)}
-              onAuxClick={() => onAuxClick(key)}
-              onDoubleClick={() => onCompDblClick(key)}
-              onContextMenu={() => onCompRightClick(key)}
-            >
-              {editor?.container.machineController.platform?.getFullComponentIcon(key)}
-              <p className="ml-2 line-clamp-1">{key}</p>
-            </div>
-          )}
+          renderItem={renderComponent}
         />
       </div>
 

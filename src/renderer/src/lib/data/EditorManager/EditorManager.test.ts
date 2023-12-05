@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 
 import { EditorManager } from './EditorManager';
 
-import { emptyElements } from '../../types/diagram';
+import { emptyElements } from '../../../types/diagram';
 
 const em = new EditorManager();
 em.init('basename', 'name', { ...emptyElements(), transitions: [] });

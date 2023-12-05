@@ -43,7 +43,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performOpenFile = async (path?: string) => {
-    const result = await manager?.open(openImportError, path);
+    const result = await manager?.files.open(openImportError, path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -73,12 +73,12 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (idx: string) => {
-    manager?.newFile(idx);
+    manager?.files.newFile(idx);
     clearTabs();
   };
 
   const handleSaveAsFile = async () => {
-    const result = await manager?.saveAs();
+    const result = await manager?.files.saveAs();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
@@ -88,7 +88,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const handleSaveFile = async () => {
-    const result = await manager?.save();
+    const result = await manager?.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {

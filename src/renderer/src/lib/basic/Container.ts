@@ -119,8 +119,8 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.keyboard.on('ctrly', this.machineController.undoRedo.redo);
     this.app.keyboard.on('ctrlc', this.machineController.copySelected);
     this.app.keyboard.on('ctrlv', this.machineController.pasteSelected);
-    this.app.keyboard.on('ctrls', this.app.manager.save);
-    this.app.keyboard.on('ctrlshifta', this.app.manager.saveAs);
+    this.app.keyboard.on('ctrls', this.app.manager.files.save);
+    this.app.keyboard.on('ctrlshifta', this.app.manager.files.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);

@@ -19,7 +19,7 @@ jobs:
         run: curl https://github.com/avrdudes/avrdude/releases/download/v7.2/avrdude-v7.2-windows-x64.zip -o resources/modules/win32/avrdude-v7.2-windows-x64.zip
 
       - name: Check
-        run: ls -la resourses/modules/win32
+        run: ls -la resources/modules/win32
 
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3

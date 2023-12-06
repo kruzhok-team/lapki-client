@@ -23,6 +23,7 @@ import { defaultTransColor } from './DiagramEditor';
 import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
+import { WithHint } from './WithHint';
 
 const operandOptions = [
   {
@@ -128,28 +129,38 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const isEditingEvent = isData === undefined;
 
   const compoEntry = (idx: string) => {
+    const proto = machine.platform.getComponent(idx);
+
     return {
       value: idx,
       label: (
-        <div className="flex items-center">
-          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
-          {idx}
-        </div>
+        <WithHint hint={proto?.description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
+              {idx}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
 
-  const eventEntry = (name: string, compo?: string) => {
+  const eventEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
@@ -169,21 +180,25 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     };
   };
 
-  const conditionEntry = (name: string, compo?: string) => {
+  const conditionEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getVariableIconUrl(
-              compo ? param1Components.value : param2Components.value,
-              name,
-              true
-            )}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getVariableIconUrl(
+                  compo ? param1Components.value : param2Components.value,
+                  name,
+                  true
+                )}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
@@ -215,18 +230,20 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const optionsMethods = !components
     ? []
-    : machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name));
+    : machine.platform
+        .getAvailableEvents(components.value)
+        .map(({ name, description }) => eventEntry(name, undefined, description));
 
   const optionsParam1Methods = !components
     ? []
     : machine.platform
         .getAvailableVariables(param1Components.value)
-        .map(({ name }) => conditionEntry(name, param1Components.value));
+        .map(({ name, description }) => conditionEntry(name, param1Components.value, description));
   const optionsParam2Methods = !components
     ? []
     : machine.platform
         .getAvailableVariables(param2Components.value)
-        .map(({ name }) => conditionEntry(name, param2Components.value));
+        .map(({ name, description }) => conditionEntry(name, param2Components.value, description));
 
   const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
   const [param1Methods, setParam1Methods] = useState<SelectOption | null>(optionsParam1Methods[0]);

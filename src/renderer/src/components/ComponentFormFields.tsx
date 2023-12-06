@@ -70,7 +70,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         const name = param.name ?? idx;
         const value = parameters[name] ?? '';
         return (
-          <ComponentFormFieldLabel key={idx} label={name + ':'}>
+          <ComponentFormFieldLabel key={idx} label={name + ':'} hint={param.description}>
             <input
               className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               value={value}

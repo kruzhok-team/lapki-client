@@ -15,6 +15,12 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+      - name: Download a file
+        run: |
+          wget https://github.com/avrdudes/avrdude/releases/download/v7.2/avrdude-v7.2-windows-x86.zip -O resources/modules/win32/avrdude.zip
+          unzip resources/modules/win32/avrdude.zip -d resources/modules/win32
+          rm -f resources/modules/win32/avrdude.zip
+
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
         with:

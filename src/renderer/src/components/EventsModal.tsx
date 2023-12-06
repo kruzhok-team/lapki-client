@@ -10,6 +10,8 @@ import { State } from '@renderer/lib/drawable/State';
 import { Action, Event } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
+import { WithHint } from './WithHint';
+
 import { EventSelection } from '../lib/drawable/Events';
 
 type ArgSet = { [k: string]: string };
@@ -54,43 +56,57 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const isEditingEvent = props.isData?.event.actionIdx === null;
 
   const compoEntry = (idx: string) => {
+    const proto = machine.platform.getComponent(idx);
+
     return {
       value: idx,
       label: (
-        <div className="flex items-center">
-          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
-          {idx}
-        </div>
+        <WithHint hint={proto?.description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
+              {idx}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
 
-  const eventEntry = (name: string, compo?: string) => {
+  const eventEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
 
-  const actionEntry = (name: string, compo?: string) => {
+  const actionEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
@@ -107,8 +123,12 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const optionsMethods = !components
     ? []
     : isEditingEvent
-    ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
-    : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
+    ? machine.platform
+        .getAvailableEvents(components.value)
+        .map(({ name, description }) => eventEntry(name, undefined, description))
+    : machine.platform
+        .getAvailableMethods(components.value)
+        .map(({ name, description }) => actionEntry(name, undefined, description));
 
   const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
 

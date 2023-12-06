@@ -65,7 +65,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'code',
               name: manager.data.name ?? 'Безымянная',
-              code: manager.getDataSerialized('JSON'),
+              code: manager.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -133,7 +133,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'state',
               name: state.data.name,
-              code: manager.getStateSerialized(state.id) ?? '',
+              code: manager.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -248,7 +248,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               openTab({
                 type: 'transition',
                 name: transition.id,
-                code: manager.getTransitionSerialized(transition.id) ?? '',
+                code: manager.serializer.getTransition(transition.id) ?? '',
                 language: 'json',
               });
             },

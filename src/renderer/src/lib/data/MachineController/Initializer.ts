@@ -1,3 +1,5 @@
+import { InitialState } from '@renderer/types/diagram';
+
 import { MachineController } from './MachineController';
 
 import { State } from '../../drawable/State';
@@ -48,6 +50,7 @@ export class Initializer {
       this.container.statesController.unwatchState(value);
     });
     this.states.clear();
+    this.container.statesController.clearInitialStateMark();
     this.transitions.clear();
     this.undoRedo.clear();
   }
@@ -76,9 +79,7 @@ export class Initializer {
     }
 
     const initialState = this.container.app.manager.data.elements.initialState;
-    if (initialState) {
-      this.machineController.createInitialState(initialState.target, initialState.position, false);
-    }
+    if (initialState) this.createInitialStateView(initialState);
   }
 
   private initTransitions() {
@@ -139,5 +140,12 @@ export class Initializer {
     this.transitions.set(id, transition);
     this.machineController.linkTransition(id);
     this.container.transitionsController.watchTransition(transition);
+  }
+
+  private createInitialStateView(data: InitialState) {
+    const target = this.states.get(data.target);
+    if (!target) return;
+
+    this.container.statesController.initInitialStateMark();
   }
 }

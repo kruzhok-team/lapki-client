@@ -13,7 +13,6 @@ import {
   Flasher,
 } from '@renderer/components/Modules/Flasher';
 import { FlasherSelectModal } from '@renderer/components/serverSelect/FlasherSelectModal';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device } from '@renderer/types/FlasherTypes';
 
@@ -22,11 +21,10 @@ import { Settings } from '../Modules/Settings';
 const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
 
 export interface FlasherProps {
-  manager: EditorManager | null;
   compilerData: CompilerResult | undefined;
 }
 
-export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
+export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -54,7 +52,7 @@ export const Loader: React.FC<FlasherProps> = ({ manager, compilerData }) => {
   const isActive = (id: string) => currentDevice === id;
 
   const handleGetList = async () => {
-    manager?.getList();
+    Flasher.getList();
   };
 
   const handleFlash = async () => {

@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isEditorDataStale = manager.useData('isStale');
 
   const handleImport = async () => {
-    await manager.import(setOpenData);
+    await manager.files.import(setOpenData);
   };
 
   const menus = useMemo(
@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader manager={manager} compilerData={compilerData} />,
+      <Loader compilerData={compilerData} />,
       <History editor={editor} />,
       <Setting />,
     ],

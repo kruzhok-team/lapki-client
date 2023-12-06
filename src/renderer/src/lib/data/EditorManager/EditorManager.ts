@@ -1,12 +1,8 @@
-import { Dispatch, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 
 import { customAlphabet } from 'nanoid';
 
-import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Flasher } from '@renderer/components/Modules/Flasher';
-import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import {
-  emptyElements,
   Event,
   Action,
   Transition,
@@ -27,22 +23,13 @@ import {
   ChangeStateEventsParams,
   AddComponentParams,
 } from '@renderer/types/EditorManager';
-import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
-import { importGraphml, exportGraphml } from './GraphmlParser';
-import { isPlatformAvailable } from './PlatformLoader';
+import { FilesManager } from './FilesManager';
+import { Serializer } from './Serializer';
 
-import ElementsJSONCodec from '../codecs/ElementsJSONCodec';
-import { EventSelection } from '../drawable/Events';
-import { stateStyle } from '../styles';
-
-export type FileError = {
-  name: string;
-  content: string;
-};
-
-type SaveMode = 'JSON' | 'Cyberiada';
+import { EventSelection } from '../../drawable/Events';
+import { stateStyle } from '../../styles';
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
@@ -55,25 +42,16 @@ type SaveMode = 'JSON' | 'Cyberiada';
 export class EditorManager {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
+  files = new FilesManager(this);
+  serializer = new Serializer(this);
 
   resetEditor?: () => void;
 
   init(basename: string | null, name: string, elements: Elements) {
     this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
+    this.triggerDataUpdate('isInitialized');
 
     this.data = emptyEditorData();
-
-    const self = this;
-    this.data = new Proxy(this.data, {
-      set(target, prop, val, receiver) {
-        const result = Reflect.set(target, prop, val, receiver);
-
-        self.dataListeners[prop].forEach((listener) => listener());
-
-        return result;
-      },
-    });
-
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = {
@@ -86,21 +64,12 @@ export class EditorManager {
     };
     this.data.isInitialized = true;
 
-    this.data.elements = new Proxy(this.data.elements, {
-      set(target, key, val, receiver) {
-        const result = Reflect.set(target, key, val, receiver);
-        self.dataListeners[`elements.${String(key)}`].forEach((listener) => listener());
-
-        self.data.isStale = true;
-
-        return result;
-      },
-    });
+    this.triggerDataUpdate('basename', 'name', 'elements', 'isInitialized', 'isStale');
 
     this.resetEditor?.();
   }
 
-  subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
+  private subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
     this.dataListeners[propertyName].push(listener);
 
     return () => {
@@ -127,199 +96,24 @@ export class EditorManager {
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
-  newFile(platformIdx: string) {
-    if (!isPlatformAvailable(platformIdx)) {
-      throw Error('unknown platform ' + platformIdx);
-    }
+  private triggerDataUpdate<T extends EditorDataPropertyName>(...propertyNames: T[]) {
+    const isShallow = (propertyName: string): propertyName is keyof EditorData => {
+      return !propertyName.startsWith('elements.');
+    };
 
-    const elements = emptyElements();
-    (elements.transitions as any) = [];
-    elements.platform = platformIdx;
-    this.init(null, 'Без названия', elements as any);
-  }
+    for (const name of propertyNames) {
+      if (!isShallow(name)) {
+        this.data.elements[name.split('.')[1]] = {
+          ...this.data.elements[name.split('.')[1]],
+        };
 
-  compile() {
-    Compiler.compile(this.data.elements.platform, {
-      ...this.data.elements,
-      transitions: Object.values(this.data.elements.transitions),
-    });
-  }
-
-  getList(): void {
-    Flasher.getList();
-  }
-
-  parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
-    if (openData[0]) {
-      try {
-        const data = ElementsJSONCodec.toElements(importData);
-        if (!isPlatformAvailable(data.platform)) {
-          return makeLeft({
-            name: openData[1]!,
-            content: `Незнакомая платформа "${data.platform}".`,
-          });
-        }
-        this.init(
-          openData[1]!.replace('.graphml', '.json'),
-          openData[2]!.replace('.graphml', '.json'),
-          data
-        );
-
-        return makeRight(null);
-      } catch (e) {
-        let errText = 'unknown error';
-        if (typeof e === 'string') {
-          errText = e.toUpperCase();
-        } else if (e instanceof Error) {
-          errText = e.message;
-        }
-        return makeLeft({
-          name: openData[1]!,
-          content: 'Ошибка формата: ' + errText,
-        });
+        this.data.isStale = true;
+        this.dataListeners['isStale'].forEach((listener) => listener());
       }
-    } else if (openData[1]) {
-      return makeLeft({
-        name: openData[1]!,
-        content: openData[3]!,
-      });
-    }
-    return makeLeft(null);
-  }
 
-  async import(setImportData: Dispatch<[boolean, string | null, string | null, string]>) {
-    const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada');
-    if (openData[0]) {
-      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
-      setImportData(openData);
+      this.dataListeners[name].forEach((listener) => listener());
     }
   }
-
-  async open(
-    openImportError: (error: string) => void,
-    path?: string
-  ): Promise<Either<FileError | null, null>> {
-    const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada', path);
-    if (openData[0]) {
-      try {
-        const data = importGraphml(openData[3], openImportError);
-
-        if (!isPlatformAvailable(data.platform)) {
-          return makeLeft({
-            name: openData[1]!,
-            content: `Незнакомая платформа "${data.platform}".`,
-          });
-        }
-
-        this.init(openData[1] ?? '', openData[2] ?? '', data);
-
-        return makeRight(null);
-      } catch (e) {
-        let errText = 'unknown error';
-        if (typeof e === 'string') {
-          errText = e.toUpperCase();
-        } else if (e instanceof Error) {
-          errText = e.message;
-        }
-        return makeLeft({
-          name: openData[1]!,
-          content: 'Ошибка формата: ' + errText,
-        });
-      }
-    } else if (openData[1]) {
-      return makeLeft({
-        name: openData[1]!,
-        content: openData[3]!,
-      });
-    }
-    return makeLeft(null);
-  }
-
-  async saveIntoFolder(data: Array<SourceFile | Binary>) {
-    await window.electron.ipcRenderer.invoke('dialog:saveIntoFolder', data);
-  }
-
-  async startLocalModule(module: string) {
-    await window.electron.ipcRenderer.invoke('Module:startLocalModule', module);
-  }
-
-  getDataSerialized(saveMode: SaveMode) {
-    switch (saveMode) {
-      case 'JSON':
-        return JSON.stringify(
-          { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
-          undefined,
-          2
-        );
-      case 'Cyberiada':
-        return exportGraphml({
-          ...this.data.elements,
-          transitions: Object.values(this.data.elements.transitions),
-        });
-    }
-  }
-
-  getStateSerialized(id: string) {
-    const state = this.data.elements.states[id];
-    if (!state) return null;
-
-    return JSON.stringify(state, undefined, 2);
-  }
-
-  getTransitionSerialized(id: string) {
-    const transition = this.data.elements.transitions[id];
-    if (!transition) return null;
-
-    return JSON.stringify(transition, undefined, 2);
-  }
-
-  async stopLocalModule(module: string) {
-    await window.electron.ipcRenderer.invoke('Module:stopLocalModule', module);
-  }
-
-  save = async (): Promise<Either<FileError | null, null>> => {
-    if (!this.data.isInitialized) return makeLeft(null);
-    if (!this.data.basename) {
-      return await this.saveAs();
-    }
-    const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
-      'dialog:saveFile',
-      this.data.basename,
-      this.getDataSerialized('Cyberiada')
-    );
-    if (saveData[0]) {
-      this.data.basename = saveData[1];
-      this.data.name = saveData[2];
-
-      return makeRight(null);
-    } else {
-      return makeLeft({
-        name: saveData[1],
-        content: saveData[2],
-      });
-    }
-  };
-
-  saveAs = async (): Promise<Either<FileError | null, null>> => {
-    if (!this.data.isInitialized) return makeLeft(null);
-    const data = this.getDataSerialized('Cyberiada');
-    const saveData: [boolean, string | null, string | null] =
-      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
-    if (saveData[0]) {
-      this.data.basename = saveData[1];
-      this.data.name = saveData[2];
-
-      return makeRight(null);
-    } else if (saveData[1]) {
-      return makeLeft({
-        name: saveData[1]!,
-        content: saveData[2]!,
-      });
-    }
-    return makeLeft(null);
-  };
 
   createState(args: CreateStateParameters) {
     const { name, parentId, id, events = [], placeInCenter = false } = args;
@@ -354,6 +148,8 @@ export class EditorManager {
       name,
       parent: parentId,
     };
+
+    this.triggerDataUpdate('elements.states');
 
     return newId;
   }
@@ -390,6 +186,8 @@ export class EditorManager {
       }
     }
 
+    this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -397,6 +195,8 @@ export class EditorManager {
     if (!this.data.elements.states.hasOwnProperty(id)) return false;
 
     this.data.elements.states[id].name = name;
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -406,6 +206,8 @@ export class EditorManager {
     if (!state) return false;
 
     state.bounds = bounds;
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -417,6 +219,8 @@ export class EditorManager {
     if (!parent || !child) return false;
 
     child.parent = parentId;
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -432,6 +236,8 @@ export class EditorManager {
 
     delete state.parent;
 
+    this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -440,6 +246,8 @@ export class EditorManager {
     if (!state) return false;
 
     delete this.data.elements.states[id];
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -450,6 +258,8 @@ export class EditorManager {
 
     this.data.elements.initialState = initialState;
 
+    this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -458,11 +268,15 @@ export class EditorManager {
 
     this.data.elements.initialState.position = position;
 
+    this.triggerDataUpdate('elements.initialState');
+
     return true;
   }
 
   deleteInitialState() {
     this.data.elements.initialState = null;
+
+    this.triggerDataUpdate('elements.initialState');
 
     return true;
   }
@@ -477,6 +291,8 @@ export class EditorManager {
       state.events.push(eventData);
     }
 
+    this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -487,6 +303,8 @@ export class EditorManager {
     const { eventIdx, actionIdx } = event;
 
     state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -516,6 +334,8 @@ export class EditorManager {
     // state.events.splice(eventIdx, 1);
     // }
 
+    this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -527,6 +347,8 @@ export class EditorManager {
 
     state.events[eventIdx].do[actionIdx as number] = newValue;
 
+    this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -535,6 +357,8 @@ export class EditorManager {
     if (!state) return false;
 
     state.events.splice(eventIdx, 1);
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -546,6 +370,8 @@ export class EditorManager {
     const { eventIdx, actionIdx } = event;
 
     state.events[eventIdx].do.splice(actionIdx as number, 1);
+
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -587,6 +413,8 @@ export class EditorManager {
       condition,
     };
 
+    this.triggerDataUpdate('elements.transitions');
+
     return String(newId);
   }
 
@@ -611,6 +439,8 @@ export class EditorManager {
     transition.do = doAction;
     transition.condition = condition;
 
+    this.triggerDataUpdate('elements.transitions');
+
     return true;
   }
 
@@ -620,6 +450,8 @@ export class EditorManager {
 
     transition.position = position;
 
+    this.triggerDataUpdate('elements.transitions');
+
     return true;
   }
 
@@ -628,6 +460,8 @@ export class EditorManager {
     if (!transition) return false;
 
     delete this.data.elements.transitions[id];
+
+    this.triggerDataUpdate('elements.transitions');
 
     return true;
   }
@@ -643,8 +477,7 @@ export class EditorManager {
       parameters,
     };
 
-    // TODO Выглядит костыльно
-    this.data.elements.components = { ...this.data.elements.components };
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -655,8 +488,7 @@ export class EditorManager {
 
     component.parameters = parameters;
 
-    // TODO Выглядит костыльно
-    this.data.elements.components = { ...this.data.elements.components };
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -669,8 +501,7 @@ export class EditorManager {
 
     delete this.data.elements.components[name];
 
-    // TODO Выглядит костыльно
-    this.data.elements.components = { ...this.data.elements.components };
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -681,8 +512,7 @@ export class EditorManager {
 
     delete this.data.elements.components[name];
 
-    // TODO Выглядит костыльно
-    this.data.elements.components = { ...this.data.elements.components };
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }

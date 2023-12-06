@@ -166,7 +166,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
       <DiagramContextMenu {...contextMenu} />
       <StateNameModal {...stateName} />
 
-      {editor !== null ? (
+      {editor && (
         <CreateEventsModal
           editor={editor}
           manager={manager}
@@ -175,8 +175,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({ manager, editor, s
           onClose={closeEventsModal}
           onSubmit={handleCreateEventsModal}
         />
-      ) : (
-        ''
       )}
 
       {isModalOpen ? (

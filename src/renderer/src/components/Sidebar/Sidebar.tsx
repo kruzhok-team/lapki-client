@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
-import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
+import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
@@ -90,22 +90,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
+        hint: 'Меню',
       },
       {
         Icon: <ComponentsIcon />,
+        hint: 'Компоненты',
       },
       {
         Icon: <CompilerIcon />,
+        hint: 'Компилятор',
       },
       {
-        Icon: <DriveIcon />,
+        Icon: <FlasherIcon />,
+        hint: 'Загрузчик',
       },
       {
         Icon: <HistoryIcon />,
+        hint: 'История изменений',
         bottom: true,
       },
       {
         Icon: <SettingsIcon />,
+        hint: 'Настройки',
       },
     ],
     [isEditorDataStale]

@@ -20,7 +20,6 @@ import {
   handleBinFileOpen,
   handleOpenPlatformFile,
 } from './file-handlers';
-import { getAllTemplates } from './getAllTemplates';
 import {
   FLASHER_LOCAL_PORT,
   LAPKI_FLASHER,
@@ -28,6 +27,7 @@ import {
   ModuleStatus,
 } from './modules/ModuleManager';
 import { searchPlatforms } from './PlatformSeacher';
+import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
 
@@ -195,6 +195,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('getAllTemplates', getAllTemplates);
+  ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

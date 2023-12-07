@@ -44,7 +44,7 @@ export const App: React.FC = () => {
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const { saveModalProps, operations, performNewFile } = useFileOperations({
+  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate } = useFileOperations({
     manager,
     openLoadError,
     openCreateSchemeModal,
@@ -110,6 +110,8 @@ export const App: React.FC = () => {
             isOpen={isCreateSchemeModalOpen}
             onCreate={performNewFile}
             onClose={closeCreateSchemeModal}
+            onCreateFromTemplate={handleOpenFromTemplate}
+            manager={manager}
           />
         </div>
       </ThemeContext.Provider>

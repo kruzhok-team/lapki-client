@@ -1,59 +1,57 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
-// import { twMerge } from 'tailwind-merge';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 import { PlatformSelection } from './PlatformSelection';
+import { TemplateSelection } from './TemplateSelection';
 
 import { Modal } from '../Modal/Modal';
 import { TabPanel } from '../UI/Tabs/TabPanel';
 import { Tabs } from '../UI/Tabs/Tabs';
 
-interface Templates {
-  [type: string]: { name: string; data: string }[];
-}
-
 interface CreateSchemeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (idx: string) => void;
+  onCreateFromTemplate: (type: string, name: string) => void;
+  manager: EditorManager;
 }
 
 export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   onClose,
   onCreate,
+  onCreateFromTemplate,
+  manager,
   ...props
 }) => {
   const [tabValue, setTabValue] = useState(0);
 
   const [selectedPlatformIdx, setSelectedPlatformIdx] = useState<string | null>(null);
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [templates, setTemplates] = useState({} as Templates);
+  const [selectedTemplate, setSelectedTemplate] = useState<{ type: string; name: string } | null>(
+    null
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // if (!selectedPlatformIdx) return;
+    if (tabValue === 0) {
+      if (!selectedPlatformIdx) return;
 
-    // onCreate(selectedPlatformIdx);
+      onCreate(selectedPlatformIdx);
+    } else if (tabValue === 1) {
+      if (!selectedTemplate) return;
+
+      const { type, name } = selectedTemplate;
+      onCreateFromTemplate(type, name);
+    }
+
     handleCLose();
   };
 
   const handleCLose = () => {
     onClose();
-    // setSelectedPlatformIdx(null);
+    setSelectedPlatformIdx(null);
   };
-
-  useEffect(() => {
-    const fn = async () => {
-      const data = (await window.electron.ipcRenderer.invoke('getAllTemplates')) as Templates;
-
-      setTemplates(data);
-      setIsLoading(false);
-    };
-
-    fn();
-  }, []);
 
   return (
     <Modal
@@ -77,7 +75,11 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
       </TabPanel>
 
       <TabPanel value={1} tabValue={tabValue}>
-        {isLoading ? 'Loading...' : Object.keys(templates).map((name) => <div>{name}</div>)}
+        <TemplateSelection
+          selectedTemplate={selectedTemplate}
+          setSelectedTemplate={setSelectedTemplate}
+          manager={manager}
+        />
       </TabPanel>
     </Modal>
   );

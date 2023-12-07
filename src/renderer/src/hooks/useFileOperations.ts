@@ -56,6 +56,13 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       clearTabs();
     }
   };
+
+  const handleOpenFromTemplate = (type: string, name: string) => {
+    manager.files.createFromTemplate(type, name, openImportError);
+
+    clearTabs();
+  };
+
   //Создание нового файла
   const handleNewFile = async () => {
     if (isStale) {
@@ -137,5 +144,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       onRequestSaveAsFile: handleSaveAsFile,
     },
     performNewFile,
+    handleOpenFromTemplate,
   };
 };

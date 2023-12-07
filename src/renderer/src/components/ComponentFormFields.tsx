@@ -46,7 +46,10 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             />
           </ComponentFormFieldLabel>
 
-          <ComponentFormFieldLabel label="Метка:">
+          <ComponentFormFieldLabel
+            label="Метка:"
+            hint="До 3-х символов. Метка нужна для различения разных компонентов одного типа."
+          >
             <input
               className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               value={parameters['label'] ?? ''}

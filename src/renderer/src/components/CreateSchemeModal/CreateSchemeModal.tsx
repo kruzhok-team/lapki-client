@@ -54,12 +54,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   };
 
   return (
-    <Modal
-      {...props}
-      onRequestClose={handleCLose}
-      onSubmit={handleSubmit}
-      title="Выберите платформу"
-    >
+    <Modal {...props} onRequestClose={handleCLose} onSubmit={handleSubmit} title="Создание схемы">
       <Tabs
         className="mb-4"
         tabs={['Создать пустую', 'Выбрать шаблон']}

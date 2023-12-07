@@ -20,6 +20,7 @@ import {
   handleBinFileOpen,
   handleOpenPlatformFile,
 } from './file-handlers';
+import { getAllTemplates } from './getAllTemplates';
 import {
   FLASHER_LOCAL_PORT,
   LAPKI_FLASHER,
@@ -192,6 +193,8 @@ app.whenReady().then(() => {
   ipcMain.handle('Flasher:getPort', (_event) => {
     return FLASHER_LOCAL_PORT;
   });
+
+  ipcMain.handle('getAllTemplates', getAllTemplates);
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

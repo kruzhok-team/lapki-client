@@ -29,6 +29,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     setParameters({ ...parameters });
   };
 
+  const protoParametersArray = Object.entries(protoParameters);
+
   return (
     <div className="flex flex-col gap-2">
       <h3 className="mb-1 text-xl">Параметры:</h3>
@@ -66,7 +68,9 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         </>
       )}
 
-      {Object.entries(protoParameters).map(([idx, param]) => {
+      {!showMainData && !protoParametersArray.length && 'У данного компонента нет параметров'}
+
+      {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
         const value = parameters[name] ?? '';
         return (

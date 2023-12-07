@@ -1,8 +1,9 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { findFreePort } from './freePortFinder';
 import path from 'path';
-export var FLASHER_LOCAL_HOST: string = 'localhost';
-export var FLASHER_LOCAL_PORT: number;
+
+import { findFreePort } from './freePortFinder';
+export const FLASHER_LOCAL_HOST: string = 'localhost';
+export let FLASHER_LOCAL_PORT: number;
 // название локального загрузчика
 export const LAPKI_FLASHER: string = 'lapki-flasher';
 
@@ -47,7 +48,7 @@ export class ModuleManager {
       const basePath = path
         .join(__dirname, '../../resources')
         .replace('app.asar', 'app.asar.unpacked'); // process.resourcesPath;
-      var chprocess;
+      let chprocess;
       /*
         параметры локального загрузчика:
           -address string
@@ -66,26 +67,41 @@ export class ModuleManager {
               выводить в консоль подробную информацию
           -alwaysUpdate
               всегда искать устройства и обновлять их список, даже когда ни один клиент не подключён (в основном требуется для тестирования)
+          -stub
+              количество ненастоящих, симулируемых устройств, которые будут восприниматься как настоящие, применяется для тестирования, при значении 0 или меньше фальшивые устройства не добавляются (по-умолчанию 0)
+          -avrdudePath 
+              путь к avrdude (напишите avrdude, если нужно, чтобы использовался системный путь) (по-умолчанию avrdude.exe)
+          -configPath 
+              путь к файлу конфигурации avrdude (по-умолчанию '')
       */
-      var flasherArgs: string[] = [
+      const flasherArgs: string[] = [
         '-updateList=1',
         '-listCooldown=0',
         `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
+        `-verbose`,
       ];
       let modulePath: string = '';
       switch (platform) {
-        case 'linux':
-          modulePath = `${basePath}/modules/${platform}/${module}`;
+        case 'linux': {
+          const osPath = `${basePath}/modules/${platform}`;
+          modulePath = `${osPath}/${module}`;
+          flasherArgs.push(`-avrdudePath=${osPath}/avrdude`);
+          flasherArgs.push(`-configPath=${osPath}/avrdude.conf`);
           break;
-        case 'win32':
-          modulePath = `${basePath}\\modules\\${platform}\\${module}.exe`;
+        }
+        case 'win32': {
+          const osPath = `${basePath}\\modules\\${platform}`;
+          modulePath = `${osPath}\\${module}.exe`;
+          flasherArgs.push(`-avrdudePath=${osPath}\\avrdude.exe`);
+          flasherArgs.push(`-configPath=${osPath}\\avrdude.conf`);
           break;
+        }
         default:
           this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
       if (modulePath) {
-        console.log(modulePath);
+        console.log(modulePath, flasherArgs);
         chprocess = spawn(modulePath, flasherArgs);
         chprocess.on('error', function (err) {
           if (err.code == 'ENOENT') {

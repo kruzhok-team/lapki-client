@@ -78,7 +78,6 @@ export class ModuleManager {
         '-updateList=1',
         '-listCooldown=0',
         `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
-        `-verbose`,
       ];
       let modulePath: string = '';
       switch (platform) {

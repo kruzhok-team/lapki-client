@@ -55,7 +55,11 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
   };
 
   return (
-    <WithHint hint="Нажмите ⏎, чтобы применить" placement="top-end">
+    <WithHint
+      hint="Нажмите ⏎, чтобы применить"
+      offset={{ crossAxis: -20, mainAxis: 10 }}
+      placement="top-end"
+    >
       {(props) => (
         <input
           {...props}

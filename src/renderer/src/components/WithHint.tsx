@@ -10,6 +10,7 @@ import {
   FloatingArrow,
   arrow,
   Placement,
+  OffsetOptions,
 } from '@floating-ui/react';
 import { createPortal } from 'react-dom';
 
@@ -18,7 +19,7 @@ import { getColor } from '@renderer/theme';
 interface WithHintProps {
   children: (props: Record<string, any>) => React.ReactNode;
   hint: React.ReactNode;
-  offset?: number;
+  offset?: OffsetOptions;
   placement?: Placement;
 }
 

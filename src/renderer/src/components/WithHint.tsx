@@ -18,6 +18,7 @@ interface WithHintProps {
   hint: string;
   offset?: number;
   placement?: Placement;
+  delay?: number;
 }
 
 export const WithHint: React.FC<WithHintProps> = ({
@@ -25,6 +26,7 @@ export const WithHint: React.FC<WithHintProps> = ({
   hint,
   offset = 10,
   placement = 'bottom',
+  delay,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,7 +44,9 @@ export const WithHint: React.FC<WithHintProps> = ({
       }),
     ],
   });
-  const hover = useHover(context);
+  const hover = useHover(context, {
+    delay,
+  });
   const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
 
   return (

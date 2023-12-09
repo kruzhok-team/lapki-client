@@ -50,6 +50,8 @@ function createWindow(): void {
     },
   });
 
+  let shouldClose = false; // Флаг для того чтобы можно было закрыть на крестик после открытия окна сохранения
+
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.control && input.code === 'KeyW') {
       event.preventDefault();
@@ -67,10 +69,13 @@ function createWindow(): void {
 
   //Запрос в область рендера
   mainWindow.on('close', (e) => {
-    if (mainWindow) {
+    if (!mainWindow) return;
+
+    if (!shouldClose) {
       e.preventDefault();
       mainWindow.webContents.send('app-close');
     }
+    shouldClose = true;
   });
 
   //Получаем ответ из рендера и закрываем приложение

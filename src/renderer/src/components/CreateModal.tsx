@@ -650,12 +650,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           value={methods}
           isSearchable={false}
         />
-        {isData &&
-          (dataDo ? (
-            <p className="text-success">✔</p>
-          ) : (
-            <p className="text-orange-500">(новое событие)</p>
-          ))}
+        {isData && (dataDo ? <p className="text-success">✔</p> : <p>(Новое событие)</p>)}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
@@ -803,7 +798,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
-          {method.length === 0 && <div className="mx-2 my-2 flex text-error">(нет действий)</div>}
+          {method.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
         </div>
         <div className="flex flex-col gap-2">
           <button type="button" className="btn-secondary p-1" onClick={onOpenEventsModal}>

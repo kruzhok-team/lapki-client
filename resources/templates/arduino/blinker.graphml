@@ -35,7 +35,7 @@ pin/ 12
     <node id="timer1">
         <data key="dName">timer1</data>
         <data key="dData">type/ Timer
-name/ Светодиод
+name/ Таймер
 description/ Программный таймер.
         </data>
     </node>

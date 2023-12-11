@@ -10,13 +10,16 @@ import {
   FloatingArrow,
   arrow,
   Placement,
+  OffsetOptions,
 } from '@floating-ui/react';
 import { createPortal } from 'react-dom';
 
+import { getColor } from '@renderer/theme';
+
 interface WithHintProps {
   children: (props: Record<string, any>) => React.ReactNode;
-  hint: string;
-  offset?: number;
+  hint: React.ReactNode;
+  offset?: OffsetOptions;
   placement?: Placement;
   delay?: number;
 }
@@ -60,12 +63,18 @@ export const WithHint: React.FC<WithHintProps> = ({
         hint &&
         createPortal(
           <div
-            className="z-[100] max-w-sm rounded-sm bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
+            className="z-[100] max-w-sm rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
             ref={refs.setFloating}
             style={floatingStyles}
             {...getFloatingProps()}
           >
-            <FloatingArrow className="fill-bg-secondary" ref={arrowRef} context={context} />
+            <FloatingArrow
+              className="fill-bg-secondary"
+              ref={arrowRef}
+              context={context}
+              stroke={getColor('border-primary')}
+              strokeWidth={0.5}
+            />
             {hint}
           </div>,
           document.body

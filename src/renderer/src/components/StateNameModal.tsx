@@ -3,6 +3,8 @@ import React, { useLayoutEffect, useState } from 'react';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
 
+import { WithHint } from './WithHint';
+
 interface StateNameModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -53,16 +55,25 @@ export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
   };
 
   return (
-    <input
-      style={inputStyle}
-      autoFocus
-      className="fixed rounded-t-[6px] bg-[#525252] text-white outline outline-2 outline-white"
-      placeholder="Придумайте название"
-      maxLength={20}
-      onKeyUp={handleKeyUp}
-      onBlur={onClose}
-      onChange={(e) => setValue(e.target.value)}
-      value={value}
-    />
+    <WithHint
+      hint="Нажмите ⏎, чтобы применить"
+      offset={{ crossAxis: -20, mainAxis: 10 }}
+      placement="top-end"
+    >
+      {(props) => (
+        <input
+          {...props}
+          style={inputStyle}
+          autoFocus
+          className="fixed rounded-t-[6px] bg-[#525252] text-white outline outline-2 outline-white"
+          placeholder="Придумайте название"
+          maxLength={20}
+          onKeyUp={handleKeyUp}
+          onBlur={onClose}
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
+        />
+      )}
+    </WithHint>
   );
 };

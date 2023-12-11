@@ -47,6 +47,17 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
+    const drawBounds = state.drawBounds;
+    const titleHeight = state.titleHeight;
+    const y = e.event.y - drawBounds.y;
+    const x = e.event.x - drawBounds.x;
+
+    if (y <= titleHeight && x >= drawBounds.width - 25 / this.container.app.manager.data.scale) {
+      this.emit('changeStateName', state);
+    }
+  };
+
+  handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     this.container.machineController.selectState(state.id);
 
     const targetPos = state.computedPosition;
@@ -153,7 +164,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   watchState(state: State) {
-    state.on('mousedown', this.handleStateClick.bind(this, state));
+    state.on('click', this.handleStateClick.bind(this, state));
+    state.on('mousedown', this.handleStateMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleContextMenu.bind(this, state));
@@ -165,7 +177,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   unwatchState(state: State) {
-    state.off('mousedown', this.handleStateClick.bind(this, state));
+    state.off('click', this.handleStateClick.bind(this, state));
+    state.off('mousedown', this.handleStateMouseDown.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.off('contextmenu', this.handleContextMenu.bind(this, state));

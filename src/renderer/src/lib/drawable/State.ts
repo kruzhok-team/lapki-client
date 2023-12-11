@@ -3,6 +3,7 @@ import theme, { getColor } from '@renderer/theme';
 import { EdgeHandlers } from './EdgeHandlers';
 import { Events } from './Events';
 import { Node } from './Node';
+import { icons } from './Picto';
 
 import { Container } from '../basic/Container';
 
@@ -54,6 +55,7 @@ export class State extends Node {
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
+    this.drawPen(ctx);
     this.eventBox.draw(ctx);
 
     if (!this.children.isEmpty) {
@@ -211,6 +213,24 @@ export class State extends Node {
       6 / this.container.app.manager.data.scale,
     ]);
     ctx.stroke();
+
+    ctx.closePath();
+  }
+
+  private drawPen(ctx: CanvasRenderingContext2D) {
+    const icon = icons.get('pen');
+    if (!icon) return;
+
+    const { x, y } = this.drawBounds;
+    const { width } = this.computedTitleSizes;
+    const size = 16 / this.container.app.manager.data.scale;
+    const p = 9 / this.container.app.manager.data.scale;
+
+    ctx.beginPath();
+    ctx.fillStyle = style.titleColor;
+    ctx.strokeStyle = style.titleColor;
+
+    ctx.drawImage(icon, x + width - size - p, y + p, size, size);
 
     ctx.closePath();
   }

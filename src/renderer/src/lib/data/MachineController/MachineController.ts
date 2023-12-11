@@ -460,7 +460,7 @@ export class MachineController {
       });
     }
 
-    this.container.statesController.initialStateMark = null;
+    this.container.statesController.clearInitialStateMark();
     this.container.app.manager.deleteInitialState();
 
     this.container.isDirty = true;

@@ -59,6 +59,12 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     onRequestEditComponent(key);
   };
 
+  const onCompKeyDown = (e: React.KeyboardEvent, name: string) => {
+    if (e.key !== 'Delete') return;
+
+    onRequestDeleteComponent(name);
+  };
+
   const onAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onRequestAddComponent();
@@ -70,17 +76,19 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     return (
       <WithHint key={name} hint={proto?.description ?? ''} placement="right">
         {(props) => (
-          <div
-            className={twMerge('flex items-center p-1', name == cursor && 'bg-bg-active')}
+          <button
+            type="button"
+            className={twMerge('flex w-full items-center p-1', name == cursor && 'bg-bg-active')}
             onClick={() => onClick(name)}
             onAuxClick={() => onAuxClick(name)}
             onDoubleClick={() => onCompDblClick(name)}
             onContextMenu={() => onCompRightClick(name)}
+            onKeyDown={(e) => onCompKeyDown(e, name)}
             {...props}
           >
             {editor?.container.machineController.platform?.getFullComponentIcon(name)}
             <p className="ml-2 line-clamp-1">{name}</p>
-          </div>
+          </button>
         )}
       </WithHint>
     );

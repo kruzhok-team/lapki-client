@@ -4,7 +4,7 @@ import * as monaco from 'monaco-editor';
 import DocumentTitle from 'react-document-title';
 
 import {
-  PlatformSelectModal,
+  CreateSchemeModal,
   SaveRemindModal,
   ErrorModal,
   Sidebar,
@@ -14,6 +14,7 @@ import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
+import { useModal } from './hooks/useModal';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -39,17 +40,14 @@ export const App: React.FC = () => {
   const name = manager.useData('name');
   const platformName = manager.useData('elements.platform');
 
-  // FIXME: много, очень много модальных флажков, возможно ли сократить это обилие...
-  const [isPlatformModalOpen, setIsPlatformModalOpen] = useState(false);
-  const openPlatformModal = () => setIsPlatformModalOpen(true);
-  const closePlatformModal = () => setIsPlatformModalOpen(false);
+  const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const { saveModalProps, operations, performNewFile } = useFileOperations({
+  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate } = useFileOperations({
     manager,
     openLoadError,
-    openPlatformModal,
+    openCreateSchemeModal,
     openSaveError,
     openImportError,
   });
@@ -108,10 +106,12 @@ export const App: React.FC = () => {
 
           <SaveRemindModal {...saveModalProps} />
           <ErrorModal {...errorModalProps} />
-          <PlatformSelectModal
-            isOpen={isPlatformModalOpen}
+          <CreateSchemeModal
+            isOpen={isCreateSchemeModalOpen}
             onCreate={performNewFile}
-            onClose={closePlatformModal}
+            onClose={closeCreateSchemeModal}
+            onCreateFromTemplate={handleOpenFromTemplate}
+            manager={manager}
           />
         </div>
       </ThemeContext.Provider>

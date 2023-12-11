@@ -103,9 +103,15 @@ export class EditorManager {
 
     for (const name of propertyNames) {
       if (!isShallow(name)) {
-        this.data.elements[name.split('.')[1]] = {
-          ...this.data.elements[name.split('.')[1]],
-        };
+        const subName = name.split('.')[1];
+        const prevValue = this.data.elements[subName];
+
+        // Ссылку нужно обновлять только у объектов
+        if (typeof prevValue === 'object' && prevValue !== null) {
+          this.data.elements[subName] = {
+            ...prevValue,
+          };
+        }
 
         this.data.isStale = true;
         this.dataListeners['isStale'].forEach((listener) => listener());

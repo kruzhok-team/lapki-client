@@ -79,6 +79,10 @@ function createWindow(): void {
     shouldClose = true;
   });
 
+  ipcMain.on('reset-close', () => {
+    shouldClose = false;
+  });
+
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
     ModuleManager.stopModule(LAPKI_FLASHER);

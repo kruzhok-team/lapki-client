@@ -4,6 +4,7 @@ import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
+import { TemplatesList } from '@renderer/types/templates';
 
 import { EditorManager } from './EditorManager';
 
@@ -173,5 +174,21 @@ export class FilesManager {
 
   async saveIntoFolder(data: Array<SourceFile | Binary>) {
     await window.electron.ipcRenderer.invoke('dialog:saveIntoFolder', data);
+  }
+
+  async getAllTemplates() {
+    return (await window.electron.ipcRenderer.invoke('getAllTemplates')) as TemplatesList;
+  }
+
+  async createFromTemplate(type: string, name: string, openImportError: (error: string) => void) {
+    const templateData = await window.electron.ipcRenderer.invoke(
+      'getTemplateData',
+      type,
+      name + '.graphml'
+    );
+
+    const data = importGraphml(templateData, openImportError);
+
+    this.editorManager.init(null, 'Без названия', data);
   }
 }

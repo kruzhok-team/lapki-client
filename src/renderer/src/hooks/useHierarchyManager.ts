@@ -18,6 +18,22 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
   const states = manager.useData('elements.states');
   const transitions = manager.useData('elements.transitions');
 
+  //Нахождение выделеного состояния(связи)
+  const id: string = useMemo(() => {
+    let isSelectedName: string = '';
+
+    Object.entries(states)
+      .filter((state) => editor?.container.machineController.states.get(state[0])?.isSelected)
+      .map((value) => (isSelectedName = value[0]));
+    Object.entries(transitions)
+      .filter(
+        (transition) =>
+          editor?.container.machineController.transitions.get(transition[0])?.isSelected
+      )
+      .map((value) => (isSelectedName = value[0]));
+    return isSelectedName;
+  }, [editor, states, transitions]);
+
   const hierarchy: HierarchyItem = useMemo(() => {
     const data: HierarchyItem = {};
 
@@ -72,5 +88,5 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
     return data;
   }, [states, transitions]);
 
-  return { hierarchy, editor, manager };
+  return { hierarchy, id, editor };
 };

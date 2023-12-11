@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   Tree,
@@ -18,29 +18,43 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
-export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEditor | null }> = ({
-  hierarchy,
-  editor,
-}) => {
+export const Hierarchy: React.FC<{
+  hierarchy: HierarchyItem;
+  id: string;
+  editor: CanvasEditor | null;
+}> = ({ hierarchy, id, editor }) => {
   //Магия смены темы у данного компонента(На самом деле всё просто, он как ребёнок, получает все знания у своего родителя, которая связана со сменой темы)
   const { theme } = useThemeContext();
-
   const treeEnvironment = useRef<TreeEnvironmentRef>(null);
   const tree = useRef<TreeRef>(null);
-
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
 
+  useMemo(() => {
+    setSelectedItems([id]);
+  }, [id]);
+
   if (!editor) return;
 
-  const onSubmit = (id: string) => {
-    editor?.container.machineController.selectState(id);
-    editor?.container.machineController.selectTransition(id);
+  const onSubmit = (item: TreeItem<any>) => {
+    setFocusedItem(item.index.toString());
+    editor?.container.machineController.selectState(item.index.toString());
+    editor?.container.machineController.selectTransition(item.index.toString());
   };
-
-  const onRename = (id: string, name: string) => {
-    editor?.container.machineController.changeStateName(id, name);
+  const onRename = (item: TreeItem<any>, name: string) => {
+    editor?.container.machineController.changeStateName(item.index.toString(), name);
+  };
+  const onSelected = (items: TreeItemIndex[]) => {
+    setSelectedItems(items);
+  };
+  const onExpanded = (item: TreeItem<any>) => {
+    setExpandedItems((items) => [...items, item.index]);
+  };
+  const onCollapse = (item: TreeItem<any>) => {
+    setExpandedItems((items) =>
+      items.filter((expandedItemIndex) => expandedItemIndex !== item.index)
+    );
   };
 
   //Здесь мы напрямую работаем с родителями и дочерними элементами
@@ -48,17 +62,21 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
     const parent = tree.current?.dragAndDropContext.draggingPosition as DraggingPositionItem;
 
     items.map((value) => {
-      target.targetType.toString() === 'item'
-        ? editor.container.machineController.linkState(
-            parent.targetItem.toString(),
-            value.index.toString()
-          )
-        : target.targetType.toString() === 'between-items' && parent.parentItem !== 'root'
-        ? editor.container.machineController.linkState(
+      if (target.targetType.toString() === 'item') {
+        editor.container.machineController.linkState(
+          parent.targetItem.toString(),
+          value.index.toString()
+        );
+      } else {
+        if (target.targetType.toString() === 'between-items' && parent.parentItem !== 'root') {
+          editor.container.machineController.linkState(
             parent.parentItem.toString(),
             value.index.toString()
-          )
-        : editor.container.machineController.unlinkState({ id: value.index.toString() });
+          );
+        } else {
+          editor.container.machineController.unlinkState({ id: value.index.toString() });
+        }
+      }
     });
   };
 
@@ -73,23 +91,12 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
         canDropOnFolder
         canDropOnNonFolder
         canSearch={false}
-        onDrop={(items, target) => {
-          onLinkUnlinkState(items, target);
-        }}
-        onRenameItem={(item, name) => onRename(item.index.toString(), name)}
-        onFocusItem={(item) => {
-          setFocusedItem(item?.index);
-          onSubmit(item?.index.toString());
-        }}
-        onExpandItem={(item) => {
-          setExpandedItems((items) => [...items, item.index]);
-        }}
-        onCollapseItem={(item) =>
-          setExpandedItems((items) =>
-            items.filter((expandedItemIndex) => expandedItemIndex !== item.index)
-          )
-        }
-        onSelectItems={(items) => setSelectedItems(items)}
+        onDrop={onLinkUnlinkState}
+        onRenameItem={onRename}
+        onFocusItem={onSubmit}
+        onExpandItem={onExpanded}
+        onCollapseItem={onCollapse}
+        onSelectItems={onSelected}
         viewState={{
           ['tree-1']: {
             focusedItem,
@@ -124,7 +131,7 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
                 left: false,
                 right: false,
                 button: e.button,
-                stopPropagation: () => e.stopPropagation(),
+                stopPropagation: e.stopPropagation,
                 nativeEvent: e.nativeEvent,
               };
               Array.from(editor.container.machineController.states).map((state) => {
@@ -140,14 +147,12 @@ export const Hierarchy: React.FC<{ hierarchy: HierarchyItem; editor: CanvasEdito
                 }
               });
             },
-
             onBlur: () => {
               actions.unselectItem();
             },
             onFocus: () => {
               actions.focusItem();
             },
-
             onDragStart: (e) => {
               //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
               if (item.canMove) {

@@ -1,8 +1,10 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { findFreePort } from './freePortFinder';
+import { existsSync } from 'fs';
 import path from 'path';
-export var FLASHER_LOCAL_HOST: string = 'localhost';
-export var FLASHER_LOCAL_PORT: number;
+
+import { findFreePort } from './freePortFinder';
+export const FLASHER_LOCAL_HOST: string = 'localhost';
+export let FLASHER_LOCAL_PORT: number;
 // название локального загрузчика
 export const LAPKI_FLASHER: string = 'lapki-flasher';
 
@@ -47,46 +49,82 @@ export class ModuleManager {
       const basePath = path
         .join(__dirname, '../../resources')
         .replace('app.asar', 'app.asar.unpacked'); // process.resourcesPath;
-      var chprocess;
-      /*
-        параметры локального загрузчика:
-          -address string
-              адресс для подключения (default "localhost:8080")
-          -fileSize int
-              максимальный размер файла, загружаемого на сервер (в байтах) (default 2097152)
-          -listCooldown int
-              минимальное время (в секундах), через которое клиент может снова запросить список устройств, игнорируется, если количество клиентов меньше чем 2 (default 2)      
-          -msgSize int
-              максмальный размер одного сообщения, передаваемого через веб-сокеты (в байтах) (default 1024)
-          -thread int
-              максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
-          -updateList int
-              количество секунд между автоматическими обновлениями (default 15)
-          -verbose
-              выводить в консоль подробную информацию
-          -alwaysUpdate
-              всегда искать устройства и обновлять их список, даже когда ни один клиент не подключён (в основном требуется для тестирования)
-      */
-      var flasherArgs: string[] = [
-        '-updateList=1',
-        '-listCooldown=0',
-        `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
-      ];
+      let chprocess;
       let modulePath: string = '';
+      let osPath = '';
       switch (platform) {
-        case 'linux':
-          modulePath = `${basePath}/modules/${platform}/${module}`;
+        case 'linux': {
+          osPath = `${basePath}/modules/${platform}`;
+          modulePath = `${osPath}/${module}`;
           break;
-        case 'win32':
-          modulePath = `${basePath}\\modules\\${platform}\\${module}.exe`;
+        }
+        case 'win32': {
+          osPath = `${basePath}\\modules\\${platform}`;
+          modulePath = `${osPath}\\${module}.exe`;
           break;
+        }
         default:
           this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
       if (modulePath) {
-        console.log(modulePath);
-        chprocess = spawn(modulePath, flasherArgs);
+        switch (module) {
+          case LAPKI_FLASHER: {
+            /*
+            параметры локального загрузчика:
+              -address string
+                  адресс для подключения (default "localhost:8080")
+              -fileSize int
+                  максимальный размер файла, загружаемого на сервер (в байтах) (default 2097152)
+              -listCooldown int
+                  минимальное время (в секундах), через которое клиент может снова запросить список устройств, игнорируется, если количество клиентов меньше чем 2 (default 2)      
+              -msgSize int
+                  максмальный размер одного сообщения, передаваемого через веб-сокеты (в байтах) (default 1024)
+              -thread int
+                  максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
+              -updateList int
+                  количество секунд между автоматическими обновлениями (default 15)
+              -verbose
+                  выводить в консоль подробную информацию
+              -alwaysUpdate
+                  всегда искать устройства и обновлять их список, даже когда ни один клиент не подключён (в основном требуется для тестирования)
+              -stub
+                  количество ненастоящих, симулируемых устройств, которые будут восприниматься как настоящие, применяется для тестирования, при значении 0 или меньше фальшивые устройства не добавляются (по-умолчанию 0)
+              -avrdudePath 
+                  путь к avrdude (по-умолчанию avrdude, то есть будет использоваться системный путь)
+              -configPath 
+                  путь к файлу конфигурации avrdude (по-умолчанию '', то есть пустая строка)
+            */
+            const flasherArgs: string[] = [
+              '-updateList=1',
+              '-listCooldown=0',
+              `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
+            ];
+
+            let avrdudePath = '';
+            let configPath = '';
+            switch (platform) {
+              case 'linux':
+                avrdudePath = `${osPath}/avrdude`;
+                configPath = `${osPath}/avrdude.conf`;
+                break;
+              case 'win32':
+                avrdudePath = `${osPath}\\avrdude.exe`;
+                configPath = `${osPath}\\avrdude.conf`;
+                break;
+            }
+            if (existsSync(avrdudePath)) {
+              flasherArgs.push(`-avrdudePath=${avrdudePath}`);
+            }
+            if (existsSync(configPath)) {
+              flasherArgs.push(`-configPath=${configPath}`);
+            }
+            chprocess = spawn(modulePath, flasherArgs);
+            break;
+          }
+          default:
+            chprocess = spawn(modulePath);
+        }
         chprocess.on('error', function (err) {
           if (err.code == 'ENOENT') {
             ModuleManager.moduleStatus[module] = new ModuleStatus(

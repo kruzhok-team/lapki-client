@@ -9,12 +9,12 @@ interface useFileOperationsArgs {
   manager: EditorManager;
   openLoadError: (cause: any) => void;
   openSaveError: (cause: any) => void;
-  openPlatformModal: () => void;
+  openCreateSchemeModal: () => void;
   openImportError: (error: string) => void;
 }
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
-  const { manager, openLoadError, openSaveError, openPlatformModal, openImportError } = args;
+  const { manager, openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
   const isStale = manager.useData('isStale');
   const name = manager.useData('name');
@@ -56,19 +56,26 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       clearTabs();
     }
   };
+
+  const handleOpenFromTemplate = (type: string, name: string) => {
+    manager.files.createFromTemplate(type, name, openImportError);
+
+    clearTabs();
+  };
+
   //Создание нового файла
   const handleNewFile = async () => {
     if (isStale) {
       setData({
         shownName: name,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
-        onConfirm: openPlatformModal,
+        onConfirm: openCreateSchemeModal,
         onSave: handleSaveFile,
-        onOpen: () => openPlatformModal(),
+        onOpen: () => openCreateSchemeModal(),
       });
       openSaveModal();
     } else {
-      openPlatformModal();
+      openCreateSchemeModal();
     }
   };
 
@@ -137,5 +144,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       onRequestSaveAsFile: handleSaveAsFile,
     },
     performNewFile,
+    handleOpenFromTemplate,
   };
 };

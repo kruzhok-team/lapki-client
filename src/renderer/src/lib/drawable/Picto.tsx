@@ -2,6 +2,7 @@ import { twMerge } from 'tailwind-merge';
 
 import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
+import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/types/graphics';
 
@@ -29,6 +30,7 @@ const basePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
+  pen: Pen,
   system: resolveImg('common/system.svg'),
   variable: resolveImg('common/variable.svg'),
 

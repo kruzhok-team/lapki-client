@@ -16,10 +16,9 @@ export const Labels: React.FC<LabelsProps> = ({ items }) => {
   return (
     <div className="flex flex-col border-r border-border-primary bg-bg-primary">
       {items.map(({ Icon, bottom = false, hint }, i) => (
-        <WithHint hint={hint} placement="right" offset={5} delay={100}>
+        <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
           {(props) => (
             <button
-              key={i}
               className={twMerge(
                 'w-12 border-l-2 border-transparent p-2 text-text-inactive transition-colors hover:text-text-primary',
                 activeTab === i && 'border-primary text-text-primary',

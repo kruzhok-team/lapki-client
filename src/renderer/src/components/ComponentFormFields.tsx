@@ -29,6 +29,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     setParameters({ ...parameters });
   };
 
+  const protoParametersArray = Object.entries(protoParameters);
+
   return (
     <div className="flex flex-col gap-2">
       <h3 className="mb-1 text-xl">Параметры:</h3>
@@ -37,16 +39,19 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         <>
           <ComponentFormFieldLabel label="Название:">
             <input
-              className="w-[250px] rounded border bg-transparent px-2 py-1 outline-none"
+              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               maxLength={20}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </ComponentFormFieldLabel>
 
-          <ComponentFormFieldLabel label="Метка:">
+          <ComponentFormFieldLabel
+            label="Метка:"
+            hint="До 3-х символов. Метка нужна для различения разных компонентов одного типа."
+          >
             <input
-              className="w-[250px] rounded border bg-transparent px-2 py-1 outline-none"
+              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               value={parameters['label'] ?? ''}
               name={'label'}
               maxLength={3}
@@ -56,7 +61,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
           <ComponentFormFieldLabel label="Цвет метки:">
             <input
-              className="rounded border bg-transparent outline-none"
+              className="rounded border border-border-primary bg-transparent text-text-primary outline-none"
               value={parameters['labelColor'] ?? '#FFFFFF'}
               name={'labelColor'}
               type="color"
@@ -66,13 +71,15 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         </>
       )}
 
-      {Object.entries(protoParameters).map(([idx, param]) => {
+      {!showMainData && !protoParametersArray.length && 'У данного компонента нет параметров'}
+
+      {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
         const value = parameters[name] ?? '';
         return (
-          <ComponentFormFieldLabel key={idx} label={name + ':'}>
+          <ComponentFormFieldLabel key={idx} label={name + ':'} hint={param.description}>
             <input
-              className="w-[250px] rounded border bg-transparent px-2 py-1 outline-none"
+              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
               value={value}
               name={name}
               onChange={handleInputChange}

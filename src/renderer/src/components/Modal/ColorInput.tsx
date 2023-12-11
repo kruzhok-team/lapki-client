@@ -11,19 +11,18 @@ interface ColorInputProps extends ComponentProps<'input'> {
 export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
   ({ label, error, errorMessage, ...props }, ref) => {
     return (
-      <label className={twMerge('m-2 flex', error && 'text-red-500')}>
-        {label}
+      <label className={twMerge('m-2 flex', error && 'text-error')}>
+        <span className="font-bold">{label}</span>
         <input
           className={twMerge(
-            'ml-2 rounded border bg-transparent outline-none transition-colors',
-            error && 'border-red-500 placeholder:text-red-500',
-            !error && 'border-neutral-200 text-neutral-50 focus:border-neutral-50'
+            'ml-2 rounded border border-border-primary bg-transparent outline-none transition-colors',
+            error && 'border-error placeholder:text-error'
           )}
           ref={ref}
           type="color"
           {...props}
         />
-        <p className="min-h-[24px] text-[14px] text-red-500">{errorMessage}</p>
+        <p className="min-h-[24px] text-[14px] text-error">{errorMessage}</p>
       </label>
     );
   }

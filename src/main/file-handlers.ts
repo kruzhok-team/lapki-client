@@ -15,7 +15,7 @@ export async function handleFileOpen(platform: string, path?: string) {
   return new Promise(async (resolve, _reject) => {
     const platforms: Map<string, Array<string>> = new Map([
       ['ide', ['json']],
-      ['BearlogaDefend', ['graphml']],
+      ['Cyberiada', ['graphml']],
     ]);
 
     let filePath = path;
@@ -23,7 +23,7 @@ export async function handleFileOpen(platform: string, path?: string) {
 
     if (!path) {
       const res = await dialog.showOpenDialog({
-        filters: [{ name: 'json', extensions: platforms.get(platform)! }],
+        filters: [{ name: 'graphml', extensions: platforms.get(platform)! }],
         properties: ['openFile'],
       });
 
@@ -145,7 +145,7 @@ export async function handleFileSaveAs(filename, data) {
         title: 'Выберите путь к файлу для сохранения',
         defaultPath: filename ? filename : __dirname, // path.join(__dirname, fileName),
         buttonLabel: 'Сохранить',
-        filters: [{ name: 'json', extensions: ['json'] }],
+        filters: [{ name: 'graphml', extensions: ['graphml'] }],
       })
       .then((file) => {
         if (file.canceled) {

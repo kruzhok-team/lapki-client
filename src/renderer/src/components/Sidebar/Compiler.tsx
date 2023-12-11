@@ -18,6 +18,7 @@ export interface CompilerProps {
   setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
+  openImportError: (error: string) => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
@@ -29,7 +30,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
 }) => {
   const [importData, setImportData] = useState<string | undefined>(undefined);
-
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -43,18 +43,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    manager.saveIntoFolder(preparedData);
+    manager.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    manager.compile();
+    manager.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager.saveIntoFolder(compilerData!.source!);
+    await manager.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -92,15 +92,15 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      manager.parseImportData(importData, openData!);
+      manager.files.parseImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);
 
   useEffect(() => {
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    console.log('CONNECTING TO COMPILER');
     Settings.getCompilerSettings().then((compiler) => {
-      console.log('CONNECTING TO COMPILER');
+      Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
       Compiler.connect(compiler.host, compiler.port);
     });
   }, []);
@@ -138,10 +138,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     },
   ];
   const cantCompile =
-    compilerStatus == 'Не подключен' || compilerStatus == 'Идет компиляция...' || !isInitialized;
-  const disabled = cantCompile;
-  const connecting = compilerStatus == 'Идет подключение...';
-
+    compilerStatus == 'Идет компиляция...' ||
+    !isInitialized ||
+    compilerStatus == 'Идет подключение...';
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -150,7 +149,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
       <div className="flex flex-col px-4">
         <button
-          disabled={compilerStatus != 'Не подключен' ? disabled : connecting}
+          disabled={cantCompile}
           className="btn-primary mb-4 flex justify-center"
           onClick={compilerStatus != 'Не подключен' ? handleCompile : handleReconnect}
         >

@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-
-import ReactModal, { Props } from 'react-modal';
+import React, { useLayoutEffect, useState } from 'react';
 
 import './Modal/style.css';
 import { Select, SelectOption } from '@renderer/components/UI';
@@ -9,6 +7,9 @@ import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { State } from '@renderer/lib/drawable/State';
 import { Action, Event } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
+
+import { Modal } from './Modal';
+import { WithHint } from './WithHint';
 
 import { EventSelection } from '../lib/drawable/Events';
 
@@ -23,13 +24,11 @@ interface FormPreset {
   argForm: ArgForm;
 }
 
-interface EventsModalProps extends Props {
-  editor: CanvasEditor | null;
+interface EventsModalProps {
+  editor: CanvasEditor;
   manager: EditorManager;
   isData: { state: State; event: EventSelection; click: boolean } | undefined;
   isOpen: boolean;
-  cancelLabel?: string;
-  submitLabel?: string;
   onSubmit: (data: EventsModalResult) => void;
   onClose: () => void;
 }
@@ -41,56 +40,69 @@ export interface EventsModalResult {
 }
 
 export const CreateEventsModal: React.FC<EventsModalProps> = ({
-  cancelLabel,
-  submitLabel,
   onSubmit,
   onClose,
   editor,
   manager,
-  ...props
+  isData,
+  isOpen,
 }) => {
   const componentsData = manager.useData('elements.components');
-  const machine = editor!.container.machineController;
-  const isEditingEvent = props.isData?.event.actionIdx === null;
+  const machine = editor.container.machineController;
+  const isEditingEvent = isData?.event.actionIdx === null;
 
   const compoEntry = (idx: string) => {
+    const proto = machine.platform.getComponent(idx);
+
     return {
       value: idx,
       label: (
-        <div className="flex items-center">
-          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
-          {idx}
-        </div>
+        <WithHint hint={proto?.description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
+              {idx}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
 
-  const eventEntry = (name: string, compo?: string) => {
+  const eventEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
 
-  const actionEntry = (name: string, compo?: string) => {
+  const actionEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getActionIconUrl(compo ?? components.value, name, true)}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
@@ -107,12 +119,16 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const optionsMethods = !components
     ? []
     : isEditingEvent
-    ? machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name))
-    : machine.platform.getAvailableMethods(components.value).map(({ name }) => actionEntry(name));
+    ? machine.platform
+        .getAvailableEvents(components.value)
+        .map(({ name, description }) => eventEntry(name, undefined, description))
+    : machine.platform
+        .getAvailableMethods(components.value)
+        .map(({ name, description }) => actionEntry(name, undefined, description));
 
   const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isChanged) return;
     if (optionsMethods.length > 0) {
       setMethods(optionsMethods[0]);
@@ -139,7 +155,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     return argForm;
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isChanged) return;
     setArgSet({});
     if (methods) {
@@ -149,9 +165,9 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     }
   }, [methods]);
 
-  const tryGetData: () => FormPreset | undefined = () => {
-    if (props.isData) {
-      const d = props.isData;
+  const tryGetData = (): FormPreset | undefined => {
+    if (isData) {
+      const d = isData;
       if (d.event.eventIdx >= 0) {
         const evs = d.state.eventBox.data[d.event.eventIdx];
         if (evs) {
@@ -188,21 +204,19 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
     const name = entry.name;
     const data = argSet[entry.name] ?? '';
     return (
-      <>
-        <label className="mx-1 flex flex-col">
-          {name}
-          <input
-            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
-            value={data}
-            name={name}
-            onChange={(e) => handleInputChange(e)}
-          />
-        </label>
-      </>
+      <label key={name} className="mx-1 flex flex-col">
+        {name}
+        <input
+          className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
+          value={data}
+          name={name}
+          onChange={(e) => handleInputChange(e)}
+        />
+      </label>
     );
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSet = { ...argSet };
     newSet[e.target.name] = e.target.value;
     setArgSet(newSet);
@@ -210,8 +224,8 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 
   const [isChanged, setIsChanged] = useState(false);
   const [wasOpen, setWasOpen] = useState(false);
-  useEffect(() => {
-    if (!wasOpen && props.isOpen) {
+  useLayoutEffect(() => {
+    if (!wasOpen && isOpen) {
       const d: FormPreset | undefined = tryGetData();
       if (d) {
         setComponents(d.compo);
@@ -223,10 +237,10 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
       }
       setIsChanged(false);
     }
-    setWasOpen(props.isOpen);
-  }, [props.isOpen]);
+    setWasOpen(isOpen);
+  }, [isOpen]);
 
-  const handleSubmit = (ev) => {
+  const handleSubmit = (ev: React.FormEvent) => {
     ev.preventDefault();
 
     if (!methods) {
@@ -235,7 +249,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 
     // FIXME: очень некорректное дублирование, его нужно снять
     const data = {
-      id: props.isData,
+      id: isData,
       trigger: {
         component: components.value,
         method: methods.value,
@@ -256,51 +270,32 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   };
 
   return (
-    <ReactModal
-      {...props}
-      className="absolute left-1/2 top-12 w-full max-w-sm -translate-x-1/2 rounded-lg bg-neutral-800 p-6 text-neutral-100 outline-none"
-      overlayClassName="bg-[rgba(0,0,0,0.6)] z-[60] fixed inset-0 backdrop-blur"
+    <Modal
+      title={`Выберите ${isEditingEvent ? 'событие' : 'действие'}`}
+      onSubmit={handleSubmit}
+      submitDisabled={!methods}
+      className="max-w-sm"
+      overlayClassName="z-[60]"
+      isOpen={isOpen}
       onRequestClose={onClose}
     >
-      <div className="relative mb-3 justify-between border-b border-neutral-400 pb-1">
-        <h1 className="text-2xl font-bold">Выберите {isEditingEvent ? 'событие' : 'действие'}</h1>
+      <div className="flex flex-col items-center">
+        <Select
+          className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
+          options={options}
+          onChange={onSelect(setComponents)}
+          value={components}
+          isSearchable={false}
+        />
+        <Select
+          className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
+          options={optionsMethods}
+          onChange={onSelect(setMethods)}
+          value={methods}
+          isSearchable={false}
+        />
+        {parameters?.length > 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col items-center">
-          <Select
-            className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
-            options={options}
-            onChange={onSelect(setComponents)}
-            value={components}
-            isSearchable={false}
-          />
-          <Select
-            className="mb-6 h-[34px] w-[200px] max-w-[200px] py-1"
-            options={optionsMethods}
-            onChange={onSelect(setMethods)}
-            value={methods}
-            isSearchable={false}
-          />
-          {parameters?.length > 0 ? <div className="mb-6">{parameters}</div> : ''}
-        </div>
-        <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded px-4 py-2 text-neutral-400 transition-colors hover:text-neutral-50"
-            onClick={onClose}
-          >
-            {cancelLabel ?? 'Закрыть'}
-          </button>
-          <button
-            type="submit"
-            className="rounded bg-neutral-700 px-4 py-2 transition-colors hover:enabled:bg-neutral-600"
-            hidden={!onSubmit}
-            disabled={!methods}
-          >
-            {submitLabel ?? 'Сохранить'}
-          </button>
-        </div>
-      </form>
-    </ReactModal>
+    </Modal>
   );
 };

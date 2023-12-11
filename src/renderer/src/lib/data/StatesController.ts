@@ -184,6 +184,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.initialStateMark?.off('dragend', this.handleInitialStateDragEnd.bind(this));
   }
 
+  clearInitialStateMark() {
+    this.unwatchInitialState();
+    this.initialStateMark = null;
+  }
+
   initInitialStateMark() {
     this.unwatchInitialState();
 

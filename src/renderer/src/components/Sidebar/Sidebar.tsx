@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
-import { ReactComponent as DriveIcon } from '@renderer/assets/icons/drive.svg';
+import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
@@ -32,12 +32,14 @@ interface SidebarProps {
   editor: CanvasEditor | null;
   manager: EditorManager;
   callbacks: SidebarCallbacks;
+  openImportError: (error: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   editor,
   manager,
   callbacks: { onRequestNewFile, onRequestOpenFile, onRequestSaveFile, onRequestSaveAsFile },
+  openImportError,
 }) => {
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
@@ -47,8 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isEditorDataStale = manager.useData('isStale');
 
-  const handleImport = async (platform: string) => {
-    await manager.import(platform, setOpenData);
+  const handleImport = async () => {
+    await manager.files.import(setOpenData);
   };
 
   const menus = useMemo(
@@ -71,8 +73,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerData={setCompilerData}
         compilerStatus={compilerStatus}
         setCompilerStatus={setCompilerStatus}
+        openImportError={openImportError}
       />,
-      <Loader manager={manager} compilerData={compilerData} />,
+      <Loader compilerData={compilerData} />,
       <History editor={editor} />,
       <Setting />,
     ],
@@ -87,22 +90,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
+        hint: 'Меню',
       },
       {
         Icon: <ComponentsIcon />,
+        hint: 'Компоненты',
       },
       {
         Icon: <CompilerIcon />,
+        hint: 'Компилятор',
       },
       {
-        Icon: <DriveIcon />,
+        Icon: <FlasherIcon />,
+        hint: 'Загрузчик',
       },
       {
         Icon: <HistoryIcon />,
+        hint: 'История изменений',
         bottom: true,
       },
       {
         Icon: <SettingsIcon />,
+        hint: 'Настройки',
       },
     ],
     [isEditorDataStale]

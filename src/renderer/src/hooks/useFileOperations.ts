@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { SaveModalData } from '@renderer/components';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -10,10 +10,11 @@ interface useFileOperationsArgs {
   openLoadError: (cause: any) => void;
   openSaveError: (cause: any) => void;
   openPlatformModal: () => void;
+  openImportError: (error: string) => void;
 }
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
-  const { manager, openLoadError, openSaveError, openPlatformModal } = args;
+  const { manager, openLoadError, openSaveError, openPlatformModal, openImportError } = args;
 
   const name = manager.useData('name');
   const isStale = manager.useData('isStale');
@@ -41,7 +42,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performOpenFile = async (path?: string) => {
-    const result = await manager?.open(path);
+    const result = await manager?.files.open(openImportError, path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -71,12 +72,22 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (idx: string) => {
-    manager?.newFile(idx);
+    manager?.files.newFile(idx);
     clearTabs();
   };
 
+  const handleSaveAsFile = async () => {
+    const result = await manager?.files.saveAs();
+    if (result && isLeft(result)) {
+      const cause = unwrapEither(result);
+      if (cause) {
+        openSaveError(cause);
+      }
+    }
+  };
+
   const handleSaveFile = async () => {
-    const result = await manager?.save();
+    const result = await manager?.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
@@ -87,39 +98,34 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  //console.log(isStale);
-  const handleSaveAsFile = async () => {
-    const result = await manager?.saveAs();
-    if (result && isLeft(result)) {
-      const cause = unwrapEither(result);
-      if (cause) {
-        openSaveError(cause);
+  useEffect(() => {
+    //Сохранение проекта после закрытия редактора
+    const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
+      //Данное условие будет всегда работать(проект будет закрываться), потому что
+      //isStale работает неправильно. Если же заккоментировать код в else, то можно проверить работоспособность условия.
+      if (isStale) {
+        setData({
+          shownName: name,
+          question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
+          //При нажатии на любую из кнопок, он должен закрывать редактор
+          onConfirm: () => {
+            return window.electron.ipcRenderer.send('closed');
+          },
+          onSave: handleSaveFile,
+          onOpen: () => {
+            return window.electron.ipcRenderer.send('closed');
+          },
+        });
+        openSaveModal();
+      } else {
+        window.electron.ipcRenderer.send('closed');
       }
-    }
-  };
+    });
 
-  //Сохранение проекта после закрытия редактора
-  window.electron.ipcRenderer.on('app-close', () => {
-    //Данное условие будет всегда работать(проект будет закрываться), потому что
-    //isStale работает неправильно. Если же заккоментировать код в else, то можно проверить работоспособность условия.
-    if (isStale) {
-      setData({
-        shownName: name,
-        question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
-        //При нажатии на любую из кнопок, он должен закрывать редактор
-        onConfirm: () => {
-          return window.electron.ipcRenderer.send('closed');
-        },
-        onSave: handleSaveFile,
-        onOpen: () => {
-          return window.electron.ipcRenderer.send('closed');
-        },
-      });
-      openSaveModal();
-    } else {
-      window.electron.ipcRenderer.send('closed');
-    }
-  });
+    return () => {
+      unsubscribe();
+    };
+  }, [handleSaveFile, isStale, name]);
 
   return {
     saveModalProps: { isOpen, onClose, data },

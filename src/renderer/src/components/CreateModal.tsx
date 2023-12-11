@@ -23,6 +23,34 @@ import { defaultTransColor } from './DiagramEditor';
 import { ColorInput } from './Modal/ColorInput';
 import { Modal } from './Modal/Modal';
 import { TextInput } from './Modal/TextInput';
+import { WithHint } from './WithHint';
+
+const operandOptions = [
+  {
+    value: 'greater',
+    label: '>',
+  },
+  {
+    value: 'less',
+    label: '<',
+  },
+  {
+    value: 'equals',
+    label: '=',
+  },
+  {
+    value: 'notEquals',
+    label: '!=',
+  },
+  {
+    value: 'greaterOrEqual',
+    label: '>=',
+  },
+  {
+    value: 'lessOrEqual',
+    label: '<=',
+  },
+];
 
 type ArgSet = { [k: string]: string };
 type ArgFormEntry = { name: string; description?: string };
@@ -101,28 +129,38 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const isEditingEvent = isData === undefined;
 
   const compoEntry = (idx: string) => {
+    const proto = machine.platform.getComponent(idx);
+
     return {
       value: idx,
       label: (
-        <div className="flex items-center">
-          {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
-          {idx}
-        </div>
+        <WithHint hint={proto?.description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              {machine.platform.getFullComponentIcon(idx, 'mr-1 h-7 w-7')}
+              {idx}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
 
-  const eventEntry = (name: string, compo?: string) => {
+  const eventEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getEventIconUrl(compo ?? components.value, name, true)}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
@@ -142,21 +180,25 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     };
   };
 
-  const conditionEntry = (name: string, compo?: string) => {
+  const conditionEntry = (name: string, compo?: string, description?: string) => {
     return {
       value: name,
       label: (
-        <div className="flex items-center">
-          <img
-            src={machine.platform.getVariableIconUrl(
-              compo ? param1Components.value : param2Components.value,
-              name,
-              true
-            )}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-          {name}
-        </div>
+        <WithHint hint={description ?? ''} offset={15} placement="right">
+          {(props) => (
+            <div className="flex items-center" {...props}>
+              <img
+                src={machine.platform.getVariableIconUrl(
+                  compo ? param1Components.value : param2Components.value,
+                  name,
+                  true
+                )}
+                className="mr-1 h-7 w-7 object-contain"
+              />
+              {name}
+            </div>
+          )}
+        </WithHint>
       ),
     };
   };
@@ -188,18 +230,20 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const optionsMethods = !components
     ? []
-    : machine.platform.getAvailableEvents(components.value).map(({ name }) => eventEntry(name));
+    : machine.platform
+        .getAvailableEvents(components.value)
+        .map(({ name, description }) => eventEntry(name, undefined, description));
 
   const optionsParam1Methods = !components
     ? []
     : machine.platform
         .getAvailableVariables(param1Components.value)
-        .map(({ name }) => conditionEntry(name, param1Components.value));
+        .map(({ name, description }) => conditionEntry(name, param1Components.value, description));
   const optionsParam2Methods = !components
     ? []
     : machine.platform
         .getAvailableVariables(param2Components.value)
-        .map(({ name }) => conditionEntry(name, param2Components.value));
+        .map(({ name, description }) => conditionEntry(name, param2Components.value, description));
 
   const [methods, setMethods] = useState<SelectOption | null>(optionsMethods[0]);
   const [param1Methods, setParam1Methods] = useState<SelectOption | null>(optionsParam1Methods[0]);
@@ -369,7 +413,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <label className="mx-1 flex flex-col">
           {name}
           <input
-            className="w-[250px] max-w-[250px] rounded border bg-transparent px-2 py-1 outline-none transition-colors placeholder:font-normal"
+            className="w-[250px] max-w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none transition-colors"
             value={data}
             name={name}
             onChange={(e) => handleInputChange(e)}
@@ -538,32 +582,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   });
   //-----------------------------------------------------------------------------------------------------
 
-  const selectElse = [
-    {
-      type: 'greater',
-      icon: '>',
-    },
-    {
-      type: 'less',
-      icon: '<',
-    },
-    {
-      type: 'equals',
-      icon: '=',
-    },
-    {
-      type: 'notEquals',
-      icon: '!=',
-    },
-    {
-      type: 'greaterOrEqual',
-      icon: '>=',
-    },
-    {
-      type: 'lessOrEqual',
-      icon: '<=',
-    },
-  ];
   //Срабатывания клика по элементу списка действий и удаление выбранного действия
   const [clickList, setClickList] = useState<number>(0);
 
@@ -616,42 +634,32 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       submitLabel="Сохранить"
     >
       {/*---------------------------------Добавление основного события-------------------------------------*/}
-      <div className="flex items-center">
-        <label className="mx-1">Когда: </label>
+      <div className="my-5 flex items-center">
+        <label className="mx-1 align-middle font-bold">Когда: </label>
         <Select
-          className="mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]"
+          className="mx-1 h-[34px] w-[200px] max-w-[200px] align-middle"
           options={optionsComponents}
           onChange={onSelect(setComponents)}
           value={components}
           isSearchable={false}
         />
         <Select
-          className="mx-1 my-1 mb-6 h-[34px] w-[200px] max-w-[200px]"
+          className="mx-1 h-[34px] w-[200px] max-w-[200px]"
           options={optionsMethods}
           onChange={onSelect(setMethods)}
           value={methods}
           isSearchable={false}
         />
-        {isData &&
-          (dataDo ? (
-            <p className="text-success">Событие существует!</p>
-          ) : (
-            <p className="text-orange-500">Событие отсутствует!</p>
-          ))}
+        {isData && (dataDo ? <p className="text-success">✔</p> : <p>(Новое событие)</p>)}
         {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''}
       </div>
 
       {/*--------------------------------------Добавление условия------------------------------------------*/}
       {isData !== undefined || (
-        <div className="flex items-start">
-          <div className="my-3 flex items-center">
-            <label className="mx-1">Если: </label>
-            <label
-              className={twMerge(
-                'my-2 ml-3 select-none rounded bg-neutral-700 px-3 py-2 transition-colors hover:bg-neutral-500',
-                !isElse && 'bg-neutral-500'
-              )}
-            >
+        <div className="my-3 flex items-start">
+          <div className="flex items-center">
+            <label className="mx-1 font-bold">Если: </label>
+            <label className={twMerge('btn ml-3 border-primary px-3', !isElse && 'btn-primary')}>
               <input type="checkbox" onChange={handleIsElse} className="h-0 w-0 opacity-0" />
               <span>Условие</span>
             </label>
@@ -695,32 +703,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   {...register('argsOneElse', {
                     required: 'Это поле обязательно к заполнению!',
                   })}
-                  isElse={isElse}
+                  isHidden={isElse}
                   error={!!errors.argsOneElse}
                   errorMessage={errors.argsOneElse?.message ?? ''}
                 />
               )}
             </div>
-            <select
-              className={twMerge(
-                'mb-4 ml-8 w-[60px] rounded border bg-transparent px-1 py-1 text-white',
-                isElse && 'hidden'
-              )}
-              ref={(event) => {
-                if (event !== null) {
-                  setCondOperator(event.value);
-                }
-              }}
-            >
-              {selectElse.map((content) => (
-                <option
-                  key={'option' + content.type}
-                  className="bg-neutral-800"
-                  value={content.type}
-                  label={content.icon}
-                ></option>
-              ))}
-            </select>
+            <Select
+              className={twMerge('max-w-[200px]', isElse && 'hidden')}
+              options={operandOptions}
+              onChange={(v) => setCondOperator((v as any).value)}
+              value={operandOptions.find((opt) => opt.value === condOperator)}
+            />
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -759,7 +753,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   {...register('argsTwoElse', {
                     required: 'Это поле обязательно к заполнению!',
                   })}
-                  isElse={isElse}
+                  isHidden={isElse}
                   error={!!errors.argsTwoElse}
                   errorMessage={errors.argsTwoElse?.message ?? ''}
                 />
@@ -770,14 +764,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       )}
 
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
-      <div className="flex">
-        <label className="mx-1">Делай: </label>
-        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-neutral-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#FFFFFF] scrollbar-thumb-rounded-full">
+      <div className="my-1 flex">
+        <label className="mx-1 mt-2 font-bold">Делай: </label>
+        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {method.length === 0 ||
             method.map((data, key) => (
               <div
                 key={'Methods' + key}
-                className={twMerge('flex hover:bg-primary', clickList === key && 'bg-primary')}
+                className={twMerge('flex hover:bg-bg-hover', clickList === key && 'bg-bg-active')}
                 onClick={() => setClickList(key)}
                 draggable={true}
                 onDragOver={(event) => event.preventDefault()}
@@ -786,11 +780,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               >
                 <div
                   className={twMerge(
-                    'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-lg border-2 bg-neutral-700 px-1'
+                    'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
                   )}
                 >
                   {machine.platform.getFullComponentIcon(data.component)}
-                  <div className="h-full border-2 border-white"></div>
+                  <div className="h-full w-[2px] bg-border-primary"></div>
                   <img
                     style={{ height: '32px', width: '32px' }}
                     src={machine.platform.getActionIconUrl(data.component, data.method, true)}
@@ -804,21 +798,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 {data.args !== undefined || <div>{data.args}</div>}
               </div>
             ))}
-          {method.length === 0 && <div className="flex text-error">Вы не выбрали действия!</div>}
+          {method.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
         </div>
-        <div className="flex flex-col">
-          <button
-            type="button"
-            className="rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={onOpenEventsModal}
-          >
+        <div className="flex flex-col gap-2">
+          <button type="button" className="btn-secondary p-1" onClick={onOpenEventsModal}>
             <AddIcon />
           </button>
-          <button
-            type="button"
-            className="my-2 rounded bg-neutral-700 px-1 py-1 transition-colors hover:bg-neutral-600"
-            onClick={deleteMethod}
-          >
+          <button type="button" className="btn-secondary p-1" onClick={deleteMethod}>
             <SubtractIcon />
           </button>
         </div>

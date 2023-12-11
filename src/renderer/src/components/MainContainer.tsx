@@ -116,7 +116,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         </div>
       )}
 
-      <Documentations topOffset={!!isInitialized} baseUrl={'https://lapki-doc.polyus-nt.ru/'} />
+      <Documentations topOffset={!!isInitialized} />
     </div>
   );
 };

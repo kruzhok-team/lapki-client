@@ -40,9 +40,11 @@ export class Compiler {
   private static curReconnectAttemps: number = 1;
   /*  
     максимальное количество автоматических попыток переподключения
-    значение меньше нуля означает, что ограничения на попытки отсутствует
+    значение меньше нуля означает, что ограничение на попытки отсутствует
   */
   private static maxReconnectAttempts: number = 3;
+  // true = пробовать переподключиться
+  private static shouldReconnect: boolean = true;
   static filename: string;
 
   static setDefaultStatus() {
@@ -63,8 +65,8 @@ export class Compiler {
   static binary: Array<Binary> | undefined = undefined;
   static source: Array<SourceFile> | undefined = undefined;
 
-  static checkConnection(): boolean {
-    return this.connection !== undefined;
+  static checkConnection(connection: Websocket | undefined): connection is Websocket {
+    return connection !== undefined;
   }
 
   static decodeBinaries(binaries: Array<any>) {
@@ -102,49 +104,67 @@ export class Compiler {
     return result;
   }
 
-  static connect(host: string, port: number, timeout = this.startTimeout) {
+  // Устанавливает новое соединение, закрывая старое. Ничего не делает, если заданный адрес совпадает с текущим и соединение установлено или устанавливается.
+  static async connect(host: string, port: number, timeout = this.startTimeout) {
+    if (
+      this.host == host &&
+      this.port == port &&
+      (this.connecting || this.checkConnection(this.connection))
+    ) {
+      return;
+    }
     this.timeout = timeout;
     this.host = host;
     this.port = port;
     this.base_address = `ws://${this.host}:${this.port}/main`;
-    Compiler.connectRoute(this.base_address);
+    await Compiler.close();
+    await Compiler.connectRoute(this.base_address);
+  }
+
+  static async close() {
+    this.shouldReconnect = false;
+    await this.connection?.close();
+    clearTimeout(this.timerReconnectID);
+    this.timeoutSetted = false;
+    this.connection = undefined;
+    //console.log('DISCONNECTED');
   }
 
   static reconnect() {
     this.connectRoute(this.base_address);
   }
 
-  static connectRoute(route: string): Websocket {
-    if (this.checkConnection()) return this.connection!;
+  static async connectRoute(route: string): Promise<Websocket | undefined> {
+    if (this.checkConnection(this.connection)) return this.connection;
     if (this.connecting) return;
+    //console.log('CONNECTING');
     clearTimeout(this.timerReconnectID);
     this.timeoutSetted = false;
     this.setCompilerStatus('Идет подключение...');
     // FIXME: подключение к несуществующему узлу мгновенно кидает неотлавливаемую
     //   асинхронную ошибку, и никто с этим ничего не может сделать.
-    const ws = new WebSocket(route);
+    console.log('CONNECTING TO', route);
+    this.connection = new Websocket(route);
     this.connecting = true;
 
-    ws.onopen = () => {
+    this.connection.onopen = () => {
       console.log('Compiler: connected');
       this.setCompilerStatus('Подключен');
-      this.connection = ws;
       this.connecting = false;
       this.timeoutSetted = false;
       this.timeout = this.startTimeout;
       this.curReconnectAttemps = 0;
+      this.shouldReconnect = true;
     };
 
-    ws.onmessage = (msg) => {
+    this.connection.onmessage = (msg) => {
       // console.log(msg);
       this.setCompilerStatus('Подключен');
       clearTimeout(this.timerOutID);
       let data;
       switch (this.mode) {
         case 'compile':
-          data = JSON.parse(msg.data);
-          console.log(msg.data);
-          console.log(typeof data);
+          data = JSON.parse(msg.data as string);
           if (data.binary.length > 0) {
             this.binary = [];
             this.decodeBinaries(data.binary);
@@ -160,12 +180,13 @@ export class Compiler {
           } as CompilerResult);
           break;
         case 'import':
-          data = JSON.parse(msg.data);
+          data = JSON.parse(msg.data as string);
+          console.log(data);
           // TODO: Сразу распарсить как Elements.
           this.setImportData(JSON.stringify(data.source[0].fileContent));
           break;
         case 'export':
-          data = JSON.parse(msg.data) as SourceFile;
+          data = JSON.parse(msg.data as string) as SourceFile;
           this.setCompilerData({
             result: 'OK',
             binary: [],
@@ -185,7 +206,7 @@ export class Compiler {
       }
     };
 
-    ws.onclose = () => {
+    this.connection.onclose = async () => {
       if (this.connection) {
         console.log('Compiler: connection closed');
       }
@@ -193,6 +214,7 @@ export class Compiler {
       this.connection = undefined;
       this.connecting = false;
       if (
+        this.shouldReconnect &&
         !this.timeoutSetted &&
         (this.maxReconnectAttempts < 0 || this.curReconnectAttemps < this.maxReconnectAttempts)
       ) {
@@ -203,62 +225,66 @@ export class Compiler {
             this.timeout += 2000;
           }
           this.curReconnectAttemps++;
-          this.connectRoute(route);
+          this.reconnect();
           this.timeoutSetted = false;
         }, this.timeout);
       }
     };
 
-    return ws;
+    return this.connection;
   }
 
-  static compile(platform: string, data: Elements | string) {
-    const route = `${this.base_address}main`;
-    const ws: Websocket = this.connectRoute(route);
-    let compilerSettings: CompilerSettings;
-    const [mainPlatform, subPlatform] = platform.split('-');
-    console.log(mainPlatform, subPlatform);
-    switch (mainPlatform) {
-      case 'ArduinoUno':
-        ws.send('arduino');
-        this.mode = 'compile';
-        compilerSettings = {
-          compiler: 'arduino-cli',
-          filename: 'biba',
-          flags: ['-b', 'arduino:avr:uno'],
-        };
-        const obj = {
-          ...(data as Elements),
-          compilerSettings: compilerSettings,
-        };
-        ws.send(JSON.stringify(obj));
-        break;
-      case 'BearlogaDefendImport':
-        ws.send('berlogaImport');
-        ws.send(data);
-        ws.send(subPlatform);
-        console.log('import!');
-        this.mode = 'import';
-        break;
-      case 'BearlogaDefend':
-        ws.send('berlogaExport');
-        ws.send(JSON.stringify(data));
-        if (subPlatform !== undefined) {
-          ws.send(subPlatform);
-        } else {
-          ws.send('Robot');
+  static async compile(platform: string, data: Elements | string) {
+    const route = this.base_address;
+    const ws: Websocket | undefined = await this.connectRoute(route);
+    if (ws !== undefined) {
+      const [mainPlatform, subPlatform] = platform.split('-');
+      console.log(mainPlatform, subPlatform);
+      switch (mainPlatform) {
+        case 'ArduinoUno': {
+          ws.send('arduino');
+          this.mode = 'compile';
+          const compilerSettings: CompilerSettings = {
+            compiler: 'arduino-cli',
+            filename: 'biba',
+            flags: ['-b', 'arduino:avr:uno'],
+          };
+          const obj = {
+            ...(data as Elements),
+            compilerSettings: compilerSettings,
+          };
+          ws.send(JSON.stringify(obj));
+          break;
         }
-        console.log('export!');
-        this.mode = 'export';
-        break;
-      default:
-        console.log(`unknown platform ${platform}`);
-        return;
-    }
+        case 'BearlogaDefendImport':
+          ws.send('berlogaImport');
+          ws.send(data as string);
+          ws.send(subPlatform);
+          console.log('import!');
+          this.mode = 'import';
+          break;
+        case 'BearlogaDefend':
+          ws.send('berlogaExport');
+          ws.send(JSON.stringify(data));
+          if (subPlatform !== undefined) {
+            ws.send(subPlatform);
+          } else {
+            ws.send('Robot');
+          }
+          console.log('export!');
+          this.mode = 'export';
+          break;
+        default:
+          console.log(`unknown platform ${platform}`);
+          return;
+      }
 
-    this.setCompilerStatus('Идет компиляция...');
-    this.timerOutID = setTimeout(() => {
-      Compiler.setCompilerStatus('Что-то пошло не так...');
-    }, this.timeOutTime);
+      this.setCompilerStatus('Идет компиляция...');
+      this.timerOutID = setTimeout(() => {
+        Compiler.setCompilerStatus('Что-то пошло не так...');
+      }, this.timeOutTime);
+    } else {
+      console.log('Внутренняя ошибка! Отсутствует подключение');
+    }
   }
 }

@@ -9,6 +9,9 @@ declare global {
       FLASHER_SETTINGS_KEY: string;
       COMPILER_SETTINGS_KEY: string;
       PLATFORMS_PATH_SETTINGS_KEY: string;
+      DEFAULT_COMPILER_SETTINGS;
+      DOC_SETTINGS_KEY: string;
+      DEFAULT_DOC_SETTINGS;
     };
   }
 }

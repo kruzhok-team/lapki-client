@@ -18,6 +18,8 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
+import { WithHint } from '../WithHint';
+
 export const Hierarchy: React.FC<{
   hierarchy: HierarchyItem;
   id: string;
@@ -80,6 +82,25 @@ export const Hierarchy: React.FC<{
     });
   };
 
+  const buttonsHierarchy = [
+    {
+      text: 'Раскрыть всё',
+      hint: 'Показывает все вложенные состояния и связи в иерархии',
+      onItems: () => {
+        setExpandedItems([]);
+        tree.current?.expandAll();
+      },
+    },
+    {
+      text: 'Свернуть всё',
+      hint: 'Скрывает все вложенные состояния и связи в иерархии',
+      onItems: () => {
+        setExpandedItems([]);
+        tree.current?.collapseAll();
+      },
+    },
+  ];
+
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <ControlledTreeEnvironment
@@ -111,7 +132,7 @@ export const Hierarchy: React.FC<{
               actions.focusItem();
               actions.selectItem();
               //Раскрытие списка по нажатию на текст
-              if (item.isFolder) {
+              if (item.isFolder && !renderFlags.isRenaming) {
                 actions.toggleExpandedState();
               }
             },
@@ -169,26 +190,20 @@ export const Hierarchy: React.FC<{
         }}
       >
         <div>
-          <button
-            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-            type="button"
-            onClick={() => {
-              setExpandedItems([]);
-              tree.current?.expandAll();
-            }}
-          >
-            Раскрыть все
-          </button>
-          <button
-            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-            type="button"
-            onClick={() => {
-              setExpandedItems([]);
-              tree.current?.collapseAll();
-            }}
-          >
-            Свернуть все
-          </button>
+          {buttonsHierarchy.map(({ text, hint, onItems }, i) => (
+            <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
+              {(props) => (
+                <button
+                  className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+                  type="button"
+                  onClick={() => onItems()}
+                  {...props}
+                >
+                  {text}
+                </button>
+              )}
+            </WithHint>
+          ))}
         </div>
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>

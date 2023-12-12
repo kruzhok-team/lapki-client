@@ -26,16 +26,16 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
   ctrlPressed = false;
   shiftPressed = false;
 
-  constructor() {
+  constructor(public element: HTMLElement) {
     super();
 
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
+    this.element.addEventListener('keydown', this.handleKeyDown);
+    this.element.addEventListener('keyup', this.handleKeyUp);
   }
 
   cleanUp() {
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
+    this.element.removeEventListener('keydown', this.handleKeyDown);
+    this.element.removeEventListener('keyup', this.handleKeyUp);
   }
 
   handleKeyDown = (e: KeyboardEvent) => {

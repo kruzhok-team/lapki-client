@@ -522,4 +522,12 @@ export class EditorManager {
 
     return true;
   }
+
+  setScale(value: number) {
+    this.data.scale = value;
+
+    this.triggerDataUpdate('scale');
+
+    return true;
+  }
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 
 import ReactModal, { Props } from 'react-modal';
+import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 
 import './style.css';
-import { twMerge } from 'tailwind-merge';
 
 ReactModal.setAppElement('#root');
 

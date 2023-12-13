@@ -203,7 +203,10 @@ app.whenReady().then(() => {
     return FLASHER_LOCAL_PORT;
   });
 
+  ipcMain.handle('appVersion', app.getVersion);
+
   ipcMain.handle('getAllTemplates', getAllTemplates);
+
   ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
 
   // Горячие клавиши для режима разрабочика:

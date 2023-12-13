@@ -8,6 +8,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
 import { Documentations } from './Documentation/Documentation';
+import { Scale } from './Scale';
 import { Tabs } from './Tabs';
 
 interface MainContainerProps {
@@ -115,6 +116,8 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           </div>
         </div>
       )}
+
+      {editor && <Scale editor={editor} manager={manager} />}
 
       <Documentations topOffset={!!isInitialized} />
     </div>

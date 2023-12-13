@@ -57,7 +57,7 @@ export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
       {items.map((item) => (
         <div
           key={item.name}
-          className={twMerge('hidden h-[calc(100vh-2rem)]', activeTab === item.name && 'block')}
+          className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
             <DiagramEditor {...editorProps} />

@@ -23,7 +23,7 @@ export class CanvasEditor {
     this.root = container;
     this.canvas = new Canvas(this);
     this.mouse = new Mouse(this.canvas.element);
-    this.keyboard = new Keyboard();
+    this.keyboard = new Keyboard(this.canvas.element);
     this.render = new Render();
     this.root.append(this.canvas.element);
     this.canvas.resize();

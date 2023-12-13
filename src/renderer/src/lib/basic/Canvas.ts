@@ -26,7 +26,8 @@ export class Canvas {
     this.resizeObserver = new ResizeObserver(this.resize);
     this.resizeObserver.observe(app.root);
 
-    this.element.style.position = 'absolute';
+    this.element.id = 'canvas';
+    this.element.tabIndex = -1;
   }
 
   clear() {

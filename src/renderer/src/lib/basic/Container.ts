@@ -150,8 +150,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   setScale(value: number) {
-    this.app.manager.data.scale = value;
-
+    this.app.manager.setScale(value);
     picto.scale = value;
 
     this.isDirty = true;

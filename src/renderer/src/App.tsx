@@ -103,7 +103,7 @@ export const App: React.FC = () => {
     <DocumentTitle title={title}>
       <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
         <div className="h-screen select-none">
-          <div className="flex h-full w-full flex-row overflow-hidden">
+          <div className="flex h-full w-full flex-row overflow-x-hidden">
             <Sidebar
               manager={manager}
               editor={editor}

@@ -6,6 +6,9 @@
   body {
     @apply bg-bg-primary font-Fira text-text-primary;
   }
+  #canvas {
+    @apply absolute outline-none focus:outline-none;
+  }
 }
 
 @layer components {

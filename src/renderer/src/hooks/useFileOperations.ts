@@ -23,7 +23,10 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const openSaveModal = () => setIsOpen(true);
-  const onClose = () => setIsOpen(false);
+  const onClose = () => {
+    window.electron.ipcRenderer.send('reset-close');
+    setIsOpen(false);
+  };
 
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {

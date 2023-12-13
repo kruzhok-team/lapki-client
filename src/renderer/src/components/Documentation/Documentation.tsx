@@ -68,9 +68,9 @@ export function Documentations({ topOffset = false }: DocumentationsProps) {
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
+        'absolute right-0 top-0 flex h-[calc(100vh-44.19px)] translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
         isOpen && 'translate-x-0',
-        topOffset && 'top-11'
+        topOffset && 'top-[44.19px]'
       )}
     >
       <button className="w-8" onClick={toggle}>

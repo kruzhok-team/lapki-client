@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   Tree,
@@ -32,28 +32,64 @@ export const Hierarchy: React.FC<{
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
+  const [search, setSearch] = useState<string>('');
 
-  useMemo(() => {
-    setSelectedItems([id]);
+  const findItemPath = useCallback(
+    async (e, searchRoot = 'root') => {
+      const item = await hierarchy[searchRoot];
+      if (item.data.toLowerCase().includes(e.toLowerCase())) {
+        return [item.index];
+      }
+      const searchedItems = await Promise.all(
+        (item.children && item.children.map((child) => findItemPath(e, child))) || []
+      );
+      const result = searchedItems.find((item) => item !== null);
+      if (!result) {
+        return null;
+      }
+      return [item.index, ...result];
+    },
+    [hierarchy]
+  );
+
+  //Функции для поиска в иерархии состояний
+  const find = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (search) {
+        findItemPath(search).then((path) => {
+          if (path) {
+            tree.current?.expandSubsequently(path.slice(0, path.length - 1)).then(() => {
+              tree.current?.selectItems([path[path.length - 1]]);
+            });
+          }
+        });
+      }
+    },
+    [findItemPath, search]
+  );
+
+  useEffect(() => {
+    setSearch(id);
   }, [id]);
 
   if (!editor) return;
 
-  const onSubmit = (item: TreeItem<any>) => {
+  const onSubmit = (item: TreeItem) => {
     setFocusedItem(item.index.toString());
     editor?.container.machineController.selectState(item.index.toString());
     editor?.container.machineController.selectTransition(item.index.toString());
   };
-  const onRename = (item: TreeItem<any>, name: string) => {
+  const onRename = (item: TreeItem, name: string) => {
     editor?.container.machineController.changeStateName(item.index.toString(), name);
   };
   const onSelected = (items: TreeItemIndex[]) => {
     setSelectedItems(items);
   };
-  const onExpanded = (item: TreeItem<any>) => {
+  const onExpanded = (item: TreeItem) => {
     setExpandedItems((items) => [...items, item.index]);
   };
-  const onCollapse = (item: TreeItem<any>) => {
+  const onCollapse = (item: TreeItem) => {
     setExpandedItems((items) =>
       items.filter((expandedItemIndex) => expandedItemIndex !== item.index)
     );
@@ -82,23 +118,50 @@ export const Hierarchy: React.FC<{
     });
   };
 
-  const buttonsHierarchy = [
+  const functionsHierarchy = [
+    {
+      text: 'Поиск...',
+      type: 'input',
+      hint: 'Позволяет найти необходимое состояние(связь) за считанные секунды',
+      onFunction: (e) => {
+        setSearch(e.target.value);
+        find(e);
+      },
+    },
     {
       text: 'Раскрыть всё',
+      type: 'button',
       hint: 'Показывает все вложенные состояния и связи в иерархии',
-      onItems: () => {
+      onFunction: () => {
         setExpandedItems([]);
         tree.current?.expandAll();
       },
     },
     {
       text: 'Свернуть всё',
+      type: 'button',
       hint: 'Скрывает все вложенные состояния и связи в иерархии',
-      onItems: () => {
+      onFunction: () => {
         setExpandedItems([]);
         tree.current?.collapseAll();
       },
     },
+    // {
+    //   text: 'Скрыть связи',
+    //   type: 'button',
+    //   hint: 'Показывает только состояния, связи же будут скрыты',
+    //   onFunction: () => {
+    //     ('');
+    //   },
+    // },
+    // {
+    //   text: 'Скрыть состояния',
+    //   type: 'button',
+    //   hint: 'Показывает только связи, состояния же будут скрыты',
+    //   onFunction: () => {
+    //     ('');
+    //   },
+    // },
   ];
 
   return (
@@ -190,18 +253,29 @@ export const Hierarchy: React.FC<{
         }}
       >
         <div>
-          {buttonsHierarchy.map(({ text, hint, onItems }, i) => (
+          {functionsHierarchy.map(({ text, type, hint, onFunction }, i) => (
             <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
-              {(props) => (
-                <button
-                  className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-                  type="button"
-                  onClick={() => onItems()}
-                  {...props}
-                >
-                  {text}
-                </button>
-              )}
+              {(props) =>
+                type === 'input' ? (
+                  <input
+                    className="btn-primary mb-2 flex w-full items-center justify-center gap-3 placeholder-white"
+                    onChange={onFunction}
+                    type="search"
+                    onBlur={(e) => (e.target.value = '')}
+                    {...props}
+                    placeholder={text}
+                  ></input>
+                ) : (
+                  <button
+                    className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+                    type="button"
+                    onClick={onFunction}
+                    {...props}
+                  >
+                    {text}
+                  </button>
+                )
+              }
             </WithHint>
           ))}
         </div>

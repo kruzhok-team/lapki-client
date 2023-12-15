@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Modal } from './Modal/Modal';
 
@@ -11,12 +11,22 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   onClose,
   ...props
 }) => {
+  const [appVersion, setAppVersion] = useState<string>('0.0.0');
+  const releaseName = 'Abyssinian';
+  const releaseDate = '1 декабря 2023 года';
+
+  useEffect(() => {
+    window.electron.ipcRenderer.invoke('appVersion').then((version) => {
+      setAppVersion(version);
+    });
+  }, []);
+
   return (
     <Modal {...props} onRequestClose={onClose} title="О программе">
       <div>
-        <b>Версия:</b> 0.1.0 «Abyssinian»
+        <b>Версия:</b> {appVersion} «{releaseName}»
         <br />
-        <b>Дата релиза:</b> 1 декабря 2023 года
+        <b>Дата релиза:</b> {releaseDate}
         <br />
         <b>Ссылка на проект:</b>{' '}
         <a

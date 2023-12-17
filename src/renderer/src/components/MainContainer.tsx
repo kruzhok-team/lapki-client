@@ -7,7 +7,7 @@ import { ReactComponent as Icon } from '@renderer/assets/icons/icon.svg';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
-import { Documentations } from './Documentation/Documentation';
+import { Documentation } from './Documentation/Documentation';
 import { Scale } from './Scale';
 import { Tabs } from './Tabs';
 
@@ -119,7 +119,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 
       {editor && <Scale editor={editor} manager={manager} />}
 
-      <Documentations topOffset={!!isInitialized} />
+      <Documentation topOffset={!!isInitialized} />
     </div>
   );
 };

@@ -4,15 +4,16 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
 import { useDoc } from '@renderer/store/useDoc';
+import { File } from '@renderer/types/documentation';
 
-import Show from './components/Show';
+import { Show } from './components/Show';
 import { Tree } from './components/Tree';
 
 import { Settings } from '../Modules/Settings';
 
 /*Загрузка документации*/
 
-interface DocumentationsProps {
+interface DocumentationProps {
   topOffset?: boolean;
 }
 
@@ -32,7 +33,7 @@ function getData(url) {
     });
 }
 
-export function Documentations({ topOffset = false }: DocumentationsProps) {
+export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false }) => {
   const [url, setUrl] = useState('');
   SET_URL = setUrl;
   const [activeTab, setActiveTab] = useState<number>(0);
@@ -43,20 +44,21 @@ export function Documentations({ topOffset = false }: DocumentationsProps) {
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
-  const onItemClicked = (event: React.MouseEvent<HTMLLIElement, MouseEvent>, item) => {
-    event.stopPropagation();
-    if (item.path.endsWith('html')) {
-      fetch(encodeURI(`${url}${item.path}`))
+  const onItemClick = (item: File) => {
+    if (item.path?.endsWith('html')) {
+      return fetch(encodeURI(`${url}${item.path}`))
         .then((data) => data.text())
         .then((html) => {
           setHtml(html);
           setActiveTab(1);
         });
-    } else {
-      setHtml('');
-      setDocumentLink(`${url}${item.path}`);
-      setActiveTab(1);
     }
+
+    setHtml('');
+    setDocumentLink(`${url}${item.path}`);
+    setActiveTab(1);
+
+    return;
   };
 
   useEffect(() => {
@@ -109,7 +111,7 @@ export function Documentations({ topOffset = false }: DocumentationsProps) {
           <div className="h-full overflow-y-auto scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500">
             <div className={twMerge(activeTab !== 0 && 'hidden')}>
               {data ? (
-                <Tree root={data.body} borderWidth={0} onItemClicked={onItemClicked} />
+                <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
               ) : (
                 <span>Загрузка</span>
               )}
@@ -123,4 +125,4 @@ export function Documentations({ topOffset = false }: DocumentationsProps) {
       </div>
     </div>
   );
-}
+};

@@ -1,12 +1,10 @@
-export const FileIcon = (): JSX.Element => (
-  <svg
+<svg
     xmlns="http://www.w3.org/2000/svg"
-    className="mr-2 inline-block h-5 w-5 stroke-current"
     width="44"
     height="44"
     viewBox="0 0 24 24"
     strokeWidth="1.5"
-    stroke="#2c3e50"
+    stroke="currentColor"
     fill="none"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -18,4 +16,3 @@ export const FileIcon = (): JSX.Element => (
     <line x1="12" y1="17" x2="12" y2="16" />
     <line x1="15" y1="17" x2="15" y2="14" />
   </svg>
-);

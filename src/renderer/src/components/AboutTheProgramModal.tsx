@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Modal } from './Modal/Modal';
+import { Modal } from '@renderer/components/UI';
 
 interface AboutTheProgramModalProps {
   isOpen: boolean;

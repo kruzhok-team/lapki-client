@@ -1,12 +1,12 @@
 import React from 'react';
-import { twMerge } from 'tailwind-merge';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { useDoc } from '@renderer/store/useDoc';
+import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useDoc } from '@renderer/store/useDoc';
 
 interface ScaleProps {
   editor: CanvasEditor;

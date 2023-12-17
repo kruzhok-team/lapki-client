@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 
-import { Modal } from '../Modal/Modal';
-import { TextInput } from '../Modal/TextInput';
+import { Modal, TextInput } from '@renderer/components/UI';
 import { Settings } from '../Modules/Settings';
 
 interface ServerSelectModalProps {

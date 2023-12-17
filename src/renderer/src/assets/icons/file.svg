@@ -1,18 +1,14 @@
-<svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="44"
-    height="44"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    fill="none"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-    <line x1="9" y1="17" x2="9" y2="12" />
-    <line x1="12" y1="17" x2="12" y2="16" />
-    <line x1="15" y1="17" x2="15" y2="14" />
-  </svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44" fill="none">
+  <g clip-path="url(#clip0_90_3)">
+    <path d="M25.6667 5.5V12.8333C25.6667 13.3196 25.8599 13.7859 26.2037 14.1297C26.5475 14.4735 27.0139 14.6667 27.5001 14.6667H34.8334" stroke="currentColor" stroke-width="1.83333"/>
+    <path d="M31.1667 38.5H12.8334C11.861 38.5 10.9283 38.1137 10.2407 37.4261C9.55306 36.7384 9.16675 35.8058 9.16675 34.8333V9.16667C9.16675 8.19421 9.55306 7.26158 10.2407 6.57394C10.9283 5.88631 11.861 5.5 12.8334 5.5H25.6667L34.8334 14.6667V34.8333C34.8334 35.8058 34.4471 36.7384 33.7595 37.4261C33.0718 38.1137 32.1392 38.5 31.1667 38.5Z" stroke="currentColor" stroke-width="1.83333"/>
+    <path d="M16.5 31.1667V22" stroke="currentColor" stroke-width="1.83333"/>
+    <path d="M22 31.1666V29.3333" stroke="currentColor" stroke-width="1.83333"/>
+    <path d="M27.5 31.1667V25.6667" stroke="currentColor" stroke-width="1.83333"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_90_3">
+      <rect width="44" height="44" fill="white"/>
+    </clipPath>
+  </defs>
+</svg>

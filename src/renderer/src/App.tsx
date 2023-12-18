@@ -44,14 +44,6 @@ export const App: React.FC = () => {
   const { editor, manager, setEditor } = useEditorManager();
   const contextMenu = useDiagramContextMenu(editor, manager);
 
-  // const [update, setUpdate] = useState<CanvasEditor | null>(null);
-  // useEffect(() => {
-  //   setUpdate(editor);
-  // }, [editor]);
-
-  // const value = useMemo(() => ({ update, setUpdate }), [update]);
-  // console.log(value);
-
   const name = manager.useData('name');
   const platformName = manager.useData('elements.platform');
 

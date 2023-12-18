@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import * as monaco from 'monaco-editor';
-import DocumentTitle from 'react-document-title';
 
 import {
   CreateSchemeModal,
@@ -14,6 +13,7 @@ import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
+import { useAppTitle } from './hooks/useAppTitle';
 import { useModal } from './hooks/useModal';
 import {
   getPlatformsErrors,
@@ -30,15 +30,9 @@ import { Theme } from './types/theme';
 export const App: React.FC = () => {
   // TODO: а если у нас будет несколько редакторов?
 
-  // Заголовок с названием файла,платформой и - Lapki IDE в конце
-  const [title, setTitle] = useState<string>('Lapki IDE');
-
   const [theme, setTheme] = useState<Theme>('dark');
 
   const { editor, manager, setEditor } = useEditorManager();
-
-  const name = manager.useData('name');
-  const platformName = manager.useData('elements.platform');
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
@@ -51,6 +45,8 @@ export const App: React.FC = () => {
     openSaveError,
     openImportError,
   });
+
+  useAppTitle(manager);
 
   const handleChangeTheme = (theme: Theme) => {
     setTheme(theme);
@@ -77,44 +73,35 @@ export const App: React.FC = () => {
     });
   }, []);
 
-  // Переименование вынес сюда из EditorManager.
-  useEffect(() => {
-    if (!name || !platformName) return;
-
-    setTitle(`${name} [${platformName}] – Lapki IDE`);
-  }, [name, platformName]);
-
   return (
-    <DocumentTitle title={title}>
-      <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
-        <div className="h-screen select-none">
-          <div className="flex h-full w-full flex-row overflow-x-hidden">
-            <Sidebar
-              manager={manager}
-              editor={editor}
-              callbacks={operations}
-              openImportError={openImportError}
-            />
-
-            <MainContainer
-              manager={manager}
-              editor={editor}
-              setEditor={setEditor}
-              onRequestOpenFile={operations.onRequestOpenFile}
-            />
-          </div>
-
-          <SaveRemindModal {...saveModalProps} />
-          <ErrorModal {...errorModalProps} />
-          <CreateSchemeModal
-            isOpen={isCreateSchemeModalOpen}
-            onCreate={performNewFile}
-            onClose={closeCreateSchemeModal}
-            onCreateFromTemplate={handleOpenFromTemplate}
+    <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
+      <div className="h-screen select-none">
+        <div className="flex h-full w-full flex-row overflow-x-hidden">
+          <Sidebar
             manager={manager}
+            editor={editor}
+            callbacks={operations}
+            openImportError={openImportError}
+          />
+
+          <MainContainer
+            manager={manager}
+            editor={editor}
+            setEditor={setEditor}
+            onRequestOpenFile={operations.onRequestOpenFile}
           />
         </div>
-      </ThemeContext.Provider>
-    </DocumentTitle>
+
+        <SaveRemindModal {...saveModalProps} />
+        <ErrorModal {...errorModalProps} />
+        <CreateSchemeModal
+          isOpen={isCreateSchemeModalOpen}
+          onCreate={performNewFile}
+          onClose={closeCreateSchemeModal}
+          onCreateFromTemplate={handleOpenFromTemplate}
+          manager={manager}
+        />
+      </div>
+    </ThemeContext.Provider>
   );
 };

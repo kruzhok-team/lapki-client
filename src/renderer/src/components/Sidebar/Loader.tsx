@@ -218,7 +218,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         <div className="mb-2 flex rounded">
           <button
             className={twMerge(
-              'btn-primary mr-2 flex w-full items-center justify-center px-2',
+              'btn-primary mr-2 flex w-full items-center justify-between px-5',
               flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
             )}
             onClick={() => {

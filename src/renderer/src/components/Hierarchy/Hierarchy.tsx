@@ -188,6 +188,22 @@ export const Hierarchy: React.FC<{
             selectedItems,
           },
         }}
+        //Реализовано свое переименование для добавления разных функций
+        renderRenameInput={(props) => (
+          <form {...props.formProps}>
+            <span>
+              <input
+                {...props.inputProps}
+                ref={props.inputRef}
+                maxLength={16}
+                className="rct-tree-item-renaming-input"
+              />
+            </span>
+            <span>
+              <button {...props.submitButtonProps} ref={props.submitButtonRef} type="submit" />
+            </span>
+          </form>
+        )}
         defaultInteractionMode={{
           mode: 'custom',
           createInteractiveElementProps: (item, _treeId, actions, renderFlags) => ({

@@ -120,7 +120,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         />
       </div>
       <div className="h-full flex-auto px-4 pt-3 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
+        <h1 className="mb-3 border-b border-border-primary pb-2 text-lg">Иерархия состояний</h1>
         <Hierarchy {...hierarchyData} />
       </div>
 

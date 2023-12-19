@@ -30,7 +30,8 @@ export class Serializer {
   getState(id: string) {
     const state = this.data.elements.states[id];
     if (!state) return null;
-
+    //Требуется проверка на удаление
+    delete state.selection;
     return JSON.stringify(state, undefined, 2);
   }
 

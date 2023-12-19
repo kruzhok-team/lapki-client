@@ -917,6 +917,9 @@ export class MachineController {
     if (!state) return;
 
     this.removeSelection();
+
+    this.container.app.manager.changeStateSelection(id, true);
+
     state.setIsSelected(true);
   }
 
@@ -925,6 +928,9 @@ export class MachineController {
     if (!transition) return;
 
     this.removeSelection();
+
+    this.container.app.manager.changeTransitionSelection(id, true);
+
     transition.setIsSelected(true);
   }
 

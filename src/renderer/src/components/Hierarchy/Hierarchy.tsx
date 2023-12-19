@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
 import {
   Tree,
@@ -29,7 +29,7 @@ export const Hierarchy: React.FC<{
   hierarchy: HierarchyItem;
   id: string;
   editor: CanvasEditor | null;
-}> = ({ hierarchy, editor }) => {
+}> = ({ hierarchy, id, editor }) => {
   //Магия смены темы у данного компонента(На самом деле всё просто, он как ребёнок, получает все знания у своего родителя, которая связана со сменой темы)
   const { theme } = useThemeContext();
   const treeEnvironment = useRef<TreeEnvironmentRef>(null);
@@ -71,6 +71,11 @@ export const Hierarchy: React.FC<{
     },
     [findItemPath, search]
   );
+
+  useLayoutEffect(() => {
+    setSelectedItems([id]);
+    setSearch(id);
+  }, [id]);
 
   if (!editor) return;
 

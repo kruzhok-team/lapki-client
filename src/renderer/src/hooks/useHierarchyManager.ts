@@ -50,44 +50,43 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
       ],
       data: 'Root item',
     };
-
     //Создаем элементы списка иерархий(состояния)
-    Object.entries(states).map((state) => {
-      data[state[0]] = {
-        index: state[0],
+    for (const [stateId, state] of Object.entries(states)) {
+      data[stateId] = {
+        index: stateId,
         isFolder:
-          Object.entries(states).some((value) => value[1].parent === state[0]) ||
-          Object.entries(transitions).some((transition) => transition[1].source === state[0]),
+          Object.entries(states).some((value) => value[1].parent === stateId) ||
+          Object.entries(transitions).some((transition) => transition[1].source === stateId),
         children: [
           ...Object.entries(states)
-            .filter((value) => value[1].parent === state[0])
+            .filter((value) => value[1].parent === stateId)
             .map((value) => value[0]),
           ...Object.entries(transitions)
-            .filter((transition) => transition[1].source === state[0])
+            .filter((transition) => transition[1].source === stateId)
             .map((value) => value[0]),
         ],
-        data: state[1].name,
+        data: state.name,
         canRename: true,
         canMove: true,
       };
-    });
+    }
 
     //Создаем элементы списка иерархий(связи)
-    Object.entries(transitions).map((transition) => {
-      data[transition[0]] = {
-        index: transition[0],
+    for (const [transitionId, transition] of Object.entries(transitions)) {
+      data[transitionId] = {
+        index: transitionId,
         data:
           Object.entries(states)
-            .filter((state) => transition[1].source === state[0])
+            .filter((state) => transition.source === state[0])
             .map((value) => value[1].name) +
           ' -> ' +
           Object.entries(states)
-            .filter((state) => transition[1].target === state[0])
+            .filter((state) => transition.target === state[0])
             .map((value) => value[1].name),
         canRename: false,
         canMove: false,
       };
-    });
+    }
     return data;
   }, [states, transitions]);
 

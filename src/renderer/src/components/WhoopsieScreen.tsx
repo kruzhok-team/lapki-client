@@ -1,5 +1,5 @@
-import { ErrorInfo } from 'react';
-import { Component, ReactNode } from 'react';
+import { ErrorInfo, Component, ReactNode } from 'react';
+
 // TODO: aтрибуция
 // Cat Poop by Denis Sazhin from <a href="https://thenounproject.com/browse/icons/term/cat-poop/" target="_blank" title="Cat Poop Icons">Noun Project</a> (CC BY 3.0)
 import { ReactComponent as CatError } from '../assets/icons/cat-error.svg';

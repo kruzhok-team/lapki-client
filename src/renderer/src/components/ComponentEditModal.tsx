@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { Modal } from '@renderer/components/UI';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
 import { ComponentFormFields } from './ComponentFormFields';
-import { Modal } from './Modal/Modal';
 
 interface ComponentEditModalProps {
   isOpen: boolean;

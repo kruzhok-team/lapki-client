@@ -4,11 +4,11 @@ import { twMerge } from 'tailwind-merge';
 
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ScrollableList } from '@renderer/components/ScrollableList';
+import { Modal } from '@renderer/components/UI';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable/Picto';
 
-import { Modal } from './Modal/Modal';
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 

@@ -5,7 +5,7 @@ import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { PlatformSelection } from './PlatformSelection';
 import { TemplateSelection } from './TemplateSelection';
 
-import { Modal } from '../Modal/Modal';
+import { Modal } from '../UI/Modal/Modal';
 import { TabPanel } from '../UI/Tabs/TabPanel';
 import { Tabs } from '../UI/Tabs/Tabs';
 

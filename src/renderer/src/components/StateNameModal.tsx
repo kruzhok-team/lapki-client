@@ -1,9 +1,8 @@
 import React, { useLayoutEffect, useState } from 'react';
 
+import { WithHint } from '@renderer/components/UI';
 import { State } from '@renderer/lib/drawable/State';
 import { Point } from '@renderer/types/graphics';
-
-import { WithHint } from './WithHint';
 
 interface StateNameModalProps {
   isOpen: boolean;

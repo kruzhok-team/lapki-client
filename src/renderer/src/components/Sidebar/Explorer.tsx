@@ -5,11 +5,10 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
+import { WithHint } from '@renderer/components/UI';
 import { useComponents } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-
-import { WithHint } from '../WithHint';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;

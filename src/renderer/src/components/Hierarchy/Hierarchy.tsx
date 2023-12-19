@@ -73,8 +73,10 @@ export const Hierarchy: React.FC<{
   );
 
   useLayoutEffect(() => {
-    setSelectedItems([id]);
-    setSearch(id);
+    if (id) {
+      return setSelectedItems([id]);
+    }
+    setSelectedItems([]);
   }, [id]);
 
   if (!editor) return;

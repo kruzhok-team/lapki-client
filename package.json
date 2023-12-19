@@ -33,7 +33,6 @@
     "@electron-toolkit/utils": "^1.0.2",
     "@floating-ui/react": "^0.24.8",
     "@floating-ui/react-dom": "^2.0.1",
-    "@headlessui/react": "^1.7.15",
     "@monaco-editor/react": "^4.5.1",
     "@types/ws": "^8.5.10",
     "@uiw/react-codesandbox": "^1.1.5",

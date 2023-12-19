@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import {
   Tree,
@@ -29,7 +29,7 @@ export const Hierarchy: React.FC<{
   hierarchy: HierarchyItem;
   id: string;
   editor: CanvasEditor | null;
-}> = ({ hierarchy, id, editor }) => {
+}> = ({ hierarchy, editor }) => {
   //Магия смены темы у данного компонента(На самом деле всё просто, он как ребёнок, получает все знания у своего родителя, которая связана со сменой темы)
   const { theme } = useThemeContext();
   const treeEnvironment = useRef<TreeEnvironmentRef>(null);
@@ -104,14 +104,21 @@ export const Hierarchy: React.FC<{
       stopPropagation: e.stopPropagation,
       nativeEvent: e.nativeEvent,
     };
-    editor.container.machineController.states[item.index.toString()].find((state) => {
-      editor.container.statesController.handleContextMenu(state[1], { event: mouse });
-    });
-    editor.container.machineController.transitions[item.index.toString()].find((transition) => {
-      editor.container.transitionsController.handleContextMenu(transition[1], {
-        event: mouse,
-      });
-    });
+    const state = editor.container.machineController.states.get(item.index.toString());
+    if (state) {
+      return editor.container.statesController.handleContextMenu(state, { event: mouse });
+    }
+
+    const transition = editor.container.machineController.transitions.get(item.index.toString());
+    if (transition) {
+      return editor.container.transitionsController.handleContextMenu(transition, { event: mouse });
+    }
+
+    // editor.container.machineController.transitions[item.index.toString()].find((transition) => {
+    //   editor.container.transitionsController.handleContextMenu(transition[1], {
+    //     event: mouse,
+    //   });
+    // });
   };
   const onDragStart = (e, item: TreeItem, actions: TreeItemActions) => {
     //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
@@ -218,21 +225,22 @@ export const Hierarchy: React.FC<{
             delay={100}
           >
             {(props) => (
-              <>
-                <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+              <div className="mb-2 flex items-center">
+                <span className="absolute pl-2">
                   <SearchIcon />
                 </span>
                 <input
-                  className="mb-2 flex h-10 w-full gap-3 rounded p-2 text-current focus:border-[#0c4bee] focus:outline-none focus:ring-2 focus:ring-[#0c4bee]"
+                  className="flex h-10 w-full gap-3 rounded border-white bg-transparent pl-10 pr-2 text-current ring-2 focus:border-[#0c4bee] focus:outline-none focus:ring-2 focus:ring-[#0c4bee]"
                   onChange={(e) => {
                     setSearch(e.target.value);
                     find(e);
                   }}
                   {...props}
+                  type="text"
                   onBlur={(e) => (e.target.value = '')}
                   placeholder="Поиск..."
                 />
-              </>
+              </div>
             )}
           </WithHint>
           <WithHint

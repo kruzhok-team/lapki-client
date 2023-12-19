@@ -300,6 +300,11 @@ function parseComponentNode(content: string, component: OuterComponent) {
         }
         break;
       }
+      case 'labelColor':
+      case 'label': {
+        component.parameters[parameterName] = value;
+        break;
+      }
       case 'name': {
         if (component.humanName === undefined || component.humanName === '') {
           component.humanName = value;

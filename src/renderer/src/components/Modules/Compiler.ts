@@ -246,8 +246,23 @@ export class Compiler {
           this.mode = 'compile';
           const compilerSettings: CompilerSettings = {
             compiler: 'arduino-cli',
-            filename: 'biba',
+            filename: this.filename,
             flags: ['-b', 'arduino:avr:uno'],
+          };
+          const obj = {
+            ...(data as Elements),
+            compilerSettings: compilerSettings,
+          };
+          ws.send(JSON.stringify(obj));
+          break;
+        }
+        case 'ArduinoMicro': {
+          ws.send('arduino');
+          this.mode = 'compile';
+          const compilerSettings: CompilerSettings = {
+            compiler: 'arduino-cli',
+            filename: this.filename,
+            flags: ['-b', 'arduino:avr:micro'],
           };
           const obj = {
             ...(data as Elements),

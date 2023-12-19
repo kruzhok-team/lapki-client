@@ -236,7 +236,7 @@ export const Hierarchy: React.FC<{
                     find(e);
                   }}
                   {...props}
-                  type="text"
+                  type="search"
                   onBlur={(e) => (e.target.value = '')}
                   placeholder="Поиск..."
                 />

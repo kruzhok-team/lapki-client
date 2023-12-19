@@ -18,7 +18,7 @@ const combination = [
     },
   },
   {
-    name: 'Импорт схемы(Graphml)',
+    name: 'Импорт схемы (Cyberiada-GraphML)',
     command: {
       button1: 'Ctrl',
       button2: 'I',

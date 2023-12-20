@@ -16,14 +16,13 @@ import { twMerge } from 'tailwind-merge';
 import './style-modern.css';
 
 import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg';
+import { WithHint } from '@renderer/components/UI';
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { InputRender } from './inputRender';
-
-import { WithHint } from '../WithHint';
 
 export const Hierarchy: React.FC<{
   hierarchy: HierarchyItem;
@@ -259,7 +258,7 @@ export const Hierarchy: React.FC<{
           >
             {(props) => (
               <button
-                className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+                className="btn-primary mb-2 w-full"
                 type="button"
                 onClick={handleExpanded}
                 {...props}
@@ -277,7 +276,7 @@ export const Hierarchy: React.FC<{
           >
             {(props) => (
               <button
-                className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+                className="btn-primary mb-2 w-full"
                 type="button"
                 onClick={handleCollapse}
                 {...props}

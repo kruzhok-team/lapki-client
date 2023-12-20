@@ -19,11 +19,11 @@ export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const scale = manager.useData('scale');
 
   const handleZoomOut = () => {
-    editor.container.changeScale(0.1);
+    editor.container.changeScale(0.2);
   };
 
   const handleZoomIn = () => {
-    editor.container.changeScale(-0.1);
+    editor.container.changeScale(-0.2);
   };
 
   const handleReset = () => {

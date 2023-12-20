@@ -255,7 +255,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <p>{connectionStatus}</p>
           <br></br>
           <button
-            className="btn-primary mb-2"
+            className="btn-primary mb-2 w-full"
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:

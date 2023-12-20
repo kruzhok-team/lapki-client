@@ -95,12 +95,12 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   };
 
   return (
-    <section className="flex flex-col" onClick={() => onUnClick()}>
+    <section className="flex h-full flex-col px-4" onClick={() => onUnClick()}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Компоненты
+        Проводник
       </h3>
-
-      <div className="px-4 text-center">
+      <div className="h-[50%]">
+        <h3 className="mb-3 font-semibold">Компоненты</h3>
         <button
           className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
           disabled={!isInitialized}
@@ -111,7 +111,6 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         </button>
 
         <ScrollableList
-          className="max-h-[300px]"
           containerProps={{ onClick: (e) => e.stopPropagation() }}
           listItems={Object.keys(components)}
           heightOfItem={10}
@@ -119,8 +118,9 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
           renderItem={renderComponent}
         />
       </div>
-      <div className="h-full flex-auto px-4 pt-3 text-center">
-        <h1 className="mb-3 border-b border-border-primary pb-2 text-lg">Иерархия состояний</h1>
+
+      <div className="h-[50%] flex-auto pt-3">
+        <h3 className="mb-3 font-semibold">Иерархия состояний</h3>
         <Hierarchy {...hierarchyData} />
       </div>
 

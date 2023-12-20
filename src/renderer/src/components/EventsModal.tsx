@@ -1,15 +1,11 @@
 import React, { useLayoutEffect, useState } from 'react';
 
-import './Modal/style.css';
-import { Select, SelectOption } from '@renderer/components/UI';
+import { Select, SelectOption, WithHint, Modal } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { State } from '@renderer/lib/drawable/State';
 import { Action, Event } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
-
-import { Modal } from './Modal';
-import { WithHint } from './WithHint';
 
 import { EventSelection } from '../lib/drawable/Events';
 

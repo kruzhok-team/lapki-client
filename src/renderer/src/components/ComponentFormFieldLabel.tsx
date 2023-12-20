@@ -1,8 +1,7 @@
 import React from 'react';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
-
-import { WithHint } from './WithHint';
+import { WithHint } from '@renderer/components/UI';
 
 interface ComponentFormFieldLabelProps {
   label: string;

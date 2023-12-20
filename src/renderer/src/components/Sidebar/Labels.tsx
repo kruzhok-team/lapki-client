@@ -2,9 +2,8 @@ import React from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { WithHint } from '@renderer/components/UI';
 import { useSidebar } from '@renderer/store/useSidebar';
-
-import { WithHint } from '../WithHint';
 
 interface LabelsProps {
   items: Array<{ Icon: JSX.Element; bottom?: boolean; hint: string }>;

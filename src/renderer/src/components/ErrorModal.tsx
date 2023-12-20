@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Modal } from './Modal/Modal';
+import { Modal } from '@renderer/components/UI';
 
 export type ErrorModalData = {
   text: JSX.Element;

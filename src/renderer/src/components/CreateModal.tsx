@@ -5,7 +5,14 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { Select, SelectOption } from '@renderer/components/UI';
+import {
+  Select,
+  SelectOption,
+  WithHint,
+  Modal,
+  ColorInput,
+  TextInput,
+} from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
@@ -20,10 +27,6 @@ import {
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { defaultTransColor } from './DiagramEditor';
-import { ColorInput } from './Modal/ColorInput';
-import { Modal } from './Modal/Modal';
-import { TextInput } from './Modal/TextInput';
-import { WithHint } from './WithHint';
 
 const operandOptions = [
   {

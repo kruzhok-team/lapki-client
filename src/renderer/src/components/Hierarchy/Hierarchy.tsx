@@ -220,7 +220,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
       >
         <div>
           <WithHint
-            key="input"
             hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
             placement="right"
             offset={5}
@@ -246,7 +245,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
             )}
           </WithHint>
           <WithHint
-            key="button1"
             hint="Показывает все вложенные состояния и связи в иерархии"
             placement="right"
             offset={5}
@@ -264,7 +262,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
             )}
           </WithHint>
           <WithHint
-            key="button2"
             hint="Скрывает все вложенные состояния и связи в иерархии"
             placement="right"
             offset={5}

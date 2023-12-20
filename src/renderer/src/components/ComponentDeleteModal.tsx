@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { Modal } from './Modal/Modal';
-
-import { ComponentProto } from '@renderer/types/platform';
+import { Modal } from '@renderer/components/UI';
 import { Component as ComponentData } from '@renderer/types/diagram';
+import { ComponentProto } from '@renderer/types/platform';
 
 interface ComponentDeleteModalProps {
   isOpen: boolean;

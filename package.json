@@ -1,6 +1,6 @@
 {
   "name": "lapki-ide",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Statemachine-based IDE for cyber-physical systems",
   "main": "./out/main/index.js",
   "author": "Kruzhok Association, Polyus-NT",
@@ -33,7 +33,6 @@
     "@electron-toolkit/utils": "^1.0.2",
     "@floating-ui/react": "^0.24.8",
     "@floating-ui/react-dom": "^2.0.1",
-    "@headlessui/react": "^1.7.15",
     "@monaco-editor/react": "^4.5.1",
     "@types/ws": "^8.5.10",
     "@uiw/react-codesandbox": "^1.1.5",
@@ -70,7 +69,6 @@
     "@types/lodash.throttle": "^4.1.8",
     "@types/node": "^18.16.16",
     "@types/react": "^18.2.8",
-    "@types/react-document-title": "^2.0.5",
     "@types/react-dom": "^18.2.4",
     "@types/react-modal": "^3.16.0",
     "@typescript-eslint/eslint-plugin": "^5.59.8",

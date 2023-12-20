@@ -19,7 +19,7 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
   const transitions = manager.useData('elements.transitions');
 
   //Нахождение выделеного состояния(связи)
-  const id: string | undefined = useMemo(() => {
+  const selectedItemId: string | undefined = useMemo(() => {
     let isSelectedName: string = '';
 
     for (const [stateId, state] of Object.entries(states)) {
@@ -90,5 +90,5 @@ export const useHierarchyManager = (editor: CanvasEditor | null, manager: Editor
     return data;
   }, [states, transitions]);
 
-  return { hierarchy, id, editor };
+  return { hierarchy, selectedItemId, editor };
 };

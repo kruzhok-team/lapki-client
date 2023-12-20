@@ -24,12 +24,13 @@ import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { InputRender } from './inputRender';
 
-export const Hierarchy: React.FC<{
+export interface HierarchyProps {
   hierarchy: HierarchyItem;
-  id: string;
+  selectedItemId: string;
   editor: CanvasEditor | null;
-}> = ({ hierarchy, id, editor }) => {
-  //Магия смены темы у данного компонента(На самом деле всё просто, он как ребёнок, получает все знания у своего родителя, которая связана со сменой темы)
+}
+
+export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId, editor }) => {
   const { theme } = useThemeContext();
   const treeEnvironment = useRef<TreeEnvironmentRef>(null);
   const tree = useRef<TreeRef>(null);
@@ -72,11 +73,11 @@ export const Hierarchy: React.FC<{
   );
 
   useLayoutEffect(() => {
-    if (id) {
-      return setSelectedItems([id]);
+    if (selectedItemId) {
+      return setSelectedItems([selectedItemId]);
     }
     setSelectedItems([]);
-  }, [id]);
+  }, [selectedItemId]);
 
   if (!editor) return;
 
@@ -119,12 +120,6 @@ export const Hierarchy: React.FC<{
     if (transition) {
       return editor.container.transitionsController.handleContextMenu(transition, { event: mouse });
     }
-
-    // editor.container.machineController.transitions[item.index.toString()].find((transition) => {
-    //   editor.container.transitionsController.handleContextMenu(transition[1], {
-    //     event: mouse,
-    //   });
-    // });
   };
   const onDragStart = (e, item: TreeItem, actions: TreeItemActions) => {
     //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
@@ -134,6 +129,7 @@ export const Hierarchy: React.FC<{
   };
 
   const onRename = (item: TreeItem, name: string) => {
+    //Используется для переименование состояния, это можно использовать
     editor?.container.machineController.changeStateName(item.index.toString(), name);
   };
   const onSelected = (items: TreeItemIndex[]) => {

@@ -45,7 +45,7 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
 }) => {
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
-  const isEditingEvent = isData?.event.actionIdx === null;
+  const isEditingEvent = Boolean(isData && isData.event.actionIdx === null);
 
   const compoEntry = (idx: string) => {
     const proto = machine.platform.getComponent(idx);
@@ -222,19 +222,27 @@ export const CreateEventsModal: React.FC<EventsModalProps> = ({
   const [wasOpen, setWasOpen] = useState(false);
   useLayoutEffect(() => {
     if (!wasOpen && isOpen) {
-      const d: FormPreset | undefined = tryGetData();
+      const d = tryGetData();
       if (d) {
         setComponents(d.compo);
         setMethods(d.event);
         setArgSet(d.argSet);
         setArgForm(d.argForm);
       } else {
-        setComponents(components);
+        setComponents(options[0]);
+        setMethods(optionsMethods[0]);
+        setArgSet({});
+        if (optionsMethods[0]) {
+          setArgForm(retrieveArgForm(options[0].value, optionsMethods[0].value));
+        } else {
+          setArgForm([]);
+        }
       }
       setIsChanged(false);
     }
     setWasOpen(isOpen);
-  }, [isOpen]);
+    // Пока такой неочивидный набор зависимостей, планируется полностью переписать эту модалку
+  }, [isOpen, wasOpen]);
 
   const handleSubmit = (ev: React.FormEvent) => {
     ev.preventDefault();

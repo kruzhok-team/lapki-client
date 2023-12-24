@@ -1,41 +1,40 @@
-import { Transition } from '@headlessui/react';
 import React, { useState } from 'react';
-import { File } from '../types/File';
-import { DirectoryIcon } from '../Icons/Directory';
+
+import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as DirectoryIcon } from '@renderer/assets/icons/directory.svg';
+import { File } from '@renderer/types/documentation';
+
 import { Item } from './Item';
 import { Tree } from './Tree';
 
-export const Directory = ({
-  item,
-  onItemClicked,
-}: React.PropsWithChildren<{
+interface DirectoryProps {
   item: File;
-  onItemClicked;
-}>): JSX.Element => {
-  const [toggle, setToggle] = useState<boolean>(false);
+  onItemClick: (item: File) => void;
+}
+
+export const Directory: React.FC<DirectoryProps> = ({ item, onItemClick }) => {
+  const [isOpen, setIsOpen] = useState(false);
 
   const onDirectoryClicked = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     event.stopPropagation();
-    setToggle(!toggle);
+    setIsOpen((p) => !p);
   };
 
   return (
     <Item onClick={onDirectoryClicked}>
       <span className="block truncate bg-opacity-50 pb-2 pl-0 pr-2 pt-2 transition hover:bg-[#4391bf] hover:bg-opacity-50">
-        <DirectoryIcon />
+        <DirectoryIcon className="mr-2 inline-block h-5 w-5" />
         {item.name}
       </span>
-      <Transition
-        show={toggle}
-        enter="transition-opacity duration-10"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="transition-opacity duration-10"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
+      <div
+        className={twMerge(
+          'max-h-0 overflow-hidden transition-opacity',
+          isOpen && 'max-h-none opacity-100'
+        )}
       >
-        <Tree root={item} onItemClicked={onItemClicked} />
-      </Transition>
+        <Tree root={item} onItemClick={onItemClick} />
+      </div>
     </Item>
   );
 };

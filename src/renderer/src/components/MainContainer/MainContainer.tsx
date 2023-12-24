@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { twMerge } from 'tailwind-merge';
 
-import { Documentations, Scale } from '@renderer/components';
+import { Documentation, Scale } from '@renderer/components';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 
@@ -61,7 +61,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 
       {editor && <Scale editor={editor} manager={manager} />}
 
-      <Documentations topOffset={!!isInitialized} />
+      <Documentation topOffset={!!isInitialized} />
     </div>
   );
 };

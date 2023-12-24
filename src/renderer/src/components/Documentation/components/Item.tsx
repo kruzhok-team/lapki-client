@@ -1,11 +1,11 @@
-import React from 'react';
-export const Item = ({
-  children,
-  ...rest
-}: React.PropsWithChildren<
-  React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>
->) => (
-  <li className="cursor-pointer" {...rest}>
-    {children}
-  </li>
-);
+import React, { ComponentProps } from 'react';
+
+type ItemProps = ComponentProps<'li'>;
+
+export const Item: React.FC<ItemProps> = ({ children, ...rest }) => {
+  return (
+    <li className="cursor-pointer" {...rest}>
+      {children}
+    </li>
+  );
+};

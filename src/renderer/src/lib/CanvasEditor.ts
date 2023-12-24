@@ -1,3 +1,5 @@
+import * as TWEEN from '@tweenjs/tween.js';
+
 import { Canvas } from './basic/Canvas';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
@@ -42,6 +44,8 @@ export class CanvasEditor {
     });
 
     this.render.subscribe(() => {
+      TWEEN.update();
+
       if (!this.container.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();

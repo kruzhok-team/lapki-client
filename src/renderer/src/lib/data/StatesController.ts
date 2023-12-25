@@ -91,14 +91,27 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
     this.container.machineController.selectState(state.id);
 
-    const eventIdx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
-    if (!eventIdx) {
-      this.emit('stateContextMenu', { state, position: { x: e.event.x, y: e.event.y } });
-    } else {
+    const eventIdx = state.eventBox.handleClick({
+      x: e.event.x,
+      y: e.event.y,
+    });
+    //Переносено с useDiagramContextMenu.ts, так как эта математика нужна лишь для событий внутри состояний
+    //Раньше позиция мышки бралась с верхнего левого угла и прибавлялось значение клика внутри него, но щас позиция клика мышки берётся глобального
+    const offset = this.container.app.mouse.getOffset();
+
+    if (eventIdx) {
       this.emit('eventContextMenu', {
         state,
-        position: { x: e.event.x, y: e.event.y },
+        position: {
+          x: e.event.x + offset.x,
+          y: e.event.y + offset.y,
+        },
         event: eventIdx,
+      });
+    } else {
+      this.emit('stateContextMenu', {
+        state,
+        position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
       });
     }
   };

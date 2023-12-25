@@ -917,6 +917,9 @@ export class MachineController {
     if (!state) return;
 
     this.removeSelection();
+
+    this.container.app.manager.changeStateSelection(id, true);
+
     state.setIsSelected(true);
   }
 
@@ -925,6 +928,9 @@ export class MachineController {
     if (!transition) return;
 
     this.removeSelection();
+
+    this.container.app.manager.changeTransitionSelection(id, true);
+
     transition.setIsSelected(true);
   }
 
@@ -940,11 +946,13 @@ export class MachineController {
   removeSelection() {
     this.states.forEach((state) => {
       state.setIsSelected(false);
+      this.container.app.manager.changeStateSelection(state.id, false);
       state.eventBox.selection = undefined;
     });
 
-    this.transitions.forEach((value) => {
-      value.setIsSelected(false);
+    this.transitions.forEach((transition) => {
+      transition.setIsSelected(false);
+      this.container.app.manager.changeTransitionSelection(transition.id, false);
     });
 
     this.container.isDirty = true;

@@ -1,6 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
 
-import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -10,7 +9,6 @@ import { Transition } from '@renderer/lib/drawable/Transition';
 import { Action } from '@renderer/types/diagram';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
-import { DiagramContextMenu } from './DiagramContextMenu';
 import { CreateEventsModal, EventsModalResult } from './EventsModal';
 import { StateNameModal } from './StateNameModal';
 
@@ -44,7 +42,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
     const openEventsModal = () => setIsEventsModalOpen(true);
     const closeEventsModal = () => setIsEventsModalOpen(false);
 
-    const contextMenu = useDiagramContextMenu(editor, manager);
     const stateName = useDiagramStateName(editor);
 
     useEffect(() => {
@@ -165,7 +162,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       <>
         <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef} />
 
-        <DiagramContextMenu {...contextMenu} />
         <StateNameModal {...stateName} />
 
         {editor && (

@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { WithHint } from '@renderer/components/UI';
 import { useComponents } from '@renderer/hooks';
+import { useHierarchyManager } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+
+import { Hierarchy } from '../Hierarchy/Hierarchy';
 
 interface ExplorerProps {
   editor: CanvasEditor | null;
@@ -27,6 +31,8 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     onRequestEditComponent,
     onRequestDeleteComponent,
   } = useComponents(editor, manager);
+
+  const hierarchyData = useHierarchyManager(editor, manager);
 
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -89,46 +95,67 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     );
   };
 
+  const [showComponents, setShowComponents] = useState(true);
+  const [showHierarchy, setShowHierarchy] = useState(true);
+
+  const toggleShow = (name: string) => {
+    if (name === 'Компоненты') {
+      return setShowComponents(!showComponents);
+    }
+    setShowHierarchy(!showHierarchy);
+  };
+
   return (
-    <section className="flex flex-col" onClick={() => onUnClick()}>
+    <section className="flex h-full flex-col px-4" onClick={() => onUnClick()}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Компоненты
+        Проводник
       </h3>
-
-      <div className="px-4 text-center">
+      <div className={twMerge('h-[50%]', !showComponents && 'h-10')}>
         <button
-          className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-          disabled={!isInitialized}
-          onClick={onAddClick}
+          className="mb-3 flex w-full justify-between"
+          onClick={() => toggleShow('Компоненты')}
         >
-          <AddIcon className="shrink-0" />
-          Добавить...
+          <h3 className="font-semibold">Компоненты</h3>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', showComponents && 'rotate-180')}
+          />
         </button>
+        <div className={twMerge(showComponents ? 'block' : 'hidden')}>
+          <button
+            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+            disabled={!isInitialized}
+            onClick={onAddClick}
+          >
+            <AddIcon className="shrink-0" />
+            Добавить...
+          </button>
 
-        <ScrollableList
-          className="max-h-[350px]"
-          containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={Object.keys(components)}
-          heightOfItem={10}
-          maxItemsToRender={50}
-          renderItem={renderComponent}
-        />
+          <ScrollableList
+            containerProps={{ onClick: (e) => e.stopPropagation() }}
+            listItems={Object.keys(components)}
+            heightOfItem={10}
+            maxItemsToRender={50}
+            renderItem={renderComponent}
+          />
+        </div>
       </div>
-
+      <div className={twMerge('h-[50%]', !showHierarchy && 'h-10')}>
+        <button
+          className="mb-3 flex w-full justify-between"
+          onClick={() => toggleShow('Иерархия состояний')}
+        >
+          <h3 className="font-semibold">Иерархия состояний</h3>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', showHierarchy && 'rotate-180')}
+          />
+        </button>
+        <div className={twMerge(showHierarchy ? 'block' : 'hidden')}>
+          <Hierarchy {...hierarchyData} />
+        </div>
+      </div>
       <ComponentAddModal manager={manager} {...addProps} />
       <ComponentEditModal manager={manager} {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
-
-      {/* TODO: 
-      <div className="h-full flex-auto px-4 pt-3 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
-
-        <div>
-          Не забыть посмотреть варианты древа и возможности редактирования машины состояний
-          отсюда!!!
-        </div>
-      </div>
-       */}
     </section>
   );
 };

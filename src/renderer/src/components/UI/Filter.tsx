@@ -103,6 +103,7 @@ export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleColl
               context={context}
               width={ARROW_WIDTH}
               height={ARROW_HEIGHT}
+              color="white"
             />
             <WithHint
               hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
@@ -130,8 +131,8 @@ export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleColl
             </WithHint>
             <h6 className="mb-3 text-sm font-medium">Фильтр</h6>
             <ul className="space-y-2 text-sm">
-              {handleButton.map(({ text, hint }) => (
-                <WithHint hint={hint} placement="right" offset={5} delay={100}>
+              {handleButton.map(({ text, hint }, i) => (
+                <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
                   {(props) => (
                     <li className="flex items-center">
                       <label className="ml-2 text-sm font-medium" {...props}>

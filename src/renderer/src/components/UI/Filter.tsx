@@ -27,7 +27,7 @@ export interface FilterProps {
 export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleCollapse }) => {
   const ARROW_WIDTH = 30;
   const ARROW_HEIGHT = 15;
-  const [placement, setPlacement] = useState<Placement>('right');
+  const [placement] = useState<Placement>('right');
   const [isOpen, setIsOpen] = useState(false);
 
   const arrowRef = useRef(null);

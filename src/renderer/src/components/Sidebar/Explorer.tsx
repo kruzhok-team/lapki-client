@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
@@ -94,36 +95,64 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     );
   };
 
+  const [showComponents, setShowComponents] = useState(true);
+  const [showHierarchy, setShowHierarchy] = useState(true);
+
+  const toggleShow = (name: string) => {
+    if (name === 'Компоненты') {
+      return setShowComponents(!showComponents);
+    }
+    setShowHierarchy(!showHierarchy);
+  };
+
   return (
     <section className="flex h-full flex-col px-4" onClick={() => onUnClick()}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Проводник
       </h3>
-      <div className="h-[50%]">
-        <h3 className="mb-3 font-semibold">Компоненты</h3>
+      <div className={twMerge('h-[50%]', !showComponents && 'h-10')}>
         <button
-          className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-          disabled={!isInitialized}
-          onClick={onAddClick}
+          className="mb-3 flex w-full justify-between"
+          onClick={() => toggleShow('Компоненты')}
         >
-          <AddIcon className="shrink-0" />
-          Добавить...
+          <h3 className="font-semibold">Компоненты</h3>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', showComponents && 'rotate-180')}
+          />
         </button>
+        <div className={twMerge(showComponents ? 'block' : 'hidden')}>
+          <button
+            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+            disabled={!isInitialized}
+            onClick={onAddClick}
+          >
+            <AddIcon className="shrink-0" />
+            Добавить...
+          </button>
 
-        <ScrollableList
-          containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={Object.keys(components)}
-          heightOfItem={10}
-          maxItemsToRender={50}
-          renderItem={renderComponent}
-        />
+          <ScrollableList
+            containerProps={{ onClick: (e) => e.stopPropagation() }}
+            listItems={Object.keys(components)}
+            heightOfItem={10}
+            maxItemsToRender={50}
+            renderItem={renderComponent}
+          />
+        </div>
       </div>
-
-      <div className="h-[50%] flex-auto pt-3">
-        <h3 className="mb-3 font-semibold">Иерархия состояний</h3>
-        <Hierarchy {...hierarchyData} />
+      <div className={twMerge('h-[50%]', !showHierarchy && 'h-10')}>
+        <button
+          className="mb-3 flex w-full justify-between"
+          onClick={() => toggleShow('Иерархия состояний')}
+        >
+          <h3 className="font-semibold">Иерархия состояний</h3>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', showHierarchy && 'rotate-180')}
+          />
+        </button>
+        <div className={twMerge(showHierarchy ? 'block' : 'hidden')}>
+          <Hierarchy {...hierarchyData} />
+        </div>
       </div>
-
       <ComponentAddModal manager={manager} {...addProps} />
       <ComponentEditModal manager={manager} {...editProps} />
       <ComponentDeleteModal {...deleteProps} />

@@ -15,14 +15,14 @@ import {
 import { twMerge } from 'tailwind-merge';
 import './style-modern.css';
 
-import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg';
-import { WithHint } from '@renderer/components/UI';
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { InputRender } from './inputRender';
+
+import { Filter } from '../UI/Filter';
 
 export interface HierarchyProps {
   hierarchy: HierarchyItem;
@@ -61,6 +61,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
   const find = useCallback(
     (e) => {
       e.preventDefault();
+      setSearch(e.target.value);
       if (!search) return;
       findItemPath(search).then((path) => {
         if (!path) return;
@@ -219,65 +220,12 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
         }}
       >
         <div>
-          <WithHint
-            hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
-            placement="right"
-            offset={5}
-            delay={100}
-          >
-            {(props) => (
-              <div className="mb-2 flex items-center">
-                <span className="absolute pl-2">
-                  <SearchIcon />
-                </span>
-                <input
-                  className="flex h-10 w-full gap-3 rounded border-white bg-transparent pl-10 pr-2 text-current ring-2 focus:border-[#0c4bee] focus:outline-none focus:ring-2 focus:ring-[#0c4bee]"
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    find(e);
-                  }}
-                  {...props}
-                  type="search"
-                  onBlur={(e) => (e.target.value = '')}
-                  placeholder="Поиск..."
-                />
-              </div>
-            )}
-          </WithHint>
-          <WithHint
-            hint="Показывает все вложенные состояния и связи в иерархии"
-            placement="right"
-            offset={5}
-            delay={100}
-          >
-            {(props) => (
-              <button
-                className="btn-primary mb-2 w-full"
-                type="button"
-                onClick={handleExpanded}
-                {...props}
-              >
-                Раскрыть всё
-              </button>
-            )}
-          </WithHint>
-          <WithHint
-            hint="Скрывает все вложенные состояния и связи в иерархии"
-            placement="right"
-            offset={5}
-            delay={100}
-          >
-            {(props) => (
-              <button
-                className="btn-primary mb-2 w-full"
-                type="button"
-                onClick={handleCollapse}
-                {...props}
-              >
-                Свернуть всё
-              </button>
-            )}
-          </WithHint>
+          <Filter
+            data={hierarchy}
+            find={find}
+            handleExpanded={handleExpanded}
+            handleCollapse={handleCollapse}
+          />
         </div>
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>

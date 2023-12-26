@@ -20,9 +20,8 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
+import { Filter } from './Filter';
 import { InputRender } from './inputRender';
-
-import { Filter } from '../UI/Filter';
 
 export interface HierarchyProps {
   hierarchy: HierarchyItem;
@@ -219,14 +218,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
           }),
         }}
       >
-        <div>
-          <Filter
-            data={hierarchy}
-            find={find}
-            handleExpanded={handleExpanded}
-            handleCollapse={handleCollapse}
-          />
-        </div>
+        <Filter find={find} handleExpanded={handleExpanded} handleCollapse={handleCollapse} />
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
     </div>

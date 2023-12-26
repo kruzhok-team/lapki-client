@@ -1,68 +1,39 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
-import {
-  useFloating,
-  arrow,
-  FloatingArrow,
-  offset,
-  shift,
-  flip,
-  useTransitionStyles,
-  autoUpdate,
-} from '@floating-ui/react';
-import type { Placement } from '@floating-ui/react';
+import { useFloating, offset, flip, shift, arrow, FloatingArrow } from '@floating-ui/react';
 
+import { ReactComponent as FilterIcon } from '@renderer/assets/icons/filter.svg';
 import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg';
-import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
+import { useClickOutside } from '@renderer/hooks';
 
-import { WithHint } from './WithHint';
+import { TextInput } from '../UI/TextInput';
+import { WithHint } from '../UI/WithHint';
 
 export interface FilterProps {
-  data: HierarchyItem;
   find: (e) => void;
   handleExpanded: () => void;
   handleCollapse: () => void;
 }
 
-export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleCollapse }) => {
-  const ARROW_WIDTH = 30;
-  const ARROW_HEIGHT = 15;
-  const [placement] = useState<Placement>('right');
-  const [isOpen, setIsOpen] = useState(false);
+export const Filter: React.FC<FilterProps> = (props) => {
+  const { find, handleExpanded, handleCollapse } = props;
 
+  const [isOpen, setIsOpen] = useState(false);
   const arrowRef = useRef(null);
 
-  const { refs, floatingStyles, context, middlewareData } = useFloating({
-    placement,
-    open: isOpen,
-    onOpenChange: setIsOpen,
+  const { refs, floatingStyles, context } = useFloating({
+    placement: 'right',
     middleware: [
-      offset(ARROW_HEIGHT),
-      flip({ padding: 5 }),
+      offset(),
+      flip(),
       shift({ padding: 5 }),
-      arrow({ element: arrowRef }),
+      arrow({
+        element: arrowRef,
+      }),
     ],
-    whileElementsMounted: autoUpdate,
   });
 
-  const arrowX = middlewareData.arrow?.x ?? 0;
-  const arrowY = middlewareData.arrow?.y ?? 0;
-  const transformX = arrowX + ARROW_WIDTH / 2;
-  const transformY = arrowY + ARROW_HEIGHT;
-
-  const { isMounted, styles } = useTransitionStyles(context, {
-    initial: {
-      transform: 'scale(0)',
-    },
-    common: ({ side }) => ({
-      transformOrigin: {
-        top: `${transformX}px calc(100% + ${ARROW_HEIGHT}px)`,
-        bottom: `${transformX}px ${-ARROW_HEIGHT}px`,
-        left: `calc(100% + ${ARROW_HEIGHT}px) ${transformY}px`,
-        right: `${-ARROW_HEIGHT}px ${transformY}px`,
-      }[side],
-    }),
-  });
+  useClickOutside(refs.floating.current, () => setIsOpen(false), !isOpen);
 
   const [checkBox, setCheckBox] = useState();
   const handleInputChange = (score) => {
@@ -85,26 +56,21 @@ export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleColl
   ];
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="justify-left flex items-center">
       <button
         ref={refs.setReference}
-        className="btn-primary reference mb-2"
+        className="btn-primary reference mb-2 flex"
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
+        <FilterIcon />
         Фильтр
       </button>
 
-      {isMounted && (
-        <div ref={refs.setFloating} style={floatingStyles} className="z-10">
-          <div style={styles} className="relative rounded-lg p-3">
-            <FloatingArrow
-              ref={arrowRef}
-              context={context}
-              width={ARROW_WIDTH}
-              height={ARROW_HEIGHT}
-              color="white"
-            />
+      {isOpen && (
+        <div ref={refs.setFloating} style={floatingStyles} className="z-10 ml-2">
+          <FloatingArrow ref={arrowRef} context={context} fill="#4b5563" />
+          <div className="relative rounded-lg bg-gray-600 p-3">
             <WithHint
               hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
               placement="right"
@@ -113,10 +79,23 @@ export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleColl
             >
               {(props) => (
                 <div className="mb-2 flex items-center">
-                  <span className="absolute pl-2">
+                  <span className="absolute pl-4">
                     <SearchIcon />
                   </span>
-                  <input
+                  <TextInput
+                    onChange={(e) => {
+                      find(e);
+                    }}
+                    {...props}
+                    onBlur={(e) => (e.target.value = '')}
+                    placeholder="Поиск..."
+                    label={''}
+                    className="h-10 pl-10 pr-2"
+                    isHidden={false}
+                    error={false}
+                    errorMessage={''}
+                  />
+                  {/* <input
                     className="flex h-10 w-full gap-3 rounded border-white bg-transparent pl-10 pr-2 text-current ring-2 focus:border-[#0c4bee] focus:outline-none focus:ring-2 focus:ring-[#0c4bee]"
                     onChange={(e) => {
                       find(e);
@@ -125,24 +104,24 @@ export const Filter: React.FC<FilterProps> = ({ find, handleExpanded, handleColl
                     type="search"
                     onBlur={(e) => (e.target.value = '')}
                     placeholder="Поиск..."
-                  />
+                  /> */}
                 </div>
               )}
             </WithHint>
-            <h6 className="mb-3 text-sm font-medium">Фильтр</h6>
-            <ul className="space-y-2 text-sm">
+            <h6 className="mb-3">Фильтр</h6>
+            <ul className="space-y-2">
               {handleButton.map(({ text, hint }, i) => (
                 <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
                   {(props) => (
                     <li className="flex items-center">
-                      <label className="ml-2 text-sm font-medium" {...props}>
+                      <label className="ml-2" {...props}>
                         <input
                           type="radio"
                           value={text}
                           name={text}
                           onChange={() => handleInputChange(text)}
                           checked={text === checkBox}
-                          className="text-primary-600 h-4 w-4 border-gray-300 bg-gray-100"
+                          className="h-4 w-4 border-gray-300 bg-gray-100"
                         />
                         {' ' + text}
                       </label>

@@ -9,7 +9,9 @@ import {
   FloatingArrow,
   FloatingOverlay,
 } from '@floating-ui/react';
+import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as FilterIcon } from '@renderer/assets/icons/filter.svg';
 import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg';
 import { useClickOutside } from '@renderer/hooks';
@@ -30,7 +32,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
   const arrowRef = useRef(null);
 
   const { refs, floatingStyles, context } = useFloating({
-    placement: 'right',
+    placement: 'right-end',
     middleware: [
       offset(),
       flip(),
@@ -52,17 +54,54 @@ export const Filter: React.FC<FilterProps> = (props) => {
     return handleCollapse();
   };
 
-  const handleButton = [
+  const data = [
     {
-      text: 'Развернуть всё',
-      hint: 'Показывает все вложенные состояния и связи в иерархии',
+      title: 'Вложенность',
+      children: [
+        {
+          text: 'Развернуть всё',
+          hint: 'Показывает все вложенные состояния и связи в иерархии',
+          type: 'radio',
+        },
+        {
+          text: 'Свернуть всё',
+          hint: 'Сворачивает все вложенные состояния и связи в иерархии',
+          type: 'radio',
+        },
+      ],
     },
     {
-      text: 'Свернуть всё',
-      hint: 'Сворачивает все вложенные состояния и связи в иерархии',
+      title: 'Состояние',
+      children: [
+        {
+          text: 'Начальное состояние',
+          hint: 'Пока находится в разработке, добавлен для тестирования, для реализаций оставшихся функций фильтра',
+          type: 'checkbox',
+        },
+      ],
     },
   ];
 
+  const [show, setShow] = useState('Вложенность');
+  //Показываем лишь одну из необходимых вкладок фильтра
+  const toggleShow = (title: string) => {
+    return setShow(title);
+  };
+
+  const [inputText, setInputText] = useState('');
+  const onChange = (e) => {
+    setInputText(e.target.value);
+    find(e);
+  };
+
+  //Очищаем весь фильтр
+  const clear = () => {
+    //Сворачиваем все состояния и очищаем фильтр вложенности
+    handleCollapse();
+    setCheckBox(undefined);
+    //Очищаем поиск
+    setInputText('');
+  };
   return (
     <div className="justify-left flex items-center">
       <button
@@ -80,6 +119,12 @@ export const Filter: React.FC<FilterProps> = (props) => {
           <div ref={refs.setFloating} style={floatingStyles} className="ml-2">
             <FloatingArrow ref={arrowRef} context={context} fill="#4b5563" />
             <div className="relative rounded-lg bg-gray-600 p-3">
+              <div className="mb-3 flex justify-between">
+                <h3 className="font-semibold">Фильтр</h3>
+                <button className="text-red-500" onClick={clear}>
+                  Очистить
+                </button>
+              </div>
               <WithHint
                 hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
                 placement="right"
@@ -87,18 +132,18 @@ export const Filter: React.FC<FilterProps> = (props) => {
                 delay={100}
               >
                 {(props) => (
-                  <div className="mb-2 flex items-center">
+                  <div className="mb-3 flex items-center">
                     <span className="absolute pl-4">
                       <SearchIcon />
                     </span>
                     <TextInput
-                      onChange={(e) => {
-                        find(e);
-                      }}
+                      onChange={onChange}
                       {...props}
-                      onBlur={(e) => (e.target.value = '')}
+                      //Пока оставлю, вдруг пригодится
+                      //onBlur={(e) => (e.target.value = '')}
                       placeholder="Поиск..."
                       label={''}
+                      value={inputText}
                       className="h-10 pl-10 pr-2"
                       isHidden={false}
                       error={false}
@@ -117,28 +162,58 @@ export const Filter: React.FC<FilterProps> = (props) => {
                   </div>
                 )}
               </WithHint>
-              <h6 className="mb-3">Фильтр</h6>
-              <ul className="space-y-2">
-                {handleButton.map(({ text, hint }, i) => (
-                  <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
-                    {(props) => (
-                      <li className="flex items-center">
-                        <label className="ml-2" {...props}>
-                          <input
-                            type="radio"
-                            value={text}
-                            name={text}
-                            onChange={() => handleInputChange(text)}
-                            checked={text === checkBox}
-                            className="h-4 w-4 border-gray-300 bg-gray-100"
-                          />
-                          {' ' + text}
-                        </label>
-                      </li>
-                    )}
-                  </WithHint>
-                ))}
-              </ul>
+
+              {data.map(({ title, children }, key) => (
+                <div key={key}>
+                  {children && (
+                    <>
+                      <button
+                        className="my-3 flex w-full justify-between border-b border-border-primary"
+                        onClick={() => toggleShow(title)}
+                      >
+                        <h6>{title}</h6>
+                        <ArrowIcon
+                          className={twMerge(
+                            'rotate-0 transition-transform',
+                            show === title && 'rotate-180'
+                          )}
+                        />
+                      </button>
+                      <ul className={twMerge('hidden space-y-2', show === title && 'block')}>
+                        {children.map(({ text, hint, type }, i) => (
+                          <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
+                            {(props) => (
+                              <li className="flex">
+                                <label className="flex items-center" {...props}>
+                                  {type === 'radio' ? (
+                                    <input
+                                      type={type}
+                                      value={text}
+                                      name={text}
+                                      onChange={() => handleInputChange(text)}
+                                      checked={text === checkBox}
+                                      className="mx-2 h-4 w-4"
+                                    />
+                                  ) : (
+                                    <input
+                                      type={type}
+                                      value={text}
+                                      name={text}
+                                      className="mx-2 h-4 w-4"
+                                    />
+                                  )}
+
+                                  {' ' + text}
+                                </label>
+                              </li>
+                            )}
+                          </WithHint>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </FloatingOverlay>

@@ -111,7 +111,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         Проводник
       </h3>
       <div className="flex h-full flex-col">
-        <div className={twMerge('flex-grow basis-0', !showComponents && 'h-10')}>
+        <div className={twMerge('flex-grow basis-0', !showComponents && 'h-10 flex-grow-0')}>
           <button
             className="mb-3 flex w-full justify-between"
             onClick={() => toggleShow('Компоненты')}

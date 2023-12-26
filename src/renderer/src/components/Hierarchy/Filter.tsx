@@ -1,6 +1,14 @@
 import React, { useRef, useState } from 'react';
 
-import { useFloating, offset, flip, shift, arrow, FloatingArrow } from '@floating-ui/react';
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  arrow,
+  FloatingArrow,
+  FloatingOverlay,
+} from '@floating-ui/react';
 
 import { ReactComponent as FilterIcon } from '@renderer/assets/icons/filter.svg';
 import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg';
@@ -68,34 +76,35 @@ export const Filter: React.FC<FilterProps> = (props) => {
       </button>
 
       {isOpen && (
-        <div ref={refs.setFloating} style={floatingStyles} className="z-10 ml-2">
-          <FloatingArrow ref={arrowRef} context={context} fill="#4b5563" />
-          <div className="relative rounded-lg bg-gray-600 p-3">
-            <WithHint
-              hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
-              placement="right"
-              offset={5}
-              delay={100}
-            >
-              {(props) => (
-                <div className="mb-2 flex items-center">
-                  <span className="absolute pl-4">
-                    <SearchIcon />
-                  </span>
-                  <TextInput
-                    onChange={(e) => {
-                      find(e);
-                    }}
-                    {...props}
-                    onBlur={(e) => (e.target.value = '')}
-                    placeholder="Поиск..."
-                    label={''}
-                    className="h-10 pl-10 pr-2"
-                    isHidden={false}
-                    error={false}
-                    errorMessage={''}
-                  />
-                  {/* <input
+        <FloatingOverlay className="z-10">
+          <div ref={refs.setFloating} style={floatingStyles} className="ml-2">
+            <FloatingArrow ref={arrowRef} context={context} fill="#4b5563" />
+            <div className="relative rounded-lg bg-gray-600 p-3">
+              <WithHint
+                hint="Позволяет найти необходимое состояние(связь) за считанные секунды"
+                placement="right"
+                offset={5}
+                delay={100}
+              >
+                {(props) => (
+                  <div className="mb-2 flex items-center">
+                    <span className="absolute pl-4">
+                      <SearchIcon />
+                    </span>
+                    <TextInput
+                      onChange={(e) => {
+                        find(e);
+                      }}
+                      {...props}
+                      onBlur={(e) => (e.target.value = '')}
+                      placeholder="Поиск..."
+                      label={''}
+                      className="h-10 pl-10 pr-2"
+                      isHidden={false}
+                      error={false}
+                      errorMessage={''}
+                    />
+                    {/* <input
                     className="flex h-10 w-full gap-3 rounded border-white bg-transparent pl-10 pr-2 text-current ring-2 focus:border-[#0c4bee] focus:outline-none focus:ring-2 focus:ring-[#0c4bee]"
                     onChange={(e) => {
                       find(e);
@@ -105,33 +114,34 @@ export const Filter: React.FC<FilterProps> = (props) => {
                     onBlur={(e) => (e.target.value = '')}
                     placeholder="Поиск..."
                   /> */}
-                </div>
-              )}
-            </WithHint>
-            <h6 className="mb-3">Фильтр</h6>
-            <ul className="space-y-2">
-              {handleButton.map(({ text, hint }, i) => (
-                <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
-                  {(props) => (
-                    <li className="flex items-center">
-                      <label className="ml-2" {...props}>
-                        <input
-                          type="radio"
-                          value={text}
-                          name={text}
-                          onChange={() => handleInputChange(text)}
-                          checked={text === checkBox}
-                          className="h-4 w-4 border-gray-300 bg-gray-100"
-                        />
-                        {' ' + text}
-                      </label>
-                    </li>
-                  )}
-                </WithHint>
-              ))}
-            </ul>
+                  </div>
+                )}
+              </WithHint>
+              <h6 className="mb-3">Фильтр</h6>
+              <ul className="space-y-2">
+                {handleButton.map(({ text, hint }, i) => (
+                  <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
+                    {(props) => (
+                      <li className="flex items-center">
+                        <label className="ml-2" {...props}>
+                          <input
+                            type="radio"
+                            value={text}
+                            name={text}
+                            onChange={() => handleInputChange(text)}
+                            checked={text === checkBox}
+                            className="h-4 w-4 border-gray-300 bg-gray-100"
+                          />
+                          {' ' + text}
+                        </label>
+                      </li>
+                    )}
+                  </WithHint>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        </FloatingOverlay>
       )}
     </div>
   );

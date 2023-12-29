@@ -63,7 +63,7 @@ export const WithHint: React.FC<WithHintProps> = ({
         hint &&
         createPortal(
           <div
-            className="z-[100] max-w-sm rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
+            className="z-[100] max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
             ref={refs.setFloating}
             style={floatingStyles}
             {...getFloatingProps()}

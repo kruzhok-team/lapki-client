@@ -1,4 +1,5 @@
 import { Point } from '@renderer/types/graphics';
+import { ArgType } from '@renderer/types/platform';
 
 export const getVirtualElement = (position: Point) => {
   return {
@@ -31,4 +32,50 @@ export const indexOfMin = (arr: number[]) => {
   });
 
   return minIndex;
+};
+
+// Валидаторы типов arduino, в платформе это поле type
+export const validators: Record<string, (value: string) => boolean> = {
+  uint8_t(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue) || value.includes('.')) return false;
+
+    return nValue >= 0 && nValue <= 255;
+  },
+  byte(value) {
+    return this.uint8_t(value);
+  },
+  int(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue) || value.includes('.')) return false;
+
+    return nValue >= -32_767 && nValue <= 32_767;
+  },
+  'unsigned int'(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue) || value.includes('.')) return false;
+
+    return nValue >= 0 && nValue <= 65_535;
+  },
+  'unsigned long'(value) {
+    if (isNaN(Number(value))) return false;
+
+    const nValue = BigInt(value);
+
+    console.log(BigInt((2 ^ 32) - 1));
+
+    return nValue >= 0 && nValue <= BigInt((2 ^ 32) - 1);
+  },
+  'char[]'() {
+    return true;
+  },
+};
+
+export const formatArgType = (value: ArgType) => {
+  if (Array.isArray(value)) return `[${value}]`;
+
+  return value;
 };

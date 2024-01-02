@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+
 import ReactSelect, { Props } from 'react-select';
 
 import './style.css';
@@ -8,7 +9,7 @@ export interface SelectOption {
   label: ReactNode;
 }
 
-interface SelectProps extends Props {}
+type SelectProps = Props;
 
 export const Select: React.FC<SelectProps> = (props) => {
   return <ReactSelect classNamePrefix="CustomSelect" {...props} />;

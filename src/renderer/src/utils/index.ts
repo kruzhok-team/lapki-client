@@ -34,6 +34,7 @@ export const indexOfMin = (arr: number[]) => {
   return minIndex;
 };
 
+// Валидаторы типов arduino, в платформе это поле type
 export const validators: Record<string, (value: string) => boolean> = {
   uint8_t(value) {
     const nValue = Number(value);

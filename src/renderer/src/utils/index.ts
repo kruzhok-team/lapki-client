@@ -61,13 +61,11 @@ export const validators: Record<string, (value: string) => boolean> = {
     return nValue >= 0 && nValue <= 65_535;
   },
   'unsigned long'(value) {
-    if (isNaN(Number(value))) return false;
+    const nValue = Number(value);
 
-    const nValue = BigInt(value);
+    if (isNaN(nValue)) return false;
 
-    console.log(BigInt((2 ^ 32) - 1));
-
-    return nValue >= 0 && nValue <= BigInt((2 ^ 32) - 1);
+    return nValue >= 0 && nValue <= 4_294_967_295;
   },
   'char[]'() {
     return true;

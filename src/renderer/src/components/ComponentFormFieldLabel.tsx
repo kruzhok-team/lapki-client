@@ -21,8 +21,8 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
 }) => {
   return (
     <div>
-      <label className="flex items-center gap-2">
-        <div className="flex w-28 items-center gap-1">
+      <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
+        <div className="flex min-w-28 items-center gap-1">
           <span>{label}</span>
           {hint && (
             <WithHint hint={hint}>

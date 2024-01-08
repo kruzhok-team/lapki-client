@@ -39,9 +39,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
       typeof type === 'string' &&
       validators[type]
     ) {
-      const validator = validators[type];
-
-      if (!validator(value)) {
+      if (!validators[type](value)) {
         setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
       } else {
         setErrors((p) => ({ ...p, [name]: '' }));

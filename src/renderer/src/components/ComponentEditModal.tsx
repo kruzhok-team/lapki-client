@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -35,8 +35,21 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const [name, setName] = useState('');
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
+  const [errors, setErrors] = useState({} as Record<string, string>);
+
+  // Сброс к начальному состоянию после закрытия
+  const handleAfterClose = () => {
+    setName(idx);
+    setParameters({ ...data.parameters });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Если есть ошибка то не отправляем форму
+    for (const key in errors) {
+      if (errors[key]) return;
+    }
 
     const submitData = { type: data.type, parameters };
     const newName = name === idx ? undefined : name;
@@ -56,11 +69,11 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   // Ограничение на повтор имён
   const submitDisabled = useMemo(() => idx !== name && name in components, [components, idx, name]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setName(idx);
   }, [idx]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setParameters({ ...data.parameters });
   }, [data.parameters]);
 
@@ -68,6 +81,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
+      onAfterClose={handleAfterClose}
       title={componentName}
       submitLabel="Применить"
       onSubmit={handleSubmit}
@@ -82,6 +96,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
         setName={setName}
         parameters={parameters}
         setParameters={setParameters}
+        errors={errors}
+        setErrors={setErrors}
       />
     </Modal>
   );

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
+import { formatArgType, validators } from '@renderer/utils';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
+import { Select } from './UI';
 
 interface ComponentFormFieldsProps {
   showMainData: boolean;
@@ -13,6 +15,9 @@ interface ComponentFormFieldsProps {
   setParameters: (data: ComponentData['parameters']) => void;
   name: string;
   setName: (data: string) => void;
+
+  errors: Record<string, string>;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
 
 export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
@@ -22,14 +27,42 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   name,
   setParameters,
   setName,
+  errors,
+  setErrors,
 }) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    parameters[e.target.name] = e.target.value;
+  const handleInputChange = (name: string, value: string) => {
+    const type = protoParameters[name]?.type;
 
+    if (
+      !['label', 'labelColor'].includes(name) &&
+      type &&
+      typeof type === 'string' &&
+      validators[type]
+    ) {
+      if (!validators[type](value)) {
+        setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
+      } else {
+        setErrors((p) => ({ ...p, [name]: '' }));
+      }
+    }
+
+    parameters[name] = value;
     setParameters({ ...parameters });
   };
 
   const protoParametersArray = Object.entries(protoParameters);
+
+  // Первоначальное создание объекта ошибок
+  useEffect(() => {
+    setErrors(
+      Object.fromEntries(
+        Object.entries(protoParameters).map(([idx, param]) => {
+          const name = param.name ?? idx;
+          return [name, ''];
+        })
+      )
+    );
+  }, [protoParameters, setErrors]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -37,37 +70,31 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
       {showMainData && (
         <>
-          <ComponentFormFieldLabel label="Название:">
-            <input
-              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
-              maxLength={20}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </ComponentFormFieldLabel>
+          <ComponentFormFieldLabel
+            label="Название:"
+            maxLength={20}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoFocus
+          />
 
           <ComponentFormFieldLabel
             label="Метка:"
             hint="До 3-х символов. Метка нужна для различения разных компонентов одного типа."
-          >
-            <input
-              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
-              value={parameters['label'] ?? ''}
-              name={'label'}
-              maxLength={3}
-              onChange={handleInputChange}
-            />
-          </ComponentFormFieldLabel>
+            value={parameters['label'] ?? ''}
+            name="label"
+            maxLength={3}
+            onChange={(e) => handleInputChange('label', e.target.value)}
+          />
 
-          <ComponentFormFieldLabel label="Цвет метки:">
-            <input
-              className="rounded border border-border-primary bg-transparent text-text-primary outline-none"
-              value={parameters['labelColor'] ?? '#FFFFFF'}
-              name={'labelColor'}
-              type="color"
-              onChange={handleInputChange}
-            />
-          </ComponentFormFieldLabel>
+          <ComponentFormFieldLabel
+            label="Цвет метки:"
+            className="w-10 p-0"
+            value={parameters['labelColor'] ?? '#FFFFFF'}
+            name="labelColor"
+            type="color"
+            onChange={(e) => handleInputChange('labelColor', e.target.value)}
+          />
         </>
       )}
 
@@ -76,15 +103,37 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
       {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
         const value = parameters[name] ?? '';
+        const type = protoParameters[name].type;
+        const error = errors[name];
+
+        if (Array.isArray(type)) {
+          const options = type.map((value) => ({ label: value, value }));
+          return (
+            <ComponentFormFieldLabel
+              key={idx}
+              label={name + ':'}
+              hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
+            >
+              <Select
+                className="w-[250px]"
+                options={options}
+                value={options.find((o) => o.value === value)}
+                onChange={({ value }: any) => handleInputChange(name, value)}
+              />
+            </ComponentFormFieldLabel>
+          );
+        }
+
         return (
-          <ComponentFormFieldLabel key={idx} label={name + ':'} hint={param.description}>
-            <input
-              className="w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none"
-              value={value}
-              name={name}
-              onChange={handleInputChange}
-            />
-          </ComponentFormFieldLabel>
+          <ComponentFormFieldLabel
+            key={idx}
+            label={name + ':'}
+            hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
+            error={error}
+            value={value}
+            name={name}
+            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+          />
         );
       })}
     </div>

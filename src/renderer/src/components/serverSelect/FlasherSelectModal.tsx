@@ -1,9 +1,9 @@
 import { Controller, useForm } from 'react-hook-form';
 
-import { Select } from '@renderer/components/UI';
+import { Select, Modal, TextInput } from '@renderer/components/UI';
 
+import { Flasher } from '../Modules/Flasher';
 import { Settings } from '../Modules/Settings';
-import { Modal, TextInput } from '@renderer/components/UI';
 
 const SELECT_LOCAL = 'local';
 const SELECT_REMOTE = 'remote';
@@ -15,6 +15,7 @@ const options = [
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
+  isLocal: boolean;
   onClose: () => void;
   handleLocal: () => void;
   handleRemote: (host: string, port: number) => void;
@@ -30,6 +31,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   onClose,
   handleLocal,
   handleRemote,
+  isLocal,
   ...props
 }) => {
   const {
@@ -63,6 +65,10 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
 
   const onRequestClose = () => {
     onClose();
+  };
+
+  const currentServer = () => {
+    return `${Flasher.host}:${Flasher.port} (${isLocal ? 'локальный' : 'удалённый'})`;
   };
 
   return (
@@ -121,6 +127,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={!showSecondaryField}
         />
       </div>
+      <div> Текущий адрес: {currentServer()}</div>
     </Modal>
   );
 };

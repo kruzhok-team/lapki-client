@@ -123,8 +123,8 @@ export const Filter: React.FC<FilterProps> = (props) => {
       {isOpen && (
         <FloatingOverlay className="z-10">
           <div ref={refs.setFloating} style={floatingStyles} className="ml-2">
-            <FloatingArrow ref={arrowRef} context={context} fill="#4b5563" />
-            <div className="relative rounded-lg bg-gray-600 p-3">
+            {/* <FloatingArrow ref={arrowRef} context={context} fill="inherit" /> */}
+            <div className="relative rounded bg-bg-secondary p-3 shadow-xl">
               <div className="mb-3 flex justify-between">
                 <h3 className="font-semibold">Фильтр</h3>
                 <button className="text-red-500" onClick={clear}>

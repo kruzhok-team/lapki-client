@@ -26,7 +26,7 @@ interface StatesControllerEvents {
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
-  changeEvent: { state: State; event: EventSelection; click: boolean };
+  changeEvent: { state: State; eventSelection: EventSelection };
   eventContextMenu: { state: State; event: EventSelection; position: Point };
 }
 
@@ -79,11 +79,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
       // FIXME: пересчитывает координаты внутри, ещё раз
-      const eventIdx = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
-      if (!eventIdx) {
+      const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+      if (!eventSelection) {
         this.emit('changeState', state);
       } else {
-        this.emit('changeEvent', { state, event: eventIdx, click: true });
+        this.emit('changeEvent', { state, eventSelection });
       }
     }
   };

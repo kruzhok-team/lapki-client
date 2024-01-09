@@ -1,9 +1,9 @@
 .CustomSelect__control {
-  @apply bg-bg-secondary shadow-none !important;
+  @apply border-border-primary bg-transparent shadow-none !important;
 }
 
 .CustomSelect__control--is-focused {
-  @apply border-border-primary !important;
+  @apply border-text-primary !important;
 }
 
 .CustomSelect__single-value {
@@ -12,6 +12,14 @@
 
 .CustomSelect__indicator-separator {
   @apply bg-border-primary !important;
+}
+
+.CustomSelect__indicator {
+  @apply text-border-primary !important;
+}
+
+.CustomSelect__control:hover .CustomSelect__indicator {
+  @apply text-text-primary !important;
 }
 
 .CustomSelect__menu {

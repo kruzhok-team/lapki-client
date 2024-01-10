@@ -195,6 +195,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
       >
         <Filter
           hierarchy={hierarchy}
+          tree={tree}
           handleExpanded={handleExpanded}
           handleCollapse={handleCollapse}
         />

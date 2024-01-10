@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { RefObject, useCallback, useRef, useState } from 'react';
 
 import {
   useFloating,
@@ -22,17 +22,17 @@ import { TextInput } from '../UI/TextInput';
 import { WithHint } from '../UI/WithHint';
 
 export interface FilterProps {
+  tree: RefObject<TreeRef>;
   hierarchy: HierarchyItem;
   handleExpanded: () => void;
   handleCollapse: () => void;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { hierarchy, handleExpanded, handleCollapse } = props;
+  const { tree, hierarchy, handleExpanded, handleCollapse } = props;
 
   const [isOpen, setIsOpen] = useState(false);
   const arrowRef = useRef(null);
-  const tree = useRef<TreeRef>(null);
 
   const [search, setSearch] = useState<string>('');
 
@@ -67,7 +67,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
         });
       });
     },
-    [findItemPath, search]
+    [findItemPath, search, tree]
   );
 
   const { refs, floatingStyles /*context*/ } = useFloating({

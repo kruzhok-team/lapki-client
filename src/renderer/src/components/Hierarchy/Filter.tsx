@@ -188,16 +188,6 @@ export const Filter: React.FC<FilterProps> = (props) => {
                       error={false}
                       errorMessage={''}
                     />
-                    {/* <input
-                    className="flex h-10 w-full gap-3 rounded border-white bg-transparent pl-10 pr-2 text-current ring-2 focus:border-[#0c4bee] focus:outline-none focus:ring-2 focus:ring-[#0c4bee]"
-                    onChange={(e) => {
-                      find(e);
-                    }}
-                    {...props}
-                    type="search"
-                    onBlur={(e) => (e.target.value = '')}
-                    placeholder="Поиск..."
-                  /> */}
                   </div>
                 )}
               </WithHint>

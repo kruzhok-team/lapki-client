@@ -173,8 +173,8 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
         }}
         //Реализовано свое переименование для добавления разных функций
         renderRenameInput={(props) => <InputRender props={props} />}
-        renderItemTitle={(props) => (
-          <TitleRender props={props} initialState={initialState} editor={editor} />
+        renderItemTitle={(data) => (
+          <TitleRender data={data} initialState={initialState} editor={editor} />
         )}
         defaultInteractionMode={{
           mode: 'custom',

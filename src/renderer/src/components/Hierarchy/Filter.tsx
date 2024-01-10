@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import {
   useFloating,
@@ -9,27 +9,66 @@ import {
   //FloatingArrow,
   FloatingOverlay,
 } from '@floating-ui/react';
+import { TreeRef } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as FilterIcon } from '@renderer/assets/icons/filter.svg';
 import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg';
 import { useClickOutside } from '@renderer/hooks';
+import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 
 import { TextInput } from '../UI/TextInput';
 import { WithHint } from '../UI/WithHint';
 
 export interface FilterProps {
-  find: (e) => void;
+  hierarchy: HierarchyItem;
   handleExpanded: () => void;
   handleCollapse: () => void;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { find, handleExpanded, handleCollapse } = props;
+  const { hierarchy, handleExpanded, handleCollapse } = props;
 
   const [isOpen, setIsOpen] = useState(false);
   const arrowRef = useRef(null);
+  const tree = useRef<TreeRef>(null);
+
+  const [search, setSearch] = useState<string>('');
+
+  const findItemPath = useCallback(
+    async (e, searchRoot = 'root') => {
+      const item = await hierarchy[searchRoot];
+      if (item.data.toLowerCase().includes(e.toLowerCase())) {
+        return [item.index];
+      }
+      const searchedItems = await Promise.all(
+        (item.children && item.children.map((child) => findItemPath(e, child))) || []
+      );
+      const result = searchedItems.find((item) => item !== null);
+      if (!result) {
+        return null;
+      }
+      return [item.index, ...result];
+    },
+    [hierarchy]
+  );
+
+  //Функции для поиска в иерархии состояний
+  const find = useCallback(
+    (e) => {
+      e.preventDefault();
+      setSearch(e.target.value);
+      if (!search) return;
+      findItemPath(search).then((path) => {
+        if (!path) return;
+        tree.current?.expandSubsequently(path.slice(0, path.length - 1)).then(() => {
+          tree.current?.selectItems([path[path.length - 1]]);
+        });
+      });
+    },
+    [findItemPath, search]
+  );
 
   const { refs, floatingStyles /*context*/ } = useFloating({
     placement: 'right-end',
@@ -70,16 +109,16 @@ export const Filter: React.FC<FilterProps> = (props) => {
         },
       ],
     },
-    {
-      title: 'Состояние',
-      children: [
-        {
-          text: 'Начальное состояние',
-          hint: 'Показывает лишь начальное состояние и его вложенность',
-          type: 'checkbox',
-        },
-      ],
-    },
+    // {
+    //   title: 'Состояние',
+    //   children: [
+    //     {
+    //       text: 'Начальное состояние',
+    //       hint: 'Показывает начальное состояние и его вложенность',
+    //       type: 'checkbox',
+    //     },
+    //   ],
+    // },
   ];
 
   const [show, setShow] = useState('Вложенность');

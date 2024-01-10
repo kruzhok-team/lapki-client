@@ -43,41 +43,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
-  const [search, setSearch] = useState<string>('');
-
-  const findItemPath = useCallback(
-    async (e, searchRoot = 'root') => {
-      const item = await hierarchy[searchRoot];
-      if (item.data.toLowerCase().includes(e.toLowerCase())) {
-        return [item.index];
-      }
-      const searchedItems = await Promise.all(
-        (item.children && item.children.map((child) => findItemPath(e, child))) || []
-      );
-      const result = searchedItems.find((item) => item !== null);
-      if (!result) {
-        return null;
-      }
-      return [item.index, ...result];
-    },
-    [hierarchy]
-  );
-
-  //Функции для поиска в иерархии состояний
-  const find = useCallback(
-    (e) => {
-      e.preventDefault();
-      setSearch(e.target.value);
-      if (!search) return;
-      findItemPath(search).then((path) => {
-        if (!path) return;
-        tree.current?.expandSubsequently(path.slice(0, path.length - 1)).then(() => {
-          tree.current?.selectItems([path[path.length - 1]]);
-        });
-      });
-    },
-    [findItemPath, search]
-  );
 
   useLayoutEffect(() => {
     if (selectedItemId) {
@@ -171,7 +136,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
       editor.container.machineController.unlinkState({ id: value.index.toString() });
     });
   };
-  console.log(initialState);
+
   const handleExpanded = () => {
     setExpandedItems([]);
     tree.current?.expandAll();
@@ -228,7 +193,11 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
           }),
         }}
       >
-        <Filter find={find} handleExpanded={handleExpanded} handleCollapse={handleCollapse} />
+        <Filter
+          hierarchy={hierarchy}
+          handleExpanded={handleExpanded}
+          handleCollapse={handleCollapse}
+        />
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
     </div>

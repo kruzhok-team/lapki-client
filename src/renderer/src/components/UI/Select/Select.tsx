@@ -55,7 +55,7 @@ export function Select<
   return (
     <ReactSelect
       {...props}
-      classNamePrefix="CustomSelect"
+      classNamePrefix="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb scrollbar-track-rounded-full scrollbar-thumb-rounded-full CustomSelect"
       components={{ Option: Option as any, SingleValue: SingleValue as any }}
     />
   );

@@ -1,3 +1,5 @@
+import { twMerge } from 'tailwind-merge';
+
 import { ReactComponent as InitialStateIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
@@ -11,16 +13,18 @@ export const TitleRender: React.FC<{
   return (
     <span className="flex w-full justify-between">
       <div className="flex">
-        {editor && editor.container.machineController.states.get(props.item.index.toString()) ? (
-          <StateIcon width={24} height={24} />
-        ) : (
-          <TransitionIcon width={24} height={24} />
-        )}
-        <span title={props.title} className="ml-1 line-clamp-1">
-          {props.title}
-        </span>
+        <div className="w-6">
+          {editor && editor.container.machineController.states.get(props.item.index.toString()) ? (
+            <StateIcon width={24} height={24} />
+          ) : (
+            <TransitionIcon width={24} height={24} />
+          )}
+        </div>
+        <span className="mx-1 line-clamp-1">{props.title}</span>
       </div>
-      {initialState === props.item.index && <InitialStateIcon width={24} height={24} />}
+      <div className={twMerge('block w-6', initialState !== props.item.index && 'hidden')}>
+        <InitialStateIcon width={24} height={24} />
+      </div>
     </span>
   );
 };

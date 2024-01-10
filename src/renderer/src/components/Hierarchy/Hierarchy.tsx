@@ -53,7 +53,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
 
   if (!editor) return;
 
-  const onSubmit = (item: TreeItem) => {
+  const onFocus = (item: TreeItem) => {
     setFocusedItem(item.index.toString());
     editor.container.machineController.selectState(item.index.toString());
     editor.container.machineController.selectTransition(item.index.toString());
@@ -99,7 +99,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
     e.dataTransfer.dropEffect = 'move';
     actions.startDragging();
   };
-
   const onRename = (item: TreeItem, name: string) => {
     //Используется для переименование состояния, это можно использовать
     editor?.container.machineController.changeStateName(item.index.toString(), name);
@@ -137,16 +136,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
     });
   };
 
-  const handleExpanded = () => {
-    setExpandedItems([]);
-    tree.current?.expandAll();
-  };
-
-  const handleCollapse = () => {
-    setExpandedItems([]);
-    tree.current?.collapseAll();
-  };
-
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <ControlledTreeEnvironment
@@ -160,7 +149,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
         canSearch={false}
         onDrop={onLinkUnlinkState}
         onRenameItem={onRename}
-        onFocusItem={onSubmit}
         onExpandItem={onExpanded}
         onCollapseItem={onCollapse}
         onSelectItems={onSelected}
@@ -183,7 +171,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
             onDoubleClick: () => onDoubleClick(item, actions),
             onContextMenu: (e) => onContextMenu(e, item, actions),
             onBlur: actions.unselectItem,
-            onFocus: actions.focusItem,
+            onFocus: () => onFocus(item),
             onDragStart: (e) => onDragStart(e, item, actions),
             //Разрешаем перемещение
             draggable: renderFlags.canDrag && !renderFlags.isRenaming,
@@ -193,12 +181,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
           }),
         }}
       >
-        <Filter
-          hierarchy={hierarchy}
-          tree={tree}
-          handleExpanded={handleExpanded}
-          handleCollapse={handleCollapse}
-        />
+        <Filter hierarchy={hierarchy} tree={tree} setExpandedItems={setExpandedItems} />
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
     </div>

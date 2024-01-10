@@ -13,8 +13,8 @@ import {
   TreeItemRenderFlags,
 } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
-import './style-modern.css';
 
+import './style-modern.css';
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useThemeContext } from '@renderer/store/ThemeContext';
@@ -22,14 +22,21 @@ import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Filter } from './Filter';
 import { InputRender } from './inputRender';
+import { TitleRender } from './titleRender';
 
 export interface HierarchyProps {
+  editor: CanvasEditor | null;
   hierarchy: HierarchyItem;
   selectedItemId: string;
-  editor: CanvasEditor | null;
+  initialState: string | undefined;
 }
 
-export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId, editor }) => {
+export const Hierarchy: React.FC<HierarchyProps> = ({
+  editor,
+  hierarchy,
+  selectedItemId,
+  initialState,
+}) => {
   const { theme } = useThemeContext();
   const treeEnvironment = useRef<TreeEnvironmentRef>(null);
   const tree = useRef<TreeRef>(null);
@@ -111,11 +118,11 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
       stopPropagation: e.stopPropagation,
       nativeEvent: e.nativeEvent,
     };
+
     const state = editor.container.machineController.states.get(item.index.toString());
     if (state) {
       return editor.container.statesController.handleContextMenu(state, { event: mouse });
     }
-
     const transition = editor.container.machineController.transitions.get(item.index.toString());
     if (transition) {
       return editor.container.transitionsController.handleContextMenu(transition, { event: mouse });
@@ -164,7 +171,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
       editor.container.machineController.unlinkState({ id: value.index.toString() });
     });
   };
-
+  console.log(initialState);
   const handleExpanded = () => {
     setExpandedItems([]);
     tree.current?.expandAll();
@@ -201,6 +208,9 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ hierarchy, selectedItemId,
         }}
         //Реализовано свое переименование для добавления разных функций
         renderRenameInput={(props) => <InputRender props={props} />}
+        renderItemTitle={(props) => (
+          <TitleRender props={props} initialState={initialState} editor={editor} />
+        )}
         defaultInteractionMode={{
           mode: 'custom',
           createInteractiveElementProps: (item, _treeId, actions, renderFlags) => ({

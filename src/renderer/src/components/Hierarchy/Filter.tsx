@@ -45,10 +45,10 @@ export const Filter: React.FC<FilterProps> = (props) => {
 
   useClickOutside(refs.floating.current, () => setIsOpen(false), !isOpen);
 
-  const [checkBox, setCheckBox] = useState();
-  const handleInputChange = (score) => {
-    setCheckBox(score);
-    if (score === 'Развернуть всё') {
+  const [checkRadio, setCheckRadio] = useState();
+  const handleInputChangeRadio = (text) => {
+    setCheckRadio(text);
+    if (text === 'Развернуть всё') {
       return handleExpanded();
     }
     return handleCollapse();
@@ -70,22 +70,16 @@ export const Filter: React.FC<FilterProps> = (props) => {
         },
       ],
     },
-    //Убрать из под комментария, если захочется проверить работу вкладок
-    /*{
+    {
       title: 'Состояние',
       children: [
         {
-          text: 'Начальное состояние №1',
-          hint: 'Пока находится в разработке, добавлен для тестирования, для реализаций оставшихся функций фильтра',
-          type: 'checkbox',
-        },
-        {
-          text: 'Начальное состояние №2',
-          hint: 'Пока находится в разработке, добавлен для тестирования, для реализаций оставшихся функций фильтра',
+          text: 'Начальное состояние',
+          hint: 'Показывает лишь начальное состояние и его вложенность',
           type: 'checkbox',
         },
       ],
-    },*/
+    },
   ];
 
   const [show, setShow] = useState('Вложенность');
@@ -104,7 +98,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
   const clear = () => {
     //Сворачиваем все состояния и очищаем фильтр вложенности
     handleCollapse();
-    setCheckBox(undefined);
+    setCheckRadio(undefined);
     //Очищаем поиск
     setInputText('');
   };
@@ -195,8 +189,8 @@ export const Filter: React.FC<FilterProps> = (props) => {
                                       type={type}
                                       value={text}
                                       name={text}
-                                      onChange={() => handleInputChange(text)}
-                                      checked={text === checkBox}
+                                      onChange={() => handleInputChangeRadio(text)}
+                                      checked={text === checkRadio}
                                       className="mx-2 h-4 w-4"
                                     />
                                   ) : (

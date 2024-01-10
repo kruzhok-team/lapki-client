@@ -30,10 +30,16 @@ export const TitleRender: React.FC<{
           </div>
         )}
       </WithHint>
-
-      <div className={twMerge('block w-6', initialState !== data.item.index && 'hidden')}>
-        <InitialStateIcon width={24} height={24} />
-      </div>
+      <WithHint hint="Начальное состояние" placement="right" offset={5} delay={100}>
+        {(props) => (
+          <div
+            {...props}
+            className={twMerge('block w-6', initialState !== data.item.index && 'hidden')}
+          >
+            <InitialStateIcon width={24} height={24} />
+          </div>
+        )}
+      </WithHint>
     </span>
   );
 };

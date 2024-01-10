@@ -6,7 +6,7 @@ import {
   flip,
   shift,
   arrow,
-  FloatingArrow,
+  //FloatingArrow,
   FloatingOverlay,
 } from '@floating-ui/react';
 import { twMerge } from 'tailwind-merge';
@@ -31,7 +31,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const arrowRef = useRef(null);
 
-  const { refs, floatingStyles, context } = useFloating({
+  const { refs, floatingStyles /*context*/ } = useFloating({
     placement: 'right-end',
     middleware: [
       offset(),
@@ -119,7 +119,6 @@ export const Filter: React.FC<FilterProps> = (props) => {
         <FilterIcon />
         Фильтр
       </button>
-
       {isOpen && (
         <FloatingOverlay className="z-10">
           <div ref={refs.setFloating} style={floatingStyles} className="ml-2">

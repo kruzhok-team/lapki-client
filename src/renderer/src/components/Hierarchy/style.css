@@ -67,6 +67,9 @@
   text-align: left;
   color: inherit;
   outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rct-tree-item-arrow {

@@ -9,7 +9,7 @@ export const TitleRender: React.FC<{
   initialState: string | undefined;
 }> = ({ props, editor, initialState }) => {
   return (
-    <span className="flex w-full">
+    <span className="flex w-full justify-between">
       <div className="flex">
         {editor && editor.container.machineController.states.get(props.item.index.toString()) ? (
           <StateIcon width={24} height={24} />

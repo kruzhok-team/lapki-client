@@ -9,7 +9,7 @@ import {
   //FloatingArrow,
   FloatingOverlay,
 } from '@floating-ui/react';
-import { TreeRef } from 'react-complex-tree';
+import { TreeItemIndex, TreeRef } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
@@ -24,12 +24,11 @@ import { WithHint } from '../UI/WithHint';
 export interface FilterProps {
   tree: RefObject<TreeRef>;
   hierarchy: HierarchyItem;
-  handleExpanded: () => void;
-  handleCollapse: () => void;
+  setExpandedItems: (expanded: TreeItemIndex[]) => void;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { tree, hierarchy, handleExpanded, handleCollapse } = props;
+  const { tree, hierarchy, setExpandedItems } = props;
 
   const [isOpen, setIsOpen] = useState(false);
   const arrowRef = useRef(null);
@@ -87,10 +86,11 @@ export const Filter: React.FC<FilterProps> = (props) => {
   const [checkRadio, setCheckRadio] = useState();
   const handleInputChangeRadio = (text) => {
     setCheckRadio(text);
+    setExpandedItems([]);
     if (text === 'Развернуть всё') {
-      return handleExpanded();
+      return tree.current?.expandAll();
     }
-    return handleCollapse();
+    return tree.current?.collapseAll();
   };
 
   const data = [
@@ -136,7 +136,8 @@ export const Filter: React.FC<FilterProps> = (props) => {
   //Очищаем весь фильтр
   const clear = () => {
     //Сворачиваем все состояния и очищаем фильтр вложенности
-    handleCollapse();
+    setExpandedItems([]);
+    tree.current?.collapseAll();
     setCheckRadio(undefined);
     //Очищаем поиск
     setInputText('');

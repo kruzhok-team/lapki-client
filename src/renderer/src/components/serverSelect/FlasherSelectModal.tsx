@@ -68,7 +68,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   };
 
   const currentServer = () => {
-    return `${Flasher.host}:${Flasher.port} (${isLocal ? 'локальный' : 'удалённый'})`;
+    return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
   };
 
   return (
@@ -127,7 +127,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={!showSecondaryField}
         />
       </div>
-      <div> Текущий адрес: {currentServer()}</div>
+      <div> {currentServer()}</div>
     </Modal>
   );
 };

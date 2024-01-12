@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
@@ -110,51 +111,67 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Проводник
       </h3>
-      <div className="flex h-full flex-col">
-        <div className={twMerge('flex-grow basis-0', !showComponents && 'h-10 flex-grow-0')}>
-          <button
-            className="mb-3 flex w-full justify-between"
-            onClick={() => toggleShow('Компоненты')}
-          >
-            <h3 className="font-semibold">Компоненты</h3>
-            <ArrowIcon
-              className={twMerge('rotate-0 transition-transform', showComponents && 'rotate-180')}
-            />
-          </button>
-          <div className={twMerge(showComponents ? 'block' : 'hidden')}>
+      {/* className="flex h-full flex-col" */}
+      <PanelGroup direction="vertical">
+        <Panel
+          order={1}
+          defaultSize={50}
+          minSize={2.5}
+          maxSize={50}
+          collapsible={showComponents}
+          onCollapse={() => toggleShow('Компоненты')}
+          collapsedSize={2.5}
+        >
+          <div className={twMerge('flex-grow basis-0', !showHierarchy && 'h-10 flex-grow-0')}>
             <button
-              className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-              disabled={!isInitialized}
-              onClick={onAddClick}
+              className="mb-3 flex w-full justify-between"
+              onClick={() => toggleShow('Компоненты')}
             >
-              <AddIcon className="shrink-0" />
-              Добавить...
+              <h3 className="font-semibold">Компоненты</h3>
+              <ArrowIcon
+                className={twMerge('rotate-0 transition-transform', showComponents && 'rotate-180')}
+              />
             </button>
+            <div className={twMerge(showComponents ? 'block' : 'hidden')}>
+              <button
+                className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+                disabled={!isInitialized}
+                onClick={onAddClick}
+              >
+                <AddIcon className="shrink-0" />
+                Добавить...
+              </button>
 
-            <ScrollableList
-              containerProps={{ onClick: (e) => e.stopPropagation() }}
-              listItems={Object.keys(components)}
-              heightOfItem={10}
-              maxItemsToRender={50}
-              renderItem={renderComponent}
-            />
+              <ScrollableList
+                containerProps={{ onClick: (e) => e.stopPropagation() }}
+                listItems={Object.keys(components)}
+                heightOfItem={10}
+                maxItemsToRender={50}
+                renderItem={renderComponent}
+              />
+            </div>
           </div>
-        </div>
-        <div className={twMerge('flex-grow basis-0', !showHierarchy && 'h-10')}>
-          <button
-            className="mb-3 flex w-full justify-between"
-            onClick={() => toggleShow('Иерархия состояний')}
-          >
-            <h3 className="font-semibold">Иерархия состояний</h3>
-            <ArrowIcon
-              className={twMerge('rotate-0 transition-transform', showHierarchy && 'rotate-180')}
-            />
-          </button>
-          <div className={twMerge(showHierarchy ? 'block' : 'hidden')}>
-            <Hierarchy {...hierarchyData} />
+        </Panel>
+        <PanelResizeHandle className="group py-1">
+          <div className="h-1 duration-500 group-hover:bg-current group-active:bg-current"></div>
+        </PanelResizeHandle>
+        <Panel order={2}>
+          <div className={twMerge('flex-grow basis-0', !showHierarchy && 'h-10')}>
+            <button
+              className="mb-3 flex w-full justify-between"
+              onClick={() => toggleShow('Иерархия состояний')}
+            >
+              <h3 className="font-semibold">Иерархия состояний</h3>
+              <ArrowIcon
+                className={twMerge('rotate-0 transition-transform', showHierarchy && 'rotate-180')}
+              />
+            </button>
+            <div className={twMerge(showHierarchy ? 'block' : 'hidden')}>
+              <Hierarchy {...hierarchyData} />
+            </div>
           </div>
-        </div>
-      </div>
+        </Panel>
+      </PanelGroup>
 
       <ComponentAddModal manager={manager} {...addProps} />
       <ComponentEditModal manager={manager} {...editProps} />

@@ -56,6 +56,7 @@
     "react-merge-refs": "^2.1.1",
     "react-modal": "^3.16.1",
     "react-popper": "^2.3.0",
+    "react-resizable-panels": "^1.0.8",
     "react-select": "^5.7.4",
     "tailwind-merge": "^1.13.2",
     "ts-json-schema-generator": "^1.2.0",

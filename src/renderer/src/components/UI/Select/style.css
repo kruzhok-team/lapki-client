@@ -23,11 +23,11 @@
 }
 
 .CustomSelect__menu {
-  @apply rounded;
+  @apply overflow-hidden rounded bg-bg-primary;
 }
 
 .CustomSelect__menu-list {
-  @apply rounded bg-bg-primary;
+  @apply bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb;
 }
 
 .CustomSelect__option--is-focused {

@@ -83,15 +83,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
 
   useClickOutside(refs.floating.current, () => setIsOpen(false), !isOpen);
 
-  const [checkRadio, setCheckRadio] = useState();
-  const handleInputChangeRadio = (text) => {
-    setCheckRadio(text);
-    setExpandedItems([]);
-    if (text === 'Развернуть всё') {
-      return tree.current?.expandAll();
-    }
-    return tree.current?.collapseAll();
-  };
+  const [checkRadio, setCheckRadio] = useState('Свернуть всё');
 
   const data = [
     {
@@ -108,16 +100,26 @@ export const Filter: React.FC<FilterProps> = (props) => {
           type: 'radio',
         },
       ],
+      onClick: (e) => {
+        setCheckRadio(e.target.value);
+        setExpandedItems([]);
+        if (e.target.value === 'Развернуть всё') {
+          return tree.current?.expandAll();
+        }
+        return tree.current?.collapseAll();
+      },
     },
     // {
     //   title: 'Состояние',
     //   children: [
     //     {
     //       text: 'Начальное состояние',
-    //       hint: 'Показывает начальное состояние и его вложенность',
+    //       hint: 'Показывает начальное состояние в иерархии',
     //       type: 'checkbox',
     //     },
     //   ],
+    //   // eslint-disable-next-line @typescript-eslint/no-empty-function
+    //   onClick: () => {},
     // },
   ];
 
@@ -138,7 +140,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
     //Сворачиваем все состояния и очищаем фильтр вложенности
     setExpandedItems([]);
     tree.current?.collapseAll();
-    setCheckRadio(undefined);
+    setCheckRadio('Свернуть всё');
     //Очищаем поиск
     setInputText('');
   };
@@ -192,7 +194,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
                 )}
               </WithHint>
 
-              {data.map(({ title, children }, key) => (
+              {data.map(({ title, children, onClick }, key) => (
                 <div key={key}>
                   {children && (
                     <>
@@ -219,7 +221,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
                                       type={type}
                                       value={text}
                                       name={text}
-                                      onChange={() => handleInputChangeRadio(text)}
+                                      onChange={onClick}
                                       checked={text === checkRadio}
                                       className="mx-2 h-4 w-4"
                                     />
@@ -228,6 +230,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
                                       type={type}
                                       value={text}
                                       name={text}
+                                      onClick={() => onClick(text)}
                                       className="mx-2 h-4 w-4"
                                     />
                                   )}

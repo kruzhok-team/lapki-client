@@ -1,6 +1,9 @@
+import { useState } from 'react';
+
 import { useForm } from 'react-hook-form';
 
 import { Modal, TextInput } from '@renderer/components/UI';
+
 import { Settings } from '../Modules/Settings';
 
 interface ServerSelectModalProps {
@@ -35,6 +38,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     setValue,
     register,
+    reset,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
@@ -46,7 +50,13 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     },
   });
 
+  // последнии отправленные пользователем хост и порт
+  const [lastHost, setLastHost] = useState<string | undefined>(undefined);
+  const [lastPort, setLastPort] = useState<string | undefined>(undefined);
+
   const handleSubmit = hookHandleSubmit((data) => {
+    setLastHost(data.inputHost);
+    setLastPort(data.inputPort);
     handleCustom(data.inputHost, Number(data.inputPort));
     onRequestClose();
   });
@@ -60,6 +70,14 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     setValue('inputPort', props.originaltPortValue);
   };
 
+  const onAfterOpen = () => {
+    if (lastHost != undefined && lastPort != undefined) {
+      reset({ inputHost: lastHost, inputPort: lastPort });
+    } else {
+      reset();
+    }
+  };
+
   return (
     <Modal
       {...props}
@@ -67,6 +85,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterOpen={onAfterOpen}
     >
       <div className={'flex'}>
         <TextInput

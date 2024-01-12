@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
+
 import { Controller, useForm } from 'react-hook-form';
 
 import { Select, Modal, TextInput } from '@renderer/components/UI';
 
-import { Flasher } from '../Modules/Flasher';
 import { Settings } from '../Modules/Settings';
 
 const SELECT_LOCAL = 'local';
@@ -39,6 +40,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     control,
     handleSubmit: hookHandleSubmit,
     watch,
+    reset,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.getFlasherSettings().then((server) => {
@@ -50,7 +52,9 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       });
     },
   });
-
+  // последнии отправленные пользователем хост и порт
+  const [lastHost, setLastHost] = useState<string | undefined>(undefined);
+  const [lastPort, setLastPort] = useState<number | undefined>(undefined);
   // октрыта ли опция выбора локального загрузчика
   const showSecondaryField = watch('flasherType') === SELECT_REMOTE;
 
@@ -58,6 +62,9 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     if (data.flasherType == SELECT_LOCAL) {
       handleLocal();
     } else {
+      setLastHost(data.host);
+      setLastPort(data.port);
+      //console.log(lastHost, lastPort);
       handleRemote(data.host, data.port);
     }
     onRequestClose();
@@ -71,6 +78,14 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
   };
 
+  const onAfterOpen = () => {
+    if (lastHost != undefined && lastPort != undefined) {
+      reset({ host: lastHost, port: lastPort, flasherType: SELECT_REMOTE });
+    } else {
+      reset();
+    }
+  };
+
   return (
     <Modal
       {...props}
@@ -78,6 +93,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       title={'Выберите загрузчик'}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterOpen={onAfterOpen}
     >
       <div className="flex items-center">
         <Controller

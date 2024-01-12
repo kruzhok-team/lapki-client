@@ -111,7 +111,6 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Проводник
       </h3>
-      {/* className="flex h-full flex-col" */}
       <PanelGroup direction="vertical">
         <Panel
           order={1}

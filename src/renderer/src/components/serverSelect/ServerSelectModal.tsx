@@ -24,9 +24,9 @@ interface ServerSelectModalProps {
 
 interface formValues {
   // текущее значение поля ввода для хоста
-  inputHost: string;
+  host: string;
   // текущее значение поля ввода для порта
-  inputPort: string;
+  port: string;
 }
 
 export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
@@ -43,8 +43,8 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
         return {
-          inputHost: server.host,
-          inputPort: server.port,
+          host: server.host,
+          port: server.port,
         };
       });
     },
@@ -55,9 +55,9 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   const [lastPort, setLastPort] = useState<string | undefined>(undefined);
 
   const handleSubmit = hookHandleSubmit((data) => {
-    setLastHost(data.inputHost);
-    setLastPort(data.inputPort);
-    handleCustom(data.inputHost, Number(data.inputPort));
+    setLastHost(data.host);
+    setLastPort(data.port);
+    handleCustom(data.host, Number(data.port));
     onRequestClose();
   });
 
@@ -66,13 +66,13 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   };
 
   const handleReturnOriginalValues = () => {
-    setValue('inputHost', props.originaltHostValue);
-    setValue('inputPort', props.originaltPortValue);
+    setValue('host', props.originaltHostValue);
+    setValue('port', props.originaltPortValue);
   };
 
   const onAfterOpen = () => {
     if (lastHost != undefined && lastPort != undefined) {
-      reset({ inputHost: lastHost, inputPort: lastPort });
+      reset({ host: lastHost, port: lastPort });
     } else {
       reset();
     }
@@ -90,7 +90,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       <div className={'flex'}>
         <TextInput
           maxLength={80}
-          {...register('inputHost')}
+          {...register('host')}
           label="Хост:"
           placeholder="Напишите адрес хоста"
           isHidden={false}
@@ -98,7 +98,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           errorMessage={''}
         />
         <TextInput
-          {...register('inputPort')}
+          {...register('port')}
           label="Порт:"
           placeholder="Напишите порт"
           isHidden={false}

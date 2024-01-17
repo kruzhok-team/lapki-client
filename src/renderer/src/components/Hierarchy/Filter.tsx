@@ -83,7 +83,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
 
   useClickOutside(refs.floating.current, () => setIsOpen(false), !isOpen);
 
-  const [checkRadio, setCheckRadio] = useState('Свернуть всё');
+  const [checked, setChecked] = useState('Свернуть всё');
 
   const data = [
     {
@@ -101,7 +101,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
         },
       ],
       onClick: (e) => {
-        setCheckRadio(e.target.value);
+        setChecked(e.target.value);
         setExpandedItems([]);
         if (e.target.value === 'Развернуть всё') {
           return tree.current?.expandAll();
@@ -140,10 +140,11 @@ export const Filter: React.FC<FilterProps> = (props) => {
     //Сворачиваем все состояния и очищаем фильтр вложенности
     setExpandedItems([]);
     tree.current?.collapseAll();
-    setCheckRadio('Свернуть всё');
+    setChecked('Свернуть всё');
     //Очищаем поиск
     setInputText('');
   };
+
   return (
     <div className="justify-left flex items-center">
       <button
@@ -215,26 +216,22 @@ export const Filter: React.FC<FilterProps> = (props) => {
                           <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>
                             {(props) => (
                               <li className="flex">
-                                <label className="flex items-center" {...props}>
+                                <label className="flex items-center" onClick={onClick} {...props}>
                                   {type === 'radio' ? (
                                     <input
                                       type={type}
                                       value={text}
-                                      name={text}
-                                      onChange={onClick}
-                                      checked={text === checkRadio}
+                                      checked={checked === text}
                                       className="mx-2 h-4 w-4"
                                     />
                                   ) : (
                                     <input
                                       type={type}
                                       value={text}
-                                      name={text}
                                       onClick={() => onClick(text)}
                                       className="mx-2 h-4 w-4"
                                     />
                                   )}
-
                                   {' ' + text}
                                 </label>
                               </li>

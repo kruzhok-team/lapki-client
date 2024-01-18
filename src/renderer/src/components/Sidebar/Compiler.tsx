@@ -81,7 +81,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
-        language: 'cpp',
+        language: 'xml',
       });
     });
   };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
@@ -89,30 +90,47 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     );
   };
 
+  const [showComponents, setShowComponents] = useState(true);
+
+  const toggleShow = () => {
+    return setShowComponents(!showComponents);
+  };
+
   return (
     <section className="flex flex-col" onClick={() => onUnClick()}>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Компоненты
+        Проводник
       </h3>
-
-      <div className="px-4 text-center">
-        <button
-          className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-          disabled={!isInitialized}
-          onClick={onAddClick}
-        >
-          <AddIcon className="shrink-0" />
-          Добавить...
+      <div
+        className={twMerge(
+          'flex-grow basis-0 px-4 text-center',
+          !showComponents && 'h-10 flex-grow-0'
+        )}
+      >
+        <button className="mb-3 flex w-full justify-between" onClick={toggleShow}>
+          <h3 className="font-semibold">Компоненты</h3>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', showComponents && 'rotate-180')}
+          />
         </button>
+        <div className={twMerge(showComponents ? 'block' : 'hidden')}>
+          <button
+            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+            disabled={!isInitialized}
+            onClick={onAddClick}
+          >
+            <AddIcon className="shrink-0" />
+            Добавить...
+          </button>
 
-        <ScrollableList
-          className="max-h-[350px]"
-          containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={Object.keys(components)}
-          heightOfItem={10}
-          maxItemsToRender={50}
-          renderItem={renderComponent}
-        />
+          <ScrollableList
+            containerProps={{ onClick: (e) => e.stopPropagation() }}
+            listItems={Object.keys(components)}
+            heightOfItem={10}
+            maxItemsToRender={50}
+            renderItem={renderComponent}
+          />
+        </div>
       </div>
 
       <ComponentAddModal manager={manager} {...addProps} />

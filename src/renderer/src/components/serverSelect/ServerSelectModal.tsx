@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { useForm } from 'react-hook-form';
 
 import { Modal, TextInput } from '@renderer/components/UI';
@@ -34,29 +32,9 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const {
-    handleSubmit: hookHandleSubmit,
-    setValue,
-    register,
-    reset,
-  } = useForm<formValues>({
-    defaultValues: async () => {
-      return Settings.get(props.electronSettingsKey).then((server) => {
-        return {
-          host: server.host,
-          port: server.port,
-        };
-      });
-    },
-  });
-
-  // последнии отправленные пользователем хост и порт
-  const [lastHost, setLastHost] = useState<string | undefined>(undefined);
-  const [lastPort, setLastPort] = useState<string | undefined>(undefined);
+  const { handleSubmit: hookHandleSubmit, setValue, register, reset } = useForm<formValues>({});
 
   const handleSubmit = hookHandleSubmit((data) => {
-    setLastHost(data.host);
-    setLastPort(data.port);
     handleCustom(data.host, Number(data.port));
     onRequestClose();
   });
@@ -71,11 +49,9 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   };
 
   const onAfterOpen = () => {
-    if (lastHost != undefined && lastPort != undefined) {
-      reset({ host: lastHost, port: lastPort });
-    } else {
-      reset();
-    }
+    Settings.get(props.electronSettingsKey).then((server) => {
+      reset({ host: server.host, port: server.port });
+    });
   };
 
   return (

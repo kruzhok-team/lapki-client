@@ -1,5 +1,4 @@
 // TODO: нужно как-то объединить файлы FlasherSelectModal.tsx, ServerSelectModal.tsx, DocSelectModal.tsx, чтобы уменьшить повторения кода
-import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
@@ -30,26 +29,10 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const {
-    register,
-    handleSubmit: hookHandleSubmit,
-    setValue,
-    reset,
-  } = useForm<formValues>({
-    defaultValues: async () => {
-      return Settings.get(props.electronSettingsKey).then((server) => {
-        return {
-          host: server.host ?? '',
-        };
-      });
-    },
-  });
-  // последний отправленный пользователем адрес
-  const [lastHost, setLastHost] = useState<string | undefined>(undefined);
+  const { register, handleSubmit: hookHandleSubmit, setValue, reset } = useForm<formValues>({});
 
   // текущий адрес к которому подключен клиент
   const handleSubmit = hookHandleSubmit((data) => {
-    setLastHost(String(data.host));
     handleCustom(String(data.host));
     onRequestClose();
   });
@@ -63,11 +46,9 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   };
 
   const onAfterOpen = () => {
-    if (lastHost != undefined) {
-      reset({ host: lastHost });
-    } else {
-      reset();
-    }
+    Settings.get(props.electronSettingsKey).then((server) => {
+      reset({ host: server.host ?? '' });
+    });
   };
 
   return (

@@ -5,22 +5,14 @@ import { SingleValue } from 'react-select';
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
-import { EventSelection } from '@renderer/lib/drawable/Events';
-import { State } from '@renderer/lib/drawable/State';
-import { Action, Event, ArgList } from '@renderer/types/diagram';
+import { Event, ArgList } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { EventsModalParameters } from './EventsModalParameters';
 
 export interface EventsModalData {
-  state: State;
-  eventSelection: EventSelection;
-}
-
-export interface EventsModalResult {
-  id?: { state: State; eventSelection: EventSelection };
-  trigger: Event;
-  action: Action;
+  event: Event;
+  isEditingEvent: boolean;
 }
 
 interface EventsModalProps {
@@ -28,7 +20,7 @@ interface EventsModalProps {
   manager: EditorManager;
   initialData?: EventsModalData;
   isOpen: boolean;
-  onSubmit: (data: EventsModalResult) => void;
+  onSubmit: (data: Event) => void;
   onClose: () => void;
 }
 
@@ -42,7 +34,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 }) => {
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
-  const isEditingEvent = Boolean(initialData && initialData.eventSelection.actionIdx === null);
+  const isEditingEvent = initialData?.isEditingEvent ?? false;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -100,16 +92,8 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
     // Этот блок нужен для то чтобы по возвращению на начальное состояние сбросить параметры до начального состояния а не очищать совсем)
     if (initialData) {
-      const { state, eventSelection } = initialData;
-      const eventData = state.eventBox.data[eventSelection.eventIdx];
-
-      const data =
-        eventSelection.actionIdx === null
-          ? eventData.trigger
-          : eventData.do[eventSelection.actionIdx];
-
-      if (data.component === componentName && data.method === method) {
-        parameters = data.args ?? {};
+      if (initialData.event.component === componentName && initialData.event.method === method) {
+        parameters = initialData.event.args ?? {};
       }
     }
 
@@ -151,19 +135,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
     }
     if (!selectedComponent || !selectedMethod) return;
 
-    // FIXME: очень некорректное дублирование, его нужно снять
     onSubmit({
-      id: initialData,
-      trigger: {
-        component: selectedComponent,
-        method: selectedMethod,
-        args: parameters,
-      },
-      action: {
-        component: selectedComponent,
-        method: selectedMethod,
-        args: parameters,
-      },
+      component: selectedComponent,
+      method: selectedMethod,
+      args: parameters,
     });
   };
 
@@ -198,15 +173,9 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       );
     };
 
-    const { state, eventSelection } = initialData;
-    const eventData = state.eventBox.data[eventSelection.eventIdx];
+    const { event, isEditingEvent } = initialData;
 
-    // Проверка на то что мы редактируем, событие или действие
-    if (eventSelection.actionIdx === null) {
-      init(eventData.trigger, 'signals');
-    } else {
-      init(eventData.do[eventSelection.actionIdx], 'methods');
-    }
+    init(event, isEditingEvent ? 'signals' : 'methods');
   }, [machine, initialData]);
 
   return (

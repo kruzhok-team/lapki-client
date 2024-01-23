@@ -77,3 +77,6 @@ export const formatArgType = (value: ArgType) => {
 
   return value;
 };
+
+// цвет связи по-умолчанию
+export const defaultTransColor = '#0000FF';

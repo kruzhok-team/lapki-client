@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { Controller, useForm } from 'react-hook-form';
 
 import { Select, Modal, TextInput } from '@renderer/components/UI';
@@ -41,20 +39,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     watch,
     reset,
-  } = useForm<formValues>({
-    defaultValues: async () => {
-      return Settings.getFlasherSettings().then((server) => {
-        return {
-          host: String(server.host),
-          port: Number(server.port),
-          flasherType: SELECT_REMOTE,
-        };
-      });
-    },
-  });
-  // последнии отправленные пользователем хост и порт
-  const [lastHost, setLastHost] = useState<string | undefined>(undefined);
-  const [lastPort, setLastPort] = useState<number | undefined>(undefined);
+  } = useForm<formValues>({});
   // октрыта ли опция выбора локального загрузчика
   const showSecondaryField = watch('flasherType') === SELECT_REMOTE;
 
@@ -62,9 +47,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     if (data.flasherType == SELECT_LOCAL) {
       handleLocal();
     } else {
-      setLastHost(data.host);
-      setLastPort(data.port);
-      //console.log(lastHost, lastPort);
       handleRemote(data.host, data.port);
     }
     onRequestClose();
@@ -79,11 +61,9 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   };
 
   const onAfterOpen = () => {
-    if (lastHost != undefined && lastPort != undefined) {
-      reset({ host: lastHost, port: lastPort, flasherType: SELECT_REMOTE });
-    } else {
-      reset();
-    }
+    Settings.getFlasherSettings().then((server) => {
+      reset({ host: String(server.host), port: Number(server.port), flasherType: SELECT_REMOTE });
+    });
   };
 
   return (

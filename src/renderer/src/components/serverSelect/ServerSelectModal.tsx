@@ -32,7 +32,21 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit, setValue, register, reset } = useForm<formValues>({});
+  const {
+    handleSubmit: hookHandleSubmit,
+    setValue,
+    register,
+    reset,
+  } = useForm<formValues>({
+    defaultValues: async () => {
+      return Settings.get(props.electronSettingsKey).then((server) => {
+        return {
+          host: server.host,
+          port: server.port,
+        };
+      });
+    },
+  });
 
   const handleSubmit = hookHandleSubmit((data) => {
     handleCustom(data.host, Number(data.port));
@@ -48,7 +62,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     setValue('port', props.originaltPortValue);
   };
 
-  const onAfterOpen = () => {
+  const reloadSettings = () => {
     Settings.get(props.electronSettingsKey).then((server) => {
       reset({ host: server.host, port: server.port });
     });
@@ -61,7 +75,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      onAfterOpen={onAfterOpen}
+      onAfterClose={reloadSettings}
     >
       <div className={'flex'}>
         <TextInput

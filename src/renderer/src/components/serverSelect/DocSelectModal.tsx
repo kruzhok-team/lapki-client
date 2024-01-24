@@ -29,7 +29,20 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   handleCustom: handleCustom,
   ...props
 }) => {
-  const { register, handleSubmit: hookHandleSubmit, setValue, reset } = useForm<formValues>({});
+  const {
+    register,
+    handleSubmit: hookHandleSubmit,
+    setValue,
+    reset,
+  } = useForm<formValues>({
+    defaultValues: async () => {
+      return Settings.get(props.electronSettingsKey).then((server) => {
+        return {
+          host: server.host ?? '',
+        };
+      });
+    },
+  });
 
   // текущий адрес к которому подключен клиент
   const handleSubmit = hookHandleSubmit((data) => {
@@ -45,7 +58,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     setValue('host', props.originaltHostValue);
   };
 
-  const onAfterOpen = () => {
+  const resetSettings = () => {
     Settings.get(props.electronSettingsKey).then((server) => {
       reset({ host: server.host ?? '' });
     });
@@ -58,7 +71,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      onAfterOpen={onAfterOpen}
+      onAfterClose={resetSettings}
     >
       <div className={twMerge('flex')}>
         <TextInput

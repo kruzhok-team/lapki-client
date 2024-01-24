@@ -39,7 +39,17 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     watch,
     reset,
-  } = useForm<formValues>({});
+  } = useForm<formValues>({
+    defaultValues: async () => {
+      return Settings.getFlasherSettings().then((server) => {
+        return {
+          host: String(server.host),
+          port: Number(server.port),
+          flasherType: SELECT_REMOTE,
+        };
+      });
+    },
+  });
   // октрыта ли опция выбора локального загрузчика
   const showSecondaryField = watch('flasherType') === SELECT_REMOTE;
 
@@ -60,7 +70,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
   };
 
-  const onAfterOpen = () => {
+  const resetSettings = () => {
     Settings.getFlasherSettings().then((server) => {
       reset({ host: String(server.host), port: Number(server.port), flasherType: SELECT_REMOTE });
     });
@@ -73,7 +83,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       title={'Выберите загрузчик'}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      onAfterOpen={onAfterOpen}
+      onAfterClose={resetSettings}
     >
       <div className="flex items-center">
         <Controller

@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 
 import { Modal, TextInput } from '@renderer/components/UI';
+
 import { Settings } from '../Modules/Settings';
 
 interface ServerSelectModalProps {
@@ -21,9 +22,9 @@ interface ServerSelectModalProps {
 
 interface formValues {
   // текущее значение поля ввода для хоста
-  inputHost: string;
+  host: string;
   // текущее значение поля ввода для порта
-  inputPort: string;
+  port: string;
 }
 
 export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
@@ -35,19 +36,20 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     setValue,
     register,
+    reset,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
         return {
-          inputHost: server.host,
-          inputPort: server.port,
+          host: server.host,
+          port: server.port,
         };
       });
     },
   });
 
   const handleSubmit = hookHandleSubmit((data) => {
-    handleCustom(data.inputHost, Number(data.inputPort));
+    handleCustom(data.host, Number(data.port));
     onRequestClose();
   });
 
@@ -56,8 +58,14 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
   };
 
   const handleReturnOriginalValues = () => {
-    setValue('inputHost', props.originaltHostValue);
-    setValue('inputPort', props.originaltPortValue);
+    setValue('host', props.originaltHostValue);
+    setValue('port', props.originaltPortValue);
+  };
+
+  const reloadSettings = () => {
+    Settings.get(props.electronSettingsKey).then((server) => {
+      reset({ host: server.host, port: server.port });
+    });
   };
 
   return (
@@ -67,11 +75,12 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterClose={reloadSettings}
     >
       <div className={'flex'}>
         <TextInput
           maxLength={80}
-          {...register('inputHost')}
+          {...register('host')}
           label="Хост:"
           placeholder="Напишите адрес хоста"
           isHidden={false}
@@ -79,7 +88,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           errorMessage={''}
         />
         <TextInput
-          {...register('inputPort')}
+          {...register('port')}
           label="Порт:"
           placeholder="Напишите порт"
           isHidden={false}

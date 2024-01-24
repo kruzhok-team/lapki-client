@@ -1,9 +1,8 @@
 import { Controller, useForm } from 'react-hook-form';
 
-import { Select } from '@renderer/components/UI';
+import { Select, Modal, TextInput } from '@renderer/components/UI';
 
 import { Settings } from '../Modules/Settings';
-import { Modal, TextInput } from '@renderer/components/UI';
 
 const SELECT_LOCAL = 'local';
 const SELECT_REMOTE = 'remote';
@@ -15,6 +14,7 @@ const options = [
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
+  isLocal: boolean;
   onClose: () => void;
   handleLocal: () => void;
   handleRemote: (host: string, port: number) => void;
@@ -30,6 +30,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   onClose,
   handleLocal,
   handleRemote,
+  isLocal,
   ...props
 }) => {
   const {
@@ -37,6 +38,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     control,
     handleSubmit: hookHandleSubmit,
     watch,
+    reset,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.getFlasherSettings().then((server) => {
@@ -48,7 +50,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       });
     },
   });
-
   // октрыта ли опция выбора локального загрузчика
   const showSecondaryField = watch('flasherType') === SELECT_REMOTE;
 
@@ -65,6 +66,16 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     onClose();
   };
 
+  const currentServer = () => {
+    return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
+  };
+
+  const resetSettings = () => {
+    Settings.getFlasherSettings().then((server) => {
+      reset({ host: String(server.host), port: Number(server.port), flasherType: SELECT_REMOTE });
+    });
+  };
+
   return (
     <Modal
       {...props}
@@ -72,6 +83,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       title={'Выберите загрузчик'}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterClose={resetSettings}
     >
       <div className="flex items-center">
         <Controller
@@ -121,6 +133,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={!showSecondaryField}
         />
       </div>
+      <div> {currentServer()}</div>
     </Modal>
   );
 };

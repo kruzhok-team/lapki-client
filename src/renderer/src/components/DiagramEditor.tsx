@@ -11,7 +11,7 @@ import { Transition } from '@renderer/lib/drawable/Transition';
 import { Action, Event } from '@renderer/types/diagram';
 import { defaultTransColor } from '@renderer/utils';
 
-import { CreateModal, CreateModalResult } from './CreateModal';
+import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
 import { EventsModalData, EventsModal } from './EventsModal';
 import { StateNameModal } from './StateNameModal';
@@ -142,7 +142,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       closeEventsModal();
     };
 
-    const handleCreateModal = (data: CreateModalResult) => {
+    const handleCreateModalSubmit = (data: CreateModalResult) => {
       if (data.key === 2) {
         editor?.container.machineController.changeStateEvents({
           id: data.id,
@@ -200,18 +200,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
           />
         )}
 
-        {isCreateModalOpen && (
+        {editor && (
           <CreateModal
             editor={editor}
             manager={manager}
-            isCondition={events}
-            setIsCondition={setEvents}
-            isOpen={isCreateModalOpen}
+            isState={state}
+            isTransition={transition ? { transition: transition } : undefined}
+            isEvents={events}
+            setIsEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}
-            isData={state}
-            isTransition={transition ? { target: transition } : undefined}
+            onSubmit={handleCreateModalSubmit}
+            isOpen={isCreateModalOpen}
             onClose={closeCreateModal}
-            onSubmit={handleCreateModal}
           />
         )}
       </>

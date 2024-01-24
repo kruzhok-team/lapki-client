@@ -4,16 +4,15 @@ import { useDiagramStateName } from '@renderer/hooks/useDiagramStateName';
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
-import { Action } from '@renderer/types/diagram';
+import { Action, Event } from '@renderer/types/diagram';
+import { defaultTransColor } from '@renderer/utils';
 
 import { CreateModal, CreateModalResult } from './CreateModal';
-import { EventsModalData, EventsModal, EventsModalResult } from './EventsModal';
+import { EventsModalData, EventsModal } from './EventsModal';
 import { StateNameModal } from './StateNameModal';
-
-// цвет связи по-умолчанию
-export const defaultTransColor = '#0000FF';
 
 export interface DiagramEditorProps {
   manager: EditorManager;
@@ -33,6 +32,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
 
     const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
     const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
+    // Дополнительные данные о родителе события
+    const [eventsModalParentData, setEventsModalParentData] = useState<{
+      state: State;
+      eventSelection: EventSelection;
+    }>();
 
     const stateName = useDiagramStateName(editor);
 
@@ -67,8 +71,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       });
 
       editor.container.statesController.on('changeEvent', (data) => {
+        const { state, eventSelection, event, isEditingEvent } = data;
+
         ClearUseState();
-        setEventsModalData(data);
+        setEventsModalParentData({ state, eventSelection });
+        setEventsModalData({ event, isEditingEvent });
         openEventsModal();
       });
 
@@ -101,13 +108,32 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       // }, [ containerRef.current ]);
     }, [manager, setEditor]);
 
-    const handleCreateEventsModal = (data: EventsModalResult) => {
-      setEvents([...events, data.action]);
-      if (!isCreateModalOpen && data.id?.eventSelection) {
+    const handleEventsModalSubmit = (data: Event) => {
+      // Если есть какие-то данные то мы редактируем событие а не добавляем
+      if (eventsModalData) {
+        setEvents((p) => {
+          const { component, method } = eventsModalData.event;
+          const prevEventIndex = p.findIndex(
+            (v) => v.component === component && v.method === method
+          );
+
+          if (prevEventIndex === -1) return p;
+
+          const newEvents = [...p];
+
+          newEvents[prevEventIndex] = data;
+
+          return newEvents;
+        });
+      } else {
+        setEvents((p) => [...p, data]);
+      }
+
+      if (!isCreateModalOpen && eventsModalParentData) {
         editor?.container.machineController.changeEvent(
-          data.id?.state.id,
-          data.id.eventSelection,
-          data.trigger
+          eventsModalParentData.state.id,
+          eventsModalParentData.eventSelection,
+          data
         );
       }
       closeEventsModal();
@@ -146,6 +172,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       closeCreateModal();
     };
 
+    const handleOpenEventsModal = (event?: Event) => {
+      setEventsModalData(event && { event, isEditingEvent: false });
+      setEventsModalParentData(undefined);
+
+      openEventsModal();
+    };
+
     return (
       <>
         <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef} />
@@ -157,7 +190,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
             editor={editor}
             manager={manager}
             initialData={eventsModalData}
-            onSubmit={handleCreateEventsModal}
+            onSubmit={handleEventsModalSubmit}
             isOpen={isEventsModalOpen}
             onClose={closeEventsModal}
           />
@@ -170,10 +203,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
             isCondition={events}
             setIsCondition={setEvents}
             isOpen={isCreateModalOpen}
-            onOpenEventsModal={() => {
-              openEventsModal();
-              setEventsModalData(undefined);
-            }}
+            onOpenEventsModal={handleOpenEventsModal}
             isData={state}
             isTransition={transition ? { target: transition } : undefined}
             onClose={closeCreateModal}

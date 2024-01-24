@@ -73,6 +73,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.emit('createTransition', { source: this.ghost.source, target: state });
     }
     this.ghost.clear();
+    this.container.isDirty = true;
   };
 
   handleMouseUp = () => {

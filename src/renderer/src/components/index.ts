@@ -1,5 +1,6 @@
 export * from './CodeEditor';
-export * from './CreateModal';
+export * from './CreateModal/CreateModal';
+export * from './EventsModal/EventsModal';
 export * from './DiagramEditor';
 export * from './Documentation/Documentation';
 export * from './SaveRemindModal';

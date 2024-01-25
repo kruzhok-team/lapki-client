@@ -87,7 +87,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   //Хранение цвета связи
   const [color, setColor] = useState<string>();
-  const [errors, setErrors] = useState<boolean>(false);
   const [conditionOperator, setConditionOperator] = useState<string | null>(null);
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

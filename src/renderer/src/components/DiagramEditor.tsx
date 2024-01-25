@@ -13,7 +13,7 @@ import { defaultTransColor } from '@renderer/utils';
 
 import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
-import { EventsModalData, EventsModal } from './EventsModal';
+import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
 import { StateNameModal } from './StateNameModal';
 
 export interface DiagramEditorProps {

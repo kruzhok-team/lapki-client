@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-empty */
 /**
  * Кодер JSON-формата описания платформы.
  * Выполняет кодирование и декодирование с проверкой данных на корректность.
@@ -202,6 +204,7 @@ const typeMap: any = {
     [
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
       { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'hidden', js: 'hidden', typ: u(undefined, true) },
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
     ],

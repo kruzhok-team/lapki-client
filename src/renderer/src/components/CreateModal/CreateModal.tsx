@@ -20,6 +20,8 @@ import {
 } from '@renderer/types/diagram';
 import { defaultTransColor } from '@renderer/utils';
 
+import { EventsBlockModal } from './EventsBlockModal';
+
 export interface CreateModalResult {
   id: string;
   key: number;
@@ -32,10 +34,10 @@ export interface CreateModalResult {
 interface CreateModalProps {
   editor: CanvasEditor;
   manager: EditorManager;
-  isState: { state: State } | undefined;
-  isTransition: { transition: Transition } | undefined;
-  isEvents: Action[] | undefined;
-  setIsEvents: React.Dispatch<React.SetStateAction<Action[]>>;
+  state: State | undefined;
+  transition: Transition | undefined;
+  events: Action[];
+  setEvents: React.Dispatch<React.SetStateAction<Action[]>>;
   onOpenEventsModal: (event?: Event) => void;
   isOpen: boolean;
   onSubmit: (data: CreateModalResult) => void;
@@ -45,10 +47,10 @@ interface CreateModalProps {
 export const CreateModal: React.FC<CreateModalProps> = ({
   editor,
   manager,
-  isState,
-  isTransition,
-  isEvents,
-  setIsEvents,
+  state,
+  transition,
+  events,
+  setEvents,
   onOpenEventsModal,
   isOpen,
   onSubmit,
@@ -83,7 +85,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
-  const isEditingData = isState !== undefined;
+  const isEditingState = state !== undefined;
 
   //Хранение цвета связи
   const [color, setColor] = useState<string>();
@@ -114,12 +116,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingData) {
+    if (isEditingState) {
       result.unshift(getComponentOption('System'));
     }
 
     return result;
-  }, [componentsData, isEditingData, machine]);
+  }, [componentsData, isEditingState, machine]);
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -135,12 +137,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingData) {
+    if (isEditingState) {
       result.unshift(getComponentOption('System'));
     }
 
     return result;
-  }, [componentsData, isEditingData, machine]);
+  }, [componentsData, isEditingState, machine]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -156,12 +158,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingData) {
+    if (isEditingState) {
       result.unshift(getComponentOption('System'));
     }
 
     return result;
-  }, [componentsData, isEditingData, machine]);
+  }, [componentsData, isEditingState, machine]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
@@ -228,36 +230,19 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   //-------------------------------Реализация показа блоков условия--------------------------------------
   const [conditionShow, setConditionShow] = useState(true);
-  const [isParamOne, setIsParamOne] = useState(true);
-  const [isParamTwo, setIsParamTwo] = useState(true);
+  const [isParamOneInput1, setIsParamOneInput1] = useState(true);
+  const [isParamOneInput2, setIsParamOneInput2] = useState(true);
   const handleIsElse = (event) => {
     return setConditionShow(!event.target.checked);
   };
-  const handleParamOne = (event) => {
-    return setIsParamOne(!event.target.checked);
+  const handleParamOneInput1 = (event) => {
+    return setIsParamOneInput1(!event.target.checked);
   };
-  const handleParamTwo = (event) => {
-    return setIsParamTwo(!event.target.checked);
+  const handleParamOneInput2 = (event) => {
+    return setIsParamOneInput2(!event.target.checked);
   };
 
   //-----------------------------------------------------------------------------------------------------
-
-  //Делаем проверку на наличие событий в состояниях
-  const dataEvents = isState?.state.eventBox.data.find(
-    (value) =>
-      selectedComponent === value.trigger.component && selectedMethod === value.trigger.method
-  );
-
-  useLayoutEffect(() => {
-    if (!isTransition) {
-      if (isState && dataEvents) {
-        return setIsEvents(dataEvents.do);
-      }
-      return setIsEvents([]);
-    }
-  }, [dataEvents, isState, isTransition]);
-
-  const method: Action[] = isEvents!;
 
   const handleComponentChange = (value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? '');
@@ -289,16 +274,16 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
     if (!conditionShow) {
-      if (isParamOne && !selectedComponentParam1 && !selectedMethodParam1) {
+      if (isParamOneInput1 && !selectedComponentParam1 && !selectedMethodParam1) {
         return;
       }
-      if (isParamTwo && !selectedComponentParam2 && !selectedMethodParam2) {
+      if (isParamOneInput2 && !selectedComponentParam2 && !selectedMethodParam2) {
         return;
       }
-      if (!isParamOne && argsParam1 === '') {
+      if (!isParamOneInput1 && argsParam1 === '') {
         return;
       }
-      if (!isParamTwo && argsParam2 === '') {
+      if (!isParamOneInput2 && argsParam2 === '') {
         return;
       }
     }
@@ -313,8 +298,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           type: conditionOperator!,
           value: [
             {
-              type: isParamOne ? 'component' : 'value',
-              value: isParamOne
+              type: isParamOneInput1 ? 'component' : 'value',
+              value: isParamOneInput1
                 ? {
                     component: selectedComponentParam1!,
                     method: selectedMethodParam1!,
@@ -323,8 +308,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 : argsParam1!,
             },
             {
-              type: isParamTwo ? 'component' : 'value',
-              value: isParamTwo
+              type: isParamOneInput2 ? 'component' : 'value',
+              value: isParamOneInput2
                 ? {
                     component: selectedComponentParam2!,
                     method: selectedMethodParam2!,
@@ -336,18 +321,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         };
 
     const data: CreateModalResult = {
-      id: isEditingData ? isState.state.id : '',
-      key: isEditingData ? 2 : 3,
+      id: isEditingState ? state!.id : '',
+      key: isEditingState ? 2 : 3,
       trigger: {
         component: selectedComponent,
         method: selectedMethod,
       },
       condition: condition,
-      do: method,
+      do: events,
       color: color,
     };
 
-    if ((isState && method.length !== 0) || isState === undefined) {
+    if ((state && events.length !== 0) || state === undefined) {
       onSubmit(data);
     }
   };
@@ -364,12 +349,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     setSelectedMethodParam1('');
     setSelectedMethodParam2('');
     setArgsParam2('');
-    setColor(isTransition?.transition.data.color);
+    setColor(transition?.data.color);
 
-    if (isEditingData) {
-      if (isState.state.data.events.length === 0) return;
+    if (isEditingState) {
+      if (!state) return;
 
-      const { state } = isState;
+      if (state.data.events.length === 0) return;
+
       const init = (state: State) => {
         const { data } = state;
 
@@ -381,8 +367,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     //Позволяет найти начальные значения условия(условий), если таковые имеются
     const tryGetCondition = () => {
-      if (isTransition) {
-        const c = isTransition.transition.data.condition;
+      if (transition) {
+        const c = transition.data.condition;
         if (!c) return undefined;
         const operator = c.type;
         if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
@@ -431,8 +417,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       return undefined;
     };
 
-    if (!isTransition) return;
-    const { transition } = isTransition;
+    if (!transition) return;
     const init = (transition: Transition) => {
       const { data } = transition;
 
@@ -442,49 +427,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       tryGetCondition();
     };
     return init(transition);
-  }, [machine, isEditingData, isState, isTransition]);
-
-  //Срабатывания клика по элементу списка действий и удаление выбранного действия
-  const [clickList, setClickList] = useState<number>(0);
-
-  const deleteMethod = () => {
-    const delMethod = method.filter((_value, index) => clickList !== index);
-    setIsEvents(delMethod);
-  };
-
-  //Ниже реализовано перетаскивание событий между собой
-  const [dragId, setDragId] = useState();
-  const handleDrag = (id) => {
-    setDragId(id);
-  };
-
-  const handleDrop = (id) => {
-    const dragBox = method.find((_box, index) => index === dragId);
-    const dropBox = method.find((_box, index) => index === id);
-
-    if (!dragBox || !dropBox) return;
-
-    const dragBoxOrder = dragBox;
-    const dropBoxOrder = dropBox;
-
-    const newBoxState = method.map((box, index) => {
-      if (index === dragId) {
-        box = dropBoxOrder;
-      }
-      if (index === id) {
-        box = dragBoxOrder;
-      }
-      return box;
-    });
-    setIsEvents(newBoxState);
-  };
+  }, [machine, isEditingState, state, transition]);
 
   return (
     //--------------------------------------Показ модального окна------------------------------------------
     <Modal
       title={
-        isEditingData
-          ? 'Редактор состояния: ' + JSON.stringify(isState.state.data.name)
+        isEditingState
+          ? 'Редактор состояния: ' + JSON.stringify(state?.data.name)
           : 'Редактор соединения'
       }
       onSubmit={handleSubmit}
@@ -508,12 +458,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
           isSearchable={false}
         />
-        {isEditingData && (dataEvents ? <p className="text-success">✔</p> : <p>(Новое событие)</p>)}
+        {isEditingState && (events ? <p className="text-success">✔</p> : <p>(Новое событие)</p>)}
         {/* {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''} */}
       </div>
 
       {/*--------------------------------------Добавление условия------------------------------------------*/}
-      {isEditingData || (
+      {isEditingState || (
         <div className="my-3 flex items-start">
           <div className="flex items-center">
             <label className="mx-1 font-bold">Если: </label>
@@ -534,11 +484,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             <div className="flex items-center">
               <input
                 type="checkbox"
-                onChange={handleParamOne}
-                checked={!isParamOne}
+                onChange={handleParamOneInput1}
+                checked={!isParamOneInput1}
                 className={twMerge('mx-4', conditionShow && 'hidden')}
               />
-              {isParamOne ? (
+              {isParamOneInput1 ? (
                 <>
                   <Select
                     className={twMerge(
@@ -570,7 +520,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 <TextInput
                   label="Параметр:"
                   placeholder="Напишите параметр"
-                  isHidden={conditionShow}
+                  hidden={conditionShow}
                   onChange={(e) => setArgsParam1(e.target.value)}
                   value={argsParam1 ?? undefined}
                   error={false}
@@ -588,11 +538,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               <input
                 type="checkbox"
                 disabled={conditionShow}
-                checked={!isParamTwo}
-                onChange={handleParamTwo}
+                checked={!isParamOneInput2}
+                onChange={handleParamOneInput2}
                 className={twMerge('mx-4', conditionShow && 'hidden')}
               />
-              {isParamTwo ? (
+              {isParamOneInput2 ? (
                 <>
                   <Select
                     className={twMerge(
@@ -624,7 +574,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 <TextInput
                   label="Параметр:"
                   placeholder="Напишите параметр"
-                  isHidden={conditionShow}
+                  hidden={conditionShow}
                   onChange={(e) => setArgsParam2(e.target.value)}
                   value={argsParam2 ?? undefined}
                   error={false}
@@ -637,57 +587,22 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       )}
 
       {/*-------------------------------------Добавление действий-----------------------------------------*/}
-      <div className="my-1 flex">
-        <label className="mx-1 mt-2 font-bold">Делай: </label>
-        <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {method.length === 0 ||
-            method.map((data, key) => (
-              <div
-                key={'Methods' + key}
-                className={twMerge('flex hover:bg-bg-hover', clickList === key && 'bg-bg-active')}
-                onClick={() => setClickList(key)}
-                draggable={true}
-                onDragOver={(event) => event.preventDefault()}
-                onDragStart={() => handleDrag(key)}
-                onDrop={() => handleDrop(key)}
-                onDoubleClick={() => onOpenEventsModal(data)}
-              >
-                <div
-                  className={twMerge(
-                    'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
-                  )}
-                >
-                  {machine.platform.getFullComponentIcon(data.component)}
-                  <div className="h-full w-[2px] bg-border-primary"></div>
-                  <img
-                    style={{ height: '32px', width: '32px' }}
-                    src={machine.platform.getActionIconUrl(data.component, data.method, true)}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <div>{data.component}.</div>
-                  <div>{data.method}</div>
-                </div>
-
-                {data.args !== undefined || <div>{data.args}</div>}
-              </div>
-            ))}
-          {method.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
-        </div>
-        <div className="flex flex-col gap-2">
-          <button type="button" className="btn-secondary p-1" onClick={() => onOpenEventsModal()}>
-            <AddIcon />
-          </button>
-          <button type="button" className="btn-secondary p-1" onClick={deleteMethod}>
-            <SubtractIcon />
-          </button>
-        </div>
-      </div>
-      {isEditingData || (
+      <EventsBlockModal
+        editor={editor}
+        state={state}
+        transition={transition}
+        selectedComponent={selectedComponent}
+        selectedMethod={selectedMethod}
+        events={events}
+        setEvents={setEvents}
+        onOpenEventsModal={onOpenEventsModal}
+        isOpen={isOpen}
+      />
+      {isEditingState || (
         <ColorInput
           label="Цвет связи:"
           onChange={(e) => setColor(e.target.value)}
-          defaultValue={isTransition?.transition.data.color ?? defaultTransColor}
+          defaultValue={transition?.data.color ?? defaultTransColor}
         />
       )}
     </Modal>

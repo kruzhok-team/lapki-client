@@ -25,7 +25,7 @@ export interface DiagramEditorProps {
 export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
   ({ manager, editor, setEditor }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [state, setState] = useState<{ state: State }>();
+    const [state, setState] = useState<State | null>(null);
     const [events, setEvents] = useState<Action[]>([]);
     const [transition, setTransition] = useState<Transition | null>(null);
     const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
@@ -52,7 +52,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
 
       //Функция очистки всех данных
       const ClearUseState = () => {
-        setState(undefined);
+        setState(null);
         setEvents([]);
         setTransition(null);
         setNewTransition(undefined);
@@ -69,7 +69,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       //Здесь мы открываем модальное окно редактирования ноды
       editor.container.statesController.on('changeState', (state) => {
         ClearUseState();
-        setState({ state });
+        setState(state);
         openCreateModal();
       });
 
@@ -204,10 +204,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
           <CreateModal
             editor={editor}
             manager={manager}
-            isState={state}
-            isTransition={transition ? { transition: transition } : undefined}
-            isEvents={events}
-            setIsEvents={setEvents}
+            state={state ? state : undefined}
+            transition={transition ? transition : undefined}
+            events={events}
+            setEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}
             onSubmit={handleCreateModalSubmit}
             isOpen={isCreateModalOpen}

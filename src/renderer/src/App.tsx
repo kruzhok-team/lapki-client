@@ -8,6 +8,7 @@ import {
   ErrorModal,
   Sidebar,
   MainContainer,
+  UpdateModal,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
@@ -101,6 +102,7 @@ export const App: React.FC = () => {
           onCreateFromTemplate={handleOpenFromTemplate}
           manager={manager}
         />
+        <UpdateModal />
       </div>
     </ThemeContext.Provider>
   );

@@ -10,9 +10,9 @@ interface TextInputProps extends ComponentProps<'input'> {
 }
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  ({ label, isHidden: isElse, error, errorMessage, className, ...props }, ref) => {
+  ({ label, isHidden, error, errorMessage, className, ...props }, ref) => {
     return (
-      <label className={twMerge('mx-1 flex flex-col', error && 'text-error', isElse && 'hidden')}>
+      <label className={twMerge('mx-1 flex flex-col', error && 'text-error', isHidden && 'hidden')}>
         {label}
         <input
           className={twMerge(

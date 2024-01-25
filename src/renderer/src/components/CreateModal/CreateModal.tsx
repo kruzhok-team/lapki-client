@@ -518,7 +518,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 <TextInput
                   label="Параметр:"
                   placeholder="Напишите параметр"
-                  hidden={conditionShow}
+                  isHidden={conditionShow}
                   onChange={(e) => setArgsParam1(e.target.value)}
                   value={argsParam1 ?? undefined}
                   error={false}
@@ -572,7 +572,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 <TextInput
                   label="Параметр:"
                   placeholder="Напишите параметр"
-                  hidden={conditionShow}
+                  isHidden={conditionShow}
                   onChange={(e) => setArgsParam2(e.target.value)}
                   value={argsParam2 ?? undefined}
                   error={false}

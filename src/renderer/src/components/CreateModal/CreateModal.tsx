@@ -84,10 +84,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
   const isEditingData = isState !== undefined;
-  const method: Action[] = isEvents!;
 
   //Хранение цвета связи
   const [color, setColor] = useState<string>();
+  const [errors, setErrors] = useState<boolean>(false);
   const [conditionOperator, setConditionOperator] = useState<string | null>(null);
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -232,23 +232,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [isParamOne, setIsParamOne] = useState(true);
   const [isParamTwo, setIsParamTwo] = useState(true);
   const handleIsElse = (event) => {
-    if (event.target.checked) {
-      return setConditionShow(false);
-    }
-    return setConditionShow(true);
+    return setConditionShow(!event.target.checked);
   };
   const handleParamOne = (event) => {
-    if (event.target.checked) {
-      return setIsParamOne(false);
-    }
-    return setIsParamOne(true);
+    return setIsParamOne(!event.target.checked);
   };
   const handleParamTwo = (event) => {
-    if (event.target.checked) {
-      return setIsParamTwo(false);
-    }
-    return setIsParamTwo(true);
+    return setIsParamTwo(!event.target.checked);
   };
+
   //-----------------------------------------------------------------------------------------------------
 
   //Делаем проверку на наличие событий в состояниях
@@ -259,15 +251,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   useLayoutEffect(() => {
     if (!isTransition) {
-      return;
+      if (isState && dataEvents) {
+        return setIsEvents(dataEvents.do);
+      }
+      return setIsEvents([]);
     }
+  }, [dataEvents, isState, isTransition]);
 
-    if (isState && dataEvents) {
-      setIsEvents(dataEvents.do);
-    } else {
-      setIsEvents([]);
-    }
-  }, [dataEvents]);
+  const method: Action[] = isEvents!;
 
   const handleComponentChange = (value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? '');
@@ -297,11 +288,18 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     if (!selectedComponent || !selectedMethod) return;
 
+    //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
     if (!conditionShow) {
-      if (isParamOne && selectedMethodParam1 == null) {
+      if (isParamOne && !selectedComponentParam1 && !selectedMethodParam1) {
         return;
       }
-      if (isParamTwo && selectedMethodParam2 == null) {
+      if (isParamTwo && !selectedComponentParam2 && !selectedMethodParam2) {
+        return;
+      }
+      if (!isParamOne && argsParam1 === '') {
+        return;
+      }
+      if (!isParamTwo && argsParam2 === '') {
         return;
       }
     }
@@ -350,7 +348,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       color: color,
     };
 
-    if ((isState !== undefined && method.length !== 0) || isState === undefined) {
+    if ((isState && method.length !== 0) || isState === undefined) {
       onSubmit(data);
     }
   };
@@ -459,7 +457,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const [dragId, setDragId] = useState();
   const handleDrag = (id) => {
     setDragId(id);
-    console.log(id);
   };
 
   const handleDrop = (id) => {
@@ -524,7 +521,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             <label
               className={twMerge('btn ml-3 border-primary px-3', !conditionShow && 'btn-primary')}
             >
-              <input type="checkbox" onChange={handleIsElse} className="h-0 w-0 opacity-0" />
+              <input
+                type="checkbox"
+                checked={!conditionShow}
+                onChange={handleIsElse}
+                className="h-0 w-0 opacity-0"
+              />
               <span>Условие</span>
             </label>
           </div>
@@ -572,8 +574,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   isHidden={conditionShow}
                   onChange={(e) => setArgsParam1(e.target.value)}
                   value={argsParam1 ?? undefined}
-                  error={argsParam1 == ''}
-                  errorMessage={argsParam1 == '' ? 'Это поле обязательно для заполнения!' : ''}
+                  error={false}
+                  errorMessage={''}
                 />
               )}
             </div>
@@ -626,8 +628,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                   isHidden={conditionShow}
                   onChange={(e) => setArgsParam2(e.target.value)}
                   value={argsParam2 ?? undefined}
-                  error={argsParam2 == ''}
-                  errorMessage={argsParam2 == '' ? 'Это поле обязательно для заполнения!' : ''}
+                  error={false}
+                  errorMessage={''}
                 />
               )}
             </div>

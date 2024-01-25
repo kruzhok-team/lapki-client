@@ -3,8 +3,6 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
-import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Select, SelectOption, Modal, ColorInput, TextInput } from '@renderer/components/UI';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';

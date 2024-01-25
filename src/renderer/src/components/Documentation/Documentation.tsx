@@ -22,14 +22,31 @@ let SET_URL;
 let SET_DATA;
 export function setURL(url) {
   SET_URL(url);
-  getData(url);
+  getData(url, true);
 }
 
-function getData(url) {
-  fetch(`${url}/index.json`)
-    .then((data) => data.json())
-    .then((data) => {
-      SET_DATA(data);
+function getData(url: string, nocache?: boolean) {
+  const arg = nocache ?? false ? '?nocache=true' : '';
+  fetch(`${url}/index.json${arg}`)
+    .then((response) => {
+      if (!response.ok) {
+        console.warn(response);
+        SET_DATA({ name: ':(' });
+        return;
+      }
+      response
+        .json()
+        .then((data) => {
+          SET_DATA(data);
+        })
+        .catch((reason) => {
+          console.warn(reason);
+          SET_DATA({ name: ':(' });
+        });
+    })
+    .catch((reason) => {
+      console.warn(reason);
+      SET_DATA({ name: ':(' });
     });
 }
 
@@ -44,14 +61,32 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
+  const fetchItem = (path: string, nocache?: boolean) => {
+    const arg = nocache ?? false ? '?nocache=true' : '';
+    return fetch(encodeURI(`${url}${path}${arg}`))
+      .then((response) => {
+        if (!response.ok) {
+          console.warn(response);
+          return;
+        }
+        response
+          .text()
+          .then((html) => {
+            setHtml(`<base href="${url}${path}" />` + html);
+            setActiveTab(1);
+          })
+          .catch((reason) => {
+            console.warn(reason);
+          });
+      })
+      .catch((reason) => {
+        console.warn(reason);
+      });
+  };
+
   const onItemClick = (item: File) => {
     if (item.path?.endsWith('html')) {
-      return fetch(encodeURI(`${url}${item.path}`))
-        .then((data) => data.text())
-        .then((html) => {
-          setHtml(`<base href="${url}${item.path}" />` + html);
-          setActiveTab(1);
-        });
+      return fetchItem(item.path);
     }
 
     setHtml('');

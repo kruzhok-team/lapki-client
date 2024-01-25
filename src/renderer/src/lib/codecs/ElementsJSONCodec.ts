@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-empty */
 /**
  * Кодер JSON-формата схемы.
  * Выполняет кодирование и декодирование с проверкой данных на корректность.

@@ -26,7 +26,7 @@ export function setURL(url) {
 }
 
 function getData(url) {
-  fetch(url)
+  fetch(`${url}/index.json`)
     .then((data) => data.json())
     .then((data) => {
       SET_DATA(data);
@@ -49,7 +49,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       return fetch(encodeURI(`${url}${item.path}`))
         .then((data) => data.text())
         .then((html) => {
-          setHtml(html);
+          setHtml(`<base href="${url}${item.path}" />` + html);
           setActiveTab(1);
         });
     }

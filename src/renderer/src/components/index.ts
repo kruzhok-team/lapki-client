@@ -12,3 +12,4 @@ export * from './ComponentAddModal';
 export * from './ComponentEditModal';
 export * from './ComponentDeleteModal';
 export * from './Scale';
+export * from './UpdateModal';

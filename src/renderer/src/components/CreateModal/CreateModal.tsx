@@ -22,6 +22,33 @@ import { defaultTransColor } from '@renderer/utils';
 
 import { EventsBlockModal } from './EventsBlockModal';
 
+const operand = [
+  {
+    value: 'greater',
+    label: '>',
+  },
+  {
+    value: 'less',
+    label: '<',
+  },
+  {
+    value: 'equals',
+    label: '=',
+  },
+  {
+    value: 'notEquals',
+    label: '!=',
+  },
+  {
+    value: 'greaterOrEqual',
+    label: '>=',
+  },
+  {
+    value: 'lessOrEqual',
+    label: '<=',
+  },
+];
+
 export interface CreateModalResult {
   id: string;
   key: number;
@@ -56,33 +83,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
   onClose,
 }) => {
-  const operand = [
-    {
-      value: 'greater',
-      label: '>',
-    },
-    {
-      value: 'less',
-      label: '<',
-    },
-    {
-      value: 'equals',
-      label: '=',
-    },
-    {
-      value: 'notEquals',
-      label: '!=',
-    },
-    {
-      value: 'greaterOrEqual',
-      label: '>=',
-    },
-    {
-      value: 'lessOrEqual',
-      label: '<=',
-    },
-  ];
-
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
   const isEditingState = state !== undefined;

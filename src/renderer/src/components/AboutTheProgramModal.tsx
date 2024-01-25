@@ -30,7 +30,7 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
         <br />
         <b>Ссылка на проект:</b>{' '}
         <a
-          className="text-blue-600 transition duration-150 ease-in-out hover:text-blue-500 focus:text-blue-500 active:text-blue-700"
+          className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
           href="https://github.com/kruzhok-team/lapki-client"
           target="_blank"
           rel="noopener noreferrer"
@@ -40,12 +40,20 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
         <br />
         <b>Обратная связь:</b>{' '}
         <a
-          className="text-blue-600 transition duration-150 ease-in-out hover:text-blue-500 focus:text-blue-500 active:text-blue-700"
+          className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
           href="https://github.com/kruzhok-team/lapki-client/issues/new"
           target="_blank"
           rel="noopener noreferrer"
         >
-          баг-трекер
+          баг-трекер,
+        </a>{' '}
+        <a
+          className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+          href="https://t.me/LapkiSupportBot"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          чат-бот в Telegram
         </a>
         <br />
       </div>

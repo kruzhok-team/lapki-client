@@ -69,6 +69,18 @@ export class EditorManager {
     this.resetEditor?.();
   }
 
+  triggerSave(basename: string | null, name: string | null) {
+    this.data.basename = basename;
+    this.data.name = name ?? 'Без названия';
+    this.data.isStale = false;
+    this.triggerDataUpdate('basename', 'name', 'isStale');
+  }
+
+  makeStale() {
+    this.data.isStale = true;
+    this.triggerDataUpdate('isStale');
+  }
+
   private subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
     this.dataListeners[propertyName].push(listener);
 

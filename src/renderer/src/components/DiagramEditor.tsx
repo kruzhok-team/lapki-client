@@ -11,9 +11,9 @@ import { Transition } from '@renderer/lib/drawable/Transition';
 import { Action, Event } from '@renderer/types/diagram';
 import { defaultTransColor } from '@renderer/utils';
 
-import { CreateModal, CreateModalResult } from './CreateModal';
+import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
-import { EventsModalData, EventsModal } from './EventsModal';
+import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
 import { StateNameModal } from './StateNameModal';
 
 export interface DiagramEditorProps {
@@ -25,7 +25,7 @@ export interface DiagramEditorProps {
 export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
   ({ manager, editor, setEditor }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [state, setState] = useState<{ state: State }>();
+    const [state, setState] = useState<State | null>(null);
     const [events, setEvents] = useState<Action[]>([]);
     const [transition, setTransition] = useState<Transition | null>(null);
     const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
@@ -52,7 +52,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
 
       //Функция очистки всех данных
       const ClearUseState = () => {
-        setState(undefined);
+        setState(null);
         setEvents([]);
         setTransition(null);
         setNewTransition(undefined);
@@ -69,7 +69,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       //Здесь мы открываем модальное окно редактирования ноды
       editor.container.statesController.on('changeState', (state) => {
         ClearUseState();
-        setState({ state });
+        setState(state);
         openCreateModal();
       });
 
@@ -142,7 +142,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
       closeEventsModal();
     };
 
-    const handleCreateModal = (data: CreateModalResult) => {
+    const handleCreateModalSubmit = (data: CreateModalResult) => {
       if (data.key === 2) {
         editor?.container.machineController.changeStateEvents({
           id: data.id,
@@ -200,18 +200,18 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
           />
         )}
 
-        {isCreateModalOpen && (
+        {editor && (
           <CreateModal
             editor={editor}
             manager={manager}
-            isCondition={events}
-            setIsCondition={setEvents}
-            isOpen={isCreateModalOpen}
+            state={state ? state : undefined}
+            transition={transition ? transition : undefined}
+            events={events}
+            setEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}
-            isData={state}
-            isTransition={transition ? { target: transition } : undefined}
+            onSubmit={handleCreateModalSubmit}
+            isOpen={isCreateModalOpen}
             onClose={closeCreateModal}
-            onSubmit={handleCreateModal}
           />
         )}
       </>

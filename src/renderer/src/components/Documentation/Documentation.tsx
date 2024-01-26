@@ -17,6 +17,10 @@ interface DocumentationProps {
   topOffset?: boolean;
 }
 
+const BAD_DATA = {
+  body: { name: 'index', children: [{ name: 'Не загрузилось :(', path: 'index.json' }] },
+};
+
 // TODO: используется для того, чтобы задать значение переменной извне, но это выглядит костыльно
 let SET_URL;
 let SET_DATA;
@@ -29,24 +33,16 @@ function getData(url: string, nocache?: boolean) {
   const arg = nocache ?? false ? '?nocache=true' : '';
   fetch(`${url}/index.json${arg}`)
     .then((response) => {
-      if (!response.ok) {
-        console.warn(response);
-        SET_DATA({ name: ':(' });
-        return;
-      }
-      response
-        .json()
-        .then((data) => {
-          SET_DATA(data);
-        })
-        .catch((reason) => {
-          console.warn(reason);
-          SET_DATA({ name: ':(' });
-        });
+      if (!response.ok) throw response;
+      return response.json();
+    })
+    .then((data) => {
+      SET_DATA(data);
     })
     .catch((reason) => {
       console.warn(reason);
-      SET_DATA({ name: ':(' });
+      SET_DATA(BAD_DATA);
+      // TODO: подробнее отразить в интерфейсе
     });
 }
 
@@ -65,22 +61,16 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     const arg = nocache ?? false ? '?nocache=true' : '';
     return fetch(encodeURI(`${url}${path}${arg}`))
       .then((response) => {
-        if (!response.ok) {
-          console.warn(response);
-          return;
-        }
-        response
-          .text()
-          .then((html) => {
-            setHtml(`<base href="${url}${path}" />` + html);
-            setActiveTab(1);
-          })
-          .catch((reason) => {
-            console.warn(reason);
-          });
+        if (!response.ok) throw response;
+        return response.text();
+      })
+      .then((html) => {
+        setHtml(`<base href="${url}${path}" />` + html);
+        setActiveTab(1);
       })
       .catch((reason) => {
         console.warn(reason);
+        // TODO: отразить в интерфейсе
       });
   };
 

@@ -141,9 +141,7 @@ export class FilesManager {
       this.editorManager.serializer.getAll('Cyberiada')
     );
     if (saveData[0]) {
-      this.data.basename = saveData[1];
-      this.data.name = saveData[2];
-
+      this.editorManager.triggerSave(saveData[1], saveData[2]);
       return makeRight(null);
     } else {
       return makeLeft({
@@ -159,9 +157,7 @@ export class FilesManager {
     const saveData: [boolean, string | null, string | null] =
       await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
     if (saveData[0]) {
-      this.data.basename = saveData[1];
-      this.data.name = saveData[2];
-
+      this.editorManager.triggerSave(saveData[1], saveData[2]);
       return makeRight(null);
     } else if (saveData[1]) {
       return makeLeft({
@@ -190,5 +186,6 @@ export class FilesManager {
     const data = importGraphml(templateData, openImportError);
 
     this.editorManager.init(null, 'Без названия', data);
+    this.editorManager.makeStale();
   }
 }

@@ -1309,6 +1309,16 @@ const processDependPlatform: ProcessDependPlatform = {
         '@target': transition.target,
         data: [],
       };
+      edge.data?.push({
+        '@key': 'dGeometry',
+        '@x': transition.position.x,
+        '@y': transition.position.y,
+        content: '',
+      });
+      edge.data?.push({
+        '@key': 'dColor',
+        content: transition.color,
+      });
 
       const trigger = `${transition.trigger.component}.${transition.trigger.method}`;
       let condition = '';

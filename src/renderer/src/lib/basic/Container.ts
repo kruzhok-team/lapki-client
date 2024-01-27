@@ -263,9 +263,11 @@ export class Container extends EventEmitter<ContainerEvents> {
       this.handleChangeScale(e);
     } else {
       if (this.app.keyboard.shiftPressed) {
+        this.app.manager.data.offset.y -= e.nativeEvent.deltaX * 0.1;
         this.app.manager.data.offset.x -= e.nativeEvent.deltaY * 0.1;
       } else {
         this.app.manager.data.offset.y -= e.nativeEvent.deltaY * 0.1;
+        this.app.manager.data.offset.x -= e.nativeEvent.deltaX * 0.1;
       }
 
       this.isDirty = true;

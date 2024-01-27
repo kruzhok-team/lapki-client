@@ -342,6 +342,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     setSelectedComponentParam1('');
     setSelectedComponentParam2('');
     setArgsParam1('');
+    setConditionShow(true);
+    setIsParamOneInput1(true);
+    setIsParamOneInput2(true);
     setConditionOperator('');
     setSelectedMethod('');
     setSelectedMethodParam1('');
@@ -367,17 +370,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     const tryGetCondition = () => {
       if (transition) {
         const c = transition.data.condition;
-        if (!c) return undefined;
+        if (!c) return false;
         const operator = c.type;
         if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
           console.warn('👽 got condition from future (not comparsion)', c);
-          return undefined;
+          return false;
         }
         const param1 = c.value[0];
         const param2 = c.value[1];
         if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
           console.warn('👽 got condition from future (non-value operands)', c);
-          return undefined;
+          return false;
         }
 
         if (
@@ -385,15 +388,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           (typeof param1.value === 'string' || typeof param1.value === 'number')
         ) {
           setArgsParam1(param1.value);
+          setIsParamOneInput1(false);
         } else if (param1.type == 'component') {
           const compoName = (param1.value as VariableData).component;
           const methodName = (param1.value as VariableData).method;
           setSelectedComponentParam1(compoName);
           setSelectedMethodParam1(methodName);
+          setIsParamOneInput1(true);
           //eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
         } else {
           console.warn('👽 got condition from future (strange operand 1)', c);
-          return undefined;
+          return false;
         }
 
         if (
@@ -401,18 +406,21 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           (typeof param2.value === 'string' || typeof param2.value === 'number')
         ) {
           setArgsParam2(param2.value);
+          setIsParamOneInput2(false);
         } else if (param2.type == 'component') {
           const compoName = (param2.value as VariableData).component;
           const methodName = (param2.value as VariableData).method;
           setSelectedComponentParam2(compoName);
           setSelectedMethodParam2(methodName);
+          setIsParamOneInput2(true);
         } else {
           console.warn('👽 got condition from future (strange operand 2)', c);
-          return undefined;
+          return false;
         }
-        return setConditionOperator(operator);
+        setConditionOperator(operator);
+        return true;
       }
-      return undefined;
+      return false;
     };
 
     if (!transition) return;
@@ -422,7 +430,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       setSelectedComponent(data.trigger.component);
       setSelectedMethod(data.trigger.method);
 
-      tryGetCondition();
+      const hasCondition = tryGetCondition();
+      setConditionShow(!hasCondition);
     };
     return init(transition);
   }, [machine, isEditingState, state, transition]);

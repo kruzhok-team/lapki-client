@@ -79,7 +79,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
           {...register('host')}
           label="Адрес:"
           placeholder="Напишите адрес"
-          isHidden={false}
+          hidden={false}
           error={false}
           errorMessage={''}
         />

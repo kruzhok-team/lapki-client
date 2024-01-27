@@ -83,7 +83,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           {...register('host')}
           label="Хост:"
           placeholder="Напишите адрес хоста"
-          isHidden={false}
+          hidden={false}
           error={false}
           errorMessage={''}
         />
@@ -91,7 +91,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           {...register('port')}
           label="Порт:"
           placeholder="Напишите порт"
-          isHidden={false}
+          hidden={false}
           error={false}
           errorMessage={''}
           onInput={(event) => {

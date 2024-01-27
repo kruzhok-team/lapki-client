@@ -5,5 +5,4 @@ export * from './WithHint';
 export * from './Modal';
 export * from './ColorInput';
 export * from './TextInput';
-export * from './Switch';
 export * from './Checkbox';

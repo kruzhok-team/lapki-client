@@ -182,6 +182,7 @@ export class Picto {
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
     ctx.lineWidth = 0.5;
+    ctx.beginPath();
     ctx.roundRect(x, y, width / this.scale, height / this.scale, 5 / this.scale);
     ctx.fill();
     ctx.stroke();
@@ -201,11 +202,14 @@ export class Picto {
 
   drawCursor(ctx: CanvasRenderingContext2D, x: number, y: number) {
     // FIXME: рисовать лучше под иконкой, рисует фон, даже если не просишь
+    ctx.save();
     ctx.strokeStyle = '#fff';
     ctx.fillStyle = 'none';
     ctx.lineWidth = 3 / this.scale;
+    ctx.beginPath();
     ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
     ctx.stroke();
+    ctx.restore();
   }
 
   drawMono(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {

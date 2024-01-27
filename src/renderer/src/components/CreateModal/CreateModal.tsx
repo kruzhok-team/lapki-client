@@ -1,9 +1,9 @@
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 
+import { flushSync } from 'react-dom';
 import { SingleValue } from 'react-select';
-import { twMerge } from 'tailwind-merge';
 
-import { Select, SelectOption, Modal, ColorInput, TextInput } from '@renderer/components/UI';
+import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
@@ -59,6 +59,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
   const isEditingState = state !== undefined;
+
+  const [formState, setFormState] = useState<'submitted' | 'default'>('default');
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -117,10 +119,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   //Хранение цвета связи
   const [color, setColor] = useState<string>();
 
-  const condition = useCreateModalCondition({ editor, manager, isEditingState });
+  const condition = useCreateModalCondition({ editor, manager, isEditingState, formState });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    setFormState('submitted');
 
     if (!selectedComponent || !selectedMethod) return;
 
@@ -138,18 +142,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     } = condition;
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (!show) {
-      if (isParamOneInput1 && !selectedComponentParam1 && !selectedMethodParam1) {
-        return;
-      }
-      if (isParamOneInput2 && !selectedComponentParam2 && !selectedMethodParam2) {
-        return;
-      }
-      if (!isParamOneInput1 && argsParam1 === '') {
-        return;
-      }
-      if (!isParamOneInput2 && argsParam2 === '') {
-        return;
+    if (show) {
+      const errors = condition.checkForErrors();
+
+      console.log(errors);
+
+      for (const key in errors) {
+        if (errors[key]) return;
       }
     }
 
@@ -218,6 +217,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);
+    setFormState('default');
+    condition.setErrors({});
 
     if (isEditingState) {
       if (!state) return;

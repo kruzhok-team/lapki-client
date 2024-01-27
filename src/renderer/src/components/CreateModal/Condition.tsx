@@ -58,9 +58,13 @@ interface ConditionProps {
   selectedMethodParam2: string | null;
 
   argsParam1: string | number | null;
-  setArgsParam1: (value: string | number | null) => void;
+  handleArgsParam1Change: (value: string) => void;
   argsParam2: string | number | null;
-  setArgsParam2: (value: string | number | null) => void;
+  handleArgsParam2Change: (value: string) => void;
+
+  handleConditionOperatorChange: (value: SingleValue<SelectOption>) => void;
+
+  errors: Record<string, string>;
 }
 
 export const Condition: React.FC<ConditionProps> = (props) => {
@@ -79,8 +83,8 @@ export const Condition: React.FC<ConditionProps> = (props) => {
     handleMethodParam1Change,
     selectedMethodParam1,
 
-    setConditionOperator,
     conditionOperator,
+    handleConditionOperatorChange,
 
     componentOptionsParam2,
     handleComponentParam2Change,
@@ -90,9 +94,11 @@ export const Condition: React.FC<ConditionProps> = (props) => {
     selectedMethodParam2,
 
     argsParam1,
-    setArgsParam1,
+    handleArgsParam1Change,
     argsParam2,
-    setArgsParam2,
+    handleArgsParam2Change,
+
+    errors,
   } = props;
 
   return (
@@ -102,82 +108,90 @@ export const Condition: React.FC<ConditionProps> = (props) => {
         <Switch checked={show} onCheckedChange={handleChangeConditionShow} />
       </div>
 
-      <div className={twMerge('flex flex-col', !show && 'hidden')}>
-        <div className="flex items-center">
+      <div className={twMerge('flex flex-col gap-2', !show && 'hidden')}>
+        <div className="flex items-end">
           <Checkbox
             checked={!isParamOneInput1}
             onCheckedChange={(v) => handleParamOneInput1(!v)}
-            className="mr-2"
+            className="mb-2 mr-2"
           />
           {isParamOneInput1 ? (
-            <>
+            <div className="flex gap-2">
               <Select
-                className="mx-1 my-3 h-[34px] w-[200px] max-w-[200px]"
+                className="h-[34px] w-[200px] max-w-[200px]"
                 options={componentOptionsParam1}
                 onChange={handleComponentParam1Change}
                 value={
                   componentOptionsParam1.find((o) => o.value === selectedComponentParam1) ?? null
                 }
                 isSearchable={false}
+                error={errors.selectedComponentParam1 || ''}
               />
               <Select
-                className="mx-1 my-3 h-[34px] w-[200px] max-w-[200px]"
+                className="h-[34px] w-[200px] max-w-[200px]"
                 options={methodOptionsParam1}
                 onChange={handleMethodParam1Change}
                 value={methodOptionsParam1.find((o) => o.value === selectedMethodParam1) ?? null}
                 isSearchable={false}
+                error={errors.selectedMethodParam1 || ''}
               />
-            </>
+            </div>
           ) : (
             <TextInput
               label="Параметр:"
               placeholder="Напишите параметр"
-              onChange={(e) => setArgsParam1(e.target.value)}
-              value={argsParam1 ?? undefined}
-              error={false}
-              errorMessage={''}
+              onChange={(e) => handleArgsParam1Change(e.target.value)}
+              value={argsParam1 ?? ''}
+              error={!!errors.argsParam1}
+              errorMessage={errors.argsParam1 || ''}
             />
           )}
         </div>
+
         <Select
-          className="mx-12 my-3 max-w-[200px]"
+          containerClassName="pl-7"
+          className="max-w-[200px]"
           options={operand}
-          onChange={(v) => setConditionOperator((v as any).value)}
+          onChange={handleConditionOperatorChange}
           value={operand.find((opt) => opt.value === conditionOperator)}
+          error={errors.conditionOperator || ''}
         />
-        <div className="flex items-center">
+
+        <div className="flex items-end">
           <Checkbox
             checked={!isParamOneInput2}
             onCheckedChange={(v) => handleParamOneInput2(!v)}
-            className="mr-2"
+            className="mb-2 mr-2"
           />
           {isParamOneInput2 ? (
-            <>
+            <div className="flex gap-2">
               <Select
-                className="mx-1 my-3 h-[34px] w-[200px] max-w-[200px]"
+                className="h-[34px] w-[200px] max-w-[200px]"
                 options={componentOptionsParam2}
                 onChange={handleComponentParam2Change}
                 value={
                   componentOptionsParam2.find((o) => o.value === selectedComponentParam2) ?? null
                 }
                 isSearchable={false}
+                error={errors.selectedComponentParam2 || ''}
               />
               <Select
-                className="mx-1 my-3 h-[34px] w-[200px] max-w-[200px]"
+                className="h-[34px] w-[200px] max-w-[200px]"
                 options={methodOptionsParam2}
                 onChange={handleMethodParam2Change}
                 value={methodOptionsParam2.find((o) => o.value === selectedMethodParam2) ?? null}
                 isSearchable={false}
+                error={errors.selectedMethodParam2 || ''}
               />
-            </>
+            </div>
           ) : (
             <TextInput
               label="Параметр:"
               placeholder="Напишите параметр"
-              onChange={(e) => setArgsParam2(e.target.value)}
-              value={argsParam2 ?? undefined}
-              error={false}
-              errorMessage={''}
+              onChange={(e) => handleArgsParam2Change(e.target.value)}
+              value={argsParam2 ?? ''}
+              error={!!errors.argsParam2}
+              errorMessage={errors.argsParam2 || ''}
             />
           )}
         </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
@@ -10,15 +10,19 @@ interface useCreateModalConditionParams {
   editor: CanvasEditor;
   manager: EditorManager;
   isEditingState: boolean;
+  formState: 'submitted' | 'default';
 }
 
 export const useCreateModalCondition = ({
   editor,
   manager,
   isEditingState,
+  formState,
 }: useCreateModalConditionParams) => {
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
+
+  const [errors, setErrors] = useState({} as Record<string, string>);
 
   const [conditionOperator, setConditionOperator] = useState<string | null>(null);
 
@@ -122,6 +126,40 @@ export const useCreateModalCondition = ({
     });
   }, [machine, selectedComponentParam2]);
 
+  const checkForErrors = useCallback(() => {
+    const newErrors: Record<string, string> = {};
+
+    if (isParamOneInput1) {
+      newErrors.selectedComponentParam1 = selectedComponentParam1 ? '' : 'Обязательно';
+      newErrors.selectedMethodParam1 = selectedMethodParam1 ? '' : 'Обязательно';
+    } else {
+      newErrors.argsParam1 = argsParam1 ? '' : 'Обязательно';
+    }
+
+    if (isParamOneInput2) {
+      newErrors.selectedComponentParam2 = selectedComponentParam2 ? '' : 'Обязательно';
+      newErrors.selectedMethodParam2 = selectedMethodParam2 ? '' : 'Обязательно';
+    } else {
+      newErrors.argsParam2 = argsParam2 ? '' : 'Обязательно';
+    }
+
+    newErrors.conditionOperator = conditionOperator ? '' : 'Обязательно';
+
+    setErrors(newErrors);
+
+    return newErrors;
+  }, [
+    argsParam1,
+    argsParam2,
+    conditionOperator,
+    isParamOneInput1,
+    isParamOneInput2,
+    selectedComponentParam1,
+    selectedComponentParam2,
+    selectedMethodParam1,
+    selectedMethodParam2,
+  ]);
+
   const handleComponentParam1Change = (value: SingleValue<SelectOption>) => {
     setSelectedComponentParam1(value?.value ?? '');
     setSelectedMethodParam1('');
@@ -137,6 +175,24 @@ export const useCreateModalCondition = ({
   const handleMethodParam2Change = (value: SingleValue<SelectOption>) => {
     setSelectedMethodParam2(value?.value ?? '');
   };
+
+  const handleConditionOperatorChange = (value: SingleValue<SelectOption>) => {
+    setConditionOperator(value?.value ?? null);
+  };
+
+  const handleArgsParam1Change = (value: string) => {
+    setArgsParam1(value);
+  };
+
+  const handleArgsParam2Change = (value: string) => {
+    setArgsParam2(value);
+  };
+
+  useLayoutEffect(() => {
+    if (formState === 'submitted') {
+      checkForErrors();
+    }
+  }, [checkForErrors, formState]);
 
   return {
     show,
@@ -167,5 +223,11 @@ export const useCreateModalCondition = ({
     handleComponentParam2Change,
     handleMethodParam1Change,
     handleMethodParam2Change,
+    errors,
+    setErrors,
+    checkForErrors,
+    handleArgsParam1Change,
+    handleArgsParam2Change,
+    handleConditionOperatorChange,
   };
 };

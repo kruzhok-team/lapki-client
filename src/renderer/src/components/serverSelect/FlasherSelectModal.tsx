@@ -108,7 +108,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           label="Хост:"
           {...register('host')}
           placeholder="Напишите адрес хоста"
-          isHidden={false}
+          hidden={false}
           error={false}
           errorMessage={''}
           disabled={!showSecondaryField}
@@ -118,7 +118,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           label="Порт:"
           {...register('port')}
           placeholder="Напишите порт"
-          isHidden={false}
+          hidden={false}
           error={false}
           errorMessage={''}
           onInput={(event) => {

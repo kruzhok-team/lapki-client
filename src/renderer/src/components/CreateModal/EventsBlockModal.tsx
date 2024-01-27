@@ -95,7 +95,7 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
 
   return (
     <div className="my-1 flex">
-      <label className="mx-1 mt-2 font-bold">Делай: </label>
+      <label className="mr-1 mt-2 font-bold">Делай: </label>
       <div className="ml-1 mr-2 flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
         {method.length === 0 ||
           method.map((data, key) => (

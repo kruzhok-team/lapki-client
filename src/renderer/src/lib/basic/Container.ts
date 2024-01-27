@@ -307,6 +307,12 @@ export class Container extends EventEmitter<ContainerEvents> {
     const arrX: number[] = [];
     const arrY: number[] = [];
 
+    const initialPos = this.machineController.getInitialStatePosition();
+    if (initialPos) {
+      arrX.push(initialPos.x);
+      arrY.push(initialPos.y);
+    }
+
     this.machineController.states.forEach((state) => {
       arrX.push(state.bounds.x);
       arrY.push(state.bounds.y);

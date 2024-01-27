@@ -620,7 +620,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <ColorInput
           label="Цвет связи:"
           onChange={(e) => setColor(e.target.value)}
-          defaultValue={transition?.data.color ?? defaultTransColor}
+          defaultValue={transition?.data?.color ?? defaultTransColor}
         />
       )}
     </Modal>

@@ -54,6 +54,7 @@ export function Select<
 >(props: Props<Option, IsMulti, Group>) {
   return (
     <ReactSelect
+      placeholder="Выберите..."
       {...props}
       classNamePrefix="CustomSelect"
       components={{ Option: Option as any, SingleValue: SingleValue as any }}

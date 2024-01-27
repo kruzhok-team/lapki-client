@@ -3,7 +3,7 @@ import React from 'react';
 import { SingleValue } from 'react-select';
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Select, SelectOption, Switch, TextInput } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption, TextInput } from '@renderer/components/UI';
 
 const operand = [
   {
@@ -104,11 +104,19 @@ export const Condition: React.FC<ConditionProps> = (props) => {
   return (
     <div className="my-3">
       <div className="mb-2 flex items-center">
-        <span className="mr-2 font-bold">Условие: </span>
-        <Switch checked={show} onCheckedChange={handleChangeConditionShow} />
+        <label className="mr-2 font-bold">Если: </label>
+        <label className={twMerge('btn border-primary px-3', show && 'btn-primary')}>
+          <input
+            type="checkbox"
+            checked={show}
+            onChange={(e) => handleChangeConditionShow(e.target.checked)}
+            className="h-0 w-0 opacity-0"
+          />
+          <span>{show ? 'Убрать условие' : 'Добавить условие'}</span>
+        </label>
       </div>
 
-      <div className={twMerge('flex flex-col gap-2', !show && 'hidden')}>
+      <div className={twMerge('ml-12 flex flex-col gap-2', !show && 'hidden')}>
         <div className="flex items-end">
           <Checkbox
             checked={!isParamOneInput1}

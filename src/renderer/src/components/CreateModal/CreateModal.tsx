@@ -144,8 +144,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     if (show) {
       const errors = condition.checkForErrors();
 
-      console.log(errors);
-
       for (const key in errors) {
         if (errors[key]) return;
       }
@@ -351,7 +349,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         <ColorInput
           label="Цвет связи:"
           onChange={(e) => setColor(e.target.value)}
-          defaultValue={transition?.data.color ?? defaultTransColor}
+          defaultValue={transition?.data?.color ?? defaultTransColor}
         />
       )}
     </Modal>

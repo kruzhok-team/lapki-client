@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 
-import { flushSync } from 'react-dom';
 import { SingleValue } from 'react-select';
 
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';

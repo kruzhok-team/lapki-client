@@ -272,17 +272,28 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
     if (!conditionShow) {
-      if (isParamOneInput1 && !selectedComponentParam1 && !selectedMethodParam1) {
+      if (!conditionOperator) {
         return;
       }
-      if (isParamOneInput2 && !selectedComponentParam2 && !selectedMethodParam2) {
-        return;
+      if (isParamOneInput1) {
+        if (!selectedComponentParam1 || !selectedMethodParam1) {
+          return;
+        }
+      } else {
+        // FIXME: нужно срезать пробелы
+        if (argsParam1 === '') {
+          return;
+        }
       }
-      if (!isParamOneInput1 && argsParam1 === '') {
-        return;
-      }
-      if (!isParamOneInput2 && argsParam2 === '') {
-        return;
+      if (isParamOneInput2) {
+        if (!selectedComponentParam2 || !selectedMethodParam2) {
+          return;
+        }
+      } else {
+        // FIXME: нужно срезать пробелы
+        if (argsParam2 === '') {
+          return;
+        }
       }
     }
 

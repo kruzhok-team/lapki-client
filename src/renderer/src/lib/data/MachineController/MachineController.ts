@@ -448,6 +448,12 @@ export class MachineController {
     this.container.isDirty = true;
   };
 
+  getInitialStatePosition = () => {
+    const initialState = this.container.app.manager.data.elements.initialState;
+    if (!initialState) return null;
+    return initialState.position;
+  };
+
   deleteInitialState = (canUndo = true) => {
     const initialStateData = this.container.app.manager.data.elements.initialState;
 

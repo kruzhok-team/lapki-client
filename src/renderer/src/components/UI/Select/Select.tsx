@@ -56,6 +56,7 @@ export function Select<
 >({
   error,
   containerClassName,
+  className,
   ...props
 }: Props<Option, IsMulti, Group> & { error?: string; containerClassName?: string }) {
   return (
@@ -63,6 +64,7 @@ export function Select<
       <ReactSelect
         placeholder="Выберите..."
         {...props}
+        className={twMerge(className, !!error && 'error')}
         classNamePrefix="CustomSelect"
         components={{ Option: Option as any, SingleValue: SingleValue as any }}
       />

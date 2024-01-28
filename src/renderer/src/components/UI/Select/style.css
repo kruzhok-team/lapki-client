@@ -41,3 +41,7 @@
 .CustomSelect__option--is-selected {
   @apply bg-primary !important;
 }
+
+.error > .CustomSelect__control {
+  @apply border-error !important;
+}

@@ -186,7 +186,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       isOpen={isOpen}
       onRequestClose={onClose}
     >
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 grid grid-cols-2 items-center gap-3">
         <Select
           className="w-full"
           options={componentOptions}

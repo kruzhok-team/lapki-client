@@ -117,11 +117,11 @@ export const Condition: React.FC<ConditionProps> = (props) => {
       </div>
 
       <div className={twMerge('ml-12 flex flex-col gap-2', !show && 'hidden')}>
-        <div className="flex items-end">
+        <div className="flex items-start">
           <Checkbox
             checked={!isParamOneInput1}
             onCheckedChange={(v) => handleParamOneInput1(!v)}
-            className="mb-2 mr-2"
+            className="mr-2 mt-[9px]"
           />
           {isParamOneInput1 ? (
             <div className="flex w-full gap-2">
@@ -166,11 +166,11 @@ export const Condition: React.FC<ConditionProps> = (props) => {
           error={errors.conditionOperator || ''}
         />
 
-        <div className="flex items-end">
+        <div className="flex items-start">
           <Checkbox
             checked={!isParamOneInput2}
             onCheckedChange={(v) => handleParamOneInput2(!v)}
-            className="mb-2 mr-2"
+            className="mr-2 mt-[9px]"
           />
           {isParamOneInput2 ? (
             <div className="flex w-full gap-2">

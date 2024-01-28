@@ -16,7 +16,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         {label}
         <input
           className={twMerge(
-            'w-[250px] max-w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none transition-colors',
+            'w-full max-w-[250px] rounded border border-border-primary bg-transparent px-2 py-[5px] text-text-primary outline-none transition-colors',
             error && 'border-error placeholder:text-error',
             className
           )}

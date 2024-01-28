@@ -124,9 +124,9 @@ export const Condition: React.FC<ConditionProps> = (props) => {
             className="mb-2 mr-2"
           />
           {isParamOneInput1 ? (
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2">
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={componentOptionsParam1}
                 onChange={handleComponentParam1Change}
                 value={
@@ -136,7 +136,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
                 error={errors.selectedComponentParam1 || ''}
               />
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={methodOptionsParam1}
                 onChange={handleMethodParam1Change}
                 value={methodOptionsParam1.find((o) => o.value === selectedMethodParam1) ?? null}
@@ -172,9 +172,9 @@ export const Condition: React.FC<ConditionProps> = (props) => {
             className="mb-2 mr-2"
           />
           {isParamOneInput2 ? (
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2">
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={componentOptionsParam2}
                 onChange={handleComponentParam2Change}
                 value={
@@ -184,7 +184,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
                 error={errors.selectedComponentParam2 || ''}
               />
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={methodOptionsParam2}
                 onChange={handleMethodParam2Change}
                 value={methodOptionsParam2.find((o) => o.value === selectedMethodParam2) ?? null}

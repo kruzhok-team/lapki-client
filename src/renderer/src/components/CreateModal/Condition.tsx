@@ -146,7 +146,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
             </div>
           ) : (
             <TextInput
-              label="Параметр:"
+              label=""
               placeholder="Напишите параметр"
               onChange={(e) => handleArgsParam1Change(e.target.value)}
               value={argsParam1 ?? ''}
@@ -158,7 +158,8 @@ export const Condition: React.FC<ConditionProps> = (props) => {
 
         <Select
           containerClassName="pl-7"
-          className="max-w-[200px]"
+          className="max-w-[220px]"
+          placeholder="Выберите оператор"
           options={operand}
           onChange={handleConditionOperatorChange}
           value={operand.find((opt) => opt.value === conditionOperator)}
@@ -194,7 +195,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
             </div>
           ) : (
             <TextInput
-              label="Параметр:"
+              label=""
               placeholder="Напишите параметр"
               onChange={(e) => handleArgsParam2Change(e.target.value)}
               value={argsParam2 ?? ''}

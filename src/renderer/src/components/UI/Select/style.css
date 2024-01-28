@@ -45,3 +45,7 @@
 .error > .CustomSelect__control {
   @apply border-error !important;
 }
+
+.CustomSelect__placeholder {
+  @apply text-border-primary !important;
+}

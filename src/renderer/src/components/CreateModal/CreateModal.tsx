@@ -311,24 +311,24 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       onRequestClose={onClose}
     >
       {/*---------------------------------Добавление основного события-------------------------------------*/}
-      <div className="my-5 flex items-center">
-        <label className="mr-1 align-middle font-bold">Когда: </label>
-        <Select
-          className="mx-1 h-[34px] w-[200px] max-w-[200px] align-middle"
-          options={componentOptions}
-          onChange={handleComponentChange}
-          value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
-          isSearchable={false}
-        />
-        <Select
-          className="mx-1 h-[34px] w-[200px] max-w-[200px]"
-          options={methodOptions}
-          onChange={handleMethodChange}
-          value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
-          isSearchable={false}
-        />
-        {isEditingState && (events ? <p className="text-success">✔</p> : <p>(Новое событие)</p>)}
-        {/* {parameters?.length >= 0 ? <div className="mb-6">{parameters}</div> : ''} */}
+      <div className="flex items-center">
+        <p className="mr-2 font-bold">Когда:</p>
+        <div className="flex w-full gap-2">
+          <Select
+            containerClassName="w-full"
+            options={componentOptions}
+            onChange={handleComponentChange}
+            value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
+            isSearchable={false}
+          />
+          <Select
+            containerClassName="w-full"
+            options={methodOptions}
+            onChange={handleMethodChange}
+            value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
+            isSearchable={false}
+          />
+        </div>
       </div>
 
       {!isEditingState && <Condition {...condition} />}
@@ -345,7 +345,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         onOpenEventsModal={onOpenEventsModal}
         isOpen={isOpen}
       />
-      {isEditingState || (
+      {!isEditingState && (
         <ColorInput
           label="Цвет связи:"
           onChange={(e) => setColor(e.target.value)}

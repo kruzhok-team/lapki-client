@@ -117,16 +117,16 @@ export const Condition: React.FC<ConditionProps> = (props) => {
       </div>
 
       <div className={twMerge('ml-12 flex flex-col gap-2', !show && 'hidden')}>
-        <div className="flex items-end">
+        <div className="flex items-start">
           <Checkbox
             checked={!isParamOneInput1}
             onCheckedChange={(v) => handleParamOneInput1(!v)}
-            className="mb-2 mr-2"
+            className="mr-2 mt-[9px]"
           />
           {isParamOneInput1 ? (
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2">
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={componentOptionsParam1}
                 onChange={handleComponentParam1Change}
                 value={
@@ -136,7 +136,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
                 error={errors.selectedComponentParam1 || ''}
               />
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={methodOptionsParam1}
                 onChange={handleMethodParam1Change}
                 value={methodOptionsParam1.find((o) => o.value === selectedMethodParam1) ?? null}
@@ -146,7 +146,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
             </div>
           ) : (
             <TextInput
-              label="Параметр:"
+              label=""
               placeholder="Напишите параметр"
               onChange={(e) => handleArgsParam1Change(e.target.value)}
               value={argsParam1 ?? ''}
@@ -158,23 +158,24 @@ export const Condition: React.FC<ConditionProps> = (props) => {
 
         <Select
           containerClassName="pl-7"
-          className="max-w-[200px]"
+          className="max-w-[220px]"
+          placeholder="Выберите оператор"
           options={operand}
           onChange={handleConditionOperatorChange}
           value={operand.find((opt) => opt.value === conditionOperator)}
           error={errors.conditionOperator || ''}
         />
 
-        <div className="flex items-end">
+        <div className="flex items-start">
           <Checkbox
             checked={!isParamOneInput2}
             onCheckedChange={(v) => handleParamOneInput2(!v)}
-            className="mb-2 mr-2"
+            className="mr-2 mt-[9px]"
           />
           {isParamOneInput2 ? (
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2">
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={componentOptionsParam2}
                 onChange={handleComponentParam2Change}
                 value={
@@ -184,7 +185,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
                 error={errors.selectedComponentParam2 || ''}
               />
               <Select
-                className="h-[34px] w-[200px] max-w-[200px]"
+                containerClassName="w-full"
                 options={methodOptionsParam2}
                 onChange={handleMethodParam2Change}
                 value={methodOptionsParam2.find((o) => o.value === selectedMethodParam2) ?? null}
@@ -194,7 +195,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
             </div>
           ) : (
             <TextInput
-              label="Параметр:"
+              label=""
               placeholder="Напишите параметр"
               onChange={(e) => handleArgsParam2Change(e.target.value)}
               value={argsParam2 ?? ''}

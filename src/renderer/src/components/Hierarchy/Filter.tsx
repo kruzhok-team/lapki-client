@@ -18,7 +18,7 @@ import { ReactComponent as SearchIcon } from '@renderer/assets/icons/search.svg'
 import { useClickOutside } from '@renderer/hooks';
 import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
 
-import { TextInput } from '../UI/TextInput';
+import { TextField } from '../UI';
 import { WithHint } from '../UI/WithHint';
 
 export interface FilterProps {
@@ -178,7 +178,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
                     <span className="absolute pl-4">
                       <SearchIcon />
                     </span>
-                    <TextInput
+                    <TextField
                       onChange={onChange}
                       {...props}
                       //Пока оставлю, вдруг пригодится

@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
-import { Modal, TextInput } from '@renderer/components/UI';
+import { Modal, TextField } from '@renderer/components/UI';
 
 import { Settings } from '../Modules/Settings';
 
@@ -74,7 +74,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       onAfterClose={resetSettings}
     >
       <div className={twMerge('flex')}>
-        <TextInput
+        <TextField
           maxLength={80}
           {...register('host')}
           label="Адрес:"

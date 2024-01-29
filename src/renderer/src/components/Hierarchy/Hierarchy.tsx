@@ -15,34 +15,29 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
-import { HierarchyItem } from '@renderer/hooks/useHierarchyManager';
+import { HierarchyItem, useHierarchyManager } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
-import { Filter } from './Filter';
+import { FilterNew } from './FilterNew';
 import { InputRender } from './inputRender';
 import { TitleRender } from './titleRender';
 
 export interface HierarchyProps {
   editor: CanvasEditor | null;
-  hierarchy: HierarchyItem;
-  selectedItemId: string;
-  initialState: string | undefined;
+  manager: EditorManager;
 }
 
-export const Hierarchy: React.FC<HierarchyProps> = ({
-  editor,
-  hierarchy,
-  selectedItemId,
-  initialState,
-}) => {
+export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
   const { theme } = useThemeContext();
-  const treeEnvironment = useRef<TreeEnvironmentRef>(null);
   const tree = useRef<TreeRef>(null);
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
+
+  const { hierarchy, initialState, selectedItemId } = useHierarchyManager(editor, manager);
 
   useLayoutEffect(() => {
     if (selectedItemId) {
@@ -139,7 +134,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <ControlledTreeEnvironment
-        ref={treeEnvironment}
         items={hierarchy}
         getItemTitle={(item) => item.data}
         canDragAndDrop
@@ -181,7 +175,12 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
           }),
         }}
       >
-        <Filter hierarchy={hierarchy} tree={tree} setExpandedItems={setExpandedItems} />
+        <FilterNew
+          hierarchy={hierarchy}
+          expandedItems={expandedItems}
+          setExpandedItems={setExpandedItems}
+        />
+        {/* <Filter hierarchy={hierarchy} tree={tree} setExpandedItems={setExpandedItems} /> */}
         <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
     </div>

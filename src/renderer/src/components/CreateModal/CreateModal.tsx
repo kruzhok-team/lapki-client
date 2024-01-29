@@ -116,7 +116,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
 
   //Хранение цвета связи
-  const [color, setColor] = useState<string>();
+  const [color, setColor] = useState(defaultTransColor);
 
   const condition = useCreateModalCondition({ editor, manager, isEditingState, formState });
 
@@ -210,7 +210,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.setSelectedMethodParam1('');
     condition.setSelectedMethodParam2('');
     condition.setArgsParam2('');
-    setColor(transition?.data.color);
+    setColor(transition?.data?.color ?? defaultTransColor);
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);
@@ -333,7 +333,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
       {!isEditingState && <Condition {...condition} />}
 
-      {/*-------------------------------------Добавление действий-----------------------------------------*/}
       <EventsBlockModal
         editor={editor}
         state={state}
@@ -345,12 +344,12 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         onOpenEventsModal={onOpenEventsModal}
         isOpen={isOpen}
       />
+
       {!isEditingState && (
-        <ColorInput
-          label="Цвет связи:"
-          onChange={(e) => setColor(e.target.value)}
-          defaultValue={transition?.data?.color ?? defaultTransColor}
-        />
+        <label className="flex items-center gap-2">
+          <span className="font-bold">Цвет связи:</span>
+          <ColorInput value={color} onChange={setColor} />
+        </label>
       )}
     </Modal>
   );

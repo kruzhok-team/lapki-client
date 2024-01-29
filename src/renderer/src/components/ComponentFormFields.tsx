@@ -5,7 +5,7 @@ import { ComponentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
-import { Select } from './UI';
+import { ColorInput, Select } from './UI';
 
 interface ComponentFormFieldsProps {
   showMainData: boolean;
@@ -87,14 +87,12 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             onChange={(e) => handleInputChange('label', e.target.value)}
           />
 
-          <ComponentFormFieldLabel
-            label="Цвет метки:"
-            className="w-10 p-0"
-            value={parameters['labelColor'] ?? '#FFFFFF'}
-            name="labelColor"
-            type="color"
-            onChange={(e) => handleInputChange('labelColor', e.target.value)}
-          />
+          <ComponentFormFieldLabel label="Цвет метки:" name="labelColor">
+            <ColorInput
+              value={parameters['labelColor'] ?? '#FFFFFF'}
+              onChange={(value) => handleInputChange('labelColor', value)}
+            />
+          </ComponentFormFieldLabel>
         </>
       )}
 

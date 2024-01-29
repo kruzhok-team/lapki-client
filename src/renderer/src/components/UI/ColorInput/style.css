@@ -1,0 +1,7 @@
+.react-colorful__saturation {
+  @apply rounded-t !important;
+}
+
+.react-colorful__last-control {
+  @apply rounded-b !important;
+}

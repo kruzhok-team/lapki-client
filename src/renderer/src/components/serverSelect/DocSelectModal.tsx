@@ -1,8 +1,10 @@
 // TODO: нужно как-то объединить файлы FlasherSelectModal.tsx, ServerSelectModal.tsx, DocSelectModal.tsx, чтобы уменьшить повторения кода
+
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { Modal, TextInput } from '@renderer/components/UI';
+
 import { Settings } from '../Modules/Settings';
 
 interface DocSelectModalProps {
@@ -19,7 +21,7 @@ interface DocSelectModalProps {
 
 interface formValues {
   // текущее значение поля ввода для адреса
-  inputHost: string;
+  host: string;
 }
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({
@@ -31,18 +33,20 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
     register,
     handleSubmit: hookHandleSubmit,
     setValue,
+    reset,
   } = useForm<formValues>({
     defaultValues: async () => {
       return Settings.get(props.electronSettingsKey).then((server) => {
         return {
-          inputHost: server.host ?? '',
+          host: server.host ?? '',
         };
       });
     },
   });
+
   // текущий адрес к которому подключен клиент
   const handleSubmit = hookHandleSubmit((data) => {
-    handleCustom(String(data.inputHost));
+    handleCustom(String(data.host));
     onRequestClose();
   });
 
@@ -51,7 +55,13 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
   };
 
   const handleReturnOriginalValues = () => {
-    setValue('inputHost', props.originaltHostValue);
+    setValue('host', props.originaltHostValue);
+  };
+
+  const resetSettings = () => {
+    Settings.get(props.electronSettingsKey).then((server) => {
+      reset({ host: server.host ?? '' });
+    });
   };
 
   return (
@@ -61,14 +71,15 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title={props.topTitle}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterClose={resetSettings}
     >
       <div className={twMerge('flex')}>
         <TextInput
           maxLength={80}
-          {...register('inputHost')}
+          {...register('host')}
           label="Адрес:"
           placeholder="Напишите адрес"
-          isHidden={false}
+          hidden={false}
           error={false}
           errorMessage={''}
         />

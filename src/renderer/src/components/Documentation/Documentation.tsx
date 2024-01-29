@@ -17,19 +17,32 @@ interface DocumentationProps {
   topOffset?: boolean;
 }
 
+const BAD_DATA = {
+  body: { name: 'index', children: [{ name: 'Не загрузилось :(', path: 'index.json' }] },
+};
+
 // TODO: используется для того, чтобы задать значение переменной извне, но это выглядит костыльно
 let SET_URL;
 let SET_DATA;
 export function setURL(url) {
   SET_URL(url);
-  getData(url);
+  getData(url, true);
 }
 
-function getData(url) {
-  fetch(url)
-    .then((data) => data.json())
+function getData(url: string, nocache?: boolean) {
+  const arg = nocache ?? false ? '?nocache=true' : '';
+  fetch(`${url}/index.json${arg}`)
+    .then((response) => {
+      if (!response.ok) throw response;
+      return response.json();
+    })
     .then((data) => {
       SET_DATA(data);
+    })
+    .catch((reason) => {
+      console.warn(reason);
+      SET_DATA(BAD_DATA);
+      // TODO: подробнее отразить в интерфейсе
     });
 }
 
@@ -44,14 +57,26 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
+  const fetchItem = (path: string, nocache?: boolean) => {
+    const arg = nocache ?? false ? '?nocache=true' : '';
+    return fetch(encodeURI(`${url}${path}${arg}`))
+      .then((response) => {
+        if (!response.ok) throw response;
+        return response.text();
+      })
+      .then((html) => {
+        setHtml(`<base href="${url}${path}" />` + html);
+        setActiveTab(1);
+      })
+      .catch((reason) => {
+        console.warn(reason);
+        // TODO: отразить в интерфейсе
+      });
+  };
+
   const onItemClick = (item: File) => {
     if (item.path?.endsWith('html')) {
-      return fetch(encodeURI(`${url}${item.path}`))
-        .then((data) => data.text())
-        .then((html) => {
-          setHtml(html);
-          setActiveTab(1);
-        });
+      return fetchItem(item.path);
     }
 
     setHtml('');

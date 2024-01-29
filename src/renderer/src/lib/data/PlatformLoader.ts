@@ -95,13 +95,16 @@ export function isPlatformAvailable(idx: string): boolean {
 }
 
 export function getAvailablePlatforms(): PlatformInfo[] {
-  return Array.from(platforms.entries()).map(([idx, pfm]) => {
-    return {
-      idx,
-      name: pfm.name ?? idx,
-      description: pfm.description ?? '',
-    };
-  });
+  return Array.from(platforms.entries())
+    .filter(([_idx, pfm]) => !(pfm.hidden ?? false))
+    .map(([idx, pfm]) => {
+      return {
+        idx,
+        name: pfm.name ?? idx,
+        description: pfm.description ?? '',
+        hidden: pfm.hidden ?? false,
+      };
+    });
 }
 
 export function getPlatform(idx: string) {

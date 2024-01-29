@@ -47,6 +47,7 @@ export type ComponentProto = {
 export type Platform = {
   name?: string;
   description?: string;
+  hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };
 };
@@ -55,6 +56,7 @@ export type PlatformInfo = {
   idx: string;
   name: string;
   description: string;
+  hidden: boolean;
 };
 
 export type Platforms = {

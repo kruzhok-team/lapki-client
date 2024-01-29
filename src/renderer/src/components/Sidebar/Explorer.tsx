@@ -96,7 +96,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     );
   };
 
-  const [showComponents, setShowComponents] = useState(false);
+  const [showComponents, setShowComponents] = useState(true);
   const [showHierarchy, setShowHierarchy] = useState(false);
 
   const toggleShow = (name: string) => {
@@ -108,9 +108,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
 
   return (
     <section className="flex h-full flex-col px-4" onClick={() => onUnClick()}>
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Проводник
-      </h3>
+      <h3 className="mb-3 border-b border-border-primary py-2 text-center text-lg">Проводник</h3>
       <PanelGroup direction="vertical">
         <Panel
           order={1}
@@ -121,7 +119,12 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
           onCollapse={() => toggleShow('Компоненты')}
           collapsedSize={2.5}
         >
-          <div className={twMerge('flex-grow basis-0', !showHierarchy && 'h-10 flex-grow-0')}>
+          <div
+            className={twMerge(
+              'flex-grow basis-0 text-center',
+              !showComponents && 'h-10 flex-grow-0'
+            )}
+          >
             <button
               className="mb-3 flex w-full justify-between"
               onClick={() => toggleShow('Компоненты')}
@@ -152,7 +155,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
           </div>
         </Panel>
         <PanelResizeHandle className="group py-1">
-          <div className="h-1 duration-500 group-hover:bg-current group-active:bg-current"></div>
+          <div className="h-1 duration-500 group-hover:bg-current group-active:bg-current group-[]:bg-bg-primary"></div>
         </PanelResizeHandle>
         <Panel order={2}>
           <div className={twMerge('flex-grow basis-0', !showHierarchy && 'h-10')}>

@@ -16,11 +16,11 @@ unit/ Autoborder</data>
     </node>
     <node id="init">
       <data key="dInitial"></data>
-      <data key="dGeometry" x="-1357.9385699999991" y="689.7975590000007" width="450" height="95"></data>
+      <data key="dGeometry" x="-1518.138569999999" y="475.39755900000006" width="450" height="95"></data>
     </node>
     <node id="n0">
       <data key="dName">Бой</data>
-      <data key="dGeometry" x="-578.005" y="438.187256" width="672.532166" height="145"></data>
+      <data key="dGeometry" x="-942.8049999999986" y="474.28725600000024" width="672.532166" height="145"></data>
       <data key="dData">entry/
 
 exit/
@@ -29,7 +29,7 @@ exit/
       <graph id="n0">
         <node id="n0::n1">
           <data key="dName">Сближение</data>
-          <data key="dGeometry" x="96.99999999999991" y="390.56859999999995" width="468" height="145"></data>
+          <data key="dGeometry" x="47.4999999999999" y="9.26859999999996" width="468" height="145"></data>
           <data key="dData">entry/
 МодульДвижения.ДвигатьсяКЦели()
 
@@ -39,7 +39,7 @@ exit/
         </node>
         <node id="n0::n2">
           <data key="dName">Атака</data>
-          <data key="dGeometry" x="56.600000000000016" y="38.405933000000005" width="468" height="145"></data>
+          <data key="dGeometry" x="51.299999999999955" y="299.80593300000027" width="468" height="145"></data>
           <data key="dData">entry/
 ОружиеЦелевое.АтаковатьЦель()
 
@@ -51,7 +51,7 @@ exit/
     </node>
     <node id="n3">
       <data key="dName">Скан</data>
-      <data key="dGeometry" x="-1318.9385699999996" y="870.5975589999995" width="468" height="145"></data>
+      <data key="dGeometry" x="-1591.5385700000004" y="631.1975589999998" width="468" height="145"></data>
       <data key="dData">entry/
 Сенсор.ПоискВрагаПоДистанции(мин)
 
@@ -62,22 +62,32 @@ exit/
     </node>
     <edge source="init" target="n3"></edge>
     <edge source="n0" target="n3">
+      <data key="dGeometry" x="-1493.4000000000024" y="835.9999999999997"></data>
+      <data key="dColor">#c81afd</data>
       <data key="dData">АнализаторЦели.ЦельУничтожена/
 </data>
     </edge>
     <edge source="n0" target="n3">
+      <data key="dGeometry" x="-1348.9999999999998" y="923.4000000000001"></data>
+      <data key="dColor">#438048</data>
       <data key="dData">АнализаторЦели.ЦельПотеряна/
 </data>
     </edge>
     <edge source="n3" target="n0::n1">
+      <data key="dGeometry" x="-1098.2000000000003" y="665"></data>
+      <data key="dColor">#df2db6</data>
       <data key="dData">Сенсор.ЦельПолучена/
 </data>
     </edge>
     <edge source="n0::n1" target="n0::n2">
+      <data key="dGeometry" x="58.899999999999956" y="197.5999999999999"></data>
+      <data key="dColor">#f450c8</data>
       <data key="dData">ОружиеЦелевое.ЦельВошлаВЗонуАтаки/
 </data>
     </edge>
     <edge source="n0::n2" target="n0::n1">
+      <data key="dGeometry" x="364.79999999999995" y="199.4999999999999"></data>
+      <data key="dColor">#7517fe</data>
       <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/
 </data>
     </edge>

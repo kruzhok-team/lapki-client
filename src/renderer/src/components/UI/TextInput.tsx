@@ -4,19 +4,30 @@ import { twMerge } from 'tailwind-merge';
 
 interface TextInputProps extends ComponentProps<'input'> {
   label: string;
-  isHidden: boolean;
+  containerClassName?: string;
+  hidden?: boolean;
   error?: boolean;
   errorMessage: string;
 }
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  ({ label, isHidden: isElse, error, errorMessage, className, ...props }, ref) => {
+  (
+    { label, hidden = false, error, errorMessage, className, containerClassName, ...props },
+    ref
+  ) => {
     return (
-      <label className={twMerge('mx-1 flex flex-col', error && 'text-error', isElse && 'hidden')}>
+      <label
+        className={twMerge(
+          'flex flex-col',
+          error && 'text-error',
+          hidden && 'hidden',
+          containerClassName
+        )}
+      >
         {label}
         <input
           className={twMerge(
-            'w-[250px] max-w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none transition-colors',
+            'w-full max-w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors placeholder:text-border-primary',
             error && 'border-error placeholder:text-error',
             className
           )}
@@ -24,7 +35,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={20}
           {...props}
         />
-        {error ? <p className="min-h-[24px] text-[14px] text-error">{errorMessage}</p> : ''}
+        <p className="text-[14px] text-error">{errorMessage}</p>
       </label>
     );
   }

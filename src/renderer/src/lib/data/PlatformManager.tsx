@@ -414,15 +414,14 @@ export class PlatformManager {
       const icoW = (picto.eventHeight + picto.eventMargin) / picto.scale;
       const leftW = (this.measureCondition(ac.value[0]) + mr) / picto.scale;
 
-      this.drawCondition(ctx, ac.value[0], x, y, alpha);
+      this.drawCondition(ctx, ac.value[0], x, y, opacity);
       picto.drawMono(ctx, x + leftW, y, {
         bgColor,
         fgColor,
         rightIcon: `op/${ac.type}`,
         opacity,
       });
-      this.drawCondition(ctx, ac.value[1], x + leftW + icoW, y, alpha);
-
+      this.drawCondition(ctx, ac.value[1], x + leftW + icoW, y, opacity);
       return;
     }
     if (ac.type == 'value') {

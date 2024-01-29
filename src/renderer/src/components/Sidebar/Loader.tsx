@@ -327,6 +327,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
       <FlasherSelectModal
         isOpen={isFlasherModalOpen}
+        isLocal={flasherIsLocal}
         handleLocal={handleLocalFlasher}
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}

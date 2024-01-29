@@ -8,8 +8,9 @@ import ReactSelect, {
   SingleValueProps,
   components,
 } from 'react-select';
-
 import './style.css';
+import { twMerge } from 'tailwind-merge';
+
 import { WithHint } from '../WithHint';
 
 export interface SelectOption {
@@ -51,12 +52,22 @@ export function Select<
   Option extends SelectOption,
   IsMulti extends boolean = false,
   Group extends GroupBase<Option> = GroupBase<Option>
->(props: Props<Option, IsMulti, Group>) {
+>({
+  error,
+  containerClassName,
+  className,
+  ...props
+}: Props<Option, IsMulti, Group> & { error?: string; containerClassName?: string }) {
   return (
-    <ReactSelect
-      {...props}
-      classNamePrefix="CustomSelect"
-      components={{ Option: Option as any, SingleValue: SingleValue as any }}
-    />
+    <div className={containerClassName}>
+      <ReactSelect
+        placeholder="Выберите..."
+        {...props}
+        className={twMerge(className, !!error && 'error')}
+        classNamePrefix="CustomSelect"
+        components={{ Option: Option as any, SingleValue: SingleValue as any }}
+      />
+      <p className={twMerge('text-sm text-error', error && 'mt-1')}>{error}</p>
+    </div>
   );
 }

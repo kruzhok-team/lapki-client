@@ -187,7 +187,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
                       label={''}
                       value={inputText}
                       className="h-10 pl-10 pr-2"
-                      isHidden={false}
+                      hidden={false}
                       error={false}
                       errorMessage={''}
                     />

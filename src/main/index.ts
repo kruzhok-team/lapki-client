@@ -4,6 +4,7 @@ import settings from 'electron-settings';
 
 import { join } from 'path';
 
+import { checkForUpdates } from './checkForUpdates';
 import {
   COMPILER_SETTINGS_KEY,
   DEFAULT_COMPILER_SETTINGS,
@@ -208,6 +209,8 @@ app.whenReady().then(() => {
   ipcMain.handle('getAllTemplates', getAllTemplates);
 
   ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
+
+  ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

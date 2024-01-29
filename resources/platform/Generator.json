@@ -347,12 +347,6 @@
             "ТаймерВыполнен": {
               "img": "bearloga/done.svg",
               "description": "Запускает отсчёт таймера на T секунд, по истечении которых возникнет событие."
-            }
-          },
-          "variables": {
-            "ТекущееЗначениеТаймера": {
-              "img": "bearloga/timer_current.svg",
-              "description": "Показывает текущее значение таймера в секундах."
             },
             "Тик": {
               "img": "bearloga/tick.svg",
@@ -361,6 +355,12 @@
             "Тик1Секунда": {
               "img": "bearloga/tick_1s.svg",
               "description": "Событие вызывается каждую секунду"
+            }
+          },
+          "variables": {
+            "ТекущееЗначениеТаймера": {
+              "img": "bearloga/timer_current.svg",
+              "description": "Показывает текущее значение таймера в секундах."
             }
           },
           "parameters": {},

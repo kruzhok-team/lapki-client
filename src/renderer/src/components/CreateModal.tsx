@@ -21,12 +21,12 @@ import { Transition } from '@renderer/lib/drawable/Transition';
 import {
   Action,
   Condition as ConditionData,
+  Event,
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
-
-import { defaultTransColor } from './DiagramEditor';
+import { defaultTransColor } from '@renderer/utils';
 
 const operandOptions = [
   {
@@ -81,7 +81,7 @@ interface CreateModalProps {
   isTransition: { target: Transition } | undefined;
   isCondition: Action[] | undefined;
   setIsCondition: React.Dispatch<React.SetStateAction<Action[]>>;
-  onOpenEventsModal: () => void;
+  onOpenEventsModal: (event?: Event) => void;
   onClose: () => void;
   onSubmit: (data: CreateModalResult) => void;
 }
@@ -780,6 +780,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
                 onDragOver={(event) => event.preventDefault()}
                 onDragStart={() => handleDrag(key)}
                 onDrop={() => handleDrop(key)}
+                onDoubleClick={() => onOpenEventsModal(data)}
               >
                 <div
                   className={twMerge(
@@ -804,7 +805,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           {method.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
         </div>
         <div className="flex flex-col gap-2">
-          <button type="button" className="btn-secondary p-1" onClick={onOpenEventsModal}>
+          <button type="button" className="btn-secondary p-1" onClick={() => onOpenEventsModal()}>
             <AddIcon />
           </button>
           <button type="button" className="btn-secondary p-1" onClick={deleteMethod}>

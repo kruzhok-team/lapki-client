@@ -51,55 +51,55 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
 
   const hierarchy: HierarchyItem = useMemo(() => {
-    const data: HierarchyItem = {};
-
-    data['root'] = {
-      index: 'root',
-      isFolder: true,
-      children: [
-        ...Object.entries(states)
-          .filter((value) => value[1].parent === undefined)
-          .map((value) => value[0]),
-      ],
-      data: 'Root item',
+    const data: HierarchyItem = {
+      root: {
+        index: 'root',
+        isFolder: true,
+        data: 'Root item',
+        children: [],
+      },
     };
-    //Создаем элементы списка иерархий(состояния)
-    for (const [stateId, state] of Object.entries(states)) {
+
+    for (const stateId in states) {
+      const state = states[stateId];
+
       data[stateId] = {
         index: stateId,
-        isFolder:
-          Object.entries(states).some((value) => value[1].parent === stateId) ||
-          Object.entries(transitions).some((transition) => transition[1].source === stateId),
-        children: [
-          ...Object.entries(states)
-            .filter((value) => value[1].parent === stateId)
-            .map((value) => value[0]),
-          ...Object.entries(transitions)
-            .filter((transition) => transition[1].source === stateId)
-            .map((value) => value[0]),
-        ],
+        isFolder: false,
         data: state.name,
+        children: [],
         canRename: true,
         canMove: true,
       };
     }
 
-    //Создаем элементы списка иерархий(связи)
-    for (const [transitionId, transition] of Object.entries(transitions)) {
+    for (const stateId in states) {
+      const state = states[stateId];
+
+      if (!state.parent) {
+        data.root.children?.push(stateId);
+      } else {
+        data[state.parent].children?.push(stateId);
+        data[state.parent].isFolder = true;
+      }
+    }
+
+    for (const transitionId in transitions) {
+      const transition = transitions[transitionId];
+      const source = states[transition.source].name;
+      const target = states[transition.target].name;
+
       data[transitionId] = {
         index: transitionId,
-        data:
-          Object.entries(states)
-            .filter((state) => transition.source === state[0])
-            .map((value) => value[1].name) +
-          ' -> ' +
-          Object.entries(states)
-            .filter((state) => transition.target === state[0])
-            .map((value) => value[1].name),
+        isFolder: false,
+        data: `${source} -> ${target}`,
         canRename: false,
         canMove: false,
       };
+      data[transition.source].children?.push(transitionId);
+      data[transition.source].isFolder = true;
     }
+
     return data;
   }, [states, transitions]);
 

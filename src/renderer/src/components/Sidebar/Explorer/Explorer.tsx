@@ -92,7 +92,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
             <h3 className="font-semibold">Иерархия состояний</h3>
           </button>
 
-          <Hierarchy editor={editor} manager={manager} />
+          {editor ? <Hierarchy editor={editor} manager={manager} /> : 'None'}
         </Panel>
       </PanelGroup>
     </section>

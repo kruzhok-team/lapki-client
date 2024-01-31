@@ -1,70 +1,160 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 
 import {
   Tree,
   TreeItem,
   DraggingPosition,
   ControlledTreeEnvironment,
-  TreeRef,
-  TreeEnvironmentRef,
-  TreeItemIndex,
-  DraggingPositionItem,
   TreeItemActions,
   TreeItemRenderFlags,
+  TreeItemIndex,
 } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
-import { HierarchyItem, useHierarchyManager } from '@renderer/hooks/useHierarchyManager';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
-import { FilterNew } from './FilterNew';
+import { Filter } from './Filter';
 import { InputRender } from './inputRender';
 import { TitleRender } from './titleRender';
 
+interface HierarchyItem {
+  [index: string]: {
+    index: string;
+    isFolder?: boolean;
+    children?: Array<string>;
+    canRename?: boolean;
+    canMove?: boolean;
+    data: string;
+  };
+}
+
 export interface HierarchyProps {
-  editor: CanvasEditor | null;
+  editor: CanvasEditor;
   manager: EditorManager;
 }
 
 export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
   const { theme } = useThemeContext();
-  const tree = useRef<TreeRef>(null);
+
+  const states = manager.useData('elements.states');
+  const transitions = manager.useData('elements.transitions');
+  const initialState = manager.useData('elements.initialState')?.target;
+
+  const machine = editor.container.machineController;
+
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
 
-  const { hierarchy, initialState, selectedItemId } = useHierarchyManager(editor, manager);
+  const hierarchy: HierarchyItem = useMemo(() => {
+    const data: HierarchyItem = {};
 
-  useLayoutEffect(() => {
-    if (selectedItemId) {
-      return setSelectedItems([selectedItemId]);
+    data['root'] = {
+      index: 'root',
+      isFolder: true,
+      children: [
+        ...Object.entries(states)
+          .filter((value) => value[1].parent === undefined)
+          .map((value) => value[0]),
+      ],
+      data: 'Root item',
+    };
+    //Создаем элементы списка иерархий(состояния)
+    for (const [stateId, state] of Object.entries(states)) {
+      data[stateId] = {
+        index: stateId,
+        isFolder:
+          Object.entries(states).some((value) => value[1].parent === stateId) ||
+          Object.entries(transitions).some((transition) => transition[1].source === stateId),
+        children: [
+          ...Object.entries(states)
+            .filter((value) => value[1].parent === stateId)
+            .map((value) => value[0]),
+          ...Object.entries(transitions)
+            .filter((transition) => transition[1].source === stateId)
+            .map((value) => value[0]),
+        ],
+        data: state.name,
+        canRename: true,
+        canMove: true,
+      };
     }
-    setSelectedItems([]);
-  }, [selectedItemId]);
 
-  if (!editor) return;
+    //Создаем элементы списка иерархий(связи)
+    for (const [transitionId, transition] of Object.entries(transitions)) {
+      data[transitionId] = {
+        index: transitionId,
+        data:
+          Object.entries(states)
+            .filter((state) => transition.source === state[0])
+            .map((value) => value[1].name) +
+          ' -> ' +
+          Object.entries(states)
+            .filter((state) => transition.target === state[0])
+            .map((value) => value[1].name),
+        canRename: false,
+        canMove: false,
+      };
+    }
+    return data;
+  }, [states, transitions]);
 
-  const onFocus = (item: TreeItem) => {
-    setFocusedItem(item.index.toString());
-    editor.container.machineController.selectState(item.index.toString());
-    editor.container.machineController.selectTransition(item.index.toString());
+  // Синхронизация дерева и состояний
+  const handleFocusItem = (item: TreeItem<string>) => setFocusedItem(item.index);
+  const handleExpandItem = (item: TreeItem<string>) => setExpandedItems((p) => [...p, item.index]);
+  const handleCollapseItem = (item: TreeItem<string>) =>
+    setExpandedItems((p) => p.filter((index) => index !== item.index));
+  const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
+
+  const handleRename = (item: TreeItem, name: string) => {
+    machine.changeStateName(item.index.toString(), name);
   };
-  const onClick = (item: TreeItem, actions: TreeItemActions, renderFlags: TreeItemRenderFlags) => {
-    actions.focusItem();
-    actions.selectItem();
-    //Раскрытие списка по нажатию на текст
-    if (!item.isFolder && renderFlags.isRenaming) return;
-    actions.toggleExpandedState();
+
+  const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
+    items.map((value) => {
+      const childId = value.index.toString();
+
+      if (target.targetType === 'root') {
+        return machine.unlinkState({ id: childId });
+      }
+
+      const parent = target.parentItem.toString();
+
+      if (parent === 'root') {
+        return machine.unlinkState({ id: childId });
+      }
+
+      if (parent === childId) return;
+
+      return machine.linkState(parent, childId);
+    });
   };
-  const onDoubleClick = (item: TreeItem, actions: TreeItemActions) => {
+
+  const onFocus = (item: TreeItem) => () => {
+    machine.selectState(item.index.toString());
+    machine.selectTransition(item.index.toString());
+  };
+
+  const onClick =
+    (item: TreeItem, actions: TreeItemActions, renderFlags: TreeItemRenderFlags) => () => {
+      actions.focusItem();
+      actions.selectItem();
+      //Раскрытие списка по нажатию на текст
+      if (!item.isFolder && renderFlags.isRenaming) return;
+      actions.toggleExpandedState();
+    };
+
+  const onDoubleClick = (item: TreeItem, actions: TreeItemActions) => () => {
     if (!item.canRename) return;
+
     actions.startRenamingItem();
   };
-  const onContextMenu = (e, item: TreeItem, actions: TreeItemActions) => {
+
+  const onContextMenu = (item: TreeItem, actions: TreeItemActions) => (e) => {
     actions.selectItem();
     //Создаем необходимую переменную, чтобы совпадало с типом в контроллерах и пишем туда значения мыши во время клика правой кнопкой
     const mouse: MyMouseEvent = {
@@ -79,57 +169,80 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
       nativeEvent: e.nativeEvent,
     };
 
-    const state = editor.container.machineController.states.get(item.index.toString());
+    const state = machine.states.get(item.index.toString());
     if (state) {
       return editor.container.statesController.handleContextMenu(state, { event: mouse });
     }
-    const transition = editor.container.machineController.transitions.get(item.index.toString());
+    const transition = machine.transitions.get(item.index.toString());
     if (transition) {
-      return editor.container.transitionsController.handleContextMenu(transition, { event: mouse });
+      return editor.container.transitionsController.handleContextMenu(transition, {
+        event: mouse,
+      });
     }
   };
-  const onDragStart = (e, item: TreeItem, actions: TreeItemActions) => {
-    //Проверка, можно ли двигать тот или иной объект, в данном случае, двигать можно лишь состояния, связи запрещено
+
+  const onDragStart = (item: TreeItem, actions: TreeItemActions) => (e) => {
     if (!item.canMove) return;
+
     e.dataTransfer.dropEffect = 'move';
     actions.startDragging();
   };
-  const onRename = (item: TreeItem, name: string) => {
-    //Используется для переименование состояния, это можно использовать
-    editor?.container.machineController.changeStateName(item.index.toString(), name);
+
+  const onExpandAll = () => {
+    const items = Object.entries(hierarchy)
+      .filter(([, item]) => item.isFolder)
+      .map(([key]) => key);
+
+    return setExpandedItems(items);
   };
-  const onSelected = (items: TreeItemIndex[]) => {
-    setSelectedItems(items);
-  };
-  const onExpanded = (item: TreeItem) => {
-    setExpandedItems((items) => [...items, item.index]);
-  };
-  const onCollapse = (item: TreeItem) => {
-    setExpandedItems((items) =>
-      items.filter((expandedItemIndex) => expandedItemIndex !== item.index)
-    );
+  const onCollapseAll = () => setExpandedItems([]);
+
+  const findItemPath = (search: string, searchRoot = 'root'): string[] | null => {
+    const item = hierarchy[searchRoot];
+    if (item.data.toLowerCase().includes(search.toLowerCase())) {
+      return [item.index];
+    }
+    const searchedItems =
+      item.children?.map((child) => findItemPath(search, child.toString())) || [];
+    const result = searchedItems.find((item) => item !== null);
+    if (!result) {
+      return null;
+    }
+    return [item.index, ...result];
   };
 
-  //Здесь мы напрямую работаем с родителями и дочерними элементами
-  const onLinkUnlinkState = (items: TreeItem[], target: DraggingPosition) => {
-    const parent = tree.current?.dragAndDropContext.draggingPosition as DraggingPositionItem;
+  const processSearch = (search: string) => {
+    const path = findItemPath(search);
 
-    items.map((value) => {
-      if (target.targetType.toString() === 'item') {
-        return editor.container.machineController.linkState(
-          parent.targetItem.toString(),
-          value.index.toString()
-        );
+    if (!path) return;
+
+    setExpandedItems((p) => {
+      for (const item of path) {
+        if (!p.includes(item)) {
+          p.push(item);
+        }
       }
-      if (target.targetType.toString() === 'between-items' && parent.parentItem !== 'root') {
-        return editor.container.machineController.linkState(
-          parent.parentItem.toString(),
-          value.index.toString()
-        );
-      }
-      editor.container.machineController.unlinkState({ id: value.index.toString() });
+
+      return [...p];
     });
+    setSelectedItems([path[path.length - 1]]);
   };
+
+  useLayoutEffect(() => {
+    setSelectedItems([]);
+
+    for (const [stateId, state] of Object.entries(states)) {
+      if (state.selection) {
+        return setSelectedItems([stateId]);
+      }
+    }
+
+    for (const [transitionId, transition] of Object.entries(transitions)) {
+      if (transition.selection) {
+        return setSelectedItems([transitionId]);
+      }
+    }
+  }, [states, transitions]);
 
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>
@@ -141,19 +254,19 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
         canDropOnFolder
         canDropOnNonFolder
         canSearch={false}
-        onDrop={onLinkUnlinkState}
-        onRenameItem={onRename}
-        onExpandItem={onExpanded}
-        onCollapseItem={onCollapse}
-        onSelectItems={onSelected}
+        onDrop={handleDrop}
+        onRenameItem={handleRename}
         viewState={{
-          ['tree-1']: {
+          tree: {
             focusedItem,
             expandedItems,
             selectedItems,
           },
         }}
-        //Реализовано свое переименование для добавления разных функций
+        onFocusItem={handleFocusItem}
+        onExpandItem={handleExpandItem}
+        onCollapseItem={handleCollapseItem}
+        onSelectItems={handleSelectItems}
         renderRenameInput={(props) => <InputRender props={props} />}
         renderItemTitle={(data) => (
           <TitleRender data={data} initialState={initialState} editor={editor} />
@@ -161,27 +274,23 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
         defaultInteractionMode={{
           mode: 'custom',
           createInteractiveElementProps: (item, _treeId, actions, renderFlags) => ({
-            onClick: () => onClick(item, actions, renderFlags),
-            onDoubleClick: () => onDoubleClick(item, actions),
-            onContextMenu: (e) => onContextMenu(e, item, actions),
+            onClick: onClick(item, actions, renderFlags),
+            onDoubleClick: onDoubleClick(item, actions),
+            onContextMenu: onContextMenu(item, actions),
             onBlur: actions.unselectItem,
-            onFocus: () => onFocus(item),
-            onDragStart: (e) => onDragStart(e, item, actions),
-            //Разрешаем перемещение
+            onFocus: onFocus(item),
+            onDragStart: onDragStart(item, actions),
             draggable: renderFlags.canDrag && !renderFlags.isRenaming,
-            onDragOver: (e) => {
-              e.preventDefault(); // Разрешить удаление
-            },
+            onDragOver: (e) => e.preventDefault(),
           }),
         }}
       >
-        <FilterNew
-          hierarchy={hierarchy}
-          expandedItems={expandedItems}
-          setExpandedItems={setExpandedItems}
+        <Filter
+          onExpandAll={onExpandAll}
+          onCollapseAll={onCollapseAll}
+          processSearch={processSearch}
         />
-        {/* <Filter hierarchy={hierarchy} tree={tree} setExpandedItems={setExpandedItems} /> */}
-        <Tree ref={tree} treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
+        <Tree treeId="tree" rootItem="root" />
       </ControlledTreeEnvironment>
     </div>
   );

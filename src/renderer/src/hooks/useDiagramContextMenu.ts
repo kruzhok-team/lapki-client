@@ -27,9 +27,10 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     if (!editor) return;
 
     const handleEvent = (pos: Point, items: DiagramContextMenuItem[]) => {
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-
+      //Это было необходимо, чтобы определить позицию клика в редакторе
+      //Пришлось перетащить эту математику в контроллеры state и transition, так как контекстное меню теперь работает не только с редактором
+      //const offset = editor.mouse.getOffset();
+      const position = { x: pos.x /*+ offset.x*/, y: pos.y /*+ offset.y*/ };
       setIsOpen(true);
       setPosition(position);
       setItems(items);

@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 
-import { Select, Modal, TextInput } from '@renderer/components/UI';
+import { Select, Modal, TextField } from '@renderer/components/UI';
 
 import { Settings } from '../Modules/Settings';
 
@@ -102,7 +102,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
         />
       </div>
       <div className="flex">
-        <TextInput
+        <TextField
           maxLength={80}
           className="disabled:opacity-50"
           label="Хост:"
@@ -113,7 +113,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           errorMessage={''}
           disabled={!showSecondaryField}
         />
-        <TextInput
+        <TextField
           className="disabled:opacity-50"
           label="Порт:"
           {...register('port')}

@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 
-import { Modal, TextInput } from '@renderer/components/UI';
+import { Modal, TextField } from '@renderer/components/UI';
 
 import { Settings } from '../Modules/Settings';
 
@@ -78,7 +78,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       onAfterClose={reloadSettings}
     >
       <div className={'flex'}>
-        <TextInput
+        <TextField
           maxLength={80}
           {...register('host')}
           label="Хост:"
@@ -87,7 +87,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           error={false}
           errorMessage={''}
         />
-        <TextInput
+        <TextField
           {...register('port')}
           label="Порт:"
           placeholder="Напишите порт"

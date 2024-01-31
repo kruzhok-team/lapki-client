@@ -219,6 +219,16 @@ export class EditorManager {
     return true;
   }
 
+  //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
+  changeStateSelection(id: string, selection: boolean) {
+    if (!this.data.elements.states.hasOwnProperty(id)) return false;
+
+    this.data.elements.states[id].selection = selection;
+
+    this.triggerDataUpdate('elements.states');
+    return true;
+  }
+
   changeStateBounds(id: string, bounds: Rectangle) {
     const state = this.data.elements.states[id];
     if (!state) return false;
@@ -459,6 +469,16 @@ export class EditorManager {
 
     this.triggerDataUpdate('elements.transitions');
 
+    return true;
+  }
+
+  //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
+  changeTransitionSelection(id: string, selection: boolean) {
+    if (!this.data.elements.transitions.hasOwnProperty(id)) return false;
+
+    this.data.elements.transitions[id].selection = selection;
+
+    this.triggerDataUpdate('elements.states');
     return true;
   }
 

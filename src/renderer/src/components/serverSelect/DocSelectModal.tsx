@@ -78,6 +78,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
           maxLength={80}
           {...register('host')}
           label="Адрес:"
+          className="mb-2"
           placeholder="Напишите адрес"
           hidden={false}
           error={false}

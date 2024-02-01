@@ -82,6 +82,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           maxLength={80}
           {...register('host')}
           label="Хост:"
+          className="mb-2"
           placeholder="Напишите адрес хоста"
           hidden={false}
           error={false}
@@ -90,6 +91,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
         <TextInput
           {...register('port')}
           label="Порт:"
+          className="mb-2"
           placeholder="Напишите порт"
           hidden={false}
           error={false}

@@ -126,7 +126,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       const updatedFlattenedList = flattenDocuments(data.body.children);
       setFlattenedList(updatedFlattenedList);
     }
-  }, []);
+  }, [data]);
 
   useEffect(() => {
     Settings.getDocSettings().then((doc) => {

@@ -79,15 +79,15 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   const [current, setCurrent] = useState<File | undefined>(undefined);
   const [forward, setForward] = useState<File | undefined>(undefined);
 
-  const flattenDocuments = (documents: File[] | undefined, parentPath = '') => {
+  const flattenDocuments = (documents: File[] | undefined) => {
     let result: { name: string; path: string }[] = [];
     if (!documents) return result;
 
     documents.forEach((doc) => {
-      const fullPath = parentPath ? `${doc.path}` : doc.name;
+      const fullPath = `${doc.path}`;
 
       if (doc.children) {
-        result = result.concat(flattenDocuments(doc.children, fullPath));
+        result = result.concat(flattenDocuments(doc.children));
       } else {
         result.push({ name: doc.name, path: fullPath });
       }
@@ -109,10 +109,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   }, [back, current, flattenedList, forward]);
 
   const onItemClick = (item: File) => {
-    // Create a flattened list when selecting documentation
-    const updatedFlattenedList = flattenDocuments(data?.body.children, item.path);
-    setFlattenedList(updatedFlattenedList);
-
     setCurrent(item);
 
     if (item.path?.endsWith('html')) {
@@ -124,6 +120,13 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     setActiveTab(1);
     return;
   };
+
+  useEffect(() => {
+    if (data) {
+      const updatedFlattenedList = flattenDocuments(data.body.children);
+      setFlattenedList(updatedFlattenedList);
+    }
+  }, []);
 
   useEffect(() => {
     Settings.getDocSettings().then((doc) => {

@@ -101,7 +101,11 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     const currentNum = flattenedList.findIndex((value) => value.path === current.path);
 
     setBack(flattenedList.find((_value, id) => id === currentNum - 1));
-    setForward(flattenedList.find((_value, id) => id === currentNum + 1));
+    //Если открыт последний документ, то возвращаемся в начало документации
+    if (flattenedList[flattenedList.length - 1].path === current?.path) {
+      return setForward(flattenedList[0]);
+    }
+    return setForward(flattenedList.find((_value, id) => id === currentNum + 1));
   }, [back, current, flattenedList, forward]);
 
   const onItemClick = (item: File) => {
@@ -192,7 +196,9 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
                     disabled={!forward ? true : false}
                     onClick={() => onItemClick(forward!)}
                   >
-                    Вперёд
+                    {flattenedList[flattenedList.length - 1].path === current?.path
+                      ? 'В начало'
+                      : 'Вперёд'}
                   </button>
                 </div>
               ) : (

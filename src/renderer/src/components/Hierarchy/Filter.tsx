@@ -1,6 +1,5 @@
-import React, { RefObject, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
-import { StaticTreeDataProvider, TreeRef } from 'react-complex-tree';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ClearIcon } from '@renderer/assets/icons/close.svg';
@@ -10,23 +9,22 @@ import { ReactComponent as ExpandIcon } from '@renderer/assets/icons/expand-all.
 import { TextInput } from '../UI';
 
 interface FilterProps {
-  processSearch: (value: string) => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
+  search: string;
+  onChangeSearch: (value: string) => void;
 }
 
-export const Filter: React.FC<FilterProps> = ({ onExpandAll, onCollapseAll, processSearch }) => {
+export const Filter: React.FC<FilterProps> = (props) => {
+  const { onExpandAll, onCollapseAll, search, onChangeSearch } = props;
   const inputRef = useRef<HTMLInputElement>(null);
-  const [search, setSearch] = useState('');
 
-  const handleChangeSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-
-    processSearch(e.target.value);
+  const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChangeSearch(e.target.value);
   };
 
   const handleClear = () => {
-    setSearch('');
+    onChangeSearch('');
     inputRef.current?.focus();
   };
 

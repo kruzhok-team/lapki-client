@@ -21,15 +21,9 @@ import { Filter } from './Filter';
 import { InputRender } from './inputRender';
 import { TitleRender } from './titleRender';
 
-interface HierarchyItem {
-  [index: string]: {
-    index: string;
-    isFolder?: boolean;
-    children?: Array<string>;
-    canRename?: boolean;
-    canMove?: boolean;
-    data: string;
-  };
+export interface HierarchyItemData {
+  title: string;
+  type: 'state' | 'transition';
 }
 
 export interface HierarchyProps {
@@ -46,16 +40,17 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
 
   const machine = editor.container.machineController;
 
+  const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
 
-  const hierarchy: HierarchyItem = useMemo(() => {
-    const data: HierarchyItem = {
+  const hierarchy = useMemo(() => {
+    const data: Record<TreeItemIndex, TreeItem<HierarchyItemData>> = {
       root: {
         index: 'root',
         isFolder: true,
-        data: 'Root item',
+        data: { title: 'Root item', type: 'state' },
         children: [],
       },
     };
@@ -66,7 +61,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
       data[stateId] = {
         index: stateId,
         isFolder: false,
-        data: state.name,
+        data: { title: state.name, type: 'state' },
         children: [],
         canRename: true,
         canMove: true,
@@ -92,7 +87,10 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
       data[transitionId] = {
         index: transitionId,
         isFolder: false,
-        data: `${source} -> ${target}`,
+        data: {
+          title: `${source} -> ${target}`,
+          type: 'transition',
+        },
         canRename: false,
         canMove: false,
       };
@@ -104,9 +102,10 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
   }, [states, transitions]);
 
   // Синхронизация дерева и состояний
-  const handleFocusItem = (item: TreeItem<string>) => setFocusedItem(item.index);
-  const handleExpandItem = (item: TreeItem<string>) => setExpandedItems((p) => [...p, item.index]);
-  const handleCollapseItem = (item: TreeItem<string>) =>
+  const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
+  const handleExpandItem = (item: TreeItem<HierarchyItemData>) =>
+    setExpandedItems((p) => [...p, item.index]);
+  const handleCollapseItem = (item: TreeItem<HierarchyItemData>) =>
     setExpandedItems((p) => p.filter((index) => index !== item.index));
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
@@ -197,27 +196,35 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
   };
   const onCollapseAll = () => setExpandedItems([]);
 
-  const findItemPath = (search: string, searchRoot = 'root'): string[] | null => {
-    const item = hierarchy[searchRoot];
-    if (item.data.toLowerCase().includes(search.toLowerCase())) {
-      return [item.index];
-    }
-    const searchedItems =
-      item.children?.map((child) => findItemPath(search, child.toString())) || [];
-    const result = searchedItems.find((item) => item !== null);
-    if (!result) {
-      return null;
-    }
-    return [item.index, ...result];
-  };
+  const handleChangeSearch = (value: string) => {
+    setSearch(value);
 
-  const processSearch = (search: string) => {
-    const path = findItemPath(search);
+    if (!value) {
+      setSelectedItems([]);
+      return;
+    }
 
-    if (!path) return;
+    const getParents = (stateId: string): string[] => {
+      const state = states[stateId];
+      if (!state.parent) return [];
+
+      return [state.parent, ...getParents(state.parent)];
+    };
+
+    const items = Object.values(hierarchy).filter((item) =>
+      item.data.title.trim().toLowerCase().includes(value.trim().toLowerCase())
+    );
+    const itemsParents = items.reduce((acc, cur) => {
+      if (cur.data.type === 'state') {
+        return [...acc, ...getParents(cur.index.toString())];
+      }
+      return acc;
+    }, [] as string[]);
+
+    const itemsIds = [...itemsParents, ...items.map((item) => item.index.toString())];
 
     setExpandedItems((p) => {
-      for (const item of path) {
+      for (const item of itemsIds) {
         if (!p.includes(item)) {
           p.push(item);
         }
@@ -225,7 +232,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
 
       return [...p];
     });
-    setSelectedItems([path[path.length - 1]]);
+    setSelectedItems([itemsIds[itemsIds.length - 1]]);
   };
 
   useLayoutEffect(() => {
@@ -248,7 +255,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <ControlledTreeEnvironment
         items={hierarchy}
-        getItemTitle={(item) => item.data}
+        getItemTitle={(item) => item.data.title}
         canDragAndDrop
         canReorderItems
         canDropOnFolder
@@ -269,7 +276,12 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
         onSelectItems={handleSelectItems}
         renderRenameInput={(props) => <InputRender props={props} />}
         renderItemTitle={(data) => (
-          <TitleRender data={data} initialState={initialState} editor={editor} />
+          <TitleRender
+            type={data.item.data.type}
+            title={data.item.data.title}
+            isInitial={initialState === data.item.index.toString()}
+            search={search}
+          />
         )}
         defaultInteractionMode={{
           mode: 'custom',
@@ -288,7 +300,8 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
         <Filter
           onExpandAll={onExpandAll}
           onCollapseAll={onCollapseAll}
-          processSearch={processSearch}
+          search={search}
+          onChangeSearch={handleChangeSearch}
         />
         <Tree treeId="tree" rootItem="root" />
       </ControlledTreeEnvironment>

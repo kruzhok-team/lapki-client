@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -74,7 +74,43 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       });
   };
 
+  const [flattenedList, setFlattenedList] = useState<{ name: string; path: string }[]>([]);
+  const [back, setBack] = useState<File | undefined>(undefined);
+  const [current, setCurrent] = useState<File | undefined>(undefined);
+  const [forward, setForward] = useState<File | undefined>(undefined);
+
+  const flattenDocuments = (documents: File[] | undefined, parentPath = '') => {
+    let result: { name: string; path: string }[] = [];
+    if (!documents) return result;
+
+    documents.forEach((doc) => {
+      const fullPath = parentPath ? `${doc.path}` : doc.name;
+
+      if (doc.children) {
+        result = result.concat(flattenDocuments(doc.children, fullPath));
+      } else {
+        result.push({ name: doc.name, path: fullPath });
+      }
+    });
+
+    return result;
+  };
+
+  useLayoutEffect(() => {
+    if (!current) return;
+    const currentNum = flattenedList.findIndex((value) => value.path === current.path);
+
+    setBack(flattenedList.find((_value, id) => id === currentNum - 1));
+    setForward(flattenedList.find((_value, id) => id === currentNum + 1));
+  }, [back, current, flattenedList, forward]);
+
   const onItemClick = (item: File) => {
+    // Create a flattened list when selecting documentation
+    const updatedFlattenedList = flattenDocuments(data?.body.children, item.path);
+    setFlattenedList(updatedFlattenedList);
+
+    setCurrent(item);
+
     if (item.path?.endsWith('html')) {
       return fetchItem(item.path);
     }
@@ -82,7 +118,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     setHtml('');
     setDocumentLink(`${url}${item.path}`);
     setActiveTab(1);
-
     return;
   };
 
@@ -105,7 +140,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       </button>
 
       <div className="w-[400px]">
-        <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-bg-secondary px-1 py-4 text-base ">
+        <section className="flex h-full select-none flex-col border-l-[1px] border-[#4391BF] bg-bg-secondary px-1 pt-4 text-base">
           <div className="flex gap-1 py-2">
             <button
               className={twMerge(
@@ -142,7 +177,28 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
               )}
             </div>
 
-            <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
+            <div className={twMerge('flex h-full flex-col', activeTab !== 1 && 'hidden')}>
+              {back || forward ? (
+                <div className={twMerge('m-2 flex justify-between gap-2')}>
+                  <button
+                    className="btn-primary w-full"
+                    disabled={!back ? true : false}
+                    onClick={() => onItemClick(back!)}
+                  >
+                    Назад
+                  </button>
+                  <button
+                    className="btn-primary w-full"
+                    disabled={!forward ? true : false}
+                    onClick={() => onItemClick(forward!)}
+                  >
+                    Вперёд
+                  </button>
+                </div>
+              ) : (
+                ''
+              )}
+
               <Show html={html} documentLink={documentLink} />
             </div>
           </div>

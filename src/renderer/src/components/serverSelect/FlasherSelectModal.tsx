@@ -101,10 +101,10 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           )}
         />
       </div>
-      <div className="flex">
+      <div className="mb-2 flex gap-2">
         <TextInput
           maxLength={80}
-          className="mb-2 disabled:opacity-50"
+          className="disabled:opacity-50"
           label="Хост:"
           {...register('host')}
           placeholder="Напишите адрес хоста"
@@ -114,7 +114,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={!showSecondaryField}
         />
         <TextInput
-          className="mb-2 disabled:opacity-50"
+          className="disabled:opacity-50"
           label="Порт:"
           {...register('port')}
           placeholder="Напишите порт"

@@ -77,12 +77,11 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       onSubmit={handleSubmit}
       onAfterClose={reloadSettings}
     >
-      <div className={'flex'}>
+      <div className={'mb-2 flex gap-2'}>
         <TextInput
           maxLength={80}
           {...register('host')}
           label="Хост:"
-          className="mb-2"
           placeholder="Напишите адрес хоста"
           hidden={false}
           error={false}
@@ -91,7 +90,6 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
         <TextInput
           {...register('port')}
           label="Порт:"
-          className="mb-2"
           placeholder="Напишите порт"
           hidden={false}
           error={false}

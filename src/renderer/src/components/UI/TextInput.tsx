@@ -18,7 +18,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     return (
       <label
         className={twMerge(
-          'mr-2 flex flex-col',
+          'flex flex-col',
           error && 'text-error',
           hidden && 'hidden',
           containerClassName

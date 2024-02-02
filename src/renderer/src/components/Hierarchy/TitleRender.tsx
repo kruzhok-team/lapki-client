@@ -46,12 +46,6 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
                   key={i}
                   data-highlight={part.trim().toLowerCase() === search.trim().toLowerCase()}
                   className="data-[highlight=true]:text-text-highlighted"
-                  style={{
-                    color:
-                      part.toLowerCase() === search.toLowerCase()
-                        ? getColor('text-highlighted')
-                        : undefined,
-                  }}
                 >
                   {part}
                 </span>

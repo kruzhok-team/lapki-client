@@ -16,10 +16,11 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
+import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';
-import { InputRender } from './inputRender';
-import { TitleRender } from './titleRender';
+import { InputRender } from './InputRender';
+import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
@@ -280,7 +281,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
             type={data.item.data.type}
             title={data.item.data.title}
             isInitial={initialState === data.item.index.toString()}
-            search={search}
+            search={escapeRegExp(search)}
           />
         )}
         defaultInteractionMode={{

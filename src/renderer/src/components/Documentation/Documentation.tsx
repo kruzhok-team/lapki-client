@@ -103,10 +103,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
   useLayoutEffect(() => {
     if (!current) return;
-    if (!flattenedList) return;
     const currentNum = flattenedList.findIndex((value) => value.path === current.path);
 
     setBack(flattenedList.find((_value, id) => id === currentNum - 1));
+
     //Если открыт последний документ, то возвращаемся в начало документации
     if (flattenedList[flattenedList.length - 1].path === current?.path) {
       return setForward(flattenedList[0]);
@@ -184,7 +184,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
             </div>
 
             <div className={twMerge('flex h-full flex-col', activeTab !== 1 && 'hidden')}>
-              {back || forward ? (
+              {current ? (
                 <div className={twMerge('m-2 flex justify-between gap-2')}>
                   <button
                     className="btn-primary w-full"

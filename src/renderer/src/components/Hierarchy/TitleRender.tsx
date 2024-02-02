@@ -1,7 +1,6 @@
 import { ReactComponent as InitialStateIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
-import { getColor } from '@renderer/theme';
 
 import { WithHint } from '../UI';
 

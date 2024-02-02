@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -74,10 +74,9 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       });
   };
 
-  const [flattenedList, setFlattenedList] = useState<{ name: string; path: string }[]>([]);
-  const [back, setBack] = useState<File | undefined>(undefined);
-  const [current, setCurrent] = useState<File | undefined>(undefined);
-  const [forward, setForward] = useState<File | undefined>(undefined);
+  const [back, setBack] = useState<File>();
+  const [current, setCurrent] = useState<File>();
+  const [forward, setForward] = useState<File>();
 
   const flattenDocuments = (documents: File[] | undefined) => {
     let result: { name: string; path: string }[] = [];
@@ -96,8 +95,15 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     return result;
   };
 
+  const flattenedList = useMemo(() => {
+    if (!data) return [];
+    const updatedFlattenedList = flattenDocuments(data.body.children);
+    return updatedFlattenedList;
+  }, [data]);
+
   useLayoutEffect(() => {
     if (!current) return;
+    if (!flattenedList) return;
     const currentNum = flattenedList.findIndex((value) => value.path === current.path);
 
     setBack(flattenedList.find((_value, id) => id === currentNum - 1));
@@ -120,13 +126,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     setActiveTab(1);
     return;
   };
-
-  useEffect(() => {
-    if (data) {
-      const updatedFlattenedList = flattenDocuments(data.body.children);
-      setFlattenedList(updatedFlattenedList);
-    }
-  }, [data]);
 
   useEffect(() => {
     Settings.getDocSettings().then((doc) => {

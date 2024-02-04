@@ -6,3 +6,4 @@ export * from './Modal';
 export * from './ColorInput';
 export * from './TextInput';
 export * from './Checkbox';
+export * from './TextAreaAutoResize';

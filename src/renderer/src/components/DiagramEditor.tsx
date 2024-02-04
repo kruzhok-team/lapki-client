@@ -14,6 +14,7 @@ import { defaultTransColor } from '@renderer/utils';
 import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { DiagramContextMenu } from './DiagramContextMenu';
 import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
+import { NoteEdit } from './NoteEdit';
 import { StateNameModal } from './StateNameModal';
 
 export interface DiagramEditorProps {
@@ -45,8 +46,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
 
     useEffect(() => {
       if (!containerRef.current) return;
-
-      console.log('init editor');
 
       const editor = new CanvasEditor(containerRef.current, manager);
 
@@ -188,6 +187,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = memo(
 
         <DiagramContextMenu {...contextMenu} />
         <StateNameModal {...stateName} />
+        {editor && <NoteEdit editor={editor} />}
 
         {editor && (
           <EventsModal

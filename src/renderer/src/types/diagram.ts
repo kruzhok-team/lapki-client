@@ -66,11 +66,17 @@ export type Component = {
   parameters: { [key: string]: string };
 };
 
+export type Note = {
+  position: Point;
+  text: string;
+};
+
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
   transitions: Transition[];
   components: { [id: string]: Component };
+  notes: Record<string, Note>;
 
   initialState: InitialState | null;
 
@@ -89,6 +95,7 @@ export function emptyElements(): InnerElements {
     states: {},
     transitions: {},
     components: {},
+    notes: {},
     initialState: null,
 
     platform: '',

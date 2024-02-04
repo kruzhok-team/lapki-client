@@ -1,3 +1,4 @@
+import { Note } from '@renderer/lib/drawable/Note';
 import {
   Action,
   Condition,
@@ -11,6 +12,7 @@ import {
   AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
+  CreateNoteParameters,
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
@@ -52,6 +54,7 @@ export class MachineController {
 
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
+  notes: Map<string, Note> = new Map();
 
   platform!: PlatformManager;
 
@@ -972,4 +975,41 @@ export class MachineController {
     }
     return vacant;
   }
+
+  createNote(params: CreateNoteParameters, canUndo = true) {
+    const newNoteId = this.container.app.manager.createNote(params);
+    const note = new Note(this.container, newNoteId);
+
+    this.notes.set(newNoteId, note);
+    this.container.notesController.watch(note);
+    this.container.children.add('note', newNoteId);
+
+    this.container.isDirty = true;
+
+    // if (canUndo) {
+    //   this.undoRedo.do({
+    //     type: 'createTransition',
+    //     args: { id, params },
+    //   });
+    // }
+
+    return note;
+  }
+
+  changeNote = (id: string, text: string, canUndo = true) => {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    // if (canUndo) {
+    //   this.undoRedo.do({
+    //     type: 'changeStateName',
+    //     args: { id, name, prevName: state.data.name },
+    //   });
+    // }
+
+    this.container.app.manager.changeNote(id, text);
+    note.prepareText();
+
+    this.container.isDirty = true;
+  };
 }

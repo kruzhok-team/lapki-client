@@ -22,6 +22,7 @@ import {
   ChangeTransitionParameters,
   ChangeStateEventsParams,
   AddComponentParams,
+  CreateNoteParameters,
 } from '@renderer/types/EditorManager';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
@@ -61,6 +62,16 @@ export class EditorManager {
 
         return acc;
       }, {}),
+      notes: {
+        1: {
+          position: { x: 100, y: 100 },
+          text: 'My\n first Note\nGOD so coll note ad time time time time time time time time',
+        },
+        2: {
+          position: { x: 200, y: 400 },
+          text: 'Second',
+        },
+      },
     };
     this.data.isInitialized = true;
 
@@ -539,6 +550,52 @@ export class EditorManager {
     this.data.scale = value;
 
     this.triggerDataUpdate('scale');
+
+    return true;
+  }
+
+  createNote(params: CreateNoteParameters) {
+    const { id, text, placeInCenter = false } = params;
+    let position = params.position;
+
+    const getNewId = () => {
+      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+      let id = nanoid();
+      while (this.data.elements.notes.hasOwnProperty(id)) {
+        id = nanoid();
+      }
+
+      return id;
+    };
+
+    const centerPosition = () => {
+      return {
+        x: position.x - 200 / 2,
+        y: position.y - 36 / 2,
+      };
+    };
+
+    position = placeInCenter ? centerPosition() : position;
+
+    const newId = id ?? getNewId();
+
+    this.data.elements.notes[newId] = {
+      text,
+      position,
+    };
+
+    this.triggerDataUpdate('elements.notes');
+
+    return newId;
+  }
+
+  changeNote(id: string, text: string) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].text = text;
+
+    this.triggerDataUpdate('elements.notes');
 
     return true;
   }

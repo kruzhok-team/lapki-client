@@ -82,14 +82,13 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
 
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const source = states[transition.source].name;
       const target = states[transition.target].name;
 
       data[transitionId] = {
         index: transitionId,
         isFolder: false,
         data: {
-          title: `${source} -> ${target}`,
+          title: target,
           type: 'transition',
         },
         canRename: false,

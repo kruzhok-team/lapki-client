@@ -8,7 +8,7 @@ interface TextAreaAutoResizeProps extends ComponentProps<'span'> {
 }
 
 export const TextAreaAutoResize = forwardRef<HTMLSpanElement, TextAreaAutoResizeProps>(
-  ({ className, placeholder, ...props }, ref) => {
+  ({ className, placeholder, onKeyDown, ...props }, ref) => {
     return (
       <span
         ref={ref}
@@ -16,6 +16,13 @@ export const TextAreaAutoResize = forwardRef<HTMLSpanElement, TextAreaAutoResize
         role="textbox"
         contentEditable
         data-placeholder={placeholder}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            document.execCommand('insertLineBreak');
+            event.preventDefault();
+          }
+          onKeyDown?.(event);
+        }}
         {...props}
       />
     );

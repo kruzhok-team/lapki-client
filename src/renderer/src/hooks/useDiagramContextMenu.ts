@@ -290,7 +290,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            // editor?.container.machineController.deleteState(state.id as string);
+            editor?.container.machineController.deleteNote(note.id);
           },
         },
       ]);

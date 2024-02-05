@@ -735,6 +735,7 @@ export function importGraphml(
     const elements: Elements = {
       states: {},
       transitions: [],
+      notes: [],
       initialState: {
         target: '',
         position: { x: 0, y: 0 },
@@ -782,6 +783,7 @@ export function importGraphml(
     return {
       states: {},
       transitions: [],
+      notes: [],
       initialState: {
         target: '',
         position: { x: 0, y: 0 },

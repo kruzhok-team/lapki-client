@@ -15,7 +15,11 @@ export class Serializer {
     switch (saveMode) {
       case 'JSON':
         return JSON.stringify(
-          { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
+          {
+            ...this.data.elements,
+            transitions: Object.values(this.data.elements.transitions),
+            notes: Object.values(this.data.elements.notes),
+          },
           undefined,
           2
         );
@@ -23,6 +27,7 @@ export class Serializer {
         return exportGraphml({
           ...this.data.elements,
           transitions: Object.values(this.data.elements.transitions),
+          notes: Object.values(this.data.elements.notes),
         });
     }
   }

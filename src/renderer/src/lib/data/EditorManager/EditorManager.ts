@@ -62,16 +62,11 @@ export class EditorManager {
 
         return acc;
       }, {}),
-      notes: {
-        1: {
-          position: { x: 100, y: 100 },
-          text: 'My\n first Note\nGOD so coll note ad time time time time time time time time',
-        },
-        2: {
-          position: { x: 200, y: 400 },
-          text: 'Second',
-        },
-      },
+      notes: elements.notes.reduce((acc, cur, i) => {
+        acc[i] = cur;
+
+        return acc;
+      }, {}),
     };
     this.data.isInitialized = true;
 
@@ -590,10 +585,32 @@ export class EditorManager {
     return newId;
   }
 
-  changeNote(id: string, text: string) {
+  changeNoteText(id: string, text: string) {
     if (!this.data.elements.notes.hasOwnProperty(id)) return false;
 
     this.data.elements.notes[id].text = text;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNotePosition(id: string, position: Point) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    note.position = position;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  deleteNote(id: string) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    delete this.data.elements.notes[id];
 
     this.triggerDataUpdate('elements.notes');
 

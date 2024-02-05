@@ -76,7 +76,7 @@ export type Elements = {
   states: { [id: string]: State };
   transitions: Transition[];
   components: { [id: string]: Component };
-  notes: Record<string, Note>;
+  notes: Note[];
 
   initialState: InitialState | null;
 
@@ -86,8 +86,9 @@ export type Elements = {
 };
 
 // Данные внутри редактора хранятся немного по-другому и это их описание
-export interface InnerElements extends Omit<Elements, 'transitions'> {
+export interface InnerElements extends Omit<Elements, 'transitions' | 'notes'> {
   transitions: Record<string, Transition>;
+  notes: Record<string, Note>;
 }
 
 export function emptyElements(): InnerElements {

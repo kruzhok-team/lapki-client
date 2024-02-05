@@ -18,27 +18,21 @@ export const NoteEdit: React.FC<NoteEditProps> = ({ editor }) => {
   const [style, setStyle] = useState({} as CSSProperties);
   const ref = useRef<HTMLSpanElement>(null);
 
-  const handleClose = useCallback(() => {
-    note?.setVisible(true);
-
-    close();
-  }, [close, note]);
-
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     const el = ref.current;
     const value = (el?.textContent ?? '').trim();
 
-    if (!el || !value || !note) return;
+    if (!el || !note) return;
 
-    editor.container.machineController.changeNote(note.id, value);
+    editor.container.machineController.changeNoteText(note.id, value);
+  }, [editor, note]);
 
-    handleClose();
-  };
+  const handleClose = useCallback(() => {
+    handleSubmit();
+    note?.setVisible(true);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) return handleSubmit();
-    if (e.key === 'Escape') return handleClose();
-  };
+    close();
+  }, [close, handleSubmit, note]);
 
   useEffect(() => {
     window.addEventListener('wheel', handleClose);
@@ -89,8 +83,7 @@ export const NoteEdit: React.FC<NoteEditProps> = ({ editor }) => {
         'fixed overflow-hidden whitespace-pre-wrap border-none bg-bg-secondary text-base leading-none outline outline-1 outline-text-primary',
         !isOpen && 'hidden'
       )}
-      placeholder="Придумайте записку"
-      onKeyDown={handleKeyDown}
+      placeholder="Придумайте заметку"
       onBlur={handleClose}
     />
   );

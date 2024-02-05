@@ -101,7 +101,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           )}
         />
       </div>
-      <div className="flex">
+      <div className="mb-2 flex gap-2">
         <TextInput
           maxLength={80}
           className="disabled:opacity-50"

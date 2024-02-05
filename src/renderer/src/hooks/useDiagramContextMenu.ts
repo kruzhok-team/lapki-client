@@ -59,8 +59,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           },
         },
         {
-          label: 'Вставить записку',
-          type: 'pasteState',
+          label: 'Вставить заметку',
+          type: 'note',
           action: () => {
             const note = editor?.container.machineController.createNote({
               position: canvasPos,

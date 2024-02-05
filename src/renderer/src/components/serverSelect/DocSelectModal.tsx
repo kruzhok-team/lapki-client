@@ -73,7 +73,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       onSubmit={handleSubmit}
       onAfterClose={resetSettings}
     >
-      <div className={twMerge('flex')}>
+      <div className={twMerge('mb-2 flex')}>
         <TextField
           maxLength={80}
           {...register('host')}

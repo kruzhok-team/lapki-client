@@ -77,7 +77,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       onSubmit={handleSubmit}
       onAfterClose={reloadSettings}
     >
-      <div className={'flex'}>
+      <div className={'mb-2 flex gap-2'}>
         <TextField
           maxLength={80}
           {...register('host')}

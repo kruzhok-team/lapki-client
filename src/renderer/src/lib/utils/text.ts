@@ -44,6 +44,35 @@ export const getTextWidth = (ctx: CanvasRenderingContext2D, text: string, font: 
   return width;
 };
 
+// Вспомогательная функция для prepareText для разбивки слова на строки
+const splitWord = (ctx: CanvasRenderingContext2D, word: string, font: string, maxWidth: number) => {
+  const lines: string[][] = [];
+  const newLine: string[] = [];
+  let newLineWidth = 0;
+
+  for (const char of word) {
+    const charWidth = getTextWidth(ctx, char, font);
+
+    if (Math.floor(newLineWidth + charWidth) <= maxWidth) {
+      newLineWidth += charWidth;
+      newLine.push(char);
+      continue;
+    }
+
+    lines.push([newLine.join('')]);
+    newLine.length = 0;
+
+    newLineWidth = charWidth;
+    newLine.push(char);
+  }
+
+  return {
+    lines,
+    newLine: [newLine.join('')],
+    newLineWidth,
+  };
+};
+
 export const prepareText = (
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -65,18 +94,33 @@ export const prepareText = (
     }
 
     const words = line.split(' ');
-    const newLine: string[] = [];
+    let newLine: string[] = [];
+    let newLineWidth = 0;
 
     for (const word of words) {
-      const currentLineWidth =
-        newLine.reduce((acc, cur) => acc + getTextWidth(ctx, cur, font), 0) +
-        (newLine.length - 1) * spaceWidth;
+      const wordWidth = getTextWidth(ctx, word, font);
 
-      if (currentLineWidth + spaceWidth + getTextWidth(ctx, word, font) >= maxWidth) {
+      // Развилка когда слово больще целой строки, приходится это слово разбивать
+      if (wordWidth >= maxWidth) {
         textArray.push(newLine.join(' '));
-        newLine.length = 0;
+
+        const splitted = splitWord(ctx, word, font, maxWidth);
+        textArray.push(...splitted.lines.map((line) => line.join(' ')));
+        newLine = splitted.newLine;
+        newLineWidth = splitted.newLineWidth;
+        continue;
       }
 
+      if (Math.floor(newLineWidth + spaceWidth + wordWidth) <= maxWidth) {
+        newLineWidth += spaceWidth + wordWidth;
+        newLine.push(word);
+        continue;
+      }
+
+      textArray.push(newLine.join(' '));
+      newLine.length = 0;
+
+      newLineWidth = wordWidth;
       newLine.push(word);
     }
 

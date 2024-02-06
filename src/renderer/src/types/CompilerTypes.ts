@@ -1,4 +1,4 @@
-import { Elements } from "@floating-ui/react-dom";
+import { Elements } from '@floating-ui/react-dom';
 
 export type CompilerResult = {
   result: string;

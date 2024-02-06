@@ -10,7 +10,7 @@ import { Tree } from './Tree';
 
 interface DirectoryProps {
   item: File;
-  onItemClick: (item: File) => void;
+  onItemClick: (filePath: string) => void;
 }
 
 export const Directory: React.FC<DirectoryProps> = ({ item, onItemClick }) => {

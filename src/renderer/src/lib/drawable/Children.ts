@@ -1,9 +1,11 @@
+import { Node } from './Node';
 import { State } from './State';
 import { Transition } from './Transition';
 
 import { MachineController } from '../data/MachineController';
 
-type CbListItem = State | Transition;
+type ListType = 'state' | 'transition' | 'note';
+
 /**
  * Пока что это странный класс предназначенный только для отрисовки,
  * у {@link Container} и {@link Node} объявляется этот класс и рендер идёт по дереву
@@ -12,22 +14,31 @@ type CbListItem = State | Transition;
 export class Children {
   private statesList = [] as string[];
   private transitionsList = [] as string[];
+  private notesList = [] as string[];
 
   constructor(public stateMachine: MachineController) {}
 
-  forEach(cb: (item: CbListItem) => void) {
+  private getList(type: ListType) {
+    if (type === 'state') {
+      return this.statesList;
+    }
+    if (type === 'transition') {
+      return this.transitionsList;
+    }
+    return this.notesList;
+  }
+
+  forEach(cb: (item: Node) => void) {
     this.statesList.forEach((id) => {
-      cb(this.stateMachine.states.get(id) as State);
+      cb(this.stateMachine.states.get(id) as Node);
     });
 
     this.transitionsList.forEach((id) => {
-      cb(this.stateMachine.transitions.get(id) as Transition);
+      cb(this.stateMachine.transitions.get(id) as Node);
     });
-  }
 
-  forEachState(cb: (item: State) => void) {
-    this.statesList.forEach((id) => {
-      cb(this.stateMachine.states.get(id) as State);
+    this.notesList.forEach((id) => {
+      cb(this.stateMachine.notes.get(id) as Node);
     });
   }
 
@@ -42,6 +53,7 @@ export class Children {
   clear() {
     this.statesList.length = 0;
     this.transitionsList.length = 0;
+    this.notesList.length = 0;
   }
 
   // Для того чтобы можно было перебрать экземпляр класса с помощью for of
@@ -73,17 +85,14 @@ export class Children {
     };
   }
 
-  add(type: 'state' | 'transition', id: string) {
-    if (type === 'state') {
-      this.statesList.push(id);
-    }
-    if (type === 'transition') {
-      this.transitionsList.push(id);
-    }
+  add(type: ListType, id: string) {
+    const list = this.getList(type);
+
+    list.push(id);
   }
 
-  remove(type: 'state' | 'transition', id: string) {
-    const list = type === 'state' ? this.statesList : this.transitionsList;
+  remove(type: ListType, id: string) {
+    const list = this.getList(type);
     const index = list.findIndex((item) => id === item);
 
     if (index !== -1) {
@@ -97,20 +106,28 @@ export class Children {
     return this.stateMachine.states.get(id);
   }
 
-  getByIndex(index: number) {
+  getByIndex(index: number): Node | undefined {
     if (index < this.statesList.length) {
       const id = this.statesList[index];
 
-      return this.stateMachine.states.get(id) as State;
+      return this.stateMachine.states.get(id);
     }
 
-    const id = this.transitionsList[index - this.statesList.length];
+    index -= this.statesList.length;
 
-    return this.stateMachine.transitions.get(id) as Transition;
+    if (index < this.transitionsList.length) {
+      const id = this.transitionsList[index];
+
+      return this.stateMachine.transitions.get(id);
+    }
+
+    const id = this.notesList[index - this.transitionsList.length];
+
+    return this.stateMachine.notes.get(id);
   }
 
-  moveToEnd(type: 'state' | 'transition', id: string) {
-    const list = type === 'state' ? this.statesList : this.transitionsList;
+  moveToEnd(type: ListType, id: string) {
+    const list = this.getList(type);
 
     const index = list.findIndex((item) => id === item);
 
@@ -120,7 +137,7 @@ export class Children {
   }
 
   get size() {
-    return this.statesList.length + this.transitionsList.length;
+    return this.statesList.length + this.transitionsList.length + this.notesList.length;
   }
 
   get isEmpty() {

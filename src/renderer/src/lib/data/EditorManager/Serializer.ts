@@ -24,11 +24,7 @@ export class Serializer {
           2
         );
       case 'Cyberiada':
-        return exportGraphml({
-          ...this.data.elements,
-          transitions: Object.values(this.data.elements.transitions),
-          notes: Object.values(this.data.elements.notes),
-        });
+        return exportGraphml(this.data.elements);
     }
   }
 

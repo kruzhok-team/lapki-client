@@ -5,6 +5,7 @@
 <key id="dName" for="node" attr.name="name" attr.type="string"/>
 <key id="dData" for="edge" attr.name="data" attr.type="string"/>
 <key id="dData" for="node" attr.name="data" attr.type="string"/>
+<key id="dNote" for="node" attr.name="data" attr.type="string"/>
 <key id="dInitial" for="node" attr.name="initial" attr.type="string"/>
 <key id="dGeometry" for="edge"/>
 <key id="dGeometry" for="node"/>
@@ -58,6 +59,11 @@ timer1.start(1000)
         </data>
         <data key="dGeometry" x="81" y="334"
             width="450" height="95" />
+    </node>
+
+    <node id="commentX">
+        <data key="dNote">Включение и выключение лампочки по таймеру!</data>
+        <data key="dGeometry" x="640" y="114" />
     </node>
     
     <edge source="" target="LED1"></edge>

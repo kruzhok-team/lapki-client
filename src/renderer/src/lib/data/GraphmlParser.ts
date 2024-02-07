@@ -10,6 +10,7 @@ import {
   Elements,
   Condition,
   Variable,
+  Note,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -80,9 +81,10 @@ interface DataNodeProcessArgs {
   parentNode?: Node;
   state?: State;
   transition?: Transition;
+  note?: Note;
 }
 
-const dataKeys = ['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry', 'dColor'] as const;
+const dataKeys = ['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry', 'dColor', 'dNote'] as const;
 type DataKey = (typeof dataKeys)[number];
 
 function isDataKey(key: string): key is DataKey {
@@ -175,6 +177,11 @@ const dataNodeProcess: DataNodeProcess = {
         x: x,
         y: y,
       };
+    } else if (data.note !== undefined) {
+      data.note.position = {
+        x: x,
+        y: y,
+      };
     } else {
       throw new Error('Непредвиденный вызов функции dGeometry');
     }
@@ -182,6 +189,13 @@ const dataNodeProcess: DataNodeProcess = {
   dColor(data: DataNodeProcessArgs) {
     if (data.transition !== undefined) {
       data.transition.color = data.node.content;
+    }
+  },
+  dNote(data: DataNodeProcessArgs) {
+    if (data.note !== undefined) {
+      data.note.text = data.node.content;
+    } else {
+      throw new Error('Непредвиденный вызов функции dNote');
     }
   },
 };
@@ -566,6 +580,16 @@ function createEmptyState(): State {
   };
 }
 
+function createEmptyNote(): Note {
+  return {
+    position: {
+      x: 0,
+      y: 0,
+    },
+    text: '',
+  };
+}
+
 // Обработка нод
 function processNode(
   elements: Elements,
@@ -574,8 +598,12 @@ function processNode(
   awailableDataProperties: Map<string, Map<string, KeyProperties>>,
   parent?: Node,
   component?: OuterComponent
-): State {
-  const state: State = createEmptyState();
+): State | Note {
+  // Если находим dNote среди дата-нод, то создаем пустую заметку, а состояние делаем undefined
+  const note: Note | undefined = node.data?.find((dataNode) => dataNode.key === 'dNote')
+    ? createEmptyNote()
+    : undefined;
+  const state: State | undefined = note == undefined ? createEmptyState() : undefined;
   if (node.data !== undefined) {
     for (const dataNode of node.data) {
       if (awailableDataProperties.get('node')?.has(dataNode.key)) {
@@ -588,6 +616,7 @@ function processNode(
             parentNode: node,
             state: state,
             component: component,
+            note: note,
           });
         }
       } else {
@@ -596,7 +625,7 @@ function processNode(
     }
   }
 
-  if (parent !== undefined) {
+  if (parent !== undefined && state !== undefined) {
     state.parent = parent.id;
   }
 
@@ -604,7 +633,13 @@ function processNode(
     processGraph(elements, node.graph, meta, awailableDataProperties, node);
   }
 
-  return state;
+  if (state !== undefined) {
+    return state;
+  } else if (note !== undefined) {
+    return note;
+  } else {
+    throw new Error('Отсутствует состояние или заметка для данного узла!');
+  }
 }
 
 function emptyOuterComponent(): OuterComponent {
@@ -615,6 +650,10 @@ function emptyOuterComponent(): OuterComponent {
     type: '',
     parameters: {},
   };
+}
+
+function isState(value): value is State {
+  return (value as State).events !== undefined;
 }
 
 function processGraph(
@@ -659,7 +698,19 @@ function processGraph(
 
   for (const idx in graph.node) {
     const node = graph.node[idx];
-    elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties, parent);
+    const processResult: State | Note = processNode(
+      elements,
+      node,
+      meta,
+      awailableDataProperties,
+      parent
+    );
+
+    if (isState(processResult)) {
+      elements.states[node.id] = processResult;
+    } else {
+      elements.notes.push(processResult);
+    }
   }
 
   if (graph.edge) {

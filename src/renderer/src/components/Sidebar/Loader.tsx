@@ -63,39 +63,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     if (flasherFile) {
       Flasher.flash(currentDevice);
     } else {
-      let platform = compilerData?.platform;
-      if (platform === undefined) {
-        setFlasherLog(
-          'Прошивку не удаётся начать, так как не удаётся получить название платфорормы от компилятора'
-        );
-        return;
-      }
-      platform = platform?.toLowerCase();
-      const device = devices.get(currentDevice)?.name.toLowerCase();
-      if (device == undefined || device == null) {
-        setCurrentDevice(undefined);
-        console.log('Не удаётся начать прошивку, так как устройства нет в списке');
-        return;
-      }
-      switch (platform) {
-        case 'arduinomicro':
-          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
-            setFlasherLog('Выбранное устройство не является Arduino Micro');
-            return;
-          }
-          break;
-        case 'arduinouno':
-          if (device != 'arduino uno') {
-            setFlasherLog('Выбранное устройство не является Arduino Uno');
-            return;
-          }
-          break;
-        default:
-          setFlasherLog(
-            'Платформа для которой была выполнена компиляция не поддерживается загрузчиком'
-          );
-          return;
-      }
       Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
     }
   };
@@ -245,6 +212,48 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
   };
 
+  const flashButtonDisabled = () => {
+    if (flashing || connectionStatus != FLASHER_CONNECTED) {
+      return true;
+    }
+    if (!currentDevice) {
+      return true;
+    }
+    if (!devices.has(currentDevice)) {
+      setCurrentDevice(undefined);
+      return true;
+    }
+    if (flasherFile) {
+      return false;
+    }
+    // проверка на соответствие платформы схемы и типа устройства
+    if (!(compilerData?.binary === undefined || compilerData.binary.length == 0)) {
+      let platform = compilerData?.platform;
+      if (platform === undefined) {
+        return;
+      }
+      platform = platform?.toLowerCase();
+      const device = devices.get(currentDevice)?.name.toLowerCase();
+      switch (platform) {
+        case 'arduinomicro':
+          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
+            return true;
+          }
+          break;
+        case 'arduinouno':
+          if (device != 'arduino uno') {
+            return true;
+          }
+          break;
+        default:
+          return true;
+      }
+    } else {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -332,14 +341,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <button
             className="btn-primary mb-2 w-full"
             onClick={handleFlash}
-            disabled={
-              flashing ||
-              !currentDevice ||
-              connectionStatus != FLASHER_CONNECTED ||
-              (!flasherFile &&
-                (compilerData?.binary === undefined || compilerData.binary.length == 0)) ||
-              !devices.has(currentDevice)
-            }
+            disabled={flashButtonDisabled()}
           >
             Загрузить
           </button>

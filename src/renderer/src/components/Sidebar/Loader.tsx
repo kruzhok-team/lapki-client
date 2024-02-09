@@ -56,9 +56,46 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleFlash = async () => {
+    if (currentDevice == null || currentDevice == undefined) {
+      console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
+      return;
+    }
     if (flasherFile) {
-      Flasher.flash(currentDevice!);
+      Flasher.flash(currentDevice);
     } else {
+      let platform = compilerData?.platform;
+      if (platform === undefined) {
+        setFlasherLog(
+          'Прошивку не удаётся начать, так как не удаётся получить название платфорормы от компилятора'
+        );
+        return;
+      }
+      platform = platform?.toLowerCase();
+      const device = devices.get(currentDevice)?.name.toLowerCase();
+      if (device == undefined || device == null) {
+        setCurrentDevice(undefined);
+        console.log('Не удаётся начать прошивку, так как устройства нет в списке');
+        return;
+      }
+      switch (platform) {
+        case 'arduinomicro':
+          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
+            setFlasherLog('Выбранное устройство не является Arduino Micro');
+            return;
+          }
+          break;
+        case 'arduinouno':
+          if (device != 'arduino uno') {
+            setFlasherLog('Выбранное устройство не является Arduino Uno');
+            return;
+          }
+          break;
+        default:
+          setFlasherLog(
+            'Платформа для которой была выполнена компиляция не поддерживается загрузчиком'
+          );
+          return;
+      }
       Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
     }
   };
@@ -300,7 +337,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
               !currentDevice ||
               connectionStatus != FLASHER_CONNECTED ||
               (!flasherFile &&
-                (compilerData?.binary === undefined || compilerData.binary.length == 0))
+                (compilerData?.binary === undefined || compilerData.binary.length == 0)) ||
+              !devices.has(currentDevice)
             }
           >
             Загрузить

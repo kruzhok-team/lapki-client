@@ -219,7 +219,6 @@ export class EditorManager {
     return true;
   }
 
-  //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
   changeStateSelection(id: string, selection: boolean) {
     if (!this.data.elements.states.hasOwnProperty(id)) return false;
 

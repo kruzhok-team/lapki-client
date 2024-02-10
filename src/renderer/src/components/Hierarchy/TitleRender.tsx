@@ -24,7 +24,7 @@ const icons = {
   state: StateIcon,
   transition: TransitionIcon,
 };
-
+/* Отрисовка заголовка ноды в иерархии состояний, можно подсвечивать подстроку (для отображения поиска) */
 export const TitleRender: React.FC<TitleRenderProps> = (props) => {
   const { type, title, search } = props;
 

@@ -16,8 +16,8 @@ interface useFileOperationsArgs {
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { manager, openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
-  const name = manager.useData('name');
   const isStale = manager.useData('isStale');
+  const name = manager.useData('name');
   const clearTabs = useTabs((state) => state.clearTabs);
 
   const [data, setData] = useState<SaveModalData | null>(null);

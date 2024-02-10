@@ -6,6 +6,9 @@ interface TextInputProps extends ComponentProps<'input'> {
   error?: boolean;
 }
 
+/**
+ * Просто инпут, используется в ситуации когда не подходит {@link TextField}
+ */
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
   const { error, className, ...other } = props;
 

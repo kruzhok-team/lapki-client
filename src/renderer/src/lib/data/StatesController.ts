@@ -108,8 +108,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       x: e.event.x,
       y: e.event.y,
     });
-    //Переносено с useDiagramContextMenu.ts, так как эта математика нужна лишь для событий внутри состояний
-    //Раньше позиция мышки бралась с верхнего левого угла и прибавлялось значение клика внутри него, но щас позиция клика мышки берётся глобального
+
     const offset = this.container.app.mouse.getOffset();
 
     if (eventIdx) {

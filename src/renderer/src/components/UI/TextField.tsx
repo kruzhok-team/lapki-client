@@ -12,6 +12,9 @@ interface TextFieldProps extends ComponentProps<'input'> {
   errorMessage: string;
 }
 
+/**
+ * Поле ввода с надписью и ошибкой, использует {@link TextInput}
+ */
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   (
     { label, hidden = false, error, errorMessage, className, containerClassName, ...props },

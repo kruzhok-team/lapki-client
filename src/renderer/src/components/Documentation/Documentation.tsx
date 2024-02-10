@@ -69,6 +69,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       setHtml(`<base href="${url}${path}" />` + html);
       setActiveTab(1);
     } catch (reason) {
+      // TODO: отразить в интерфейсе
       console.warn(reason);
     }
   };
@@ -143,11 +144,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
             </div>
 
             <div className={twMerge('flex h-full flex-col', activeTab !== 1 && 'hidden')}>
+              <Show html={html} documentLink={documentLink} />
               {currentPath && (
                 <Navigation data={data} onItemClick={onItemClick} currentPath={currentPath} />
               )}
-
-              <Show html={html} documentLink={documentLink} />
             </div>
           </div>
         </section>

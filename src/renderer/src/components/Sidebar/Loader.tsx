@@ -56,8 +56,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleFlash = async () => {
+    if (currentDevice == null || currentDevice == undefined) {
+      console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
+      return;
+    }
     if (flasherFile) {
-      Flasher.flash(currentDevice!);
+      Flasher.flash(currentDevice);
     } else {
       Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
     }
@@ -208,6 +212,48 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
   };
 
+  const flashButtonDisabled = () => {
+    if (flashing || connectionStatus != FLASHER_CONNECTED) {
+      return true;
+    }
+    if (!currentDevice) {
+      return true;
+    }
+    if (!devices.has(currentDevice)) {
+      setCurrentDevice(undefined);
+      return true;
+    }
+    if (flasherFile) {
+      return false;
+    }
+    // проверка на соответствие платформы схемы и типа устройства
+    if (!(compilerData?.binary === undefined || compilerData.binary.length == 0)) {
+      let platform = compilerData?.platform;
+      if (platform === undefined) {
+        return;
+      }
+      platform = platform?.toLowerCase();
+      const device = devices.get(currentDevice)?.name.toLowerCase();
+      switch (platform) {
+        case 'arduinomicro':
+          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
+            return true;
+          }
+          break;
+        case 'arduinouno':
+          if (device != 'arduino uno') {
+            return true;
+          }
+          break;
+        default:
+          return true;
+      }
+    } else {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -295,13 +341,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <button
             className="btn-primary mb-2 w-full"
             onClick={handleFlash}
-            disabled={
-              flashing ||
-              !currentDevice ||
-              connectionStatus != FLASHER_CONNECTED ||
-              (!flasherFile &&
-                (compilerData?.binary === undefined || compilerData.binary.length == 0))
-            }
+            disabled={flashButtonDisabled()}
           >
             Загрузить
           </button>

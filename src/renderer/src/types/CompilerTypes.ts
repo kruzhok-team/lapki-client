@@ -1,4 +1,4 @@
-import { Elements } from "@floating-ui/react-dom";
+import { Elements } from '@floating-ui/react-dom';
 
 export type CompilerResult = {
   result: string;
@@ -6,6 +6,8 @@ export type CompilerResult = {
   stderr?: string;
   binary?: Array<Binary>;
   source?: Array<SourceFile>;
+  // платформа для которой была осуществлена компиляция
+  platform?: string;
 };
 
 export type SourceFile = {

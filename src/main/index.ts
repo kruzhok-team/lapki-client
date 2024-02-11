@@ -20,6 +20,10 @@ import {
   handleSaveIntoFolder,
   handleBinFileOpen,
   handleOpenPlatformFile,
+  handleGetFileSize,
+  handleGetLastModified,
+  handleGetBirthTime,
+  handleGetFileMetadata,
 } from './file-handlers';
 import {
   FLASHER_LOCAL_PORT,
@@ -211,6 +215,10 @@ app.whenReady().then(() => {
   ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
 
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
+
+  ipcMain.handle('File:getMetadata', (_event, absolute_path: string) => {
+    return handleGetFileMetadata(absolute_path);
+  });
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

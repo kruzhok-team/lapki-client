@@ -1,23 +1,60 @@
 import React, { useEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
-
+import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { Platform } from '@renderer/types/platform';
 interface FilePropertiesModalProps {
   isOpen: boolean;
   onClose: () => void;
+  manager: EditorManager;
 }
 
-export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClose, ...props }) => {
+export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({
+  onClose,
+  manager,
+  ...props
+}) => {
+  const [fileSize, setFileSize] = useState<number>(0);
+  const [fileLastModified, setFileLastModified] = useState<Date>();
+  const [fileBirthDate, setFileBirthDate] = useState<Date>();
+  const [platform, setPlatform] = useState<Platform | undefined>(undefined);
+  // получение метаданных о файле
+  const onAfterOpen = () => {
+    window.electron.ipcRenderer.invoke('File:getMetadata', manager.data?.basename).then((stat) => {
+      setFileBirthDate(stat['birthtime']);
+      setFileLastModified(stat['mtime']);
+      setFileSize(stat['size']);
+    });
+
+    setPlatform(getPlatform(manager.data.elements.platform));
+    //setPlatform(getPlatform(manager.data.elements.platform));
+  };
+  // получить строку, предназначенную для чтения пользователем
+  function dateFormat(date: Date | undefined): string {
+    if (!date) {
+      return '';
+    }
+    return `${date.getDate()}.${
+      date.getMonth() + 1
+    }.${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
+  }
   return (
-    <Modal {...props} onRequestClose={onClose} title="Свойства">
+    <Modal {...props} onRequestClose={onClose} onAfterOpen={onAfterOpen} title="Свойства">
       <div>
-        <b>Название:</b>
+        <b>Название:</b> {manager.data.name}
         <br />
-        <b>Платформа: </b>
+        <b>Платформа:</b> {platform?.name}
         <br />
-        <b>Последняя дата изменения файла:</b>
+        <b>Описание платформы:</b> {platform?.description || 'Пока что нет описания'}
         <br />
-        <b>Путь к файлу :</b>
+        <b>Путь к файлу:</b> {manager.data.basename}
+        <br />
+        <b>Дата и время последнего изменения файла:</b> {dateFormat(fileLastModified)}
+        <br />
+        <b>Дата и время создания файла:</b> {dateFormat(fileBirthDate)}
+        <br />
+        <b>Размер файла:</b> {`${fileSize} байтов`}
         <br />
       </div>
     </Modal>

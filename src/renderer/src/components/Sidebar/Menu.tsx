@@ -93,7 +93,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           {text}
         </button>
       ))}
-      <FilePropertiesModal isOpen={isModalOpen} onClose={closeModal} />
+      <FilePropertiesModal isOpen={isModalOpen} manager={props.manager} onClose={closeModal} />
     </section>
   );
 };

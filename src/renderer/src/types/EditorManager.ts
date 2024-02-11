@@ -51,6 +51,13 @@ export interface CreateTransitionParameters {
   condition: Condition | undefined;
 }
 
+export interface CreateNoteParameters {
+  id?: string;
+  position: Point;
+  text: string;
+  placeInCenter?: boolean;
+}
+
 export interface ChangeTransitionParameters {
   id: string;
   source: string;

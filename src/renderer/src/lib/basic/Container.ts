@@ -6,6 +6,7 @@ import { MyMouseEvent } from '@renderer/types/mouse';
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
 import { MachineController } from '../data/MachineController';
+import { NotesController } from '../data/NotesController';
 import { StatesController } from '../data/StatesController';
 import { TransitionsController } from '../data/TransitionsController';
 import { Children } from '../drawable/Children';
@@ -34,6 +35,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   machineController!: MachineController;
   statesController!: StatesController;
   transitionsController!: TransitionsController;
+  notesController!: NotesController;
 
   children: Children;
   private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать
@@ -45,6 +47,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.machineController = new MachineController(this);
     this.statesController = new StatesController(this);
     this.transitionsController = new TransitionsController(this);
+    this.notesController = new NotesController(this);
     this.children = new Children(this.machineController);
 
     // Порядок важен, система очень тонкая

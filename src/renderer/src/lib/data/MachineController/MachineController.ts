@@ -1,3 +1,4 @@
+import { Note } from '@renderer/lib/drawable/Note';
 import {
   Action,
   Condition,
@@ -11,6 +12,7 @@ import {
   AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
+  CreateNoteParameters,
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
@@ -52,6 +54,7 @@ export class MachineController {
 
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
+  notes: Map<string, Note> = new Map();
 
   platform!: PlatformManager;
 
@@ -979,5 +982,78 @@ export class MachineController {
       });
     }
     return vacant;
+  }
+
+  createNote(params: CreateNoteParameters, canUndo = true) {
+    const newNoteId = this.container.app.manager.createNote(params);
+    const note = new Note(this.container, newNoteId);
+
+    this.notes.set(newNoteId, note);
+    this.container.notesController.watch(note);
+    this.container.children.add('note', newNoteId);
+
+    this.container.isDirty = true;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'createNote',
+        args: { id: newNoteId, params },
+      });
+    }
+
+    return note;
+  }
+
+  changeNoteText = (id: string, text: string, canUndo = true) => {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeNoteText',
+        args: { id, text, prevText: note.data.text },
+      });
+    }
+
+    this.container.app.manager.changeNoteText(id, text);
+    note.prepareText();
+
+    this.container.isDirty = true;
+  };
+
+  changeNotePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeNotePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.container.app.manager.changeNotePosition(id, endPosition);
+
+    this.container.isDirty = true;
+  }
+
+  deleteNote(id: string, canUndo = true) {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'deleteNote',
+        args: { id, prevData: structuredClone(note.data) },
+      });
+    }
+
+    this.container.app.manager.deleteNote(id);
+
+    this.container.children.remove('note', id);
+    this.container.notesController.unwatch(note);
+    this.notes.delete(id);
+
+    this.container.isDirty = true;
   }
 }

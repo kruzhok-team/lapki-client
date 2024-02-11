@@ -10,6 +10,8 @@ import {
   Elements,
   Condition,
   Variable,
+  Note,
+  InnerElements,
 } from '@renderer/types/diagram';
 import { ArgumentProto, Platform } from '@renderer/types/platform';
 
@@ -80,9 +82,10 @@ interface DataNodeProcessArgs {
   parentNode?: Node;
   state?: State;
   transition?: Transition;
+  note?: Note;
 }
 
-const dataKeys = ['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry', 'dColor'] as const;
+const dataKeys = ['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry', 'dColor', 'dNote'] as const;
 type DataKey = (typeof dataKeys)[number];
 
 function isDataKey(key: string): key is DataKey {
@@ -175,6 +178,11 @@ const dataNodeProcess: DataNodeProcess = {
         x: x,
         y: y,
       };
+    } else if (data.note !== undefined) {
+      data.note.position = {
+        x: x,
+        y: y,
+      };
     } else {
       throw new Error('Непредвиденный вызов функции dGeometry');
     }
@@ -182,6 +190,13 @@ const dataNodeProcess: DataNodeProcess = {
   dColor(data: DataNodeProcessArgs) {
     if (data.transition !== undefined) {
       data.transition.color = data.node.content;
+    }
+  },
+  dNote(data: DataNodeProcessArgs) {
+    if (data.note !== undefined) {
+      data.note.text = data.node.content;
+    } else {
+      throw new Error('Непредвиденный вызов функции dNote');
     }
   },
 };
@@ -566,6 +581,16 @@ function createEmptyState(): State {
   };
 }
 
+function createEmptyNote(): Note {
+  return {
+    position: {
+      x: 0,
+      y: 0,
+    },
+    text: '',
+  };
+}
+
 // Обработка нод
 function processNode(
   elements: Elements,
@@ -574,8 +599,12 @@ function processNode(
   awailableDataProperties: Map<string, Map<string, KeyProperties>>,
   parent?: Node,
   component?: OuterComponent
-): State {
-  const state: State = createEmptyState();
+): State | Note {
+  // Если находим dNote среди дата-нод, то создаем пустую заметку, а состояние делаем undefined
+  const note: Note | undefined = node.data?.find((dataNode) => dataNode.key === 'dNote')
+    ? createEmptyNote()
+    : undefined;
+  const state: State | undefined = note == undefined ? createEmptyState() : undefined;
   if (node.data !== undefined) {
     for (const dataNode of node.data) {
       if (awailableDataProperties.get('node')?.has(dataNode.key)) {
@@ -588,6 +617,7 @@ function processNode(
             parentNode: node,
             state: state,
             component: component,
+            note: note,
           });
         }
       } else {
@@ -596,7 +626,7 @@ function processNode(
     }
   }
 
-  if (parent !== undefined) {
+  if (parent !== undefined && state !== undefined) {
     state.parent = parent.id;
   }
 
@@ -604,7 +634,13 @@ function processNode(
     processGraph(elements, node.graph, meta, awailableDataProperties, node);
   }
 
-  return state;
+  if (state !== undefined) {
+    return state;
+  } else if (note !== undefined) {
+    return note;
+  } else {
+    throw new Error('Отсутствует состояние или заметка для данного узла!');
+  }
 }
 
 function emptyOuterComponent(): OuterComponent {
@@ -615,6 +651,10 @@ function emptyOuterComponent(): OuterComponent {
     type: '',
     parameters: {},
   };
+}
+
+function isState(value): value is State {
+  return (value as State).events !== undefined;
 }
 
 function processGraph(
@@ -659,7 +699,19 @@ function processGraph(
 
   for (const idx in graph.node) {
     const node = graph.node[idx];
-    elements.states[node.id] = processNode(elements, node, meta, awailableDataProperties, parent);
+    const processResult: State | Note = processNode(
+      elements,
+      node,
+      meta,
+      awailableDataProperties,
+      parent
+    );
+
+    if (isState(processResult)) {
+      elements.states[node.id] = processResult;
+    } else {
+      elements.notes.push(processResult);
+    }
   }
 
   if (graph.edge) {
@@ -735,6 +787,7 @@ export function importGraphml(
     const elements: Elements = {
       states: {},
       transitions: [],
+      notes: [],
       initialState: {
         target: '',
         position: { x: 0, y: 0 },
@@ -782,6 +835,7 @@ export function importGraphml(
     return {
       states: {},
       transitions: [],
+      notes: [],
       initialState: {
         target: '',
         position: { x: 0, y: 0 },
@@ -849,7 +903,7 @@ function getOperandString(operand: Variable | string | Condition[] | number) {
 type Platforms = 'ArduinoUno' | 'BearlogaDefend';
 type PlatformDataKeys = { [key in Platforms]: ExportKeyNode[] };
 type ProcessDependPlatform = {
-  [key in Platforms]: (elements: Elements, subplatform?: string) => CyberiadaXML;
+  [key in Platforms]: (elements: InnerElements, subplatform?: string) => CyberiadaXML;
 };
 const PlatformKeys: PlatformDataKeys = {
   ArduinoUno: [
@@ -889,6 +943,10 @@ const PlatformKeys: PlatformDataKeys = {
       '@id': 'dColor',
       '@for': 'edge',
     },
+    {
+      '@id': 'dNote',
+      '@for': 'node',
+    },
   ],
   BearlogaDefend: [
     {
@@ -923,6 +981,10 @@ const PlatformKeys: PlatformDataKeys = {
       '@id': 'dGeometry',
       '@for': 'node',
     },
+    {
+      '@id': 'dNote',
+      '@for': 'node',
+    },
   ],
 };
 
@@ -947,7 +1009,7 @@ type CyberiadaXML = {
 // Но, думаю, в целом это правильное решение разделить обработку каждой платформы
 // TODO: Разбить этот монолит на функции
 const processDependPlatform: ProcessDependPlatform = {
-  ArduinoUno(elements: Elements): CyberiadaXML {
+  ArduinoUno(elements: InnerElements): CyberiadaXML {
     const keyNodes = PlatformKeys.ArduinoUno;
     const description = 'name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n';
     const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
@@ -1078,6 +1140,25 @@ const processDependPlatform: ProcessDependPlatform = {
         content: content,
       });
 
+      for (const noteEntry of Object.entries(elements.notes)) {
+        const noteId = noteEntry[0];
+        const note = noteEntry[1];
+        nodes.set(noteId, {
+          '@id': noteId,
+          data: [
+            {
+              '@key': 'dNote',
+              content: note.text,
+            },
+            {
+              '@key': 'dGeometry',
+              '@x': note.position.x,
+              '@y': note.position.y,
+              content: '',
+            },
+          ],
+        });
+      }
       if (state.parent !== undefined) {
         const parent = nodes.get(state.parent);
         if (parent !== undefined) {
@@ -1106,7 +1187,7 @@ const processDependPlatform: ProcessDependPlatform = {
       }
     }
 
-    for (const transition of elements.transitions) {
+    for (const transition of Object.values(elements.transitions)) {
       const edge: ExportEdge = {
         '@source': transition.source,
         '@target': transition.target,
@@ -1165,7 +1246,7 @@ const processDependPlatform: ProcessDependPlatform = {
     };
   },
 
-  BearlogaDefend(elements: Elements, subplatform?: string): CyberiadaXML {
+  BearlogaDefend(elements: InnerElements, subplatform?: string): CyberiadaXML {
     const keyNodes = PlatformKeys.BearlogaDefend;
     let description = '';
     if (subplatform !== undefined) {
@@ -1303,7 +1384,7 @@ const processDependPlatform: ProcessDependPlatform = {
       }
     }
 
-    for (const transition of elements.transitions) {
+    for (const transition of Object.values(elements.transitions)) {
       const edge: ExportEdge = {
         '@source': transition.source,
         '@target': transition.target,
@@ -1344,6 +1425,25 @@ const processDependPlatform: ProcessDependPlatform = {
       graph.edge.push(edge);
     }
 
+    for (const noteEntry of Object.entries(elements.notes)) {
+      const noteId = noteEntry[0];
+      const note = noteEntry[1];
+      nodes.set(noteId, {
+        '@id': noteId,
+        data: [
+          {
+            '@key': 'dNote',
+            content: note.text,
+          },
+          {
+            '@key': 'dGeometry',
+            '@x': note.position.x,
+            '@y': note.position.y,
+            content: '',
+          },
+        ],
+      });
+    }
     graph.node.push(...nodes.values());
     return {
       '?xml': {
@@ -1363,7 +1463,7 @@ const processDependPlatform: ProcessDependPlatform = {
   },
 };
 
-export function exportGraphml(elements: Elements): string {
+export function exportGraphml(elements: InnerElements): string {
   const builder = new XMLBuilder({
     textNodeName: 'content',
     ignoreAttributes: false,
@@ -1371,7 +1471,7 @@ export function exportGraphml(elements: Elements): string {
     format: true,
   });
   let xml = {};
-  if (elements.platform == 'ArduinoUno') {
+  if (elements.platform.startsWith('Arduino')) {
     xml = processDependPlatform.ArduinoUno(elements);
   } else if (elements.platform.startsWith('BearlogaDefend')) {
     const subplatform = elements.platform.split('-')[1];

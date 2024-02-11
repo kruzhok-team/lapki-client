@@ -56,6 +56,19 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           },
         },
         {
+          label: 'Вставить заметку',
+          type: 'note',
+          action: () => {
+            const note = editor?.container.machineController.createNote({
+              position: canvasPos,
+              placeInCenter: true,
+              text: '',
+            });
+
+            editor.container.notesController.emit('change', note);
+          },
+        },
+        {
           label: 'Посмотреть код',
           type: 'showCodeAll',
           action: () => {
@@ -260,6 +273,25 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         ]);
       }
     );
+
+    editor.container.notesController.on('contextMenu', ({ note, position }) => {
+      handleEvent(position, [
+        {
+          label: 'Редактировать',
+          type: 'edit',
+          action: () => {
+            editor.container.notesController.emit('change', note);
+          },
+        },
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor?.container.machineController.deleteNote(note.id);
+          },
+        },
+      ]);
+    });
   }, [editor]);
 
   return { isOpen, onClose, items, position };

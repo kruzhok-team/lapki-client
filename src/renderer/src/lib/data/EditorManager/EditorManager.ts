@@ -22,6 +22,7 @@ import {
   ChangeTransitionParameters,
   ChangeStateEventsParams,
   AddComponentParams,
+  CreateNoteParameters,
 } from '@renderer/types/EditorManager';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
@@ -57,6 +58,11 @@ export class EditorManager {
     this.data.elements = {
       ...elements,
       transitions: elements.transitions.reduce((acc, cur, i) => {
+        acc[i] = cur;
+
+        return acc;
+      }, {}),
+      notes: elements.notes.reduce((acc, cur, i) => {
         acc[i] = cur;
 
         return acc;
@@ -558,6 +564,74 @@ export class EditorManager {
     this.data.scale = value;
 
     this.triggerDataUpdate('scale');
+
+    return true;
+  }
+
+  createNote(params: CreateNoteParameters) {
+    const { id, text, placeInCenter = false } = params;
+    let position = params.position;
+
+    const getNewId = () => {
+      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+
+      let id = nanoid();
+      while (this.data.elements.notes.hasOwnProperty(id)) {
+        id = nanoid();
+      }
+
+      return id;
+    };
+
+    const centerPosition = () => {
+      return {
+        x: position.x - 200 / 2,
+        y: position.y - 36 / 2,
+      };
+    };
+
+    position = placeInCenter ? centerPosition() : position;
+
+    const newId = id ?? getNewId();
+
+    this.data.elements.notes[newId] = {
+      text,
+      position,
+    };
+
+    this.triggerDataUpdate('elements.notes');
+
+    return newId;
+  }
+
+  changeNoteText(id: string, text: string) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].text = text;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNotePosition(id: string, position: Point) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    note.position = position;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  deleteNote(id: string) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    delete this.data.elements.notes[id];
+
+    this.triggerDataUpdate('elements.notes');
 
     return true;
   }

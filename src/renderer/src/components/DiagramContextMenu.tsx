@@ -10,6 +10,7 @@ import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event_add.svg';
+import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
@@ -86,6 +87,10 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
     },
     target: {
       icon: undefined,
+      combination: undefined,
+    },
+    note: {
+      icon: <NoteIcon />,
       combination: undefined,
     },
   };

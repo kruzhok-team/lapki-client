@@ -6,6 +6,7 @@ import { Node } from './Node';
 import { icons } from './Picto';
 
 import { Container } from '../basic/Container';
+import { drawText } from '../utils/text';
 
 const style = theme.colors.diagram.state;
 
@@ -113,9 +114,6 @@ export class State extends Node {
 
     const { height, width, fontSize, paddingX, paddingY } = this.computedTitleSizes;
 
-    ctx.font = `${fontSize}px/0 Fira Sans`;
-    ctx.textBaseline = 'hanging';
-
     ctx.beginPath();
 
     ctx.fillStyle = style.titleBg;
@@ -128,12 +126,13 @@ export class State extends Node {
     ]);
     ctx.fill();
 
-    ctx.fillStyle = this.data.name !== '' ? style.titleColor : style.titleColorUndefined;
-    ctx.fillText(
-      this.data.name !== '' ? this.data.name : 'Без названия',
-      x + paddingX,
-      y + paddingY
-    );
+    drawText(ctx, this.data.name || 'Без названия', {
+      x: x + paddingX,
+      y: y + paddingY,
+      textAlign: 'left',
+      color: this.data.name !== '' ? style.titleColor : style.titleColorUndefined,
+      font: `${fontSize}px/1 'Fira Sans'`,
+    });
 
     ctx.closePath();
   }

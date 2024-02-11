@@ -214,10 +214,27 @@ export class Container extends EventEmitter<ContainerEvents> {
   handleRightMouseClick = (e: MyMouseEvent) => {
     const node = this.getCapturedNode({ position: e });
 
+    const offset = this.app.mouse.getOffset();
+
+    //Крайняя необходимость, по-другому пока не стал делать, хотя есть способ как можно это сделать, но сколько займёт реализация не могу знать
+    const position = {
+      x: e.x + offset.x,
+      y: e.y + offset.y,
+      dx: e.dx,
+      dy: e.dy,
+      /**
+       * Наличие зажатой левой кнопки.
+       * Полезно для отслеживания перетаскивания.
+       */
+      left: e.left,
+      button: e.button,
+      stopPropagation: e.stopPropagation,
+      nativeEvent: e.nativeEvent,
+    };
     if (node) {
       node.handleMouseContextMenu(e);
     } else {
-      this.emit('contextMenu', e);
+      this.emit('contextMenu', position);
     }
   };
 

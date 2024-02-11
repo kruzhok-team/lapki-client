@@ -31,7 +31,7 @@ export class Serializer {
   getState(id: string) {
     const state = this.data.elements.states[id];
     if (!state) return null;
-
+    delete state.selection;
     return JSON.stringify(state, undefined, 2);
   }
 

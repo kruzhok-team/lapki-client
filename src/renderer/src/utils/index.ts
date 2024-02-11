@@ -93,3 +93,7 @@ export const placeCaretAtEnd = (el: HTMLElement) => {
   sel?.removeAllRanges();
   sel?.addRange(range);
 };
+
+export const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+};

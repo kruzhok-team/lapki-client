@@ -20,9 +20,6 @@ import {
   handleSaveIntoFolder,
   handleBinFileOpen,
   handleOpenPlatformFile,
-  handleGetFileSize,
-  handleGetLastModified,
-  handleGetBirthTime,
   handleGetFileMetadata,
 } from './file-handlers';
 import {

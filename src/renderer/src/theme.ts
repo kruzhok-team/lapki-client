@@ -18,6 +18,7 @@ const colorNames = {
   'text-secondary': '--t-s',
   'text-inactive': '--t-i',
   'text-disabled': '--t-d',
+  'text-highlighted': '--t-h',
 
   'scrollbar-track': '--s-tr',
   'scrollbar-thumb': '--s-th',

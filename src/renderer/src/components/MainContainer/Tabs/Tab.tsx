@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
-import { Tab as TabType } from '@renderer/types/tabs';
-
-import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
-import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
-import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
-import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
+import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
+import { ReactComponent as EditorIcon } from '@renderer/assets/icons/editor.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
+import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition.svg';
+import { Tab as TabType } from '@renderer/types/tabs';
 
 interface TabProps {
   isActive: boolean;

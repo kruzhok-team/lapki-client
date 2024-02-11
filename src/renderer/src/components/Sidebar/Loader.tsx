@@ -261,11 +261,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       </h3>
 
       <div className="px-4">
-        <div className="mb-2 flex rounded border-2 border-[#557b91]">
+        <div className="mb-2 flex rounded">
           <button
             className={twMerge(
-              'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-50'
+              'btn-primary mr-2 flex w-full items-center justify-between px-5',
+              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
             )}
             onClick={() => {
               switch (connectionStatus) {
@@ -287,8 +287,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           </button>
           <button
             className={twMerge(
-              'p-1 hover:bg-[#557b91] hover:text-white',
-              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-50'
+              'btn-primary px-4',
+              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-70'
             )}
             onClick={handleHostChange}
             disabled={connectionStatus == FLASHER_CONNECTING || flashing}
@@ -301,7 +301,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <p>{connectionStatus}</p>
           <br></br>
           <button
-            className="btn-primary mb-2"
+            className="btn-primary mb-2 w-full"
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
@@ -346,7 +346,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             Загрузить
           </button>
           <button
-            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-70'}
             onClick={handleFileChoose}
             disabled={flashing}
           >

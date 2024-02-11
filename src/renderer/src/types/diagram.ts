@@ -32,6 +32,8 @@ export type State = {
   name: string;
   bounds: Rectangle;
   events: EventData[];
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 export type InitialState = {
@@ -59,6 +61,8 @@ export type Transition = {
   trigger: Event;
   condition?: Condition | null;
   do?: Action[];
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 export type Component = {

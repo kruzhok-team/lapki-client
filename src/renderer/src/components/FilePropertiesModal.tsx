@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { EditorManager } from '@renderer/lib/data/EditorManager';

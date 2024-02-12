@@ -46,8 +46,6 @@ export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({
         <br />
         <b>Платформа:</b> {platform?.name}
         <br />
-        <b>Описание платформы:</b> {platform?.description || 'Пока что нет описания'}
-        <br />
         <b>Путь к файлу:</b> {manager.data.basename}
         <br />
         <b>Дата и время последнего изменения файла:</b> {dateFormat(fileLastModified)}

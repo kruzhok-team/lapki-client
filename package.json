@@ -29,6 +29,7 @@
     "bundle:linux": "electron-builder --linux --config"
   },
   "dependencies": {
+    "@codemirror/lang-json": "^6.0.1",
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
     "@floating-ui/react": "^0.24.8",
@@ -36,7 +37,7 @@
     "@monaco-editor/react": "^4.5.1",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@types/ws": "^8.5.10",
-    "@uiw/react-codesandbox": "^1.1.5",
+    "@uiw/react-codemirror": "^4.21.21",
     "blob-util": "^2.0.2",
     "buffer": "^6.0.3",
     "compare-versions": "^6.1.0",
@@ -51,8 +52,8 @@
     "monaco-editor-webpack-plugin": "^7.1.0",
     "nanoid": "^4.0.2",
     "re-resizable": "^6.9.11",
-    "react-complex-tree": "^2.3.2",
     "react-colorful": "^5.6.1",
+    "react-complex-tree": "^2.3.2",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.45.1",
     "react-merge-refs": "^2.1.1",

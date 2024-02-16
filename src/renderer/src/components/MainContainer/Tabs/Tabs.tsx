@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor, DiagramEditorProps } from '@renderer/components';
+import { DiagramEditor, DiagramEditorProps } from '@renderer/components';
+import { CodeEditor } from '@renderer/components/CodeEditorNew';
 import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
@@ -62,7 +63,8 @@ export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
           {item.type === 'editor' ? (
             <DiagramEditor {...editorProps} />
           ) : (
-            <CodeEditor language={item.language} value={item.code} />
+            // <CodeEditor language={item.language} value={item.code} />
+            <CodeEditor initialValue={item.code} />
           )}
         </div>
       ))}

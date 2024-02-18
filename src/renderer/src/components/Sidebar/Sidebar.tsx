@@ -6,8 +6,7 @@ import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.sv
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
@@ -29,18 +28,16 @@ export interface SidebarCallbacks {
 }
 
 interface SidebarProps {
-  editor: CanvasEditor | null;
-  manager: EditorManager;
   callbacks: SidebarCallbacks;
   openImportError: (error: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  editor,
-  manager,
   callbacks: { onRequestNewFile, onRequestOpenFile, onRequestSaveFile, onRequestSaveAsFile },
   openImportError,
 }) => {
+  const { manager } = useEditorContext();
+
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
@@ -62,12 +59,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onRequestSaveAsFile={onRequestSaveAsFile}
         onRequestImport={handleImport}
         compilerStatus={compilerStatus}
-        manager={manager}
       />,
-      <Explorer editor={editor} manager={manager} />,
+      <Explorer />,
       <CompilerTab
-        manager={manager}
-        editor={editor}
         openData={openData}
         compilerData={compilerData}
         setCompilerData={setCompilerData}
@@ -76,10 +70,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         openImportError={openImportError}
       />,
       <Loader compilerData={compilerData} />,
-      <History editor={editor} />,
+      <History />,
       <Setting />,
     ],
-    [manager, editor, compilerData, openData, compilerStatus]
+    [compilerData, openData, compilerStatus]
   );
 
   const tabLabels = useMemo(

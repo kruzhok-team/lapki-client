@@ -70,9 +70,9 @@ export class EditorManager {
     };
     this.data.isInitialized = true;
 
-    this.triggerDataUpdate('basename', 'name', 'elements', 'isInitialized', 'isStale');
+    // this.resetEditor?.();
 
-    this.resetEditor?.();
+    this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -114,7 +114,7 @@ export class EditorManager {
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
-  private triggerDataUpdate<T extends EditorDataPropertyName>(...propertyNames: T[]) {
+  triggerDataUpdate<T extends EditorDataPropertyName>(...propertyNames: T[]) {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
       return !propertyName.startsWith('elements.');
     };

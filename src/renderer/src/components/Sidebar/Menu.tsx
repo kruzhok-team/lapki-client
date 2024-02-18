@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { FilePropertiesModal } from '../FilePropertiesModal';
 
@@ -11,13 +11,14 @@ export interface MenuProps {
   onRequestSaveAsFile: () => void;
   onRequestImport: () => void;
   compilerStatus: string;
-  manager: EditorManager;
   // TODO: isModified: boolean;
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const isStale = props.manager.useData('isStale');
-  const isInitialized = props.manager.useData('isInitialized');
+  const { manager } = useEditorContext();
+
+  const isStale = manager.useData('isStale');
+  const isInitialized = manager.useData('isInitialized');
 
   const items = [
     {
@@ -93,7 +94,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           {text}
         </button>
       ))}
-      <FilePropertiesModal isOpen={isModalOpen} manager={props.manager} onClose={closeModal} />
+      <FilePropertiesModal isOpen={isModalOpen} onClose={closeModal} />
     </section>
   );
 };

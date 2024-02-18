@@ -3,22 +3,19 @@ import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 interface useCreateModalConditionParams {
-  editor: CanvasEditor;
-  manager: EditorManager;
   isEditingState: boolean;
   formState: 'submitted' | 'default';
 }
 
 export const useCreateModalCondition = ({
-  editor,
-  manager,
   isEditingState,
   formState,
 }: useCreateModalConditionParams) => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
 

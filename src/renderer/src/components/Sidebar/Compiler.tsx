@@ -4,15 +4,12 @@ import { twMerge } from 'tailwind-merge';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Settings } from '@renderer/components/Modules/Settings';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 export interface CompilerProps {
-  manager: EditorManager;
-  editor: CanvasEditor | null;
   openData: [boolean, string | null, string | null, string] | undefined;
   compilerData: CompilerResult | undefined;
   setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
@@ -22,13 +19,14 @@ export interface CompilerProps {
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
-  manager,
   openData,
   compilerData,
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
 }) => {
+  const { manager } = useEditorContext();
+
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);

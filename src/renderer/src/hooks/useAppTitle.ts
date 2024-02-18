@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
-export const useAppTitle = (manager: EditorManager) => {
+export const useAppTitle = () => {
+  const { manager } = useEditorContext();
+
   const name = manager.useData('name');
   const platformName = manager.useData('elements.platform');
 

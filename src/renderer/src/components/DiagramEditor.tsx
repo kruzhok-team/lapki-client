@@ -37,7 +37,7 @@ export const DiagramEditor: React.FC = () => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    editor.init(containerRef.current);
+    editor.mount(containerRef.current);
 
     //Функция очистки всех данных
     const ClearUseState = () => {

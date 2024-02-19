@@ -22,7 +22,9 @@ export class CanvasEditor {
 
   constructor() {
     this.manager = new EditorManager();
-    // this.manager.resetEditor = () => {};
+    this.manager.resetEditor = () => {
+      this.container.machineController.loadData();
+    };
   }
 
   get root() {
@@ -62,7 +64,7 @@ export class CanvasEditor {
     return this._container;
   }
 
-  init(root: HTMLDivElement) {
+  mount(root: HTMLDivElement) {
     this._root = root;
     this._canvas = new Canvas(this);
     this._mouse = new Mouse(this.canvas.element);

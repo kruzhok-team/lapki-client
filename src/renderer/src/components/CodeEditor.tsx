@@ -25,6 +25,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, language }
     theme,
     height: '100%',
     lang: language,
+    readOnly: true,
   });
 
   useEffect(() => {

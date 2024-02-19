@@ -27,6 +27,7 @@ export class CanvasEditor {
     };
   }
 
+  // геттеры для удобства, чтобы после монтирования редактора можно было бы ими нормально пользоваться а до монтирования ошибки
   get root() {
     if (!this._root) {
       throw new Error('Cannot access root before initialization');

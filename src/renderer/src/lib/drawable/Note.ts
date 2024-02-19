@@ -14,6 +14,7 @@ export class Note extends Node {
     hasText: false,
   };
   private visible = true;
+  isSelected = false;
 
   constructor(container: Container, id: string, parent?: Node) {
     super(container, id, parent);
@@ -32,6 +33,21 @@ export class Note extends Node {
   set bounds(value) {
     this.data.position.x = value.x;
     this.data.position.y = value.y;
+  }
+
+  get computedStyles() {
+    const scale = this.container.app.manager.data.scale;
+
+    return {
+      padding: 10 / scale,
+      fontSize: 16 / scale,
+      borderRadius: 6 / scale,
+      color: this.textData.hasText ? getColor('text-primary') : getColor('border-primary'),
+    };
+  }
+
+  setIsSelected(value: boolean) {
+    this.isSelected = value;
   }
 
   setVisible(value: boolean) {
@@ -55,17 +71,14 @@ export class Note extends Node {
 
     const { x, y, width, height } = this.drawBounds;
     const textToDraw = this.textData.hasText ? this.textData.textArray : placeholder;
-    const scale = this.container.app.manager.data.scale;
-    const padding = 10 / scale;
-    const fontSize = 16 / scale;
+    const { padding, fontSize, color, borderRadius } = this.computedStyles;
     const font = `${fontSize}px/1 'Fira Sans'`;
-    const color = this.textData.hasText ? getColor('text-primary') : getColor('border-primary');
 
     ctx.fillStyle = 'black';
     ctx.globalAlpha = 0.3;
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height, 6 / scale);
+    ctx.roundRect(x, y, width, height, borderRadius);
     ctx.fill();
 
     ctx.globalAlpha = 1;
@@ -78,6 +91,21 @@ export class Note extends Node {
       font,
     });
 
+    if (this.isSelected) {
+      this.drawSelection(ctx);
+    }
+
     ctx.closePath();
+  }
+
+  private drawSelection(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height } = this.drawBounds;
+    const { borderRadius } = this.computedStyles;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FFF';
+
+    ctx.roundRect(x, y, width, height, borderRadius);
+    ctx.stroke();
   }
 }

@@ -49,10 +49,7 @@ export const NoteEdit: React.FC = () => {
         y: statePos.y + globalOffset.y,
       };
       const { width } = note.drawBounds;
-      const scale = editor.container.app.manager.data.scale;
-      const padding = 10 / scale;
-      const fontSize = 16 / scale;
-      const borderRadius = 6 / scale;
+      const { padding, fontSize, borderRadius } = note.computedStyles;
 
       note.setVisible(false);
 

@@ -6,6 +6,7 @@ import {
   Variable,
   State as StateType,
   Transition as TransitionType,
+  Note as NoteType,
   EventData,
 } from '@renderer/types/diagram';
 import {
@@ -597,93 +598,6 @@ export class MachineController {
     this.container.isDirty = true;
   }
 
-  deleteSelected = () => {
-    let removed = false;
-
-    const killList: string[] = [];
-    this.states.forEach((state) => {
-      if (state.isSelected) {
-        if (state.eventBox.selection) {
-          this.deleteEvent(state.id, state.eventBox.selection);
-          state.eventBox.selection = undefined;
-          removed = true;
-          return;
-        } else {
-          killList.push(state.id);
-        }
-      }
-    });
-    for (const k of killList) {
-      this.deleteState(k);
-      removed = true;
-    }
-
-    killList.length = 0;
-
-    this.transitions.forEach((value) => {
-      if (value.isSelected) {
-        killList.push(value.id);
-      }
-    });
-
-    for (const k of killList) {
-      this.deleteTransition(k);
-      removed = true;
-    }
-
-    if (removed) {
-      this.container.isDirty = true;
-    }
-  };
-
-  //Глубокое рекурсивное копирование выбранного состояния или связи и занесения его данных в буфер обмена
-  copySelected = () => {
-    //Выделено состояние для копирования
-    this.states.forEach((state) => {
-      if (state.isSelected) {
-        navigator.clipboard.writeText(JSON.stringify(state.data)).then(() => {
-          console.log('Скопировано состояние!');
-        });
-      }
-    });
-
-    //Выделена связь для копирования
-    this.transitions.forEach((transition) => {
-      if (transition.isSelected) {
-        navigator.clipboard.writeText(JSON.stringify(transition.data)).then(() => {
-          console.log('Скопирована связь!');
-        });
-      }
-    });
-    this.container.isDirty = true;
-  };
-
-  //Вставляем код из буфера обмена в редактор машин состояний
-  pasteSelected = () => {
-    navigator.clipboard.readText().then((data) => {
-      const copyData = JSON.parse(data) as StateType | TransitionType;
-      //Проверяем, нет ли нужного нам элемента в объекте с разными типами
-      if ('name' in copyData) {
-        this.createState({
-          name: copyData.name,
-          position: copyData.bounds,
-          events: copyData.events,
-          parentId: copyData.parent,
-        });
-      } else {
-        this.createTransition({
-          ...copyData,
-          component: copyData.trigger.component,
-          method: copyData.trigger.method,
-          doAction: copyData.do!,
-          condition: copyData.condition!,
-        });
-      }
-      console.log('Объект вставлен!');
-    });
-    this.container.isDirty = true;
-  };
-
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.states.get(stateId);
     if (!state) return;
@@ -921,6 +835,88 @@ export class MachineController {
     }
   }
 
+  deleteSelected = () => {
+    this.states.forEach((state) => {
+      if (!state.isSelected) return;
+
+      if (state.eventBox.selection) {
+        this.deleteEvent(state.id, state.eventBox.selection);
+        state.eventBox.selection = undefined;
+        return;
+      }
+
+      this.deleteState(state.id);
+    });
+
+    this.transitions.forEach((transition) => {
+      if (!transition.isSelected) return;
+
+      this.deleteTransition(transition.id);
+    });
+
+    this.notes.forEach((note) => {
+      if (!note.isSelected) return;
+
+      this.deleteNote(note.id);
+    });
+  };
+
+  copySelected = () => {
+    this.states.forEach((state) => {
+      if (!state.isSelected) return;
+
+      const data = this.container.app.manager.serializer.getState(state.id);
+      if (!data) return;
+
+      navigator.clipboard.writeText(data);
+    });
+
+    this.transitions.forEach((transition) => {
+      if (!transition.isSelected) return;
+
+      const data = this.container.app.manager.serializer.getTransition(transition.id);
+      if (!data) return;
+
+      navigator.clipboard.writeText(data);
+    });
+
+    this.notes.forEach((note) => {
+      if (!note.isSelected) return;
+
+      const data = this.container.app.manager.serializer.getNote(note.id);
+      if (!data) return;
+
+      navigator.clipboard.writeText(data);
+    });
+  };
+
+  pasteSelected = async () => {
+    const data = await navigator.clipboard.readText();
+
+    const copyData = JSON.parse(data) as StateType | TransitionType | NoteType;
+
+    if ('name' in copyData) {
+      return this.createState({
+        name: copyData.name,
+        position: copyData.bounds,
+        events: copyData.events,
+        parentId: copyData.parent,
+      });
+    }
+
+    if ('text' in copyData) {
+      return this.createNote(copyData);
+    }
+
+    return this.createTransition({
+      ...copyData,
+      component: copyData.trigger.component,
+      method: copyData.trigger.method,
+      doAction: copyData.do ?? [],
+      condition: copyData.condition ?? undefined,
+    });
+  };
+
   selectState(id: string) {
     const state = this.states.get(id);
     if (!state) return;
@@ -943,6 +939,15 @@ export class MachineController {
     transition.setIsSelected(true);
   }
 
+  selectNote(id: string) {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    this.removeSelection();
+
+    note.setIsSelected(true);
+  }
+
   /**
    * Снимает выделение со всех нод и переходов.
    *
@@ -962,6 +967,10 @@ export class MachineController {
     this.transitions.forEach((transition) => {
       transition.setIsSelected(false);
       this.container.app.manager.changeTransitionSelection(transition.id, false);
+    });
+
+    this.notes.forEach((note) => {
+      note.setIsSelected(false);
     });
 
     this.container.isDirty = true;

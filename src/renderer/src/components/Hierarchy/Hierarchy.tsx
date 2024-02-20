@@ -12,8 +12,7 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 import { escapeRegExp } from '@renderer/utils';
@@ -27,12 +26,10 @@ export interface HierarchyItemData {
   type: 'state' | 'transition';
 }
 
-export interface HierarchyProps {
-  editor: CanvasEditor;
-  manager: EditorManager;
-}
+export const Hierarchy: React.FC = () => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
 
-export const Hierarchy: React.FC<HierarchyProps> = ({ editor, manager }) => {
   const { theme } = useThemeContext();
 
   const states = manager.useData('elements.states');

@@ -3,12 +3,8 @@ import React, { useId } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-down.svg';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Action, actionDescriptions, Stack } from '@renderer/lib/data/UndoRedo';
-
-interface HistoryProps {
-  editor: CanvasEditor | null;
-}
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 const groupByNumberOfConnectedActions = (stack: Stack) => {
   const res: Array<Action<any> | Action<any>[]> = [];
@@ -67,7 +63,9 @@ const HistoryWithoutEditor: React.FC = () => {
   return <p>Нельзя посмотреть историю до инициализации</p>;
 };
 
-const HistoryWithEditor: React.FC<{ editor: CanvasEditor }> = ({ editor }) => {
+const HistoryWithEditor: React.FC = () => {
+  const editor = useEditorContext();
+
   const { undoStack, redoStack } = editor.container.machineController.undoRedo.use();
 
   return (
@@ -128,15 +126,16 @@ const HistoryWithEditor: React.FC<{ editor: CanvasEditor }> = ({ editor }) => {
   );
 };
 
-export const History: React.FC<HistoryProps> = ({ editor }) => {
+export const History: React.FC = () => {
+  const { manager } = useEditorContext();
+  const isMounted = manager.useData('isMounted');
+
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         История изменений
       </h3>
-      <div className="px-4">
-        {editor ? <HistoryWithEditor editor={editor} /> : <HistoryWithoutEditor />}
-      </div>
+      <div className="px-4">{isMounted ? <HistoryWithEditor /> : <HistoryWithoutEditor />}</div>
     </section>
   );
 };

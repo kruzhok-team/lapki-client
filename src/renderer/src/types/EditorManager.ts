@@ -2,6 +2,7 @@ import { emptyElements, Action, Condition, EventData } from '@renderer/types/dia
 import { Point } from '@renderer/types/graphics';
 
 export const emptyEditorData = () => ({
+  isMounted: false,
   isInitialized: false,
   isStale: false,
   basename: null as string | null,

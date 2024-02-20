@@ -52,6 +52,8 @@ export class EditorManager {
     this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
     this.triggerDataUpdate('isInitialized');
 
+    const prevMounted = this.data.isMounted;
+
     this.data = emptyEditorData();
     this.data.basename = basename;
     this.data.name = name;
@@ -69,10 +71,13 @@ export class EditorManager {
       }, {}),
     };
     this.data.isInitialized = true;
+    this.data.isMounted = prevMounted;
 
-    this.triggerDataUpdate('basename', 'name', 'elements', 'isInitialized', 'isStale');
+    this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
-    this.resetEditor?.();
+    if (this.data.isMounted) {
+      this.resetEditor?.();
+    }
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -114,7 +119,7 @@ export class EditorManager {
     return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
   }
 
-  private triggerDataUpdate<T extends EditorDataPropertyName>(...propertyNames: T[]) {
+  triggerDataUpdate<T extends EditorDataPropertyName>(...propertyNames: T[]) {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
       return !propertyName.startsWith('elements.');
     };

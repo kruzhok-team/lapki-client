@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
@@ -16,8 +16,6 @@ interface ComponentEditModalProps {
   proto: ComponentProto;
   onEdit: (idx: string, data: ComponentData, newName?: string) => void;
   onDelete: (idx: string) => void;
-
-  manager: EditorManager;
 }
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
@@ -28,8 +26,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onClose,
   onEdit,
   onDelete,
-  manager,
 }) => {
+  const { manager } = useEditorContext();
   const components = manager.useData('elements.components');
 
   const [name, setName] = useState('');

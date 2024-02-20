@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import * as monaco from 'monaco-editor';
-
 import {
   CreateSchemeModal,
   SaveRemindModal,
@@ -17,7 +15,6 @@ import {
   useErrorModal,
   useFileOperations,
 } from '@renderer/hooks';
-import { getColor } from '@renderer/theme';
 
 import { DiagramContextMenu } from './components/DiagramContextMenu';
 import { useAppTitle } from './hooks/useAppTitle';
@@ -60,8 +57,6 @@ export const App: React.FC = () => {
     setTheme(theme);
 
     document.documentElement.dataset.theme = theme;
-
-    monaco.editor.setTheme(getColor('codeEditorTheme').trim());
 
     if (editor) {
       editor.container.isDirty = true;

@@ -62,7 +62,7 @@ export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
           {item.type === 'editor' ? (
             <DiagramEditor {...editorProps} />
           ) : (
-            <CodeEditor language={item.language} value={item.code} />
+            <CodeEditor initialValue={item.code} language={item.language} />
           )}
         </div>
       ))}

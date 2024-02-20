@@ -1,11 +1,8 @@
 import { useRef, useState } from 'react';
 
-import * as monaco from 'monaco-editor';
-
 import { MainContainer } from '@renderer/components';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { ThemeContext } from '@renderer/store/ThemeContext';
-import { getColor } from '@renderer/theme';
 import { Theme } from '@renderer/types/theme';
 
 import { EditorContext } from './store/EditorContext';
@@ -21,8 +18,6 @@ export const App: React.FC = () => {
     setTheme(theme);
 
     document.documentElement.dataset.theme = theme;
-
-    monaco.editor.setTheme(getColor('codeEditorTheme').trim());
 
     if (editor) {
       editor.container.isDirty = true;

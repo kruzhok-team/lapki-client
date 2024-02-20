@@ -63,7 +63,7 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Компоненты</h3>
           </button>
 
-          {isMounted ? <ComponentsList /> : 'None'}
+          {isMounted ? <ComponentsList /> : 'Недоступно до открытия схемы'}
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">
@@ -89,7 +89,7 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Иерархия состояний</h3>
           </button>
 
-          {isMounted ? <Hierarchy /> : 'None'}
+          {isMounted ? <Hierarchy /> : 'Недоступно до открытия схемы'}
         </Panel>
       </PanelGroup>
     </section>

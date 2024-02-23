@@ -1,9 +1,12 @@
 import { ElectronAPI } from '@electron-toolkit/preload';
 
+import { getSetting, Settings } from '../main/settings';
+
 declare global {
   interface Window {
     electron: ElectronAPI;
     api: {
+      getSetting: typeof getSetting;
       LAPKI_FLASHER: string;
       FLASHER_LOCAL_HOST: string;
       FLASHER_SETTINGS_KEY: string;

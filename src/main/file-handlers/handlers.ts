@@ -1,8 +1,9 @@
-import { dialog } from 'electron';
+import { dialog, app } from 'electron';
+import settings from 'electron-settings';
 
 import fs from 'fs';
 import { readdir, readFile } from 'fs/promises';
-import { basename } from 'path';
+import path, { basename } from 'path';
 
 import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
 
@@ -11,7 +12,10 @@ import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
  * @returns Promise
  */
 
-export async function handleFileOpen(platform: string, path?: string) {
+export async function handleFileOpen(
+  platform: string,
+  path?: string
+): Promise<[boolean, string | null, string | null, string]> {
   return new Promise(async (resolve, _reject) => {
     const platforms: Map<string, Array<string>> = new Map([
       ['ide', ['json']],
@@ -34,9 +38,9 @@ export async function handleFileOpen(platform: string, path?: string) {
     if (!canceled && filePath) {
       fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err) {
-          resolve([false, filePath, basename(filePath as string), err.message]);
+          resolve([false, filePath ?? null, basename(filePath as string), err.message]);
         } else {
-          resolve([true, filePath, basename(filePath as string), data]);
+          resolve([true, filePath ?? null, basename(filePath as string), data]);
         }
       });
     } else {
@@ -45,9 +49,11 @@ export async function handleFileOpen(platform: string, path?: string) {
   });
 }
 
-export async function handleOpenPlatformFile(absolute_path: string) {
-  return new Promise(async (resolve, _reject) => {
-    await readFile(absolute_path, 'utf-8')
+export async function handleOpenPlatformFile(absolute_path: string): Promise<any> {
+  return new Promise((resolve) => {
+    console.log(absolute_path);
+
+    readFile(absolute_path, 'utf-8')
       .then((text) => {
         resolve([true, text, basename(absolute_path), null]);
       })
@@ -88,9 +94,34 @@ export async function handleGetPlatforms(directory: string): Promise<Array<any>>
   });
 }
 
+// TODO(bryzZz) return type
+export async function searchPlatforms(): Promise<any> {
+  const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
+  const DEFAULT_PATH = [basePath + '/platform', app.getPath('userData') + '/platform'];
+
+  return new Promise(async (resolve) => {
+    const platformsPaths = new Array<string>();
+    const userPath: any = await settings.get('PlatformsPath');
+    let platformFound = false;
+    if (userPath.path != '') {
+      DEFAULT_PATH.push(userPath!.path);
+    }
+    for (const path of DEFAULT_PATH) {
+      const response = await handleGetPlatforms(path);
+      if (response[0]) {
+        if (response[1].length > 0) {
+          platformsPaths.push(...response[1]);
+          platformFound = true;
+        }
+      }
+    }
+    resolve([platformFound, platformsPaths]);
+  });
+}
+
 export async function handleSaveIntoFolder(data: Array<SourceFile | Binary>) {
-  return new Promise(async (resolve, _reject) => {
-    await dialog
+  return new Promise((resolve, _reject) => {
+    dialog
       .showOpenDialog({
         properties: ['openDirectory'],
       })
@@ -121,7 +152,7 @@ export async function handleSaveIntoFolder(data: Array<SourceFile | Binary>) {
  * Асинхронное сохранение файла схемы.
  * @returns Promise
  */
-export async function handleFileSave(fileName, data) {
+export async function handleFileSave(fileName, data): Promise<[boolean, string, string]> {
   return new Promise(async (resolve, _reject) => {
     await fs.writeFile(fileName, data, function (err) {
       if (err) {
@@ -138,7 +169,10 @@ export async function handleFileSave(fileName, data) {
  * Асинхронный диалог сохранения файла схемы.
  * @returns Promise
  */
-export async function handleFileSaveAs(filename, data) {
+export async function handleFileSaveAs(
+  filename,
+  data
+): Promise<[boolean, string | null, string | null]> {
   return new Promise(async (resolve, _reject) => {
     await dialog
       .showSaveDialog({
@@ -178,7 +212,7 @@ export async function handleFileSaveAs(filename, data) {
  * Асинхронный диалог открытия файла прошивки.
  * @returns Promise
  */
-export async function handleBinFileOpen() {
+export async function handleBinFileOpen(): Promise<[boolean, string | null, string | null, any]> {
   return new Promise(async (resolve, _reject) => {
     const validExtensions = ['hex', 'bin'];
     const { canceled, filePaths } = await dialog.showOpenDialog({

@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 
+import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { FilePropertiesModal } from '../FilePropertiesModal';
@@ -19,6 +20,9 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
   const isStale = manager.useData('isStale');
   const isInitialized = manager.useData('isInitialized');
+
+  const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
+    useModal(false);
 
   const items = [
     {
@@ -48,9 +52,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Свойства',
-      onClick: () => {
-        setIsModalOpen(true);
-      },
+      onClick: openPropertiesModalOpen,
       disabled: !isInitialized,
     },
     // {
@@ -78,8 +80,6 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     }
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const closeModal = () => setIsModalOpen(false);
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">Меню</h3>
@@ -94,7 +94,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           {text}
         </button>
       ))}
-      <FilePropertiesModal isOpen={isModalOpen} onClose={closeModal} />
+
+      <FilePropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
     </section>
   );
 };

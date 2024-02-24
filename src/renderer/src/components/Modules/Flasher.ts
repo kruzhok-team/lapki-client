@@ -377,8 +377,7 @@ export class Flasher {
     openData[2] название файла
     openData[3] данные из файла
     */
-    const openData: [boolean, string | null, string | null, any] =
-      await window.electron.ipcRenderer.invoke('dialog:openBinFile');
+    const openData = await window.api.fileHandlers.openBinFile();
     if (openData[0]) {
       const buffer: Buffer = openData[3];
       //console.log(buffer.toString());

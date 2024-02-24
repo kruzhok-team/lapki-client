@@ -7,7 +7,7 @@ import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
 import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 // TODO? выдача стандартного файла для платформы
 
-const platformPaths = await window.electron.ipcRenderer.invoke('PlatformLoader:getPlatforms');
+const platformPaths = await window.api.fileHandlers.getPlatforms();
 
 let platformsLoaded = false;
 
@@ -17,10 +17,7 @@ const platformsErrors: Map<string, string> = new Map();
 function fetchPlatforms(paths: string[]) {
   const promises = paths.map((path): Promise<[string, Either<string, Platforms>]> => {
     return new Promise(async (resolve) => {
-      const response = await window.electron.ipcRenderer.invoke(
-        'PlatformLoader:openPlatformFile',
-        path
-      );
+      const response = await window.api.fileHandlers.openPlatformFile(path);
 
       if (!response[0]) {
         resolve([path, makeLeft('Ошибка при чтении файла:' + response[3])]);
@@ -51,7 +48,6 @@ export function preloadPlatforms(callback: () => void) {
     callback();
     return;
   }
-  console.log(platformPaths);
   if (platformPaths[0]) {
     fetchPlatforms(platformPaths[1]).then((results) => {
       platforms.clear();

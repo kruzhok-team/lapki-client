@@ -5,7 +5,7 @@ import fs from 'fs';
 import { readdir, readFile } from 'fs/promises';
 import path, { basename } from 'path';
 
-import { Binary, SourceFile } from '../renderer/src/types/CompilerTypes';
+import { Binary, SourceFile } from './CompilerTypes';
 
 /**
  * Асинхронный диалог открытия файла схемы.

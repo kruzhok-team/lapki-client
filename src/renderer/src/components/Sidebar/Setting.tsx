@@ -106,7 +106,7 @@ export const Setting: React.FC<SettingProps> = () => {
         topTitle={'Выберите компилятор'}
         textSelectTitle={'Компилятор'}
         originaltHostValue={window.api.DEFAULT_COMPILER_SETTINGS.host}
-        originaltPortValue={window.api.DEFAULT_COMPILER_SETTINGS.port}
+        originaltPortValue={window.api.DEFAULT_COMPILER_SETTINGS.port.toString()}
         electronSettingsKey={window.api.COMPILER_SETTINGS_KEY}
       />
 

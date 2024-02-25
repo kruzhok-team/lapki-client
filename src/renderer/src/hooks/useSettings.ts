@@ -1,34 +1,33 @@
-type SettingsKeys = Awaited<ReturnType<typeof window.api.getSetting>>;
+import { useCallback, useEffect, useState } from 'react';
 
-class UseSettingsHelper {
-  listeners: Record<> = [];
+type Settings = Main['settings'];
+type SettingsKey = keyof Settings;
 
-  private subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
-    this.dataListeners[propertyName].push(listener);
+export const useSettings = <T extends SettingsKey>(key: T) => {
+  const [value, setValue] = useState<Settings[T] | null>(null);
+
+  const setSetting = useCallback(
+    (value: Settings[T]) => {
+      window.electron.ipcRenderer.invoke('settings:set', key, value);
+    },
+    [key]
+  );
+
+  const resetSetting = useCallback(() => {
+    window.electron.ipcRenderer.invoke('settings:reset', key);
+  }, [key]);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.invoke('settings:get', key).then(setValue);
+
+    const unsubscribe = window.electron.ipcRenderer.on(`settings:change:${key}`, (_event, value) =>
+      setValue(value)
+    );
 
     return () => {
-      this.dataListeners[propertyName] = this.dataListeners[propertyName].filter(
-        (l) => l !== listener
-      );
+      unsubscribe();
     };
-  };
+  }, [key]);
 
-  useData<T extends EditorDataPropertyName>(propertyName: T): EditorDataReturn<T> {
-    const isShallow = (propertyName: string): propertyName is keyof EditorData => {
-      return !propertyName.startsWith('elements.');
-    };
-
-    const getSnapshot = () => {
-      if (isShallow(propertyName)) {
-        return this.data[propertyName];
-      }
-
-      return this.data['elements'][propertyName.split('.')[1]];
-    };
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useSyncExternalStore(this.subscribe(propertyName), getSnapshot);
-  }
-}
-
-export const useSettings = () => {};
+  return [value, setSetting, resetSetting] as const;
+};

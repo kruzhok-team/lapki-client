@@ -12,7 +12,7 @@ const DEFAULT_PATH = [basePath + '/platform', app.getPath('userData') + '/platfo
 export async function searchPlatforms() {
   return new Promise(async (resolve, _reject) => {
     const platformsPaths = new Array<string>();
-    const userPath: any = await settings.get('PlatformsPath');
+    const userPath: any = await settings.get('platformsPath');
     let platformFound = false;
     if (userPath.path != '') {
       DEFAULT_PATH.push(userPath!.path);

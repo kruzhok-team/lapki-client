@@ -1,6 +1,5 @@
 import { optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
-import settings from 'electron-settings';
 
 import { join } from 'path';
 
@@ -106,12 +105,12 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  initSettings(mainWindow.webContents);
 }
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
-  initSettings(ipcMain);
-
   // IPC из отрисовщика, в основном диалоговые окна
   ipcMain.handle('dialog:saveIntoFolder', (_event, data) => {
     return handleSaveIntoFolder(data);

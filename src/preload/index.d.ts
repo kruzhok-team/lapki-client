@@ -6,7 +6,6 @@ declare global {
   interface Window {
     electron: ElectronAPI;
     api: {
-      getSetting: typeof getSetting;
       LAPKI_FLASHER: string;
       FLASHER_LOCAL_HOST: string;
       FLASHER_SETTINGS_KEY: string;
@@ -16,5 +15,9 @@ declare global {
       DOC_SETTINGS_KEY: string;
       DEFAULT_DOC_SETTINGS;
     };
+  }
+  //! Это только тип, значения тут нет
+  interface Main {
+    settings: Settings;
   }
 }

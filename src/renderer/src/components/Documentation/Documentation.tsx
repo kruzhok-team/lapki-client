@@ -3,16 +3,13 @@ import { useState, useEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+import { useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
 
 import { Navigation } from './components/Navigation';
 import { Show } from './components/Show';
 import { Tree } from './components/Tree';
-
-import { Settings } from '../Modules/Settings';
-
-/*Загрузка документации*/
 
 interface DocumentationProps {
   topOffset?: boolean;
@@ -22,37 +19,12 @@ const BAD_DATA = {
   body: { name: 'index', children: [{ name: 'Не загрузилось :(', path: 'index.json' }] },
 };
 
-// TODO: используется для того, чтобы задать значение переменной извне, но это выглядит костыльно
-let SET_URL;
-let SET_DATA;
-export function setURL(url) {
-  SET_URL(url);
-  getData(url, true);
-}
-
-function getData(url: string, nocache?: boolean) {
-  const arg = nocache ?? false ? '?nocache=true' : '';
-  fetch(`${url}/index.json${arg}`)
-    .then((response) => {
-      if (!response.ok) throw response;
-      return response.json();
-    })
-    .then((data) => {
-      SET_DATA(data);
-    })
-    .catch((reason) => {
-      console.warn(reason);
-      SET_DATA(BAD_DATA);
-      // TODO: подробнее отразить в интерфейсе
-    });
-}
-
 export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false }) => {
-  const [url, setUrl] = useState('');
-  SET_URL = setUrl;
+  const [doc] = useSettings('doc');
+  const url = doc?.host ?? '';
+
   const [activeTab, setActiveTab] = useState<number>(0);
   const [data, setData] = useState<{ body: File }>();
-  SET_DATA = setData;
   const [html, setHtml] = useState('');
   const [documentLink, setDocumentLink] = useState('');
 
@@ -88,10 +60,18 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   };
 
   useEffect(() => {
-    Settings.getDocSettings().then((doc) => {
-      setURL(doc.host);
-    });
-  }, []);
+    fetch(`${url}/index.json?nocache=true`)
+      .then((response) => {
+        if (!response.ok) throw response;
+        return response.json();
+      })
+      .then(setData)
+      .catch((reason) => {
+        // TODO: подробнее отразить в интерфейсе
+        console.warn(reason);
+        setData(BAD_DATA);
+      });
+  }, [url]);
 
   return (
     <div

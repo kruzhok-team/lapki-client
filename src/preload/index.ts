@@ -2,27 +2,13 @@
 import { electronAPI } from '@electron-toolkit/preload';
 import { contextBridge } from 'electron';
 
-import {
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  DEFAULT_DOC_SETTINGS,
-  DOC_SETTINGS_KEY,
-  FLASHER_SETTINGS_KEY,
-  PLATFORMS_PATH_SETTINGS_KEY,
-} from '../main/electron-settings-consts';
+import { FLASHER_SETTINGS_KEY } from '../main/electron-settings-consts';
 import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
-import { getSetting } from '../main/settings';
 // Custom APIs for renderer
 const api = {
-  getSetting,
   LAPKI_FLASHER,
   FLASHER_LOCAL_HOST,
   FLASHER_SETTINGS_KEY,
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  PLATFORMS_PATH_SETTINGS_KEY,
-  DOC_SETTINGS_KEY,
-  DEFAULT_DOC_SETTINGS,
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -3,8 +3,7 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Event, ArgList } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
@@ -16,8 +15,6 @@ export interface EventsModalData {
 }
 
 interface EventsModalProps {
-  editor: CanvasEditor;
-  manager: EditorManager;
   initialData?: EventsModalData;
   isOpen: boolean;
   onSubmit: (data: Event) => void;
@@ -25,13 +22,14 @@ interface EventsModalProps {
 }
 
 export const EventsModal: React.FC<EventsModalProps> = ({
-  editor,
-  manager,
   initialData,
   onSubmit,
   isOpen,
   onClose,
 }) => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
+
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
   const isEditingEvent = initialData?.isEditingEvent ?? false;

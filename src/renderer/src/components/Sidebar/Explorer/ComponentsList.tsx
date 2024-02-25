@@ -7,15 +7,12 @@ import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@re
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { WithHint } from '@renderer/components/UI';
 import { useComponents } from '@renderer/hooks';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
-interface ComponentsListProps {
-  editor: CanvasEditor | null;
-  manager: EditorManager;
-}
+export const ComponentsList: React.FC = () => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
 
-export const ComponentsList: React.FC<ComponentsListProps> = ({ editor, manager }) => {
   const isInitialized = manager.useData('isInitialized');
   const components = manager.useData('elements.components');
 
@@ -26,7 +23,7 @@ export const ComponentsList: React.FC<ComponentsListProps> = ({ editor, manager 
     onRequestAddComponent,
     onRequestEditComponent,
     onRequestDeleteComponent,
-  } = useComponents(editor, manager);
+  } = useComponents();
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
 
@@ -103,8 +100,8 @@ export const ComponentsList: React.FC<ComponentsListProps> = ({ editor, manager 
         renderItem={renderComponent}
       />
 
-      <ComponentAddModal manager={manager} {...addProps} />
-      <ComponentEditModal manager={manager} {...editProps} />
+      <ComponentAddModal {...addProps} />
+      <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
     </>
   );

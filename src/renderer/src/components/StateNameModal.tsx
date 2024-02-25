@@ -1,25 +1,14 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { WithHint } from '@renderer/components/UI';
-import { State } from '@renderer/lib/drawable/State';
-import { Point } from '@renderer/types/graphics';
-
-interface StateNameModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-
-  state: State;
-  position: Point;
-  sizes: State['computedTitleSizes'];
-  onRename: (name: string) => void;
-}
+import { useDiagramStateName } from '@renderer/hooks';
 
 export interface StateNameModalFormValues {
   name: string;
 }
 
-export const StateNameModal: React.FC<StateNameModalProps> = (props) => {
-  const { isOpen, onClose, state, position, sizes, onRename } = props;
+export const StateNameModal: React.FC = () => {
+  const { isOpen, onClose, state, position, sizes, onRename } = useDiagramStateName();
 
   const [value, setValue] = useState<string>('');
 

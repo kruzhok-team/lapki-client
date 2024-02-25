@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { State } from '@renderer/lib/drawable/State';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
 
@@ -14,7 +13,9 @@ export type DiagramContextMenuItem = {
   action: () => void;
 };
 
-export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: EditorManager) => {
+export const useDiagramContextMenu = () => {
+  const editor = useEditorContext();
+
   const openTab = useTabs((state) => state.openTab);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -74,8 +75,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           action: () => {
             openTab({
               type: 'code',
-              name: manager.data.name ?? 'Безымянная',
-              code: manager.serializer.getAll('JSON'),
+              name: editor.manager.data.name ?? 'Безымянная',
+              code: editor.manager.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -143,7 +144,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'state',
               name: state.data.name,
-              code: manager.serializer.getState(state.id) ?? '',
+              code: editor.manager.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -258,7 +259,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               openTab({
                 type: 'transition',
                 name: transition.id,
-                code: manager.serializer.getTransition(transition.id) ?? '',
+                code: editor.manager.serializer.getTransition(transition.id) ?? '',
                 language: 'json',
               });
             },

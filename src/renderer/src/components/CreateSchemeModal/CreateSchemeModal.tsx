@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
-
 import { PlatformSelection } from './PlatformSelection';
 import { TemplateSelection } from './TemplateSelection';
 
@@ -14,14 +12,12 @@ interface CreateSchemeModalProps {
   onClose: () => void;
   onCreate: (idx: string) => void;
   onCreateFromTemplate: (type: string, name: string) => void;
-  manager: EditorManager;
 }
 
 export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   onClose,
   onCreate,
   onCreateFromTemplate,
-  manager,
   ...props
 }) => {
   const [tabValue, setTabValue] = useState(0);
@@ -73,7 +69,6 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
         <TemplateSelection
           selectedTemplate={selectedTemplate}
           setSelectedTemplate={setSelectedTemplate}
-          manager={manager}
         />
       </TabPanel>
     </Modal>

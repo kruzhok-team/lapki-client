@@ -2,14 +2,19 @@ import { Canvas } from './basic/Canvas';
 import { Container } from './basic/Container';
 import { Keyboard } from './basic/Keyboard';
 import { Mouse } from './basic/Mouse';
+import { EventEmitter } from './common/EventEmitter';
 import { Render } from './common/Render';
 import { EditorManager } from './data/EditorManager';
 import { preloadPicto } from './drawable/Picto';
 
+interface CanvasEditorEvents {
+  changeTextMode: { textMode: boolean };
+}
+
 /**
  * Редактор машин состояний.
  */
-export class CanvasEditor {
+export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
   private _root: HTMLElement | null = null;
 
   private _canvas: Canvas | null = null;
@@ -20,7 +25,11 @@ export class CanvasEditor {
 
   manager!: EditorManager;
 
+  textMode = true;
+
   constructor() {
+    super();
+
     this.manager = new EditorManager();
     this.manager.resetEditor = () => {
       this.container.machineController.loadData();
@@ -105,5 +114,13 @@ export class CanvasEditor {
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
     this.mouse.clearUp();
+  }
+
+  setTextMode(value: boolean) {
+    this.textMode = value;
+
+    this.emit('changeTextMode', { textMode: value });
+
+    this.container.isDirty = true;
   }
 }

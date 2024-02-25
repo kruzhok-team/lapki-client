@@ -42,15 +42,18 @@ export class State extends Node {
 
   updateEventBox() {
     this.eventBox.recalculate();
-    // console.log(['State.updateEventBox', this.id, this.bounds, this.eventBox.bounds]);
+
     this.bounds.width = Math.max(
       this.bounds.width,
-      this.eventBox.bounds.width + this.eventBox.bounds.x
+      // this.eventBox.bounds.width + this.eventBox.bounds.x
+      this.eventBox.sizes.width
     );
-    const calcHeight = this.titleHeight + this.eventBox.bounds.height + this.eventBox.bounds.y;
-    // this.bounds.height = Math.max(this.bounds.height, calcHeight);
-    this.bounds.height = calcHeight;
-    // console.log(['/State.updateEventBox', this.id, this.bounds]);
+
+    // this.bounds.height = this.titleHeight + this.eventBox.bounds.height + this.eventBox.bounds.y;
+    this.bounds.height = Math.max(
+      this.bounds.height,
+      this.titleHeight + this.eventBox.sizes.height
+    );
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

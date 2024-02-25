@@ -1,6 +1,6 @@
 export type Point = { x: number; y: number };
-
-export type Rectangle = Point & { width: number; height: number };
+export type Sizes = { width: number; height: number };
+export type Rectangle = Point & Sizes;
 
 export interface TransitionLine {
   start: Point;

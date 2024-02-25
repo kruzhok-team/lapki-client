@@ -57,8 +57,6 @@ export class Note extends Node {
 
   prepareText() {
     const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 9999;
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
     this.textData = {
       ...prepareText(ctx, this.data.text || placeholder, '16px/1 "Fira Sans"', 200 - 2 * 10),

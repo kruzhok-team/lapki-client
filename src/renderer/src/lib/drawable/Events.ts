@@ -1,10 +1,12 @@
-import { Point, Rectangle } from '@renderer/types/graphics';
+import { getColor } from '@renderer/theme';
+import { Point, Rectangle, Sizes } from '@renderer/types/graphics';
 
 import { picto } from './Picto';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { isPointInRectangle } from '../utils';
+import { drawText, prepareText } from '../utils/text';
 
 export type EventSelection = {
   eventIdx: number;
@@ -17,30 +19,23 @@ export type EventSelection = {
  * обработку событий мыши.
  */
 export class Events {
-  container!: Container;
-  parent!: State;
-  bounds!: Rectangle;
+  private textArray = [] as string[];
+
+  sizes!: Sizes;
 
   selection?: EventSelection;
-
-  buttonMap!: Map<Rectangle, [number, number]>;
 
   minEventRow = 3;
 
   minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
   minHeight = picto.eventHeight;
 
-  constructor(container: Container, parent: State) {
-    this.container = container;
-    this.parent = parent;
-    this.bounds = {
-      x: 15,
-      y: 10,
+  constructor(public container: Container, public parent: State) {
+    this.sizes = {
       width: this.minWidth,
       height: this.minHeight,
     };
 
-    this.buttonMap = new Map();
     this.recalculate();
   }
 
@@ -49,15 +44,33 @@ export class Events {
   }
 
   recalculate() {
+    if (this.container.app.textMode) {
+      const { width } = this.parent.drawBounds;
+      const pX = 15 / this.container.app.manager.data.scale;
+      const pY = 10 / this.container.app.manager.data.scale;
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+      const text = `entry/
+    LED1.on()
+    timer1.start(1000)
+    timer1.stop(1000)`;
+
+      const { textArray, height } = prepareText(ctx, text, '16px/1 "Fira Sans"', width - 2 * pX);
+
+      this.textArray = textArray;
+      this.sizes.height = height + pY * 2;
+
+      return;
+    }
+
     let eventRows = 0;
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
-      // TODO: пересчитывать карту кнопок
-      // this.buttonMap.set(..., [i, -1]);
     });
-    this.bounds.height = Math.max(this.minHeight, 50 * eventRows);
+    this.sizes.height = Math.max(this.minHeight, 50 * eventRows);
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
@@ -66,8 +79,8 @@ export class Events {
 
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
-    const px = this.bounds.x / this.container.app.manager.data.scale;
-    const py = this.bounds.y / this.container.app.manager.data.scale;
+    const px = 15 / this.container.app.manager.data.scale;
+    const py = 10 / this.container.app.manager.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -122,11 +135,14 @@ export class Events {
   }
 
   handleDoubleClick(p: Point) {
-    const idx = this.calculatePictoIndex(p);
-    return idx;
+    return this.calculatePictoIndex(p);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    if (this.container.app.textMode) {
+      return this.drawTextEvents(ctx);
+    }
+
     this.drawImageEvents(ctx);
   }
 
@@ -140,8 +156,8 @@ export class Events {
       Math.floor((width * this.container.app.manager.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
-    const px = this.bounds.x / this.container.app.manager.data.scale;
-    const py = this.bounds.y / this.container.app.manager.data.scale;
+    const px = 15 / this.container.app.manager.data.scale;
+    const py = 10 / this.container.app.manager.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -175,6 +191,27 @@ export class Events {
       });
 
       eventRow += Math.max(1, Math.ceil(events.do.length / eventRowLength));
+    });
+
+    ctx.closePath();
+  }
+
+  private drawTextEvents(ctx: CanvasRenderingContext2D) {
+    const { x, y } = this.parent.drawBounds;
+    const titleHeight = this.parent.titleHeight / this.container.app.manager.data.scale;
+    const px = 15 / this.container.app.manager.data.scale;
+    const py = 10 / this.container.app.manager.data.scale;
+    const fontSize = 16 / this.container.app.manager.data.scale;
+    const font = `${fontSize}px/1 'Fira Sans'`;
+
+    ctx.beginPath();
+
+    drawText(ctx, this.textArray, {
+      x: x + px,
+      y: y + titleHeight + py,
+      textAlign: 'left',
+      color: getColor('text-primary'),
+      font,
     });
 
     ctx.closePath();

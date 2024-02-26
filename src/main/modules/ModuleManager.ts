@@ -1,12 +1,8 @@
+import settings from 'electron-settings';
+
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
-
-import { findFreePort } from './freePortFinder';
-export const FLASHER_LOCAL_HOST: string = 'localhost';
-export let FLASHER_LOCAL_PORT: number;
-// название локального загрузчика
-export const LAPKI_FLASHER: string = 'lapki-flasher';
 
 export class ModuleStatus {
   /* 
@@ -37,14 +33,10 @@ export class ModuleStatus {
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
-  static async startLocalModule(module: string) {
+
+  static async startLocalModule(module: 'lapki-flasher') {
     this.moduleStatus[module] = new ModuleStatus();
     if (!this.localProccesses.has(module)) {
-      if (module == LAPKI_FLASHER) {
-        await findFreePort((port) => {
-          FLASHER_LOCAL_PORT = port;
-        });
-      }
       const platform = process.platform;
       const basePath = path
         .join(__dirname, '../../resources')
@@ -69,7 +61,8 @@ export class ModuleManager {
       }
       if (modulePath) {
         switch (module) {
-          case LAPKI_FLASHER: {
+          case 'lapki-flasher': {
+            const port = await settings.get('flasher.port');
             /*
             параметры локального загрузчика:
               -address string
@@ -98,7 +91,7 @@ export class ModuleManager {
             const flasherArgs: string[] = [
               '-updateList=1',
               '-listCooldown=0',
-              `-address=${FLASHER_LOCAL_HOST}:${FLASHER_LOCAL_PORT}`,
+              `-address=localhost:${port}`,
             ];
 
             let avrdudePath = '';
@@ -157,14 +150,14 @@ export class ModuleManager {
     }
   }
 
-  static stopModule(module: string) {
+  static stopModule(module: 'lapki-flasher') {
     if (this.localProccesses.has(module)) {
       this.localProccesses.get(module)!.kill();
       this.localProccesses.delete(module);
     }
   }
 
-  static getLocalStatus(module: string) {
+  static getLocalStatus(module: 'lapki-flasher') {
     return this.moduleStatus[module];
   }
 }

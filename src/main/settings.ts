@@ -10,8 +10,9 @@ const defaultSettings = {
     port: 8081,
   },
   flasher: {
-    host: null as string | null,
-    port: null as number | null,
+    host: 'localhost',
+    port: 0,
+    type: 'local' as 'local' | 'remote',
   },
   platformsPath: '',
 };
@@ -20,20 +21,20 @@ export type Settings = typeof defaultSettings;
 
 export const initSettings = (webContents: WebContents) => {
   for (const key in defaultSettings) {
-    if (!settings.has(key)) {
-      settings.set(key, defaultSettings[key]);
+    if (!settings.hasSync(key)) {
+      settings.setSync(key, defaultSettings[key]);
     }
   }
 
   ipcMain.handle('settings:get', (_event, key) => {
     return settings.get(key);
   });
-  ipcMain.handle('settings:set', async (_event, key, value) => {
+  ipcMain.handle('settings:set', async (_event, key: string, value) => {
     await settings.set(key, value);
 
     webContents.send(`settings:change:${key}`, value);
   });
-  ipcMain.handle('settings:reset', async (_event, key) => {
+  ipcMain.handle('settings:reset', async (_event, key: string) => {
     await settings.set(key, defaultSettings[key]);
 
     webContents.send(`settings:change:${key}`, defaultSettings[key]);

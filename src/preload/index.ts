@@ -2,14 +2,10 @@
 import { electronAPI } from '@electron-toolkit/preload';
 import { contextBridge } from 'electron';
 
-import { FLASHER_SETTINGS_KEY } from '../main/electron-settings-consts';
-import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
 // Custom APIs for renderer
-const api = {
-  LAPKI_FLASHER,
-  FLASHER_LOCAL_HOST,
-  FLASHER_SETTINGS_KEY,
-};
+const api = {};
+
+export type API = typeof api;
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

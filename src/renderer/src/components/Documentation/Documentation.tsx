@@ -60,6 +60,8 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   };
 
   useEffect(() => {
+    if (!url) return;
+
     fetch(`${url}/index.json?nocache=true`)
       .then((response) => {
         if (!response.ok) throw response;

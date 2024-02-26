@@ -1,104 +1,131 @@
+import { useLayoutEffect } from 'react';
+
 import { Controller, useForm } from 'react-hook-form';
 
 import { Select, Modal, TextField } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks';
 
-import { Settings } from '../Modules/Settings';
+// import { Settings } from '../Modules/Settings';
 
-const SELECT_LOCAL = 'local';
-const SELECT_REMOTE = 'remote';
+// const SELECT_LOCAL = 'local';
+// const SELECT_REMOTE = 'remote';
 
 const options = [
-  { value: SELECT_REMOTE, label: 'Удалённый' },
-  { value: SELECT_LOCAL, label: 'Локальный' },
+  { value: 'remote', label: 'Удалённый' },
+  { value: 'local', label: 'Локальный' },
 ];
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
-  isLocal: boolean;
   onClose: () => void;
+  onSubmit: (data: FlasherSelectModalFormValues) => void;
+
   handleLocal: () => void;
   handleRemote: (host: string, port: number) => void;
 }
 
-interface formValues {
+export interface FlasherSelectModalFormValues {
   host: string;
   port: number;
-  flasherType: string;
+  type: 'local' | 'remote';
 }
 
 export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   onClose,
-  handleLocal,
-  handleRemote,
-  isLocal,
+  onSubmit,
   ...props
 }) => {
+  const [flasherSetting] = useSettings('flasher');
+
   const {
     register,
     control,
     handleSubmit: hookHandleSubmit,
     watch,
+    setValue,
     reset,
-  } = useForm<formValues>({
-    defaultValues: async () => {
-      return Settings.getFlasherSettings().then((server) => {
-        return {
-          host: String(server.host),
-          port: Number(server.port),
-          flasherType: SELECT_REMOTE,
-        };
-      });
-    },
+  } = useForm<FlasherSelectModalFormValues>({
+    // defaultValues: async () => {
+    //   return Settings.getFlasherSettings().then((server) => {
+    //     return {
+    //       host: String(server.host),
+    //       port: Number(server.port),
+    //       flasherType: SELECT_REMOTE,
+    //     };
+    //   });
+    // },
   });
-  // октрыта ли опция выбора локального загрузчика
-  const showSecondaryField = watch('flasherType') === SELECT_REMOTE;
+
+  const isSecondaryFieldsDisabled = watch('type') === 'local';
 
   const handleSubmit = hookHandleSubmit((data) => {
-    if (data.flasherType == SELECT_LOCAL) {
-      handleLocal();
-    } else {
-      handleRemote(data.host, data.port);
-    }
-    onRequestClose();
+    // if (data.flasherType == SELECT_LOCAL) {
+    //   handleLocal();
+    // } else {
+    //   handleRemote(data.host, data.port);
+    // }
+    onSubmit(data);
+    onClose();
   });
 
-  const onRequestClose = () => {
-    onClose();
-  };
+  // const currentServer = () => {
+  //   return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
+  // };
 
-  const currentServer = () => {
-    return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
-  };
+  // const resetSettings = () => {
+  //   Settings.getFlasherSettings().then((server) => {
+  //     reset({ host: String(server.host), port: Number(server.port), flasherType: SELECT_REMOTE });
+  //   });
+  // };
 
-  const resetSettings = () => {
-    Settings.getFlasherSettings().then((server) => {
-      reset({ host: String(server.host), port: Number(server.port), flasherType: SELECT_REMOTE });
-    });
-  };
+  const currentServerLabel = `Текущий тип сервера: ${
+    flasherSetting?.type === 'local' ? 'локальный' : 'удалённый'
+  }`;
+
+  useLayoutEffect(() => {
+    if (!flasherSetting) return;
+
+    setValue('type', flasherSetting.type);
+    setValue('host', flasherSetting.host ?? '');
+    setValue('port', Number(flasherSetting.port ?? ''));
+  }, [setValue, flasherSetting]);
 
   return (
     <Modal
       {...props}
-      onRequestClose={onRequestClose}
+      onRequestClose={onClose}
       title={'Выберите загрузчик'}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      onAfterClose={resetSettings}
+      // onAfterClose={resetSettings}
     >
       <div className="flex items-center">
         <Controller
           control={control}
-          name="flasherType"
-          render={({ field: { value, onChange } }) => (
-            <div>
-              Тип
-              <Select
-                value={options.find((opt) => opt.value === value)}
-                onChange={(v) => onChange((v as any).value)}
-                options={options}
-              />
-            </div>
-          )}
+          name="type"
+          render={({ field: { value, onChange } }) => {
+            const handleChange = (v: any) => {
+              onChange(v.value);
+
+              console.log('here', v.value);
+
+              if (v.value === 'local') {
+                window.electron.ipcRenderer.invoke('Flasher:setFreePort');
+              }
+            };
+
+            return (
+              <div>
+                Тип
+                <Select
+                  value={options.find((opt) => opt.value === value)}
+                  onChange={handleChange}
+                  options={options}
+                  isSearchable={false}
+                />
+              </div>
+            );
+          }}
         />
       </div>
       <div className="mb-2 flex gap-2">
@@ -108,32 +135,27 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           label="Хост:"
           {...register('host')}
           placeholder="Напишите адрес хоста"
-          hidden={false}
-          error={false}
-          errorMessage={''}
-          disabled={!showSecondaryField}
+          disabled={isSecondaryFieldsDisabled}
         />
         <TextField
           className="disabled:opacity-50"
           label="Порт:"
-          {...register('port')}
+          {...register('port', { valueAsNumber: true })}
           placeholder="Напишите порт"
-          hidden={false}
-          error={false}
-          errorMessage={''}
-          onInput={(event) => {
-            const { target } = event;
-            if (target) {
-              (target as HTMLInputElement).value = (target as HTMLInputElement).value.replace(
-                /[^0-9]/g,
-                ''
-              );
-            }
-          }}
-          disabled={!showSecondaryField}
+          // onInput={(event) => {
+          //   const { target } = event;
+          //   if (target) {
+          //     (target as HTMLInputElement).value = (target as HTMLInputElement).value.replace(
+          //       /[^0-9]/g,
+          //       ''
+          //     );
+          //   }
+          // }}
+          disabled={isSecondaryFieldsDisabled}
         />
       </div>
-      <div> {currentServer()}</div>
+
+      <div>{currentServerLabel}</div>
     </Modal>
   );
 };

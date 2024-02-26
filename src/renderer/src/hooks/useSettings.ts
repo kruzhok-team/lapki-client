@@ -8,13 +8,13 @@ export const useSettings = <T extends SettingsKey>(key: T) => {
 
   const setSetting = useCallback(
     (value: Settings[T]) => {
-      window.electron.ipcRenderer.invoke('settings:set', key, value);
+      return window.electron.ipcRenderer.invoke('settings:set', key, value);
     },
     [key]
   );
 
   const resetSetting = useCallback(() => {
-    window.electron.ipcRenderer.invoke('settings:reset', key);
+    return window.electron.ipcRenderer.invoke('settings:reset', key);
   }, [key]);
 
   useEffect(() => {

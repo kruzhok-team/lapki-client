@@ -1,5 +1,6 @@
 import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, ipcRenderer } from 'electron';
+import settings from 'electron-settings';
 
 import { join } from 'path';
 
@@ -13,12 +14,8 @@ import {
   handleOpenPlatformFile,
   handleGetFileMetadata,
 } from './file-handlers';
-import {
-  FLASHER_LOCAL_PORT,
-  LAPKI_FLASHER,
-  ModuleManager,
-  ModuleStatus,
-} from './modules/ModuleManager';
+import { findFreePort } from './modules/freePortFinder';
+import { ModuleManager, ModuleStatus } from './modules/ModuleManager';
 import { searchPlatforms } from './PlatformSeacher';
 import { initSettings } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
@@ -79,7 +76,7 @@ function createWindow(): void {
 
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
-    ModuleManager.stopModule(LAPKI_FLASHER);
+    ModuleManager.stopModule('lapki-flasher');
     if (process.platform !== 'darwin') {
       app.exit(0);
     }
@@ -107,6 +104,14 @@ function createWindow(): void {
   }
 
   initSettings(mainWindow.webContents);
+
+  ipcMain.handle('Flasher:setFreePort', () => {
+    findFreePort(async (p) => {
+      await settings.set('flasher.port', p);
+      const value = await settings.get('flasher');
+      mainWindow.webContents.send(`settings:change:flasher`, value);
+    });
+  });
 }
 
 // Выполняется после инициализации Electron
@@ -132,20 +137,12 @@ app.whenReady().then(() => {
     return handleBinFileOpen();
   });
 
-  ipcMain.handle('Module:startLocalModule', (_event, module: string) => {
-    return ModuleManager.startLocalModule(module);
-  });
-
-  ipcMain.handle('Module:stopLocalModule', (_event, module: string) => {
-    return ModuleManager.stopModule(module);
-  });
-
-  ipcMain.handle('Module:reboot', (_event, module: string) => {
+  ipcMain.handle('Module:reboot', (_event, module: 'lapki-flasher') => {
     ModuleManager.stopModule(module);
     ModuleManager.startLocalModule(module);
   });
 
-  ipcMain.handle('Module:getStatus', (_event, module: string) => {
+  ipcMain.handle('Module:getStatus', (_event, module: 'lapki-flasher') => {
     const status: ModuleStatus = ModuleManager.getLocalStatus(module);
     return status;
   });
@@ -157,11 +154,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {
     return handleOpenPlatformFile(absolute_path);
-  });
-
-  // получение локального порта
-  ipcMain.handle('Flasher:getPort', (_event) => {
-    return FLASHER_LOCAL_PORT;
   });
 
   ipcMain.handle('appVersion', app.getVersion);
@@ -183,7 +175,15 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-  ModuleManager.startLocalModule(LAPKI_FLASHER);
+
+  const startFlasher = async () => {
+    await findFreePort((p) => {
+      settings.set('flasher.port', p);
+    });
+    ModuleManager.startLocalModule('lapki-flasher');
+  };
+  startFlasher();
+
   createWindow();
 
   app.on('activate', function () {
@@ -197,7 +197,7 @@ app.whenReady().then(() => {
 // Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule(LAPKI_FLASHER);
+  ModuleManager.stopModule('lapki-flasher');
   if (process.platform !== 'darwin') {
     app.quit();
   }

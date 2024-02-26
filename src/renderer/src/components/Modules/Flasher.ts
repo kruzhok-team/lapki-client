@@ -16,7 +16,6 @@ export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
 
-//export const FLASHER_LOCAL_PORT = window.electron.ipcRenderer.invoke;
 export class Flasher {
   static port: number;
   static host: string;
@@ -166,19 +165,20 @@ export class Flasher {
     this.connecting = true;
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.clearTimer();
-    if (host == undefined && port == undefined) {
-      Flasher.host = window.api.FLASHER_LOCAL_HOST;
-      await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
-        Flasher.port = localPort;
-      });
-    } else {
-      if (host != undefined) {
-        Flasher.host = host;
-      }
-      if (port != undefined) {
-        Flasher.port = port;
-      }
+    // if (host == undefined && port == undefined) {
+    // Flasher.host = window.api.FLASHER_LOCAL_HOST;
+    // await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
+    //   Flasher.port = localPort;
+    // });
+    // } else {
+
+    if (host != undefined) {
+      Flasher.host = host;
     }
+    if (port != undefined) {
+      Flasher.port = port;
+    }
+    // }
     const new_address = Flasher.makeAddress(Flasher.host, Flasher.port);
     // означает, что хост должен смениться
     if (new_address != Flasher.base_address) {

@@ -12,19 +12,22 @@ import {
   FLASHER_NO_CONNECTION,
   Flasher,
 } from '@renderer/components/Modules/Flasher';
-import { FlasherSelectModal } from '@renderer/components/serverSelect/FlasherSelectModal';
+import {
+  FlasherSelectModal,
+  FlasherSelectModalFormValues,
+} from '@renderer/components/serverSelect/FlasherSelectModal';
+import { useSettings } from '@renderer/hooks';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device } from '@renderer/types/FlasherTypes';
-
-import { Settings } from '../Modules/Settings';
-
-const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
 }
 
 export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
+  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const { host, port, type } = flasherSetting ?? {};
+
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -32,7 +35,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
-  const [flasherIsLocal, setFlasherIslocal] = useState<boolean>(true);
+  const flasherIsLocal = type === 'local';
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
@@ -40,6 +43,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     Flasher.freezeReconnectionTimer(false);
     setIsFlasherModalOpen(false);
   };
+
+  console.log('Loader flasherSetting', flasherSetting);
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -73,21 +78,33 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleLocalFlasher = async () => {
-    console.log('local');
-    setFlasherIslocal(true);
+    // console.log('local');
+    // setFlasherIslocal(true);
     Flasher.setAutoReconnect(false);
     await Flasher.connect();
   };
 
   const handleRemoteFlasher = async (host: string, port: number) => {
-    setFlasherIslocal(false);
+    // setFlasherIslocal(false);
     console.log('remote');
     Flasher.setAutoReconnect(true);
-    await Settings.setFlasherSettings({
-      port: port,
-      host: host,
-    });
-    await Flasher.connect(host, port);
+    // await Settings.setFlasherSettings({
+    //   port: port,
+    //   host: host,
+    // });
+    // await Flasher.connect(host, port);
+  };
+
+  const handleFlasherModalSubmit = async (data: FlasherSelectModalFormValues) => {
+    if (data.type === 'local') {
+      Flasher.setAutoReconnect(false);
+      await Flasher.connect('localhost');
+      return;
+    }
+
+    Flasher.setAutoReconnect(true);
+    await setFlasherSetting(data);
+    await Flasher.connect(data.host, data.port);
   };
 
   const handleFileChoose = () => {
@@ -105,7 +122,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
     if (flasherIsLocal) {
       await window.electron.ipcRenderer
-        .invoke('Module:getStatus', LAPKI_FLASHER)
+        .invoke('Module:getStatus', 'lapki-flasher')
         .then(function (obj) {
           const errorDetails = obj.details;
           switch (obj.code) {
@@ -180,10 +197,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       setFlashing,
       setFlasherError
     );
-    const reader = new FileReader();
-    Flasher.initReader(reader);
-    console.log('CONNECTING TO FLASHER');
-    Flasher.connect();
+
+    if (host && port) {
+      const reader = new FileReader();
+      Flasher.initReader(reader);
+      Flasher.connect(host, port);
+    }
     // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
   }, []);
 
@@ -203,9 +222,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleReconnect = () => {
+    if (!host || !port) return;
+
     if (flasherIsLocal) {
       window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
-        Flasher.connect();
+        Flasher.connect(host, port);
       });
     } else {
       Flasher.reconnect();
@@ -367,7 +388,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
       <FlasherSelectModal
         isOpen={isFlasherModalOpen}
-        isLocal={flasherIsLocal}
+        onSubmit={handleFlasherModalSubmit}
         handleLocal={handleLocalFlasher}
         handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}

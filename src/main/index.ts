@@ -104,14 +104,6 @@ function createWindow(): void {
   }
 
   initSettings(mainWindow.webContents);
-
-  ipcMain.handle('Flasher:setFreePort', () => {
-    findFreePort(async (p) => {
-      await settings.set('flasher.port', p);
-      const value = await settings.get('flasher');
-      mainWindow.webContents.send(`settings:change:flasher`, value);
-    });
-  });
 }
 
 // Выполняется после инициализации Electron
@@ -156,6 +148,10 @@ app.whenReady().then(() => {
     return handleOpenPlatformFile(absolute_path);
   });
 
+  ipcMain.handle('Flasher:getFreePort', () => {
+    return findFreePort();
+  });
+
   ipcMain.handle('appVersion', app.getVersion);
 
   ipcMain.handle('getAllTemplates', getAllTemplates);
@@ -177,9 +173,9 @@ app.whenReady().then(() => {
   });
 
   const startFlasher = async () => {
-    await findFreePort((p) => {
-      settings.set('flasher.port', p);
-    });
+    const port = await findFreePort();
+    settings.set('flasher.port', port);
+
     ModuleManager.startLocalModule('lapki-flasher');
   };
   startFlasher();

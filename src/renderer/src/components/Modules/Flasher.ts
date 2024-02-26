@@ -157,10 +157,7 @@ export class Flasher {
   /*
    подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
   */
-  static async connect(
-    host: string | undefined = undefined,
-    port: number | undefined = undefined
-  ): Promise<Websocket | undefined> {
+  static async connect(host?: string, port?: number): Promise<Websocket | undefined> {
     if (this.connecting) return;
     this.connecting = true;
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);

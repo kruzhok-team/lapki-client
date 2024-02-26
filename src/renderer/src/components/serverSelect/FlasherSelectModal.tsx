@@ -107,10 +107,14 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
             const handleChange = (v: any) => {
               onChange(v.value);
 
-              console.log('here', v.value);
-
               if (v.value === 'local') {
-                window.electron.ipcRenderer.invoke('Flasher:setFreePort');
+                console.log('here');
+
+                window.electron.ipcRenderer.invoke('Flasher:getFreePort').then((port) => {
+                  console.log('here2', port);
+
+                  setValue('port', port);
+                });
               }
             };
 

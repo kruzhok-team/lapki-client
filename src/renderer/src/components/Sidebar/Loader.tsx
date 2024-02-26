@@ -80,14 +80,14 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const handleLocalFlasher = async () => {
     // console.log('local');
     // setFlasherIslocal(true);
-    Flasher.setAutoReconnect(false);
-    await Flasher.connect();
+    // Flasher.setAutoReconnect(false);
+    // await Flasher.connect();
   };
 
   const handleRemoteFlasher = async (host: string, port: number) => {
     // setFlasherIslocal(false);
-    console.log('remote');
-    Flasher.setAutoReconnect(true);
+    // console.log('remote');
+    // Flasher.setAutoReconnect(true);
     // await Settings.setFlasherSettings({
     //   port: port,
     //   host: host,
@@ -96,15 +96,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleFlasherModalSubmit = async (data: FlasherSelectModalFormValues) => {
-    if (data.type === 'local') {
-      Flasher.setAutoReconnect(false);
-      await Flasher.connect('localhost');
-      return;
-    }
-
-    Flasher.setAutoReconnect(true);
+    Flasher.setAutoReconnect(data.type === 'remote');
     await setFlasherSetting(data);
-    await Flasher.connect(data.host, data.port);
   };
 
   const handleFileChoose = () => {
@@ -198,13 +191,14 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       setFlasherError
     );
 
-    if (host && port) {
-      const reader = new FileReader();
-      Flasher.initReader(reader);
-      Flasher.connect(host, port);
-    }
-    // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
+    Flasher.initReader(new FileReader());
   }, []);
+
+  useEffect(() => {
+    if (!host || !port) return;
+
+    Flasher.connect(host, port);
+  }, [host, port]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {

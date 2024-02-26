@@ -1,5 +1,5 @@
 import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain, ipcRenderer } from 'electron';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import settings from 'electron-settings';
 
 import { join } from 'path';

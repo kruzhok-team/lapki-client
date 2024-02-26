@@ -44,8 +44,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     setIsFlasherModalOpen(false);
   };
 
-  console.log('Loader flasherSetting', flasherSetting);
-
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const openMsgModal = (data: ErrorModalData) => {
@@ -77,27 +75,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     openFlasherModal();
   };
 
-  const handleLocalFlasher = async () => {
-    // console.log('local');
-    // setFlasherIslocal(true);
-    // Flasher.setAutoReconnect(false);
-    // await Flasher.connect();
-  };
-
-  const handleRemoteFlasher = async (host: string, port: number) => {
-    // setFlasherIslocal(false);
-    // console.log('remote');
-    // Flasher.setAutoReconnect(true);
-    // await Settings.setFlasherSettings({
-    //   port: port,
-    //   host: host,
-    // });
-    // await Flasher.connect(host, port);
-  };
-
-  const handleFlasherModalSubmit = async (data: FlasherSelectModalFormValues) => {
+  const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
     Flasher.setAutoReconnect(data.type === 'remote');
-    await setFlasherSetting(data);
+    setFlasherSetting(data);
   };
 
   const handleFileChoose = () => {
@@ -383,8 +363,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       <FlasherSelectModal
         isOpen={isFlasherModalOpen}
         onSubmit={handleFlasherModalSubmit}
-        handleLocal={handleLocalFlasher}
-        handleRemote={handleRemoteFlasher}
         onClose={closeFlasherModal}
       />
     </section>

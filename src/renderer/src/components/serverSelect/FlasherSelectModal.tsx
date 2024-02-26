@@ -5,11 +5,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { Select, Modal, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 
-// import { Settings } from '../Modules/Settings';
-
-// const SELECT_LOCAL = 'local';
-// const SELECT_REMOTE = 'remote';
-
 const options = [
   { value: 'remote', label: 'Удалённый' },
   { value: 'local', label: 'Локальный' },
@@ -19,9 +14,6 @@ interface FlasherSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: FlasherSelectModalFormValues) => void;
-
-  handleLocal: () => void;
-  handleRemote: (host: string, port: number) => void;
 }
 
 export interface FlasherSelectModalFormValues {
@@ -43,40 +35,14 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     handleSubmit: hookHandleSubmit,
     watch,
     setValue,
-    reset,
-  } = useForm<FlasherSelectModalFormValues>({
-    // defaultValues: async () => {
-    //   return Settings.getFlasherSettings().then((server) => {
-    //     return {
-    //       host: String(server.host),
-    //       port: Number(server.port),
-    //       flasherType: SELECT_REMOTE,
-    //     };
-    //   });
-    // },
-  });
+  } = useForm<FlasherSelectModalFormValues>();
 
   const isSecondaryFieldsDisabled = watch('type') === 'local';
 
   const handleSubmit = hookHandleSubmit((data) => {
-    // if (data.flasherType == SELECT_LOCAL) {
-    //   handleLocal();
-    // } else {
-    //   handleRemote(data.host, data.port);
-    // }
     onSubmit(data);
     onClose();
   });
-
-  // const currentServer = () => {
-  //   return `Текущий тип сервера: ${isLocal ? 'локальный' : 'удалённый'}`;
-  // };
-
-  // const resetSettings = () => {
-  //   Settings.getFlasherSettings().then((server) => {
-  //     reset({ host: String(server.host), port: Number(server.port), flasherType: SELECT_REMOTE });
-  //   });
-  // };
 
   const currentServerLabel = `Текущий тип сервера: ${
     flasherSetting?.type === 'local' ? 'локальный' : 'удалённый'
@@ -97,7 +63,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       title={'Выберите загрузчик'}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      // onAfterClose={resetSettings}
     >
       <div className="flex items-center">
         <Controller
@@ -108,11 +73,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
               onChange(v.value);
 
               if (v.value === 'local') {
-                console.log('here');
-
                 window.electron.ipcRenderer.invoke('Flasher:getFreePort').then((port) => {
-                  console.log('here2', port);
-
                   setValue('port', port);
                 });
               }
@@ -146,15 +107,15 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           label="Порт:"
           {...register('port', { valueAsNumber: true })}
           placeholder="Напишите порт"
-          // onInput={(event) => {
-          //   const { target } = event;
-          //   if (target) {
-          //     (target as HTMLInputElement).value = (target as HTMLInputElement).value.replace(
-          //       /[^0-9]/g,
-          //       ''
-          //     );
-          //   }
-          // }}
+          onInput={(event) => {
+            const { target } = event;
+            if (target) {
+              (target as HTMLInputElement).value = (target as HTMLInputElement).value.replace(
+                /[^0-9]/g,
+                ''
+              );
+            }
+          }}
           disabled={isSecondaryFieldsDisabled}
         />
       </div>

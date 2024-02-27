@@ -1,18 +1,20 @@
 import { useSyncExternalStore } from 'react';
 
 import {
+  State as StateData,
+  Transition as TransitionData,
+  Note as NoteData,
   Action as EventAction,
   Event,
   Component,
-  Transition as TransitionData,
   EventData,
-  State as StateData,
   InitialState,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
+  CreateNoteParameters,
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
@@ -60,6 +62,11 @@ export type PossibleActions = {
   addComponent: { args: AddComponentParams };
   removeComponent: { args: RemoveComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
+
+  createNote: { id: string; params: CreateNoteParameters };
+  changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
+  changeNoteText: { id: string; text: string; prevText: string };
+  deleteNote: { id: string; prevData: NoteData };
 };
 export type PossibleActionTypes = keyof PossibleActions;
 export type Action<T extends PossibleActionTypes> = {
@@ -220,6 +227,23 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
+
+  createNote: (sM, { id, params }) => ({
+    redo: sM.createNote.bind(sM, { id, ...params }, false),
+    undo: sM.deleteNote.bind(sM, id, false),
+  }),
+  changeNoteText: (sM, { id, text, prevText }) => ({
+    redo: sM.changeNoteText.bind(sM, id, text, false),
+    undo: sM.changeNoteText.bind(sM, id, prevText, false),
+  }),
+  changeNotePosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.changeNotePosition.bind(sM, id, startPosition, endPosition, false),
+    undo: sM.changeNotePosition.bind(sM, id, endPosition, startPosition, false),
+  }),
+  deleteNote: (sM, { id, prevData }) => ({
+    redo: sM.deleteNote.bind(sM, id, false),
+    undo: sM.createNote.bind(sM, { id, ...prevData }, false),
+  }),
 };
 
 export const actionDescriptions: ActionDescriptions = {
@@ -321,6 +345,22 @@ export const actionDescriptions: ActionDescriptions = {
       description: `Было: ${JSON.stringify(prev)}\nСтало: ${JSON.stringify(newComp)}`,
     };
   },
+
+  createNote: (args) => ({ name: 'Создание заметки', description: `Id: ${args.id}` }),
+  changeNoteText: (args) => ({
+    name: 'Изменение текста заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevText}"\nСтало: "${args.text}"`,
+  }),
+  changeNotePosition: (args) => ({
+    name: 'Перемещение заметки',
+    description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
+      args.startPosition
+    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+  }),
+  deleteNote: (args) => ({
+    name: 'Удаление заметки',
+    description: `ID: ${args.id} Текст: ${args.prevData.text}`,
+  }),
 };
 
 export const STACK_SIZE_LIMIT = 100;

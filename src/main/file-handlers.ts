@@ -199,3 +199,9 @@ export async function handleBinFileOpen() {
     }
   });
 }
+
+// получить метаданные о файле (дата создания, последней модификации, размер и т.д.)
+export function handleGetFileMetadata(absolute_path: string) {
+  //const stat = fs.statSync(absolute_path);
+  return fs.statSync(absolute_path);
+}

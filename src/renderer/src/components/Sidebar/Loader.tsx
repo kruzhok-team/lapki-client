@@ -56,8 +56,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleFlash = async () => {
+    if (currentDevice == null || currentDevice == undefined) {
+      console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
+      return;
+    }
     if (flasherFile) {
-      Flasher.flash(currentDevice!);
+      Flasher.flash(currentDevice);
     } else {
       Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
     }
@@ -208,6 +212,48 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
   };
 
+  const flashButtonDisabled = () => {
+    if (flashing || connectionStatus != FLASHER_CONNECTED) {
+      return true;
+    }
+    if (!currentDevice) {
+      return true;
+    }
+    if (!devices.has(currentDevice)) {
+      setCurrentDevice(undefined);
+      return true;
+    }
+    if (flasherFile) {
+      return false;
+    }
+    // проверка на соответствие платформы схемы и типа устройства
+    if (!(compilerData?.binary === undefined || compilerData.binary.length == 0)) {
+      let platform = compilerData?.platform;
+      if (platform === undefined) {
+        return;
+      }
+      platform = platform?.toLowerCase();
+      const device = devices.get(currentDevice)?.name.toLowerCase();
+      switch (platform) {
+        case 'arduinomicro':
+          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
+            return true;
+          }
+          break;
+        case 'arduinouno':
+          if (device != 'arduino uno') {
+            return true;
+          }
+          break;
+        default:
+          return true;
+      }
+    } else {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -215,11 +261,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       </h3>
 
       <div className="px-4">
-        <div className="mb-2 flex rounded border-2 border-[#557b91]">
+        <div className="mb-2 flex rounded">
           <button
             className={twMerge(
-              'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-50'
+              'btn-primary mr-2 flex w-full items-center justify-between px-5',
+              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
             )}
             onClick={() => {
               switch (connectionStatus) {
@@ -241,8 +287,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           </button>
           <button
             className={twMerge(
-              'p-1 hover:bg-[#557b91] hover:text-white',
-              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-50'
+              'btn-primary px-4',
+              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-70'
             )}
             onClick={handleHostChange}
             disabled={connectionStatus == FLASHER_CONNECTING || flashing}
@@ -255,7 +301,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <p>{connectionStatus}</p>
           <br></br>
           <button
-            className="btn-primary mb-2"
+            className="btn-primary mb-2 w-full"
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
@@ -295,18 +341,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <button
             className="btn-primary mb-2 w-full"
             onClick={handleFlash}
-            disabled={
-              flashing ||
-              !currentDevice ||
-              connectionStatus != FLASHER_CONNECTED ||
-              (!flasherFile &&
-                (compilerData?.binary === undefined || compilerData.binary.length == 0))
-            }
+            disabled={flashButtonDisabled()}
           >
             Загрузить
           </button>
           <button
-            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-70'}
             onClick={handleFileChoose}
             disabled={flashing}
           >

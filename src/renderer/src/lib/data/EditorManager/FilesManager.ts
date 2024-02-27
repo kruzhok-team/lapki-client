@@ -31,6 +31,7 @@ export class FilesManager {
 
     const elements = emptyElements();
     (elements.transitions as any) = [];
+    (elements.notes as any) = [];
     elements.platform = platformIdx;
     this.editorManager.init(null, 'Без названия', elements as any);
   }
@@ -39,6 +40,7 @@ export class FilesManager {
     Compiler.compile(this.data.elements.platform, {
       ...this.data.elements,
       transitions: Object.values(this.data.elements.transitions),
+      notes: Object.values(this.data.elements.notes),
     });
   }
 

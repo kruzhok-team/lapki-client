@@ -2,6 +2,7 @@ import { emptyElements, Action, Condition, EventData } from '@renderer/types/dia
 import { Point } from '@renderer/types/graphics';
 
 export const emptyEditorData = () => ({
+  isMounted: false,
   isInitialized: false,
   isStale: false,
   basename: null as string | null,
@@ -49,6 +50,13 @@ export interface CreateTransitionParameters {
   method: string;
   doAction: Action[];
   condition: Condition | undefined;
+}
+
+export interface CreateNoteParameters {
+  id?: string;
+  position: Point;
+  text: string;
+  placeInCenter?: boolean;
 }
 
 export interface ChangeTransitionParameters {

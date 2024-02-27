@@ -300,48 +300,6 @@ export const drawImageFit = (
   );
 };
 
-interface DrawTextOptions {
-  x: number;
-  y: number;
-  color?: string;
-  align?: CanvasTextAlign;
-  baseline?: CanvasTextBaseline;
-  fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
-  fontSize?: number;
-  fontFamily?: string;
-}
-
-export const drawText = (ctx: CanvasRenderingContext2D, text: string, options: DrawTextOptions) => {
-  const {
-    x,
-    y,
-    color = '#FFF',
-    align = 'left',
-    baseline = 'bottom',
-    fontWeight = 'normal',
-    fontSize = 16,
-    fontFamily = 'Fira Sans',
-  } = options;
-
-  // Как я понял это луший вариант для перфоманса чем ctx.save() и ctx.restore()
-  const prevTextAlign = ctx.textAlign;
-  const prevTextBaseline = ctx.textBaseline;
-  const prevFont = ctx.font;
-  const prevFillStyle = ctx.fillStyle;
-
-  ctx.textAlign = align;
-  ctx.textBaseline = baseline;
-  ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
-  ctx.fillStyle = color;
-
-  ctx.fillText(text, x, y);
-
-  ctx.textAlign = prevTextAlign;
-  ctx.textBaseline = prevTextBaseline;
-  ctx.font = prevFont;
-  ctx.fillStyle = prevFillStyle;
-};
-
 export const drawCurvedLine = (
   ctx: CanvasRenderingContext2D,
   line: TransitionLine,

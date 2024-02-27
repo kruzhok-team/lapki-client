@@ -83,3 +83,17 @@ export const defaultTransColor = '#0000FF';
 
 // пресеты цветов
 export const presetColors = ['#119da4', '#591f0a', '#f26419', '#1f487e', '#4b296b'];
+
+export const placeCaretAtEnd = (el: HTMLElement) => {
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel?.removeAllRanges();
+  sel?.addRange(range);
+};
+
+export const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+};

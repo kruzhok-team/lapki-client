@@ -61,6 +61,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
 
   abstract get bounds(): Rectangle;
   abstract set bounds(bounds: Rectangle);
+  abstract draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): unknown;
 
   // Позиция рассчитанная с возможным родителем
   get compoundPosition() {

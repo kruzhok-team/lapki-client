@@ -1,13 +1,15 @@
 import { useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { systemComponent, ComponentEntry } from '@renderer/lib/data/PlatformManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { useModal } from './useModal';
 
-export const useComponents = (editor: CanvasEditor | null, manager: EditorManager) => {
+export const useComponents = () => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
+
   const components = manager.useData('elements.components');
 
   const [idx, setIdx] = useState('');

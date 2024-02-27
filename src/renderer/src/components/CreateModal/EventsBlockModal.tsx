@@ -4,13 +4,12 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
 interface EventsBlockModalProps {
-  editor: CanvasEditor;
   state: State | undefined;
   transition: Transition | undefined;
   selectedComponent: string | null;
@@ -22,7 +21,6 @@ interface EventsBlockModalProps {
 }
 
 export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
-  editor,
   state,
   transition,
   selectedComponent,
@@ -32,6 +30,8 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
   onOpenEventsModal,
   isOpen,
 }) => {
+  const editor = useEditorContext();
+
   const machine = editor.container.machineController;
 
   //-----------------------------------------------------------------------------------------------------

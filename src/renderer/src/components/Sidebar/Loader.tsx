@@ -259,7 +259,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         <div className="mb-2 flex rounded">
           <button
             className={twMerge(
-              'btn-primary mr-2 flex w-full items-center justify-between px-5',
+              'btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0',
               flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
             )}
             onClick={() => {
@@ -277,12 +277,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             }}
             disabled={connectionStatus == FLASHER_CONNECTING && flasherIsLocal}
           >
-            <Update width="1.5rem" height="1.5rem" className="mr-1" />
+            <Update width="1.5rem" height="1.5rem" />
             {display()}
           </button>
           <button
             className={twMerge(
-              'btn-primary px-4',
+              'btn-primary px-2',
               (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-70'
             )}
             onClick={handleHostChange}

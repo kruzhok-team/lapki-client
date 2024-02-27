@@ -76,6 +76,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
                 window.electron.ipcRenderer.invoke('Flasher:getFreePort').then((port) => {
                   setValue('port', port);
                 });
+                setValue('host', 'localhost');
               }
             };
 

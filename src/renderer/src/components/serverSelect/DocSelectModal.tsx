@@ -3,37 +3,36 @@ import { useLayoutEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Modal, TextField } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks';
+
+type FormValues = Main['settings']['doc'];
 
 interface DocSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (host: string) => void;
-  onReset: () => void;
-
-  defaultHostValue: string;
 }
 
-interface FormValues {
-  host: string;
-}
+export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...props }) => {
+  const [docSetting, setDocSetting, resetDocSetting] = useSettings('doc');
 
-export const DocSelectModal: React.FC<DocSelectModalProps> = ({
-  onClose,
-  onSubmit,
-  onReset,
-  defaultHostValue,
-  ...props
-}) => {
-  const { register, handleSubmit: hookHandleSubmit, setValue } = useForm<FormValues>();
+  const { register, handleSubmit: hookHandleSubmit, reset } = useForm<FormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
-    onSubmit(data.host);
+    setDocSetting(data);
     onClose();
   });
 
+  const handleAfterClose = () => {
+    if (!docSetting) return;
+
+    reset(docSetting);
+  };
+
   useLayoutEffect(() => {
-    setValue('host', defaultHostValue);
-  }, [setValue, defaultHostValue]);
+    if (!docSetting) return;
+
+    reset(docSetting);
+  }, [reset, docSetting]);
 
   return (
     <Modal
@@ -42,6 +41,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
       title="Выберите док-сервер"
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterClose={handleAfterClose}
     >
       <TextField
         className="mb-2"
@@ -51,7 +51,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({
         placeholder="Напишите адрес"
       />
 
-      <button type="button" className="btn-secondary" onClick={onReset}>
+      <button type="button" className="btn-secondary" onClick={resetDocSetting}>
         Сбросить настройки
       </button>
     </Modal>

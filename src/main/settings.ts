@@ -15,6 +15,7 @@ const defaultSettings = {
     type: 'local' as 'local' | 'remote',
   },
   platformsPath: '',
+  theme: 'light' as 'light' | 'dark',
 };
 
 export type Settings = typeof defaultSettings;

@@ -3,7 +3,7 @@ import React from 'react';
 import { Select } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { useThemeContext } from '@renderer/store/ThemeContext';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
@@ -21,21 +21,22 @@ const themeOptions = [
 ];
 
 export const Setting: React.FC = () => {
-  const { setTheme, theme } = useThemeContext();
-
-  const [compilerSetting, setCompilerSetting, resetCompilerSetting] = useSettings('compiler');
-  const [docSetting, setDocSetting, resetDocSetting] = useSettings('doc');
+  const editor = useEditorContext();
+  const isMounted = editor.manager.useData('isMounted');
+  const [theme, setTheme] = useSettings('theme');
 
   const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
 
-  const handleDocSubmit = (host: string) => {
-    setDocSetting({ host });
-  };
+  const handleChangeTheme = ({ value }: any) => {
+    setTheme(value);
 
-  const handleCompileSubmit = (host: string, port: number) => {
-    setCompilerSetting({ host, port });
+    document.documentElement.dataset.theme = value;
+
+    if (isMounted) {
+      editor.container.isDirty = true;
+    }
   };
 
   return (
@@ -50,7 +51,7 @@ export const Setting: React.FC = () => {
           <Select
             options={themeOptions}
             value={themeOptions.find((o) => o.value === theme)}
-            onChange={({ value }: any) => setTheme(value)}
+            onChange={handleChangeTheme}
             isSearchable={false}
           />
         </div>
@@ -65,27 +66,8 @@ export const Setting: React.FC = () => {
         </button>
       </div>
 
-      {compilerSetting && (
-        <ServerSelectModal
-          isOpen={isCompilerOpen}
-          onSubmit={handleCompileSubmit}
-          onClose={closeCompiler}
-          onReset={resetCompilerSetting}
-          defaultHostValue={compilerSetting.host}
-          defaultPortValue={compilerSetting.port.toString()}
-        />
-      )}
-
-      {docSetting && (
-        <DocSelectModal
-          isOpen={isDocModalOpen}
-          onSubmit={handleDocSubmit}
-          onReset={resetDocSetting}
-          onClose={closeDocModal}
-          defaultHostValue={docSetting.host}
-        />
-      )}
-
+      <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />
+      <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
     </section>
   );

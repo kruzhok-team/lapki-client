@@ -3,41 +3,36 @@ import { useLayoutEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Modal, TextField } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks';
+
+type FormValues = Main['settings']['compiler'];
 
 interface ServerSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (host: string, port: number) => void;
-  onReset: () => void;
-
-  defaultHostValue: string;
-  defaultPortValue: string;
 }
 
-interface FormValues {
-  host: string;
-  port: string;
-}
+export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({ onClose, ...props }) => {
+  const [compilerSetting, setCompilerSetting, resetCompilerSetting] = useSettings('compiler');
 
-export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
-  onClose,
-  onSubmit,
-  onReset,
-  defaultHostValue,
-  defaultPortValue,
-  ...props
-}) => {
-  const { handleSubmit: hookHandleSubmit, setValue, register } = useForm<FormValues>();
+  const { handleSubmit: hookHandleSubmit, reset, register } = useForm<FormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
-    onSubmit(data.host, Number(data.port));
+    setCompilerSetting(data);
     onClose();
   });
 
+  const handleAfterClose = () => {
+    if (!compilerSetting) return;
+
+    reset(compilerSetting);
+  };
+
   useLayoutEffect(() => {
-    setValue('host', defaultHostValue);
-    setValue('port', defaultPortValue);
-  }, [setValue, defaultHostValue, defaultPortValue]);
+    if (!compilerSetting) return;
+
+    reset(compilerSetting);
+  }, [reset, compilerSetting]);
 
   return (
     <Modal
@@ -46,6 +41,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
       title="Выберите компилятор"
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterClose={handleAfterClose}
     >
       <div className={'mb-2 flex gap-2'}>
         <TextField
@@ -69,7 +65,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           }}
         />
       </div>
-      <button type="button" className="btn-secondary" onClick={onReset}>
+      <button type="button" className="btn-secondary" onClick={resetCompilerSetting}>
         Сбросить настройки
       </button>
     </Modal>

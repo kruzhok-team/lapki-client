@@ -4,7 +4,7 @@ import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
 import { useCodeMirror } from '@uiw/react-codemirror';
 
-import { useThemeContext } from '@renderer/store/ThemeContext';
+import { useSettings } from '@renderer/hooks';
 import { Language } from '@renderer/types/tabs';
 
 const extensions = [json(), xml()];
@@ -15,14 +15,14 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, language }) => {
-  const { theme } = useThemeContext();
+  const [theme] = useSettings('theme');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { setContainer } = useCodeMirror({
     container: containerRef.current,
     extensions,
     value: initialValue,
-    theme,
+    theme: theme ?? 'light',
     height: '100%',
     lang: language,
     readOnly: true,

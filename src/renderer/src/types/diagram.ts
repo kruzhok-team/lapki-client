@@ -87,6 +87,7 @@ export type Elements = {
   platform: string;
   parameters?: { [key: string]: string };
   compilerSettings?: CompilerSettings | null;
+  meta: { [id: string]: string };
 };
 
 // Данные внутри редактора хранятся немного по-другому и это их описание
@@ -106,5 +107,6 @@ export function emptyElements(): InnerElements {
     platform: '',
     parameters: {},
     compilerSettings: null,
+    meta: {},
   };
 }

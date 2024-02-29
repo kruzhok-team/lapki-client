@@ -22,6 +22,7 @@ import {
   Transition,
   Variable,
 } from '@renderer/types/diagram';
+import { Point } from '@renderer/types/graphics';
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -52,7 +53,6 @@ function checkConditionTokenType(token: string): Condition {
   if (token.includes('.')) {
     const [component, method] = token.split('.');
     ``;
-
     return {
       type: 'component',
       value: {
@@ -62,7 +62,6 @@ function checkConditionTokenType(token: string): Condition {
       },
     };
   }
-
   return {
     type: 'value',
     value: token,
@@ -74,7 +73,6 @@ function parseCondition(condition: string): Condition {
   const lval = checkConditionTokenType(tokens[0]);
   const operator = operatorAlias.get(tokens[1]);
   const rval = checkConditionTokenType(tokens[2]);
-
   if (operator !== undefined) {
     return {
       type: operator,
@@ -82,20 +80,6 @@ function parseCondition(condition: string): Condition {
     };
   }
   throw new Error(`Неизвестный оператор ${operator}`);
-}
-
-// Функция извлекает события и действия из дата-ноды
-function parseNodeData(elements: Elements, content: string, state: State) {
-  // По формату CyberiadaGraphML события разделены пустой строкой.
-  if (content !== undefined) {
-    const unprocessedEventsAndActions = content.split('\n\n');
-    for (const event of unprocessedEventsAndActions) {
-      const result = parseEvent(elements, event);
-      if (result !== undefined) {
-        state.events.push(result[0]);
-      }
-    }
-  }
 }
 
 function parseComponentNode(content: string, component: OuterComponent) {
@@ -199,28 +183,7 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
   } else {
     throw new Error(`Не определен триггер для действий ${event}`);
   }
-
   return;
-}
-
-function parseTransitionData(elements: Elements, content: string, transition: Transition) {
-  const unprocessedEventsAndActions = content.split('\n\n');
-  // TODO: сделать проверку, что триггер всего один.
-  for (const event of unprocessedEventsAndActions) {
-    const result = parseEvent(elements, event);
-    if (result !== undefined) {
-      const eventData = result[0];
-      const condition = result[1];
-      if (eventData !== undefined) {
-        transition.trigger = eventData.trigger;
-        transition.do = eventData.do;
-
-        if (condition !== undefined) {
-          transition.condition = condition;
-        }
-      }
-    }
-  }
 }
 
 function getAllComponents(elements: Elements, meta: Meta) {
@@ -239,7 +202,6 @@ function initArgList(args: string[]): ArgList {
   args.forEach((value: string, index: number) => {
     argList[`${index}`] = value;
   });
-
   return argList;
 }
 
@@ -339,13 +301,11 @@ function getInitialState(rawInitialState: CGMLInitialState | null): InitialState
       throw new Error('No position of initial state!');
     }
   }
-
   return null;
 }
 
 function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: State } {
   const states: { [id: string]: State } = {};
-
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
     states[rawStateId] = {
@@ -355,13 +315,45 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
       events: parseStateEvents(rawState.actions),
     };
   }
-
   return states;
+}
+
+function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | undefined {
+  const rawTriggerAndAction = rawEvents.split('\n\n');
+  if (rawTriggerAndAction.length > 1) {
+    throw new Error('Поддерживаются события только с одним триггером!');
+  }
+  for (const rawEvent of rawTriggerAndAction) {
+    const result = parseEvent(rawEvent);
+    if (result !== undefined) {
+      const [event, condition] = result;
+      return [event, condition];
+    }
+  }
+  return;
 }
 
 function getTransitions(rawTransitions: CGMLTransition[]): Transition[] {
   const transitions: Transition[] = [];
-
+  for (const rawTransition of rawTransitions) {
+    if (rawTransition.actions == undefined) {
+      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+    }
+    const parsedEvent = parseTransitionEvents(rawTransition.actions);
+    if (parsedEvent == undefined) {
+      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+    }
+    const [eventData, condition] = parsedEvent;
+    transitions.push({
+      source: rawTransition.source,
+      target: rawTransition.target,
+      color: rawTransition.color !== undefined ? rawTransition.color : randomColor(),
+      position: rawTransition.position !== undefined ? rawTransition.position : { x: -1, y: -1 },
+      trigger: eventData.trigger,
+      do: eventData.do,
+      condition: condition,
+    });
+  }
   return transitions;
 }
 
@@ -376,20 +368,17 @@ function parseStateEvents(content: string): EventData[] {
       events.push(event);
     }
   }
-
   return events;
 }
 
 function getNotes(rawNotes: { [id: string]: CGMLNote }): Note[] {
   const notes: Note[] = [];
-
   for (const rawNoteId in rawNotes) {
     const rawNote: CGMLNote = rawNotes[rawNoteId];
     notes.push({
       ...rawNote,
     });
   }
-
   return notes;
 }
 
@@ -425,7 +414,6 @@ export function importGraphml(
 ): Elements {
   try {
     const rawElements: CGMLElements = parseCGML(expression);
-
     const elements: Elements = {
       states: {},
       transitions: [],
@@ -435,7 +423,6 @@ export function importGraphml(
       platform: rawElements.platform,
       meta: {},
     };
-
     if (isPlatformAvailable(rawElements.platform)) {
       elements.meta = parseMeta(rawElements.meta);
       const initialState: InitialState | null = getInitialState(rawElements.initialState);
@@ -448,12 +435,10 @@ export function importGraphml(
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
-
     return elements;
   } catch (error) {
     console.log(error);
     openImportError((error as any).message);
-
     return {
       states: {},
       transitions: [],
@@ -469,93 +454,93 @@ export function importGraphml(
   }
 }
 
-function getOperandString(operand: Variable | string | Condition[] | number) {
-  if (isVariable(operand)) {
-    return `${(operand as Variable).component}.${(operand as Variable).method}`;
-  } else {
-    return operand;
-  }
-}
+// function getOperandString(operand: Variable | string | Condition[] | number) {
+//   if (isVariable(operand)) {
+//     return `${(operand as Variable).component}.${(operand as Variable).method}`;
+//   } else {
+//     return operand;
+//   }
+// }
 
-const PlatformKeys: PlatformDataKeys = {
-  ArduinoUno: [
-    {
-      '@id': 'dName',
-      '@for': 'node',
-      '@attr.name': 'name',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'node',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'edge',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dInitial',
-      '@for': 'node',
-      '@attr.name': 'initial',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'edge',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'node',
-    },
-    {
-      '@id': 'dColor',
-      '@for': 'edge',
-    },
-    {
-      '@id': 'dNote',
-      '@for': 'node',
-    },
-  ],
-  BearlogaDefend: [
-    {
-      '@id': 'dName',
-      '@for': 'node',
-      '@attr.name': 'name',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'node',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'edge',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dInitial',
-      '@for': 'node',
-      '@attr.name': 'initial',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'edge',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'node',
-    },
-    {
-      '@id': 'dNote',
-      '@for': 'node',
-    },
-  ],
-};
+// const PlatformKeys: PlatformDataKeys = {
+//   ArduinoUno: [
+//     {
+//       '@id': 'dName',
+//       '@for': 'node',
+//       '@attr.name': 'name',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dData',
+//       '@for': 'node',
+//       '@attr.name': 'data',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dData',
+//       '@for': 'edge',
+//       '@attr.name': 'data',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dInitial',
+//       '@for': 'node',
+//       '@attr.name': 'initial',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dGeometry',
+//       '@for': 'edge',
+//     },
+//     {
+//       '@id': 'dGeometry',
+//       '@for': 'node',
+//     },
+//     {
+//       '@id': 'dColor',
+//       '@for': 'edge',
+//     },
+//     {
+//       '@id': 'dNote',
+//       '@for': 'node',
+//     },
+//   ],
+//   BearlogaDefend: [
+//     {
+//       '@id': 'dName',
+//       '@for': 'node',
+//       '@attr.name': 'name',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dData',
+//       '@for': 'node',
+//       '@attr.name': 'data',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dData',
+//       '@for': 'edge',
+//       '@attr.name': 'data',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dInitial',
+//       '@for': 'node',
+//       '@attr.name': 'initial',
+//       '@attr.type': 'string',
+//     },
+//     {
+//       '@id': 'dGeometry',
+//       '@for': 'edge',
+//     },
+//     {
+//       '@id': 'dGeometry',
+//       '@for': 'node',
+//     },
+//     {
+//       '@id': 'dNote',
+//       '@for': 'node',
+//     },
+//   ],
+// };

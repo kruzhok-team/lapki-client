@@ -9,6 +9,8 @@ export type Action = {
   args?: ArgList;
 };
 
+export type Meta = { [id: string]: string };
+
 export type CompilerSettings = {
   filename: string;
   compiler: string;

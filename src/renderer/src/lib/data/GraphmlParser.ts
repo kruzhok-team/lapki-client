@@ -6,6 +6,7 @@ import {
   CGMLNote,
   CGMLState,
   CGMLTransition,
+  CGMLComponent,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -21,6 +22,7 @@ import {
   State,
   Transition,
   Variable,
+  Meta,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -82,20 +84,17 @@ function parseCondition(condition: string): Condition {
   throw new Error(`Неизвестный оператор ${operator}`);
 }
 
-function parseComponentNode(content: string, component: OuterComponent) {
+function emptyComponent(): Component {
+  return {
+    type: '',
+    parameters: {},
+  };
+}
+
+function parseComponentNode(content: string, componentId: string): [Component, Meta] {
+  const component: Component = emptyComponent();
+  const meta: { [id: string]: string } = {};
   const unprocessedParameters = content.split('\n');
-  const checkType = (componentType): boolean => {
-    if (platform !== undefined) {
-      return platform.components[componentType] !== undefined;
-    } else {
-      throw new Error(`Платформа не определена!`);
-    }
-  };
-
-  const checkParameter = (parameterName, componentType): boolean => {
-    return platform?.components[componentType].parameters[parameterName] !== undefined;
-  };
-
   for (const parameter of unprocessedParameters) {
     let [parameterName, value] = parameter.split('/');
     parameterName = parameterName.trim();
@@ -103,23 +102,20 @@ function parseComponentNode(content: string, component: OuterComponent) {
     switch (parameterName) {
       case 'type': {
         if (component.type === '') {
-          if (checkType(value)) component.type = value;
-          else {
-            throw new Error(`Неизвестный тип компонента ${value} в платформе ${platform?.name}`);
-          }
+          component.type = value;
         } else {
           throw new Error(
-            `Тип компонента ${component.name} уже указан! Предыдущий тип ${component.type}, новый - ${value}`
+            `Тип у компонента ${componentId} уже указан! Предыдущий тип ${component.type}, новый - ${value}`
           );
         }
         break;
       }
       case 'description': {
-        if (component.description === undefined) {
-          component.description = value;
+        if (meta['description'] === undefined) {
+          meta['description'] = value;
         } else {
           throw new Error(
-            `Описание компонента ${component.name} уже указано! Предыдущее описание ${component.description}, новое - ${value}`
+            `Описание компонента у ${componentId} уже указано! Предыдущее описание ${meta['description']}, новое - ${value}`
           );
         }
         break;
@@ -130,25 +126,20 @@ function parseComponentNode(content: string, component: OuterComponent) {
         break;
       }
       case 'name': {
-        if (component.humanName === undefined || component.humanName === '') {
-          component.humanName = value;
+        if (meta['name'] === undefined) {
+          meta['name'] = value;
         } else {
           throw new Error(
-            `Имя компонента ${component.humanName} уже указано! Предыдущее имя ${component.humanName}, новое - ${value}`
+            `Имя компонента ${componentId} уже указано! Предыдущее имя ${meta['name']}, новое - ${value}`
           );
         }
         break;
       }
       default:
-        if (checkParameter(parameterName, component.type)) {
-          component.parameters[parameterName] = value;
-        } else {
-          throw new Error(
-            `Неизвестный параметр ${parameterName} для компонента типа ${component.type}`
-          );
-        }
+        component.parameters[parameterName] = value;
     }
   }
+  return [component, meta];
 }
 
 function parseEvent(event: string): [EventData, Condition?] | undefined {
@@ -186,16 +177,16 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
   return;
 }
 
-function getAllComponents(elements: Elements, meta: Meta) {
-  if (platform !== undefined && meta.platform.startsWith('BearlogaDefend')) {
-    for (const componentName of Object.keys(platform.components)) {
-      elements.components[componentName] = {
-        type: componentName,
-        parameters: {},
-      };
-    }
-  }
-}
+// function getAllComponents(elements: Elements, meta: Meta) {
+//   if (platform !== undefined && meta.platform.startsWith('BearlogaDefend')) {
+//     for (const componentName of Object.keys(platform.components)) {
+//       elements.components[componentName] = {
+//         type: componentName,
+//         parameters: {},
+//       };
+//     }
+//   }
+// }
 
 function initArgList(args: string[]): ArgList {
   const argList: ArgList = {};
@@ -403,11 +394,24 @@ function parseMeta(unproccessedMeta: string): { [id: string]: string } {
   return meta;
 }
 
+function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
+  [id: string]: Component;
+} {
+  const components: { [id: string]: Component } = {};
+  for (const id in rawComponents) {
+    const rawComponent = rawComponents[id];
+    const [component, meta] = parseComponentNode(rawComponent.parameters, id);
+    component[id] = component;
+  }
+  return components;
+}
+
 const systemComponentAlias = new Map<string, Event>([
   ['entry', { component: 'System', method: 'onEnter' }],
   ['exit', { component: 'System', method: 'onExit' }],
 ]);
 
+// TODO: Components, validation
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
@@ -432,6 +436,7 @@ export function importGraphml(
       elements.notes = getNotes(rawElements.notes);
       elements.states = getStates(rawElements.states);
       elements.transitions = getTransitions(rawElements.transitions);
+      elements.components = getComponents(rawElements.components);
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }

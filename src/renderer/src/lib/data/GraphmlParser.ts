@@ -1,6 +1,28 @@
-import { CGMLElements, parseCGML, CGMLInitialState } from '@kruzhok-team/cyberiadaml-js';
+import { Platform, platform } from '@floating-ui/react-dom';
+import {
+  CGMLElements,
+  parseCGML,
+  CGMLInitialState,
+  CGMLNote,
+  CGMLState,
+  CGMLTransition,
+} from '@kruzhok-team/cyberiadaml-js';
 
-import { Elements, InitialState } from '@renderer/types/diagram';
+import {
+  Action,
+  ArgList,
+  Component,
+  Condition,
+  Elements,
+  Event,
+  EventData,
+  InitialState,
+  Note,
+  State,
+  Transition,
+  Variable,
+} from '@renderer/types/diagram';
+import { ArgumentProto } from '@renderer/types/platform';
 
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
@@ -145,12 +167,12 @@ function parseComponentNode(content: string, component: OuterComponent) {
   }
 }
 
-function parseEvent(elements: Elements, event: string): [EventData, Condition?] | undefined {
+function parseEvent(event: string): [EventData, Condition?] | undefined {
   if (event.includes('/')) {
     let [trigger, stringActions] = event.split('/');
     trigger = trigger.trim();
     let condition: Condition | undefined;
-    const actions = parseActions(elements, stringActions.trim());
+    const actions = parseActions(stringActions.trim());
     if (trigger !== undefined) {
       if (trigger.includes('[')) {
         const event = trigger.split('[');
@@ -212,7 +234,16 @@ function getAllComponents(elements: Elements, meta: Meta) {
   }
 }
 
-function parseAction(elements: Elements, unproccessedAction: string): Action | undefined {
+function initArgList(args: string[]): ArgList {
+  const argList: ArgList = {};
+  args.forEach((value: string, index: number) => {
+    argList[`${index}`] = value;
+  });
+
+  return argList;
+}
+
+function parseAction(unproccessedAction: string): Action | undefined {
   const [component_name, action] = unproccessedAction.trim().split('.');
   if (action !== undefined) {
     // На случай, если действий у события нет
@@ -222,66 +253,67 @@ function parseAction(elements: Elements, unproccessedAction: string): Action | u
       .split(',')
       .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
     const method = action.slice(0, bracketPos);
-    const resultAction: Action = {
+    return {
       component: component_name,
       method: method,
+      args: initArgList(args),
     };
 
-    const component = elements.components[component_name];
-    const argList: ArgList = {};
+    // const component = elements.components[component_name];
+    // const argList: ArgList = {};
     // Если параметров у метода нет, то methodParameters будет равен undefined
-    if (component !== undefined) {
-      const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
-      if (
-        platform?.components[component.type] !== undefined &&
-        platform?.components[component.type].methods[method] !== undefined
-      ) {
-        for (const index in methodParameters) {
-          const parameter: ArgumentProto = methodParameters[index];
-          if (args[index] !== undefined && args[index] !== '') {
-            argList[parameter.name] = args[index];
-          } else {
-            throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
-          }
-        }
-        if (methodParameters === undefined) {
-          if (args.length === 0) {
-            resultAction.args = argList;
-          } else {
-            throw new Error(
-              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
-            );
-          }
-        } else {
-          if (Object.keys(argList).length === Object.keys(methodParameters).length) {
-            resultAction.args = argList;
-          } else {
-            throw new Error(
-              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
-                Object.keys(methodParameters).length
-              }, получено: ${args.length}`
-            );
-          }
-        }
-        return resultAction;
-      } else {
-        throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
-      }
-    } else {
-      throw new Error(`Неизвестный компонент ${component_name}`);
-    }
+    // if (component !== undefined) {
+    //   const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
+    //   if (
+    //     platform?.components[component.type] !== undefined &&
+    //     platform?.components[component.type].methods[method] !== undefined
+    //   ) {
+    //     for (const index in methodParameters) {
+    //       const parameter: ArgumentProto = methodParameters[index];
+    //       if (args[index] !== undefined && args[index] !== '') {
+    //         argList[parameter.name] = args[index];
+    //       } else {
+    //         throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
+    //       }
+    //     }
+    //     if (methodParameters === undefined) {
+    //       if (args.length === 0) {
+    //         resultAction.args = argList;
+    //       } else {
+    //         throw new Error(
+    //           `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
+    //         );
+    //       }
+    //     } else {
+    //       if (Object.keys(argList).length === Object.keys(methodParameters).length) {
+    //         resultAction.args = argList;
+    //       } else {
+    //         throw new Error(
+    //           `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
+    //             Object.keys(methodParameters).length
+    //           }, получено: ${args.length}`
+    //         );
+    //       }
+    //     }
+    //     return resultAction;
+    //   } else {
+    //     throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
+    //   }
+    // } else {
+    //   throw new Error(`Неизвестный компонент ${component_name}`);
+    // }
   } else {
     return;
   }
 }
 
-function parseActions(elements: Elements, unsplitedActions: string): Action[] | undefined {
+function parseActions(unsplitedActions: string): Action[] | undefined {
   if (platform !== undefined && unsplitedActions != '') {
     // Считаем, что действия находятся на разных строках
     const actions = unsplitedActions.split('\n');
     const resultActions = new Array<Action>();
     for (const unproccessedAction of actions) {
-      const resultAction = parseAction(elements, unproccessedAction);
+      const resultAction = parseAction(unproccessedAction);
       if (resultAction !== undefined) {
         resultActions.push(resultAction);
       }
@@ -309,6 +341,56 @@ function getInitialState(rawInitialState: CGMLInitialState | null): InitialState
   }
 
   return null;
+}
+
+function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: State } {
+  const states: { [id: string]: State } = {};
+
+  for (const rawStateId in rawStates) {
+    const rawState = rawStates[rawStateId];
+    states[rawStateId] = {
+      name: rawState.name,
+      bounds: rawState.bounds,
+      parent: rawState.parent,
+      events: parseStateEvents(rawState.actions),
+    };
+  }
+
+  return states;
+}
+
+function getTransitions(rawTransitions: CGMLTransition[]): Transition[] {
+  const transitions: Transition[] = [];
+
+  return transitions;
+}
+
+function parseStateEvents(content: string): EventData[] {
+  // По формату CyberiadaGraphML события разделены пустой строкой.
+  const events: EventData[] = [];
+  const unprocessedEventsAndActions = content.split('\n\n');
+  for (const unprocessedEvent of unprocessedEventsAndActions) {
+    const result = parseEvent(unprocessedEvent);
+    if (result !== undefined) {
+      const [event, condition] = result;
+      events.push(event);
+    }
+  }
+
+  return events;
+}
+
+function getNotes(rawNotes: { [id: string]: CGMLNote }): Note[] {
+  const notes: Note[] = [];
+
+  for (const rawNoteId in rawNotes) {
+    const rawNote: CGMLNote = rawNotes[rawNoteId];
+    notes.push({
+      ...rawNote,
+    });
+  }
+
+  return notes;
 }
 
 // Функция получает на вход строку, в которой мета-информация разделена символами / и \n
@@ -348,10 +430,7 @@ export function importGraphml(
       states: {},
       transitions: [],
       notes: [],
-      initialState: {
-        target: '',
-        position: { x: 0, y: 0 },
-      },
+      initialState: null,
       components: {},
       platform: rawElements.platform,
       meta: {},
@@ -359,16 +438,13 @@ export function importGraphml(
 
     if (isPlatformAvailable(rawElements.platform)) {
       elements.meta = parseMeta(rawElements.meta);
-
-      if (rawElements.initialState !== null) {
-        if (rawElements.initialState.position == null) {
-          throw new Error('No position of initial state!');
-        }
-        const initialState: InitialState | null = getInitialState(rawElements.initialState);
-        if (initialState !== null) {
-          elements.initialState = initialState;
-        }
+      const initialState: InitialState | null = getInitialState(rawElements.initialState);
+      if (initialState !== null) {
+        elements.initialState = initialState;
       }
+      elements.notes = getNotes(rawElements.notes);
+      elements.states = getStates(rawElements.states);
+      elements.transitions = getTransitions(rawElements.transitions);
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }

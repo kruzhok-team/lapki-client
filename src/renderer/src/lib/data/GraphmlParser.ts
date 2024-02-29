@@ -279,6 +279,7 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
 }
 
 function getInitialState(rawInitialState: CGMLInitialState | null): InitialState | null {
+  console.log(rawInitialState);
   if (rawInitialState !== null) {
     if (rawInitialState.position !== undefined) {
       return {
@@ -324,14 +325,22 @@ function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | und
   return;
 }
 
-function getTransitions(rawTransitions: CGMLTransition[]): Transition[] {
+function getTransitions(
+  rawTransitions: CGMLTransition[],
+  initialStateId: string | undefined
+): Transition[] {
   const transitions: Transition[] = [];
   for (const rawTransition of rawTransitions) {
     if (rawTransition.actions == undefined) {
-      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+      if (initialStateId == rawTransition.source) {
+        continue;
+      } else {
+        throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+      }
     }
     const parsedEvent = parseTransitionEvents(rawTransition.actions);
     if (parsedEvent == undefined) {
+      console.log(rawTransition);
       throw new Error('Безусловный (без триггеров) переход не поддерживается.');
     }
     const [eventData, condition] = parsedEvent;
@@ -401,8 +410,10 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
     const [component, meta] = parseComponentNode(rawComponent.parameters, id);
-    component[id] = component;
+    components[id] = component;
   }
+  console.log(rawComponents);
+  console.log(components);
   return components;
 }
 
@@ -435,7 +446,7 @@ export function importGraphml(
       }
       elements.notes = getNotes(rawElements.notes);
       elements.states = getStates(rawElements.states);
-      elements.transitions = getTransitions(rawElements.transitions);
+      elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
       elements.components = getComponents(rawElements.components);
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
@@ -549,3 +560,7 @@ export function importGraphml(
 //     },
 //   ],
 // };
+
+export function exportGraphml(elements: Elements): string {
+  return '';
+}

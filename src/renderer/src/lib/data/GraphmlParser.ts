@@ -1,4 +1,3 @@
-import { Platform, platform } from '@floating-ui/react-dom';
 import {
   CGMLElements,
   parseCGML,
@@ -25,9 +24,9 @@ import {
   Meta,
 } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
-import { ArgumentProto } from '@renderer/types/platform';
+import { Platform, ArgumentProto, ComponentProto, MethodProto } from '@renderer/types/platform';
 
-import { getPlatform, isPlatformAvailable } from './PlatformLoader';
+import { getPlatform, isPlatformAvailable, loadPlatform } from './PlatformLoader';
 
 const randomColor = (): string => {
   let result = '';
@@ -191,7 +190,7 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
 function initArgList(args: string[]): ArgList {
   const argList: ArgList = {};
   args.forEach((value: string, index: number) => {
-    argList[`${index}`] = value;
+    argList[`${index}`] = value.trim();
   });
   return argList;
 }
@@ -261,7 +260,7 @@ function parseAction(unproccessedAction: string): Action | undefined {
 }
 
 function parseActions(unsplitedActions: string): Action[] | undefined {
-  if (platform !== undefined && unsplitedActions != '') {
+  if (unsplitedActions != '') {
     // Считаем, что действия находятся на разных строках
     const actions = unsplitedActions.split('\n');
     const resultActions = new Array<Action>();
@@ -417,6 +416,63 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   return components;
 }
 
+function labelParameters(args: ArgList, method: MethodProto): ArgList {
+  const labeledArgs: ArgList = { ...args };
+  method.parameters?.forEach((element, index) => {
+    labeledArgs[element.name] = args[`${index}`];
+    delete labeledArgs[`${index}`];
+  });
+  return labeledArgs;
+}
+
+function getProtoMethod(
+  method: string,
+  component: ComponentProto | undefined
+): MethodProto | undefined {
+  return component?.methods[method];
+}
+
+function getProtoComponent(
+  component: string,
+  platformComponents: { [name: string]: ComponentProto },
+  components: { [name: string]: Component }
+): ComponentProto | undefined {
+  return platformComponents[components[component]?.type];
+}
+
+function labelStateParameters(
+  states: { [id: string]: State },
+  platformComponents: { [name: string]: ComponentProto },
+  components: { [name: string]: Component }
+): { [id: string]: State } {
+  const labeledStates: { [id: string]: State } = {};
+  for (const stateIdx in states) {
+    const state = states[stateIdx];
+    const labeledState = { ...state };
+    console.log(labeledState);
+    for (const eventIdx in labeledState.events) {
+      const event = labeledState.events[eventIdx];
+      for (const actionIdx in event.do) {
+        const action = event.do[actionIdx];
+        if (action.args !== undefined) {
+          const component: ComponentProto | undefined = getProtoComponent(
+            action.component,
+            platformComponents,
+            components
+          );
+          const method: MethodProto | undefined = getProtoMethod(action.method, component);
+          if (component !== undefined && method !== undefined) {
+            labeledState.events[eventIdx].do[actionIdx].args = labelParameters(action.args, method);
+          }
+        }
+      }
+    }
+    labeledStates[stateIdx] = labeledState;
+  }
+  console.log(labeledStates);
+  return labeledStates;
+}
+
 const systemComponentAlias = new Map<string, Event>([
   ['entry', { component: 'System', method: 'onEnter' }],
   ['exit', { component: 'System', method: 'onExit' }],
@@ -448,6 +504,17 @@ export function importGraphml(
       elements.states = getStates(rawElements.states);
       elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
       elements.components = getComponents(rawElements.components);
+      const platform: Platform | undefined = getPlatform(elements.platform);
+      if (platform == undefined) {
+        throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
+      }
+      console.log(JSON.stringify(elements.states));
+      elements.states = labelStateParameters(
+        elements.states,
+        platform.components,
+        elements.components
+      );
+      console.log(elements.states);
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }

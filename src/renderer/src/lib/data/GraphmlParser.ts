@@ -189,6 +189,8 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
 
 function initArgList(args: string[]): ArgList {
   const argList: ArgList = {};
+  // Затычка, чтобы не прокидывать повсюду платформу и компоненты.
+  // Настоящие название аргументов подтягиваются позднее.
   args.forEach((value: string, index: number) => {
     argList[`${index}`] = value.trim();
   });
@@ -363,7 +365,7 @@ function parseStateEvents(content: string): EventData[] {
   for (const unprocessedEvent of unprocessedEventsAndActions) {
     const result = parseEvent(unprocessedEvent);
     if (result !== undefined) {
-      const [event, condition] = result;
+      const [event, condition] = result; // У нас не поддерживаются условия в событиях в состоянии
       events.push(event);
     }
   }
@@ -473,12 +475,44 @@ function labelStateParameters(
   return labeledStates;
 }
 
+function labelTransitionParameters(
+  transitions: Transition[],
+  platformComponents: { [name: string]: ComponentProto },
+  components: { [name: string]: Component }
+): Transition[] {
+  const labeledTransitions: Transition[] = [];
+
+  for (const transition of transitions) {
+    const labeledTransition: Transition = transition;
+    if (labeledTransition.do !== undefined) {
+      for (const actionIdx in labeledTransition.do) {
+        const action = labeledTransition.do[actionIdx];
+        // FIXME: DRY
+        if (action.args !== undefined) {
+          const component: ComponentProto | undefined = getProtoComponent(
+            action.component,
+            platformComponents,
+            components
+          );
+          const method: MethodProto | undefined = getProtoMethod(action.method, component);
+          if (component !== undefined && method !== undefined) {
+            labeledTransition.do[actionIdx].args = labelParameters(action.args, method);
+          }
+        }
+      }
+    }
+    labeledTransitions.push(labeledTransition);
+  }
+
+  return labeledTransitions;
+}
+
 const systemComponentAlias = new Map<string, Event>([
   ['entry', { component: 'System', method: 'onEnter' }],
   ['exit', { component: 'System', method: 'onExit' }],
 ]);
 
-// TODO: Components, validation
+// TODO: labeling, validation
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
@@ -514,7 +548,12 @@ export function importGraphml(
         platform.components,
         elements.components
       );
-      console.log(elements.states);
+      elements.transitions = labelTransitionParameters(
+        elements.transitions,
+        platform.components,
+        elements.components
+      );
+      console.log(JSON.stringify(elements.transitions));
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }

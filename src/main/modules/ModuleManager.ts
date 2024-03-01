@@ -62,7 +62,7 @@ export class ModuleManager {
       if (modulePath) {
         switch (module) {
           case 'lapki-flasher': {
-            const port = await settings.get('flasher.port');
+            const port = await settings.get('flasher.localPort');
             /*
             параметры локального загрузчика:
               -address string

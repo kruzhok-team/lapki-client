@@ -26,7 +26,7 @@ export interface FlasherProps {
 
 export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
-  const { host, port, type } = flasherSetting ?? {};
+  const flasherIsLocal = flasherSetting?.type === 'local';
 
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
@@ -35,7 +35,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
-  const flasherIsLocal = type === 'local';
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
@@ -76,8 +75,10 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
+    if (!flasherSetting) return;
+
     Flasher.setAutoReconnect(data.type === 'remote');
-    setFlasherSetting(data);
+    setFlasherSetting({ ...flasherSetting, ...data });
   };
 
   const handleFileChoose = () => {
@@ -175,10 +176,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   }, []);
 
   useEffect(() => {
-    if (!host || !port) return;
+    if (!flasherSetting) return;
+    const { host, port } = flasherSetting;
 
     Flasher.connect(host, port);
-  }, [host, port]);
+  }, [flasherSetting]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
@@ -196,7 +198,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleReconnect = () => {
-    if (!host || !port) return;
+    if (!flasherSetting) return;
+    const { host, port } = flasherSetting;
 
     if (flasherIsLocal) {
       window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {

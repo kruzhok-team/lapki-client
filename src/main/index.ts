@@ -148,10 +148,6 @@ app.whenReady().then(() => {
     return handleOpenPlatformFile(absolute_path);
   });
 
-  ipcMain.handle('Flasher:getFreePort', () => {
-    return findFreePort();
-  });
-
   ipcMain.handle('appVersion', app.getVersion);
 
   ipcMain.handle('getAllTemplates', getAllTemplates);
@@ -174,7 +170,7 @@ app.whenReady().then(() => {
 
   const startFlasher = async () => {
     const port = await findFreePort();
-    settings.set('flasher.port', port);
+    await settings.set('flasher.localPort', port);
 
     ModuleManager.startLocalModule('lapki-flasher');
   };

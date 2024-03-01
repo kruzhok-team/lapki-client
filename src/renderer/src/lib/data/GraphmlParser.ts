@@ -26,6 +26,7 @@ import {
 import { Point } from '@renderer/types/graphics';
 import { Platform, ArgumentProto, ComponentProto, MethodProto } from '@renderer/types/platform';
 
+import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable, loadPlatform } from './PlatformLoader';
 
 const randomColor = (): string => {
@@ -175,17 +176,6 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
   }
   return;
 }
-
-// function getAllComponents(elements: Elements, meta: Meta) {
-//   if (platform !== undefined && meta.platform.startsWith('BearlogaDefend')) {
-//     for (const componentName of Object.keys(platform.components)) {
-//       elements.components[componentName] = {
-//         type: componentName,
-//         parameters: {},
-//       };
-//     }
-//   }
-// }
 
 function initArgList(args: string[]): ArgList {
   const argList: ArgList = {};
@@ -427,14 +417,14 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
   return labeledArgs;
 }
 
-function getProtoMethod(
+export function getProtoMethod(
   method: string,
   component: ComponentProto | undefined
 ): MethodProto | undefined {
   return component?.methods[method];
 }
 
-function getProtoComponent(
+export function getProtoComponent(
   component: string,
   platformComponents: { [name: string]: ComponentProto },
   components: { [name: string]: Component }
@@ -516,7 +506,7 @@ const systemComponentAlias = new Map<string, Event>([
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
-): Elements {
+): Elements | undefined {
   try {
     const rawElements: CGMLElements = parseCGML(expression);
     const elements: Elements = {
@@ -554,6 +544,7 @@ export function importGraphml(
         elements.components
       );
       console.log(JSON.stringify(elements.transitions));
+      validateElements(elements, platform);
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
@@ -561,18 +552,7 @@ export function importGraphml(
   } catch (error) {
     console.log(error);
     openImportError((error as any).message);
-    return {
-      states: {},
-      transitions: [],
-      notes: [],
-      initialState: {
-        target: '',
-        position: { x: 0, y: 0 },
-      },
-      components: {},
-      platform: '',
-      meta: {},
-    };
+    return;
   }
 }
 

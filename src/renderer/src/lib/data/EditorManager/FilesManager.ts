@@ -100,7 +100,9 @@ export class FilesManager {
     if (openData[0]) {
       try {
         const data = importGraphml(openData[3], openImportError);
-
+        if (data == undefined) {
+          return makeLeft(null);
+        }
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,
@@ -186,7 +188,9 @@ export class FilesManager {
     );
 
     const data = importGraphml(templateData, openImportError);
-
+    if (data == undefined) {
+      return;
+    }
     this.editorManager.init(null, 'Без названия', data);
     this.editorManager.makeStale();
   }

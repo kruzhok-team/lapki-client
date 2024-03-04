@@ -1,6 +1,6 @@
 import isequal from 'lodash.isequal';
 
-import { Elements, State, Event, Component, ArgList } from '@renderer/types/diagram';
+import { Elements, State, Component, ArgList, Transition } from '@renderer/types/diagram';
 import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 
 import { getProtoComponent, getProtoMethod } from './GraphmlParser';
@@ -23,19 +23,21 @@ function checkMethod(method: string, component: ComponentProto) {
 }
 
 function validateEvent(
-  event: Event,
+  component: string,
+  method: string,
+  args: ArgList | undefined,
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
-  if (defaultComponents[event.component] !== undefined) {
-    if (!defaultComponents[event.component].includes(event.method)) {
-      throw new Error(`Неизвестное событие ${event.method} для компонента System`);
+  if (defaultComponents[component] !== undefined) {
+    if (!defaultComponents[component].includes(method)) {
+      throw new Error(`Неизвестное событие ${method} для компонента System`);
     }
     return;
   } else {
-    checkComponent(event.component, components);
+    checkComponent(component, components);
     const protoComponent: ComponentProto | undefined = getProtoComponent(
-      event.component,
+      component,
       platformComponents,
       components
     );
@@ -44,23 +46,21 @@ function validateEvent(
       throw new Error('Internal error: component didnt be validated');
     }
 
-    checkMethod(event.method, protoComponent);
-    const protoMethod: MethodProto | undefined = getProtoMethod(event.method, protoComponent);
+    checkMethod(method, protoComponent);
+    const protoMethod: MethodProto | undefined = getProtoMethod(method, protoComponent);
 
     if (protoMethod == undefined) {
       throw new Error('Internal error: method didnt be validated');
     }
 
-    if (event.args != undefined) {
-      validateArgs(event.method, protoMethod, event.args);
-    }
+    validateArgs(method, protoMethod, args);
   }
 }
 
-function validateArgs(methodName: string, method: MethodProto, args: ArgList) {
+function validateArgs(methodName: string, method: MethodProto, args: ArgList | undefined) {
   const methodArgs: ArgumentProto[] | undefined = method.parameters;
   if (methodArgs == undefined) {
-    if (Object.keys(args).length != 0) {
+    if (args !== undefined && Object.keys(args).length != 0) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
           Object.keys(args).length
@@ -68,8 +68,18 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList) {
       );
     }
   } else {
-    for (const arg in methodArgs) {
-      console.log(arg);
+    console.log(args);
+    if (args == undefined) {
+      console.log(methodArgs);
+      throw new Error(
+        `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${methodArgs.length}`
+      );
+    }
+    const argNames = Object.keys(args);
+    for (const argIdx in methodArgs) {
+      if (argNames[argIdx] !== methodArgs[argIdx].name) {
+        throw new Error('Неправильный аргумент!');
+      }
     }
   }
 }
@@ -80,8 +90,35 @@ function validateStates(
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const state of Object.values(states)) {
+    if (state.parent !== undefined && states[state.parent] == undefined) {
+      throw new Error(`Unknown parent state ${state.parent}`);
+    }
     for (const event of state.events) {
-      validateEvent(event.trigger, components, platformComponents);
+      const trigger = event.trigger;
+      validateEvent(
+        trigger.component,
+        trigger.method,
+        trigger.args,
+        components,
+        platformComponents
+      );
+      for (const action of event.do) {
+        validateEvent(action.component, action.method, action.args, components, platformComponents);
+      }
+    }
+  }
+}
+
+function validateTransitions(
+  transitions: Transition[],
+  components: { [id: string]: Component },
+  platformComponents: { [name: string]: ComponentProto }
+) {
+  for (const transition of transitions) {
+    if (transition.do !== undefined) {
+      for (const action of transition.do) {
+        validateEvent(action.component, action.method, action.args, components, platformComponents);
+      }
     }
   }
 }
@@ -113,6 +150,8 @@ function validateComponents(
 }
 
 export function validateElements(elements: Elements, platform: Platform) {
+  console.log(elements);
   validateComponents(platform.components, elements.components);
   validateStates(elements.states, elements.components, platform.components);
+  validateTransitions(elements.transitions, elements.components, platform.components);
 }

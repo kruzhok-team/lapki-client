@@ -1,12 +1,12 @@
 import isequal from 'lodash.isequal';
 
-import { Elements, State, Event, Component } from '@renderer/types/diagram';
-import { ComponentProto, Platform } from '@renderer/types/platform';
+import { Elements, State, Event, Component, ArgList } from '@renderer/types/diagram';
+import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 
 import { getProtoComponent, getProtoMethod } from './GraphmlParser';
 
-const defaultComponents = {
-  System: ['onEnter, onExit'],
+const defaultComponents: { [key: string]: string[] } = {
+  System: ['onEnter', 'onExit'],
 };
 
 function checkComponent(component: string, components: { [id: string]: Component }) {
@@ -16,14 +16,62 @@ function checkComponent(component: string, components: { [id: string]: Component
   }
 }
 
-// function checkMethod(comp);
+function checkMethod(method: string, component: ComponentProto) {
+  if (component.methods[method] == undefined) {
+    throw new Error(`Неизвестный метод ${method}`);
+  }
+}
 
 function validateEvent(
   event: Event,
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
-  checkComponent(event.component, components);
+  if (defaultComponents[event.component] !== undefined) {
+    if (!defaultComponents[event.component].includes(event.method)) {
+      throw new Error(`Неизвестное событие ${event.method} для компонента System`);
+    }
+    return;
+  } else {
+    checkComponent(event.component, components);
+    const protoComponent: ComponentProto | undefined = getProtoComponent(
+      event.component,
+      platformComponents,
+      components
+    );
+
+    if (protoComponent == undefined) {
+      throw new Error('Internal error: component didnt be validated');
+    }
+
+    checkMethod(event.method, protoComponent);
+    const protoMethod: MethodProto | undefined = getProtoMethod(event.method, protoComponent);
+
+    if (protoMethod == undefined) {
+      throw new Error('Internal error: method didnt be validated');
+    }
+
+    if (event.args != undefined) {
+      validateArgs(event.method, protoMethod, event.args);
+    }
+  }
+}
+
+function validateArgs(methodName: string, method: MethodProto, args: ArgList) {
+  const methodArgs: ArgumentProto[] | undefined = method.parameters;
+  if (methodArgs == undefined) {
+    if (Object.keys(args).length != 0) {
+      throw new Error(
+        `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
+          Object.keys(args).length
+        }`
+      );
+    }
+  } else {
+    for (const arg in methodArgs) {
+      console.log(arg);
+    }
+  }
 }
 
 function validateStates(

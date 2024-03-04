@@ -30,7 +30,6 @@ description/ Включение и выключение лампочки по т
 name/ Светодиод
 description/ Встроенный в плату светодиод, чтобы им мигать
 pin/ 12
-HUI/ aedwqdawdad
         </data>
     </node>
 

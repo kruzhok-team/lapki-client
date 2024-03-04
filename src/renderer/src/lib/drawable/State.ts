@@ -134,7 +134,9 @@ export class State extends Node {
       y: y + paddingY,
       textAlign: 'left',
       color: this.data.name !== '' ? style.titleColor : style.titleColorUndefined,
-      font: `${fontSize}px/1 'Fira Sans'`,
+      fontSize,
+      lineHeight: 1,
+      fontFamily: 'Fira Sans',
     });
 
     ctx.closePath();

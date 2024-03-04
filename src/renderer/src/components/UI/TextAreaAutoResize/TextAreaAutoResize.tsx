@@ -7,7 +7,7 @@ interface TextAreaAutoResizeProps extends ComponentProps<'span'> {
   placeholder?: string;
 }
 
-/*
+/**
   Поле ввода которое автоматически растягивается по высоте при вводе текста
 */
 export const TextAreaAutoResize = forwardRef<HTMLSpanElement, TextAreaAutoResizeProps>(

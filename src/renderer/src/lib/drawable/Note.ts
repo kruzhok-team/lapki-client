@@ -56,10 +56,14 @@ export class Note extends Node {
   }
 
   prepareText() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
     this.textData = {
-      ...prepareText(ctx, this.data.text || placeholder, '16px/1 "Fira Sans"', 200 - 2 * 10),
+      ...prepareText({
+        text: this.data.text || placeholder,
+        maxWidth: 200 - 2 * 10,
+        fontFamily: 'Fira Sans',
+        fontSize: 16,
+        lineHeight: 1,
+      }),
       hasText: Boolean(this.data.text),
     };
   }
@@ -70,7 +74,6 @@ export class Note extends Node {
     const { x, y, width, height } = this.drawBounds;
     const textToDraw = this.textData.hasText ? this.textData.textArray : placeholder;
     const { padding, fontSize, color, borderRadius } = this.computedStyles;
-    const font = `${fontSize}px/1 'Fira Sans'`;
 
     ctx.fillStyle = 'black';
     ctx.globalAlpha = 0.3;
@@ -86,7 +89,9 @@ export class Note extends Node {
       y: y + padding,
       textAlign: 'left',
       color,
-      font,
+      fontFamily: 'Fira Sans',
+      fontSize,
+      lineHeight: 1,
     });
 
     if (this.isSelected) {

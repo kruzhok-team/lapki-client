@@ -49,14 +49,18 @@ export class Events {
       const pX = 15 / this.container.app.manager.data.scale;
       const pY = 10 / this.container.app.manager.data.scale;
 
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
       const text = `entry/
     LED1.on()
     timer1.start(1000)
     timer1.stop(1000)`;
 
-      const { textArray, height } = prepareText(ctx, text, '16px/1 "Fira Sans"', width - 2 * pX);
+      const { textArray, height } = prepareText({
+        text,
+        fontSize: 16,
+        fontFamily: 'monospace',
+        lineHeight: 1.4,
+        maxWidth: width - 2 * pX,
+      });
 
       this.textArray = textArray;
       this.sizes.height = height + pY * 2;
@@ -202,7 +206,6 @@ export class Events {
     const px = 15 / this.container.app.manager.data.scale;
     const py = 10 / this.container.app.manager.data.scale;
     const fontSize = 16 / this.container.app.manager.data.scale;
-    const font = `${fontSize}px/1 'Fira Sans'`;
 
     ctx.beginPath();
 
@@ -211,7 +214,9 @@ export class Events {
       y: y + titleHeight + py,
       textAlign: 'left',
       color: getColor('text-primary'),
-      font,
+      fontSize,
+      fontFamily: 'monospace',
+      lineHeight: 1.4,
     });
 
     ctx.closePath();

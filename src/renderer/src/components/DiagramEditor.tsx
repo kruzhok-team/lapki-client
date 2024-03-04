@@ -6,7 +6,7 @@ import {
   EventsModal,
   EventsModalData,
   NoteEdit,
-  StateTextEdit,
+  NodeTextEdit,
   StateNameModal,
 } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
@@ -79,6 +79,8 @@ export const DiagramEditor: React.FC = () => {
 
     //Здесь мы открываем модальное окно редактирования созданной связи
     editor.container.transitionsController.on('changeTransition', (target) => {
+      if (editor.textMode) return;
+
       ClearUseState();
       setEvents(target.data.do ?? []);
       setTransition(target);
@@ -179,7 +181,7 @@ export const DiagramEditor: React.FC = () => {
       {isMounted && (
         <>
           <StateNameModal />
-          <StateTextEdit />
+          <NodeTextEdit />
           <NoteEdit />
 
           <EventsModal

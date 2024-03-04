@@ -37,6 +37,7 @@
     "@floating-ui/react-dom": "^2.0.1",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@types/ws": "^8.5.10",
+    "@uiw/codemirror-themes": "^4.21.24",
     "@uiw/react-codemirror": "^4.21.21",
     "blob-util": "^2.0.2",
     "buffer": "^6.0.3",

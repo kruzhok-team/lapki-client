@@ -161,11 +161,15 @@ export const NodeTextEdit: React.FC = () => {
       ref={editorRef}
       theme={themes[nodeData?.type ?? 'state']}
       style={style}
-      className={twMerge('fixed overflow-hidden [&_.cm-content]:p-0', !isOpen && 'hidden')}
+      className={twMerge(
+        'fixed overflow-hidden [&_.cm-content]:p-0 [&_.cm-line]:pl-[15px]',
+        !isOpen && 'hidden'
+      )}
       value={nodeData?.initialValue ?? ''}
       onBlur={close}
       basicSetup={{
         lineNumbers: false,
+        foldGutter: false,
       }}
     />
   );

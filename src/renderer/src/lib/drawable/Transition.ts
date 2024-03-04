@@ -75,6 +75,12 @@ export class Transition extends Node {
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     this.drawArrows(ctx);
+    this.drawConditionBody(ctx);
+
+    if (this.isSelected) {
+      this.drawSelection(ctx);
+    }
+
     if (this.container.app.textMode) {
       return this.drawTextCondition(ctx);
     }
@@ -82,15 +88,8 @@ export class Transition extends Node {
     this.drawImageCondition(ctx);
   }
 
-  private drawImageCondition(ctx: CanvasRenderingContext2D) {
+  private drawConditionBody(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
-    const eventMargin = picto.eventMargin;
-    const p = 15 / this.container.app.manager.data.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.app.manager.data.scale;
-    const opacity = this.isSelected ? 1.0 : 0.7;
-    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    ctx.fillStyle = stateStyle.eventColor;
-    ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
@@ -100,6 +99,17 @@ export class Transition extends Node {
     ctx.closePath();
 
     ctx.fillStyle = transitionStyle.bgColor;
+  }
+
+  private drawImageCondition(ctx: CanvasRenderingContext2D) {
+    const { x, y, width } = this.drawBounds;
+    const eventMargin = picto.eventMargin;
+    const p = 15 / this.container.app.manager.data.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.app.manager.data.scale;
+    const opacity = this.isSelected ? 1.0 : 0.7;
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
 
     const trigger = this.data.trigger;
     const platform = this.container.machineController.platform;
@@ -150,25 +160,12 @@ export class Transition extends Node {
     ctx.fillText(trigger.method, x + p, y + fontSize + p);
     ctx.closePath();
     */
-
-    if (this.isSelected) {
-      this.drawSelection(ctx);
-    }
   }
 
   private drawTextCondition(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.drawBounds;
+    const { x, y } = this.drawBounds;
     const p = 15 / this.container.app.manager.data.scale;
     const fontSize = 16 / this.container.app.manager.data.scale;
-
-    ctx.fillStyle = 'rgb(23, 23, 23)';
-
-    ctx.beginPath();
-    ctx.roundRect(x, y, width, height, 8 / this.container.app.manager.data.scale);
-    ctx.fill();
-    ctx.closePath();
-
-    ctx.beginPath();
 
     drawText(ctx, this.textData.textArray, {
       x: x + p,

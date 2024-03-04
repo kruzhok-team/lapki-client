@@ -23,11 +23,10 @@ import {
   Variable,
   Meta,
 } from '@renderer/types/diagram';
-import { Point } from '@renderer/types/graphics';
 import { Platform, ArgumentProto, ComponentProto, MethodProto } from '@renderer/types/platform';
 
 import { validateElements } from './ElementsValidator';
-import { getPlatform, isPlatformAvailable, loadPlatform } from './PlatformLoader';
+import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
 const randomColor = (): string => {
   let result = '';
@@ -202,50 +201,6 @@ function parseAction(unproccessedAction: string): Action | undefined {
       method: method,
       args: initArgList(args),
     };
-
-    // const component = elements.components[component_name];
-    // const argList: ArgList = {};
-    // Если параметров у метода нет, то methodParameters будет равен undefined
-    // if (component !== undefined) {
-    //   const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
-    //   if (
-    //     platform?.components[component.type] !== undefined &&
-    //     platform?.components[component.type].methods[method] !== undefined
-    //   ) {
-    //     for (const index in methodParameters) {
-    //       const parameter: ArgumentProto = methodParameters[index];
-    //       if (args[index] !== undefined && args[index] !== '') {
-    //         argList[parameter.name] = args[index];
-    //       } else {
-    //         throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
-    //       }
-    //     }
-    //     if (methodParameters === undefined) {
-    //       if (args.length === 0) {
-    //         resultAction.args = argList;
-    //       } else {
-    //         throw new Error(
-    //           `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
-    //         );
-    //       }
-    //     } else {
-    //       if (Object.keys(argList).length === Object.keys(methodParameters).length) {
-    //         resultAction.args = argList;
-    //       } else {
-    //         throw new Error(
-    //           `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
-    //             Object.keys(methodParameters).length
-    //           }, получено: ${args.length}`
-    //         );
-    //       }
-    //     }
-    //     return resultAction;
-    //   } else {
-    //     throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
-    //   }
-    // } else {
-    //   throw new Error(`Неизвестный компонент ${component_name}`);
-    // }
   } else {
     return;
   }
@@ -444,6 +399,7 @@ function labelStateParameters(
     console.log(labeledState);
     for (const eventIdx in labeledState.events) {
       const event = labeledState.events[eventIdx];
+      console.log(event);
       for (const actionIdx in event.do) {
         const action = event.do[actionIdx];
         if (action.args !== undefined) {
@@ -497,12 +453,28 @@ function labelTransitionParameters(
   return labeledTransitions;
 }
 
+function getAllComponent(platformComponents: { [name: string]: ComponentProto }): {
+  [name: string]: Component;
+} {
+  const components: {
+    [name: string]: Component;
+  } = {};
+
+  for (const id in platformComponents) {
+    components[id] = {
+      type: id,
+      parameters: {},
+    };
+  }
+
+  return components;
+}
+
 const systemComponentAlias = new Map<string, Event>([
   ['entry', { component: 'System', method: 'onEnter' }],
   ['exit', { component: 'System', method: 'onExit' }],
 ]);
 
-// TODO: labeling, validation
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
@@ -519,6 +491,16 @@ export function importGraphml(
       meta: {},
     };
     if (isPlatformAvailable(rawElements.platform)) {
+      // TODO: добавить в платформу флаг для статических компонентов
+      const platform: Platform | undefined = getPlatform(elements.platform);
+      if (platform == undefined) {
+        throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
+      }
+      if (elements.platform.startsWith('Bearloga')) {
+        elements.components = getAllComponent(platform.components);
+      } else {
+        elements.components = getComponents(rawElements.components);
+      }
       elements.meta = parseMeta(rawElements.meta);
       const initialState: InitialState | null = getInitialState(rawElements.initialState);
       if (initialState !== null) {
@@ -527,11 +509,6 @@ export function importGraphml(
       elements.notes = getNotes(rawElements.notes);
       elements.states = getStates(rawElements.states);
       elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
-      elements.components = getComponents(rawElements.components);
-      const platform: Platform | undefined = getPlatform(elements.platform);
-      if (platform == undefined) {
-        throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
-      }
       console.log(JSON.stringify(elements.states));
       elements.states = labelStateParameters(
         elements.states,
@@ -544,6 +521,7 @@ export function importGraphml(
         elements.components
       );
       console.log(JSON.stringify(elements.transitions));
+
       validateElements(elements, platform);
     } else {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);

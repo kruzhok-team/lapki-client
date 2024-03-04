@@ -10,7 +10,7 @@ const defaultComponents: { [key: string]: string[] } = {
 };
 
 function checkComponent(component: string, components: { [id: string]: Component }) {
-  console.log(component, defaultComponents, defaultComponents[component]);
+  console.log(component, components, defaultComponents, defaultComponents[component]);
   if (components[component] == undefined && defaultComponents[component] == undefined) {
     throw new Error(`Неизвестный компонент ${component}`);
   }
@@ -78,7 +78,9 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList | u
     const argNames = Object.keys(args);
     for (const argIdx in methodArgs) {
       if (argNames[argIdx] !== methodArgs[argIdx].name) {
-        throw new Error('Неправильный аргумент!');
+        throw new Error(
+          `Неправильный аргумент ${argNames[argIdx]}, ожидался ${methodArgs[argIdx].name}`
+        );
       }
     }
   }

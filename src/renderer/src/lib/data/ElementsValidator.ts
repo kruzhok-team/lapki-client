@@ -1,13 +1,27 @@
 import isequal from 'lodash.isequal';
 
-import { Elements, State, Component, ArgList, Transition } from '@renderer/types/diagram';
+import { Elements, State, Component, ArgList, Transition, Event } from '@renderer/types/diagram';
 import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 
 import { getProtoComponent, getProtoMethod } from './GraphmlParser';
 
-const defaultComponents: { [key: string]: string[] } = {
-  System: ['onEnter', 'onExit'],
+const defaultComponents = {
+  System: { onEnter: 'entry', onExit: 'exit' },
 };
+
+export function convertDefaultComponent(component: string, method: string): string {
+  return defaultComponents[component][method];
+}
+
+export function isDefaultComponent(event: Event) {
+  if (defaultComponents[event.component] !== undefined) {
+    if (defaultComponents[event.component][event.method] == undefined) {
+      throw new Error(`Неизвестный метод ${event.method} для компонента System!`);
+    }
+    return true;
+  }
+  return false;
+}
 
 function checkComponent(component: string, components: { [id: string]: Component }) {
   console.log(component, components, defaultComponents, defaultComponents[component]);
@@ -29,10 +43,7 @@ function validateEvent(
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
-  if (defaultComponents[component] !== undefined) {
-    if (!defaultComponents[component].includes(method)) {
-      throw new Error(`Неизвестное событие ${method} для компонента System`);
-    }
+  if (isDefaultComponent({ component: component, method: method })) {
     return;
   } else {
     checkComponent(component, components);
@@ -41,18 +52,14 @@ function validateEvent(
       platformComponents,
       components
     );
-
     if (protoComponent == undefined) {
       throw new Error('Internal error: component didnt be validated');
     }
-
     checkMethod(method, protoComponent);
     const protoMethod: MethodProto | undefined = getProtoMethod(method, protoComponent);
-
     if (protoMethod == undefined) {
       throw new Error('Internal error: method didnt be validated');
     }
-
     validateArgs(method, protoMethod, args);
   }
 }
@@ -136,7 +143,6 @@ function validateComponents(
     }
     const componentParemeters = new Set(Object.keys(component.parameters));
     const platformParameters = new Set(Object.keys(platformComponent.parameters));
-
     if (componentParemeters.size != platformParameters.size) {
       throw new Error(
         `Неверное количество параметров у компонента ${component.type}! Ожидается: ${platformParameters.size}, получено: ${componentParemeters.size}`
@@ -152,7 +158,6 @@ function validateComponents(
 }
 
 export function validateElements(elements: Elements, platform: Platform) {
-  console.log(elements);
   validateComponents(platform.components, elements.components);
   validateStates(elements.states, elements.components, platform.components);
   validateTransitions(elements.transitions, elements.components, platform.components);

@@ -6,6 +6,7 @@ import {
   CGMLState,
   CGMLTransition,
   CGMLComponent,
+  exportGraphml,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -22,10 +23,11 @@ import {
   Transition,
   Variable,
   Meta,
+  InnerElements,
 } from '@renderer/types/diagram';
 import { Platform, ArgumentProto, ComponentProto, MethodProto } from '@renderer/types/platform';
 
-import { validateElements } from './ElementsValidator';
+import { convertDefaultComponent, isDefaultComponent, validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
 const randomColor = (): string => {
@@ -45,10 +47,6 @@ const operatorAlias = new Map<string, string>([
   ['>=', 'greaterOrEqual'],
   ['<=', 'lessOrEqual'],
 ]);
-
-const invertOperatorAlias = new Map<string, string>(
-  [...operatorAlias.entries()].map((a) => [a[1], a[0]])
-);
 
 function checkConditionTokenType(token: string): Condition {
   if (token.includes('.')) {
@@ -154,7 +152,6 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
         condition = parseCondition(event[1].replace(']', ''));
       }
       let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
-
       if (ev === undefined) {
         const [component, method] = trigger.split('.');
         ev = {
@@ -625,6 +622,118 @@ export function importGraphml(
 //   ],
 // };
 
-export function exportGraphml(elements: Elements): string {
-  return '';
+function emptyCGMLElements(): CGMLElements {
+  return {
+    states: {},
+    transitions: [],
+    components: {},
+    initialState: null,
+    platform: '',
+    meta: '',
+    format: '',
+    keys: [],
+    notes: {},
+  };
+}
+
+// TODO: редактор мета-данных
+function exportMeta(meta: string): string {
+  return meta;
+}
+
+function deserializeArgs(args: ArgList | undefined) {
+  if (args == undefined) {
+    return '';
+  }
+  return Object.values(args).join(', ');
+}
+
+function deserializeEvent(trigger: Event): string {
+  const newEvent = {
+    ...trigger,
+  };
+
+  if (isDefaultComponent(trigger)) {
+    return convertDefaultComponent(trigger.component, trigger.method);
+  }
+
+  if (trigger.args == undefined) {
+    return `${trigger.component}.${trigger.method}`;
+  } else {
+    return `${trigger.component}.${trigger.method}(${deserializeArgs(trigger.args)})`;
+  }
+}
+
+function deserializeActions(actions: Action[]): string {
+  let deserialized = '';
+  for (const action of actions) {
+    deserialized += `${action.component}.${action.method}(${deserializeArgs(action.args)})\n`;
+  }
+  return deserialized;
+}
+
+function deserializeEvents(events: EventData[]): string {
+  let deserialized = '';
+  for (const event of events) {
+    deserialized += deserializeEvent(event.trigger) + '/\n';
+    deserialized += deserializeActions(event.do) + '\n';
+  }
+  return deserialized;
+}
+
+// TODO: замена System на entry/exit
+function deserializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
+  const cgmlStates: { [id: string]: CGMLState } = {};
+  for (const id in states) {
+    const state: State = states[id];
+    cgmlStates[id] = {
+      name: state.name,
+      bounds: state.bounds,
+      unsupportedDataNodes: [],
+      actions: deserializeEvents(state.events),
+      parent: state.parent,
+    };
+  }
+  return cgmlStates;
+}
+
+function deserializeParameters(parameters: { [key: string]: string }): string {
+  let deserialized = '';
+  for (const parameterName in parameters) {
+    const parameterValue = parameters[parameterName];
+    deserialized += `${parameterName}/ ${parameterValue}\n`;
+  }
+  return deserialized;
+}
+
+function deserializeComponents(components: { [id: string]: Component }): {
+  [id: string]: CGMLComponent;
+} {
+  const cgmlComponents: {
+    [id: string]: CGMLComponent;
+  } = {};
+  for (const id in components) {
+    const component = components[id];
+    cgmlComponents[id] = {
+      id: id,
+      parameters: deserializeParameters(component.parameters),
+    };
+  }
+  return cgmlComponents;
+}
+
+export function exportCGML(elements: InnerElements): string {
+  const cgmlElements: CGMLElements = emptyCGMLElements();
+  cgmlElements.meta = exportMeta('');
+  cgmlElements.format = 'Cyberiada-Graphml';
+  cgmlElements.platform = elements.platform;
+  cgmlElements.components = deserializeComponents(elements.components);
+  cgmlElements.states = deserializeStates(elements.states);
+  if (elements.initialState !== null) {
+    cgmlElements.initialState = {
+      id: 'init',
+      ...elements.initialState,
+    };
+  }
+  return exportGraphml(cgmlElements);
 }

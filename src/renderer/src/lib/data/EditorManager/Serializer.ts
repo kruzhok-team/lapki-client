@@ -1,6 +1,6 @@
 import { EditorManager } from './EditorManager';
 
-import { exportGraphml } from '../GraphmlParser';
+import { exportCGML } from '../GraphmlParser';
 
 type SaveMode = 'JSON' | 'Cyberiada';
 
@@ -24,7 +24,7 @@ export class Serializer {
           2
         );
       case 'Cyberiada':
-        return exportGraphml(this.data.elements);
+        return exportCGML(this.data.elements);
     }
   }
 

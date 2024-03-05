@@ -15,7 +15,7 @@ export function convertDefaultComponent(component: string, method: string): stri
 
 export function isDefaultComponent(event: Event) {
   if (defaultComponents[event.component] !== undefined) {
-    if (defaultComponents[event.component][event.method] == undefined) {
+    if (defaultComponents[event.component][event.method] === undefined) {
       throw new Error(`Неизвестный метод ${event.method} для компонента System!`);
     }
     return true;
@@ -24,14 +24,13 @@ export function isDefaultComponent(event: Event) {
 }
 
 function checkComponent(component: string, components: { [id: string]: Component }) {
-  console.log(component, components, defaultComponents, defaultComponents[component]);
-  if (components[component] == undefined && defaultComponents[component] == undefined) {
+  if (components[component] === undefined && defaultComponents[component] === undefined) {
     throw new Error(`Неизвестный компонент ${component}`);
   }
 }
 
 function checkMethod(method: string, component: ComponentProto) {
-  if (component.methods[method] == undefined) {
+  if (component.methods[method] === undefined) {
     throw new Error(`Неизвестный метод ${method}`);
   }
 }
@@ -52,12 +51,12 @@ function validateEvent(
       platformComponents,
       components
     );
-    if (protoComponent == undefined) {
+    if (protoComponent === undefined) {
       throw new Error('Internal error: component didnt be validated');
     }
     checkMethod(method, protoComponent);
     const protoMethod: MethodProto | undefined = getProtoMethod(method, protoComponent);
-    if (protoMethod == undefined) {
+    if (protoMethod === undefined) {
       throw new Error('Internal error: method didnt be validated');
     }
     validateArgs(method, protoMethod, args);
@@ -66,7 +65,7 @@ function validateEvent(
 
 function validateArgs(methodName: string, method: MethodProto, args: ArgList | undefined) {
   const methodArgs: ArgumentProto[] | undefined = method.parameters;
-  if (methodArgs == undefined) {
+  if (methodArgs === undefined) {
     if (args !== undefined && Object.keys(args).length != 0) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
@@ -75,9 +74,7 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList | u
       );
     }
   } else {
-    console.log(args);
-    if (args == undefined) {
-      console.log(methodArgs);
+    if (args === undefined) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${methodArgs.length}`
       );
@@ -99,7 +96,7 @@ function validateStates(
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const state of Object.values(states)) {
-    if (state.parent !== undefined && states[state.parent] == undefined) {
+    if (state.parent !== undefined && states[state.parent] === undefined) {
       throw new Error(`Unknown parent state ${state.parent}`);
     }
     for (const event of state.events) {
@@ -138,7 +135,7 @@ function validateComponents(
 ) {
   for (const component of Object.values(components)) {
     const platformComponent = platformComponents[component.type];
-    if (platformComponent == undefined) {
+    if (platformComponent === undefined) {
       throw new Error(`Неизвестный тип компонента ${component.type}.`);
     }
     const componentParemeters = new Set(Object.keys(component.parameters));

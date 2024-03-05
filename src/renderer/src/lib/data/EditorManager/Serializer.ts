@@ -1,6 +1,6 @@
 import { EditorManager } from './EditorManager';
 
-import { exportCGML } from '../GraphmlParser';
+import { exportCGML } from '../GraphmlBuilder';
 
 type SaveMode = 'JSON' | 'Cyberiada';
 

@@ -39,19 +39,18 @@ const randomColor = (): string => {
   return '#' + result;
 };
 
-const operatorAlias = new Map<string, string>([
-  ['===', 'equals'],
-  ['!=', 'notEquals'],
-  ['>', 'greater'],
-  ['<', 'less'],
-  ['>=', 'greaterOrEqual'],
-  ['<=', 'lessOrEqual'],
-]);
+const operatorAlias = {
+  '==': 'equals',
+  '!=': 'notEquals',
+  '>': 'greater',
+  '<': 'less',
+  '>=': 'greaterOrEqual',
+  '<=': 'lessOrEqual',
+};
 
 function checkConditionTokenType(token: string): Condition {
   if (token.includes('.')) {
     const [component, method] = token.split('.');
-    ``;
     return {
       type: 'component',
       value: {
@@ -70,7 +69,7 @@ function checkConditionTokenType(token: string): Condition {
 function parseCondition(condition: string): Condition {
   const tokens = condition.split(' ');
   const lval = checkConditionTokenType(tokens[0]);
-  const operator = operatorAlias.get(tokens[1]);
+  const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
   if (operator !== undefined) {
     return {
@@ -140,85 +139,77 @@ function parseComponentNode(content: string, componentId: string): [Component, M
 }
 
 function parseEvent(event: string): [EventData, Condition?] | undefined {
-  if (event.includes('/')) {
-    let [trigger, stringActions] = event.split('/');
-    trigger = trigger.trim();
-    let condition: Condition | undefined;
-    const actions = parseActions(stringActions.trim());
-    if (trigger !== undefined) {
-      if (trigger.includes('[')) {
-        const event = trigger.split('[');
-        trigger = event[0];
-        condition = parseCondition(event[1].replace(']', ''));
-      }
-      let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
-      if (ev === undefined) {
-        const [component, method] = trigger.split('.');
-        ev = {
-          component: component,
-          method: method,
-        };
-      }
-      return [
-        {
-          trigger: ev,
-          do: actions !== undefined ? actions : [],
-        },
-        condition,
-      ];
-    }
-  } else {
-    throw new Error(`Не определен триггер для действий ${event}`);
+  if (!event.includes('/')) throw new Error(`Не определен триггер для действий ${event}`);
+  let [trigger, stringActions] = event.split('/').map(String.prototype.trim);
+  let condition: Condition | undefined;
+  const actions = parseActions(stringActions);
+  if (trigger === undefined) return;
+  if (trigger.includes('[')) {
+    const event = trigger.split('[');
+    trigger = event[0];
+    condition = parseCondition(event[1].replace(']', ''));
   }
-  return;
+  let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
+  if (ev === undefined) {
+    const [component, method] = trigger.split('.');
+    ev = {
+      component: component,
+      method: method,
+    };
+  }
+  return [
+    {
+      trigger: ev,
+      do: actions !== undefined ? actions : [],
+    },
+    condition,
+  ];
 }
 
+// Затычка, чтобы не прокидывать повсюду платформу и компоненты.
+// Настоящие название аргументов подтягиваются позднее.
 function initArgList(args: string[]): ArgList {
   const argList: ArgList = {};
-  // Затычка, чтобы не прокидывать повсюду платформу и компоненты.
-  // Настоящие название аргументов подтягиваются позднее.
-  args.forEach((value: string, index: number) => {
-    argList[`${index}`] = value.trim();
+  args.forEach((value, index) => {
+    argList[index] = value.trim();
   });
   return argList;
 }
 
 function parseAction(unproccessedAction: string): Action | undefined {
-  const [component_name, action] = unproccessedAction.trim().split('.');
-  if (action !== undefined) {
-    // На случай, если действий у события нет
-    const bracketPos = action.indexOf('(');
-    const args = action
-      .slice(bracketPos + 1, action.length - 1)
-      .split(',')
-      .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-    const method = action.slice(0, bracketPos);
-    return {
-      component: component_name,
-      method: method,
-      args: initArgList(args),
-    };
-  } else {
+  const [componentName, action] = unproccessedAction.trim().split('.');
+  if (action === undefined) {
     return;
   }
+  // На случай, если действий у события нет
+  const bracketPos = action.indexOf('(');
+  const args = action
+    .slice(bracketPos + 1, action.length - 1)
+    .split(',')
+    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+  const method = action.slice(0, bracketPos);
+  return {
+    component: componentName,
+    method: method,
+    args: initArgList(args),
+  };
 }
 
 function parseActions(unsplitedActions: string): Action[] | undefined {
-  if (unsplitedActions != '') {
-    // Считаем, что действия находятся на разных строках
-    const actions = unsplitedActions.split('\n');
-    const resultActions = new Array<Action>();
-    for (const unproccessedAction of actions) {
-      const resultAction = parseAction(unproccessedAction);
-      if (resultAction !== undefined) {
-        resultActions.push(resultAction);
-      }
-    }
-    return resultActions;
-  } else {
+  if (unsplitedActions === '') {
     console.log('Отсутствуют действия на событие');
     return;
   }
+  // Считаем, что действия находятся на разных строках
+  const actions = unsplitedActions.split('\n');
+  const resultActions: Action[] = [];
+  for (const unprocessedAction of actions) {
+    const resultAction = parseAction(unprocessedAction);
+    if (resultAction !== undefined) {
+      resultActions.push(resultAction);
+    }
+  }
+  return resultActions;
 }
 
 function getInitialState(rawInitialState: CGMLInitialState | null): InitialState | null {
@@ -257,28 +248,19 @@ function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | und
   if (rawTriggerAndAction.length > 1) {
     throw new Error('Поддерживаются события только с одним триггером!');
   }
-  for (const rawEvent of rawTriggerAndAction) {
-    const result = parseEvent(rawEvent);
-    if (result !== undefined) {
-      const [event, condition] = result;
-      return [event, condition];
-    }
+  const result = parseEvent(rawTriggerAndAction[0]);
+  if (result !== undefined) {
+    return result;
   }
   return;
 }
 
-function getTransitions(
-  rawTransitions: CGMLTransition[],
-  initialStateId: string | undefined
-): Transition[] {
+function getTransitions(rawTransitions: CGMLTransition[], initialStateId?: string): Transition[] {
   const transitions: Transition[] = [];
   for (const rawTransition of rawTransitions) {
     if (rawTransition.actions == undefined) {
-      if (initialStateId == rawTransition.source) {
-        continue;
-      } else {
-        throw new Error('Безусловный (без триггеров) переход не поддерживается.');
-      }
+      if (initialStateId == rawTransition.source) continue;
+      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
     }
     const parsedEvent = parseTransitionEvents(rawTransition.actions);
     if (parsedEvent == undefined) {
@@ -288,8 +270,8 @@ function getTransitions(
     transitions.push({
       source: rawTransition.source,
       target: rawTransition.target,
-      color: rawTransition.color !== undefined ? rawTransition.color : randomColor(),
-      position: rawTransition.position !== undefined ? rawTransition.position : { x: -1, y: -1 },
+      color: rawTransition.color ?? randomColor(),
+      position: rawTransition.position ?? { x: -1, y: -1 },
       trigger: eventData.trigger,
       do: eventData.do,
       condition: condition,
@@ -300,7 +282,7 @@ function getTransitions(
 
 function parseStateEvents(content: string | undefined): EventData[] {
   // По формату CyberiadaGraphML события разделены пустой строкой.
-  if (content == undefined) {
+  if (content === undefined) {
     return [];
   }
   const events: EventData[] = [];
@@ -315,20 +297,13 @@ function parseStateEvents(content: string | undefined): EventData[] {
   return events;
 }
 
-function getNotes(rawNotes: { [id: string]: CGMLNote }): Note[] {
-  const notes: Note[] = [];
-  for (const rawNoteId in rawNotes) {
-    const rawNote: CGMLNote = rawNotes[rawNoteId];
-    notes.push({
-      ...rawNote,
-    });
-  }
-  return notes;
+function getNotes(rawNotes: Record<string, CGMLNote>): Note[] {
+  return Object.values(rawNotes);
 }
 
 // Функция получает на вход строку, в которой мета-информация разделена символами / и \n
 function parseMeta(unproccessedMeta: string | undefined): { [id: string]: string } {
-  if (unproccessedMeta == undefined) {
+  if (unproccessedMeta === undefined) {
     return {};
   }
   const splitedMeta = unproccessedMeta.split('\n');
@@ -365,8 +340,8 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
 function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
-    labeledArgs[element.name] = args[`${index}`];
-    delete labeledArgs[`${index}`];
+    labeledArgs[element.name] = args[index];
+    delete labeledArgs[index];
   });
   return labeledArgs;
 }
@@ -483,242 +458,42 @@ export function importGraphml(
       platform: rawElements.platform,
       meta: {},
     };
-    if (isPlatformAvailable(rawElements.platform)) {
-      // TODO: добавить в платформу флаг для статических компонентов
-      const platform: Platform | undefined = getPlatform(elements.platform);
-      if (platform == undefined) {
-        throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
-      }
-      if (elements.platform.startsWith('Bearloga')) {
-        elements.components = getAllComponent(platform.components);
-      } else {
-        elements.components = getComponents(rawElements.components);
-      }
-      elements.meta = parseMeta(rawElements.meta);
-      const initialState: InitialState | null = getInitialState(rawElements.initialState);
-      if (initialState !== null) {
-        elements.initialState = initialState;
-      }
-      console.log(rawElements.notes);
-      elements.notes = getNotes(rawElements.notes);
-      elements.states = getStates(rawElements.states);
-      elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
-      elements.states = labelStateParameters(
-        elements.states,
-        platform.components,
-        elements.components
-      );
-      elements.transitions = labelTransitionParameters(
-        elements.transitions,
-        platform.components,
-        elements.components
-      );
-      console.log(JSON.stringify(elements.transitions));
-
-      validateElements(elements, platform);
-    } else {
+    if (!isPlatformAvailable(rawElements.platform)) {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
+    // TODO: добавить в платформу флаг для статических компонентов
+    const platform: Platform | undefined = getPlatform(elements.platform);
+    if (platform === undefined) {
+      throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
+    }
+    if (elements.platform.startsWith('Bearloga')) {
+      elements.components = getAllComponent(platform.components);
+    } else {
+      elements.components = getComponents(rawElements.components);
+    }
+    elements.meta = parseMeta(rawElements.meta);
+    const initialState: InitialState | null = getInitialState(rawElements.initialState);
+    if (initialState !== null) {
+      elements.initialState = initialState;
+    }
+    elements.notes = getNotes(rawElements.notes);
+    elements.states = getStates(rawElements.states);
+    elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
+    elements.states = labelStateParameters(
+      elements.states,
+      platform.components,
+      elements.components
+    );
+    elements.transitions = labelTransitionParameters(
+      elements.transitions,
+      platform.components,
+      elements.components
+    );
+    validateElements(elements, platform);
     return elements;
   } catch (error) {
     console.log(error);
     openImportError((error as any).message);
     return;
   }
-}
-
-function emptyCGMLElements(): CGMLElements {
-  return {
-    states: {},
-    transitions: [],
-    components: {},
-    initialState: null,
-    platform: '',
-    meta: '',
-    format: '',
-    keys: [],
-    notes: {},
-  };
-}
-
-// TODO: редактор мета-данных
-function exportMeta(meta: string): string {
-  return meta;
-}
-
-function deserializeArgs(args: ArgList | undefined) {
-  if (args == undefined) {
-    return '';
-  }
-  return Object.values(args).join(', ');
-}
-
-function deserializeEvent(trigger: Event): string {
-  if (isDefaultComponent(trigger)) {
-    return convertDefaultComponent(trigger.component, trigger.method);
-  }
-
-  if (trigger.args == undefined) {
-    return `${trigger.component}.${trigger.method}`;
-  } else {
-    return `${trigger.component}.${trigger.method}(${deserializeArgs(trigger.args)})`;
-  }
-}
-
-function deserializeActions(actions: Action[]): string {
-  let deserialized = '';
-  for (const action of actions) {
-    deserialized += `${action.component}.${action.method}(${deserializeArgs(action.args)})\n`;
-  }
-  return deserialized;
-}
-
-export function deserializeEvents(events: EventData[]): string {
-  let deserialized = '';
-  for (const event of events) {
-    deserialized += deserializeEvent(event.trigger) + '/\n';
-    deserialized += deserializeActions(event.do) + '\n';
-  }
-  return deserialized;
-}
-
-function deserializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
-  const cgmlStates: { [id: string]: CGMLState } = {};
-  for (const id in states) {
-    const state: State = states[id];
-    cgmlStates[id] = {
-      name: state.name,
-      bounds: state.bounds,
-      unsupportedDataNodes: [],
-      actions: deserializeEvents(state.events),
-      parent: state.parent,
-    };
-  }
-  return cgmlStates;
-}
-
-function deserializeParameters(parameters: { [key: string]: string }): string {
-  let deserialized = '';
-  for (const parameterName in parameters) {
-    const parameterValue = parameters[parameterName];
-    deserialized += `${parameterName}/ ${parameterValue}\n`;
-  }
-  return deserialized;
-}
-
-function deserializeTransitions(transitions: Record<string, Transition>): CGMLTransition[] {
-  const cgmlTransitions: CGMLTransition[] = [];
-  for (const transition of Object.values(transitions)) {
-    const cgmlTransition: CGMLTransition = {
-      source: transition.source,
-      target: transition.target,
-      unsupportedDataNodes: [],
-      color: transition.color,
-      position: transition.position,
-    };
-    if (transition.do !== undefined) {
-      cgmlTransition.actions =
-        deserializeEvent(transition.trigger) + '/\n' + deserializeActions(transition.do);
-    }
-    cgmlTransitions.push(cgmlTransition);
-  }
-  return cgmlTransitions;
-}
-
-function getKeys(): CGMLKeyNode[] {
-  return [
-    {
-      id: 'dName',
-      for: 'node',
-      'attr.name': 'name',
-      'attr.type': 'string',
-    },
-    {
-      id: 'dData',
-      for: 'node',
-      'attr.name': 'data',
-      'attr.type': 'string',
-    },
-    {
-      id: 'dData',
-      for: 'edge',
-      'attr.name': 'data',
-      'attr.type': 'string',
-    },
-    {
-      id: 'dInitial',
-      for: 'node',
-      'attr.name': 'initial',
-      'attr.type': 'string',
-    },
-    {
-      id: 'dGeometry',
-      for: 'edge',
-    },
-    {
-      id: 'dGeometry',
-      for: 'node',
-    },
-    {
-      id: 'dColor',
-      for: 'edge',
-    },
-    {
-      id: 'dNote',
-      for: 'node',
-    },
-    {
-      id: 'dColor',
-      for: 'node',
-    },
-  ];
-}
-
-function deserializeComponents(components: { [id: string]: Component }): {
-  [id: string]: CGMLComponent;
-} {
-  const cgmlComponents: {
-    [id: string]: CGMLComponent;
-  } = {};
-  for (const id in components) {
-    const component = components[id];
-    cgmlComponents[id] = {
-      id: id,
-      parameters: deserializeParameters(component.parameters),
-    };
-  }
-  return cgmlComponents;
-}
-
-export function exportCGML(elements: InnerElements): string {
-  const cgmlElements: CGMLElements = emptyCGMLElements();
-  cgmlElements.meta = exportMeta('');
-  cgmlElements.format = 'Cyberiada-GraphML';
-  cgmlElements.platform = elements.platform;
-  if (elements.platform.startsWith('Arduino')) {
-    cgmlElements.components = deserializeComponents(elements.components);
-  } else {
-    cgmlElements.components = {};
-  }
-  cgmlElements.states = deserializeStates(elements.states);
-  cgmlElements.transitions = [];
-  if (elements.initialState !== null) {
-    cgmlElements.initialState = {
-      id: 'init',
-      ...elements.initialState,
-    };
-    cgmlElements.transitions.push({
-      source: 'init',
-      target: elements.initialState.target,
-      unsupportedDataNodes: [],
-    });
-  }
-  console.log(elements.notes);
-  cgmlElements.notes = elements.notes;
-  cgmlElements.keys = getKeys();
-  cgmlElements.transitions = [
-    ...cgmlElements.transitions,
-    ...deserializeTransitions(elements.transitions),
-  ];
-  return exportGraphml(cgmlElements);
 }

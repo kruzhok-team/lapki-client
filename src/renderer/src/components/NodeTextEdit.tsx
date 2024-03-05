@@ -4,6 +4,7 @@ import { createTheme } from '@uiw/codemirror-themes';
 import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { twMerge } from 'tailwind-merge';
 
+import { useWheel } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { Node } from '@renderer/lib/drawable/Node';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -72,10 +73,24 @@ export const NodeTextEdit: React.FC = () => {
     close();
   }, [close, handleSubmit, nodeData]);
 
-  useEffect(() => {
-    window.addEventListener('wheel', handleClose);
-    return () => window.removeEventListener('wheel', handleClose);
-  }, [handleClose]);
+  const placeCaretAtEnd = useCallback(
+    () =>
+      setTimeout(() => {
+        const view = editorRef?.current?.view;
+        if (!view) return;
+
+        view.focus();
+        view.dispatch({
+          selection: {
+            anchor: view.state.doc.length,
+            head: view.state.doc.length,
+          },
+        });
+      }, 0),
+    []
+  );
+
+  useWheel(handleClose);
 
   useEffect(() => {
     editor.container.statesController.on('changeState', (state) => {
@@ -106,21 +121,14 @@ export const NodeTextEdit: React.FC = () => {
         left: position.x + 'px',
         top: position.y + 'px',
         width: width + 'px',
-        height: height - state.computedTitleSizes.height + 'px',
-        minHeight: fontSize + pY * 2 + 'px',
+        minHeight: height - state.computedTitleSizes.height + 'px',
         fontSize: fontSize + 'px',
         padding: `${pY}px 0`,
         borderRadius: `0px 0px ${borderRadius}px ${borderRadius}px`,
       });
       open();
 
-      // TODO(bryzZz) Фокус не работает совсем
-      editorRef.current.view?.dispatch({
-        selection: {
-          anchor: 2,
-          head: 2,
-        },
-      });
+      placeCaretAtEnd();
     });
 
     editor.container.transitionsController.on('changeTransition', (transition) => {
@@ -144,17 +152,16 @@ export const NodeTextEdit: React.FC = () => {
         left: position.x + 'px',
         top: position.y + 'px',
         width: width + 'px',
-        height: height + 'px',
-        minHeight: fontSize + p * 2 + 'px',
+        minHeight: height + 'px',
         fontSize: fontSize + 'px',
         padding: `${p}px 0`,
         borderRadius: borderRadius + 'px',
       });
       open();
 
-      // TODO(bryzZz) Фокус
+      placeCaretAtEnd();
     });
-  }, [editor, open]);
+  }, [editor, open, placeCaretAtEnd]);
 
   return (
     <CodeMirror

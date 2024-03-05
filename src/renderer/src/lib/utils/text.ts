@@ -170,10 +170,10 @@ export const drawText = (
   ctx.textBaseline = textBaseline;
 
   if (!Array.isArray(text)) {
-    ctx.fillText(text, x, y + textHeight * 0.05);
+    ctx.fillText(text, x, y + (textHeight - fontSize) / 2);
   } else {
     for (let i = 0; i < text.length; i++) {
-      ctx.fillText(text[i], x, y + i * textHeight + textHeight * 0.05);
+      ctx.fillText(text[i], x, y + i * textHeight + (textHeight - fontSize) / 2);
     }
   }
 

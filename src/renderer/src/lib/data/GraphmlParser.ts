@@ -7,6 +7,7 @@ import {
   CGMLTransition,
   CGMLComponent,
   exportGraphml,
+  CGMLKeyNode,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -222,7 +223,6 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
 }
 
 function getInitialState(rawInitialState: CGMLInitialState | null): InitialState | null {
-  console.log(rawInitialState);
   if (rawInitialState !== null) {
     if (rawInitialState.position !== undefined) {
       return {
@@ -283,7 +283,6 @@ function getTransitions(
     }
     const parsedEvent = parseTransitionEvents(rawTransition.actions);
     if (parsedEvent == undefined) {
-      console.log(rawTransition);
       throw new Error('Безусловный (без триггеров) переход не поддерживается.');
     }
     const [eventData, condition] = parsedEvent;
@@ -300,8 +299,11 @@ function getTransitions(
   return transitions;
 }
 
-function parseStateEvents(content: string): EventData[] {
+function parseStateEvents(content: string | undefined): EventData[] {
   // По формату CyberiadaGraphML события разделены пустой строкой.
+  if (content == undefined) {
+    return [];
+  }
   const events: EventData[] = [];
   const unprocessedEventsAndActions = content.split('\n\n');
   for (const unprocessedEvent of unprocessedEventsAndActions) {
@@ -326,7 +328,10 @@ function getNotes(rawNotes: { [id: string]: CGMLNote }): Note[] {
 }
 
 // Функция получает на вход строку, в которой мета-информация разделена символами / и \n
-function parseMeta(unproccessedMeta: string): { [id: string]: string } {
+function parseMeta(unproccessedMeta: string | undefined): { [id: string]: string } {
+  if (unproccessedMeta == undefined) {
+    return {};
+  }
   const splitedMeta = unproccessedMeta.split('\n');
   const meta: { [id: string]: string } = {};
   let lastPropertyKey: string = '';
@@ -355,8 +360,6 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     const [component, meta] = parseComponentNode(rawComponent.parameters, id);
     components[id] = component;
   }
-  console.log(rawComponents);
-  console.log(components);
   return components;
 }
 
@@ -393,10 +396,8 @@ function labelStateParameters(
   for (const stateIdx in states) {
     const state = states[stateIdx];
     const labeledState = { ...state };
-    console.log(labeledState);
     for (const eventIdx in labeledState.events) {
       const event = labeledState.events[eventIdx];
-      console.log(event);
       for (const actionIdx in event.do) {
         const action = event.do[actionIdx];
         if (action.args !== undefined) {
@@ -414,7 +415,6 @@ function labelStateParameters(
     }
     labeledStates[stateIdx] = labeledState;
   }
-  console.log(labeledStates);
   return labeledStates;
 }
 
@@ -446,7 +446,6 @@ function labelTransitionParameters(
     }
     labeledTransitions.push(labeledTransition);
   }
-
   return labeledTransitions;
 }
 
@@ -456,14 +455,12 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   const components: {
     [name: string]: Component;
   } = {};
-
   for (const id in platformComponents) {
     components[id] = {
       type: id,
       parameters: {},
     };
   }
-
   return components;
 }
 
@@ -503,10 +500,10 @@ export function importGraphml(
       if (initialState !== null) {
         elements.initialState = initialState;
       }
+      console.log(rawElements.notes);
       elements.notes = getNotes(rawElements.notes);
       elements.states = getStates(rawElements.states);
       elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
-      console.log(JSON.stringify(elements.states));
       elements.states = labelStateParameters(
         elements.states,
         platform.components,
@@ -530,97 +527,6 @@ export function importGraphml(
     return;
   }
 }
-
-// function getOperandString(operand: Variable | string | Condition[] | number) {
-//   if (isVariable(operand)) {
-//     return `${(operand as Variable).component}.${(operand as Variable).method}`;
-//   } else {
-//     return operand;
-//   }
-// }
-
-// const PlatformKeys: PlatformDataKeys = {
-//   ArduinoUno: [
-//     {
-//       '@id': 'dName',
-//       '@for': 'node',
-//       '@attr.name': 'name',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dData',
-//       '@for': 'node',
-//       '@attr.name': 'data',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dData',
-//       '@for': 'edge',
-//       '@attr.name': 'data',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dInitial',
-//       '@for': 'node',
-//       '@attr.name': 'initial',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dGeometry',
-//       '@for': 'edge',
-//     },
-//     {
-//       '@id': 'dGeometry',
-//       '@for': 'node',
-//     },
-//     {
-//       '@id': 'dColor',
-//       '@for': 'edge',
-//     },
-//     {
-//       '@id': 'dNote',
-//       '@for': 'node',
-//     },
-//   ],
-//   BearlogaDefend: [
-//     {
-//       '@id': 'dName',
-//       '@for': 'node',
-//       '@attr.name': 'name',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dData',
-//       '@for': 'node',
-//       '@attr.name': 'data',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dData',
-//       '@for': 'edge',
-//       '@attr.name': 'data',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dInitial',
-//       '@for': 'node',
-//       '@attr.name': 'initial',
-//       '@attr.type': 'string',
-//     },
-//     {
-//       '@id': 'dGeometry',
-//       '@for': 'edge',
-//     },
-//     {
-//       '@id': 'dGeometry',
-//       '@for': 'node',
-//     },
-//     {
-//       '@id': 'dNote',
-//       '@for': 'node',
-//     },
-//   ],
-// };
 
 function emptyCGMLElements(): CGMLElements {
   return {
@@ -649,10 +555,6 @@ function deserializeArgs(args: ArgList | undefined) {
 }
 
 function deserializeEvent(trigger: Event): string {
-  const newEvent = {
-    ...trigger,
-  };
-
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
@@ -672,7 +574,7 @@ function deserializeActions(actions: Action[]): string {
   return deserialized;
 }
 
-function deserializeEvents(events: EventData[]): string {
+export function deserializeEvents(events: EventData[]): string {
   let deserialized = '';
   for (const event of events) {
     deserialized += deserializeEvent(event.trigger) + '/\n';
@@ -681,7 +583,6 @@ function deserializeEvents(events: EventData[]): string {
   return deserialized;
 }
 
-// TODO: замена System на entry/exit
 function deserializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
   const cgmlStates: { [id: string]: CGMLState } = {};
   for (const id in states) {
@@ -706,6 +607,74 @@ function deserializeParameters(parameters: { [key: string]: string }): string {
   return deserialized;
 }
 
+function deserializeTransitions(transitions: Record<string, Transition>): CGMLTransition[] {
+  const cgmlTransitions: CGMLTransition[] = [];
+  for (const transition of Object.values(transitions)) {
+    const cgmlTransition: CGMLTransition = {
+      source: transition.source,
+      target: transition.target,
+      unsupportedDataNodes: [],
+      color: transition.color,
+      position: transition.position,
+    };
+    if (transition.do !== undefined) {
+      cgmlTransition.actions =
+        deserializeEvent(transition.trigger) + '/\n' + deserializeActions(transition.do);
+    }
+    cgmlTransitions.push(cgmlTransition);
+  }
+  return cgmlTransitions;
+}
+
+function getKeys(): CGMLKeyNode[] {
+  return [
+    {
+      id: 'dName',
+      for: 'node',
+      'attr.name': 'name',
+      'attr.type': 'string',
+    },
+    {
+      id: 'dData',
+      for: 'node',
+      'attr.name': 'data',
+      'attr.type': 'string',
+    },
+    {
+      id: 'dData',
+      for: 'edge',
+      'attr.name': 'data',
+      'attr.type': 'string',
+    },
+    {
+      id: 'dInitial',
+      for: 'node',
+      'attr.name': 'initial',
+      'attr.type': 'string',
+    },
+    {
+      id: 'dGeometry',
+      for: 'edge',
+    },
+    {
+      id: 'dGeometry',
+      for: 'node',
+    },
+    {
+      id: 'dColor',
+      for: 'edge',
+    },
+    {
+      id: 'dNote',
+      for: 'node',
+    },
+    {
+      id: 'dColor',
+      for: 'node',
+    },
+  ];
+}
+
 function deserializeComponents(components: { [id: string]: Component }): {
   [id: string]: CGMLComponent;
 } {
@@ -725,15 +694,32 @@ function deserializeComponents(components: { [id: string]: Component }): {
 export function exportCGML(elements: InnerElements): string {
   const cgmlElements: CGMLElements = emptyCGMLElements();
   cgmlElements.meta = exportMeta('');
-  cgmlElements.format = 'Cyberiada-Graphml';
+  cgmlElements.format = 'Cyberiada-GraphML';
   cgmlElements.platform = elements.platform;
-  cgmlElements.components = deserializeComponents(elements.components);
+  if (elements.platform.startsWith('Arduino')) {
+    cgmlElements.components = deserializeComponents(elements.components);
+  } else {
+    cgmlElements.components = {};
+  }
   cgmlElements.states = deserializeStates(elements.states);
+  cgmlElements.transitions = [];
   if (elements.initialState !== null) {
     cgmlElements.initialState = {
       id: 'init',
       ...elements.initialState,
     };
+    cgmlElements.transitions.push({
+      source: 'init',
+      target: elements.initialState.target,
+      unsupportedDataNodes: [],
+    });
   }
+  console.log(elements.notes);
+  cgmlElements.notes = elements.notes;
+  cgmlElements.keys = getKeys();
+  cgmlElements.transitions = [
+    ...cgmlElements.transitions,
+    ...deserializeTransitions(elements.transitions),
+  ];
   return exportGraphml(cgmlElements);
 }

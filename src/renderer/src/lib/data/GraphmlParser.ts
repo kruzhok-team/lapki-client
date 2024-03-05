@@ -22,11 +22,10 @@ import {
   Note,
   State,
   Transition,
-  Variable,
   Meta,
   InnerElements,
 } from '@renderer/types/diagram';
-import { Platform, ArgumentProto, ComponentProto, MethodProto } from '@renderer/types/platform';
+import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform';
 
 import { convertDefaultComponent, isDefaultComponent, validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -309,7 +308,7 @@ function parseStateEvents(content: string | undefined): EventData[] {
   for (const unprocessedEvent of unprocessedEventsAndActions) {
     const result = parseEvent(unprocessedEvent);
     if (result !== undefined) {
-      const [event, condition] = result; // У нас не поддерживаются условия в событиях в состоянии
+      const event = result[0]; // У нас не поддерживаются условия в событиях в состоянии
       events.push(event);
     }
   }
@@ -357,7 +356,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   const components: { [id: string]: Component } = {};
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
-    const [component, meta] = parseComponentNode(rawComponent.parameters, id);
+    const component = parseComponentNode(rawComponent.parameters, id)[0];
     components[id] = component;
   }
   return components;

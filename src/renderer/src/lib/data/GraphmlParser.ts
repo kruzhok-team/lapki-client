@@ -6,8 +6,6 @@ import {
   CGMLState,
   CGMLTransition,
   CGMLComponent,
-  exportGraphml,
-  CGMLKeyNode,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -23,11 +21,10 @@ import {
   State,
   Transition,
   Meta,
-  InnerElements,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform';
 
-import { convertDefaultComponent, isDefaultComponent, validateElements } from './ElementsValidator';
+import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
 const randomColor = (): string => {

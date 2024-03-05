@@ -1,6 +1,5 @@
 import React, { useEffect, useState, CSSProperties, useRef, useCallback } from 'react';
 
-import { createTheme } from '@uiw/codemirror-themes';
 import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { twMerge } from 'tailwind-merge';
 
@@ -9,38 +8,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { Node } from '@renderer/lib/drawable/Node';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-const stateTheme = createTheme({
-  theme: 'dark',
-  settings: {
-    background: '#404040',
-    foreground: '#FFF',
-    caret: '#FFF',
-    selection: '#0C4BEE',
-    selectionMatch: '#0C4BEE',
-    lineHighlight: '#8a91991a',
-    gutterBackground: '#404040',
-  },
-  styles: [],
-});
-
-const transitionTheme = createTheme({
-  theme: 'dark',
-  settings: {
-    background: 'rgb(23, 23, 23)',
-    foreground: '#FFF',
-    caret: '#FFF',
-    selection: '#0C4BEE',
-    selectionMatch: '#0C4BEE',
-    lineHighlight: '#8a91991a',
-    gutterBackground: 'rgb(23, 23, 23)',
-  },
-  styles: [],
-});
-
-const themes = {
-  state: stateTheme,
-  transition: transitionTheme,
-};
+import './style.css';
 
 interface NodeData {
   node: Node;
@@ -55,6 +23,7 @@ export const NodeTextEdit: React.FC = () => {
   const [isOpen, open, close] = useModal(false);
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [style, setStyle] = useState({} as CSSProperties);
+  const [paddingLeft, setPaddingLeft] = useState('');
   const ref = useRef<HTMLSpanElement>(null);
 
   const handleSubmit = useCallback(() => {
@@ -73,22 +42,20 @@ export const NodeTextEdit: React.FC = () => {
     close();
   }, [close, handleSubmit, nodeData]);
 
-  const placeCaretAtEnd = useCallback(
-    () =>
-      setTimeout(() => {
-        const view = editorRef?.current?.view;
-        if (!view) return;
+  const placeCaretAtEnd = useCallback(() => {
+    setTimeout(() => {
+      const view = editorRef?.current?.view;
+      if (!view) return;
 
-        view.focus();
-        view.dispatch({
-          selection: {
-            anchor: view.state.doc.length,
-            head: view.state.doc.length,
-          },
-        });
-      }, 0),
-    []
-  );
+      view.focus();
+      view.dispatch({
+        selection: {
+          anchor: view.state.doc.length,
+          head: view.state.doc.length,
+        },
+      });
+    }, 0);
+  }, []);
 
   useWheel(handleClose);
 
@@ -107,6 +74,7 @@ export const NodeTextEdit: React.FC = () => {
       const { width, height } = state.drawBounds;
       const fontSize = 16 / editor.manager.data.scale;
       const pY = 10 / editor.manager.data.scale;
+      const pX = 15 / editor.manager.data.scale;
       const borderRadius = 6 / editor.manager.data.scale;
 
       setNodeData({
@@ -126,9 +94,10 @@ export const NodeTextEdit: React.FC = () => {
         padding: `${pY}px 0`,
         borderRadius: `0px 0px ${borderRadius}px ${borderRadius}px`,
       });
-      open();
+      setPaddingLeft(pX + 'px');
 
-      placeCaretAtEnd();
+      open();
+      // placeCaretAtEnd();
     });
 
     editor.container.transitionsController.on('changeTransition', (transition) => {
@@ -157,8 +126,9 @@ export const NodeTextEdit: React.FC = () => {
         padding: `${p}px 0`,
         borderRadius: borderRadius + 'px',
       });
-      open();
+      setPaddingLeft(p + 'px');
 
+      open();
       placeCaretAtEnd();
     });
   }, [editor, open, placeCaretAtEnd]);
@@ -166,12 +136,9 @@ export const NodeTextEdit: React.FC = () => {
   return (
     <CodeMirror
       ref={editorRef}
-      theme={themes[nodeData?.type ?? 'state']}
       style={style}
-      className={twMerge(
-        'fixed overflow-hidden [&_.cm-content]:p-0 [&_.cm-line]:pl-[15px]',
-        !isOpen && 'hidden'
-      )}
+      data-pl={paddingLeft}
+      className={twMerge('fixed overflow-hidden', nodeData?.type ?? 'state', !isOpen && 'hidden')}
       value={nodeData?.initialValue ?? ''}
       onBlur={close}
       basicSetup={{

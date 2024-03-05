@@ -1,5 +1,5 @@
 import { getColor } from '@renderer/theme';
-import { Point, Rectangle, Sizes } from '@renderer/types/graphics';
+import { Point, Sizes } from '@renderer/types/graphics';
 
 import { picto } from './Picto';
 import { State } from './State';

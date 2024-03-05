@@ -59,7 +59,7 @@ export const NodeTextEdit: React.FC = () => {
 
   const handleSubmit = useCallback(() => {
     const el = ref.current;
-    const value = (el?.textContent ?? '').trim();
+    // const value = (el?.textContent ?? '').trim();
 
     if (!el || !nodeData) return;
 

@@ -8,6 +8,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { languageMappers } from '@renderer/utils';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -81,7 +82,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
-        language: 'xml',
+        language: languageMappers[element.extension] ?? element.extension,
       });
     });
   };

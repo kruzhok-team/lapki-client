@@ -1,4 +1,4 @@
-export type Language = 'xml' | 'json' | 'txt';
+export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
   type: 'editor';

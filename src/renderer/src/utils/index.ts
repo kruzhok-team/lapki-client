@@ -97,3 +97,9 @@ export const placeCaretAtEnd = (el: HTMLElement) => {
 export const escapeRegExp = (string: string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 };
+
+export const languageMappers = {
+  h: 'cpp',
+  ino: 'cpp',
+  graphml: 'xml',
+};

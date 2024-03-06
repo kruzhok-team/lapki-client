@@ -153,7 +153,7 @@ export class FilesManager {
   saveAs = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     const data = this.editorManager.serializer.getAll('Cyberiada');
-    const saveData = await window.api.fileHandlers.saveAsFile(this.data.basename, data);
+    const saveData = await window.api.fileHandlers.saveAsFile(this.data.basename as string, data);
     if (saveData[0]) {
       this.editorManager.triggerSave(saveData[1], saveData[2]);
       return makeRight(null);

@@ -25,7 +25,7 @@ function fetchPlatforms(paths: string[]) {
       }
 
       try {
-        const text = response[1];
+        const text = response[1] as string;
         const data = PlatformsJSONCodec.toPlatforms(text);
         resolve([path, makeRight(data)]);
       } catch (e) {

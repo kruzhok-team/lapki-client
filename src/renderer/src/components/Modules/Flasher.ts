@@ -379,7 +379,7 @@ export class Flasher {
     */
     const openData = await window.api.fileHandlers.openBinFile();
     if (openData[0]) {
-      const buffer: Buffer = openData[3];
+      const buffer = openData[3] as Buffer;
       //console.log(buffer.toString());
       Flasher.binary = new Blob([buffer]);
       this.setFlasherFile(openData[2]);

@@ -57,19 +57,7 @@ export class EditorManager {
     this.data = emptyEditorData();
     this.data.basename = basename;
     this.data.name = name;
-    this.data.elements = {
-      ...elements,
-      transitions: elements.transitions.reduce((acc, cur, i) => {
-        acc[i] = cur;
-
-        return acc;
-      }, {}),
-      notes: elements.notes.reduce((acc, cur, i) => {
-        acc[i] = cur;
-
-        return acc;
-      }, {}),
-    };
+    this.data.elements = elements;
     this.data.isInitialized = true;
     this.data.isMounted = prevMounted;
 

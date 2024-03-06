@@ -37,11 +37,7 @@ export class FilesManager {
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, {
-      ...this.data.elements,
-      transitions: Object.values(this.data.elements.transitions),
-      notes: Object.values(this.data.elements.notes),
-    });
+    Compiler.compile(this.data.elements.platform, this.data.elements);
   }
 
   parseImportData(importData, openData: [boolean, string | null, string | null, string]) {

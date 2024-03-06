@@ -2,7 +2,6 @@ import {
   CGMLElements,
   parseCGML,
   CGMLInitialState,
-  CGMLNote,
   CGMLState,
   CGMLTransition,
   CGMLComponent,
@@ -17,7 +16,6 @@ import {
   Event,
   EventData,
   InitialState,
-  Note,
   State,
   Transition,
   Meta,
@@ -137,7 +135,9 @@ function parseComponentNode(content: string, componentId: string): [Component, M
 
 function parseEvent(event: string): [EventData, Condition?] | undefined {
   if (!event.includes('/')) throw new Error(`Не определен триггер для действий ${event}`);
-  let [trigger, stringActions] = event.split('/').map(String.prototype.trim);
+  let [trigger, stringActions] = event.split('/');
+  trigger = trigger.trim();
+  stringActions = stringActions.trim();
   let condition: Condition | undefined;
   const actions = parseActions(stringActions);
   if (trigger === undefined) return;
@@ -252,9 +252,13 @@ function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | und
   return;
 }
 
-function getTransitions(rawTransitions: CGMLTransition[], initialStateId?: string): Transition[] {
-  const transitions: Transition[] = [];
-  for (const rawTransition of rawTransitions) {
+function getTransitions(
+  rawTransitions: Record<string, CGMLTransition>,
+  initialStateId?: string
+): Record<string, Transition> {
+  const transitions: Record<string, Transition> = {};
+  for (const id in rawTransitions) {
+    const rawTransition = rawTransitions[id];
     if (rawTransition.actions == undefined) {
       if (initialStateId == rawTransition.source) continue;
       throw new Error('Безусловный (без триггеров) переход не поддерживается.');
@@ -264,7 +268,7 @@ function getTransitions(rawTransitions: CGMLTransition[], initialStateId?: strin
       throw new Error('Безусловный (без триггеров) переход не поддерживается.');
     }
     const [eventData, condition] = parsedEvent;
-    transitions.push({
+    transitions[id] = {
       source: rawTransition.source,
       target: rawTransition.target,
       color: rawTransition.color ?? randomColor(),
@@ -272,7 +276,7 @@ function getTransitions(rawTransitions: CGMLTransition[], initialStateId?: strin
       trigger: eventData.trigger,
       do: eventData.do,
       condition: condition,
-    });
+    };
   }
   return transitions;
 }
@@ -292,10 +296,6 @@ function parseStateEvents(content: string | undefined): EventData[] {
     }
   }
   return events;
-}
-
-function getNotes(rawNotes: Record<string, CGMLNote>): Note[] {
-  return Object.values(rawNotes);
 }
 
 // Функция получает на вход строку, в которой мета-информация разделена символами / и \n
@@ -390,14 +390,14 @@ function labelStateParameters(
 }
 
 function labelTransitionParameters(
-  transitions: Transition[],
+  transitions: Record<string, Transition>,
   platformComponents: { [name: string]: ComponentProto },
   components: { [name: string]: Component }
-): Transition[] {
-  const labeledTransitions: Transition[] = [];
+): Record<string, Transition> {
+  const labeledTransitions: Record<string, Transition> = {};
 
-  for (const transition of transitions) {
-    const labeledTransition: Transition = transition;
+  for (const id in transitions) {
+    const labeledTransition: Transition = transitions[id];
     if (labeledTransition.do !== undefined) {
       for (const actionIdx in labeledTransition.do) {
         const action = labeledTransition.do[actionIdx];
@@ -415,7 +415,7 @@ function labelTransitionParameters(
         }
       }
     }
-    labeledTransitions.push(labeledTransition);
+    labeledTransitions[id] = labeledTransition;
   }
   return labeledTransitions;
 }
@@ -448,8 +448,8 @@ export function importGraphml(
     const rawElements: CGMLElements = parseCGML(expression);
     const elements: Elements = {
       states: {},
-      transitions: [],
-      notes: [],
+      transitions: {},
+      notes: {},
       initialState: null,
       components: {},
       platform: rawElements.platform,
@@ -473,7 +473,7 @@ export function importGraphml(
     if (initialState !== null) {
       elements.initialState = initialState;
     }
-    elements.notes = getNotes(rawElements.notes);
+    elements.notes = rawElements.notes;
     elements.states = getStates(rawElements.states);
     elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
     elements.states = labelStateParameters(

@@ -116,17 +116,25 @@ function validateStates(
 }
 
 function validateTransitions(
-  transitions: Transition[],
+  transitions: Record<string, Transition>,
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
-  for (const transition of transitions) {
+  for (const transition of Object.values(transitions)) {
     if (transition.do !== undefined) {
       for (const action of transition.do) {
         validateEvent(action.component, action.method, action.args, components, platformComponents);
       }
     }
   }
+}
+
+function setIncludes(lval: Set<any>, rval: Set<any>): boolean {
+  for (const val of rval) {
+    if (lval.has(val)) continue;
+    else return false;
+  }
+  return true;
 }
 
 function validateComponents(
@@ -140,16 +148,10 @@ function validateComponents(
     }
     const componentParemeters = new Set(Object.keys(component.parameters));
     const platformParameters = new Set(Object.keys(platformComponent.parameters));
-    if (componentParemeters.size != platformParameters.size) {
+    if (!setIncludes(platformParameters, componentParemeters)) {
       throw new Error(
-        `Неверное количество параметров у компонента ${component.type}! Ожидается: ${platformParameters.size}, получено: ${componentParemeters.size}`
+        `Получены параметры: ${componentParemeters}, но ожидались ${platformParameters}`
       );
-    } else {
-      if (!isequal(componentParemeters, platformParameters)) {
-        throw new Error(
-          `Получены параметры: ${componentParemeters}, но ожидались ${platformParameters}`
-        );
-      }
     }
   }
 }

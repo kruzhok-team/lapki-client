@@ -80,9 +80,9 @@ export type Note = {
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
-  transitions: Transition[];
+  transitions: Record<string, Transition>;
   components: { [id: string]: Component };
-  notes: Note[];
+  notes: Record<string, Note>;
 
   initialState: InitialState | null;
 
@@ -92,13 +92,7 @@ export type Elements = {
   meta: { [id: string]: string };
 };
 
-// Данные внутри редактора хранятся немного по-другому и это их описание
-export interface InnerElements extends Omit<Elements, 'transitions' | 'notes'> {
-  transitions: Record<string, Transition>;
-  notes: Record<string, Note>;
-}
-
-export function emptyElements(): InnerElements {
+export function emptyElements(): Elements {
   return {
     states: {},
     transitions: {},

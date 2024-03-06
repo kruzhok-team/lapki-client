@@ -5,12 +5,13 @@ import {
   CGMLKeyNode,
   CGMLComponent,
   exportGraphml,
+  emptyCGMLElements,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
   ArgList,
   EventData,
-  InnerElements,
+  Elements,
   State,
   Action,
   Transition,
@@ -19,20 +20,6 @@ import {
 } from '@renderer/types/diagram';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
-
-function emptyCGMLElements(): CGMLElements {
-  return {
-    states: {},
-    transitions: [],
-    components: {},
-    initialState: null,
-    platform: '',
-    meta: '',
-    format: '',
-    keys: [],
-    notes: {},
-  };
-}
 
 // TODO: редактор мета-данных
 function exportMeta(meta: string): string {
@@ -99,10 +86,14 @@ function deserializeParameters(parameters: { [key: string]: string }): string {
   return deserialized;
 }
 
-function deserializeTransitions(transitions: Record<string, Transition>): CGMLTransition[] {
-  const cgmlTransitions: CGMLTransition[] = [];
-  for (const transition of Object.values(transitions)) {
+function deserializeTransitions(
+  transitions: Record<string, Transition>
+): Record<string, CGMLTransition> {
+  const cgmlTransitions: Record<string, CGMLTransition> = {};
+  for (const id in transitions) {
+    const transition = transitions[id];
     const cgmlTransition: CGMLTransition = {
+      id: id,
       source: transition.source,
       target: transition.target,
       unsupportedDataNodes: [],
@@ -113,7 +104,7 @@ function deserializeTransitions(transitions: Record<string, Transition>): CGMLTr
       cgmlTransition.actions =
         deserializeEvent(transition.trigger) + '/\n' + deserializeActions(transition.do);
     }
-    cgmlTransitions.push(cgmlTransition);
+    cgmlTransitions[id] = cgmlTransition;
   }
   return cgmlTransitions;
 }
@@ -177,13 +168,13 @@ function deserializeComponents(components: { [id: string]: Component }): {
     const component = components[id];
     cgmlComponents[id] = {
       id: id,
-      parameters: deserializeParameters(component.parameters),
+      parameters: `type/ ${component.type}\n` + deserializeParameters(component.parameters),
     };
   }
   return cgmlComponents;
 }
 
-export function exportCGML(elements: InnerElements): string {
+export function exportCGML(elements: Elements): string {
   const cgmlElements: CGMLElements = emptyCGMLElements();
   cgmlElements.meta = exportMeta('');
   cgmlElements.format = 'Cyberiada-GraphML';
@@ -195,14 +186,10 @@ export function exportCGML(elements: InnerElements): string {
   cgmlElements.transitions = deserializeTransitions(elements.transitions);
   if (elements.initialState !== null) {
     cgmlElements.initialState = {
+      transitionId: 'initTransition',
       id: 'init',
       ...elements.initialState,
     };
-    cgmlElements.transitions.push({
-      source: 'init',
-      target: elements.initialState.target,
-      unsupportedDataNodes: [],
-    });
   }
   cgmlElements.notes = elements.notes;
   cgmlElements.keys = getKeys();

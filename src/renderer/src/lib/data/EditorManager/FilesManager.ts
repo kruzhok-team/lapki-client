@@ -83,8 +83,7 @@ export class FilesManager {
   }
 
   async import(setImportData: Dispatch<[boolean, string | null, string | null, string]>) {
-    const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada');
+    const openData = await window.api.fileHandlers.openFile('Cyberiada');
     if (openData[0]) {
       Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
       setImportData(openData);
@@ -95,8 +94,7 @@ export class FilesManager {
     openImportError: (error: string) => void,
     path?: string
   ): Promise<Either<FileError | null, null>> {
-    const openData: [boolean, string | null, string | null, string] =
-      await window.electron.ipcRenderer.invoke('dialog:openFile', 'Cyberiada', path);
+    const openData = await window.api.fileHandlers.openFile('Cyberiada', path);
     if (openData[0]) {
       try {
         const data = importGraphml(openData[3], openImportError);
@@ -137,8 +135,7 @@ export class FilesManager {
     if (!this.data.basename) {
       return await this.saveAs();
     }
-    const saveData: [boolean, string, string] = await window.electron.ipcRenderer.invoke(
-      'dialog:saveFile',
+    const saveData = await window.api.fileHandlers.saveFile(
       this.data.basename,
       this.editorManager.serializer.getAll('Cyberiada')
     );
@@ -156,8 +153,7 @@ export class FilesManager {
   saveAs = async (): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     const data = this.editorManager.serializer.getAll('Cyberiada');
-    const saveData: [boolean, string | null, string | null] =
-      await window.electron.ipcRenderer.invoke('dialog:saveAsFile', this.data.basename, data);
+    const saveData = await window.api.fileHandlers.saveAsFile(this.data.basename as string, data);
     if (saveData[0]) {
       this.editorManager.triggerSave(saveData[1], saveData[2]);
       return makeRight(null);
@@ -171,7 +167,7 @@ export class FilesManager {
   };
 
   async saveIntoFolder(data: Array<SourceFile | Binary>) {
-    await window.electron.ipcRenderer.invoke('dialog:saveIntoFolder', data);
+    await window.api.fileHandlers.saveIntoFolder(data);
   }
 
   async getAllTemplates() {

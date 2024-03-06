@@ -18,14 +18,15 @@ export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClos
   const [platform, setPlatform] = useState<Platform | undefined>(undefined);
   // получение метаданных о файле
   const onAfterOpen = () => {
-    window.electron.ipcRenderer.invoke('File:getMetadata', manager.data?.basename).then((stat) => {
+    if (!manager.data?.basename) return;
+
+    window.api.fileHandlers.getMetadata(manager.data?.basename).then((stat) => {
       setFileBirthDate(stat['birthtime']);
       setFileLastModified(stat['mtime']);
       setFileSize(stat['size']);
     });
 
     setPlatform(getPlatform(manager.data.elements.platform));
-    //setPlatform(getPlatform(manager.data.elements.platform));
   };
   // получить строку, предназначенную для чтения пользователем
   function dateFormat(date: Date | undefined): string {
@@ -36,6 +37,7 @@ export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClos
       date.getMonth() + 1
     }.${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
   }
+
   return (
     <Modal {...props} onRequestClose={onClose} onAfterOpen={onAfterOpen} title="Свойства">
       <div>

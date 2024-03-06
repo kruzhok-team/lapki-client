@@ -12,8 +12,8 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
+import { useSettings } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { useThemeContext } from '@renderer/store/ThemeContext';
 import { MyMouseEvent } from '@renderer/types/mouse';
 import { escapeRegExp } from '@renderer/utils';
 
@@ -30,7 +30,7 @@ export const Hierarchy: React.FC = () => {
   const editor = useEditorContext();
   const manager = editor.manager;
 
-  const { theme } = useThemeContext();
+  const [theme] = useSettings('theme');
 
   const states = manager.useData('elements.states');
   const transitions = manager.useData('elements.transitions');

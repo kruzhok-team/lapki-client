@@ -1,28 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { electronAPI } from '@electron-toolkit/preload';
 import { contextBridge } from 'electron';
 
-import {
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  DEFAULT_DOC_SETTINGS,
-  DOC_SETTINGS_KEY,
-  FLASHER_SETTINGS_KEY,
-  PLATFORMS_PATH_SETTINGS_KEY,
-} from '../main/electron-settings-consts';
 import { fileHandlers } from '../main/file-handlers';
-import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
 
-const api = {
-  LAPKI_FLASHER,
-  FLASHER_LOCAL_HOST,
-  FLASHER_SETTINGS_KEY,
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  PLATFORMS_PATH_SETTINGS_KEY,
-  DOC_SETTINGS_KEY,
-  DEFAULT_DOC_SETTINGS,
-  fileHandlers,
-};
+// Custom APIs for renderer
+const api = { fileHandlers };
 
 export type API = typeof api;
 

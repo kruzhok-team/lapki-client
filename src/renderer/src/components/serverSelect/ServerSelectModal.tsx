@@ -1,99 +1,59 @@
+import { useLayoutEffect } from 'react';
+
 import { useForm } from 'react-hook-form';
 
 import { Modal, TextField } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks';
 
-import { Settings } from '../Modules/Settings';
+type FormValues = Main['settings']['compiler'];
 
 interface ServerSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  handleCustom: (host: string, port: number) => void;
-  // надпись на самом верху
-  topTitle: string;
-  // надпись над меню выбора типа сервера
-  textSelectTitle: string;
-  // значение хоста к которому клиент подключается при первом запуске
-  originaltHostValue: string;
-  // значение порта к которому клиент подключается при первом запуске
-  originaltPortValue: string;
-  // ключ для извлечения настроек
-  electronSettingsKey: string;
 }
 
-interface formValues {
-  // текущее значение поля ввода для хоста
-  host: string;
-  // текущее значение поля ввода для порта
-  port: string;
-}
+export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({ onClose, ...props }) => {
+  const [compilerSetting, setCompilerSetting, resetCompilerSetting] = useSettings('compiler');
 
-export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
-  onClose,
-  handleCustom: handleCustom,
-  ...props
-}) => {
-  const {
-    handleSubmit: hookHandleSubmit,
-    setValue,
-    register,
-    reset,
-  } = useForm<formValues>({
-    defaultValues: async () => {
-      return Settings.get(props.electronSettingsKey).then((server) => {
-        return {
-          host: server.host,
-          port: server.port,
-        };
-      });
-    },
-  });
+  const { handleSubmit: hookHandleSubmit, reset, register } = useForm<FormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
-    handleCustom(data.host, Number(data.port));
-    onRequestClose();
+    setCompilerSetting(data);
+    onClose();
   });
 
-  const onRequestClose = () => {
-    onClose();
+  const handleAfterClose = () => {
+    if (!compilerSetting) return;
+
+    reset(compilerSetting);
   };
 
-  const handleReturnOriginalValues = () => {
-    setValue('host', props.originaltHostValue);
-    setValue('port', props.originaltPortValue);
-  };
+  useLayoutEffect(() => {
+    if (!compilerSetting) return;
 
-  const reloadSettings = () => {
-    Settings.get(props.electronSettingsKey).then((server) => {
-      reset({ host: server.host, port: server.port });
-    });
-  };
+    reset(compilerSetting);
+  }, [reset, compilerSetting]);
 
   return (
     <Modal
       {...props}
-      onRequestClose={onRequestClose}
-      title={props.topTitle}
+      onRequestClose={onClose}
+      title="Выберите компилятор"
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
-      onAfterClose={reloadSettings}
+      onAfterClose={handleAfterClose}
     >
       <div className={'mb-2 flex gap-2'}>
         <TextField
           maxLength={80}
-          {...register('host')}
+          {...register('host', { required: true })}
           label="Хост:"
           placeholder="Напишите адрес хоста"
-          hidden={false}
-          error={false}
-          errorMessage={''}
         />
         <TextField
-          {...register('port')}
+          {...register('port', { required: true })}
           label="Порт:"
           placeholder="Напишите порт"
-          hidden={false}
-          error={false}
-          errorMessage={''}
           onInput={(event) => {
             const { target } = event;
             if (target) {
@@ -105,7 +65,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({
           }}
         />
       </div>
-      <button type="button" className="btn-secondary" onClick={handleReturnOriginalValues}>
+      <button type="button" className="btn-secondary" onClick={resetCompilerSetting}>
         Сбросить настройки
       </button>
     </Modal>

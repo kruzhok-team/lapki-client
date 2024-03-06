@@ -39,19 +39,21 @@ export async function handleFileOpen(platform: string, path?: string): HandleFil
         .then((res) => {
           filePath = res.filePaths[0];
           canceled = res.canceled;
+          return [filePath, canceled] as const;
+        })
+        .then(([filePath, canceled]) => {
+          if (!canceled && filePath) {
+            fs.readFile(filePath, 'utf-8', (err, data) => {
+              if (err) {
+                resolve([false, filePath ?? null, basename(filePath as string), err.message]);
+              } else {
+                resolve([true, filePath ?? null, basename(filePath as string), data]);
+              }
+            });
+          } else {
+            resolve([false, null, null, '']);
+          }
         });
-    }
-
-    if (!canceled && filePath) {
-      fs.readFile(filePath, 'utf-8', (err, data) => {
-        if (err) {
-          resolve([false, filePath ?? null, basename(filePath as string), err.message]);
-        } else {
-          resolve([true, filePath ?? null, basename(filePath as string), data]);
-        }
-      });
-    } else {
-      resolve([false, null, null, '']);
     }
   });
 }
@@ -104,10 +106,10 @@ export async function searchPlatforms(): SearchPlatformsReturn {
 
   return new Promise(async (resolve) => {
     const platformsPaths = new Array<string>();
-    const userPath: any = await settings.get('PlatformsPath');
+    const userPath = (await settings.get('platformsPath')) as string;
     let platformFound = false;
-    if (userPath.path != '') {
-      DEFAULT_PATH.push(userPath!.path);
+    if (userPath != '') {
+      DEFAULT_PATH.push(userPath);
     }
     for (const path of DEFAULT_PATH) {
       const response = await handleGetPlatforms(path);

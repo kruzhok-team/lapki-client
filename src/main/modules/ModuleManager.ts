@@ -4,6 +4,8 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
 
+export type ModuleName = 'lapki-flasher';
+
 export class ModuleStatus {
   /* 
   Статус локального модуля
@@ -34,7 +36,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
 
-  static async startLocalModule(module: 'lapki-flasher') {
+  static async startLocalModule(module: ModuleName) {
     this.moduleStatus[module] = new ModuleStatus();
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
@@ -150,14 +152,14 @@ export class ModuleManager {
     }
   }
 
-  static stopModule(module: 'lapki-flasher') {
+  static stopModule(module: ModuleName) {
     if (this.localProccesses.has(module)) {
       this.localProccesses.get(module)!.kill();
       this.localProccesses.delete(module);
     }
   }
 
-  static getLocalStatus(module: 'lapki-flasher') {
+  static getLocalStatus(module: ModuleName): ModuleStatus {
     return this.moduleStatus[module];
   }
 }

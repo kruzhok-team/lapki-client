@@ -7,7 +7,7 @@ import { join } from 'path';
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { findFreePort } from './modules/freePortFinder';
-import { ModuleManager, ModuleStatus } from './modules/ModuleManager';
+import { ModuleName, ModuleManager, ModuleStatus } from './modules/ModuleManager';
 import { initSettings } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
@@ -101,14 +101,13 @@ function createWindow(): void {
 app.whenReady().then(() => {
   initFileHandlersIPC();
 
-  ipcMain.handle('Module:reboot', (_event, module: 'lapki-flasher') => {
+  ipcMain.handle('Module:reboot', (_event, module: ModuleName) => {
     ModuleManager.stopModule(module);
     ModuleManager.startLocalModule(module);
   });
 
-  ipcMain.handle('Module:getStatus', (_event, module: 'lapki-flasher') => {
-    const status: ModuleStatus = ModuleManager.getLocalStatus(module);
-    return status;
+  ipcMain.handle('Module:getStatus', (_event, module: ModuleName) => {
+    return ModuleManager.getLocalStatus(module);
   });
 
   ipcMain.handle('appVersion', app.getVersion);

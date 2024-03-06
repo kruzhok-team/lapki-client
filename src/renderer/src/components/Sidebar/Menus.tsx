@@ -52,7 +52,7 @@ export const Menus: React.FC<MenusProps> = ({ items }) => {
       maxWidth={maxWidth}
       onResize={handleResize}
       onResizeStop={handleResizeStop}
-      className="z-50 overflow-hidden border-r border-border-primary bg-bg-secondary"
+      className="overflow-hidden border-r border-border-primary bg-bg-secondary"
     >
       <div
         className={twMerge(

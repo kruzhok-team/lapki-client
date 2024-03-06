@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 
 import {
   useFloating,
-  useHover,
   FloatingPortal,
   useInteractions,
   offset as offsetMiddleware,
@@ -10,37 +9,43 @@ import {
   shift,
   FloatingArrow,
   arrow,
-  Placement,
-  OffsetOptions,
   useTransitionStyles,
 } from '@floating-ui/react';
 
+import { Checkbox } from '@renderer/components/UI';
+import { useIsVisibleFloating } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
-interface WithHintProps {
+const tutorial = {
+  items: [
+    {
+      id: '1',
+      title: 'Пример',
+      content: 'Попробуй добавить новый компонент',
+    },
+    {
+      id: '2',
+      title: 'Иерархия состояний',
+      content: 'Иерархия состояний позволяет посмотреть компоненты схемы ввиде списка',
+    },
+  ],
+};
+
+interface TutorialItemProps {
   children: (props: Record<string, any>) => React.ReactNode;
-  hint: React.ReactNode;
-  offset?: OffsetOptions;
-  placement?: Placement;
-  delay?: number;
+  id: string;
 }
 
-export const WithHint: React.FC<WithHintProps> = ({
-  children,
-  hint,
-  offset = 10,
-  placement = 'bottom',
-  delay,
-}) => {
+export const TutorialItem: React.FC<TutorialItemProps> = ({ children, id }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const arrowRef = useRef<SVGSVGElement | null>(null);
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
     onOpenChange: setIsOpen,
-    placement,
+    placement: 'right',
     middleware: [
-      offsetMiddleware(offset),
+      offsetMiddleware(10),
       flip(),
       shift({ padding: 5 }),
       arrow({
@@ -48,10 +53,9 @@ export const WithHint: React.FC<WithHintProps> = ({
       }),
     ],
   });
-  const hover = useHover(context, {
-    delay,
-  });
-  const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+
+  const isVisible = useIsVisibleFloating(context);
+  const { getReferenceProps, getFloatingProps } = useInteractions([isVisible]);
 
   const { isMounted, styles } = useTransitionStyles(context, {
     initial: {
@@ -60,22 +64,30 @@ export const WithHint: React.FC<WithHintProps> = ({
     },
   });
 
+  const tutorialItem = tutorial.items.find((item) => item.id === id);
+
   return (
     <>
       {children({
         ref: refs.setReference,
         ...getReferenceProps(),
-        'data-with-hint': true,
       })}
 
-      {isMounted && hint && (
+      {isMounted && tutorialItem && (
         <FloatingPortal>
           <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
             <div
-              className="max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl"
+              className="max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-4 py-2 shadow-xl"
               style={styles}
             >
-              {hint}
+              <h3 className="text-lg">{tutorialItem.title}</h3>
+
+              <p className="mb-2 text-base">{tutorialItem.content}</p>
+
+              <p className="flex items-center justify-end gap-2 text-sm">
+                Больше не показывать подсказки <Checkbox />
+              </p>
+
               <FloatingArrow
                 className="fill-bg-secondary"
                 ref={arrowRef}

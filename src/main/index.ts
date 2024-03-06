@@ -5,18 +5,9 @@ import settings from 'electron-settings';
 import { join } from 'path';
 
 import { checkForUpdates } from './checkForUpdates';
-import {
-  handleFileOpen,
-  handleFileSave,
-  handleFileSaveAs,
-  handleSaveIntoFolder,
-  handleBinFileOpen,
-  handleOpenPlatformFile,
-  handleGetFileMetadata,
-} from './file-handlers';
+import { initFileHandlersIPC } from './file-handlers';
 import { findFreePort } from './modules/freePortFinder';
 import { ModuleManager, ModuleStatus } from './modules/ModuleManager';
-import { searchPlatforms } from './PlatformSeacher';
 import { initSettings } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
@@ -108,26 +99,7 @@ function createWindow(): void {
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
-  // IPC из отрисовщика, в основном диалоговые окна
-  ipcMain.handle('dialog:saveIntoFolder', (_event, data) => {
-    return handleSaveIntoFolder(data);
-  });
-
-  ipcMain.handle('dialog:openFile', (_event, platform: string, path?: string) => {
-    return handleFileOpen(platform, path);
-  });
-
-  ipcMain.handle('dialog:saveFile', (_event, filename, data) => {
-    return handleFileSave(filename, data);
-  });
-
-  ipcMain.handle('dialog:saveAsFile', (_event, filename, data) => {
-    return handleFileSaveAs(filename, data);
-  });
-
-  ipcMain.handle('dialog:openBinFile', (_event) => {
-    return handleBinFileOpen();
-  });
+  initFileHandlersIPC();
 
   ipcMain.handle('Module:reboot', (_event, module: 'lapki-flasher') => {
     ModuleManager.stopModule(module);
@@ -139,15 +111,6 @@ app.whenReady().then(() => {
     return status;
   });
 
-  ipcMain.handle('PlatformLoader:getPlatforms', async (_event) => {
-    // console.log(await loadPlatforms())
-    return searchPlatforms();
-  });
-
-  ipcMain.handle('PlatformLoader:openPlatformFile', (_event, absolute_path: string) => {
-    return handleOpenPlatformFile(absolute_path);
-  });
-
   ipcMain.handle('appVersion', app.getVersion);
 
   ipcMain.handle('getAllTemplates', getAllTemplates);
@@ -155,10 +118,6 @@ app.whenReady().then(() => {
   ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
 
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
-
-  ipcMain.handle('File:getMetadata', (_event, absolute_path: string) => {
-    return handleGetFileMetadata(absolute_path);
-  });
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

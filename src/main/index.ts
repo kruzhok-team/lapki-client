@@ -7,7 +7,7 @@ import { join } from 'path';
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { findFreePort } from './modules/freePortFinder';
-import { ModuleName, ModuleManager, ModuleStatus } from './modules/ModuleManager';
+import { ModuleName, ModuleManager } from './modules/ModuleManager';
 import { initSettings } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 

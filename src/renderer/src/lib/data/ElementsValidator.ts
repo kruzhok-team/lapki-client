@@ -1,5 +1,3 @@
-import isequal from 'lodash.isequal';
-
 import { Elements, State, Component, ArgList, Transition, Event } from '@renderer/types/diagram';
 import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 

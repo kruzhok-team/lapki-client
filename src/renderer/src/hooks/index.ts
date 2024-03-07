@@ -6,3 +6,4 @@ export * from './useErrorModal';
 export * from './useFileOperations';
 export * from './useCreateModalCondition';
 export * from './useIsVisibleFloating';
+export * from './useSettings';

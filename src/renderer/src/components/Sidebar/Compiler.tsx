@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Settings } from '@renderer/components/Modules/Settings';
+import { useSettings } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
@@ -27,6 +27,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
 }) => {
   const { manager } = useEditorContext();
+
+  const [compilerSetting] = useSettings('compiler');
 
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
@@ -97,12 +99,13 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   }, [importData]);
 
   useEffect(() => {
-    console.log('CONNECTING TO COMPILER');
-    Settings.getCompilerSettings().then((compiler) => {
-      Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
-      Compiler.connect(compiler.host, compiler.port);
-    });
-  }, []);
+    if (!compilerSetting) return;
+
+    const { host, port } = compilerSetting;
+
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    Compiler.connect(host, port);
+  }, [compilerSetting]);
 
   const button = [
     {

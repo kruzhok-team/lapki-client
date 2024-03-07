@@ -9,7 +9,7 @@ interface TextFieldProps extends ComponentProps<'input'> {
   containerClassName?: string;
   hidden?: boolean;
   error?: boolean;
-  errorMessage: string;
+  errorMessage?: string;
 }
 
 /**

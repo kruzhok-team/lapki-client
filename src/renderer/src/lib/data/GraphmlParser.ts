@@ -13,7 +13,6 @@ import {
   Component,
   Condition,
   Elements,
-  Event,
   EventData,
   InitialState,
   State,
@@ -24,6 +23,11 @@ import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform'
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
+
+const systemComponentAlias = {
+  entry: { component: 'System', method: 'onEnter' },
+  exit: { component: 'System', method: 'onExit' },
+};
 
 const randomColor = (): string => {
   let result = '';
@@ -146,7 +150,7 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
     trigger = event[0];
     condition = parseCondition(event[1].replace(']', ''));
   }
-  let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
+  let ev = systemComponentAlias[trigger]; // Подстановка exit/entry на System.onExit/System.onEnter
   if (ev === undefined) {
     const [component, method] = trigger.split('.');
     ev = {
@@ -434,11 +438,6 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   }
   return components;
 }
-
-const systemComponentAlias = new Map<string, Event>([
-  ['entry', { component: 'System', method: 'onEnter' }],
-  ['exit', { component: 'System', method: 'onExit' }],
-]);
 
 export function importGraphml(
   expression: string,

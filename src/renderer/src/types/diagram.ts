@@ -89,7 +89,7 @@ export type Elements = {
   platform: string;
   parameters?: { [key: string]: string };
   compilerSettings?: CompilerSettings | null;
-  meta: { [id: string]: string };
+  meta: Meta;
 };
 
 export function emptyElements(): Elements {

@@ -5,7 +5,7 @@ import { EditorManager } from './EditorManager';
 import { emptyElements } from '../../../types/diagram';
 
 const em = new EditorManager();
-em.init('basename', 'name', { ...emptyElements(), transitions: {}, notes: {} });
+em.init('basename', 'name', emptyElements());
 
 describe('states', () => {
   describe('create', () => {

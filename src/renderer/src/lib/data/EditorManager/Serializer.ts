@@ -14,15 +14,7 @@ export class Serializer {
   getAll(saveMode: SaveMode) {
     switch (saveMode) {
       case 'JSON':
-        return JSON.stringify(
-          {
-            ...this.data.elements,
-            transitions: Object.values(this.data.elements.transitions),
-            notes: Object.values(this.data.elements.notes),
-          },
-          undefined,
-          2
-        );
+        return JSON.stringify(this.data.elements, undefined, 2);
       case 'Cyberiada':
         return exportCGML(this.data.elements);
     }

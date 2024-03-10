@@ -1,25 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { electronAPI } from '@electron-toolkit/preload';
 import { contextBridge } from 'electron';
-import { FLASHER_LOCAL_HOST, LAPKI_FLASHER } from '../main/modules/ModuleManager';
-import {
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  DEFAULT_DOC_SETTINGS,
-  DOC_SETTINGS_KEY,
-  FLASHER_SETTINGS_KEY,
-  PLATFORMS_PATH_SETTINGS_KEY,
-} from '../main/electron-settings-consts';
+
+import { fileHandlers } from '../main/file-handlers';
+
 // Custom APIs for renderer
-const api = {
-  LAPKI_FLASHER,
-  FLASHER_LOCAL_HOST,
-  FLASHER_SETTINGS_KEY,
-  COMPILER_SETTINGS_KEY,
-  DEFAULT_COMPILER_SETTINGS,
-  PLATFORMS_PATH_SETTINGS_KEY,
-  DOC_SETTINGS_KEY,
-  DEFAULT_DOC_SETTINGS,
-};
+const api = { fileHandlers };
+
+export type API = typeof api;
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -32,8 +20,10 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore (define in dts)
   window.electron = electronAPI;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore (define in dts)
   window.api = api;
 }

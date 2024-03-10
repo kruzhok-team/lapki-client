@@ -16,7 +16,6 @@ export const FLASHER_CONNECTED = 'Подключен';
 export const FLASHER_NO_CONNECTION = 'Не подключен';
 export const FLASHER_CONNECTION_ERROR = 'Ошибка при попытке подключиться';
 
-//export const FLASHER_LOCAL_PORT = window.electron.ipcRenderer.invoke;
 export class Flasher {
   static port: number;
   static host: string;
@@ -158,27 +157,15 @@ export class Flasher {
   /*
    подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
   */
-  static async connect(
-    host: string | undefined = undefined,
-    port: number | undefined = undefined
-  ): Promise<Websocket | undefined> {
+  static async connect(host: string, port: number): Promise<Websocket | undefined> {
     if (this.connecting) return;
     this.connecting = true;
     this.setFlasherConnectionStatus(FLASHER_CONNECTING);
     this.clearTimer();
-    if (host == undefined && port == undefined) {
-      Flasher.host = window.api.FLASHER_LOCAL_HOST;
-      await window.electron.ipcRenderer.invoke('Flasher:getPort').then(function (localPort) {
-        Flasher.port = localPort;
-      });
-    } else {
-      if (host != undefined) {
-        Flasher.host = host;
-      }
-      if (port != undefined) {
-        Flasher.port = port;
-      }
-    }
+
+    Flasher.host = host;
+    Flasher.port = port;
+
     const new_address = Flasher.makeAddress(Flasher.host, Flasher.port);
     // означает, что хост должен смениться
     if (new_address != Flasher.base_address) {
@@ -377,10 +364,9 @@ export class Flasher {
     openData[2] название файла
     openData[3] данные из файла
     */
-    const openData: [boolean, string | null, string | null, any] =
-      await window.electron.ipcRenderer.invoke('dialog:openBinFile');
+    const openData = await window.api.fileHandlers.openBinFile();
     if (openData[0]) {
-      const buffer: Buffer = openData[3];
+      const buffer = openData[3] as Buffer;
       //console.log(buffer.toString());
       Flasher.binary = new Blob([buffer]);
       this.setFlasherFile(openData[2]);

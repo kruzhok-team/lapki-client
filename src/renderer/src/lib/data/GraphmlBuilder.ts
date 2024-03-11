@@ -26,14 +26,14 @@ function exportMeta(meta: string): string {
   return meta;
 }
 
-function deserializeArgs(args: ArgList | undefined) {
+function serializeArgs(args: ArgList | undefined) {
   if (args === undefined) {
     return '';
   }
   return Object.values(args).join(', ');
 }
 
-function deserializeEvent(trigger: Event): string {
+function serializeEvent(trigger: Event): string {
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
@@ -41,28 +41,28 @@ function deserializeEvent(trigger: Event): string {
   if (trigger.args === undefined) {
     return `${trigger.component}.${trigger.method}`;
   } else {
-    return `${trigger.component}.${trigger.method}(${deserializeArgs(trigger.args)})`;
+    return `${trigger.component}.${trigger.method}(${serializeArgs(trigger.args)})`;
   }
 }
 
-function deserializeActions(actions: Action[]): string {
-  let deserialized = '';
+function serializeActions(actions: Action[]): string {
+  let serialized = '';
   for (const action of actions) {
-    deserialized += `${action.component}.${action.method}(${deserializeArgs(action.args)})\n`;
+    serialized += `${action.component}.${action.method}(${serializeArgs(action.args)})\n`;
   }
-  return deserialized;
+  return serialized;
 }
 
-export function deserializeEvents(events: EventData[]): string {
-  let deserialized = '';
+export function serializeEvents(events: EventData[]): string {
+  let serialized = '';
   for (const event of events) {
-    deserialized += deserializeEvent(event.trigger) + '/\n';
-    deserialized += deserializeActions(event.do) + '\n';
+    serialized += serializeEvent(event.trigger) + '/\n';
+    serialized += serializeActions(event.do) + '\n';
   }
-  return deserialized;
+  return serialized;
 }
 
-function deserializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
+function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
   const cgmlStates: { [id: string]: CGMLState } = {};
   for (const id in states) {
     const state: State = states[id];
@@ -70,23 +70,23 @@ function deserializeStates(states: { [id: string]: State }): { [id: string]: CGM
       name: state.name,
       bounds: state.bounds,
       unsupportedDataNodes: [],
-      actions: deserializeEvents(state.events),
+      actions: serializeEvents(state.events),
       parent: state.parent,
     };
   }
   return cgmlStates;
 }
 
-function deserializeParameters(parameters: { [key: string]: string }): string {
-  let deserialized = '';
+function serializeParameters(parameters: { [key: string]: string }): string {
+  let serialized = '';
   for (const parameterName in parameters) {
     const parameterValue = parameters[parameterName];
-    deserialized += `${parameterName}/ ${parameterValue}\n`;
+    serialized += `${parameterName}/ ${parameterValue}\n`;
   }
-  return deserialized;
+  return serialized;
 }
 
-function deserializeTransitions(
+function serializeTransitions(
   transitions: Record<string, Transition>
 ): Record<string, CGMLTransition> {
   const cgmlTransitions: Record<string, CGMLTransition> = {};
@@ -102,7 +102,7 @@ function deserializeTransitions(
     };
     if (transition.do !== undefined) {
       cgmlTransition.actions =
-        deserializeEvent(transition.trigger) + '/\n' + deserializeActions(transition.do);
+        serializeEvent(transition.trigger) + '/\n' + serializeActions(transition.do);
     }
     cgmlTransitions[id] = cgmlTransition;
   }
@@ -158,7 +158,7 @@ function getKeys(): CGMLKeyNode[] {
   ];
 }
 
-function deserializeComponents(components: { [id: string]: Component }): {
+function serializeComponents(components: { [id: string]: Component }): {
   [id: string]: CGMLComponent;
 } {
   const cgmlComponents: {
@@ -169,7 +169,7 @@ function deserializeComponents(components: { [id: string]: Component }): {
     cgmlComponents[id] = {
       transitionId: component.transitionId,
       id: id,
-      parameters: `type/ ${component.type}\n` + deserializeParameters(component.parameters),
+      parameters: `type/ ${component.type}\n` + serializeParameters(component.parameters),
     };
   }
   return cgmlComponents;
@@ -181,10 +181,10 @@ export function exportCGML(elements: Elements): string {
   cgmlElements.format = 'Cyberiada-GraphML';
   cgmlElements.platform = elements.platform;
   if (elements.platform.startsWith('Arduino')) {
-    cgmlElements.components = deserializeComponents(elements.components);
+    cgmlElements.components = serializeComponents(elements.components);
   }
-  cgmlElements.states = deserializeStates(elements.states);
-  cgmlElements.transitions = deserializeTransitions(elements.transitions);
+  cgmlElements.states = serializeStates(elements.states);
+  cgmlElements.transitions = serializeTransitions(elements.transitions);
   if (elements.initialState !== null) {
     cgmlElements.initialState = {
       transitionId: 'initTransition',

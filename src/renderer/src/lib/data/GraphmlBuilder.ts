@@ -167,6 +167,7 @@ function deserializeComponents(components: { [id: string]: Component }): {
   for (const id in components) {
     const component = components[id];
     cgmlComponents[id] = {
+      transitionId: component.transitionId,
       id: id,
       parameters: `type/ ${component.type}\n` + deserializeParameters(component.parameters),
     };

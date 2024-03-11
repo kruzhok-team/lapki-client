@@ -138,7 +138,7 @@ export class EditorManager {
     const { width, height } = stateStyle;
 
     const getNewId = () => {
-      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+      const nanoid = this.getIdGenerator();
 
       let id = nanoid();
       while (this.data.elements.states.hasOwnProperty(id)) {
@@ -502,13 +502,18 @@ export class EditorManager {
     return true;
   }
 
+  getIdGenerator() {
+    return customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+  }
+
   addComponent({ name, type, parameters = {} }: AddComponentParams) {
     if (this.data.elements.components.hasOwnProperty(name)) {
       console.log(['bad new component', name, type]);
       return false;
     }
-
+    const transitionId = this.getIdGenerator()();
     this.data.elements.components[name] = {
+      transitionId,
       type,
       parameters,
     };

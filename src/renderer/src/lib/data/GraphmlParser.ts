@@ -81,6 +81,7 @@ function parseCondition(condition: string): Condition {
 
 function emptyComponent(): Component {
   return {
+    transitionId: '',
     type: '',
     parameters: {},
   };
@@ -333,7 +334,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
     const component = parseComponentNode(rawComponent.parameters, id)[0];
-    components[id] = component;
+    components[id] = { ...component, transitionId: rawComponent.transitionId };
   }
   return components;
 }
@@ -432,6 +433,7 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   } = {};
   for (const id in platformComponents) {
     components[id] = {
+      transitionId: '',
       type: id,
       parameters: {},
     };

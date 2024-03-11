@@ -68,6 +68,7 @@ export type Transition = {
 };
 
 export type Component = {
+  transitionId: string;
   type: string;
   parameters: { [key: string]: string };
 };

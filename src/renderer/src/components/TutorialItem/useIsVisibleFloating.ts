@@ -20,6 +20,7 @@ export const useIsVisibleFloating = (
     elements: { domReference },
     events,
     onOpenChange,
+    open,
   } = context;
 
   const { tutorial, id, closeDelay = 3000, openDelay = 200 } = props;
@@ -35,11 +36,17 @@ export const useIsVisibleFloating = (
 
   const observer = useMemo(() => {
     return new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return tutorial.cancelShow(id);
+      if (!entry.isIntersecting) {
+        if (open) {
+          onOpenChange(false);
+        }
+
+        return tutorial.cancelShow(id);
+      }
 
       tutorial.requestShow(id);
     });
-  }, [id, tutorial]);
+  }, [id, onOpenChange, open, tutorial]);
 
   useEffect(() => {
     const handleOpenChange = ({ open }: { open: boolean }) => {

@@ -14,7 +14,7 @@ import {
 
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { Checkbox } from '@renderer/components/UI';
-import { Tutorial, TutorialItem as TutorialItemType } from '@renderer/store/Tutorial';
+import { Tutorial } from '@renderer/store/Tutorial';
 import { useTutorialContext } from '@renderer/store/TutorialContext';
 import { getColor } from '@renderer/theme';
 
@@ -27,7 +27,7 @@ interface TutorialItemProps {
 
 interface TutorialItemWithTutorialProps extends TutorialItemProps {
   tutorial: Tutorial;
-  tutorialItem: TutorialItemType;
+  tutorialItem: Main['tutorial']['items'][string];
 }
 
 export const TutorialItemWithTutorial: React.FC<TutorialItemWithTutorialProps> = (props) => {

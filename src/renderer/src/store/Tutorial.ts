@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-export type TutorialItem = { title: string; content: string; showed: boolean };
-type TutorialItems = Record<string, TutorialItem>;
+type TutorialItems = Main['tutorial']['items'];
 
 /**
  * (bryzZz)
@@ -16,24 +15,18 @@ export class Tutorial {
   private reactDataListeners = new Map<string, Array<() => void>>(); //! Подписчиков обнулять нельзя, react сам разбирается
 
   constructor() {
-    // TODO(bryzZz) Подгрузка туториала из файла
-    const data = {
-      items: {
-        '1': {
-          title: 'Пример',
-          content: 'Попробуй добавить новый компонент',
-          showed: false,
-        },
-        '2': {
-          title: 'Иерархия состояний',
-          content: 'Иерархия состояний позволяет посмотреть компоненты схемы ввиде списка',
-          showed: false,
-        },
-      },
-    };
+    this.load();
+  }
+
+  /**
+   * (bryzZz)
+   * Загрузка туториала из файла
+   */
+  private load = async () => {
+    const data = await window.api.fileHandlers.getTutorial();
 
     this.setItems(data.items);
-  }
+  };
 
   setItems = (items: TutorialItems) => {
     this.items = items;

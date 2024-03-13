@@ -10,6 +10,8 @@ import {
   handleOpenPlatformFile,
   handleGetFileMetadata,
 } from './handlers';
+import { getAllTemplates, getTemplate } from './templates';
+import { getTutorial } from './tutorial';
 
 /**
  * В этом файле происходит типизация IPC
@@ -26,6 +28,9 @@ const handlers = {
   getPlatforms: searchPlatforms,
   openPlatformFile: handleOpenPlatformFile,
   getMetadata: handleGetFileMetadata,
+  getAllTemplates,
+  getTemplate,
+  getTutorial,
 };
 
 /**

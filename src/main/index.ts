@@ -9,7 +9,6 @@ import { initFileHandlersIPC } from './file-handlers';
 import { findFreePort } from './modules/freePortFinder';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
 import { initSettings } from './settings';
-import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
 
@@ -111,10 +110,6 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('appVersion', app.getVersion);
-
-  ipcMain.handle('getAllTemplates', getAllTemplates);
-
-  ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
 
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
 

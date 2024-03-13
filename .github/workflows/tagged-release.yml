@@ -6,10 +6,13 @@ on:
       - 'v*'
 
 jobs:
-  gh_tagged_release:
+  linux-windows-build:
     runs-on: 'ubuntu-latest'
 
     permissions: write-all
+
+    outputs:
+      upload_url: ${{ steps.automatic_releases.outputs.upload_url }}
 
     steps:
       - name: Check out the repo
@@ -33,6 +36,7 @@ jobs:
             npm run bundle:win
 
       - uses: 'marvinpinto/action-automatic-releases@latest'
+        id: 'automatic_releases'
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
           prerelease: false
@@ -41,4 +45,33 @@ jobs:
             dist/*.snap
             dist/*.AppImage
             dist/*.exe
-        id: 'automatic_releases'
+
+  mac-build:
+    runs-on: 'macos-latest'
+
+    permissions: write-all
+
+    needs: linux-windows-build
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run bundle:mac
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.linux-windows-build.outputs.upload_url }}
+          asset_path: ./dist/lapki-ide-${{ github.ref_name }}.dmg
+          asset_name: lapki-ide-${{ github.ref_name }}.dmg
+          asset_content_type: application/octet-stream

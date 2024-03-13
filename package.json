@@ -26,7 +26,8 @@
     "build:win": "npm run build && npm run bundle:win",
     "build:linux": "npm run build && npm run bundle:linux",
     "bundle:win": "electron-builder --win --config",
-    "bundle:linux": "electron-builder --linux --config"
+    "bundle:linux": "electron-builder --linux --config",
+    "bundle:mac": "electron-builder --mac --config"
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.2",
@@ -106,5 +107,8 @@
   "resolutions": {
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4"
+  },
+  "optionalDependencies": {
+    "dmg-license": "^1.0.11"
   }
 }

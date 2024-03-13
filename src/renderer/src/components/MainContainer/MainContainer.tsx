@@ -24,7 +24,6 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable/Picto';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { useTutorial } from '@renderer/store/useTutorial';
 
 import { NotInitialized } from './NotInitialized';
 import { Tabs } from './Tabs';
@@ -48,7 +47,6 @@ export const MainContainer: React.FC = () => {
   });
 
   useAppTitle();
-  const setTutorialItems = useTutorial((state) => state.setItems);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -78,24 +76,6 @@ export const MainContainer: React.FC = () => {
         openPlatformError(errs);
       }
     });
-
-    // TODO(bryzZz) Подгрузка туториала из файла
-    const tutorial = {
-      items: [
-        {
-          id: '1',
-          title: 'Пример',
-          content: 'Попробуй добавить новый компонент',
-        },
-        {
-          id: '2',
-          title: 'Иерархия состояний',
-          content: 'Иерархия состояний позволяет посмотреть компоненты схемы ввиде списка',
-        },
-      ],
-    };
-
-    setTutorialItems(tutorial.items);
   }, []);
 
   return (

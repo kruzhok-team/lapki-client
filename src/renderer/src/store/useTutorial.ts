@@ -6,15 +6,26 @@ interface TutorialItem {
   content: string;
 }
 
+type Subscriber = () => void;
+type Unsubscribe = () => void;
+
 interface TutorialState {
   disabled: boolean;
   setDisabled: (disabled: boolean) => void;
 
   items: TutorialItem[];
-  currentItemId: string | null;
   setItems: (items: TutorialItem[]) => void;
 
+  requestShow: (itemId: string) => void;
+  onAvailableToShow: (itemId: string, subscriber: Subscriber) => Unsubscribe;
+  onClose: (itemId: string) => void;
+
+  pendingQueue: string[];
+  currentItemId: string | null;
+
   next: () => void;
+
+  availableToShow: (itemId: string) => boolean;
 }
 
 export const useTutorial = create<TutorialState>((set) => ({
@@ -22,6 +33,7 @@ export const useTutorial = create<TutorialState>((set) => ({
   setDisabled: (disabled) => set({ disabled }),
 
   items: [],
+  pendingQueue: [],
   currentItemId: null,
   setItems: (items) => set({ items }),
 
@@ -41,4 +53,6 @@ export const useTutorial = create<TutorialState>((set) => ({
         currentItemId: items[nextItemIndex]?.id,
       };
     }),
+
+  availableToShow: (itemId) => true,
 }));

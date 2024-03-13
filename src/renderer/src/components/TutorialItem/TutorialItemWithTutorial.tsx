@@ -13,30 +13,17 @@ import {
 } from '@floating-ui/react';
 
 import { Checkbox } from '@renderer/components/UI';
-import { useIsVisibleFloating } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
-const tutorial = {
-  items: [
-    {
-      id: '1',
-      title: 'Пример',
-      content: 'Попробуй добавить новый компонент',
-    },
-    {
-      id: '2',
-      title: 'Иерархия состояний',
-      content: 'Иерархия состояний позволяет посмотреть компоненты схемы ввиде списка',
-    },
-  ],
-};
-
-interface TutorialItemProps {
+interface TutorialItemWithTutorialProps {
   children: (props: Record<string, any>) => React.ReactNode;
   id: string;
 }
 
-export const TutorialItem: React.FC<TutorialItemProps> = ({ children, id }) => {
+export const TutorialItemWithTutorial: React.FC<TutorialItemWithTutorialProps> = ({
+  children,
+  id,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const arrowRef = useRef<SVGSVGElement | null>(null);
@@ -54,7 +41,7 @@ export const TutorialItem: React.FC<TutorialItemProps> = ({ children, id }) => {
     ],
   });
 
-  const isVisible = useIsVisibleFloating(context);
+  const isVisible = useIsVisibleFloating(context, { tutorial, id, disabled: tutorialItem?.showed });
   const { getReferenceProps, getFloatingProps } = useInteractions([isVisible]);
 
   const { isMounted, styles } = useTransitionStyles(context, {
@@ -63,8 +50,6 @@ export const TutorialItem: React.FC<TutorialItemProps> = ({ children, id }) => {
       opacity: 0,
     },
   });
-
-  const tutorialItem = tutorial.items.find((item) => item.id === id);
 
   return (
     <>

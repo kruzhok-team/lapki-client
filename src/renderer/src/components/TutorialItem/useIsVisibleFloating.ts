@@ -2,14 +2,19 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { FloatingContext, ElementProps } from '@floating-ui/react';
 
+import { Tutorial } from '@renderer/store/Tutorial';
+
 interface UseIsVisibleFloating {
+  tutorial: Tutorial;
+  id: string;
+
   closeDelay?: number;
   openDelay?: number;
 }
 
 export const useIsVisibleFloating = (
   context: FloatingContext,
-  props?: UseIsVisibleFloating
+  props: UseIsVisibleFloating
 ): ElementProps => {
   const {
     elements: { domReference },
@@ -17,7 +22,7 @@ export const useIsVisibleFloating = (
     onOpenChange,
   } = context;
 
-  const { closeDelay = 3000, openDelay = 200 } = props ?? {};
+  const { tutorial, id, closeDelay = 3000, openDelay = 200 } = props;
 
   const openTimeoutRef = useRef<NodeJS.Timeout>();
   const closeTimeoutRef = useRef<NodeJS.Timeout>();
@@ -28,33 +33,28 @@ export const useIsVisibleFloating = (
     }, closeDelay);
   }, [closeDelay, onOpenChange]);
 
-  const observer = useMemo(
-    () =>
-      new IntersectionObserver(([entry]) => {
-        if (!entry.isIntersecting) return;
+  const observer = useMemo(() => {
+    return new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return tutorial.cancelShow(id);
 
-        openTimeoutRef.current = setTimeout(() => {
-          onOpenChange(true);
-
-          closeWithDelay();
-        }, openDelay);
-      }),
-    [closeWithDelay, onOpenChange, openDelay]
-  );
+      tutorial.requestShow(id);
+    });
+  }, [id, tutorial]);
 
   useEffect(() => {
-    function onOpenChange({ open }: { open: boolean }) {
+    const handleOpenChange = ({ open }: { open: boolean }) => {
       if (!open) {
         clearTimeout(openTimeoutRef.current);
         clearTimeout(closeTimeoutRef.current);
+        tutorial.onClose(id);
       }
-    }
-
-    events.on('openchange', onOpenChange);
-    return () => {
-      events.off('openchange', onOpenChange);
     };
-  }, [events]);
+
+    events.on('openchange', handleOpenChange);
+    return () => {
+      events.off('openchange', handleOpenChange);
+    };
+  }, [events, id, tutorial]);
 
   useEffect(() => {
     if (!domReference) return;
@@ -63,12 +63,30 @@ export const useIsVisibleFloating = (
     return () => observer.disconnect();
   }, [domReference, observer]);
 
+  useEffect(() => {
+    const unsubscribe = tutorial.onAvailableToShow(id, () => {
+      openTimeoutRef.current = setTimeout(() => {
+        onOpenChange(true);
+
+        closeWithDelay();
+      }, openDelay);
+    });
+
+    return () => unsubscribe();
+  }, [closeWithDelay, id, onOpenChange, openDelay, tutorial]);
+
   return {
     floating: {
       onMouseEnter() {
         clearTimeout(closeTimeoutRef.current);
       },
       onMouseLeave() {
+        closeWithDelay();
+      },
+      onFocus() {
+        clearTimeout(closeTimeoutRef.current);
+      },
+      onBlur() {
         closeWithDelay();
       },
     },

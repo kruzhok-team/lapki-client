@@ -16,7 +16,7 @@ export const getAllTemplates = async () => {
     const dirs = (await readdir(templatesPath, { withFileTypes: true }))
       .filter((dirent) => dirent.isDirectory())
       .map((dir) => dir.name);
-    const result = {};
+    const result: Record<string, string[]> = {};
 
     for (const dirName of dirs) {
       result[dirName] = (await readdir(path.join(templatesPath, dirName))).map(removeExtension);
@@ -24,7 +24,7 @@ export const getAllTemplates = async () => {
 
     return result;
   } catch (error) {
-    return [];
+    return {};
   }
 };
 

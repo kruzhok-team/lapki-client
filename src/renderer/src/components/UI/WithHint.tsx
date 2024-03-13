@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import {
   useFloating,
   useHover,
+  FloatingPortal,
   useInteractions,
   offset as offsetMiddleware,
   flip,
@@ -11,8 +12,8 @@ import {
   arrow,
   Placement,
   OffsetOptions,
+  useTransitionStyles,
 } from '@floating-ui/react';
-import { createPortal } from 'react-dom';
 
 import { getColor } from '@renderer/theme';
 
@@ -52,6 +53,13 @@ export const WithHint: React.FC<WithHintProps> = ({
   });
   const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
 
+  const { isMounted, styles } = useTransitionStyles(context, {
+    initial: {
+      transform: 'translateX(2px)',
+      opacity: 0,
+    },
+  });
+
   return (
     <>
       {children({
@@ -59,26 +67,26 @@ export const WithHint: React.FC<WithHintProps> = ({
         ...getReferenceProps(),
         'data-with-hint': true,
       })}
-      {isOpen &&
-        hint &&
-        createPortal(
-          <div
-            className="z-[100] max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
-            ref={refs.setFloating}
-            style={floatingStyles}
-            {...getFloatingProps()}
-          >
-            <FloatingArrow
-              className="fill-bg-secondary"
-              ref={arrowRef}
-              context={context}
-              stroke={getColor('border-primary')}
-              strokeWidth={0.5}
-            />
-            {hint}
-          </div>,
-          document.body
-        )}
+
+      {isMounted && hint && (
+        <FloatingPortal>
+          <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+            <div
+              className="max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl"
+              style={styles}
+            >
+              {hint}
+              <FloatingArrow
+                className="fill-bg-secondary"
+                ref={arrowRef}
+                context={context}
+                stroke={getColor('border-primary')}
+                strokeWidth={0.5}
+              />
+            </div>
+          </div>
+        </FloatingPortal>
+      )}
     </>
   );
 };

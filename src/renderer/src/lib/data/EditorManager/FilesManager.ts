@@ -171,15 +171,11 @@ export class FilesManager {
   }
 
   async getAllTemplates() {
-    return (await window.electron.ipcRenderer.invoke('getAllTemplates')) as TemplatesList;
+    return window.api.fileHandlers.getAllTemplates();
   }
 
   async createFromTemplate(type: string, name: string, openImportError: (error: string) => void) {
-    const templateData = await window.electron.ipcRenderer.invoke(
-      'getTemplateData',
-      type,
-      name + '.graphml'
-    );
+    const templateData = await window.api.fileHandlers.getTemplate(type, name + '.graphml');
 
     const data = importGraphml(templateData, openImportError);
 

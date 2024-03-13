@@ -9,6 +9,7 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+import { TutorialItem } from '@renderer/components';
 import { Hierarchy } from '@renderer/components/Hierarchy';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
@@ -79,15 +80,23 @@ export const Explorer: React.FC = () => {
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="mb-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
-            />
-            <h3 className="font-semibold">Иерархия состояний</h3>
-          </button>
+          <TutorialItem id="2">
+            {(props) => (
+              <button
+                className="mb-3 flex items-center"
+                onClick={() => togglePanel(hierarchyPanelRef)}
+                {...props}
+              >
+                <ArrowIcon
+                  className={twMerge(
+                    'rotate-0 transition-transform',
+                    hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
+                  )}
+                />
+                <h3 className="font-semibold">Иерархия состояний</h3>
+              </button>
+            )}
+          </TutorialItem>
 
           {isMounted ? <Hierarchy /> : 'Недоступно до открытия схемы'}
         </Panel>

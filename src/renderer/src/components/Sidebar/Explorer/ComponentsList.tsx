@@ -3,7 +3,12 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
+import {
+  ComponentEditModal,
+  ComponentAddModal,
+  ComponentDeleteModal,
+  TutorialItem,
+} from '@renderer/components';
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { WithHint } from '@renderer/components/UI';
 import { useComponents } from '@renderer/hooks';
@@ -82,15 +87,20 @@ export const ComponentsList: React.FC = () => {
 
   return (
     <>
-      <button
-        type="button"
-        className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-        disabled={!isInitialized}
-        onClick={onRequestAddComponent}
-      >
-        <AddIcon className="shrink-0" />
-        Добавить...
-      </button>
+      <TutorialItem id="1">
+        {(props) => (
+          <button
+            type="button"
+            className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+            disabled={!isInitialized}
+            onClick={onRequestAddComponent}
+            {...props}
+          >
+            <AddIcon className="shrink-0" />
+            Добавить...
+          </button>
+        )}
+      </TutorialItem>
 
       <ScrollableList
         containerProps={{ onClick: (e) => e.stopPropagation() }}

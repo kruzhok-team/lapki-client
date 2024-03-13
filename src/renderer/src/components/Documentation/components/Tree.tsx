@@ -22,7 +22,7 @@ export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) =>
         borderLeftColor: `#${color_gen}`,
         borderLeftWidth: borderWidthVal,
       }}
-      className="menu bg-default text-content-700 mb-0 ml-2 mt-0 flex-1 p-2 pb-0 pt-0"
+      className="h-full max-h-[calc(100%-49.6px-41.6px)] w-full overflow-y-auto p-2 pb-0 pt-0 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {root?.children &&
         root.children.map((item) => {

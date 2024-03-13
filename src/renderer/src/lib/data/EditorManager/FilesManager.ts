@@ -37,11 +37,7 @@ export class FilesManager {
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, {
-      ...this.data.elements,
-      transitions: Object.values(this.data.elements.transitions),
-      notes: Object.values(this.data.elements.notes),
-    });
+    Compiler.compile(this.data.elements.platform, this.data.elements);
   }
 
   parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
@@ -98,7 +94,9 @@ export class FilesManager {
     if (openData[0]) {
       try {
         const data = importGraphml(openData[3], openImportError);
-
+        if (data == undefined) {
+          return makeLeft(null);
+        }
         if (!isPlatformAvailable(data.platform)) {
           return makeLeft({
             name: openData[1]!,
@@ -182,7 +180,9 @@ export class FilesManager {
     );
 
     const data = importGraphml(templateData, openImportError);
-
+    if (data == undefined) {
+      return;
+    }
     this.editorManager.init(null, 'Без названия', data);
     this.editorManager.makeStale();
   }

@@ -57,19 +57,7 @@ export class EditorManager {
     this.data = emptyEditorData();
     this.data.basename = basename;
     this.data.name = name;
-    this.data.elements = {
-      ...elements,
-      transitions: elements.transitions.reduce((acc, cur, i) => {
-        acc[i] = cur;
-
-        return acc;
-      }, {}),
-      notes: elements.notes.reduce((acc, cur, i) => {
-        acc[i] = cur;
-
-        return acc;
-      }, {}),
-    };
+    this.data.elements = elements;
     this.data.isInitialized = true;
     this.data.isMounted = prevMounted;
 
@@ -150,7 +138,7 @@ export class EditorManager {
     const { width, height } = stateStyle;
 
     const getNewId = () => {
-      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+      const nanoid = this.getIdGenerator();
 
       let id = nanoid();
       while (this.data.elements.states.hasOwnProperty(id)) {
@@ -514,13 +502,18 @@ export class EditorManager {
     return true;
   }
 
+  getIdGenerator() {
+    return customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+  }
+
   addComponent({ name, type, parameters = {} }: AddComponentParams) {
     if (this.data.elements.components.hasOwnProperty(name)) {
       console.log(['bad new component', name, type]);
       return false;
     }
-
+    const transitionId = this.getIdGenerator()();
     this.data.elements.components[name] = {
+      transitionId,
       type,
       parameters,
     };

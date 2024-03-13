@@ -255,6 +255,7 @@ export class Compiler {
           };
           const obj = {
             ...(data as Elements),
+            transitions: Object.values((data as Elements).transitions),
             compilerSettings: compilerSettings,
           };
           ws.send(JSON.stringify(obj));
@@ -270,6 +271,7 @@ export class Compiler {
           };
           const obj = {
             ...(data as Elements),
+            transitions: Object.values((data as Elements).transitions),
             compilerSettings: compilerSettings,
           };
           ws.send(JSON.stringify(obj));

@@ -29,7 +29,7 @@ export const DiagramContextMenu: React.FC = () => {
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
     elements: {
-      reference: getVirtualElement(position),
+      reference: getVirtualElement(position) as Element,
     },
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });

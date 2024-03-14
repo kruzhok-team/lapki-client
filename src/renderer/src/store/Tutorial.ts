@@ -106,10 +106,12 @@ export class Tutorial {
 
   /**
    * (bryzZz)
-   * Эта функция когда часть туториала была показана
+   * Эта функция вызывается когда часть туториала была показана
    */
-  onClose = (itemId: string) => {
+  onClose = async (itemId: string) => {
     this.pendingQueue = this.pendingQueue.filter((id) => id !== itemId);
+
+    await window.api.fileHandlers.markTutorialItemAsShowed(itemId);
 
     this.items[itemId] = { ...this.items[itemId], showed: true };
     this.reactDataListeners.get(itemId)?.forEach((l) => l());

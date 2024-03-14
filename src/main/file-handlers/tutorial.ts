@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
 const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
@@ -14,5 +14,21 @@ export const getTutorial = async (): Promise<Tutorial> => {
   } catch (error) {
     console.error(error);
     return { items: {} };
+  }
+};
+
+export const markTutorialItemAsShowed = async (itemId: string) => {
+  try {
+    const tutorial = await getTutorial();
+
+    if (!(itemId in tutorial.items)) {
+      return;
+    }
+
+    tutorial.items[itemId].showed = true;
+
+    writeFile(path.join(basePath + '/tutorial.json'), JSON.stringify(tutorial));
+  } catch (reason) {
+    console.error(reason);
   }
 };

@@ -88,9 +88,16 @@ export const TutorialItemWithTutorial: React.FC<TutorialItemWithTutorialProps> =
               <div className="px-4">
                 <p className="mb-2 text-base">{tutorialItem.content}</p>
 
-                <p className="flex items-center justify-end gap-2 text-sm">
+                <button
+                  className="btn-primary mb-2 ml-auto block"
+                  onClick={() => context.onOpenChange(false)}
+                >
+                  Ок
+                </button>
+
+                <label className="flex cursor-pointer items-center justify-end gap-2 text-sm">
                   Больше не показывать подсказки <Checkbox />
-                </p>
+                </label>
               </div>
 
               <FloatingArrow

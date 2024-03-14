@@ -11,7 +11,7 @@ import {
   handleGetFileMetadata,
 } from './handlers';
 import { getAllTemplates, getTemplate } from './templates';
-import { getTutorial } from './tutorial';
+import { getTutorial, markTutorialItemAsShowed } from './tutorial';
 
 /**
  * В этом файле происходит типизация IPC
@@ -31,6 +31,7 @@ const handlers = {
   getAllTemplates,
   getTemplate,
   getTutorial,
+  markTutorialItemAsShowed,
 };
 
 /**

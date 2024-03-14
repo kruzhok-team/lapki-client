@@ -8,6 +8,10 @@ import { Render } from './common/Render';
 import { EditorManager } from './data/EditorManager';
 import { preloadPicto } from './drawable/Picto';
 
+interface CanvasEditorSettings {
+  animations: boolean;
+}
+
 /**
  * Редактор машин состояний.
  */
@@ -19,6 +23,10 @@ export class CanvasEditor {
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
   private _container: Container | null = null;
+
+  settings: CanvasEditorSettings = {
+    animations: true,
+  };
 
   manager!: EditorManager;
 
@@ -88,7 +96,9 @@ export class CanvasEditor {
     });
 
     this.render.subscribe(() => {
-      TWEEN.update();
+      if (this.settings.animations) {
+        TWEEN.update();
+      }
 
       if (!this.container.isDirty) return;
       this.mouse.tick();
@@ -103,6 +113,14 @@ export class CanvasEditor {
     this.manager.triggerDataUpdate('isMounted');
 
     this.container.machineController.loadData();
+  }
+
+  setSettings(settings: CanvasEditorSettings) {
+    this.settings = settings;
+
+    if (this.manager.data.isMounted) {
+      this.container.isDirty = true;
+    }
   }
 
   cleanUp() {

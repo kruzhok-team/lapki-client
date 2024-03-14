@@ -369,35 +369,36 @@ export class Container extends EventEmitter<ContainerEvents> {
       clamp(replace ? delta : prevScale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
 
-    const from = {
-      x: this.app.manager.data.offset.x,
-      y: this.app.manager.data.offset.y,
-      scale: prevScale,
-    };
-
     const to = {
       x: this.app.manager.data.offset.x - (x * prevScale - x * newScale),
       y: this.app.manager.data.offset.y - (y * prevScale - y * newScale),
       scale: newScale,
     };
 
-    new TWEEN.Tween(from)
-      .to(to, 300)
-      .easing(TWEEN.Easing.Linear.None)
-      .onUpdate(({ x, y, scale }) => {
-        this.app.manager.data.offset = { x, y };
-        this.app.manager.data.scale = scale;
-        picto.scale = scale;
-        this.isDirty = true;
-      })
-      .onComplete(({ scale }) => {
-        this.setScale(scale);
-      })
-      .start();
+    if (this.app.settings.animations) {
+      const from = {
+        x: this.app.manager.data.offset.x,
+        y: this.app.manager.data.offset.y,
+        scale: prevScale,
+      };
 
-    // this.app.manager.data.offset.x -= x * prevScale - x * newScale;
-    // this.app.manager.data.offset.y -= y * prevScale - y * newScale;
-
-    // this.setScale(newScale);
+      new TWEEN.Tween(from)
+        .to(to, 200)
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate(({ x, y, scale }) => {
+          this.app.manager.data.offset = { x, y };
+          this.app.manager.data.scale = scale;
+          picto.scale = scale;
+          this.isDirty = true;
+        })
+        .onComplete(({ scale }) => {
+          this.setScale(scale);
+        })
+        .start();
+    } else {
+      this.app.manager.data.offset.x = to.x;
+      this.app.manager.data.offset.y = to.y;
+      this.setScale(to.scale);
+    }
   }
 }

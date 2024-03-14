@@ -20,10 +20,23 @@ const themeOptions = [
   },
 ];
 
+const canvasAnimationsOptions = [
+  {
+    label: 'Вкл.',
+    value: 'on',
+  },
+  {
+    label: 'Выкл.',
+    value: 'off',
+  },
+];
+
 export const Setting: React.FC = () => {
   const editor = useEditorContext();
   const isMounted = editor.manager.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
+  const [canvasSettings, setCanvasSettings] = useSettings('canvas');
+  const animationsAsString = canvasSettings?.animations ? 'on' : 'off';
 
   const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
@@ -37,6 +50,12 @@ export const Setting: React.FC = () => {
     if (isMounted) {
       editor.container.isDirty = true;
     }
+  };
+
+  const handleChangeCanvasAnimations = ({ value }: any) => {
+    const animationsAsBoolean = value === 'on' ? true : false;
+
+    setCanvasSettings({ animations: animationsAsBoolean });
   };
 
   return (
@@ -55,15 +74,26 @@ export const Setting: React.FC = () => {
             isSearchable={false}
           />
         </div>
+
         <button className="btn-primary" onClick={openCompiler}>
           Компилятор…
         </button>
         <button className="btn-primary mb-2" onClick={openDocModal}>
           Док-сервер…
         </button>
-        <button className="btn-primary" onClick={openAboutModal}>
+        <button className="btn-primary mb-4" onClick={openAboutModal}>
           О программе
         </button>
+
+        <div className="mb-4">
+          Анимации на холсте
+          <Select
+            options={canvasAnimationsOptions}
+            value={canvasAnimationsOptions.find((o) => o.value === animationsAsString)}
+            onChange={handleChangeCanvasAnimations}
+            isSearchable={false}
+          />
+        </div>
       </div>
 
       <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />

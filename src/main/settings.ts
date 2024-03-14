@@ -17,6 +17,9 @@ const defaultSettings = {
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',
+  canvas: {
+    animations: true,
+  },
 };
 
 export type Settings = typeof defaultSettings;

@@ -49,7 +49,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       if (errors[key]) return;
     }
 
-    const submitData = { type: data.type, parameters };
+    const submitData = { transitionId: data.transitionId, type: data.type, parameters };
     const newName = name === idx ? undefined : name;
 
     onEdit(idx, submitData, newName);

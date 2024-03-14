@@ -39,6 +39,7 @@
     "@floating-ui/react-dom": "^2.0.1",
     "@kruzhok-team/cyberiadaml-js": "^0.0.9",
     "@radix-ui/react-checkbox": "^1.0.4",
+    "@tweenjs/tween.js": "^23.1.1",
     "@types/ws": "^8.5.10",
     "@uiw/react-codemirror": "^4.21.21",
     "blob-util": "^2.0.2",

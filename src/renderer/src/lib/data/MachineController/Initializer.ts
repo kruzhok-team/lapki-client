@@ -1,3 +1,4 @@
+import { Note } from '@renderer/lib/drawable/Note';
 import { InitialState } from '@renderer/types/diagram';
 
 import { MachineController } from './MachineController';
@@ -18,6 +19,7 @@ export class Initializer {
 
     this.initStates();
     this.initTransitions();
+    this.initNotes();
     this.initPlatform();
     this.initComponents();
 
@@ -33,6 +35,9 @@ export class Initializer {
   private get transitions() {
     return this.machineController.transitions;
   }
+  private get notes() {
+    return this.machineController.notes;
+  }
   private get platform() {
     return this.machineController.platform;
   }
@@ -45,13 +50,17 @@ export class Initializer {
     this.transitions.forEach((value) => {
       this.container.transitionsController.unwatchTransition(value);
     });
-
     this.states.forEach((value) => {
       this.container.statesController.unwatchState(value);
     });
+    this.notes.forEach((value) => {
+      this.container.notesController.unwatch(value);
+    });
+
     this.states.clear();
     this.container.statesController.clearInitialStateMark();
     this.transitions.clear();
+    this.notes.clear();
     this.undoRedo.clear();
   }
 
@@ -87,6 +96,14 @@ export class Initializer {
 
     for (const id in items) {
       this.createTransitionView(id);
+    }
+  }
+
+  private initNotes() {
+    const items = this.container.app.manager.data.elements.notes;
+
+    for (const id in items) {
+      this.createNoteView(id);
     }
   }
 
@@ -140,6 +157,13 @@ export class Initializer {
     this.transitions.set(id, transition);
     this.machineController.linkTransition(id);
     this.container.transitionsController.watchTransition(transition);
+  }
+
+  private createNoteView(id: string) {
+    const note = new Note(this.container, id);
+    this.notes.set(id, note);
+    this.container.children.add('note', note.id);
+    this.container.notesController.watch(note);
   }
 
   private createInitialStateView(data: InitialState) {

@@ -1,5 +1,6 @@
 import throttle from 'lodash.throttle';
 
+import { Event } from '@renderer/types/diagram';
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
@@ -26,7 +27,12 @@ interface StatesControllerEvents {
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
-  changeEvent: { state: State; event: EventSelection; click: boolean };
+  changeEvent: {
+    state: State;
+    eventSelection: EventSelection;
+    event: Event;
+    isEditingEvent: boolean;
+  };
   eventContextMenu: { state: State; event: EventSelection; position: Point };
 }
 
@@ -79,11 +85,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
       // FIXME: пересчитывает координаты внутри, ещё раз
-      const eventIdx = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
-      if (!eventIdx) {
+      const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+      if (!eventSelection) {
         this.emit('changeState', state);
       } else {
-        this.emit('changeEvent', { state, event: eventIdx, click: true });
+        const eventData = state.eventBox.data[eventSelection.eventIdx];
+        const event =
+          eventSelection.actionIdx === null
+            ? eventData.trigger
+            : eventData.do[eventSelection.actionIdx];
+        const isEditingEvent = eventSelection.actionIdx === null;
+
+        this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
       }
     }
   };
@@ -91,14 +104,26 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
     this.container.machineController.selectState(state.id);
 
-    const eventIdx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
-    if (!eventIdx) {
-      this.emit('stateContextMenu', { state, position: { x: e.event.x, y: e.event.y } });
-    } else {
+    const eventIdx = state.eventBox.handleClick({
+      x: e.event.x,
+      y: e.event.y,
+    });
+
+    const offset = this.container.app.mouse.getOffset();
+
+    if (eventIdx) {
       this.emit('eventContextMenu', {
         state,
-        position: { x: e.event.x, y: e.event.y },
+        position: {
+          x: e.event.x + offset.x,
+          y: e.event.y + offset.y,
+        },
         event: eventIdx,
+      });
+    } else {
+      this.emit('stateContextMenu', {
+        state,
+        position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
       });
     }
   };

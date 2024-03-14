@@ -4,14 +4,8 @@ import { Node } from './Node';
 
 import { Container } from '../basic/Container';
 import { transitionStyle } from '../styles';
-import {
-  degrees_to_radians,
-  drawCircle,
-  drawCurvedLine,
-  drawText,
-  drawTriangle,
-  getLine,
-} from '../utils';
+import { degrees_to_radians, drawCircle, drawCurvedLine, drawTriangle, getLine } from '../utils';
+import { drawText } from '../utils/text';
 
 /**
  * Класс для отрисовки начального состояния
@@ -44,8 +38,8 @@ export class InitialStateMark extends Node {
     if (!this.target) return;
 
     const { x, y, width, height } = this.drawBounds;
+    const fontSize = 24 / this.container.app.manager.data.scale;
 
-    ctx.lineWidth = 2;
     ctx.fillStyle = getColor('primary');
 
     ctx.beginPath();
@@ -55,11 +49,10 @@ export class InitialStateMark extends Node {
     drawText(ctx, 'Начало', {
       x: x + width / 2,
       y: y + height / 2,
+      font: `bold ${fontSize}px/1 "Fira Sans"`,
       color: '#FFF',
-      align: 'center',
-      baseline: 'middle',
-      fontWeight: 'bold',
-      fontSize: 24 / this.container.app.manager.data.scale,
+      textAlign: 'center',
+      textBaseline: 'middle',
     });
 
     const line = getLine(this.target.drawBounds, this.drawBounds, 10, 3, 3);

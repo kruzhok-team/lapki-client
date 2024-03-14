@@ -1,107 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useRef } from 'react';
 
-import * as monaco from 'monaco-editor';
+import { MainContainer } from '@renderer/components';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
-import {
-  CreateSchemeModal,
-  SaveRemindModal,
-  ErrorModal,
-  Sidebar,
-  MainContainer,
-} from '@renderer/components';
-import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
-import { getColor } from '@renderer/theme';
+import { EditorContext } from './store/EditorContext';
 
-import { useAppTitle } from './hooks/useAppTitle';
-import { useModal } from './hooks/useModal';
-import {
-  getPlatformsErrors,
-  preloadPlatforms,
-  preparePreloadImages,
-} from './lib/data/PlatformLoader';
-import { preloadPicto } from './lib/drawable/Picto';
-import { ThemeContext } from './store/ThemeContext';
-import { Theme } from './types/theme';
-
-/**
- * React-компонент приложения
- */
+// TODO: а если у нас будет несколько редакторов?
 export const App: React.FC = () => {
-  // TODO: а если у нас будет несколько редакторов?
-
-  const [theme, setTheme] = useState<Theme>('dark');
-
-  const { editor, manager, setEditor } = useEditorManager();
-
-  const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
-
-  const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
-    useErrorModal();
-  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate } = useFileOperations({
-    manager,
-    openLoadError,
-    openCreateSchemeModal,
-    openSaveError,
-    openImportError,
-  });
-
-  useAppTitle(manager);
-
-  const handleChangeTheme = (theme: Theme) => {
-    setTheme(theme);
-
-    document.documentElement.dataset.theme = theme;
-
-    monaco.editor.setTheme(getColor('codeEditorTheme').trim());
-
-    if (editor) {
-      editor.container.isDirty = true;
-    }
-  };
-
-  useEffect(() => {
-    preloadPlatforms(() => {
-      preparePreloadImages();
-      preloadPicto(() => void {});
-      hideLoadingOverlay();
-
-      const errs = getPlatformsErrors();
-      if (Object.keys(errs).length > 0) {
-        openPlatformError(errs);
-      }
-    });
-  }, []);
+  const { current: editor } = useRef(new CanvasEditor());
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: handleChangeTheme }}>
-      <div className="h-screen select-none">
-        <div className="flex h-full w-full flex-row overflow-x-hidden">
-          <Sidebar
-            manager={manager}
-            editor={editor}
-            callbacks={operations}
-            openImportError={openImportError}
-          />
-
-          <MainContainer
-            manager={manager}
-            editor={editor}
-            setEditor={setEditor}
-            onRequestOpenFile={operations.onRequestOpenFile}
-          />
-        </div>
-
-        <SaveRemindModal {...saveModalProps} />
-        <ErrorModal {...errorModalProps} />
-        <CreateSchemeModal
-          isOpen={isCreateSchemeModalOpen}
-          onCreate={performNewFile}
-          onClose={closeCreateSchemeModal}
-          onCreateFromTemplate={handleOpenFromTemplate}
-          manager={manager}
-        />
-      </div>
-    </ThemeContext.Provider>
+    <EditorContext.Provider value={editor}>
+      <MainContainer />
+    </EditorContext.Provider>
   );
 };

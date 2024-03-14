@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { State } from '@renderer/lib/drawable/State';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
-export const useDiagramStateName = (editor: CanvasEditor | null) => {
+export const useDiagramStateName = () => {
+  const editor = useEditorContext();
+
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState({} as State);
   const [position, setPosition] = useState({ x: 0, y: 0 });

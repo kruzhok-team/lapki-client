@@ -1,47 +1,37 @@
 import React from 'react';
 
-// import Editor, { EditorProps } from '@monaco-editor/react';
-import Editor, { loader, EditorProps } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+import { cpp } from '@codemirror/lang-cpp';
+import { json } from '@codemirror/lang-json';
+import { xml } from '@codemirror/lang-xml';
+import CodeMirror from '@uiw/react-codemirror';
 
-(self.MonacoEnvironment as any) = {
-  getWorker(_, label) {
-    if (label === 'json') {
-      return new jsonWorker();
-    }
-    if (label === 'css' || label === 'scss' || label === 'less') {
-      return new cssWorker();
-    }
-    if (label === 'html' || label === 'handlebars' || label === 'razor') {
-      return new htmlWorker();
-    }
-    if (label === 'typescript' || label === 'javascript') {
-      return new tsWorker();
-    }
+import { useSettings } from '@renderer/hooks';
+import { Language } from '@renderer/types/tabs';
 
-    return new editorWorker();
-  },
+// (bryzZz) Почему-то нельзя просто передать массив языков, будет работать только первый
+// А так работает
+const langExtensions = {
+  cpp: cpp(),
+  xml: xml(),
+  json: json(),
 };
 
-loader.config({ monaco });
-loader.init();
+interface CodeEditorProps {
+  initialValue: string;
+  language: Language;
+}
 
-interface CodeEditorProps extends EditorProps {}
+export const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, language }) => {
+  const [theme] = useSettings('theme');
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ ...props }) => {
   return (
-    <Editor
-      className="absolute h-full overflow-hidden"
-      // theme="vs-light"
-      // defaultLanguage="json"
-      // theme={getColor('codeEditorTheme')}
-      theme="vs-dark"
-      {...props}
+    <CodeMirror
+      className="h-full [&_.cm-editor]:h-full"
+      extensions={langExtensions[language]}
+      value={initialValue}
+      theme={theme ?? 'light'}
+      lang={language}
+      readOnly={true}
     />
   );
 };

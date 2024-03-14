@@ -132,6 +132,9 @@
         "description": {
           "type": "string"
         },
+        "hidden": {
+          "type": "boolean"
+        },
         "name": {
           "type": "string"
         },

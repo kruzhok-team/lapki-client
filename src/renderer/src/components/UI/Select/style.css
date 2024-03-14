@@ -1,9 +1,9 @@
 .CustomSelect__control {
-  @apply bg-bg-secondary shadow-none !important;
+  @apply border-border-primary bg-transparent shadow-none !important;
 }
 
 .CustomSelect__control--is-focused {
-  @apply border-border-primary !important;
+  @apply border-text-primary !important;
 }
 
 .CustomSelect__single-value {
@@ -14,12 +14,20 @@
   @apply bg-border-primary !important;
 }
 
+.CustomSelect__indicator {
+  @apply text-border-primary !important;
+}
+
+.CustomSelect__control:hover .CustomSelect__indicator {
+  @apply text-text-primary !important;
+}
+
 .CustomSelect__menu {
-  @apply rounded;
+  @apply overflow-hidden rounded bg-bg-primary;
 }
 
 .CustomSelect__menu-list {
-  @apply rounded bg-bg-primary;
+  @apply bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb;
 }
 
 .CustomSelect__option--is-focused {
@@ -32,4 +40,12 @@
 
 .CustomSelect__option--is-selected {
   @apply bg-primary !important;
+}
+
+.error > .CustomSelect__control {
+  @apply border-error !important;
+}
+
+.CustomSelect__placeholder {
+  @apply text-border-primary !important;
 }

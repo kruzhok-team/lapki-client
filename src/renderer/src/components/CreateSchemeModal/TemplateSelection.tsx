@@ -2,20 +2,20 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { TemplatesList } from '@renderer/types/templates';
 
 interface TemplateSelectionProps {
   selectedTemplate: { type: string; name: string } | null;
   setSelectedTemplate: (value: { type: string; name: string }) => void;
-  manager: EditorManager;
 }
 
 export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   selectedTemplate,
   setSelectedTemplate,
-  manager,
 }) => {
+  const { manager } = useEditorContext();
+
   const [isLoading, setIsLoading] = useState(true);
   const [templates, setTemplates] = useState({} as TemplatesList);
 

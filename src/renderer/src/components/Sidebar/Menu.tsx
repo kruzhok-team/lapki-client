@@ -1,6 +1,9 @@
 import React, { useLayoutEffect } from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useModal } from '@renderer/hooks/useModal';
+import { useEditorContext } from '@renderer/store/EditorContext';
+
+import { FilePropertiesModal } from '../FilePropertiesModal';
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -9,13 +12,17 @@ export interface MenuProps {
   onRequestSaveAsFile: () => void;
   onRequestImport: () => void;
   compilerStatus: string;
-  manager: EditorManager;
   // TODO: isModified: boolean;
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const isStale = props.manager.useData('isStale');
-  const isInitialized = props.manager.useData('isInitialized');
+  const { manager } = useEditorContext();
+
+  const isStale = manager.useData('isStale');
+  const isInitialized = manager.useData('isInitialized');
+
+  const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
+    useModal(false);
 
   const items = [
     {
@@ -42,6 +49,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         props.onRequestImport();
       },
       disabled: props.compilerStatus !== 'Подключен',
+    },
+    {
+      text: 'Свойства',
+      onClick: openPropertiesModalOpen,
+      disabled: !isInitialized,
     },
     // {
     //   text: 'Примеры',
@@ -82,6 +94,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           {text}
         </button>
       ))}
+
+      <FilePropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
     </section>
   );
 };

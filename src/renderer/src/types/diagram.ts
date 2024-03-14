@@ -9,6 +9,8 @@ export type Action = {
   args?: ArgList;
 };
 
+export type Meta = { [id: string]: string };
+
 export type CompilerSettings = {
   filename: string;
   compiler: string;
@@ -32,6 +34,8 @@ export type State = {
   name: string;
   bounds: Rectangle;
   events: EventData[];
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 export type InitialState = {
@@ -59,40 +63,47 @@ export type Transition = {
   trigger: Event;
   condition?: Condition | null;
   do?: Action[];
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 export type Component = {
+  transitionId: string;
   type: string;
   parameters: { [key: string]: string };
+};
+
+export type Note = {
+  position: Point;
+  text: string;
 };
 
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
-  transitions: Transition[];
+  transitions: Record<string, Transition>;
   components: { [id: string]: Component };
+  notes: Record<string, Note>;
 
   initialState: InitialState | null;
 
   platform: string;
   parameters?: { [key: string]: string };
   compilerSettings?: CompilerSettings | null;
+  meta: Meta;
 };
 
-// Данные внутри редактора хранятся немного по-другому и это их описание
-export interface InnerElements extends Omit<Elements, 'transitions'> {
-  transitions: Record<string, Transition>;
-}
-
-export function emptyElements(): InnerElements {
+export function emptyElements(): Elements {
   return {
     states: {},
     transitions: {},
     components: {},
+    notes: {},
     initialState: null,
 
     platform: '',
     parameters: {},
     compilerSettings: null,
+    meta: {},
   };
 }

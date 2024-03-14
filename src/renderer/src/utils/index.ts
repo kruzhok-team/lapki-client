@@ -1,4 +1,5 @@
 import { Point } from '@renderer/types/graphics';
+import { ArgType } from '@renderer/types/platform';
 
 export const getVirtualElement = (position: Point) => {
   return {
@@ -31,4 +32,74 @@ export const indexOfMin = (arr: number[]) => {
   });
 
   return minIndex;
+};
+
+// Валидаторы типов arduino, в платформе это поле type
+export const validators: Record<string, (value: string) => boolean> = {
+  uint8_t(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue) || value.includes('.')) return false;
+
+    return nValue >= 0 && nValue <= 255;
+  },
+  byte(value) {
+    return this.uint8_t(value);
+  },
+  int(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue) || value.includes('.')) return false;
+
+    return nValue >= -32_767 && nValue <= 32_767;
+  },
+  'unsigned int'(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue) || value.includes('.')) return false;
+
+    return nValue >= 0 && nValue <= 65_535;
+  },
+  'unsigned long'(value) {
+    const nValue = Number(value);
+
+    if (isNaN(nValue)) return false;
+
+    return nValue >= 0 && nValue <= 4_294_967_295;
+  },
+  'char[]'() {
+    return true;
+  },
+};
+
+export const formatArgType = (value: ArgType) => {
+  if (Array.isArray(value)) return `[${value}]`;
+
+  return value;
+};
+
+// цвет связи по-умолчанию
+export const defaultTransColor = '#0000FF';
+
+// пресеты цветов
+export const presetColors = ['#119da4', '#591f0a', '#f26419', '#1f487e', '#4b296b'];
+
+export const placeCaretAtEnd = (el: HTMLElement) => {
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel?.removeAllRanges();
+  sel?.addRange(range);
+};
+
+export const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+};
+
+export const languageMappers = {
+  h: 'cpp',
+  ino: 'cpp',
+  graphml: 'xml',
 };

@@ -1,79 +1,57 @@
-// TODO: нужно как-то объединить файлы FlasherSelectModal.tsx, ServerSelectModal.tsx, DocSelectModal.tsx, чтобы уменьшить повторения кода
-import { useForm } from 'react-hook-form';
-import { twMerge } from 'tailwind-merge';
+import { useLayoutEffect } from 'react';
 
-import { Modal, TextInput } from '@renderer/components/UI';
-import { Settings } from '../Modules/Settings';
+import { useForm } from 'react-hook-form';
+
+import { Modal, TextField } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks';
+
+type FormValues = Main['settings']['doc'];
 
 interface DocSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  handleCustom: (host: string) => void;
-  // надпись на самом верху
-  topTitle: string;
-  // значение хоста к которому клиент подключается при первом запуске
-  originaltHostValue: string;
-  // ключ для извлечения настроек
-  electronSettingsKey: string;
 }
 
-interface formValues {
-  // текущее значение поля ввода для адреса
-  inputHost: string;
-}
+export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...props }) => {
+  const [docSetting, setDocSetting, resetDocSetting] = useSettings('doc');
 
-export const DocSelectModal: React.FC<DocSelectModalProps> = ({
-  onClose,
-  handleCustom: handleCustom,
-  ...props
-}) => {
-  const {
-    register,
-    handleSubmit: hookHandleSubmit,
-    setValue,
-  } = useForm<formValues>({
-    defaultValues: async () => {
-      return Settings.get(props.electronSettingsKey).then((server) => {
-        return {
-          inputHost: server.host ?? '',
-        };
-      });
-    },
-  });
-  // текущий адрес к которому подключен клиент
+  const { register, handleSubmit: hookHandleSubmit, reset } = useForm<FormValues>();
+
   const handleSubmit = hookHandleSubmit((data) => {
-    handleCustom(String(data.inputHost));
-    onRequestClose();
+    setDocSetting(data);
+    onClose();
   });
 
-  const onRequestClose = () => {
-    onClose();
+  const handleAfterClose = () => {
+    if (!docSetting) return;
+
+    reset(docSetting);
   };
 
-  const handleReturnOriginalValues = () => {
-    setValue('inputHost', props.originaltHostValue);
-  };
+  useLayoutEffect(() => {
+    if (!docSetting) return;
+
+    reset(docSetting);
+  }, [reset, docSetting]);
 
   return (
     <Modal
       {...props}
-      onRequestClose={onRequestClose}
-      title={props.topTitle}
+      onRequestClose={onClose}
+      title="Выберите док-сервер"
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
+      onAfterClose={handleAfterClose}
     >
-      <div className={twMerge('flex')}>
-        <TextInput
-          maxLength={80}
-          {...register('inputHost')}
-          label="Адрес:"
-          placeholder="Напишите адрес"
-          isHidden={false}
-          error={false}
-          errorMessage={''}
-        />
-      </div>
-      <button type="button" className="btn-secondary" onClick={handleReturnOriginalValues}>
+      <TextField
+        className="mb-2"
+        maxLength={80}
+        {...register('host', { required: true })}
+        label="Адрес:"
+        placeholder="Напишите адрес"
+      />
+
+      <button type="button" className="btn-secondary" onClick={resetDocSetting}>
         Сбросить настройки
       </button>
     </Modal>

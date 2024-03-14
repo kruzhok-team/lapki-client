@@ -8,6 +8,7 @@ import { MyMouseEvent } from '@renderer/types/mouse';
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
 import { MachineController } from '../data/MachineController';
+import { NotesController } from '../data/NotesController';
 import { StatesController } from '../data/StatesController';
 import { TransitionsController } from '../data/TransitionsController';
 import { Children } from '../drawable/Children';
@@ -36,6 +37,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   machineController!: MachineController;
   statesController!: StatesController;
   transitionsController!: TransitionsController;
+  notesController!: NotesController;
 
   children: Children;
   private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать
@@ -47,6 +49,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.machineController = new MachineController(this);
     this.statesController = new StatesController(this);
     this.transitionsController = new TransitionsController(this);
+    this.notesController = new NotesController(this);
     this.children = new Children(this.machineController);
 
     // Порядок важен, система очень тонкая
@@ -213,10 +216,27 @@ export class Container extends EventEmitter<ContainerEvents> {
   handleRightMouseClick = (e: MyMouseEvent) => {
     const node = this.getCapturedNode({ position: e });
 
+    const offset = this.app.mouse.getOffset();
+
+    //Крайняя необходимость, по-другому пока не стал делать, хотя есть способ как можно это сделать, но сколько займёт реализация не могу знать
+    const position = {
+      x: e.x + offset.x,
+      y: e.y + offset.y,
+      dx: e.dx,
+      dy: e.dy,
+      /**
+       * Наличие зажатой левой кнопки.
+       * Полезно для отслеживания перетаскивания.
+       */
+      left: e.left,
+      button: e.button,
+      stopPropagation: e.stopPropagation,
+      nativeEvent: e.nativeEvent,
+    };
     if (node) {
       node.handleMouseContextMenu(e);
     } else {
-      this.emit('contextMenu', e);
+      this.emit('contextMenu', position);
     }
   };
 
@@ -265,9 +285,11 @@ export class Container extends EventEmitter<ContainerEvents> {
       this.handleChangeScale(e);
     } else {
       if (this.app.keyboard.shiftPressed) {
+        this.app.manager.data.offset.y -= e.nativeEvent.deltaX * 0.1;
         this.app.manager.data.offset.x -= e.nativeEvent.deltaY * 0.1;
       } else {
         this.app.manager.data.offset.y -= e.nativeEvent.deltaY * 0.1;
+        this.app.manager.data.offset.x -= e.nativeEvent.deltaX * 0.1;
       }
 
       this.isDirty = true;
@@ -306,6 +328,12 @@ export class Container extends EventEmitter<ContainerEvents> {
   viewCentering() {
     const arrX: number[] = [];
     const arrY: number[] = [];
+
+    const initialPos = this.machineController.getInitialStatePosition();
+    if (initialPos) {
+      arrX.push(initialPos.x);
+      arrY.push(initialPos.y);
+    }
 
     this.machineController.states.forEach((state) => {
       arrX.push(state.bounds.x);

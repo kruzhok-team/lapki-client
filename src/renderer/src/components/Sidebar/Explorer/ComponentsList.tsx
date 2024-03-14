@@ -7,15 +7,12 @@ import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@re
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { WithHint } from '@renderer/components/UI';
 import { useComponents } from '@renderer/hooks';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
-interface ExplorerProps {
-  editor: CanvasEditor | null;
-  manager: EditorManager;
-}
+export const ComponentsList: React.FC = () => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
 
-export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const isInitialized = manager.useData('isInitialized');
   const components = manager.useData('elements.components');
 
@@ -26,31 +23,27 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     onRequestAddComponent,
     onRequestEditComponent,
     onRequestDeleteComponent,
-  } = useComponents(editor, manager);
+  } = useComponents();
 
-  const [cursor, setCursor] = useState<string | null>(null);
-
-  const onUnClick = () => {
-    setCursor(null);
-  };
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
 
   const onClick = (key: string) => {
-    setCursor(key);
+    setSelectedComponent(key);
   };
 
   const onAuxClick = (key: string) => {
-    setCursor(key);
+    setSelectedComponent(key);
     onRequestDeleteComponent(key);
   };
 
   const onCompDblClick = (key: string) => {
-    setCursor(key);
+    setSelectedComponent(key);
     onRequestEditComponent(key);
   };
 
   // TODO: контекстное меню? клонировать, переименовать, удалить
   const onCompRightClick = (key: string) => {
-    setCursor(key);
+    setSelectedComponent(key);
     onRequestEditComponent(key);
   };
 
@@ -58,11 +51,6 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
     if (e.key !== 'Delete') return;
 
     onRequestDeleteComponent(name);
-  };
-
-  const onAddClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onRequestAddComponent();
   };
 
   const renderComponent = (name: string) => {
@@ -73,7 +61,10 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
         {(props) => (
           <button
             type="button"
-            className={twMerge('flex w-full items-center p-1', name == cursor && 'bg-bg-active')}
+            className={twMerge(
+              'flex w-full items-center p-1',
+              name == selectedComponent && 'bg-bg-active'
+            )}
             onClick={() => onClick(name)}
             onAuxClick={() => onAuxClick(name)}
             onDoubleClick={() => onCompDblClick(name)}
@@ -90,45 +81,28 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   };
 
   return (
-    <section className="flex flex-col" onClick={() => onUnClick()}>
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Компоненты
-      </h3>
+    <>
+      <button
+        type="button"
+        className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+        disabled={!isInitialized}
+        onClick={onRequestAddComponent}
+      >
+        <AddIcon className="shrink-0" />
+        Добавить...
+      </button>
 
-      <div className="px-4 text-center">
-        <button
-          className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-          disabled={!isInitialized}
-          onClick={onAddClick}
-        >
-          <AddIcon className="shrink-0" />
-          Добавить...
-        </button>
+      <ScrollableList
+        containerProps={{ onClick: (e) => e.stopPropagation() }}
+        listItems={Object.keys(components)}
+        heightOfItem={10}
+        maxItemsToRender={50}
+        renderItem={renderComponent}
+      />
 
-        <ScrollableList
-          className="max-h-[350px]"
-          containerProps={{ onClick: (e) => e.stopPropagation() }}
-          listItems={Object.keys(components)}
-          heightOfItem={10}
-          maxItemsToRender={50}
-          renderItem={renderComponent}
-        />
-      </div>
-
-      <ComponentAddModal manager={manager} {...addProps} />
-      <ComponentEditModal manager={manager} {...editProps} />
+      <ComponentAddModal {...addProps} />
+      <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
-
-      {/* TODO: 
-      <div className="h-full flex-auto px-4 pt-3 text-center">
-        <h1 className="mb-3 border-b border-white pb-2 text-lg">Иерархия состояний</h1>
-
-        <div>
-          Не забыть посмотреть варианты древа и возможности редактирования машины состояний
-          отсюда!!!
-        </div>
-      </div>
-       */}
-    </section>
+    </>
   );
 };

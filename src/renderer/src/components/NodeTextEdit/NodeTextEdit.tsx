@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { useWheel } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
+import { parseStateEvents, parseTransitionEvents } from '@renderer/lib/data/GraphmlParser';
 import { Node } from '@renderer/lib/drawable/Node';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
@@ -24,23 +25,32 @@ export const NodeTextEdit: React.FC = () => {
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [style, setStyle] = useState({} as CSSProperties);
   const [paddingLeft, setPaddingLeft] = useState('');
-  const ref = useRef<HTMLSpanElement>(null);
 
   const handleSubmit = useCallback(() => {
-    const el = ref.current;
-    // const value = (el?.textContent ?? '').trim();
+    const codeEditor = editorRef.current;
 
-    if (!el || !nodeData) return;
+    if (!codeEditor || !nodeData) return;
+
+    const text = codeEditor.state?.doc.toString();
+    console.log('here', text, codeEditor);
+
+    if (!text) return;
+
+    if (nodeData.type === 'state') {
+      console.log(parseStateEvents(text));
+    } else {
+      console.log(parseTransitionEvents(text));
+    }
 
     // editor.container.machineController.changeNoteText(note.id, value);
-  }, [editor, nodeData]);
+  }, [nodeData]);
 
   const handleClose = useCallback(() => {
     handleSubmit();
     // note?.setVisible(true);
 
     close();
-  }, [close, handleSubmit, nodeData]);
+  }, [close, handleSubmit]);
 
   const placeCaretAtEnd = useCallback(() => {
     setTimeout(() => {
@@ -133,6 +143,8 @@ export const NodeTextEdit: React.FC = () => {
     });
   }, [editor, open, placeCaretAtEnd]);
 
+  // console.log(nodeData?.initialValue ?? '', editorRef.current?.state);
+
   return (
     <CodeMirror
       ref={editorRef}
@@ -140,7 +152,7 @@ export const NodeTextEdit: React.FC = () => {
       data-pl={paddingLeft}
       className={twMerge('fixed overflow-hidden', nodeData?.type ?? 'state', !isOpen && 'hidden')}
       value={nodeData?.initialValue ?? ''}
-      onBlur={close}
+      onBlur={handleClose}
       basicSetup={{
         lineNumbers: false,
         foldGutter: false,

@@ -245,7 +245,7 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
   return states;
 }
 
-function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | undefined {
+export function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | undefined {
   const rawTriggerAndAction = rawEvents.split('\n\n');
   if (rawTriggerAndAction.length > 1) {
     throw new Error('Поддерживаются события только с одним триггером!');
@@ -286,7 +286,7 @@ function getTransitions(
   return transitions;
 }
 
-function parseStateEvents(content: string | undefined): EventData[] {
+export function parseStateEvents(content: string | undefined): EventData[] {
   // По формату CyberiadaGraphML события разделены пустой строкой.
   if (content === undefined) {
     return [];

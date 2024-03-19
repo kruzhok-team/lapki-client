@@ -10,6 +10,7 @@ import {
   Elements,
   EventData,
   InitialState,
+  Meta,
 } from '@renderer/types/diagram';
 import {
   emptyEditorData,
@@ -630,6 +631,16 @@ export class EditorManager {
     delete this.data.elements.notes[id];
 
     this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  setMeta(meta: Meta) {
+    console.log('setMeta', meta);
+
+    this.data.elements.meta = meta;
+
+    this.triggerDataUpdate('elements.meta');
 
     return true;
   }

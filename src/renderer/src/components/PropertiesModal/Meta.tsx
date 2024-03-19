@@ -11,7 +11,7 @@ export interface MetaFormValues {
 }
 
 interface MetaProps {
-  form: UseFormReturn<MetaFormValues, any, undefined>;
+  form: UseFormReturn<MetaFormValues>;
 }
 
 export const Meta: React.FC<MetaProps> = ({ form }) => {

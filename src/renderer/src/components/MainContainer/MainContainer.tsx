@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge';
 
 import {
   Documentation,
-  Scale,
   CreateSchemeModal,
   SaveRemindModal,
   ErrorModal,
@@ -94,8 +93,6 @@ export const MainContainer: React.FC = () => {
           <input {...getInputProps()} />
 
           {isInitialized ? <Tabs /> : <NotInitialized />}
-
-          {isMounted && <Scale />}
 
           <Documentation topOffset={!!isMounted} />
         </div>

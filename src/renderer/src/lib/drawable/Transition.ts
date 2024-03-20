@@ -6,6 +6,7 @@ import { picto } from './Picto';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
+import { serializeTransitionActions } from '../data/GraphmlBuilder';
 import { stateStyle, transitionStyle } from '../styles';
 import {
   degrees_to_radians,
@@ -62,15 +63,15 @@ export class Transition extends Node {
   }
 
   prepareText() {
-    this.textData = {
-      ...prepareText({
-        text: 'timer1.timeout/',
-        maxWidth: 200 - 2 * 15,
-        fontFamily: 'Fira Sans',
-        fontSize: 16,
-        lineHeight: 1.4,
-      }),
-    };
+    this.textData = prepareText({
+      text: serializeTransitionActions(this.data.trigger, this.data.do ?? []),
+      maxWidth: 200 - 2 * 15,
+      fontFamily: 'Fira Sans',
+      fontSize: 16,
+      lineHeight: 1.4,
+    });
+
+    console.log(this.textData);
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {

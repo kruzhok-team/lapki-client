@@ -5,13 +5,14 @@ import { twMerge } from 'tailwind-merge';
 
 import { useWheel } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
+import { serializeEvents, serializeTransitionActions } from '@renderer/lib/data/GraphmlBuilder';
 import { parseStateEvents, parseTransitionEvents } from '@renderer/lib/data/GraphmlParser';
 import { Node } from '@renderer/lib/drawable/Node';
-
-import './style.css';
 import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { useEditorContext } from '@renderer/store/EditorContext';
+
+import './style.css';
 
 interface NodeData {
   node: Node;
@@ -91,10 +92,7 @@ export const NodeTextEdit: React.FC = () => {
       setNodeData({
         node: state,
         type: 'state',
-        initialValue: `entry/
-      LED1.on()
-      timer1.start(1000)
-      timer1.stop(1000)`,
+        initialValue: serializeEvents(state.data.events),
       });
       setStyle({
         left: position.x + 'px',
@@ -127,7 +125,11 @@ export const NodeTextEdit: React.FC = () => {
       const p = 15 / editor.manager.data.scale;
       const borderRadius = 8 / editor.manager.data.scale;
 
-      setNodeData({ node: transition, type: 'transition', initialValue: 'timer1.timeout/' });
+      setNodeData({
+        node: transition,
+        type: 'transition',
+        initialValue: serializeTransitionActions(transition.data.trigger, transition.data.do ?? []),
+      });
       setStyle({
         left: position.x + 'px',
         top: position.y + 'px',

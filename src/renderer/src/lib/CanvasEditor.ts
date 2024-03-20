@@ -25,7 +25,7 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
 
   manager!: EditorManager;
 
-  textMode = true;
+  textMode = false;
 
   constructor() {
     super();

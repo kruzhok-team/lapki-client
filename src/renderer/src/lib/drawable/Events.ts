@@ -5,6 +5,7 @@ import { picto } from './Picto';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
+import { serializeEvents } from '../data/GraphmlBuilder';
 import { isPointInRectangle } from '../utils';
 import { drawText, prepareText } from '../utils/text';
 
@@ -49,10 +50,7 @@ export class Events {
       const pX = 15 / this.container.app.manager.data.scale;
       const pY = 10 / this.container.app.manager.data.scale;
 
-      const text = `entry/
-    LED1.on()
-    timer1.start(1000)
-    timer1.stop(1000)`;
+      const text = serializeEvents(this.parent.data.events);
 
       const { textArray, height } = prepareText({
         text,

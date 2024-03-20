@@ -8,6 +8,7 @@ import {
   NoteEdit,
   NodeTextEdit,
   StateNameModal,
+  Scale,
 } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { EventSelection } from '@renderer/lib/drawable/Events';
@@ -176,7 +177,9 @@ export const DiagramEditor: React.FC = () => {
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef} />
+      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
+        {isMounted && <Scale />}
+      </div>
 
       {isMounted && (
         <>

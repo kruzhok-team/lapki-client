@@ -7,9 +7,11 @@ import { useWheel } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { parseStateEvents, parseTransitionEvents } from '@renderer/lib/data/GraphmlParser';
 import { Node } from '@renderer/lib/drawable/Node';
-import { useEditorContext } from '@renderer/store/EditorContext';
 
 import './style.css';
+import { State } from '@renderer/lib/drawable/State';
+import { Transition } from '@renderer/lib/drawable/Transition';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 interface NodeData {
   node: Node;
@@ -31,8 +33,7 @@ export const NodeTextEdit: React.FC = () => {
 
     if (!codeEditor || !nodeData) return;
 
-    const text = codeEditor.state?.doc.toString();
-    console.log('here', text, codeEditor);
+    const text = codeEditor.view?.state?.doc.toString();
 
     if (!text) return;
 
@@ -70,7 +71,7 @@ export const NodeTextEdit: React.FC = () => {
   useWheel(handleClose);
 
   useEffect(() => {
-    editor.container.statesController.on('changeState', (state) => {
+    const handleChangeState = (state: State) => {
       if (!editor.textMode || !editorRef.current) return;
 
       editor.container.machineController.removeSelection();
@@ -107,10 +108,10 @@ export const NodeTextEdit: React.FC = () => {
       setPaddingLeft(pX + 'px');
 
       open();
-      // placeCaretAtEnd();
-    });
+      placeCaretAtEnd();
+    };
 
-    editor.container.transitionsController.on('changeTransition', (transition) => {
+    const handleChangeTransition = (transition: Transition) => {
       if (!editor.textMode || !editorRef.current) return;
 
       editor.container.machineController.removeSelection();
@@ -140,10 +141,16 @@ export const NodeTextEdit: React.FC = () => {
 
       open();
       placeCaretAtEnd();
-    });
-  }, [editor, open, placeCaretAtEnd]);
+    };
 
-  // console.log(nodeData?.initialValue ?? '', editorRef.current?.state);
+    editor.container.statesController.on('changeState', handleChangeState);
+    editor.container.transitionsController.on('changeTransition', handleChangeTransition);
+
+    return () => {
+      editor.container.statesController.off('changeState', handleChangeState);
+      editor.container.transitionsController.off('changeTransition', handleChangeTransition);
+    };
+  }, [editor, open, placeCaretAtEnd]);
 
   return (
     <CodeMirror

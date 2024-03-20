@@ -50,7 +50,7 @@ function serializeActions(actions: Action[]): string {
   for (const action of actions) {
     serialized += `${action.component}.${action.method}(${serializeArgs(action.args)})\n`;
   }
-  return serialized.trim();
+  return serialized;
 }
 
 export function serializeEvents(events: EventData[]): string {
@@ -59,7 +59,7 @@ export function serializeEvents(events: EventData[]): string {
     serialized += serializeEvent(event.trigger) + '/\n';
     serialized += serializeActions(event.do) + '\n';
   }
-  return serialized.trim();
+  return serialized;
 }
 
 function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
@@ -105,7 +105,8 @@ function serializeTransitions(
       position: transition.position,
     };
     if (transition.do !== undefined) {
-      cgmlTransition.actions = serializeTransitionActions(transition.trigger, transition.do);
+      cgmlTransition.actions =
+        serializeEvent(transition.trigger) + '\n' + serializeActions(transition.do);
     }
     cgmlTransitions[id] = cgmlTransition;
   }

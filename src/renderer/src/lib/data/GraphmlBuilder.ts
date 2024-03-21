@@ -17,7 +17,6 @@ import {
   Transition,
   Component,
   Event,
-  Meta,
   Condition,
   Variable,
 } from '@renderer/types/diagram';

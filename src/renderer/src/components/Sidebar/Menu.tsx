@@ -1,9 +1,8 @@
 import React, { useLayoutEffect } from 'react';
 
+import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
-
-import { FilePropertiesModal } from '../FilePropertiesModal';
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -95,7 +94,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         </button>
       ))}
 
-      <FilePropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
+      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
     </section>
   );
 };

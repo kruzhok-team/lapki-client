@@ -7,6 +7,8 @@ const defaultComponents = {
   System: { onEnter: 'entry', onExit: 'exit' },
 };
 
+const defaultParameters = ['label', 'labelColor'] as const;
+
 export function convertDefaultComponent(component: string, method: string): string {
   return defaultComponents[component][method];
 }
@@ -127,9 +129,13 @@ function validateTransitions(
   }
 }
 
+function isDefaultParameter(parameter: any): boolean {
+  return defaultParameters.includes(parameter);
+}
+
 function setIncludes(lval: Set<any>, rval: Set<any>): boolean {
   for (const val of rval) {
-    if (lval.has(val)) continue;
+    if (lval.has(val) || isDefaultParameter(val)) continue;
     else return false;
   }
   return true;
@@ -148,7 +154,9 @@ function validateComponents(
     const platformParameters = new Set(Object.keys(platformComponent.parameters));
     if (!setIncludes(platformParameters, componentParemeters)) {
       throw new Error(
-        `Получены параметры: ${componentParemeters}, но ожидались ${platformParameters}`
+        `Получены параметры: ${[...componentParemeters].join(', ')}, но ожидались ${[
+          ...platformParameters,
+        ].join(', ')}`
       );
     }
   }

@@ -88,18 +88,14 @@ function serializeParameters(parameters: { [key: string]: string }): string {
   return serialized;
 }
 
-const operatorAlias = new Map<string, string>([
-  ['==', 'equals'],
-  ['!=', 'notEquals'],
-  ['>', 'greater'],
-  ['<', 'less'],
-  ['>=', 'greaterOrEqual'],
-  ['<=', 'lessOrEqual'],
-]);
-
-const invertOperatorAlias = new Map<string, string>(
-  [...operatorAlias.entries()].map((a) => [a[1], a[0]])
-);
+const invertOperatorAlias = {
+  equals: '==',
+  notEquals: '!=',
+  greater: '>',
+  less: '<',
+  '>=': 'greaterOrEqual',
+  '<=': 'lessOrEqual',
+};
 
 function isVariable(operand: any): operand is Variable {
   return operand.component !== undefined;
@@ -123,7 +119,7 @@ function serializeCondition(condition: Condition): string {
   if (isConditionArray(condition.value)) {
     const lval = getOperand(condition.value[0].value);
     const rval = getOperand(condition.value[1].value);
-    return `[${lval} ${invertOperatorAlias.get(condition.type)} ${rval}]`;
+    return `[${lval} ${invertOperatorAlias[condition.type]} ${rval}]`;
   } else {
     throw new Error('Internal error: condition.value is not Condition[];');
   }

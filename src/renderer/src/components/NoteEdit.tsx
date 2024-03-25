@@ -4,15 +4,13 @@ import { twMerge } from 'tailwind-merge';
 
 import { TextAreaAutoResize } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Note } from '@renderer/lib/drawable/Note';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { placeCaretAtEnd } from '@renderer/utils';
 
-interface NoteEditProps {
-  editor: CanvasEditor;
-}
+export const NoteEdit: React.FC = () => {
+  const editor = useEditorContext();
 
-export const NoteEdit: React.FC<NoteEditProps> = ({ editor }) => {
   const [isOpen, open, close] = useModal(false);
   const [note, setNote] = useState<Note | null>(null);
   const [style, setStyle] = useState({} as CSSProperties);
@@ -51,10 +49,7 @@ export const NoteEdit: React.FC<NoteEditProps> = ({ editor }) => {
         y: statePos.y + globalOffset.y,
       };
       const { width } = note.drawBounds;
-      const scale = editor.container.app.manager.data.scale;
-      const padding = 10 / scale;
-      const fontSize = 16 / scale;
-      const borderRadius = 6 / scale;
+      const { padding, fontSize, borderRadius } = note.computedStyles;
 
       note.setVisible(false);
 

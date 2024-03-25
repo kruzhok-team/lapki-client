@@ -50,13 +50,17 @@ export class Initializer {
     this.transitions.forEach((value) => {
       this.container.transitionsController.unwatchTransition(value);
     });
-
     this.states.forEach((value) => {
       this.container.statesController.unwatchState(value);
     });
+    this.notes.forEach((value) => {
+      this.container.notesController.unwatch(value);
+    });
+
     this.states.clear();
     this.container.statesController.clearInitialStateMark();
     this.transitions.clear();
+    this.notes.clear();
     this.undoRedo.clear();
   }
 

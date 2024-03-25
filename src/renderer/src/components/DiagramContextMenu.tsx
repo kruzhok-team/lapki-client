@@ -14,19 +14,11 @@ import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
-import { DiagramContextMenuItem } from '@renderer/hooks/useDiagramContextMenu';
-import { Point } from '@renderer/types/graphics';
+import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { getVirtualElement } from '@renderer/utils';
 
-interface DiagramContextMenuProps {
-  items: DiagramContextMenuItem[];
-  position: Point;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => {
-  const { position, items, isOpen, onClose } = props;
+export const DiagramContextMenu: React.FC = () => {
+  const { position, items, isOpen, onClose } = useDiagramContextMenu();
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует
   const [openMenu, setOpenMenu] = useState('');
 

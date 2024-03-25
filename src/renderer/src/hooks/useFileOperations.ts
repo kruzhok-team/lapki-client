@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
 interface useFileOperationsArgs {
-  manager: EditorManager;
   openLoadError: (cause: any) => void;
   openSaveError: (cause: any) => void;
   openCreateSchemeModal: () => void;
@@ -14,8 +13,10 @@ interface useFileOperationsArgs {
 }
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
-  const { manager, openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
+  const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
+  const editor = useEditorContext();
+  const manager = editor.manager;
   const isStale = manager.useData('isStale');
   const name = manager.useData('name');
 

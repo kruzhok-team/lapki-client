@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Platform } from '@renderer/types/platform';
 interface FilePropertiesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  manager: EditorManager;
 }
 
-export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({
-  onClose,
-  manager,
-  ...props
-}) => {
+export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClose, ...props }) => {
+  const { manager } = useEditorContext();
+
   const [fileSize, setFileSize] = useState<number>(0);
   const [fileLastModified, setFileLastModified] = useState<Date>();
   const [fileBirthDate, setFileBirthDate] = useState<Date>();

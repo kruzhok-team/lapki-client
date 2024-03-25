@@ -10,17 +10,14 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { Hierarchy } from '@renderer/components/Hierarchy';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { ComponentsList } from './ComponentsList';
 
-interface ExplorerProps {
-  editor: CanvasEditor | null;
-  manager: EditorManager;
-}
+export const Explorer: React.FC = () => {
+  const editor = useEditorContext();
+  const isMounted = editor.manager.useData('isMounted');
 
-export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
 
@@ -66,7 +63,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
             <h3 className="font-semibold">Компоненты</h3>
           </button>
 
-          <ComponentsList editor={editor} manager={manager} />
+          {isMounted ? <ComponentsList /> : 'Недоступно до открытия схемы'}
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">
@@ -92,7 +89,7 @@ export const Explorer: React.FC<ExplorerProps> = ({ editor, manager }) => {
             <h3 className="font-semibold">Иерархия состояний</h3>
           </button>
 
-          {editor ? <Hierarchy editor={editor} manager={manager} /> : 'None'}
+          {isMounted ? <Hierarchy /> : 'Недоступно до открытия схемы'}
         </Panel>
       </PanelGroup>
     </section>

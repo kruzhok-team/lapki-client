@@ -9,7 +9,7 @@ import { Item } from './Item';
 interface TreeProps {
   root: File;
   borderWidth?: number;
-  onItemClick: (item: File) => void;
+  onItemClick: (filePath: string) => void;
 }
 
 export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) => {
@@ -33,7 +33,7 @@ export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) =>
               key={item.name}
               onClick={(event) => {
                 event.stopPropagation();
-                onItemClick(item);
+                onItemClick(item.path ?? '');
               }}
             >
               <span className="block max-w-[341px] truncate p-2 pl-0 transition hover:bg-[#4391bf] hover:bg-opacity-50">

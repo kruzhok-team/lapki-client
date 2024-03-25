@@ -15,22 +15,23 @@ export class Serializer {
     switch (saveMode) {
       case 'JSON':
         return JSON.stringify(
-          { ...this.data.elements, transitions: Object.values(this.data.elements.transitions) },
+          {
+            ...this.data.elements,
+            transitions: Object.values(this.data.elements.transitions),
+            notes: Object.values(this.data.elements.notes),
+          },
           undefined,
           2
         );
       case 'Cyberiada':
-        return exportGraphml({
-          ...this.data.elements,
-          transitions: Object.values(this.data.elements.transitions),
-        });
+        return exportGraphml(this.data.elements);
     }
   }
 
   getState(id: string) {
     const state = this.data.elements.states[id];
     if (!state) return null;
-
+    delete state.selection;
     return JSON.stringify(state, undefined, 2);
   }
 

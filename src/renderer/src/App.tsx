@@ -11,9 +11,15 @@ import {
   UpdateModal,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-import { useEditorManager, useErrorModal, useFileOperations } from '@renderer/hooks';
+import {
+  useDiagramContextMenu,
+  useEditorManager,
+  useErrorModal,
+  useFileOperations,
+} from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
+import { DiagramContextMenu } from './components/DiagramContextMenu';
 import { useAppTitle } from './hooks/useAppTitle';
 import { useModal } from './hooks/useModal';
 import {
@@ -34,6 +40,7 @@ export const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>('dark');
 
   const { editor, manager, setEditor } = useEditorManager();
+  const contextMenu = useDiagramContextMenu(editor, manager);
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
@@ -91,6 +98,7 @@ export const App: React.FC = () => {
             setEditor={setEditor}
             onRequestOpenFile={operations.onRequestOpenFile}
           />
+          <DiagramContextMenu {...contextMenu} />
         </div>
 
         <SaveRemindModal {...saveModalProps} />

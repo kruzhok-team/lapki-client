@@ -1,7 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 
-const plugin = require('tailwindcss/plugin');
 import { colors } from './src/renderer/src/theme';
+
+const plugin = require('tailwindcss/plugin');
 
 export default {
   content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,jsx,tsx}'],
@@ -35,6 +36,7 @@ export default {
           '--t-s': '#fff',
           '--t-i': '#a3a2a2',
           '--t-d': 'rgb(156,163,175)',
+          '--t-h': 'yellow',
 
           '--c-e-t': 'vs-dark',
 
@@ -61,6 +63,7 @@ export default {
           '--t-s': '#fff',
           '--t-i': '#b3b2b2',
           '--t-d': 'rgb(156,163,175)',
+          '--t-h': 'yellow',
 
           '--c-e-t': 'vs-light',
 

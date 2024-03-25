@@ -47,6 +47,7 @@ export class ModuleManager {
       let modulePath: string = '';
       let osPath = '';
       switch (platform) {
+        case 'darwin':
         case 'linux': {
           osPath = `${basePath}/modules/${platform}`;
           modulePath = `${osPath}/${module}`;
@@ -99,6 +100,7 @@ export class ModuleManager {
             let avrdudePath = '';
             let configPath = '';
             switch (platform) {
+              case 'darwin':
               case 'linux':
                 avrdudePath = `${osPath}/avrdude`;
                 configPath = `${osPath}/avrdude.conf`;

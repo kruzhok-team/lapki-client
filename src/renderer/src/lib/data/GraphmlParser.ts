@@ -236,6 +236,8 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
     states[rawStateId] = {
+      // ПОМЕНЯТЬ ЦВЕТ
+      color: rawState.color ?? '#FFFFFF',
       name: rawState.name,
       bounds: rawState.bounds,
       parent: rawState.parent,

@@ -901,6 +901,7 @@ export class MachineController {
         position: copyData.bounds,
         events: copyData.events,
         parentId: copyData.parent,
+        color: copyData.color,
       });
     }
 

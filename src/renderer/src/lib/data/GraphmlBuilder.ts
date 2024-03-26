@@ -72,6 +72,7 @@ function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLS
       unsupportedDataNodes: [],
       actions: serializeEvents(state.events),
       parent: state.parent,
+      color: state.color,
     };
   }
   return cgmlStates;

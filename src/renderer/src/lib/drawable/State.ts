@@ -143,7 +143,7 @@ export class State extends Node {
     ctx.canvas.hidden;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = style.selectedBorderColor;
+    ctx.strokeStyle = this.data.color;
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);

@@ -343,10 +343,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       />
 
       {!isEditingState && (
-        <label className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <span className="font-bold">Цвет связи:</span>
           <ColorInput value={color} onChange={setColor} />
-        </label>
+        </div>
       )}
     </Modal>
   );

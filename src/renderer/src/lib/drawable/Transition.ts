@@ -1,3 +1,4 @@
+import { getColor } from '@renderer/theme';
 import { Transition as TransitionType } from '@renderer/types/diagram';
 
 import { Node } from './Node';
@@ -5,6 +6,7 @@ import { picto } from './Picto';
 import { State } from './State';
 
 import { Container } from '../basic/Container';
+import { serializeTransitionActions } from '../data/GraphmlBuilder';
 import { stateStyle, transitionStyle } from '../styles';
 import {
   degrees_to_radians,
@@ -13,6 +15,7 @@ import {
   drawTriangle,
   getTransitionLines,
 } from '../utils';
+import { drawText, prepareText } from '../utils/text';
 
 /**
  * Переход между состояниями.
@@ -21,9 +24,17 @@ import {
  */
 export class Transition extends Node {
   isSelected = false;
+  private textData = {
+    height: 100,
+    textArray: [] as string[],
+  };
 
   constructor(container: Container, id: string) {
     super(container, id);
+
+    if (this.container.app.textMode) {
+      this.prepareText();
+    }
   }
 
   get data(): TransitionType {
@@ -39,6 +50,10 @@ export class Transition extends Node {
   }
 
   get bounds() {
+    if (this.container.app.textMode) {
+      return { ...this.data.position, width: 200, height: Math.max(70, this.textData.height) };
+    }
+
     return { ...this.data.position, width: 130, height: 70 };
   }
 
@@ -47,20 +62,35 @@ export class Transition extends Node {
     this.data.position.y = value.y;
   }
 
-  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    this.drawArrows(ctx);
-    this.drawCondition(ctx);
+  prepareText() {
+    this.textData = prepareText({
+      text: serializeTransitionActions(this.data.trigger, this.data.do ?? []),
+      maxWidth: 200 - 2 * 15,
+      fontFamily: 'Fira Sans',
+      fontSize: 16,
+      lineHeight: 1.4,
+    });
+
+    console.log(this.textData);
   }
 
-  private drawCondition(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
+    this.drawArrows(ctx);
+    this.drawConditionBody(ctx);
+
+    if (this.isSelected) {
+      this.drawSelection(ctx);
+    }
+
+    if (this.container.app.textMode) {
+      return this.drawTextCondition(ctx);
+    }
+
+    this.drawImageCondition(ctx);
+  }
+
+  private drawConditionBody(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
-    const eventMargin = picto.eventMargin;
-    const p = 15 / this.container.app.manager.data.scale;
-    const fontSize = stateStyle.titleFontSize / this.container.app.manager.data.scale;
-    const opacity = this.isSelected ? 1.0 : 0.7;
-    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    ctx.fillStyle = stateStyle.eventColor;
-    ctx.textBaseline = stateStyle.eventBaseLine;
 
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
@@ -70,6 +100,17 @@ export class Transition extends Node {
     ctx.closePath();
 
     ctx.fillStyle = transitionStyle.bgColor;
+  }
+
+  private drawImageCondition(ctx: CanvasRenderingContext2D) {
+    const { x, y, width } = this.drawBounds;
+    const eventMargin = picto.eventMargin;
+    const p = 15 / this.container.app.manager.data.scale;
+    const fontSize = stateStyle.titleFontSize / this.container.app.manager.data.scale;
+    const opacity = this.isSelected ? 1.0 : 0.7;
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
 
     const trigger = this.data.trigger;
     const platform = this.container.machineController.platform;
@@ -120,10 +161,24 @@ export class Transition extends Node {
     ctx.fillText(trigger.method, x + p, y + fontSize + p);
     ctx.closePath();
     */
+  }
 
-    if (this.isSelected) {
-      this.drawSelection(ctx);
-    }
+  private drawTextCondition(ctx: CanvasRenderingContext2D) {
+    const { x, y } = this.drawBounds;
+    const p = 15 / this.container.app.manager.data.scale;
+    const fontSize = 16 / this.container.app.manager.data.scale;
+
+    drawText(ctx, this.textData.textArray, {
+      x: x + p,
+      y: y + p,
+      textAlign: 'left',
+      color: getColor('text-primary'),
+      fontSize,
+      fontFamily: 'monospace',
+      lineHeight: 1.4,
+    });
+
+    ctx.closePath();
   }
 
   private drawArrows(ctx: CanvasRenderingContext2D) {

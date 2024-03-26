@@ -5,5 +5,6 @@ export * from './useComponents';
 export * from './useErrorModal';
 export * from './useFileOperations';
 export * from './useCreateModalCondition';
+export * from './useWheel';
 export * from './useSettings';
 export * from './useFetch';

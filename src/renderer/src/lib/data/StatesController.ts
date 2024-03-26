@@ -80,25 +80,30 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const targetPos = state.computedPosition;
     const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
-    if (y <= titleHeight) {
-      this.emit('changeStateName', state);
-    } else {
-      // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
-      // FIXME: пересчитывает координаты внутри, ещё раз
-      const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
-      if (!eventSelection) {
-        this.emit('changeState', state);
-      } else {
-        const eventData = state.eventBox.data[eventSelection.eventIdx];
-        const event =
-          eventSelection.actionIdx === null
-            ? eventData.trigger
-            : eventData.do[eventSelection.actionIdx];
-        const isEditingEvent = eventSelection.actionIdx === null;
 
-        this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
-      }
+    if (y <= titleHeight) {
+      return this.emit('changeStateName', state);
     }
+
+    if (this.container.app.textMode) {
+      return this.emit('changeState', state);
+    }
+
+    // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
+    // FIXME: пересчитывает координаты внутри, ещё раз
+    const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+    if (!eventSelection) {
+      return this.emit('changeState', state);
+    }
+
+    const eventData = state.eventBox.data[eventSelection.eventIdx];
+    const event =
+      eventSelection.actionIdx === null
+        ? eventData.trigger
+        : eventData.do[eventSelection.actionIdx];
+    const isEditingEvent = eventSelection.actionIdx === null;
+
+    this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {

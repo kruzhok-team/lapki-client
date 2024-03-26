@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Scale } from '@renderer/components';
+import {
+  CreateModal,
+  CreateModalResult,
+  EventsModal,
+  EventsModalData,
+  NoteEdit,
+  NodeTextEdit,
+  StateNameModal,
+  Scale,
+} from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { EventSelection } from '@renderer/lib/drawable/Events';
 import { State } from '@renderer/lib/drawable/State';
@@ -8,11 +17,6 @@ import { Transition } from '@renderer/lib/drawable/Transition';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 import { defaultTransColor } from '@renderer/utils';
-
-import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
-import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
-import { NoteEdit } from './NoteEdit';
-import { StateNameModal } from './StateNameModal';
 
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
@@ -58,6 +62,8 @@ export const DiagramEditor: React.FC = () => {
 
     //Здесь мы открываем модальное окно редактирования ноды
     editor.container.statesController.on('changeState', (state) => {
+      if (editor.textMode) return;
+
       ClearUseState();
       setState(state);
       openCreateModal();
@@ -74,6 +80,8 @@ export const DiagramEditor: React.FC = () => {
 
     //Здесь мы открываем модальное окно редактирования созданной связи
     editor.container.transitionsController.on('changeTransition', (target) => {
+      if (editor.textMode) return;
+
       ClearUseState();
       setEvents(target.data.do ?? []);
       setTransition(target);
@@ -176,6 +184,7 @@ export const DiagramEditor: React.FC = () => {
       {isMounted && (
         <>
           <StateNameModal />
+          <NodeTextEdit />
           <NoteEdit />
 
           <EventsModal

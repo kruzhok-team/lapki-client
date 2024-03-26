@@ -49,7 +49,10 @@ export class InitialStateMark extends Node {
     drawText(ctx, 'Начало', {
       x: x + width / 2,
       y: y + height / 2,
-      font: `bold ${fontSize}px/1 "Fira Sans"`,
+      fontWeight: 'bold',
+      fontSize,
+      lineHeight: 1,
+      fontFamily: 'Fira Sans',
       color: '#FFF',
       textAlign: 'center',
       textBaseline: 'middle',

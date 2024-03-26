@@ -9,7 +9,7 @@ export const Checkbox: React.FC<RCheckbox.CheckboxProps> = ({ className, ...prop
   return (
     <RCheckbox.Root
       className={twMerge(
-        'min-w-5 flex h-5 w-5 appearance-none items-center justify-center rounded border border-border-primary outline-none',
+        'flex h-5 w-5 min-w-5 appearance-none items-center justify-center rounded border border-border-primary outline-none',
         className
       )}
       {...props}

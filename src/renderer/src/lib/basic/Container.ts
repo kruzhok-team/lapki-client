@@ -1,3 +1,5 @@
+import * as TWEEN from '@tweenjs/tween.js';
+
 import { getColor } from '@renderer/theme';
 import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point } from '@renderer/types/graphics';
@@ -366,9 +368,37 @@ export class Container extends EventEmitter<ContainerEvents> {
     const newScale = Number(
       clamp(replace ? delta : prevScale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.app.manager.data.offset.x -= x * prevScale - x * newScale;
-    this.app.manager.data.offset.y -= y * prevScale - y * newScale;
 
-    this.setScale(newScale);
+    const to = {
+      x: this.app.manager.data.offset.x - (x * prevScale - x * newScale),
+      y: this.app.manager.data.offset.y - (y * prevScale - y * newScale),
+      scale: newScale,
+    };
+
+    if (this.app.settings.animations) {
+      const from = {
+        x: this.app.manager.data.offset.x,
+        y: this.app.manager.data.offset.y,
+        scale: prevScale,
+      };
+
+      new TWEEN.Tween(from)
+        .to(to, 200)
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate(({ x, y, scale }) => {
+          this.app.manager.data.offset = { x, y };
+          this.app.manager.data.scale = scale;
+          picto.scale = scale;
+          this.isDirty = true;
+        })
+        .onComplete(({ scale }) => {
+          this.setScale(scale);
+        })
+        .start();
+    } else {
+      this.app.manager.data.offset.x = to.x;
+      this.app.manager.data.offset.y = to.y;
+      this.setScale(to.scale);
+    }
   }
 }

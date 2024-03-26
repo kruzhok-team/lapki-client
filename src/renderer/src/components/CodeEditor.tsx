@@ -1,13 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
+import { cpp } from '@codemirror/lang-cpp';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
-import { useCodeMirror } from '@uiw/react-codemirror';
+import CodeMirror from '@uiw/react-codemirror';
 
-import { useThemeContext } from '@renderer/store/ThemeContext';
+import { useSettings } from '@renderer/hooks';
 import { Language } from '@renderer/types/tabs';
 
-const extensions = [json(), xml()];
+// (bryzZz) Почему-то нельзя просто передать массив языков, будет работать только первый
+// А так работает
+const langExtensions = {
+  cpp: cpp(),
+  xml: xml(),
+  json: json(),
+};
 
 interface CodeEditorProps {
   initialValue: string;
@@ -15,24 +22,16 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, language }) => {
-  const { theme } = useThemeContext();
+  const [theme] = useSettings('theme');
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { setContainer } = useCodeMirror({
-    container: containerRef.current,
-    extensions,
-    value: initialValue,
-    theme,
-    height: '100%',
-    lang: language,
-    readOnly: true,
-  });
-
-  useEffect(() => {
-    if (containerRef.current) {
-      setContainer(containerRef.current);
-    }
-  }, [setContainer]);
-
-  return <div className="h-full" ref={containerRef} />;
+  return (
+    <CodeMirror
+      className="h-full [&_.cm-editor]:h-full"
+      extensions={langExtensions[language]}
+      value={initialValue}
+      theme={theme ?? 'light'}
+      lang={language}
+      readOnly={true}
+    />
+  );
 };

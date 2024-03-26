@@ -1,204 +1,32 @@
-import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import {
+  CGMLElements,
+  parseCGML,
+  CGMLInitialState,
+  CGMLState,
+  CGMLTransition,
+  CGMLComponent,
+} from '@kruzhok-team/cyberiadaml-js';
 
 import {
+  Action,
+  ArgList,
+  Component,
+  Condition,
+  Elements,
+  EventData,
+  InitialState,
   State,
   Transition,
-  Action,
-  Event,
-  EventData,
-  ArgList,
-  Elements,
-  Condition,
-  Variable,
-  Note,
-  InnerElements,
+  Meta,
 } from '@renderer/types/diagram';
-import { ArgumentProto, Platform } from '@renderer/types/platform';
+import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform';
 
+import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
-type Node = {
-  id: string;
-  data?: Array<DataNode>;
-  graph?: Graph;
-};
-
-type OuterComponent = {
-  id: string;
-  name: string;
-  humanName?: string;
-  type: string;
-  parameters: {
-    [key: string]: string;
-  };
-  description?: string;
-};
-
-type Edge = {
-  source: string;
-  target: string;
-  data?: Array<DataNode>;
-};
-
-type Graph = {
-  node: Array<Node>;
-  edge: Array<Edge>;
-  edgedefault: string;
-  id?: string;
-};
-
-type KeyProperties = {
-  attrName?: string;
-  attrType?: string;
-};
-
-type Meta = {
-  format: string;
-  platform: string;
-  name?: string;
-  author?: string;
-  contact?: string;
-  description?: string;
-  unit?: string;
-};
-
-type DataNode = {
-  key: string;
-  content: string;
-};
-
-type KeyNode = {
-  id: string;
-  for: string;
-  properties: KeyProperties;
-};
-
-type DataNodeProcess = { [key in DataKey]: (data: DataNodeProcessArgs) => void };
-interface DataNodeProcessArgs {
-  elements: Elements;
-  meta: Meta;
-  node: DataNode;
-  component?: OuterComponent;
-  parentNode?: Node;
-  state?: State;
-  transition?: Transition;
-  note?: Note;
-}
-
-const dataKeys = ['gFormat', 'dData', 'dName', 'dInitial', 'dGeometry', 'dColor', 'dNote'] as const;
-type DataKey = (typeof dataKeys)[number];
-
-function isDataKey(key: string): key is DataKey {
-  if (dataKeys.includes(key as DataKey)) return true;
-  else
-    throw new Error(
-      `К сожалению, в данный момент не предусмотрена обработка data-узла с ключом ${key}`
-    );
-}
-
-// Набор функций, обрабатывающих data-узлы в зависимости от их ключа.
-const dataNodeProcess: DataNodeProcess = {
-  gFormat({ meta, node }) {
-    meta.format = (node as DataNode).content; // TODO: Проверить, если уже был указан формат
-  },
-  dData({ elements, state, parentNode, meta, node, component, transition }) {
-    if (parentNode !== undefined) {
-      // Если это мета-компонент, то извлекаем мета-информацию
-      if (parentNode.id === '') {
-        parseMeta(meta, node.content);
-      } else {
-        if (component !== undefined) {
-          parseComponentNode(node.content, component);
-        } else if (state !== undefined) {
-          parseNodeData(elements, node.content, state);
-        }
-      }
-    } else {
-      if (transition !== undefined) {
-        parseTransitionData(elements, node.content, transition);
-        elements.transitions.push(transition);
-      }
-    }
-  },
-  dName(data: DataNodeProcessArgs) {
-    if (data.parentNode !== undefined) {
-      // В мета-состоянии dName означает название платформы
-      if (data.parentNode.id === '') {
-        if (data.meta.platform === '') {
-          data.meta.platform = data.node.content;
-        } else {
-          throw new Error(
-            `Повторное указание платформы! Старое значение: ${data.meta.platform}. Новое значение: ${data.node.content}`
-          );
-        }
-      } else {
-        if (data.component !== undefined) {
-          data.component.name = data.node.content;
-        } else if (data.state != undefined) {
-          data.state.name = data.node.content;
-        }
-      }
-    } else {
-      throw new Error('Непредвиденный вызов функции dName');
-    }
-  },
-  dInitial(data: DataNodeProcessArgs) {
-    if (data.parentNode !== undefined) {
-      if (data.elements.initialState !== null) {
-        initialId = data.parentNode.id;
-      }
-    } else {
-      throw new Error('Непредвиденный вызов функции dInitial');
-    }
-  },
-  dGeometry(data: DataNodeProcessArgs) {
-    const x = +data.node['x'];
-    const y = +data.node['y'];
-    if (x === undefined || y === undefined) {
-      throw new Error('Не указаны x или y для узла data с ключом dGeometry');
-    }
-    if (data.parentNode !== undefined && data.parentNode.id == initialId) {
-      if (data.elements.initialState !== null) {
-        data.elements.initialState.position = {
-          x: x,
-          y: y,
-        };
-      } else {
-        throw new Error('Непредвиденная ошибка. dataNodeProcess.dGeometry: initialState == null');
-      }
-    } else if (data.state !== undefined) {
-      data.state.bounds = {
-        x: x,
-        y: y,
-        width: data.node['width'] ? +data.node['width'] : 0,
-        height: data.node['height'] ? +data.node['height'] : 0,
-      };
-    } else if (data.transition !== undefined) {
-      data.transition.position = {
-        x: x,
-        y: y,
-      };
-    } else if (data.note !== undefined) {
-      data.note.position = {
-        x: x,
-        y: y,
-      };
-    } else {
-      throw new Error('Непредвиденный вызов функции dGeometry');
-    }
-  },
-  dColor(data: DataNodeProcessArgs) {
-    if (data.transition !== undefined) {
-      data.transition.color = data.node.content;
-    }
-  },
-  dNote(data: DataNodeProcessArgs) {
-    if (data.note !== undefined) {
-      data.note.text = data.node.content;
-    } else {
-      throw new Error('Непредвиденный вызов функции dNote');
-    }
-  },
+const systemComponentAlias = {
+  entry: { component: 'System', method: 'onEnter' },
+  exit: { component: 'System', method: 'onExit' },
 };
 
 const randomColor = (): string => {
@@ -210,24 +38,18 @@ const randomColor = (): string => {
   return '#' + result;
 };
 
-const operatorAlias = new Map<string, string>([
-  ['===', 'equals'],
-  ['!=', 'notEquals'],
-  ['>', 'greater'],
-  ['<', 'less'],
-  ['>=', 'greaterOrEqual'],
-  ['<=', 'lessOrEqual'],
-]);
-
-const invertOperatorAlias = new Map<string, string>(
-  [...operatorAlias.entries()].map((a) => [a[1], a[0]])
-);
+const operatorAlias = {
+  '==': 'equals',
+  '!=': 'notEquals',
+  '>': 'greater',
+  '<': 'less',
+  '>=': 'greaterOrEqual',
+  '<=': 'lessOrEqual',
+};
 
 function checkConditionTokenType(token: string): Condition {
   if (token.includes('.')) {
     const [component, method] = token.split('.');
-    ``;
-
     return {
       type: 'component',
       value: {
@@ -237,7 +59,6 @@ function checkConditionTokenType(token: string): Condition {
       },
     };
   }
-
   return {
     type: 'value',
     value: token,
@@ -247,9 +68,8 @@ function checkConditionTokenType(token: string): Condition {
 function parseCondition(condition: string): Condition {
   const tokens = condition.split(' ');
   const lval = checkConditionTokenType(tokens[0]);
-  const operator = operatorAlias.get(tokens[1]);
+  const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
-
   if (operator !== undefined) {
     return {
       type: operator,
@@ -259,34 +79,18 @@ function parseCondition(condition: string): Condition {
   throw new Error(`Неизвестный оператор ${operator}`);
 }
 
-// Функция извлекает события и действия из дата-ноды
-function parseNodeData(elements: Elements, content: string, state: State) {
-  // По формату CyberiadaGraphML события разделены пустой строкой.
-  if (content !== undefined) {
-    const unprocessedEventsAndActions = content.split('\n\n');
-    for (const event of unprocessedEventsAndActions) {
-      const result = parseEvent(elements, event);
-      if (result !== undefined) {
-        state.events.push(result[0]);
-      }
-    }
-  }
+function emptyComponent(): Component {
+  return {
+    transitionId: '',
+    type: '',
+    parameters: {},
+  };
 }
 
-function parseComponentNode(content: string, component: OuterComponent) {
+function parseComponentNode(content: string, componentId: string): [Component, Meta] {
+  const component: Component = emptyComponent();
+  const meta: { [id: string]: string } = {};
   const unprocessedParameters = content.split('\n');
-  const checkType = (componentType): boolean => {
-    if (platform !== undefined) {
-      return platform.components[componentType] !== undefined;
-    } else {
-      throw new Error(`Платформа не определена!`);
-    }
-  };
-
-  const checkParameter = (parameterName, componentType): boolean => {
-    return platform?.components[componentType].parameters[parameterName] !== undefined;
-  };
-
   for (const parameter of unprocessedParameters) {
     let [parameterName, value] = parameter.split('/');
     parameterName = parameterName.trim();
@@ -294,23 +98,20 @@ function parseComponentNode(content: string, component: OuterComponent) {
     switch (parameterName) {
       case 'type': {
         if (component.type === '') {
-          if (checkType(value)) component.type = value;
-          else {
-            throw new Error(`Неизвестный тип компонента ${value} в платформе ${platform?.name}`);
-          }
+          component.type = value;
         } else {
           throw new Error(
-            `Тип компонента ${component.name} уже указан! Предыдущий тип ${component.type}, новый - ${value}`
+            `Тип у компонента ${componentId} уже указан! Предыдущий тип ${component.type}, новый - ${value}`
           );
         }
         break;
       }
       case 'description': {
-        if (component.description === undefined) {
-          component.description = value;
+        if (meta['description'] === undefined) {
+          meta['description'] = value;
         } else {
           throw new Error(
-            `Описание компонента ${component.name} уже указано! Предыдущее описание ${component.description}, новое - ${value}`
+            `Описание компонента у ${componentId} уже указано! Предыдущее описание ${meta['description']}, новое - ${value}`
           );
         }
         break;
@@ -321,234 +122,195 @@ function parseComponentNode(content: string, component: OuterComponent) {
         break;
       }
       case 'name': {
-        if (component.humanName === undefined || component.humanName === '') {
-          component.humanName = value;
+        if (meta['name'] === undefined) {
+          meta['name'] = value;
         } else {
           throw new Error(
-            `Имя компонента ${component.humanName} уже указано! Предыдущее имя ${component.humanName}, новое - ${value}`
+            `Имя компонента ${componentId} уже указано! Предыдущее имя ${meta['name']}, новое - ${value}`
           );
         }
         break;
       }
       default:
-        if (checkParameter(parameterName, component.type)) {
-          component.parameters[parameterName] = value;
-        } else {
-          throw new Error(
-            `Неизвестный параметр ${parameterName} для компонента типа ${component.type}`
-          );
-        }
+        component.parameters[parameterName] = value;
     }
   }
+  return [component, meta];
 }
 
-function parseEvent(elements: Elements, event: string): [EventData, Condition?] | undefined {
-  if (event.includes('/')) {
-    let [trigger, stringActions] = event.split('/');
-    trigger = trigger.trim();
-    let condition: Condition | undefined;
-    const actions = parseActions(elements, stringActions.trim());
-    if (trigger !== undefined) {
-      if (trigger.includes('[')) {
-        const event = trigger.split('[');
-        trigger = event[0];
-        condition = parseCondition(event[1].replace(']', ''));
-      }
-      let ev = systemComponentAlias.get(trigger); // Подстановка exit/entry на System.onExit/System.onEnter
-
-      if (ev === undefined) {
-        const [component, method] = trigger.split('.');
-        ev = {
-          component: component,
-          method: method,
-        };
-      }
-      return [
-        {
-          trigger: ev,
-          do: actions !== undefined ? actions : [],
-        },
-        condition,
-      ];
-    }
-  } else {
-    throw new Error(`Не определен триггер для действий ${event}`);
+function parseEvent(event: string): [EventData, Condition?] | undefined {
+  if (!event.includes('/')) throw new Error(`Не определен триггер для действий ${event}`);
+  let [trigger, stringActions] = event.split('/');
+  trigger = trigger.trim();
+  stringActions = stringActions.trim();
+  let condition: Condition | undefined;
+  const actions = parseActions(stringActions);
+  if (trigger === undefined) return;
+  if (trigger.includes('[')) {
+    const event = trigger.split('[');
+    trigger = event[0];
+    condition = parseCondition(event[1].replace(']', ''));
   }
-
-  return;
-}
-
-function parseTransitionData(elements: Elements, content: string, transition: Transition) {
-  const unprocessedEventsAndActions = content.split('\n\n');
-  // TODO: сделать проверку, что триггер всего один.
-  for (const event of unprocessedEventsAndActions) {
-    const result = parseEvent(elements, event);
-    if (result !== undefined) {
-      const eventData = result[0];
-      const condition = result[1];
-      if (eventData !== undefined) {
-        transition.trigger = eventData.trigger;
-        transition.do = eventData.do;
-
-        if (condition !== undefined) {
-          transition.condition = condition;
-        }
-      }
-    }
-  }
-}
-
-function getAllComponents(elements: Elements, meta: Meta) {
-  if (platform !== undefined && meta.platform.startsWith('BearlogaDefend')) {
-    for (const componentName of Object.keys(platform.components)) {
-      elements.components[componentName] = {
-        type: componentName,
-        parameters: {},
-      };
-    }
-  }
-}
-
-function parseAction(elements: Elements, unproccessedAction: string): Action | undefined {
-  const [component_name, action] = unproccessedAction.trim().split('.');
-  if (action !== undefined) {
-    // На случай, если действий у события нет
-    const bracketPos = action.indexOf('(');
-    const args = action
-      .slice(bracketPos + 1, action.length - 1)
-      .split(',')
-      .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-    const method = action.slice(0, bracketPos);
-    const resultAction: Action = {
-      component: component_name,
+  let ev = systemComponentAlias[trigger]; // Подстановка exit/entry на System.onExit/System.onEnter
+  if (ev === undefined) {
+    const [component, method] = trigger.split('.');
+    ev = {
+      component: component,
       method: method,
     };
-
-    const component = elements.components[component_name];
-    const argList: ArgList = {};
-    // Если параметров у метода нет, то methodParameters будет равен undefined
-    if (component !== undefined) {
-      const methodParameters = platform?.components[component.type]?.methods[method]?.parameters;
-      if (
-        platform?.components[component.type] !== undefined &&
-        platform?.components[component.type].methods[method] !== undefined
-      ) {
-        for (const index in methodParameters) {
-          const parameter: ArgumentProto = methodParameters[index];
-          if (args[index] !== undefined && args[index] !== '') {
-            argList[parameter.name] = args[index];
-          } else {
-            throw new Error(`У ${component_name}.${method} отсутствует параметр ${parameter.name}`); // TODO Модалка
-          }
-        }
-        if (methodParameters === undefined) {
-          if (args.length === 0) {
-            resultAction.args = argList;
-          } else {
-            throw new Error(
-              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: 0, получено: ${args.length}`
-            );
-          }
-        } else {
-          if (Object.keys(argList).length === Object.keys(methodParameters).length) {
-            resultAction.args = argList;
-          } else {
-            throw new Error(
-              `Неправильное количество аргументов у функции ${method} компонента ${component_name}.\n Нужно: ${
-                Object.keys(methodParameters).length
-              }, получено: ${args.length}`
-            );
-          }
-        }
-        return resultAction;
-      } else {
-        throw new Error(`Неизвестный метод ${method} у компонента ${component_name}`);
-      }
-    } else {
-      throw new Error(`Неизвестный компонент ${component_name}`);
-    }
-  } else {
-    return;
   }
+  return [
+    {
+      trigger: ev,
+      do: actions !== undefined ? actions : [],
+    },
+    condition,
+  ];
 }
 
-function parseActions(elements: Elements, unsplitedActions: string): Action[] | undefined {
-  if (platform !== undefined && unsplitedActions != '') {
-    // Считаем, что действия находятся на разных строках
-    const actions = unsplitedActions.split('\n');
-    const resultActions = new Array<Action>();
-    for (const unproccessedAction of actions) {
-      const resultAction = parseAction(elements, unproccessedAction);
-      if (resultAction !== undefined) {
-        resultActions.push(resultAction);
-      }
-    }
-    return resultActions;
-  } else {
+// Затычка, чтобы не прокидывать повсюду платформу и компоненты.
+// Настоящие название аргументов подтягиваются позднее.
+function initArgList(args: string[]): ArgList {
+  const argList: ArgList = {};
+  args.forEach((value, index) => {
+    argList[index] = value.trim();
+  });
+  return argList;
+}
+
+function parseAction(unproccessedAction: string): Action | undefined {
+  const [componentName, action] = unproccessedAction.trim().split('.');
+  if (action === undefined) {
+    return;
+  }
+  // На случай, если действий у события нет
+  const bracketPos = action.indexOf('(');
+  const args = action
+    .slice(bracketPos + 1, action.length - 1)
+    .split(',')
+    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+  const method = action.slice(0, bracketPos);
+  return {
+    component: componentName,
+    method: method,
+    args: initArgList(args),
+  };
+}
+
+function parseActions(unsplitedActions: string): Action[] | undefined {
+  if (unsplitedActions === '') {
     console.log('Отсутствуют действия на событие');
     return;
   }
+  // Считаем, что действия находятся на разных строках
+  const actions = unsplitedActions.split('\n');
+  const resultActions: Action[] = [];
+  for (const unprocessedAction of actions) {
+    const resultAction = parseAction(unprocessedAction);
+    if (resultAction !== undefined) {
+      resultActions.push(resultAction);
+    }
+  }
+  return resultActions;
 }
 
-function processTransitions(elements: Elements, meta: Meta, edges: Edge[]) {
-  let foundInitial = false;
-  for (const idx in edges) {
-    const edge = edges[idx];
-    if (!foundInitial && edge.source === initialId) {
-      delete elements.states[edge.source];
-      if (elements.initialState !== null) {
-        elements.initialState.target = edge.target;
-      } else {
-        throw new Error('Непредвиденная ошибка. processTransitions: initialState == null');
-      }
-      foundInitial = true;
+function getInitialState(rawInitialState: CGMLInitialState | null): InitialState | null {
+  if (rawInitialState !== null) {
+    if (rawInitialState.position !== undefined) {
+      return {
+        target: rawInitialState.target,
+        position: {
+          x: rawInitialState.position.x,
+          y: rawInitialState.position.y,
+        },
+      };
+    } else {
+      throw new Error('No position of initial state!');
     }
-    const transition: Transition = {
-      source: edge.source,
-      target: edge.target,
-      color: randomColor(),
-      trigger: {
-        component: '',
-        method: '',
-      },
-      position: {
-        x: 0,
-        y: 0,
-      },
+  }
+  return null;
+}
+
+function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: State } {
+  const states: { [id: string]: State } = {};
+  for (const rawStateId in rawStates) {
+    const rawState = rawStates[rawStateId];
+    states[rawStateId] = {
+      name: rawState.name,
+      bounds: rawState.bounds,
+      parent: rawState.parent,
+      events: parseStateEvents(rawState.actions),
     };
-    for (const dataNodeIndex in edge.data) {
-      const dataNode: DataNode = edge.data[dataNodeIndex];
-      if (isDataKey(dataNode.key)) {
-        const func = dataNodeProcess[dataNode.key];
-        func({
-          elements: elements,
-          meta: meta,
-          node: dataNode,
-          component: undefined,
-          parentNode: undefined,
-          transition: transition,
-        });
-      }
-    }
   }
+  return states;
 }
 
-// Функция, которая находит формат и присваивают его к Meta
-function setFormatToMeta(elements: Elements, xml: any, meta: Meta) {
-  for (const node of xml.graphml.data as DataNode[]) {
-    if (isDataKey(node.key)) {
-      const func = dataNodeProcess[node.key];
-      func({ elements, meta, node });
+function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | undefined {
+  const rawTriggerAndAction = rawEvents.split('\n\n');
+  if (rawTriggerAndAction.length > 1) {
+    throw new Error('Поддерживаются события только с одним триггером!');
+  }
+  const result = parseEvent(rawTriggerAndAction[0]);
+  if (result !== undefined) {
+    return result;
+  }
+  return;
+}
+
+function getTransitions(
+  rawTransitions: Record<string, CGMLTransition>,
+  initialStateId?: string
+): Record<string, Transition> {
+  const transitions: Record<string, Transition> = {};
+  for (const id in rawTransitions) {
+    const rawTransition = rawTransitions[id];
+    if (rawTransition.actions == undefined) {
+      if (initialStateId == rawTransition.source) continue;
+      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+    }
+    const parsedEvent = parseTransitionEvents(rawTransition.actions);
+    if (parsedEvent == undefined) {
+      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+    }
+    const [eventData, condition] = parsedEvent;
+    transitions[id] = {
+      source: rawTransition.source,
+      target: rawTransition.target,
+      color: rawTransition.color ?? randomColor(),
+      position: rawTransition.position ?? { x: -1, y: -1 },
+      trigger: eventData.trigger,
+      do: eventData.do,
+      condition: condition,
+    };
+  }
+  return transitions;
+}
+
+function parseStateEvents(content: string | undefined): EventData[] {
+  // По формату CyberiadaGraphML события разделены пустой строкой.
+  if (content === undefined) {
+    return [];
+  }
+  const events: EventData[] = [];
+  const unprocessedEventsAndActions = content.split('\n\n');
+  for (const unprocessedEvent of unprocessedEventsAndActions) {
+    const result = parseEvent(unprocessedEvent);
+    if (result !== undefined) {
+      const event = result[0]; // У нас не поддерживаются условия в событиях в состоянии
+      events.push(event);
     }
   }
+  return events;
 }
 
 // Функция получает на вход строку, в которой мета-информация разделена символами / и \n
-function parseMeta(meta: Meta, unproccessedMeta: string) {
+function parseMeta(unproccessedMeta: string | undefined): { [id: string]: string } {
+  if (unproccessedMeta === undefined) {
+    return {};
+  }
   const splitedMeta = unproccessedMeta.split('\n');
-
+  const meta: { [id: string]: string } = {};
   let lastPropertyKey: string = '';
-
   for (const property of splitedMeta) {
     if (property.includes('/')) {
       const keyValuePair = property.split('/');
@@ -562,922 +324,174 @@ function parseMeta(meta: Meta, unproccessedMeta: string) {
       }
     }
   }
-
-  if (meta.platform === 'BearlogaDefend') {
-    meta.platform = `${meta.platform}-${meta.unit}`;
-  }
-  if (isPlatformAvailable(meta.platform)) {
-    platform = getPlatform(meta.platform);
-  } else {
-    throw new Error(`Неизвестная платформа ${meta.platform}`);
-  }
+  return meta;
 }
 
-function createEmptyState(): State {
-  return {
-    name: '',
-    bounds: { x: 0, y: 0, width: 0, height: 0 },
-    events: [],
-  };
-}
-
-function createEmptyNote(): Note {
-  return {
-    position: {
-      x: 0,
-      y: 0,
-    },
-    text: '',
-  };
-}
-
-// Обработка нод
-function processNode(
-  elements: Elements,
-  node: Node,
-  meta: Meta,
-  awailableDataProperties: Map<string, Map<string, KeyProperties>>,
-  parent?: Node,
-  component?: OuterComponent
-): State | Note {
-  // Если находим dNote среди дата-нод, то создаем пустую заметку, а состояние делаем undefined
-  const note: Note | undefined = node.data?.find((dataNode) => dataNode.key === 'dNote')
-    ? createEmptyNote()
-    : undefined;
-  const state: State | undefined = note == undefined ? createEmptyState() : undefined;
-  if (node.data !== undefined) {
-    for (const dataNode of node.data) {
-      if (awailableDataProperties.get('node')?.has(dataNode.key)) {
-        if (isDataKey(dataNode.key)) {
-          const func = dataNodeProcess[dataNode.key];
-          func({
-            elements: elements,
-            meta: meta,
-            node: dataNode,
-            parentNode: node,
-            state: state,
-            component: component,
-            note: note,
-          });
-        }
-      } else {
-        throw new Error(`Неизвестный key "${dataNode.key}" для узла node!`);
-      }
-    }
+function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
+  [id: string]: Component;
+} {
+  const components: { [id: string]: Component } = {};
+  for (const id in rawComponents) {
+    const rawComponent = rawComponents[id];
+    const component = parseComponentNode(rawComponent.parameters, id)[0];
+    components[id] = { ...component, transitionId: rawComponent.transitionId };
   }
-
-  if (parent !== undefined && state !== undefined) {
-    state.parent = parent.id;
-  }
-
-  if (node.graph !== undefined) {
-    processGraph(elements, node.graph, meta, awailableDataProperties, node);
-  }
-
-  if (state !== undefined) {
-    return state;
-  } else if (note !== undefined) {
-    return note;
-  } else {
-    throw new Error('Отсутствует состояние или заметка для данного узла!');
-  }
+  return components;
 }
 
-function emptyOuterComponent(): OuterComponent {
-  return {
-    id: '',
-    name: '',
-    humanName: '',
-    type: '',
-    parameters: {},
-  };
+function labelParameters(args: ArgList, method: MethodProto): ArgList {
+  const labeledArgs: ArgList = { ...args };
+  method.parameters?.forEach((element, index) => {
+    labeledArgs[element.name] = args[index];
+    delete labeledArgs[index];
+  });
+  return labeledArgs;
 }
 
-function isState(value): value is State {
-  return (value as State).events !== undefined;
+export function getProtoMethod(
+  method: string,
+  component: ComponentProto | undefined
+): MethodProto | undefined {
+  return component?.methods[method];
 }
 
-function processGraph(
-  elements: Elements,
-  graph: Graph,
-  meta: Meta,
-  awailableDataProperties: Map<string, Map<string, KeyProperties>>,
-  parent?: Node
-) {
-  const nodes: Node[] = graph.node;
-  const edges: Edge[] = graph.edge;
-  if (meta.platform === 'ArduinoUno' && parent === undefined) {
-    if (graph.edge) {
-      for (const idx in edges) {
-        const edge = graph.edge[idx];
-        if (edge.source === '') {
-          components_id.push(edge.target);
-          delete graph.edge[idx];
+export function getProtoComponent(
+  component: string,
+  platformComponents: { [name: string]: ComponentProto },
+  components: { [name: string]: Component }
+): ComponentProto | undefined {
+  return platformComponents[components[component]?.type];
+}
+
+function labelStateParameters(
+  states: { [id: string]: State },
+  platformComponents: { [name: string]: ComponentProto },
+  components: { [name: string]: Component }
+): { [id: string]: State } {
+  const labeledStates: { [id: string]: State } = {};
+  for (const stateIdx in states) {
+    const state = states[stateIdx];
+    const labeledState = { ...state };
+    for (const eventIdx in labeledState.events) {
+      const event = labeledState.events[eventIdx];
+      for (const actionIdx in event.do) {
+        const action = event.do[actionIdx];
+        if (action.args !== undefined) {
+          const component: ComponentProto | undefined = getProtoComponent(
+            action.component,
+            platformComponents,
+            components
+          );
+          const method: MethodProto | undefined = getProtoMethod(action.method, component);
+          if (component !== undefined && method !== undefined) {
+            labeledState.events[eventIdx].do[actionIdx].args = labelParameters(action.args, method);
+          }
         }
       }
     }
+    labeledStates[stateIdx] = labeledState;
+  }
+  return labeledStates;
+}
 
-    for (const idx in nodes) {
-      const node = nodes[idx];
-      if (components_id.includes(node.id)) {
-        const component = emptyOuterComponent();
-        component.id = node.id;
-        processNode(elements, node, meta, awailableDataProperties, parent, component);
-        delete graph.node[idx];
+function labelTransitionParameters(
+  transitions: Record<string, Transition>,
+  platformComponents: { [name: string]: ComponentProto },
+  components: { [name: string]: Component }
+): Record<string, Transition> {
+  const labeledTransitions: Record<string, Transition> = {};
 
-        if (!elements.components[component.name]) {
-          elements.components[component.name] = {
-            type: component.type,
-            parameters: component.parameters,
-          };
-        } else {
-          throw new Error(`Компонент с именем ${component.name} уже существует!`);
+  for (const id in transitions) {
+    const labeledTransition: Transition = transitions[id];
+    if (labeledTransition.do !== undefined) {
+      for (const actionIdx in labeledTransition.do) {
+        const action = labeledTransition.do[actionIdx];
+        // FIXME: DRY
+        if (action.args !== undefined) {
+          const component: ComponentProto | undefined = getProtoComponent(
+            action.component,
+            platformComponents,
+            components
+          );
+          const method: MethodProto | undefined = getProtoMethod(action.method, component);
+          if (component !== undefined && method !== undefined) {
+            labeledTransition.do[actionIdx].args = labelParameters(action.args, method);
+          }
         }
       }
     }
+    labeledTransitions[id] = labeledTransition;
   }
-
-  for (const idx in graph.node) {
-    const node = graph.node[idx];
-    const processResult: State | Note = processNode(
-      elements,
-      node,
-      meta,
-      awailableDataProperties,
-      parent
-    );
-
-    if (isState(processResult)) {
-      elements.states[node.id] = processResult;
-    } else {
-      elements.notes.push(processResult);
-    }
-  }
-
-  if (graph.edge) {
-    processTransitions(elements, meta, graph.edge);
-  }
+  return labeledTransitions;
 }
 
-// Добавляет допустимые свойства у узлов (dData, dInitial и т.д)
-function addPropertiesFromKeyNode(
-  xml: any,
-  awailableDataProperties: Map<string, Map<string, KeyProperties>> // Map<Название целевой ноды, Map<id свойства, аттрибуты свойства>>
-) {
-  for (const node of xml.graphml.key) {
-    const keyNode: KeyNode = {
-      id: node.id,
-      for: node.for,
-      properties: {
-        attrName: node['attr.name'],
-        attrType: node['attr.type'],
-      },
+function getAllComponent(platformComponents: { [name: string]: ComponentProto }): {
+  [name: string]: Component;
+} {
+  const components: {
+    [name: string]: Component;
+  } = {};
+  for (const id in platformComponents) {
+    components[id] = {
+      transitionId: '',
+      type: id,
+      parameters: {},
     };
-
-    // Если у нас уже есть список свойств для целевой ноды, то добавляем в уже существующий Map,
-    // иначе - создаем новый.
-    if (awailableDataProperties.has(keyNode.for)) {
-      const nodeProperties = awailableDataProperties.get(keyNode.for);
-
-      // Если есть такое свойство - вывести ошибку, иначе - добавить!
-      if (nodeProperties?.has(keyNode.id)) {
-        throw new Error(`Дублирование свойства ${keyNode.id} для узла ${keyNode.for}!`);
-      } else {
-        nodeProperties?.set(keyNode.id, keyNode.properties);
-      }
-    } else {
-      awailableDataProperties.set(
-        keyNode.for,
-        new Map<string, KeyProperties>([[keyNode.id, keyNode.properties]])
-      );
-    }
   }
+  return components;
 }
-
-let initialId = '';
-let platform: Platform | undefined;
-const components_id = new Array<string>();
-
-const systemComponentAlias = new Map<string, Event>([
-  ['entry', { component: 'System', method: 'onEnter' }],
-  ['exit', { component: 'System', method: 'onExit' }],
-]);
 
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
-): Elements {
+): Elements | undefined {
   try {
-    platform = undefined;
-    initialId = '';
-    components_id.splice(0);
-    const parser = new XMLParser({
-      textNodeName: 'content',
-      ignoreAttributes: false,
-      attributeNamePrefix: '',
-      isArray: (_name, _jpath, isLeafNode, isAttribute) => {
-        return isLeafNode && !isAttribute;
-      },
-    });
-
-    const meta: Meta = {
-      format: '',
-      platform: '',
-    };
+    const rawElements: CGMLElements = parseCGML(expression);
     const elements: Elements = {
       states: {},
-      transitions: [],
-      notes: [],
-      initialState: {
-        target: '',
-        position: { x: 0, y: 0 },
-      },
+      transitions: {},
+      notes: {},
+      initialState: null,
       components: {},
-      platform: '',
+      platform: rawElements.platform,
+      meta: {},
     };
-
-    const awailableDataProperties = new Map<string, Map<string, KeyProperties>>();
-    const xml = parser.parse(expression);
-    setFormatToMeta(elements, xml, meta);
-    addPropertiesFromKeyNode(xml, awailableDataProperties);
-    switch (meta.format) {
-      case 'Cyberiada-GraphML': {
-        const indexOfMetaNode = (xml.graphml.graph.node as Array<Node>).findIndex(
-          (node) => node.id === ''
-        );
-        if (indexOfMetaNode !== -1) {
-          processNode(
-            elements,
-            xml.graphml.graph.node[indexOfMetaNode],
-            meta,
-            awailableDataProperties
-          );
-          xml.graphml.graph.node = (xml.graphml.graph.node as Array<Node>).filter(
-            (value) => value.id !== ''
-          );
-          getAllComponents(elements, meta);
-          processGraph(elements, xml.graphml.graph, meta, awailableDataProperties);
-        } else {
-          throw new Error('Отсутствует мета-узел!');
-        }
-
-        break;
-      }
-      default: {
-        throw new Error(`ОШИБКА! НЕИЗВЕСТНЫЙ ФОРМАТ "${meta.format}"!`);
-      }
+    if (!isPlatformAvailable(rawElements.platform)) {
+      throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
-    elements.platform = meta.platform;
+    // TODO: добавить в платформу флаг для статических компонентов
+    const platform: Platform | undefined = getPlatform(elements.platform);
+    if (platform === undefined) {
+      throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
+    }
+    if (elements.platform.startsWith('Bearloga')) {
+      elements.components = getAllComponent(platform.components);
+    } else {
+      elements.components = getComponents(rawElements.components);
+    }
+    elements.meta = parseMeta(rawElements.meta);
+    const initialState: InitialState | null = getInitialState(rawElements.initialState);
+    if (initialState !== null) {
+      elements.initialState = initialState;
+    }
+    elements.notes = rawElements.notes;
+    elements.states = getStates(rawElements.states);
+    elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
+    elements.states = labelStateParameters(
+      elements.states,
+      platform.components,
+      elements.components
+    );
+    elements.transitions = labelTransitionParameters(
+      elements.transitions,
+      platform.components,
+      elements.components
+    );
+    validateElements(elements, platform);
     return elements;
   } catch (error) {
     console.log(error);
     openImportError((error as any).message);
-    return {
-      states: {},
-      transitions: [],
-      notes: [],
-      initialState: {
-        target: '',
-        position: { x: 0, y: 0 },
-      },
-      components: {},
-      platform: '',
-    };
+    return;
   }
-}
-
-type ExportKeyNode = {
-  '@id': string;
-  '@for': string;
-  '@attr.name'?: string;
-  '@attr.type'?: string;
-};
-
-type ExportDataNode = {
-  '@key': DataKey;
-  '@x'?: number;
-  '@y'?: number;
-  '@width'?: number;
-  '@height'?: number;
-  content: string;
-};
-
-type ExportEdge = {
-  '@source': string;
-  '@target': string;
-  data?: Array<ExportDataNode>;
-};
-
-type ExportGraph = {
-  '@id': string;
-  node: Array<ExportNode>;
-  edge: Array<ExportEdge>;
-};
-
-type ExportNode = {
-  '@id': string;
-  data: Array<ExportDataNode>;
-  graph?: ExportGraph;
-};
-
-function getArgsString(args: ArgList | undefined): string {
-  if (args !== undefined) {
-    return Object.values(args).join(', ');
-  }
-
-  return '';
-}
-
-function isVariable(object: any) {
-  return object.component !== undefined;
-}
-
-function getOperandString(operand: Variable | string | Condition[] | number) {
-  if (isVariable(operand)) {
-    return `${(operand as Variable).component}.${(operand as Variable).method}`;
-  } else {
-    return operand;
-  }
-}
-
-type Platforms = 'ArduinoUno' | 'BearlogaDefend';
-type PlatformDataKeys = { [key in Platforms]: ExportKeyNode[] };
-type ProcessDependPlatform = {
-  [key in Platforms]: (elements: InnerElements, subplatform?: string) => CyberiadaXML;
-};
-const PlatformKeys: PlatformDataKeys = {
-  ArduinoUno: [
-    {
-      '@id': 'dName',
-      '@for': 'node',
-      '@attr.name': 'name',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'node',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'edge',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dInitial',
-      '@for': 'node',
-      '@attr.name': 'initial',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'edge',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'node',
-    },
-    {
-      '@id': 'dColor',
-      '@for': 'edge',
-    },
-    {
-      '@id': 'dNote',
-      '@for': 'node',
-    },
-  ],
-  BearlogaDefend: [
-    {
-      '@id': 'dName',
-      '@for': 'node',
-      '@attr.name': 'name',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'node',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dData',
-      '@for': 'edge',
-      '@attr.name': 'data',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dInitial',
-      '@for': 'node',
-      '@attr.name': 'initial',
-      '@attr.type': 'string',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'edge',
-    },
-    {
-      '@id': 'dGeometry',
-      '@for': 'node',
-    },
-    {
-      '@id': 'dNote',
-      '@for': 'node',
-    },
-  ],
-};
-
-type XMLNode = {
-  '@version': string;
-  '@encoding': string;
-};
-
-type GraphMLNode = {
-  '@xmlns': string;
-  data: ExportDataNode;
-  key: ExportKeyNode[];
-  graph: ExportGraph;
-};
-
-type CyberiadaXML = {
-  '?xml': XMLNode;
-  graphml: GraphMLNode;
-};
-
-// Пока что это копипаст, с небольшими изменениями
-// Но, думаю, в целом это правильное решение разделить обработку каждой платформы
-// TODO: Разбить этот монолит на функции
-const processDependPlatform: ProcessDependPlatform = {
-  ArduinoUno(elements: InnerElements): CyberiadaXML {
-    const keyNodes = PlatformKeys.ArduinoUno;
-    const description = 'name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n';
-    const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
-      [
-        '',
-        {
-          '@id': '',
-          data: [
-            {
-              '@key': 'dName',
-              content: 'ArduinoUno',
-            },
-            {
-              '@key': 'dData',
-              content: description,
-            },
-          ],
-        },
-      ],
-    ]);
-
-    const graph: ExportGraph = {
-      '@id': 'G',
-      node: [],
-      edge: [],
-    };
-
-    if (elements.initialState !== null) {
-      graph.edge.push({
-        '@source': 'init',
-        '@target': elements.initialState.target,
-      });
-      nodes.set('init', {
-        '@id': 'init',
-        data: [
-          {
-            '@key': 'dInitial',
-            content: '',
-          },
-          {
-            '@key': 'dGeometry',
-            '@x': elements.initialState.position.x,
-            '@y': elements.initialState.position.y,
-            '@width': 450,
-            '@height': 95,
-            content: '',
-          },
-        ],
-      });
-    }
-
-    for (const component_idx in elements.components) {
-      const component = elements.components[component_idx];
-      let content = `type/ ${component.type}\n`;
-      for (const parameter_idx in component.parameters) {
-        const parameter = component.parameters[parameter_idx];
-        content += `${parameter_idx}/ ${parameter}\n`;
-      }
-
-      nodes.set(component_idx, {
-        '@id': component_idx,
-        data: [
-          {
-            '@key': 'dName',
-            content: component_idx,
-          },
-          {
-            '@key': 'dData',
-            content: content,
-          },
-        ],
-      });
-      const edge: ExportEdge = {
-        '@source': '',
-        '@target': component_idx,
-      };
-      graph.edge.push(edge);
-    }
-    for (const state_id in elements.states) {
-      const state = elements.states[state_id];
-      let node = nodes.get(state_id);
-      if (node === undefined) {
-        node = {
-          '@id': state_id,
-          data: [],
-        };
-      }
-
-      node.data.push({
-        '@key': 'dName',
-        content: state.name,
-      });
-
-      node.data.push({
-        '@key': 'dGeometry',
-        '@x': state.bounds.x,
-        '@y': state.bounds.y,
-        '@width': state.bounds.width,
-        '@height': state.bounds.height,
-        content: '',
-      });
-
-      let content = '';
-
-      for (const event of state.events) {
-        let content_action = '';
-        const component = event.trigger.component;
-        const method = event.trigger.method;
-        const args = getArgsString(event.trigger.args);
-        let trigger = `${component}.${method}(${args})`;
-        if (component === 'System') {
-          if (method === 'onEnter') {
-            trigger = 'entry';
-          } else if (method === 'onExit') {
-            trigger = 'exit';
-          }
-        }
-
-        for (const action of event.do) {
-          content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
-        }
-
-        content += `${trigger}/\n${content_action}\n`;
-      }
-
-      node.data.push({
-        '@key': 'dData',
-        content: content,
-      });
-
-      for (const noteEntry of Object.entries(elements.notes)) {
-        const noteId = noteEntry[0];
-        const note = noteEntry[1];
-        nodes.set(noteId, {
-          '@id': noteId,
-          data: [
-            {
-              '@key': 'dNote',
-              content: note.text,
-            },
-            {
-              '@key': 'dGeometry',
-              '@x': note.position.x,
-              '@y': note.position.y,
-              content: '',
-            },
-          ],
-        });
-      }
-      if (state.parent !== undefined) {
-        const parent = nodes.get(state.parent);
-        if (parent !== undefined) {
-          if (parent.graph !== undefined) {
-            parent.graph.node.push(node);
-          } else {
-            parent.graph = {
-              '@id': parent['@id'],
-              node: [node],
-              edge: [],
-            };
-          }
-        } else {
-          nodes.set(state.parent, {
-            '@id': state.parent,
-            data: [],
-            graph: {
-              '@id': state.parent,
-              node: [node],
-              edge: [],
-            },
-          });
-        }
-      } else {
-        nodes.set(node['@id'], node);
-      }
-    }
-
-    for (const transition of Object.values(elements.transitions)) {
-      const edge: ExportEdge = {
-        '@source': transition.source,
-        '@target': transition.target,
-        data: [],
-      };
-      edge.data?.push({
-        '@key': 'dGeometry',
-        '@x': transition.position.x,
-        '@y': transition.position.y,
-        content: '',
-      });
-      edge.data?.push({
-        '@key': 'dColor',
-        content: transition.color,
-      });
-
-      const trigger = `${transition.trigger.component}.${transition.trigger.method}`;
-      let condition = '';
-      if (transition.condition?.type !== undefined) {
-        condition = `[${getOperandString(
-          transition.condition.value[0].value
-        )} ${invertOperatorAlias.get(transition.condition.type)} ${getOperandString(
-          transition.condition.value[1].value
-        )}]`;
-      }
-
-      let string_action = '';
-      if (transition.do !== undefined) {
-        for (const action of transition.do) {
-          string_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
-        }
-      }
-      edge.data?.push({
-        '@key': 'dData',
-        content: `${trigger}${condition}/\n${string_action}`,
-      });
-
-      graph.edge.push(edge);
-    }
-
-    graph.node.push(...nodes.values());
-    return {
-      '?xml': {
-        '@version': '1.0',
-        '@encoding': 'UTF-8',
-      },
-      graphml: {
-        '@xmlns': 'http://graphml.graphdrawing.org/xmlns',
-        data: {
-          '@key': 'gFormat',
-          content: 'Cyberiada-GraphML',
-        },
-        key: keyNodes,
-        graph: graph,
-      },
-    };
-  },
-
-  BearlogaDefend(elements: InnerElements, subplatform?: string): CyberiadaXML {
-    const keyNodes = PlatformKeys.BearlogaDefend;
-    let description = '';
-    if (subplatform !== undefined) {
-      description = `name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\nunit/ ${subplatform}`;
-    } else {
-      description = `name/ Схема\ndescription/ Схема, сгенерированная с помощью Lapki IDE\n`;
-    }
-
-    const nodes: Map<string, ExportNode> = new Map<string, ExportNode>([
-      [
-        '',
-        {
-          '@id': '',
-          data: [
-            {
-              '@key': 'dName',
-              content: 'BearlogaDefend',
-            },
-            {
-              '@key': 'dData',
-              content: description,
-            },
-          ],
-        },
-      ],
-    ]);
-
-    const graph: ExportGraph = {
-      '@id': 'G',
-      node: [],
-      edge: [],
-    };
-
-    if (elements.initialState !== null) {
-      graph.edge.push({
-        '@source': 'init',
-        '@target': elements.initialState.target,
-      });
-      nodes.set('init', {
-        '@id': 'init',
-        data: [
-          {
-            '@key': 'dInitial',
-            content: '',
-          },
-          {
-            '@key': 'dGeometry',
-            '@x': elements.initialState.position.x,
-            '@y': elements.initialState.position.y,
-            '@width': 450,
-            '@height': 95,
-            content: '',
-          },
-        ],
-      });
-    }
-
-    for (const state_id in elements.states) {
-      const state = elements.states[state_id];
-      let node = nodes.get(state_id);
-      if (node === undefined) {
-        node = {
-          '@id': state_id,
-          data: [],
-        };
-      }
-
-      node.data.push({
-        '@key': 'dName',
-        content: state.name,
-      });
-
-      node.data.push({
-        '@key': 'dGeometry',
-        '@x': state.bounds.x,
-        '@y': state.bounds.y,
-        '@width': state.bounds.width,
-        '@height': state.bounds.height,
-        content: '',
-      });
-
-      let content = '';
-
-      for (const event of state.events) {
-        let content_action = '';
-        const component = event.trigger.component;
-        const method = event.trigger.method;
-        const args = getArgsString(event.trigger.args);
-        let trigger = `${component}.${method}(${args})`;
-        if (component === 'System') {
-          if (method === 'onEnter') {
-            trigger = 'entry';
-          } else if (method === 'onExit') {
-            trigger = 'exit';
-          }
-        }
-
-        for (const action of event.do) {
-          content_action += `${action.component}.${action.method}(${getArgsString(action.args)})\n`;
-        }
-
-        content += `${trigger}/\n${content_action}\n`;
-      }
-
-      node.data.push({
-        '@key': 'dData',
-        content: content,
-      });
-
-      if (state.parent !== undefined) {
-        const parent = nodes.get(state.parent);
-        if (parent !== undefined) {
-          if (parent.graph !== undefined) {
-            parent.graph.node.push(node);
-          } else {
-            parent.graph = {
-              '@id': parent['@id'],
-              node: [node],
-              edge: [],
-            };
-          }
-        } else {
-          nodes.set(state.parent, {
-            '@id': state.parent,
-            data: [],
-            graph: {
-              '@id': state.parent,
-              node: [node],
-              edge: [],
-            },
-          });
-        }
-      } else {
-        nodes.set(node['@id'], node);
-      }
-    }
-
-    for (const transition of Object.values(elements.transitions)) {
-      const edge: ExportEdge = {
-        '@source': transition.source,
-        '@target': transition.target,
-        data: [],
-      };
-      edge.data?.push({
-        '@key': 'dGeometry',
-        '@x': transition.position.x,
-        '@y': transition.position.y,
-        content: '',
-      });
-      edge.data?.push({
-        '@key': 'dColor',
-        content: transition.color,
-      });
-
-      const trigger = `${transition.trigger.component}.${transition.trigger.method}`;
-      let condition = '';
-      if (transition.condition?.type !== undefined) {
-        condition = `[${getOperandString(
-          transition.condition.value[0].value
-        )} ${invertOperatorAlias.get(transition.condition.type)} ${getOperandString(
-          transition.condition.value[1].value
-        )}]`;
-      }
-
-      let string_action = '';
-      if (transition.do !== undefined) {
-        for (const action of transition.do) {
-          string_action += `${action.component}.${action.method}\n`;
-        }
-      }
-      edge.data?.push({
-        '@key': 'dData',
-        content: `${trigger}${condition}/\n${string_action}`,
-      });
-
-      graph.edge.push(edge);
-    }
-
-    for (const noteEntry of Object.entries(elements.notes)) {
-      const noteId = noteEntry[0];
-      const note = noteEntry[1];
-      nodes.set(noteId, {
-        '@id': noteId,
-        data: [
-          {
-            '@key': 'dNote',
-            content: note.text,
-          },
-          {
-            '@key': 'dGeometry',
-            '@x': note.position.x,
-            '@y': note.position.y,
-            content: '',
-          },
-        ],
-      });
-    }
-    graph.node.push(...nodes.values());
-    return {
-      '?xml': {
-        '@version': '1.0',
-        '@encoding': 'UTF-8',
-      },
-      graphml: {
-        '@xmlns': 'http://graphml.graphdrawing.org/xmlns',
-        data: {
-          '@key': 'gFormat',
-          content: 'Cyberiada-GraphML',
-        },
-        key: keyNodes,
-        graph: graph,
-      },
-    };
-  },
-};
-
-export function exportGraphml(elements: InnerElements): string {
-  const builder = new XMLBuilder({
-    textNodeName: 'content',
-    ignoreAttributes: false,
-    attributeNamePrefix: '@',
-    format: true,
-  });
-  let xml = {};
-  if (elements.platform.startsWith('Arduino')) {
-    xml = processDependPlatform.ArduinoUno(elements);
-  } else if (elements.platform.startsWith('BearlogaDefend')) {
-    const subplatform = elements.platform.split('-')[1];
-    xml = processDependPlatform.BearlogaDefend(elements, subplatform);
-  } else {
-    console.log('Неизвестная платформа');
-  }
-  return builder.build(xml);
 }

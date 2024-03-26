@@ -26,15 +26,18 @@
     "build:win": "npm run build && npm run bundle:win",
     "build:linux": "npm run build && npm run bundle:linux",
     "bundle:win": "electron-builder --win --config",
-    "bundle:linux": "electron-builder --linux --config"
+    "bundle:linux": "electron-builder --linux --config",
+    "bundle:mac": "electron-builder --mac --config"
   },
   "dependencies": {
+    "@codemirror/lang-cpp": "^6.0.2",
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-xml": "^6.0.2",
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
     "@floating-ui/react": "^0.24.8",
     "@floating-ui/react-dom": "^2.0.1",
+    "@kruzhok-team/cyberiadaml-js": "^0.0.9",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@types/ws": "^8.5.10",
     "@uiw/react-codemirror": "^4.21.21",
@@ -105,5 +108,8 @@
   "resolutions": {
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4"
+  },
+  "optionalDependencies": {
+    "dmg-license": "^1.0.11"
   }
 }

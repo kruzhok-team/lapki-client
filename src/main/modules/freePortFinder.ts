@@ -1,5 +1,7 @@
 // нахождение незанятого порта для запуска модуля
 
+import freePortFinder from 'find-free-port';
+
 import { error } from 'console';
 
 // список небезопасных портов для хрома. Источник:https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
@@ -34,11 +36,7 @@ const DYNAMIC_PORTS: number = 49152;
 @param {string} host - хост на котором следует искать свободные порты, по-умолчанию указан адрес локального хоста
 @throws {Error} - ошибка из find-free-port
 */
-export async function findFreePort(
-  action: Function,
-  startPort: number = DYNAMIC_PORTS,
-  host: string = '127.0.0.1'
-) {
+export async function findFreePort(startPort: number = DYNAMIC_PORTS, host: string = '127.0.0.1') {
   if (startPort < USER_PORTS) {
     startPort = USER_PORTS;
   }
@@ -46,19 +44,12 @@ export async function findFreePort(
     throw error('no free and safe port is found');
   }
 
-  const freePortFinder = require('find-free-port');
-  await freePortFinder(startPort, host)
-    .then(async ([freep]) => {
-      if (freep <= LAST_UNSAFE_PORT && UNSAFE_CHROME_PORTS.includes(freep)) {
-        //await findFreePort(action, Math.floor(Math.random() * 65536));
-        await findFreePort(action, startPort + 1);
-        return;
-      }
-      action(freep);
-      return;
-    })
-    .catch((err) => {
-      console.error(err);
-      throw err;
-    });
+  const [freep] = (await freePortFinder(startPort, host)) as [number];
+
+  if (freep <= LAST_UNSAFE_PORT && UNSAFE_CHROME_PORTS.includes(freep)) {
+    //await findFreePort(action, Math.floor(Math.random() * 65536));
+    return findFreePort(startPort + 1);
+  }
+
+  return freep;
 }

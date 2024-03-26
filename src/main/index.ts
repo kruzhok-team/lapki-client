@@ -68,9 +68,7 @@ function createWindow(): void {
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
     ModuleManager.stopModule('lapki-flasher');
-    if (process.platform !== 'darwin') {
-      app.exit(0);
-    }
+    app.exit(0);
   });
 
   // Вместо создания новых окон мы передаём ссылку в систему.
@@ -144,12 +142,8 @@ app.whenReady().then(() => {
 });
 
 // Завершаем приложение, когда окна закрыты.
-// Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
   ModuleManager.stopModule('lapki-flasher');
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-  //
+  app.quit();
 });

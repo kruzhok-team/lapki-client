@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   useFloating,
@@ -42,18 +42,6 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
       }),
     ],
   });
-
-  useEffect(() => {
-    const handler = (data: any) => {
-      console.log(data);
-    };
-
-    context.events.on('openchange', handler);
-
-    return () => {
-      context.events.off('openchange', handler);
-    };
-  }, [context.events]);
 
   const click = useClick(context);
 

@@ -27,7 +27,7 @@ export interface FlasherProps {
 export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
-
+  const hasAvrdude = flasherSetting?.avrdude;
   const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -83,10 +83,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
   const handleFileChoose = () => {
     if (flasherFile) {
-      console.log('cancel file choose');
       setFlasherFile(undefined);
     } else {
-      console.log('file chooser');
       Flasher.setFile();
     }
   };
@@ -251,7 +249,23 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
     return false;
   };
-
+  const avrdudeCheck = () => {
+    if (flasherIsLocal && !hasAvrdude) {
+      return (
+        <div>
+          <div className="text-error">
+            {'Программа avrdude не найдена! Требуется её установить!'}
+          </div>
+          <div>
+            <button type="button" className="btn-primary">
+              Инструкция по установке avrdude
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return;
+  };
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -359,7 +373,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           ''
         )}
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
-          {flasherLog}
+          <div>{flasherLog}</div>
+          {avrdudeCheck()}
         </div>
       </div>
 

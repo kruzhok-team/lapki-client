@@ -2,6 +2,7 @@ import { optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import settings from 'electron-settings';
 
+import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { checkForUpdates } from './checkForUpdates';

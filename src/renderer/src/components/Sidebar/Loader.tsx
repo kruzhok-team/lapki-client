@@ -207,9 +207,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       Flasher.reconnect();
     }
   };
-
+  // условия отключения кнопки для загрузки прошивки
   const flashButtonDisabled = () => {
     if (flashing || connectionStatus != FLASHER_CONNECTED) {
+      return true;
+    }
+    if (flasherIsLocal && !hasAvrdude) {
       return true;
     }
     if (!currentDevice) {
@@ -249,6 +252,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
     return false;
   };
+  // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
   const avrdudeCheck = () => {
     if (flasherIsLocal && !hasAvrdude) {
       return (

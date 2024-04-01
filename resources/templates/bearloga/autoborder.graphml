@@ -60,32 +60,32 @@ exit/
 
 </data>
     </node>
-    <edge source="init" target="n3"></edge>
-    <edge source="n0" target="n3">
+    <edge id="initTrans" source="init" target="n3"></edge>
+    <edge id="edge1" source="n0" target="n3">
       <data key="dGeometry" x="-1493.4000000000024" y="835.9999999999997"></data>
       <data key="dColor">#c81afd</data>
       <data key="dData">АнализаторЦели.ЦельУничтожена/
 </data>
     </edge>
-    <edge source="n0" target="n3">
+    <edge id="edge2" source="n0" target="n3">
       <data key="dGeometry" x="-1348.9999999999998" y="923.4000000000001"></data>
       <data key="dColor">#438048</data>
       <data key="dData">АнализаторЦели.ЦельПотеряна/
 </data>
     </edge>
-    <edge source="n3" target="n0::n1">
+    <edge id="edge3" source="n3" target="n0::n1">
       <data key="dGeometry" x="-1098.2000000000003" y="665"></data>
       <data key="dColor">#df2db6</data>
       <data key="dData">Сенсор.ЦельПолучена/
 </data>
     </edge>
-    <edge source="n0::n1" target="n0::n2">
+    <edge id="edge4" source="n0::n1" target="n0::n2">
       <data key="dGeometry" x="58.899999999999956" y="197.5999999999999"></data>
       <data key="dColor">#f450c8</data>
       <data key="dData">ОружиеЦелевое.ЦельВошлаВЗонуАтаки/
 </data>
     </edge>
-    <edge source="n0::n2" target="n0::n1">
+    <edge edge="edge5" source="n0::n2" target="n0::n1">
       <data key="dGeometry" x="364.79999999999995" y="199.4999999999999"></data>
       <data key="dColor">#7517fe</data>
       <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/

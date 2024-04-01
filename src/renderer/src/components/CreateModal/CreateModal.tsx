@@ -343,10 +343,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         isOpen={isOpen}
       />
 
-      <label className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <span className="font-bold">Цвет:</span>
         <ColorInput value={color} onChange={setColor} />
-      </label>
+      </div>
     </Modal>
   );
 };

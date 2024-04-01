@@ -9,9 +9,9 @@ import {
   shift,
   FloatingArrow,
   arrow,
+  FloatingPortal,
 } from '@floating-ui/react';
 import { HexColorPicker } from 'react-colorful';
-import { createPortal } from 'react-dom';
 
 import { useClickOutside } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
@@ -47,17 +47,25 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
 
   const { getReferenceProps, getFloatingProps } = useInteractions([click]);
 
-  useClickOutside(refs.floating.current, () => setIsOpen(false), !isOpen);
+  useClickOutside(
+    refs.floating.current,
+    () => context.onOpenChange(false),
+    !isOpen,
+    refs.reference.current as HTMLElement
+  );
 
   return (
-    <div
-      className="h-7 w-7 cursor-pointer rounded"
-      style={{ backgroundColor: value }}
-      ref={refs.setReference}
-      {...getReferenceProps()}
-    >
-      {isOpen &&
-        createPortal(
+    <>
+      <button
+        type="button"
+        className="h-7 w-7 cursor-pointer rounded"
+        style={{ backgroundColor: value }}
+        ref={refs.setReference}
+        {...getReferenceProps()}
+      />
+
+      {isOpen && (
+        <FloatingPortal>
           <div
             className="z-[100] max-w-sm rounded border border-border-primary bg-bg-secondary p-1 shadow-xl"
             ref={refs.setFloating}
@@ -83,9 +91,9 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
                 />
               ))}
             </div>
-          </div>,
-          document.body
-        )}
-    </div>
+          </div>
+        </FloatingPortal>
+      )}
+    </>
   );
 };

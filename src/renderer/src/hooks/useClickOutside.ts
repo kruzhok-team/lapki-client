@@ -3,21 +3,23 @@ import { useEffect } from 'react';
 export const useClickOutside = (
   element: HTMLElement | null,
   action: () => void,
-  disabled = false
+  disabled = false,
+  additionalElement: HTMLElement | null = null
 ) => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (disabled || !element) return;
 
-      if (!element.contains(e.target as HTMLElement)) {
-        action();
-      }
+      if (element.contains(e.target as HTMLElement)) return;
+      if (additionalElement && additionalElement.contains(e.target as HTMLElement)) return;
+
+      action();
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
-  }, [element, action, disabled]);
+  }, [element, action, disabled, additionalElement]);
 };

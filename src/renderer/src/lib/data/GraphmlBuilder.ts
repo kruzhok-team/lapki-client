@@ -93,16 +93,16 @@ const invertOperatorAlias = {
   notEquals: '!=',
   greater: '>',
   less: '<',
-  '>=': 'greaterOrEqual',
-  '<=': 'lessOrEqual',
+  greaterOrEqual: '>=',
+  lessOrEqual: '<=',
 };
 
 function isVariable(operand: any): operand is Variable {
   return operand.component !== undefined;
 }
 
-function isConditionArray(value: any): value is Condition[] {
-  return (value as Condition[]).values !== undefined;
+function isConditionArray(value: unknown): value is Condition[] {
+  return Array.isArray(value);
 }
 
 function getOperand(operand: string | number | Variable | Condition[]): string | number {
@@ -116,13 +116,12 @@ function getOperand(operand: string | number | Variable | Condition[]): string |
 }
 
 function serializeCondition(condition: Condition): string {
-  if (isConditionArray(condition.value)) {
-    const lval = getOperand(condition.value[0].value);
-    const rval = getOperand(condition.value[1].value);
-    return `[${lval} ${invertOperatorAlias[condition.type]} ${rval}]`;
-  } else {
+  if (!isConditionArray(condition.value)) {
     throw new Error('Internal error: condition.value is not Condition[];');
   }
+  const lval = getOperand(condition.value[0].value);
+  const rval = getOperand(condition.value[1].value);
+  return `[${lval} ${invertOperatorAlias[condition.type]} ${rval}]`;
 }
 
 function serializeTransitions(
@@ -139,17 +138,17 @@ function serializeTransitions(
       color: transition.color,
       position: transition.position,
     };
-    const condition = transition.condition ? serializeCondition(transition.condition) : undefined;
     const actions = transition.do ? serializeActions(transition.do) : undefined;
     const trigger = serializeEvent(transition.trigger);
     cgmlTransition.actions = trigger;
-    if (condition !== undefined) {
-      cgmlTransition.actions += condition;
+    if (transition.condition) {
+      cgmlTransition.actions += serializeCondition(transition.condition);
     }
     cgmlTransition.actions += '/\n';
     if (actions !== undefined) {
       cgmlTransition.actions += actions;
     }
+    cgmlTransition.actions.trim();
     cgmlTransitions[id] = cgmlTransition;
   }
   return cgmlTransitions;

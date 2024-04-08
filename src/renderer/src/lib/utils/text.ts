@@ -1,3 +1,10 @@
+interface Font {
+  fontFamily?: string;
+  lineHeight?: number;
+  fontSize?: number;
+  fontWeight?: 'normal' | 'medium' | 'bold';
+}
+
 const textMap = new Map<string, Map<string, number>>();
 export const getTextWidth = (ctx: CanvasRenderingContext2D, text: string, font: string): number => {
   if (textMap.has(font)) {
@@ -24,6 +31,11 @@ export const getTextWidth = (ctx: CanvasRenderingContext2D, text: string, font: 
 
   cache.set(text, width);
   return width;
+};
+
+export const getTextHeight = (font: Pick<Font, 'fontSize' | 'lineHeight'>) => {
+  const { fontSize = 16, lineHeight = 1.2 } = font;
+  return fontSize * lineHeight;
 };
 
 // Вспомогательная функция для prepareText для разбивки слова на строки
@@ -74,7 +86,7 @@ export const prepareText = ({ text, maxWidth, ...font }: PrepareTextParams) => {
   } = font;
   const ctxFont = `${fontWeight} ${fontSize}px/${lineHeight} '${fontFamily}'`;
 
-  const textHeight = fontSize * lineHeight;
+  const textHeight = getTextHeight({ fontSize, lineHeight });
   const spaceWidth = getTextWidth(ctx, ' ', ctxFont);
 
   for (const line of initialTextArray) {
@@ -124,13 +136,6 @@ export const prepareText = ({ text, maxWidth, ...font }: PrepareTextParams) => {
   return { height: textArray.length * textHeight, textArray };
 };
 
-interface Font {
-  fontFamily?: string;
-  lineHeight?: number;
-  fontSize?: number;
-  fontWeight?: 'normal' | 'medium' | 'bold';
-}
-
 interface DrawTextOptions extends Font {
   x: number;
   y: number;
@@ -157,7 +162,7 @@ export const drawText = (
     textBaseline = 'top',
   } = options;
 
-  const textHeight = fontSize * lineHeight;
+  const textHeight = getTextHeight({ fontSize, lineHeight });
 
   const prevFont = ctx.font;
   const prevFillStyle = ctx.fillStyle;

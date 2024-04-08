@@ -1,4 +1,4 @@
-import { getColor } from '@renderer/theme';
+import theme, { getColor } from '@renderer/theme';
 import { Point, Sizes } from '@renderer/types/graphics';
 
 import { picto } from './Picto';
@@ -7,7 +7,7 @@ import { State } from './State';
 import { Container } from '../basic/Container';
 import { serializeEvents } from '../data/GraphmlBuilder';
 import { isPointInRectangle } from '../utils';
-import { drawText, prepareText } from '../utils/text';
+import { drawText, getTextHeight, getTextWidth, prepareText } from '../utils/text';
 
 export type EventSelection = {
   eventIdx: number;
@@ -20,7 +20,8 @@ export type EventSelection = {
  * обработку событий мыши.
  */
 export class Events {
-  private textArray = [] as string[];
+  // private textArray = [] as string[];
+  private textEvents = [] as string[];
 
   sizes!: Sizes;
 
@@ -37,31 +38,48 @@ export class Events {
       height: this.minHeight,
     };
 
-    this.recalculate();
+    this.update();
   }
 
   get data() {
     return this.parent.data.events;
   }
 
-  recalculate() {
+  update() {
     if (this.container.app.textMode) {
-      const { width } = this.parent.drawBounds;
-      const pX = 15 / this.container.app.manager.data.scale;
-      const pY = 10 / this.container.app.manager.data.scale;
+      // const { width } = this.parent.drawBounds;
+      // const pX = 15 / this.container.app.manager.data.scale;
+      // const pY = 10 / this.container.app.manager.data.scale;
 
-      const text = serializeEvents(this.parent.data.events);
+      // const text = serializeEvents(this.parent.data.events);
 
-      const { textArray, height } = prepareText({
-        text,
-        fontSize: 16,
-        fontFamily: 'monospace',
-        lineHeight: 1.4,
-        maxWidth: width - 2 * pX,
-      });
+      // const { textArray, height } = prepareText({
+      //   text,
+      //   fontSize: 16,
+      //   fontFamily: 'monospace',
+      //   lineHeight: 1.4,
+      //   maxWidth: width - 2 * pX,
+      // });
 
-      this.textArray = textArray;
-      this.sizes.height = height + pY * 2;
+      // this.textArray = textArray;
+      // this.sizes.height = height + pY * 2;
+
+      const textEvents: any[] = [];
+      const textHeight = getTextHeight({ fontSize: 16, lineHeight: 1.2 });
+      const py = 6;
+      const height = textHeight + py * 2;
+
+      for (let i = 0; i < this.parent.data.events.length; i++) {
+        const event = this.parent.data.events[i];
+
+        textEvents.push({
+          trigger: {
+            component: { x: 0, y: 0 },
+            method: { x: 0, y: 0 },
+            height,
+          },
+        });
+      }
 
       return;
     }
@@ -198,25 +216,98 @@ export class Events {
     ctx.closePath();
   }
 
-  private drawTextEvents(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.container.app.manager.data.scale;
-    const px = 15 / this.container.app.manager.data.scale;
-    const py = 10 / this.container.app.manager.data.scale;
-    const fontSize = 16 / this.container.app.manager.data.scale;
+  private drawTriggers(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    const scale = this.container.app.manager.data.scale;
+
+    const fontSize = 16 / scale;
+    const textHeight = getTextHeight({ fontSize });
+    const dotTextWidth = getTextWidth(ctx, '.', `normal ${fontSize}px/1.2 'Fira Sans'`);
+
+    const boxPaddingY = 6 / scale;
+    const gapX = 6 / scale;
+    const gapY = 10 / scale;
+    const textPaddingBottom = 2 / scale;
+    const boxHeight = boxPaddingY * 2 + textHeight;
+    const boxWidth = 100 / scale;
+
+    const baseFontOptions = {
+      color: getColor('text-primary'),
+      fontSize,
+      fontFamily: 'Fira Sans',
+      textAlign: 'center',
+    } as const;
+
+    ctx.fillStyle = theme.colors.diagram.state.titleBg;
 
     ctx.beginPath();
 
-    drawText(ctx, this.textArray, {
-      x: x + px,
-      y: y + titleHeight + py,
-      textAlign: 'left',
-      color: getColor('text-primary'),
-      fontSize,
-      fontFamily: 'monospace',
-      lineHeight: 1.4,
+    this.parent.data.events.forEach((_, i) => {
+      const boxY = y + i * boxHeight + gapY * i;
+
+      ctx.roundRect(x, boxY, boxWidth, boxHeight, 2 / scale);
+      ctx.roundRect(
+        x + boxWidth + boxPaddingY * 2 + dotTextWidth,
+        boxY,
+        boxWidth,
+        boxHeight,
+        2 / scale
+      );
+    });
+
+    ctx.fill();
+
+    this.parent.data.events.forEach((event, i) => {
+      const boxY = y + i * boxHeight + gapY * i;
+
+      drawText(ctx, event.trigger.component, {
+        x: x + boxWidth / 2,
+        y: boxY + boxPaddingY,
+        ...baseFontOptions,
+      });
+
+      drawText(ctx, '.', {
+        x: x + boxWidth + gapX,
+        y: boxY + boxHeight - textPaddingBottom,
+        ...baseFontOptions,
+        textAlign: 'left',
+        textBaseline: 'bottom',
+      });
+
+      drawText(ctx, event.trigger.method, {
+        x: x + boxWidth + gapX * 2 + dotTextWidth + boxWidth / 2,
+        y: boxY + boxPaddingY,
+        ...baseFontOptions,
+      });
+
+      drawText(ctx, '/', {
+        x: x + boxWidth * 2 + gapX * 3 + dotTextWidth,
+        y: boxY + boxHeight - textPaddingBottom,
+        ...baseFontOptions,
+        textAlign: 'left',
+        textBaseline: 'bottom',
+      });
     });
 
     ctx.closePath();
+  }
+
+  private drawTextEvents(ctx: CanvasRenderingContext2D) {
+    const scale = this.container.app.manager.data.scale;
+    const { x, y } = this.parent.drawBounds;
+    const titleHeight = this.parent.titleHeight / scale;
+    const px = 15 / scale;
+    const py = 10 / scale;
+
+    this.drawTriggers(ctx, x + px, y + titleHeight + py);
+
+    // drawText(ctx, this.textArray, {
+    //   x: x + px,
+    //   y: y + titleHeight + py,
+    //   textAlign: 'left',
+    //   color: getColor('text-primary'),
+    //   fontSize,
+    //   fontFamily: 'monospace',
+    //   lineHeight: 1.4,
+    // });
   }
 }

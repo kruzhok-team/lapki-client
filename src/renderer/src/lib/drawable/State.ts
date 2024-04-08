@@ -41,7 +41,7 @@ export class State extends Node {
   }
 
   updateEventBox() {
-    this.eventBox.recalculate();
+    this.eventBox.update();
 
     this.bounds.width = Math.max(
       this.bounds.width,

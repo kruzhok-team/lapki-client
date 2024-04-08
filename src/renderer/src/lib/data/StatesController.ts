@@ -1,14 +1,19 @@
 import throttle from 'lodash.throttle';
 
+import { State } from '@renderer/lib/drawable/Node/State';
 import { Event } from '@renderer/types/diagram';
+import { ChangeStateEventsParams, CreateStateParams } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
+import { UnlinkStateParams } from '@renderer/types/MachineController';
 import { MyMouseEvent } from '@renderer/types/mouse';
+
+import { History } from './History';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
-import { InitialStateMark } from '../drawable/InitialStateMark';
-import { State } from '../drawable/State';
+import { InitialState } from '../drawable/Node/InitialState';
+// import { InitialState } from '../drawable/InitialState';
 
 type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
 
@@ -38,11 +43,309 @@ interface StatesControllerEvents {
 
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
-  initialStateMark: InitialStateMark | null = null;
+  // initialStateMark: InitialState | null = null;
 
-  constructor(public container: Container) {
+  constructor(private container: Container, private history: History) {
     super();
   }
+
+  // TODO
+  get states() {
+    return this.container.machineController.states;
+  }
+  get transitions() {
+    return this.container.machineController.transitions;
+  }
+
+  createState = (args: CreateStateParams, canUndo = true) => {
+    const { parentId, position, linkByPoint = true } = args;
+
+    // Создание данных
+    const newStateId = this.container.app.manager.createState(args);
+    // Создание вьюшки
+    const state = new State(this.container, newStateId);
+
+    this.states.set(state.id, state);
+
+    let numberOfConnectedActions = 0;
+
+    // вкладываем состояние, если оно создано над другим
+    if (parentId) {
+      this.linkState(parentId, newStateId, canUndo);
+      numberOfConnectedActions += 1;
+    } else {
+      this.container.children.add('state', state.id);
+      if (linkByPoint) {
+        this.linkStateByPoint(state, position);
+      }
+    }
+
+    // Если не было начального состояния, им станет новое
+    // TODO
+    // if (!this.container.app.manager.data.elements.initialState) {
+    //   this.setInitialState(state.id, canUndo);
+    //   numberOfConnectedActions += 1;
+    // }
+
+    this.createInitialState(state.position, canUndo);
+    // numberOfConnectedActions += 1;
+
+    this.container.statesController.watchState(state);
+
+    this.container.isDirty = true;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'stateCreate',
+        args: { ...args, newStateId },
+        numberOfConnectedActions,
+      });
+    }
+  };
+
+  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
+    const { id } = args;
+
+    const state = this.states.get(id);
+    if (!state) return;
+
+    if (canUndo) {
+      const prevEvent = state.data.events.find(
+        (value) =>
+          args.triggerComponent === value.trigger.component &&
+          args.triggerMethod === value.trigger.method &&
+          undefined === value.trigger.args // FIXME: сравнение по args может не работать
+      );
+
+      const prevActions = structuredClone(prevEvent?.do ?? []);
+
+      this.history.do({
+        type: 'changeStateEvents',
+        args: { args, prevActions },
+      });
+    }
+
+    this.container.app.manager.changeStateEvents(args);
+
+    state.updateEventBox();
+
+    this.container.isDirty = true;
+  }
+
+  changeStateName = (id: string, name: string, canUndo = true) => {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeStateName',
+        args: { id, name, prevName: state.data.name },
+      });
+    }
+
+    this.container.app.manager.changeStateName(id, name);
+
+    this.container.isDirty = true;
+  };
+
+  changeStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeStatePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.container.app.manager.changeStatePosition(id, endPosition);
+
+    this.container.isDirty = true;
+  }
+
+  linkState(parentId: string, childId: string, canUndo = true, addOnceOff = false) {
+    const parent = this.states.get(parentId);
+    const child = this.states.get(childId);
+
+    if (!parent || !child) return;
+
+    let numberOfConnectedActions = 0;
+    if (child.data.parentId) {
+      this.unlinkState({ id: childId }, canUndo);
+      numberOfConnectedActions += 1;
+    }
+
+    // Вычисляем новую координату внутри контейнера
+    const parentPos = parent.compoundPosition;
+    const childPos = child.compoundPosition;
+    const newPosition = {
+      x: Math.max(0, childPos.x - parentPos.x),
+      y: Math.max(0, childPos.y - parentPos.y - parent.dimensions.height),
+    };
+
+    this.container.app.manager.linkState(parentId, childId);
+    this.changeStatePosition(childId, child.position, newPosition, false);
+    // this.container.app.manager.changeStateBounds(childId, newBounds);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'linkState',
+        args: { parentId, childId },
+        numberOfConnectedActions,
+      });
+      if (addOnceOff) {
+        child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+      }
+    }
+
+    this.container.children.remove('state', child.id);
+    child.parent = parent;
+    parent.children.add('state', child.id);
+    // TODO Сделать удобный проход по переходам состояния
+    this.transitions.forEach((transition) => {
+      if (transition.source.id === child.id || transition.target.id === child.id) {
+        this.container.machineController.linkTransition(transition.id);
+      }
+    });
+
+    this.container.isDirty = true;
+  }
+
+  linkStateByPoint(state: State, position: Point) {
+    // назначаем родительское состояние по месту его создания
+    let possibleParent: State | undefined = undefined;
+    for (const item of this.states.values()) {
+      if (state.id == item.id) continue;
+      if (item.isUnderMouse(position, true)) {
+        if (typeof possibleParent === 'undefined') {
+          possibleParent = item;
+        } else {
+          // учитываем вложенность, нужно поместить состояние
+          // в максимально дочернее
+          let searchPending = true;
+          while (searchPending) {
+            searchPending = false;
+            for (const child of possibleParent.children) {
+              if (!(child instanceof State)) continue;
+              if (state.id == child.id) continue;
+              if (child.isUnderMouse(position, true)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (possibleParent !== state && possibleParent) {
+      this.linkState(possibleParent.id, state.id, true, true);
+    }
+  }
+
+  unlinkState(params: UnlinkStateParams, canUndo = true) {
+    const { id } = params;
+
+    const state = this.states.get(id);
+    if (!state || !state.parent) return;
+
+    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
+    const newPosition = { ...state.compoundPosition };
+    this.changeStatePosition(id, state.position, newPosition, canUndo);
+    // this.container.app.manager.changeStateBounds(id, newBounds);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'unlinkState',
+        args: { parentId: state.parent.id, params },
+        numberOfConnectedActions: 1, // Изменение позиции
+      });
+      state.addOnceOff('dragend');
+    }
+
+    this.container.app.manager.unlinkState(id);
+
+    state.parent.children.remove('state', id);
+    const parentTransitionIds = state.parent.children.getTransitionIds();
+    state.parent.children.clearTransitions();
+    state.parent = undefined;
+    parentTransitionIds.forEach((id) => {
+      this.container.machineController.linkTransition(id);
+    });
+    this.container.children.add('state', id);
+
+    this.container.isDirty = true;
+  }
+
+  deleteState = (id: string, canUndo = true) => {
+    const state = this.states.get(id);
+    if (!state) return;
+
+    const parentId = state.data.parentId;
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
+    this.transitions.forEach((data, transitionId) => {
+      if (data.source.id === id || data.target.id === id) {
+        this.container.machineController.deleteTransition(transitionId, canUndo);
+        numberOfConnectedActions += 1;
+      }
+    });
+
+    // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
+    this.states.forEach((childState) => {
+      if (childState.data.parentId === id) {
+        // Если есть родительское, перепривязываем к нему
+        if (state.data.parentId) {
+          this.linkState(state.data.parentId, childState.id, canUndo);
+        } else {
+          this.unlinkState({ id: childState.id }, canUndo);
+        }
+        numberOfConnectedActions += 1;
+      }
+    });
+
+    // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
+    if (state.data.parentId) {
+      state.parent?.children.remove('state', id);
+    } else {
+      this.container.children.remove('state', id);
+    }
+
+    // Если удаляемое состояние было начальным, стираем текущее значение
+    // TODO
+    // if (this.container.app.manager.data.elements.initialState?.target === id) {
+    //   this.removeInitialState(id, canUndo);
+    //   numberOfConnectedActions += 1;
+    // }
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteState',
+        args: { id, stateData: { ...structuredClone(state.data), parentId: parentId } },
+        numberOfConnectedActions,
+      });
+    }
+
+    this.container.app.manager.deleteState(id);
+
+    this.container.statesController.unwatchState(state);
+    this.states.delete(id);
+
+    this.container.isDirty = true;
+  };
+
+  private createInitialState = (position: Point, canUndo = true) => {
+    const newStateId = this.container.app.manager.createInitialState({ position });
+
+    const state = new InitialState(this.container, newStateId);
+
+    this.states.set(state.id, state);
+
+    this.container.children.add('state', state.id);
+  };
 
   handleStartNewTransition = (state: State) => {
     this.emit('startNewTransition', state);
@@ -133,7 +436,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleLongPress = (state: State) => {
     if (typeof state.parent === 'undefined') return;
 
-    this.container.machineController.unlinkState({ id: state.id });
+    this.unlinkState({ id: state.id });
   };
 
   handleDrag: DragHandler = throttle<DragHandler>((state, e) => {
@@ -156,24 +459,20 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     if (this.dragInfo) {
-      this.container.machineController.linkState(this.dragInfo.parentId, this.dragInfo.childId);
+      this.linkState(this.dragInfo.parentId, this.dragInfo.childId);
       this.dragInfo = null;
       return;
     }
 
-    this.container.machineController.changeStatePosition(
-      state.id,
-      e.dragStartPosition,
-      e.dragEndPosition
-    );
+    this.changeStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
   };
 
-  handleInitialStateDragEnd = (e: { dragStartPosition: Point; dragEndPosition: Point }) => {
-    this.container.machineController.changeInitialStatePosition(
-      e.dragStartPosition,
-      e.dragEndPosition
-    );
-  };
+  // handleInitialStateDragEnd = (e: { dragStartPosition: Point; dragEndPosition: Point }) => {
+  //   this.container.machineController.changeInitialStatePosition(
+  //     e.dragStartPosition,
+  //     e.dragEndPosition
+  //   );
+  // };
 
   watchState(state: State) {
     state.on('click', this.handleStateClick.bind(this, state));
@@ -201,24 +500,22 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.edgeHandlers.unbindEvents();
   }
 
-  private watchInitialState() {
-    this.initialStateMark?.on('dragend', this.handleInitialStateDragEnd.bind(this));
-  }
+  // private watchInitialState() {
+  //   this.initialStateMark?.on('dragend', this.handleInitialStateDragEnd.bind(this));
+  // }
 
-  private unwatchInitialState() {
-    this.initialStateMark?.off('dragend', this.handleInitialStateDragEnd.bind(this));
-  }
+  // private unwatchInitialState() {
+  //   this.initialStateMark?.off('dragend', this.handleInitialStateDragEnd.bind(this));
+  // }
 
-  clearInitialStateMark() {
-    this.unwatchInitialState();
-    this.initialStateMark = null;
-  }
+  // clearInitialStateMark() {
+  // this.unwatchInitialState();
+  // this.initialStateMark = null;
+  // }
 
-  initInitialStateMark() {
-    this.unwatchInitialState();
-
-    this.initialStateMark = new InitialStateMark(this.container);
-
-    this.watchInitialState();
-  }
+  // initInitialStateMark() {
+  // this.unwatchInitialState();
+  // this.initialStateMark = new InitialState(this.container);
+  // this.watchInitialState();
+  // }
 }

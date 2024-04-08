@@ -15,7 +15,7 @@ import {
   Elements,
   EventData,
   InitialState,
-  State,
+  INormalState,
   Transition,
   Meta,
 } from '@renderer/types/diagram';
@@ -231,14 +231,14 @@ function getInitialState(rawInitialState: CGMLInitialState | null): InitialState
   return null;
 }
 
-function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: State } {
-  const states: { [id: string]: State } = {};
+function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: INormalState } {
+  const states: { [id: string]: INormalState } = {};
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
     states[rawStateId] = {
       name: rawState.name,
       bounds: rawState.bounds,
-      parent: rawState.parent,
+      parentId: rawState.parent,
       events: parseStateEvents(rawState.actions),
     };
   }
@@ -364,11 +364,11 @@ export function getProtoComponent(
 }
 
 function labelStateParameters(
-  states: { [id: string]: State },
+  states: { [id: string]: INormalState },
   platformComponents: { [name: string]: ComponentProto },
   components: { [name: string]: Component }
-): { [id: string]: State } {
-  const labeledStates: { [id: string]: State } = {};
+): { [id: string]: INormalState } {
+  const labeledStates: { [id: string]: INormalState } = {};
   for (const stateIdx in states) {
     const state = states[stateIdx];
     const labeledState = { ...state };

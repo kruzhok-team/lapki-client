@@ -1,10 +1,12 @@
+import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
+import { State } from '@renderer/lib/drawable/Node/State';
 import { Note } from '@renderer/lib/drawable/Note';
 import {
   Action,
   Condition,
   Event,
   Variable,
-  State as StateType,
+  INormalState as StateType,
   Transition as TransitionType,
   Note as NoteType,
   EventData,
@@ -12,9 +14,9 @@ import {
 import {
   AddComponentParams,
   ChangeStateEventsParams,
-  ChangeTransitionParameters,
-  CreateNoteParameters,
-  CreateStateParameters,
+  ChangeTransitionParams,
+  CreateNoteParams,
+  CreateStateParams,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
 import {
@@ -29,10 +31,9 @@ import { Initializer } from './Initializer';
 
 import { Container } from '../../basic/Container';
 import { EventSelection } from '../../drawable/Events';
-import { State } from '../../drawable/State';
 import { Transition } from '../../drawable/Transition';
+import { History } from '../History';
 import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
-import { UndoRedo } from '../UndoRedo';
 
 /**
  * Контроллер машины состояний.
@@ -53,15 +54,13 @@ import { UndoRedo } from '../UndoRedo';
 export class MachineController {
   initializer = new Initializer(this);
 
-  states: Map<string, State> = new Map();
+  states: Map<string, BaseState> = new Map();
   transitions: Map<string, Transition> = new Map();
   notes: Map<string, Note> = new Map();
 
   platform!: PlatformManager;
 
-  undoRedo = new UndoRedo(this);
-
-  constructor(public container: Container) {}
+  constructor(private container: Container, private history: History) {}
 
   loadData() {
     this.initializer.init();
@@ -69,412 +68,133 @@ export class MachineController {
     this.container.isDirty = true;
   }
 
-  createState = (args: CreateStateParameters, canUndo = true) => {
-    const { parentId, position, linkByPoint = true } = args;
-
-    // Создание данных
-    const newStateId = this.container.app.manager.createState(args);
-    // Создание модельки
-    const state = new State(this.container, newStateId);
-
-    this.states.set(state.id, state);
-
-    let numberOfConnectedActions = 0;
-
-    // вкладываем состояние, если оно создано над другим
-    if (parentId) {
-      this.linkState(parentId, newStateId, canUndo);
-      numberOfConnectedActions += 1;
-    } else {
-      this.container.children.add('state', state.id);
-      if (linkByPoint) {
-        this.linkStateByPoint(state, position);
-      }
-    }
-
-    // Если не было начального состояния, им станет новое
-    if (!this.container.app.manager.data.elements.initialState) {
-      this.setInitialState(state.id, canUndo);
-      numberOfConnectedActions += 1;
-    }
-
-    this.container.statesController.watchState(state);
-
-    this.container.isDirty = true;
-
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'stateCreate',
-        args: { ...args, newStateId },
-        numberOfConnectedActions,
-      });
-    }
-  };
-
-  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id } = args;
-
-    const state = this.states.get(id);
-    if (!state) return;
-
-    if (canUndo) {
-      const prevEvent = state.data.events.find(
-        (value) =>
-          args.triggerComponent === value.trigger.component &&
-          args.triggerMethod === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      const prevActions = structuredClone(prevEvent?.do ?? []);
-
-      this.undoRedo.do({
-        type: 'changeStateEvents',
-        args: { args, prevActions },
-      });
-    }
-
-    this.container.app.manager.changeStateEvents(args);
-
-    state.updateEventBox();
-
-    this.container.isDirty = true;
-  }
-
-  changeStateName = (id: string, name: string, canUndo = true) => {
-    const state = this.states.get(id);
-    if (!state) return;
-
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'changeStateName',
-        args: { id, name, prevName: state.data.name },
-      });
-    }
-
-    this.container.app.manager.changeStateName(id, name);
-
-    this.container.isDirty = true;
-  };
-
-  changeStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
-    const state = this.states.get(id);
-    if (!state) return;
-
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'changeStatePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.container.app.manager.changeStateBounds(id, {
-      ...endPosition,
-      width: state.data.bounds.width,
-      height: state.data.bounds.height,
-    });
-
-    this.container.isDirty = true;
-  }
-
-  linkState(parentId: string, childId: string, canUndo = true, addOnceOff = false) {
-    const parent = this.states.get(parentId);
-    const child = this.states.get(childId);
-
-    if (!parent || !child) return;
-
-    let numberOfConnectedActions = 0;
-    if (child.data.parent) {
-      this.unlinkState({ id: childId }, canUndo);
-      numberOfConnectedActions += 1;
-    }
-
-    // Вычисляем новую координату внутри контейнера
-    const parentPos = parent.compoundPosition;
-    const childPos = child.compoundPosition;
-    const newBounds = {
-      ...child.bounds,
-      x: Math.max(0, childPos.x - parentPos.x),
-      y: Math.max(0, childPos.y - parentPos.y - parent.bounds.height),
-    };
-
-    this.container.app.manager.linkState(parentId, childId);
-    this.changeStatePosition(childId, child.bounds, newBounds, false);
-    // this.container.app.manager.changeStateBounds(childId, newBounds);
-
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'linkState',
-        args: { parentId, childId },
-        numberOfConnectedActions,
-      });
-      if (addOnceOff) {
-        child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
-      }
-    }
-
-    this.container.children.remove('state', child.id);
-    child.parent = parent;
-    parent.children.add('state', child.id);
-    // TODO Сделать удобный проход по переходам состояния
-    this.transitions.forEach((transition) => {
-      if (transition.source.id === child.id || transition.target.id === child.id) {
-        this.linkTransition(transition.id);
-      }
-    });
-
-    this.container.isDirty = true;
-  }
-
-  linkStateByPoint(state: State, position: Point) {
-    // назначаем родительское состояние по месту его создания
-    let possibleParent: State | undefined = undefined;
-    for (const item of this.states.values()) {
-      if (state.id == item.id) continue;
-      if (item.isUnderMouse(position, true)) {
-        if (typeof possibleParent === 'undefined') {
-          possibleParent = item;
-        } else {
-          // учитываем вложенность, нужно поместить состояние
-          // в максимально дочернее
-          let searchPending = true;
-          while (searchPending) {
-            searchPending = false;
-            for (const child of possibleParent.children) {
-              if (!(child instanceof State)) continue;
-              if (state.id == child.id) continue;
-              if (child.isUnderMouse(position, true)) {
-                possibleParent = child as State;
-                searchPending = true;
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (possibleParent !== state && possibleParent) {
-      this.linkState(possibleParent.id, state.id, true, true);
-    }
-  }
-
-  unlinkState(params: UnlinkStateParams, canUndo = true) {
-    const { id } = params;
-
-    const state = this.states.get(id);
-    if (!state || !state.parent) return;
-
-    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
-    const newBounds = { ...state.bounds, ...state.compoundPosition };
-    this.changeStatePosition(id, state.bounds, newBounds, canUndo);
-    // this.container.app.manager.changeStateBounds(id, newBounds);
-
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'unlinkState',
-        args: { parentId: state.parent.id, params },
-        numberOfConnectedActions: 1, // Изменение позиции
-      });
-      state.addOnceOff('dragend');
-    }
-
-    this.container.app.manager.unlinkState(id);
-
-    state.parent.children.remove('state', id);
-    const parentTransitionIds = state.parent.children.getTransitionIds();
-    state.parent.children.clearTransitions();
-    state.parent = undefined;
-    parentTransitionIds.forEach((id) => {
-      this.linkTransition(id);
-    });
-    this.container.children.add('state', id);
-
-    this.container.isDirty = true;
-  }
-
-  deleteState = (id: string, canUndo = true) => {
-    const state = this.states.get(id);
-    if (!state) return;
-
-    const parentId = state.data.parent;
-    let numberOfConnectedActions = 0;
-
-    // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
-    this.transitions.forEach((data, transitionId) => {
-      if (data.source.id === id || data.target.id === id) {
-        this.deleteTransition(transitionId, canUndo);
-        numberOfConnectedActions += 1;
-      }
-    });
-
-    // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
-    this.states.forEach((childState) => {
-      if (childState.data.parent === id) {
-        // Если есть родительское, перепривязываем к нему
-        if (state.data.parent) {
-          this.linkState(state.data.parent, childState.id, canUndo);
-        } else {
-          this.unlinkState({ id: childState.id }, canUndo);
-        }
-        numberOfConnectedActions += 1;
-      }
-    });
-
-    // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
-    if (state.data.parent) {
-      state.parent?.children.remove('state', id);
-    } else {
-      this.container.children.remove('state', id);
-    }
-
-    // Если удаляемое состояние было начальным, стираем текущее значение
-    if (this.container.app.manager.data.elements.initialState?.target === id) {
-      this.removeInitialState(id, canUndo);
-      numberOfConnectedActions += 1;
-    }
-
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'deleteState',
-        args: { id, stateData: { ...structuredClone(state.data), parent: parentId } },
-        numberOfConnectedActions,
-      });
-    }
-
-    this.container.app.manager.deleteState(id);
-
-    this.container.statesController.unwatchState(state);
-    this.states.delete(id);
-
-    this.container.isDirty = true;
-  };
-
+  // TODO
   /**
-   * Обёртка для удобного создания {@link InitialStateMark|маркера начального состояния}
+   * Обёртка для удобного создания {@link InitialState|маркера начального состояния}
    * или перестановки его на другое {@link State|состояние}
    */
-  setInitialState = (stateId: string, canUndo = true) => {
-    const initialState = this.container.app.manager.data.elements.initialState;
+  // setInitialState = (stateId: string, canUndo = true) => {
+  //   const initialState = this.container.app.manager.data.elements.initialState;
 
-    if (!initialState) {
-      return this.createInitialState(stateId, undefined, canUndo);
-    }
+  //   if (!initialState) {
+  //     return this.createInitialState(stateId, undefined, canUndo);
+  //   }
 
-    if (initialState.target === stateId) return;
+  //   if (initialState.target === stateId) return;
 
-    return this.changeInitialState(initialState.target, stateId, canUndo);
-  };
+  //   return this.changeInitialState(initialState.target, stateId, canUndo);
+  // };
 
-  /**
-   * Вызывается при удлении {@link State|состояния} чтобы
-   * {@link InitialStateMark|маркер начального состояния} перепрыгнул на другое состояние
-   * или удалился если состояний нет
-   */
-  removeInitialState = (stateId: string, canUndo = true) => {
-    for (const id of this.states.keys()) {
-      if (id === stateId) continue;
+  // /**
+  //  * Вызывается при удлении {@link State|состояния} чтобы
+  //  * {@link InitialState|маркер начального состояния} перепрыгнул на другое состояние
+  //  * или удалился если состояний нет
+  //  */
+  // removeInitialState = (stateId: string, canUndo = true) => {
+  //   for (const id of this.states.keys()) {
+  //     if (id === stateId) continue;
 
-      return this.changeInitialState(stateId, id, canUndo);
-    }
+  //     return this.changeInitialState(stateId, id, canUndo);
+  //   }
 
-    this.deleteInitialState(canUndo);
-  };
+  //   this.deleteInitialState(canUndo);
+  // };
 
-  createInitialState = (targetId: string, initialPosition?: Point, canUndo = true) => {
-    const target = this.states.get(targetId);
-    if (!target) return;
+  // createInitialState = (targetId: string, initialPosition?: Point, canUndo = true) => {
+  //   const target = this.states.get(targetId);
+  //   if (!target) return;
 
-    const data = {
-      target: targetId,
-      position: initialPosition ?? {
-        x: target.compoundPosition.x - 100,
-        y: target.compoundPosition.y - 100,
-      },
-    };
+  //   const data = {
+  //     target: targetId,
+  //     position: initialPosition ?? {
+  //       x: target.compoundPosition.x - 100,
+  //       y: target.compoundPosition.y - 100,
+  //     },
+  //   };
 
-    this.container.app.manager.changeInitialState(data);
-    this.container.statesController.initInitialStateMark();
+  //   this.container.app.manager.changeInitialState(data);
+  //   this.container.statesController.initInitialStateMark();
 
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'createInitialState',
-        args: data,
-      });
-    }
+  //   if (canUndo) {
+  //     this.undoRedo.do({
+  //       type: 'createInitialState',
+  //       args: data,
+  //     });
+  //   }
 
-    this.container.isDirty = true;
-  };
+  //   this.container.isDirty = true;
+  // };
 
-  /**
-   * Перемещение {@link InitialStateMark|маркера начального состояния}
-   * с одного {@link State|состояния} на другое
-   */
-  changeInitialState = (prevTargetId: string, newTargetId: string, canUndo = true) => {
-    const target = this.states.get(newTargetId);
-    if (!target) return;
+  // /**
+  //  * Перемещение {@link InitialState|маркера начального состояния}
+  //  * с одного {@link State|состояния} на другое
+  //  */
+  // changeInitialState = (prevTargetId: string, newTargetId: string, canUndo = true) => {
+  //   const target = this.states.get(newTargetId);
+  //   if (!target) return;
 
-    const position = {
-      x: target.compoundPosition.x - 100,
-      y: target.compoundPosition.y - 100,
-    };
-    this.container.app.manager.changeInitialState({
-      target: newTargetId,
-      position,
-    });
-    this.container.statesController.initInitialStateMark();
+  //   const position = {
+  //     x: target.compoundPosition.x - 100,
+  //     y: target.compoundPosition.y - 100,
+  //   };
+  //   this.container.app.manager.changeInitialState({
+  //     target: newTargetId,
+  //     position,
+  //   });
+  //   this.container.statesController.initInitialStateMark();
 
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'changeInitialState',
-        args: { prevTargetId, newTargetId },
-      });
-    }
+  //   if (canUndo) {
+  //     this.undoRedo.do({
+  //       type: 'changeInitialState',
+  //       args: { prevTargetId, newTargetId },
+  //     });
+  //   }
 
-    this.container.isDirty = true;
-  };
+  //   this.container.isDirty = true;
+  // };
 
-  /**
-   * Изменение позиции {@link InitialStateMark|маркера начального состояния}
-   */
-  changeInitialStatePosition = (startPosition: Point, endPosition: Point, canUndo = true) => {
-    const initialState = this.container.app.manager.data.elements.initialState;
-    if (!initialState) return;
+  // /**
+  //  * Изменение позиции {@link InitialState|маркера начального состояния}
+  //  */
+  // changeInitialStatePosition = (startPosition: Point, endPosition: Point, canUndo = true) => {
+  //   const initialState = this.container.app.manager.data.elements.initialState;
+  //   if (!initialState) return;
 
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'changeInitialStatePosition',
-        args: { startPosition, endPosition },
-      });
-    }
+  //   if (canUndo) {
+  //     this.undoRedo.do({
+  //       type: 'changeInitialStatePosition',
+  //       args: { startPosition, endPosition },
+  //     });
+  //   }
 
-    this.container.app.manager.changeInitialStatePosition(endPosition);
+  //   this.container.app.manager.changeInitialStatePosition(endPosition);
 
-    this.container.isDirty = true;
-  };
+  //   this.container.isDirty = true;
+  // };
 
-  getInitialStatePosition = () => {
-    const initialState = this.container.app.manager.data.elements.initialState;
-    if (!initialState) return null;
-    return initialState.position;
-  };
+  // getInitialStatePosition = () => {
+  //   const initialState = this.container.app.manager.data.elements.initialState;
+  //   if (!initialState) return null;
+  //   return initialState.position;
+  // };
 
-  deleteInitialState = (canUndo = true) => {
-    const initialStateData = this.container.app.manager.data.elements.initialState;
+  // deleteInitialState = (canUndo = true) => {
+  //   const initialStateData = this.container.app.manager.data.elements.initialState;
 
-    if (!initialStateData) return;
+  //   if (!initialStateData) return;
 
-    if (canUndo) {
-      this.undoRedo.do({
-        type: 'deleteInitialState',
-        args: initialStateData,
-      });
-    }
+  //   if (canUndo) {
+  //     this.undoRedo.do({
+  //       type: 'deleteInitialState',
+  //       args: initialStateData,
+  //     });
+  //   }
 
-    this.container.statesController.clearInitialStateMark();
-    this.container.app.manager.deleteInitialState();
+  //   this.container.statesController.clearInitialStateMark();
+  //   this.container.app.manager.deleteInitialState();
 
-    this.container.isDirty = true;
-  };
+  //   this.container.isDirty = true;
+  // };
 
   createTransition(params: CreateTransitionParameters, canUndo = true) {
     const { source, target, color, component, method, doAction, condition, id: prevId } = params;
@@ -485,8 +205,8 @@ export class MachineController {
     if (!sourceState || !targetState) return;
 
     const position = params.position ?? {
-      x: (sourceState.bounds.x + targetState.bounds.x) / 2,
-      y: (sourceState.bounds.y + targetState.bounds.y) / 2,
+      x: (sourceState.position.x + targetState.position.x) / 2,
+      y: (sourceState.position.y + targetState.position.y) / 2,
     };
 
     // Создание данных
@@ -512,7 +232,7 @@ export class MachineController {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'createTransition',
         args: { id, params },
       });
@@ -545,12 +265,12 @@ export class MachineController {
     }
   }
 
-  changeTransition(args: ChangeTransitionParameters, canUndo = true) {
+  changeTransition(args: ChangeTransitionParams, canUndo = true) {
     const transition = this.transitions.get(args.id);
     if (!transition) return;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'changeTransition',
         args: { transition, args, prevData: structuredClone(transition.data) },
       });
@@ -566,7 +286,7 @@ export class MachineController {
     if (!transition) return;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'changeTransitionPosition',
         args: { id, startPosition, endPosition },
       });
@@ -582,7 +302,7 @@ export class MachineController {
     if (!transition) return;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'deleteTransition',
         args: { transition, prevData: structuredClone(transition.data) },
       });
@@ -633,7 +353,7 @@ export class MachineController {
       this.container.app.manager.changeEventAction(stateId, event, newValue);
 
       if (canUndo) {
-        this.undoRedo.do({
+        this.history.do({
           type: 'changeEventAction',
           args: { stateId, event, newValue, prevValue },
         });
@@ -644,7 +364,7 @@ export class MachineController {
       this.container.app.manager.changeEvent(stateId, eventIdx, newValue);
 
       if (canUndo) {
-        this.undoRedo.do({
+        this.history.do({
           type: 'changeEvent',
           args: { stateId, event, newValue, prevValue },
         });
@@ -675,7 +395,7 @@ export class MachineController {
       this.container.app.manager.deleteEventAction(stateId, event);
 
       if (canUndo) {
-        this.undoRedo.do({
+        this.history.do({
           type: 'deleteEventAction',
           args: { stateId, event, prevValue },
         });
@@ -686,7 +406,7 @@ export class MachineController {
       this.container.app.manager.deleteEvent(stateId, eventIdx);
 
       if (canUndo) {
-        this.undoRedo.do({
+        this.history.do({
           type: 'deleteEvent',
           args: { stateId, eventIdx, prevValue },
         });
@@ -710,7 +430,7 @@ export class MachineController {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'addComponent',
         args: { args },
       });
@@ -740,7 +460,7 @@ export class MachineController {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'editComponent',
         args: { args, prevComponent },
       });
@@ -763,7 +483,7 @@ export class MachineController {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'removeComponent',
         args: { args, prevComponent },
       });
@@ -845,7 +565,7 @@ export class MachineController {
         return;
       }
 
-      this.deleteState(state.id);
+      this.container.statesController.deleteState(state.id);
     });
 
     this.transitions.forEach((transition) => {
@@ -896,11 +616,11 @@ export class MachineController {
     const copyData = JSON.parse(data) as StateType | TransitionType | NoteType;
 
     if ('name' in copyData) {
-      return this.createState({
+      return this.container.statesController.createState({
         name: copyData.name,
-        position: copyData.bounds,
+        position: copyData.position,
         events: copyData.events,
-        parentId: copyData.parent,
+        parentId: copyData.parentId,
       });
     }
 
@@ -959,9 +679,11 @@ export class MachineController {
    */
   removeSelection() {
     this.states.forEach((state) => {
-      state.setIsSelected(false);
-      this.container.app.manager.changeStateSelection(state.id, false);
-      state.eventBox.selection = undefined;
+      if (state instanceof State) {
+        state.setIsSelected(false);
+        this.container.app.manager.changeStateSelection(state.id, false);
+        state.eventBox.selection = undefined;
+      }
     });
 
     this.transitions.forEach((transition) => {
@@ -993,7 +715,7 @@ export class MachineController {
     return vacant;
   }
 
-  createNote(params: CreateNoteParameters, canUndo = true) {
+  createNote(params: CreateNoteParams, canUndo = true) {
     const newNoteId = this.container.app.manager.createNote(params);
     const note = new Note(this.container, newNoteId);
 
@@ -1004,7 +726,7 @@ export class MachineController {
     this.container.isDirty = true;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'createNote',
         args: { id: newNoteId, params },
       });
@@ -1018,7 +740,7 @@ export class MachineController {
     if (!note) return;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'changeNoteText',
         args: { id, text, prevText: note.data.text },
       });
@@ -1035,7 +757,7 @@ export class MachineController {
     if (!note) return;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'changeNotePosition',
         args: { id, startPosition, endPosition },
       });
@@ -1051,7 +773,7 @@ export class MachineController {
     if (!note) return;
 
     if (canUndo) {
-      this.undoRedo.do({
+      this.history.do({
         type: 'deleteNote',
         args: { id, prevData: structuredClone(note.data) },
       });

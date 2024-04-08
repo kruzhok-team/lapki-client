@@ -1,26 +1,26 @@
+import { Container } from '@renderer/lib/basic/Container';
+import { Events } from '@renderer/lib/drawable/Events';
+import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
+import { EdgeHandlers } from '@renderer/lib/drawable/Node/EdgeHandlers';
+import { icons } from '@renderer/lib/drawable/Picto';
+import { Shape } from '@renderer/lib/drawable/Shape';
+import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
-
-import { EdgeHandlers } from './EdgeHandlers';
-import { Events } from './Events';
-import { Node } from './Node';
-import { icons } from './Picto';
-
-import { Container } from '../basic/Container';
-import { drawText } from '../utils/text';
+import { INormalState } from '@renderer/types/diagram';
 
 const style = theme.colors.diagram.state;
 
 /**
  * Нода машины состояний.
- * Класс выполняет отрисовку, обработку событий (за счёт {@link Node}),
+ * Класс выполняет отрисовку, обработку событий (за счёт {@link Shape}),
  * управление собственным выделением и отображение «хваталок».
  */
-export class State extends Node {
+export class State extends BaseState {
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
 
-  constructor(container: Container, id: string, parent?: Node) {
+  constructor(container: Container, id: string, parent?: Shape) {
     super(container, id, parent);
 
     this.eventBox = new Events(this.container, this);
@@ -29,27 +29,33 @@ export class State extends Node {
   }
 
   get data() {
-    return this.container.app.manager.data.elements.states[this.id];
+    return this.container.app.manager.data.elements.states[this.id] as INormalState;
   }
 
-  get bounds() {
-    return this.data.bounds;
+  get position() {
+    return this.data.position;
   }
-
-  set bounds(value) {
-    this.data.bounds = value;
+  set position(value) {
+    this.data.position = value;
+  }
+  get dimensions() {
+    return this.data.dimensions;
+  }
+  set dimensions(value) {
+    this.data.dimensions = value;
   }
 
   updateEventBox() {
     this.eventBox.recalculate();
     // console.log(['State.updateEventBox', this.id, this.bounds, this.eventBox.bounds]);
-    this.bounds.width = Math.max(
-      this.bounds.width,
-      this.eventBox.bounds.width + this.eventBox.bounds.x
-    );
     const calcHeight = this.titleHeight + this.eventBox.bounds.height + this.eventBox.bounds.y;
+
+    this.dimensions = {
+      height: calcHeight,
+      width: Math.max(this.dimensions.width, this.eventBox.bounds.width + this.eventBox.bounds.x),
+    };
+
     // this.bounds.height = Math.max(this.bounds.height, calcHeight);
-    this.bounds.height = calcHeight;
     // console.log(['/State.updateEventBox', this.id, this.bounds]);
   }
 

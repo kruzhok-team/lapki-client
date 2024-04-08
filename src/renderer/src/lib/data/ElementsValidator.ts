@@ -1,4 +1,11 @@
-import { Elements, State, Component, ArgList, Transition, Event } from '@renderer/types/diagram';
+import {
+  Elements,
+  INormalState,
+  Component,
+  ArgList,
+  Transition,
+  Event,
+} from '@renderer/types/diagram';
 import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 
 import { getProtoComponent, getProtoMethod } from './GraphmlParser';
@@ -91,13 +98,13 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList | u
 }
 
 function validateStates(
-  states: { [id: string]: State },
+  states: { [id: string]: INormalState },
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const state of Object.values(states)) {
-    if (state.parent !== undefined && states[state.parent] === undefined) {
-      throw new Error(`Unknown parent state ${state.parent}`);
+    if (state.parentId !== undefined && states[state.parentId] === undefined) {
+      throw new Error(`Unknown parent state ${state.parentId}`);
     }
     for (const event of state.events) {
       const trigger = event.trigger;

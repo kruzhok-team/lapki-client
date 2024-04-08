@@ -1,8 +1,7 @@
+import { State } from '@renderer/lib/drawable/Node/State';
+import { picto } from '@renderer/lib/drawable/Picto';
+import { Shape } from '@renderer/lib/drawable/Shape';
 import { Transition as TransitionType } from '@renderer/types/diagram';
-
-import { Node } from './Node';
-import { picto } from './Picto';
-import { State } from './State';
 
 import { Container } from '../basic/Container';
 import { stateStyle, transitionStyle } from '../styles';
@@ -19,7 +18,7 @@ import {
  * Выполняет отрисовку стрелки между тремя движущимися блоками:
  * источник, назначение, а также условие перехода.
  */
-export class Transition extends Node {
+export class Transition extends Shape {
   isSelected = false;
 
   constructor(container: Container, id: string) {
@@ -38,13 +37,18 @@ export class Transition extends Node {
     return this.container.machineController.states.get(this.data.target) as State;
   }
 
-  get bounds() {
-    return { ...this.data.position, width: 130, height: 70 };
+  get position() {
+    return this.data.position;
   }
-
-  set bounds(value) {
-    this.data.position.x = value.x;
-    this.data.position.y = value.y;
+  set position(value) {
+    this.data.position = value;
+  }
+  get dimensions() {
+    return { width: 450, height: 95 };
+  }
+  set dimensions(value) {
+    throw new Error('Transition does not have dimensions');
+    // this.data.dimensions = value;
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {

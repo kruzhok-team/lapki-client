@@ -1,3 +1,6 @@
+import { State } from '@renderer/lib/drawable/Node/State';
+import { picto } from '@renderer/lib/drawable/Picto';
+import { Shape } from '@renderer/lib/drawable/Shape';
 import { getColor } from '@renderer/theme';
 import { getCapturedNodeArgs } from '@renderer/types/drawable';
 import { Point } from '@renderer/types/graphics';
@@ -5,14 +8,12 @@ import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { EventEmitter } from '../common/EventEmitter';
+import { History } from '../data/History';
 import { MachineController } from '../data/MachineController';
 import { NotesController } from '../data/NotesController';
 import { StatesController } from '../data/StatesController';
 import { TransitionsController } from '../data/TransitionsController';
 import { Children } from '../drawable/Children';
-import { Node } from '../drawable/Node';
-import { picto } from '../drawable/Picto';
-import { State } from '../drawable/State';
 import { clamp } from '../utils';
 
 export const MAX_SCALE = 10;
@@ -37,17 +38,22 @@ export class Container extends EventEmitter<ContainerEvents> {
   transitionsController!: TransitionsController;
   notesController!: NotesController;
 
+  history!: History;
+
   children: Children;
-  private mouseDownNode: Node | null = null; // Для оптимизации чтобы на каждый mousemove не искать
+  private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
   constructor(app: CanvasEditor) {
     super();
 
     this.app = app;
-    this.machineController = new MachineController(this);
-    this.statesController = new StatesController(this);
+    this.machineController = new MachineController(this, this.history);
+    this.statesController = new StatesController(this, this.history);
     this.transitionsController = new TransitionsController(this);
     this.notesController = new NotesController(this);
+
+    this.history = new History(this.machineController);
+
     this.children = new Children(this.machineController);
 
     // Порядок важен, система очень тонкая
@@ -64,7 +70,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawGrid(ctx, canvas);
 
-    const drawChildren = (node: Container | Node) => {
+    const drawChildren = (node: Container | Shape) => {
       node.children.forEach((child) => {
         child.draw(ctx, canvas);
 
@@ -77,7 +83,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     drawChildren(this);
 
     this.transitionsController.ghost.draw(ctx, canvas);
-    this.statesController.initialStateMark?.draw(ctx);
+    // this.statesController.initialStateMark?.draw(ctx);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -118,8 +124,8 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.machineController.deleteSelected);
-    this.app.keyboard.on('ctrlz', this.machineController.undoRedo.undo);
-    this.app.keyboard.on('ctrly', this.machineController.undoRedo.redo);
+    this.app.keyboard.on('ctrlz', this.history.undo);
+    this.app.keyboard.on('ctrly', this.history.redo);
     this.app.keyboard.on('ctrlc', this.machineController.copySelected);
     this.app.keyboard.on('ctrlv', this.machineController.pasteSelected);
     this.app.keyboard.on('ctrls', this.app.manager.files.save);
@@ -134,8 +140,8 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   getCapturedNode(args: getCapturedNodeArgs) {
-    const node = this.statesController.initialStateMark?.getIntersection(args);
-    if (node) return node;
+    // const node = this.statesController.initialStateMark?.getIntersection(args);
+    // if (node) return node;
 
     const { type } = args;
 
@@ -327,20 +333,21 @@ export class Container extends EventEmitter<ContainerEvents> {
     const arrX: number[] = [];
     const arrY: number[] = [];
 
-    const initialPos = this.machineController.getInitialStatePosition();
-    if (initialPos) {
-      arrX.push(initialPos.x);
-      arrY.push(initialPos.y);
-    }
+    // TODO
+    // const initialPos = this.machineController.getInitialStatePosition();
+    // if (initialPos) {
+    //   arrX.push(initialPos.x);
+    //   arrY.push(initialPos.y);
+    // }
 
     this.machineController.states.forEach((state) => {
-      arrX.push(state.bounds.x);
-      arrY.push(state.bounds.y);
+      arrX.push(state.position.x);
+      arrY.push(state.position.y);
     });
 
     this.machineController.transitions.forEach((transition) => {
-      arrX.push(transition.bounds.x);
-      arrY.push(transition.bounds.y);
+      arrX.push(transition.position.x);
+      arrY.push(transition.position.y);
     });
 
     let minX = Math.min(...arrX);

@@ -2,27 +2,21 @@ import { useSyncExternalStore } from 'react';
 
 import { customAlphabet } from 'nanoid';
 
-import {
-  Event,
-  Action,
-  Transition,
-  Component,
-  Elements,
-  EventData,
-  InitialState,
-} from '@renderer/types/diagram';
+import { generateId } from '@renderer/lib/utils';
+import { Event, Action, Transition, Component, Elements, EventData } from '@renderer/types/diagram';
 import {
   emptyEditorData,
   emptyDataListeners,
-  CreateStateParameters,
+  CreateStateParams,
   EditorData,
   EditorDataPropertyName,
   EditorDataReturn,
-  CreateTransitionParameters,
-  ChangeTransitionParameters,
+  CreateTransitionParams,
+  ChangeTransitionParams,
   ChangeStateEventsParams,
   AddComponentParams,
-  CreateNoteParameters,
+  CreateNoteParams,
+  CreateInitialStateParams,
 } from '@renderer/types/EditorManager';
 import { Point, Rectangle } from '@renderer/types/graphics';
 
@@ -132,21 +126,16 @@ export class EditorManager {
     }
   }
 
-  createState(args: CreateStateParameters) {
-    const { name, parentId, id, events = [], placeInCenter = false } = args;
+  createState(args: CreateStateParams) {
+    const {
+      name,
+      parentId,
+      id = generateId(Object.keys(this.data.elements.states)),
+      events = [],
+      placeInCenter = false,
+    } = args;
     let position = args.position;
     const { width, height } = stateStyle;
-
-    const getNewId = () => {
-      const nanoid = this.getIdGenerator();
-
-      let id = nanoid();
-      while (this.data.elements.states.hasOwnProperty(id)) {
-        id = nanoid();
-      }
-
-      return id;
-    };
 
     const centerPosition = () => {
       return {
@@ -157,18 +146,33 @@ export class EditorManager {
 
     position = placeInCenter ? centerPosition() : position;
 
-    const newId = id ?? getNewId();
-
-    this.data.elements.states[newId] = {
-      bounds: { ...position, width, height },
+    this.data.elements.states[id] = {
+      position,
+      dimensions: { width, height },
       events: events,
       name,
-      parent: parentId,
+      parentId: parentId,
     };
 
     this.triggerDataUpdate('elements.states');
 
-    return newId;
+    return id;
+  }
+
+  createInitialState(args: CreateInitialStateParams) {
+    const { id = generateId(Object.keys(this.data.elements.states)), position } = args;
+
+    this.data.elements.states[id] = {
+      position,
+      dimensions: {
+        width: 130,
+        height: 70,
+      },
+    };
+
+    this.triggerDataUpdate('elements.states');
+
+    return id;
   }
 
   changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
@@ -227,11 +231,11 @@ export class EditorManager {
     return true;
   }
 
-  changeStateBounds(id: string, bounds: Rectangle) {
+  changeStatePosition(id: string, position: Point) {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    state.bounds = bounds;
+    state.position = position;
 
     this.triggerDataUpdate('elements.states');
 
@@ -244,7 +248,7 @@ export class EditorManager {
 
     if (!parent || !child) return false;
 
-    child.parent = parentId;
+    child.parentId = parentId;
 
     this.triggerDataUpdate('elements.states');
 
@@ -254,13 +258,13 @@ export class EditorManager {
   unlinkState(id: string) {
     const state = this.data.elements.states[id];
 
-    if (!state || !state.parent) return false;
+    if (!state || !state.parentId) return false;
 
-    const parent = this.data.elements.states[state.parent];
+    const parent = this.data.elements.states[state.parentId];
 
     if (!parent) return false;
 
-    delete state.parent;
+    delete state.parentId;
 
     this.triggerDataUpdate('elements.states');
 
@@ -278,34 +282,35 @@ export class EditorManager {
     return true;
   }
 
-  changeInitialState(initialState: InitialState) {
-    const state = this.data.elements.states[initialState.target];
-    if (!state) return false;
+  // TODO
+  // changeInitialState(initialState: InitialState) {
+  //   const state = this.data.elements.states[initialState.target];
+  //   if (!state) return false;
 
-    this.data.elements.initialState = initialState;
+  //   this.data.elements.initialState = initialState;
 
-    this.triggerDataUpdate('elements.states');
+  //   this.triggerDataUpdate('elements.states');
 
-    return true;
-  }
+  //   return true;
+  // }
 
-  changeInitialStatePosition(position: Point) {
-    if (!this.data.elements.initialState) return;
+  // changeInitialStatePosition(position: Point) {
+  //   if (!this.data.elements.initialState) return;
 
-    this.data.elements.initialState.position = position;
+  //   this.data.elements.initialState.position = position;
 
-    this.triggerDataUpdate('elements.initialState');
+  //   this.triggerDataUpdate('elements.initialState');
 
-    return true;
-  }
+  //   return true;
+  // }
 
-  deleteInitialState() {
-    this.data.elements.initialState = null;
+  // deleteInitialState() {
+  //   this.data.elements.initialState = null;
 
-    this.triggerDataUpdate('elements.initialState');
+  //   this.triggerDataUpdate('elements.initialState');
 
-    return true;
-  }
+  //   return true;
+  // }
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
@@ -412,7 +417,7 @@ export class EditorManager {
     method,
     doAction,
     condition,
-  }: CreateTransitionParameters) {
+  }: CreateTransitionParams) {
     const getNewId = () => {
       const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
 
@@ -453,7 +458,7 @@ export class EditorManager {
     method,
     doAction,
     condition,
-  }: ChangeTransitionParameters) {
+  }: ChangeTransitionParams) {
     const transition = this.data.elements.transitions[id] as Transition;
     if (!transition) return false;
 
@@ -566,7 +571,7 @@ export class EditorManager {
     return true;
   }
 
-  createNote(params: CreateNoteParameters) {
+  createNote(params: CreateNoteParams) {
     const { id, text, placeInCenter = false } = params;
     let position = params.position;
 
@@ -633,4 +638,20 @@ export class EditorManager {
 
     return true;
   }
+
+  // createInitialState(params: CreateInitialStateParams) {
+  //   const {
+  //     id = generateId(Object.keys(this.data.elements.initialStates)),
+  //     stateId,
+  //     position,
+  //   } = params;
+
+  //   this.data.elements.initialStates[id] = {
+
+  //   };
+
+  //   this.triggerDataUpdate('elements.notes');
+
+  //   return newId;
+  // }
 }

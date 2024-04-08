@@ -3,7 +3,7 @@ import React, { useId } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-down.svg';
-import { Action, actionDescriptions, Stack } from '@renderer/lib/data/UndoRedo';
+import { Action, actionDescriptions, Stack } from '@renderer/lib/data/History';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 const groupByNumberOfConnectedActions = (stack: Stack) => {
@@ -66,20 +66,20 @@ const HistoryWithoutEditor: React.FC = () => {
 const HistoryWithEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const { undoStack, redoStack } = editor.container.machineController.undoRedo.use();
+  const { undoStack, redoStack } = editor.container.history.use();
 
   return (
     <div>
       <div className="mb-4 flex gap-1">
         <button
           className="btn-secondary"
-          onClick={() => editor.container.machineController.undoRedo.undo()}
+          onClick={() => editor.container.machineController.history.undo()}
         >
           Назад
         </button>
         <button
           className="btn-secondary"
-          onClick={() => editor.container.machineController.undoRedo.redo()}
+          onClick={() => editor.container.machineController.history.redo()}
         >
           Вперёд
         </button>

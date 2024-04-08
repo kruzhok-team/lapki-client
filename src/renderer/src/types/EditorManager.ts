@@ -30,7 +30,7 @@ export const emptyDataListeners = Object.fromEntries([
   ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
 ]) as any as EditorDataListeners;
 
-export interface CreateStateParameters {
+export interface CreateStateParams {
   name: string;
   position: Point;
   parentId?: string;
@@ -40,7 +40,12 @@ export interface CreateStateParameters {
   linkByPoint?: boolean;
 }
 
-export interface CreateTransitionParameters {
+export interface CreateInitialStateParams {
+  id?: string;
+  position: Point;
+}
+
+export interface CreateTransitionParams {
   id?: string;
   source: string;
   target: string;
@@ -52,14 +57,14 @@ export interface CreateTransitionParameters {
   condition: Condition | undefined;
 }
 
-export interface CreateNoteParameters {
+export interface CreateNoteParams {
   id?: string;
   position: Point;
   text: string;
   placeInCenter?: boolean;
 }
 
-export interface ChangeTransitionParameters {
+export interface ChangeTransitionParams {
   id: string;
   source: string;
   target: string;

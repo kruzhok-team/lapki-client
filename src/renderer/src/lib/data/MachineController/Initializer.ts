@@ -1,9 +1,9 @@
+import { State } from '@renderer/lib/drawable/Node/State';
 import { Note } from '@renderer/lib/drawable/Note';
-import { InitialState } from '@renderer/types/diagram';
+// import { InitialState } from '@renderer/types/diagram';
 
 import { MachineController } from './MachineController';
 
-import { State } from '../../drawable/State';
 import { Transition } from '../../drawable/Transition';
 import { loadPlatform } from '../PlatformLoader';
 
@@ -41,8 +41,8 @@ export class Initializer {
   private get platform() {
     return this.machineController.platform;
   }
-  private get undoRedo() {
-    return this.machineController.undoRedo;
+  private get history() {
+    return this.container.history;
   }
 
   private resetEntities() {
@@ -58,10 +58,10 @@ export class Initializer {
     });
 
     this.states.clear();
-    this.container.statesController.clearInitialStateMark();
+    // this.container.statesController.clearInitialStateMark();
     this.transitions.clear();
     this.notes.clear();
-    this.undoRedo.clear();
+    this.history.clear();
   }
 
   /**
@@ -82,13 +82,13 @@ export class Initializer {
     for (const id in items) {
       const data = items[id];
 
-      if (!data.parent) continue;
+      if (!data.parentId) continue;
 
-      this.linkStateView(data.parent, id);
+      this.linkStateView(data.parentId, id);
     }
 
-    const initialState = this.container.app.manager.data.elements.initialState;
-    if (initialState) this.createInitialStateView(initialState);
+    // const initialState = this.container.app.manager.data.elements.initialState;
+    // if (initialState) this.createInitialStateView(initialState);
   }
 
   private initTransitions() {
@@ -166,10 +166,10 @@ export class Initializer {
     this.container.notesController.watch(note);
   }
 
-  private createInitialStateView(data: InitialState) {
-    const target = this.states.get(data.target);
-    if (!target) return;
+  // private createInitialStateView(data: InitialState) {
+  //   const target = this.states.get(data.target);
+  //   if (!target) return;
 
-    this.container.statesController.initInitialStateMark();
-  }
+  //   this.container.statesController.initInitialStateMark();
+  // }
 }

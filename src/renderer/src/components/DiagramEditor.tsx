@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Scale } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { EventSelection } from '@renderer/lib/drawable/Events';
-import { State } from '@renderer/lib/drawable/State';
+import { State } from '@renderer/lib/drawable/Node/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
@@ -49,7 +49,7 @@ export const DiagramEditor: React.FC = () => {
     };
 
     editor.container.on('dblclick', (position) => {
-      editor?.container.machineController.createState({
+      editor?.container.statesController.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
@@ -129,7 +129,7 @@ export const DiagramEditor: React.FC = () => {
 
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.machineController.changeStateEvents({
+      editor?.container.statesController.changeStateEvents({
         id: data.id,
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,

@@ -1,4 +1,4 @@
-import { Point, Rectangle } from './graphics';
+import { Dimensions, Point, Rectangle } from './graphics';
 
 // FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string };
@@ -29,19 +29,27 @@ export type EventData = {
   // TODO: condition?: Condition;
 };
 
-export type State = {
-  parent?: string;
+export interface IBaseState {
+  parentId?: string;
+  position: Point;
+  dimensions: Dimensions;
+}
+
+export interface INormalState extends IBaseState {
   name: string;
-  bounds: Rectangle;
   events: EventData[];
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
-};
+}
 
-export type InitialState = {
-  target: string;
-  position: Point;
-};
+export type IInitialStateNew = IBaseState;
+
+export type IState = INormalState | IInitialStateNew;
+
+// export type InitialState = {
+//   target: string;
+//   position: Point;
+// };
 
 export type Variable = {
   component: string;
@@ -80,12 +88,13 @@ export type Note = {
 
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
-  states: { [id: string]: State };
-  transitions: Record<string, Transition>;
+  states: { [id: string]: IState };
+  // initialStates: { [id: string]: InitialState };
+  transitions: { [id: string]: Transition };
   components: { [id: string]: Component };
-  notes: Record<string, Note>;
+  notes: { [id: string]: Note };
 
-  initialState: InitialState | null;
+  // initialState: InitialState | null;
 
   platform: string;
   parameters?: { [key: string]: string };
@@ -96,10 +105,11 @@ export type Elements = {
 export function emptyElements(): Elements {
   return {
     states: {},
+    // initialStates: {},
     transitions: {},
     components: {},
     notes: {},
-    initialState: null,
+    // initialState: null,
 
     platform: '',
     parameters: {},

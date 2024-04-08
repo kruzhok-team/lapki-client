@@ -34,7 +34,9 @@ export const Hierarchy: React.FC = () => {
 
   const states = manager.useData('elements.states');
   const transitions = manager.useData('elements.transitions');
-  const initialState = manager.useData('elements.initialState')?.target;
+
+  //TODO
+  // const initialState = manager.useData('elements.initialState')?.target;
 
   const machine = editor.container.machineController;
 
@@ -59,7 +61,7 @@ export const Hierarchy: React.FC = () => {
       data[stateId] = {
         index: stateId,
         isFolder: false,
-        data: { title: state.name, type: 'state' },
+        data: { title: state.name ?? 'asd', type: 'state' },
         children: [],
         canRename: true,
         canMove: true,
@@ -69,17 +71,17 @@ export const Hierarchy: React.FC = () => {
     for (const stateId in states) {
       const state = states[stateId];
 
-      if (!state.parent) {
+      if (!state.parentId) {
         data.root.children?.push(stateId);
       } else {
-        data[state.parent].children?.push(stateId);
-        data[state.parent].isFolder = true;
+        data[state.parentId].children?.push(stateId);
+        data[state.parentId].isFolder = true;
       }
     }
 
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const target = states[transition.target].name;
+      const target = states[transition.target]?.name;
 
       data[transitionId] = {
         index: transitionId,
@@ -203,9 +205,9 @@ export const Hierarchy: React.FC = () => {
 
     const getParents = (stateId: string): string[] => {
       const state = states[stateId];
-      if (!state.parent) return [];
+      if (!state.parentId) return [];
 
-      return [state.parent, ...getParents(state.parent)];
+      return [state.parentId, ...getParents(state.parentId)];
     };
 
     const items = Object.values(hierarchy).filter((item) =>
@@ -276,7 +278,9 @@ export const Hierarchy: React.FC = () => {
           <TitleRender
             type={data.item.data.type}
             title={data.item.data.title}
-            isInitial={initialState === data.item.index.toString()}
+            isInitial={false}
+            // TODO
+            // isInitial={initialState === data.item.index.toString()}
             search={escapeRegExp(search)}
           />
         )}

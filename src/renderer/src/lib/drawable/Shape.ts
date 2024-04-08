@@ -1,5 +1,5 @@
 import { getCapturedNodeArgs } from '@renderer/types/drawable';
-import { Point, Rectangle } from '@renderer/types/graphics';
+import { Dimensions, Point, Rectangle } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Children } from './Children';
@@ -24,7 +24,7 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
-interface NodeEvents {
+interface ShapeEvents {
   mousedown: { event: MyMouseEvent };
   mouseup: { event: MyMouseEvent };
   click: { event: MyMouseEvent };
@@ -35,11 +35,11 @@ interface NodeEvents {
   dragend: { dragStartPosition: Point; dragEndPosition: Point };
 }
 
-export abstract class Node extends EventEmitter<NodeEvents> {
+export abstract class Shape extends EventEmitter<ShapeEvents> {
   container!: Container;
   id!: string;
   children!: Children;
-  parent?: Node;
+  parent?: Shape;
 
   private dragStartPosition: Point | null = null;
 
@@ -50,7 +50,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
 
   childrenPadding = 15;
 
-  constructor(container: Container, id: string, parent?: Node) {
+  constructor(container: Container, id: string, parent?: Shape) {
     super();
 
     this.container = container;
@@ -59,20 +59,25 @@ export abstract class Node extends EventEmitter<NodeEvents> {
     this.children = new Children(this.container.machineController);
   }
 
-  abstract get bounds(): Rectangle;
-  abstract set bounds(bounds: Rectangle);
+  abstract get position(): Point;
+  abstract set position(value: Point);
+
+  abstract get dimensions(): Dimensions;
+  abstract set dimensions(value: Dimensions);
+
+  // abstract get bounds(): Rectangle;
+  // abstract set bounds(bounds: Rectangle);
   abstract draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): unknown;
 
   // Позиция рассчитанная с возможным родителем
   get compoundPosition() {
-    let x = this.bounds.x;
-    let y = this.bounds.y;
+    let { x, y } = this.position;
 
     if (this.parent) {
       const { x: px, y: py } = this.parent.compoundPosition;
 
       x += px + this.childrenPadding;
-      y += py + this.parent.bounds.height + this.childrenPadding;
+      y += py + this.parent.dimensions.height + this.childrenPadding;
     }
 
     return { x, y };
@@ -88,7 +93,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
   }
 
   get computedWidth() {
-    let width = this.bounds.width / this.container.app.manager.data.scale;
+    let width = this.dimensions.width / this.container.app.manager.data.scale;
     if (!this.children.isEmpty) {
       let rightChildren = this.children.getByIndex(0)!;
 
@@ -117,7 +122,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
   }
 
   get computedHeight() {
-    return this.bounds.height / this.container.app.manager.data.scale;
+    return this.dimensions.height / this.container.app.manager.data.scale;
   }
 
   get childrenContainerHeight() {
@@ -164,7 +169,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
   }
 
   private dragEnd() {
-    const dragEndPosition = { x: this.bounds.x, y: this.bounds.y };
+    const dragEndPosition = { ...this.position };
     if (
       this.dragStartPosition &&
       (dragEndPosition.x !== this.dragStartPosition.x ||
@@ -179,7 +184,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
 
   handleMouseDown = (e: MyMouseEvent) => {
     this.isMouseDown = true;
-    this.dragStartPosition = { x: this.bounds.x, y: this.bounds.y };
+    this.dragStartPosition = { ...this.position };
 
     clearTimeout(this.mouseDownTimerId);
 
@@ -199,19 +204,15 @@ export abstract class Node extends EventEmitter<NodeEvents> {
       clearTimeout(this.mouseDownTimerId);
     }
 
-    this.bounds = {
-      width: this.bounds.width,
-      height: this.bounds.height,
-      x: this.bounds.x + e.dx * this.container.app.manager.data.scale,
-      y: this.bounds.y + e.dy * this.container.app.manager.data.scale,
+    this.position = {
+      x: this.position.x + e.dx * this.container.app.manager.data.scale,
+      y: this.position.y + e.dy * this.container.app.manager.data.scale,
     };
 
     if (this.parent) {
-      this.bounds = {
-        width: this.bounds.width,
-        height: this.bounds.height,
-        x: Math.max(0, this.bounds.x),
-        y: Math.max(0, this.bounds.y),
+      this.position = {
+        x: Math.max(0, this.position.x),
+        y: Math.max(0, this.position.y),
       };
     }
 
@@ -262,7 +263,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
     return null;
   }
 
-  getIntersection(args: getCapturedNodeArgs): Node | null {
+  getIntersection(args: getCapturedNodeArgs): Shape | null {
     const { position, type, exclude, includeChildrenHeight } = args;
 
     if (exclude?.includes(this.id)) return null;
@@ -290,7 +291,7 @@ export abstract class Node extends EventEmitter<NodeEvents> {
   getDepth() {
     let depth = 0;
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let node = this as Node;
+    let node = this as Shape;
     while (node.parent) {
       depth += 1;
       node = node.parent;

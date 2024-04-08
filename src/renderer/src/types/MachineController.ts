@@ -1,4 +1,4 @@
-import { CreateTransitionParameters as MCreateTransitionParameters } from '@renderer/types/EditorManager';
+import { CreateTransitionParams as MCreateTransitionParameters } from '@renderer/types/EditorManager';
 
 import { Component } from './diagram';
 import { Point } from './graphics';

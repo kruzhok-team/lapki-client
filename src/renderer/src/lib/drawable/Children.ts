@@ -1,4 +1,4 @@
-import { Node } from './Node';
+import { Shape } from './Shape';
 import { State } from './State';
 import { Transition } from './Transition';
 
@@ -8,7 +8,7 @@ type ListType = 'state' | 'transition' | 'note';
 
 /**
  * Пока что это странный класс предназначенный только для отрисовки,
- * у {@link Container} и {@link Node} объявляется этот класс и рендер идёт по дереву
+ * у {@link Container} и {@link Shape} объявляется этот класс и рендер идёт по дереву
  * Плюс у переходов приоритет на отрисовку, в своём слое они всегда выше
  */
 export class Children {
@@ -28,17 +28,17 @@ export class Children {
     return this.notesList;
   }
 
-  forEach(cb: (item: Node) => void) {
+  forEach(cb: (item: Shape) => void) {
     this.statesList.forEach((id) => {
-      cb(this.stateMachine.states.get(id) as Node);
+      cb(this.stateMachine.states.get(id) as Shape);
     });
 
     this.transitionsList.forEach((id) => {
-      cb(this.stateMachine.transitions.get(id) as Node);
+      cb(this.stateMachine.transitions.get(id) as Shape);
     });
 
     this.notesList.forEach((id) => {
-      cb(this.stateMachine.notes.get(id) as Node);
+      cb(this.stateMachine.notes.get(id) as Shape);
     });
   }
 
@@ -106,7 +106,7 @@ export class Children {
     return this.stateMachine.states.get(id);
   }
 
-  getByIndex(index: number): Node | undefined {
+  getByIndex(index: number): Shape | undefined {
     if (index < this.statesList.length) {
       const id = this.statesList[index];
 

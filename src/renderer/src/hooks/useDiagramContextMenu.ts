@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { State } from '@renderer/lib/drawable/State';
+import { State } from '@renderer/lib/drawable/Node/State';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
@@ -49,7 +49,7 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor?.container.machineController.createState({
+            editor?.container.statesController.createState({
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
@@ -119,14 +119,14 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                editor?.container.machineController.setInitialState(state.id);
+                // editor?.container.machineController.setInitialState(state.id);
               },
             },
             {
               label: 'Вставить состояние',
               type: 'pasteState',
               action: () => {
-                editor?.container.machineController.createState({
+                editor?.container.statesController.createState({
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
@@ -153,7 +153,7 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machineController.deleteState(state.id as string);
+            editor?.container.statesController.deleteState(state.id as string);
           },
         },
       ]);

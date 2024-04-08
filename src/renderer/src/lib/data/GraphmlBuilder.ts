@@ -12,7 +12,7 @@ import {
   ArgList,
   EventData,
   Elements,
-  State,
+  INormalState,
   Action,
   Transition,
   Component,
@@ -62,16 +62,16 @@ export function serializeEvents(events: EventData[]): string {
   return serialized;
 }
 
-function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
+function serializeStates(states: { [id: string]: INormalState }): { [id: string]: CGMLState } {
   const cgmlStates: { [id: string]: CGMLState } = {};
   for (const id in states) {
-    const state: State = states[id];
+    const state: INormalState = states[id];
     cgmlStates[id] = {
       name: state.name,
       bounds: state.bounds,
       unsupportedDataNodes: [],
       actions: serializeEvents(state.events),
-      parent: state.parent,
+      parent: state.parentId,
     };
   }
   return cgmlStates;

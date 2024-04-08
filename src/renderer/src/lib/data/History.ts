@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 import {
-  State as StateData,
+  INormalState as StateData,
   Transition as TransitionData,
   Note as NoteData,
   Action as EventAction,
@@ -13,9 +13,9 @@ import {
 import {
   AddComponentParams,
   ChangeStateEventsParams,
-  ChangeTransitionParameters,
-  CreateNoteParameters,
-  CreateStateParameters,
+  ChangeTransitionParams,
+  CreateNoteParams,
+  CreateStateParams,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
 import {
@@ -31,7 +31,7 @@ import { EventSelection } from '../drawable/Events';
 import { Transition } from '../drawable/Transition';
 
 export type PossibleActions = {
-  stateCreate: CreateStateParameters & { newStateId: string };
+  stateCreate: CreateStateParams & { newStateId: string };
   deleteState: { id: string; stateData: StateData };
   changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
@@ -41,7 +41,7 @@ export type PossibleActions = {
   deleteTransition: { transition: Transition; prevData: TransitionData };
   changeTransition: {
     transition: Transition;
-    args: ChangeTransitionParameters;
+    args: ChangeTransitionParams;
     prevData: TransitionData;
   };
   createInitialState: InitialState;
@@ -63,7 +63,7 @@ export type PossibleActions = {
   removeComponent: { args: RemoveComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
 
-  createNote: { id: string; params: CreateNoteParameters };
+  createNote: { id: string; params: CreateNoteParams };
   changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { id: string; text: string; prevText: string };
   deleteNote: { id: string; prevData: NoteData };
@@ -101,7 +101,7 @@ export const actionFunctions: ActionFunctions = {
         name: stateData.name,
         id,
         position: stateData.bounds,
-        parentId: stateData.parent,
+        parentId: stateData.parentId,
         events: stateData.events,
         linkByPoint: false,
       },
@@ -365,7 +365,7 @@ export const actionDescriptions: ActionDescriptions = {
 
 export const STACK_SIZE_LIMIT = 100;
 
-export class UndoRedo {
+export class History {
   undoStack = [] as Stack;
   redoStack = [] as Stack;
 

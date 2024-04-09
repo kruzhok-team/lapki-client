@@ -5,7 +5,7 @@ import { SingleValue } from 'react-select';
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { State } from '@renderer/lib/drawable/State';
+import { State } from '@renderer/lib/drawable/Node/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import {

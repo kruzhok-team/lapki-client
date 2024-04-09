@@ -1,7 +1,7 @@
 import throttle from 'lodash.throttle';
 
 import { State } from '@renderer/lib/drawable/Node/State';
-import { Event } from '@renderer/types/diagram';
+import { Action, Event, EventData } from '@renderer/types/diagram';
 import { ChangeStateEventsParams, CreateStateParams } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
 import { UnlinkStateParams } from '@renderer/types/MachineController';
@@ -12,6 +12,7 @@ import { History } from './History';
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
+import { BaseState } from '../drawable/Node/BaseState';
 import { InitialState } from '../drawable/Node/InitialState';
 // import { InitialState } from '../drawable/InitialState';
 
@@ -45,14 +46,37 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
   // initialStateMark: InitialState | null = null;
 
+  states: Map<string, BaseState> = new Map();
+
   constructor(private container: Container, private history: History) {
     super();
   }
 
-  // TODO
-  get states() {
-    return this.container.machineController.states;
+  get(id: string) {
+    return this.states.get(id);
   }
+
+  forEach(callback: (state: BaseState) => void) {
+    return this.states.forEach(callback);
+  }
+
+  forEachNormalStates(callback: (state: State) => void) {
+    return this.states.forEach((state) => {
+      if (state instanceof State) {
+        callback(state);
+      }
+    });
+  }
+
+  clear() {
+    return this.states.clear();
+  }
+
+  set(id: string, state: BaseState) {
+    return this.states.set(id, state);
+  }
+
+  // TODO
   get transitions() {
     return this.container.machineController.transitions;
   }
@@ -90,7 +114,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.createInitialState(state.position, canUndo);
     // numberOfConnectedActions += 1;
 
-    this.container.statesController.watchState(state);
+    this.watchState(state);
 
     this.container.isDirty = true;
 
@@ -107,7 +131,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const { id } = args;
 
     const state = this.states.get(id);
-    if (!state) return;
+    if (!state || !(state instanceof State)) return;
 
     if (canUndo) {
       const prevEvent = state.data.events.find(
@@ -134,7 +158,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   changeStateName = (id: string, name: string, canUndo = true) => {
     const state = this.states.get(id);
-    if (!state) return;
+    if (!state || !(state instanceof State)) return;
 
     if (canUndo) {
       this.history.do({
@@ -168,7 +192,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const parent = this.states.get(parentId);
     const child = this.states.get(childId);
 
-    if (!parent || !child) return;
+    if (!parent || !child || !(parent instanceof State)) return;
 
     let numberOfConnectedActions = 0;
     if (child.data.parentId) {
@@ -212,37 +236,38 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.container.isDirty = true;
   }
 
-  linkStateByPoint(state: State, position: Point) {
+  // TODO
+  linkStateByPoint(_state: State, _position: Point) {
+    // TODO
     // назначаем родительское состояние по месту его создания
-    let possibleParent: State | undefined = undefined;
-    for (const item of this.states.values()) {
-      if (state.id == item.id) continue;
-      if (item.isUnderMouse(position, true)) {
-        if (typeof possibleParent === 'undefined') {
-          possibleParent = item;
-        } else {
-          // учитываем вложенность, нужно поместить состояние
-          // в максимально дочернее
-          let searchPending = true;
-          while (searchPending) {
-            searchPending = false;
-            for (const child of possibleParent.children) {
-              if (!(child instanceof State)) continue;
-              if (state.id == child.id) continue;
-              if (child.isUnderMouse(position, true)) {
-                possibleParent = child as State;
-                searchPending = true;
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (possibleParent !== state && possibleParent) {
-      this.linkState(possibleParent.id, state.id, true, true);
-    }
+    // let possibleParent: State | undefined = undefined;
+    // for (const item of this.states.values()) {
+    //   if (state.id == item.id) continue;
+    //   if (item.isUnderMouse(position, true)) {
+    //     if (typeof possibleParent === 'undefined') {
+    //       possibleParent = item;
+    //     } else {
+    //       // учитываем вложенность, нужно поместить состояние
+    //       // в максимально дочернее
+    //       let searchPending = true;
+    //       while (searchPending) {
+    //         searchPending = false;
+    //         for (const child of possibleParent.children) {
+    //           if (!(child instanceof State)) continue;
+    //           if (state.id == child.id) continue;
+    //           if (child.isUnderMouse(position, true)) {
+    //             possibleParent = child as State;
+    //             searchPending = true;
+    //             break;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    // if (possibleParent !== state && possibleParent) {
+    //   this.linkState(possibleParent.id, state.id, true, true);
+    // }
   }
 
   unlinkState(params: UnlinkStateParams, canUndo = true) {
@@ -283,14 +308,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.states.get(id);
     if (!state) return;
 
-    const parentId = state.data.parentId;
-    let numberOfConnectedActions = 0;
+    // const parentId = state.data.parentId;
+    // let numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.transitions.forEach((data, transitionId) => {
       if (data.source.id === id || data.target.id === id) {
         this.container.machineController.deleteTransition(transitionId, canUndo);
-        numberOfConnectedActions += 1;
+        // numberOfConnectedActions += 1;
       }
     });
 
@@ -303,7 +328,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         } else {
           this.unlinkState({ id: childState.id }, canUndo);
         }
-        numberOfConnectedActions += 1;
+        // numberOfConnectedActions += 1;
       }
     });
 
@@ -322,22 +347,23 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // }
 
     if (canUndo) {
-      this.history.do({
-        type: 'deleteState',
-        args: { id, stateData: { ...structuredClone(state.data), parentId: parentId } },
-        numberOfConnectedActions,
-      });
+      // TODO
+      // this.history.do({
+      //   type: 'deleteState',
+      //   args: { id, stateData: { ...structuredClone(state.data), parentId: parentId } },
+      //   numberOfConnectedActions,
+      // });
     }
 
     this.container.app.manager.deleteState(id);
 
-    this.container.statesController.unwatchState(state);
+    this.unwatchState(state);
     this.states.delete(id);
 
     this.container.isDirty = true;
   };
 
-  private createInitialState = (position: Point, canUndo = true) => {
+  private createInitialState = (position: Point, _canUndo = true) => {
     const newStateId = this.container.app.manager.createInitialState({ position });
 
     const state = new InitialState(this.container, newStateId);
@@ -346,6 +372,106 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.container.children.add('state', state.id);
   };
+
+  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
+    const state = this.states.get(stateId);
+    if (!state || !(state instanceof State)) return;
+
+    this.container.app.manager.createEvent(stateId, eventData, eventIdx);
+
+    state.updateEventBox();
+
+    this.container.isDirty = true;
+  }
+
+  createEventAction(stateId: string, event: EventSelection, value: Action) {
+    const state = this.states.get(stateId);
+    if (!state || !(state instanceof State)) return;
+
+    this.container.app.manager.createEventAction(stateId, event, value);
+
+    state.updateEventBox();
+
+    this.container.isDirty = true;
+  }
+
+  // Редактирование события в состояниях
+  changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
+    const state = this.states.get(stateId);
+    if (!state || !(state instanceof State)) return;
+
+    const { eventIdx, actionIdx } = event;
+
+    if (actionIdx !== null) {
+      const prevValue = state.data.events[eventIdx].do[actionIdx];
+
+      this.container.app.manager.changeEventAction(stateId, event, newValue);
+
+      if (canUndo) {
+        this.history.do({
+          type: 'changeEventAction',
+          args: { stateId, event, newValue, prevValue },
+        });
+      }
+    } else {
+      const prevValue = state.data.events[eventIdx].trigger;
+
+      this.container.app.manager.changeEvent(stateId, eventIdx, newValue);
+
+      if (canUndo) {
+        this.history.do({
+          type: 'changeEvent',
+          args: { stateId, event, newValue, prevValue },
+        });
+      }
+    }
+
+    state.updateEventBox();
+
+    this.container.isDirty = true;
+  }
+
+  // Удаление события в состояниях
+  //TODO показывать предупреждение при удалении события в состоянии(модалка)
+  deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
+    const state = this.states.get(stateId);
+    if (!state || !(state instanceof State)) return;
+
+    const { eventIdx, actionIdx } = event;
+
+    if (actionIdx !== null) {
+      // Проверяем если действие в событие последнее то надо удалить всё событие
+      if (state.data.events[eventIdx].do.length === 1) {
+        return this.deleteEvent(stateId, { eventIdx, actionIdx: null });
+      }
+
+      const prevValue = state.data.events[eventIdx].do[actionIdx];
+
+      this.container.app.manager.deleteEventAction(stateId, event);
+
+      if (canUndo) {
+        this.history.do({
+          type: 'deleteEventAction',
+          args: { stateId, event, prevValue },
+        });
+      }
+    } else {
+      const prevValue = state.data.events[eventIdx];
+
+      this.container.app.manager.deleteEvent(stateId, eventIdx);
+
+      if (canUndo) {
+        this.history.do({
+          type: 'deleteEvent',
+          args: { stateId, eventIdx, prevValue },
+        });
+      }
+    }
+
+    state.updateEventBox();
+
+    this.container.isDirty = true;
+  }
 
   handleStartNewTransition = (state: State) => {
     this.emit('startNewTransition', state);
@@ -474,7 +600,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   //   );
   // };
 
-  watchState(state: State) {
+  watchState(state: BaseState) {
+    if (!(state instanceof State)) return;
+
     state.on('click', this.handleStateClick.bind(this, state));
     state.on('mousedown', this.handleStateMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
@@ -487,7 +615,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
   }
 
-  unwatchState(state: State) {
+  unwatchState(state: BaseState) {
+    if (!(state instanceof State)) return;
+
     state.off('click', this.handleStateClick.bind(this, state));
     state.off('mousedown', this.handleStateMouseDown.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));

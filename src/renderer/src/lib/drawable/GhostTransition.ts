@@ -1,10 +1,14 @@
+import { Container } from '@renderer/lib/basic/Container';
+import { State } from '@renderer/lib/drawable/Node/State';
+import { transitionStyle } from '@renderer/lib/styles';
+import {
+  degrees_to_radians,
+  drawCircle,
+  drawCurvedLine,
+  drawTriangle,
+  getLine,
+} from '@renderer/lib/utils';
 import { Point } from '@renderer/types/graphics';
-
-import { State } from './State';
-
-import { Container } from '../basic/Container';
-import { transitionStyle } from '../styles';
-import { degrees_to_radians, drawCircle, drawCurvedLine, drawTriangle, getLine } from '../utils';
 
 /**
  * Неоформленный («призрачный») переход.

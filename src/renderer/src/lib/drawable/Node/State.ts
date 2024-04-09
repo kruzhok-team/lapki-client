@@ -74,7 +74,7 @@ export class State extends BaseState {
       this.edgeHandlers.draw(ctx);
     }
 
-    if (this.container.statesController.dragInfo?.parentId === this.id) {
+    if (this.container.machineController.states.dragInfo?.parentId === this.id) {
       this.drawHighlight(ctx);
     }
   }

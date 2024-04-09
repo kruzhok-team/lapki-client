@@ -1,8 +1,7 @@
-import { Shape } from './Shape';
-import { State } from './State';
-import { Transition } from './Transition';
-
-import { MachineController } from '../data/MachineController';
+import { MachineController } from '@renderer/lib/data/MachineController';
+import { State } from '@renderer/lib/drawable/Node/State';
+import { Shape } from '@renderer/lib/drawable/Shape';
+import { Transition } from '@renderer/lib/drawable/Transition';
 
 type ListType = 'state' | 'transition' | 'note';
 

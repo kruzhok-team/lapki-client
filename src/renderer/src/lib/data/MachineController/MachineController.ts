@@ -2,38 +2,32 @@ import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { Note } from '@renderer/lib/drawable/Note';
 import {
-  Action,
   Condition,
-  Event,
   Variable,
   INormalState as StateType,
   Transition as TransitionType,
   Note as NoteType,
-  EventData,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
-  ChangeStateEventsParams,
   ChangeTransitionParams,
   CreateNoteParams,
-  CreateStateParams,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
 import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
-  UnlinkStateParams,
 } from '@renderer/types/MachineController';
 import { indexOfMin } from '@renderer/utils';
 
 import { Initializer } from './Initializer';
 
 import { Container } from '../../basic/Container';
-import { EventSelection } from '../../drawable/Events';
 import { Transition } from '../../drawable/Transition';
 import { History } from '../History';
 import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
+import { StatesController } from '../StatesController';
 
 /**
  * Контроллер машины состояний.
@@ -52,15 +46,20 @@ import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
 export class MachineController {
-  initializer = new Initializer(this);
+  initializer!: Initializer;
 
-  states: Map<string, BaseState> = new Map();
+  states!: StatesController;
+
   transitions: Map<string, Transition> = new Map();
   notes: Map<string, Note> = new Map();
 
   platform!: PlatformManager;
 
-  constructor(private container: Container, private history: History) {}
+  constructor(private container: Container, private history: History) {
+    this.initializer = new Initializer(this.container, this);
+
+    this.states = new StatesController(this.container, this.history);
+  }
 
   loadData() {
     this.initializer.init();
@@ -318,106 +317,6 @@ export class MachineController {
     this.container.isDirty = true;
   }
 
-  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
-    const state = this.states.get(stateId);
-    if (!state) return;
-
-    this.container.app.manager.createEvent(stateId, eventData, eventIdx);
-
-    state.updateEventBox();
-
-    this.container.isDirty = true;
-  }
-
-  createEventAction(stateId: string, event: EventSelection, value: Action) {
-    const state = this.states.get(stateId);
-    if (!state) return;
-
-    this.container.app.manager.createEventAction(stateId, event, value);
-
-    state.updateEventBox();
-
-    this.container.isDirty = true;
-  }
-
-  // Редактирование события в состояниях
-  changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
-    const state = this.states.get(stateId);
-    if (!state) return;
-
-    const { eventIdx, actionIdx } = event;
-
-    if (actionIdx !== null) {
-      const prevValue = state.data.events[eventIdx].do[actionIdx];
-
-      this.container.app.manager.changeEventAction(stateId, event, newValue);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'changeEventAction',
-          args: { stateId, event, newValue, prevValue },
-        });
-      }
-    } else {
-      const prevValue = state.data.events[eventIdx].trigger;
-
-      this.container.app.manager.changeEvent(stateId, eventIdx, newValue);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'changeEvent',
-          args: { stateId, event, newValue, prevValue },
-        });
-      }
-    }
-
-    state.updateEventBox();
-
-    this.container.isDirty = true;
-  }
-
-  // Удаление события в состояниях
-  //TODO показывать предупреждение при удалении события в состоянии(модалка)
-  deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
-    const state = this.states.get(stateId);
-    if (!state) return;
-
-    const { eventIdx, actionIdx } = event;
-
-    if (actionIdx !== null) {
-      // Проверяем если действие в событие последнее то надо удалить всё событие
-      if (state.data.events[eventIdx].do.length === 1) {
-        return this.deleteEvent(stateId, { eventIdx, actionIdx: null });
-      }
-
-      const prevValue = state.data.events[eventIdx].do[actionIdx];
-
-      this.container.app.manager.deleteEventAction(stateId, event);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'deleteEventAction',
-          args: { stateId, event, prevValue },
-        });
-      }
-    } else {
-      const prevValue = state.data.events[eventIdx];
-
-      this.container.app.manager.deleteEvent(stateId, eventIdx);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'deleteEvent',
-          args: { stateId, eventIdx, prevValue },
-        });
-      }
-    }
-
-    state.updateEventBox();
-
-    this.container.isDirty = true;
-  }
-
   addComponent(args: AddComponentParams, canUndo = true) {
     const { name, type } = args;
 
@@ -493,12 +392,15 @@ export class MachineController {
   private renameComponent(name: string, newName: string) {
     this.container.app.manager.renameComponent(name, newName);
 
-    const visualCompo = this.platform.nameToVisual.get(name)!;
+    const visualCompo = this.platform.nameToVisual.get(name);
+
+    if (!visualCompo) return;
+
     this.platform.nameToVisual.set(newName, visualCompo);
     this.platform.nameToVisual.delete(name);
 
     // А сейчас будет занимательное путешествие по схеме с заменой всего
-    this.states.forEach((state) => {
+    this.states.forEachNormalStates((state) => {
       for (const ev of state.eventBox.data) {
         // заменяем в триггере
         if (ev.trigger.component == name) {
@@ -556,16 +458,16 @@ export class MachineController {
   }
 
   deleteSelected = () => {
-    this.states.forEach((state) => {
+    this.states.forEachNormalStates((state) => {
       if (!state.isSelected) return;
 
       if (state.eventBox.selection) {
-        this.deleteEvent(state.id, state.eventBox.selection);
+        this.states.deleteEvent(state.id, state.eventBox.selection);
         state.eventBox.selection = undefined;
         return;
       }
 
-      this.container.statesController.deleteState(state.id);
+      this.states.deleteState(state.id);
     });
 
     this.transitions.forEach((transition) => {
@@ -582,7 +484,7 @@ export class MachineController {
   };
 
   copySelected = () => {
-    this.states.forEach((state) => {
+    this.states.forEachNormalStates((state) => {
       if (!state.isSelected) return;
 
       const data = this.container.app.manager.serializer.getState(state.id);
@@ -616,7 +518,7 @@ export class MachineController {
     const copyData = JSON.parse(data) as StateType | TransitionType | NoteType;
 
     if ('name' in copyData) {
-      return this.container.statesController.createState({
+      return this.states.createState({
         name: copyData.name,
         position: copyData.position,
         events: copyData.events,
@@ -639,7 +541,7 @@ export class MachineController {
 
   selectState(id: string) {
     const state = this.states.get(id);
-    if (!state) return;
+    if (!state || !(state instanceof State)) return;
 
     this.removeSelection();
 
@@ -678,12 +580,10 @@ export class MachineController {
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
   removeSelection() {
-    this.states.forEach((state) => {
-      if (state instanceof State) {
-        state.setIsSelected(false);
-        this.container.app.manager.changeStateSelection(state.id, false);
-        state.eventBox.selection = undefined;
-      }
+    this.states.forEachNormalStates((state) => {
+      state.setIsSelected(false);
+      this.container.app.manager.changeStateSelection(state.id, false);
+      state.eventBox.selection = undefined;
     });
 
     this.transitions.forEach((transition) => {

@@ -49,7 +49,7 @@ export const DiagramEditor: React.FC = () => {
     };
 
     editor.container.on('dblclick', (position) => {
-      editor?.container.statesController.createState({
+      editor.container.machineController.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
@@ -57,13 +57,13 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.statesController.on('changeState', (state) => {
+    editor.container.machineController.states.on('changeState', (state) => {
       ClearUseState();
       setState(state);
       openCreateModal();
     });
 
-    editor.container.statesController.on('changeEvent', (data) => {
+    editor.container.machineController.states.on('changeEvent', (data) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       ClearUseState();
@@ -118,7 +118,7 @@ export const DiagramEditor: React.FC = () => {
     }
 
     if (!isCreateModalOpen && eventsModalParentData) {
-      editor?.container.machineController.changeEvent(
+      editor?.container.machineController.states.changeEvent(
         eventsModalParentData.state.id,
         eventsModalParentData.eventSelection,
         data
@@ -129,7 +129,7 @@ export const DiagramEditor: React.FC = () => {
 
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.statesController.changeStateEvents({
+      editor?.container.machineController.states.changeStateEvents({
         id: data.id,
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,

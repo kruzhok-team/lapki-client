@@ -34,7 +34,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   isDirty = true;
 
   machineController!: MachineController;
-  statesController!: StatesController;
+
   transitionsController!: TransitionsController;
   notesController!: NotesController;
 
@@ -48,7 +48,6 @@ export class Container extends EventEmitter<ContainerEvents> {
 
     this.app = app;
     this.machineController = new MachineController(this, this.history);
-    this.statesController = new StatesController(this, this.history);
     this.transitionsController = new TransitionsController(this);
     this.notesController = new NotesController(this);
 

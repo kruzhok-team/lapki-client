@@ -1,5 +1,5 @@
 import { getCapturedNodeArgs } from '@renderer/types/drawable';
-import { Dimensions, Point, Rectangle } from '@renderer/types/graphics';
+import { Dimensions, Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Children } from './Children';
@@ -95,7 +95,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
   get computedWidth() {
     let width = this.dimensions.width / this.container.app.manager.data.scale;
     if (!this.children.isEmpty) {
-      let rightChildren = this.children.getByIndex(0)!;
+      let rightChildren = this.children.getByIndex(0) as Shape;
 
       this.children.forEach((children) => {
         const x = children.computedPosition.x;
@@ -128,16 +128,16 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
   get childrenContainerHeight() {
     if (this.children.isEmpty) return 0;
 
-    let bottomChild = this.children.getByIndex(0)!;
+    let bottomChild = this.children.getByIndex(0) as Shape;
     let result = 0;
 
     this.children.forEach((child) => {
-      const y = child.bounds.y;
-      const height = child.bounds.height;
+      const y = child.position.y;
+      const height = child.dimensions.height;
       const childrenContainerHeight = child.childrenContainerHeight;
 
-      const bY = bottomChild.bounds.y;
-      const bHeight = bottomChild.bounds.height;
+      const bY = bottomChild.position.y;
+      const bHeight = bottomChild.dimensions.height;
       const bChildrenContainerHeight = bottomChild.childrenContainerHeight;
 
       if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
@@ -146,7 +146,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
     });
 
     result =
-      (bottomChild.bounds.y + bottomChild.bounds.height + this.childrenPadding * 2) /
+      (bottomChild.position.y + bottomChild.dimensions.height + this.childrenPadding * 2) /
         this.container.app.manager.data.scale +
       bottomChild.childrenContainerHeight;
 

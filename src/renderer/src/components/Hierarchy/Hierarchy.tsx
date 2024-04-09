@@ -169,7 +169,7 @@ export const Hierarchy: React.FC = () => {
 
     const state = machine.states.get(item.index.toString());
     if (state) {
-      return editor.container.statesController.handleContextMenu(state, { event: mouse });
+      return machine.states.handleContextMenu(state, { event: mouse });
     }
     const transition = machine.transitions.get(item.index.toString());
     if (transition) {

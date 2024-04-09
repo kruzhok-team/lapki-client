@@ -1,4 +1,4 @@
-import { Dimensions, Point, Rectangle } from './graphics';
+import { Dimensions, Point } from './graphics';
 
 // FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string };
@@ -74,6 +74,8 @@ export type Transition = {
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 };
+
+// export type
 
 export type Component = {
   transitionId: string;

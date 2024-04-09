@@ -1,11 +1,10 @@
+import { Container } from '@renderer/lib/basic/Container';
+import { EventEmitter } from '@renderer/lib/common/EventEmitter';
+import { GhostTransition } from '@renderer/lib/drawable/GhostTransition';
+import { State } from '@renderer/lib/drawable/Node/State';
+import { Transition } from '@renderer/lib/drawable/Transition';
 import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
-
-import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitter';
-import { GhostTransition } from '../drawable/GhostTransition';
-import { State } from '../drawable/State';
-import { Transition } from '../drawable/Transition';
 
 /**
  * Контроллер {@link Transition|переходов}.
@@ -31,8 +30,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   initEvents() {
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.container.statesController.on('startNewTransition', this.handleStartNewTransition);
-    this.container.statesController.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.container.machineController.states.on('startNewTransition', this.handleStartNewTransition);
+    this.container.machineController.states.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
   handleStartNewTransition = (state: State) => {

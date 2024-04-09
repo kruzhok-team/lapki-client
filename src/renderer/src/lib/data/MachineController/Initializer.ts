@@ -1,18 +1,17 @@
+import { Container } from '@renderer/lib/basic/Container';
+import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { Note } from '@renderer/lib/drawable/Note';
-// import { InitialState } from '@renderer/types/diagram';
+import { Transition } from '@renderer/lib/drawable/Transition';
 
 import { MachineController } from './MachineController';
-
-import { Transition } from '../../drawable/Transition';
-import { loadPlatform } from '../PlatformLoader';
 
 /**
  * Класс инкапсулирующий логику инициализации {@link MachineController|контроллера машины состояний}
  * который эджектится (https://en.wikipedia.org/wiki/Dependency_injection#Constructor_injection) в конструкторе. Наружу отдаёт только метод init
  */
 export class Initializer {
-  constructor(private machineController: MachineController) {}
+  constructor(private container: Container, private machineController: MachineController) {}
 
   init() {
     this.resetEntities();
@@ -26,9 +25,6 @@ export class Initializer {
     this.container.viewCentering();
   }
 
-  private get container() {
-    return this.machineController.container;
-  }
   private get states() {
     return this.machineController.states;
   }
@@ -51,7 +47,7 @@ export class Initializer {
       this.container.transitionsController.unwatchTransition(value);
     });
     this.states.forEach((value) => {
-      this.container.statesController.unwatchState(value);
+      this.states.unwatchState(value);
     });
     this.notes.forEach((value) => {
       this.container.notesController.unwatch(value);
@@ -137,7 +133,7 @@ export class Initializer {
   private createStateView(id: string) {
     const state = new State(this.container, id);
     this.states.set(state.id, state);
-    this.container.statesController.watchState(state);
+    this.states.watchState(state);
     this.container.children.add('state', state.id);
   }
 

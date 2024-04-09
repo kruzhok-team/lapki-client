@@ -46,12 +46,12 @@ export class Transition extends Shape {
   get dimensions() {
     return { width: 450, height: 95 };
   }
-  set dimensions(value) {
+  set dimensions(_value) {
     throw new Error('Transition does not have dimensions');
     // this.data.dimensions = value;
   }
 
-  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D) {
     this.drawArrows(ctx);
     this.drawCondition(ctx);
   }

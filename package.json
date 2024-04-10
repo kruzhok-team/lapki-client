@@ -35,6 +35,7 @@
     "@codemirror/lang-xml": "^6.0.2",
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^1.0.2",
+    "@esbuild/win32-x64": "^0.20.2",
     "@floating-ui/react": "^0.26.9",
     "@floating-ui/react-dom": "^2.0.8",
     "@kruzhok-team/cyberiadaml-js": "^0.0.9",

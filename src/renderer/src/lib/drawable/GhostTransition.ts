@@ -32,9 +32,7 @@ export class GhostTransition {
         width: 1,
         height: 1,
       },
-      10,
-      3,
-      3
+      10
     );
 
     ctx.lineWidth = transitionStyle.width;

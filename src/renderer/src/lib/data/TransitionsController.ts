@@ -49,6 +49,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     return this.items.set(id, transition);
   }
 
+  getIdsByStateId(stateId: string) {
+    return [...this.items.entries()]
+      .filter(([_, { source, target }]) => source.id === stateId || target.id === stateId)
+      .map(([id]) => id);
+  }
+
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 

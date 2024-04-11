@@ -230,7 +230,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     }
 
-    this.container.children.remove(child, Layer.NormalStates);
+    child.parent?.children.remove(child, Layer.NormalStates);
     child.parent = parent;
     parent.children.add(child, Layer.NormalStates);
     // TODO Сделать удобный проход по переходам состояния
@@ -300,12 +300,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.container.app.manager.unlinkState(id);
 
     state.parent.children.remove(state, Layer.NormalStates);
-    const parentTransitionIds = state.parent.children.getTransitionIds();
-    state.parent.children.clearTransitions();
+    const parentTransitionIds = this.container.machineController.transitions.getIdsByStateId(
+      state.parent.id
+    );
+    state.parent.children.clear(Layer.Transitions);
     state.parent = undefined;
-    parentTransitionIds.forEach((id) => {
-      this.container.machineController.transitions.linkTransition(id);
-    });
+    parentTransitionIds.forEach(this.container.machineController.transitions.linkTransition);
     this.container.children.add(state, Layer.NormalStates);
 
     this.container.isDirty = true;
@@ -319,9 +319,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // let numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
-    this.transitions.forEach((data, transitionId) => {
-      if (data.source.id === id || data.target.id === id) {
-        this.container.machineController.transitions.deleteTransition(transitionId, canUndo);
+    this.container.machineController.transitions.forEach((transition) => {
+      if (transition.source.id === id || transition.target.id === id) {
+        this.container.machineController.transitions.deleteTransition(transition.id, canUndo);
         // numberOfConnectedActions += 1;
       }
     });

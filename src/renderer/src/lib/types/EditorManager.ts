@@ -1,5 +1,10 @@
-import { emptyElements, Action, Condition, EventData } from '@renderer/types/diagram';
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
+import {
+  emptyElements,
+  Action,
+  EventData,
+  Transition as TransitionData,
+} from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
   isMounted: false,
@@ -45,34 +50,14 @@ export interface CreateInitialStateParams {
   position: Point;
 }
 
-export interface CreateTransitionParams {
-  id?: string;
-  source: string;
-  target: string;
-  color: string;
-  position: Point;
-  component: string;
-  method: string;
-  doAction: Action[];
-  condition: Condition | undefined;
-}
+export type CreateTransitionParams = TransitionData & { id?: string };
+export type ChangeTransitionParams = TransitionData & { id: string };
 
 export interface CreateNoteParams {
   id?: string;
   position: Point;
   text: string;
   placeInCenter?: boolean;
-}
-
-export interface ChangeTransitionParams {
-  id: string;
-  source: string;
-  target: string;
-  color: string;
-  component: string;
-  method: string;
-  doAction: Action[];
-  condition: Condition | undefined;
 }
 
 export interface ChangeStateEventsParams {

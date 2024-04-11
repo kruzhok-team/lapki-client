@@ -1,4 +1,4 @@
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
 import { Button, MouseEvents } from '@renderer/types/mouse';
 
 import { BubbleEventEmitter } from '../common/BubbleEventEmitter';

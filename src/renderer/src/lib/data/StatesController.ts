@@ -1,10 +1,10 @@
 import throttle from 'lodash.throttle';
 
 import { State } from '@renderer/lib/drawable/Node/State';
+import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorManager';
+import { Point } from '@renderer/lib/types/graphics';
+import { UnlinkStateParams } from '@renderer/lib/types/MachineController';
 import { Action, Event, EventData } from '@renderer/types/diagram';
-import { ChangeStateEventsParams, CreateStateParams } from '@renderer/types/EditorManager';
-import { Point } from '@renderer/types/graphics';
-import { UnlinkStateParams } from '@renderer/types/MachineController';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { History } from './History';
@@ -14,7 +14,7 @@ import { EventEmitter } from '../common/EventEmitter';
 import { EventSelection } from '../drawable/Events';
 import { BaseState } from '../drawable/Node/BaseState';
 import { InitialState } from '../drawable/Node/InitialState';
-// import { InitialState } from '../drawable/InitialState';
+import { Layer } from '../types';
 
 type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
 
@@ -46,22 +46,29 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
   // initialStateMark: InitialState | null = null;
 
-  states: Map<string, BaseState> = new Map();
+  private items: Map<string, BaseState> = new Map();
 
   constructor(private container: Container, private history: History) {
     super();
   }
 
+  getNormalStates() {
+    return new Map([...this.items.entries()].filter(([, state]) => state instanceof State)) as Map<
+      string,
+      State
+    >;
+  }
+
   get(id: string) {
-    return this.states.get(id);
+    return this.items.get(id);
   }
 
   forEach(callback: (state: BaseState) => void) {
-    return this.states.forEach(callback);
+    return this.items.forEach(callback);
   }
 
   forEachNormalStates(callback: (state: State) => void) {
-    return this.states.forEach((state) => {
+    return this.items.forEach((state) => {
       if (state instanceof State) {
         callback(state);
       }
@@ -69,11 +76,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   clear() {
-    return this.states.clear();
+    return this.items.clear();
   }
 
   set(id: string, state: BaseState) {
-    return this.states.set(id, state);
+    return this.items.set(id, state);
   }
 
   // TODO
@@ -89,7 +96,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // Создание вьюшки
     const state = new State(this.container, newStateId);
 
-    this.states.set(state.id, state);
+    this.items.set(state.id, state);
 
     let numberOfConnectedActions = 0;
 
@@ -98,7 +105,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       this.linkState(parentId, newStateId, canUndo);
       numberOfConnectedActions += 1;
     } else {
-      this.container.children.add('state', state.id);
+      this.container.children.add(state, Layer.NormalStates);
       if (linkByPoint) {
         this.linkStateByPoint(state, position);
       }
@@ -111,7 +118,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     //   numberOfConnectedActions += 1;
     // }
 
-    this.createInitialState(state.position, canUndo);
+    this.createInitialState(state, canUndo);
     // numberOfConnectedActions += 1;
 
     this.watchState(state);
@@ -130,7 +137,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
     const { id } = args;
 
-    const state = this.states.get(id);
+    const state = this.items.get(id);
     if (!state || !(state instanceof State)) return;
 
     if (canUndo) {
@@ -157,7 +164,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   changeStateName = (id: string, name: string, canUndo = true) => {
-    const state = this.states.get(id);
+    const state = this.items.get(id);
     if (!state || !(state instanceof State)) return;
 
     if (canUndo) {
@@ -173,7 +180,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
-    const state = this.states.get(id);
+    const state = this.items.get(id);
     if (!state) return;
 
     if (canUndo) {
@@ -189,8 +196,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   linkState(parentId: string, childId: string, canUndo = true, addOnceOff = false) {
-    const parent = this.states.get(parentId);
-    const child = this.states.get(childId);
+    const parent = this.items.get(parentId);
+    const child = this.items.get(childId);
 
     if (!parent || !child || !(parent instanceof State)) return;
 
@@ -223,13 +230,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     }
 
-    this.container.children.remove('state', child.id);
+    this.container.children.remove(child, Layer.NormalStates);
     child.parent = parent;
-    parent.children.add('state', child.id);
+    parent.children.add(child, Layer.NormalStates);
     // TODO Сделать удобный проход по переходам состояния
     this.transitions.forEach((transition) => {
       if (transition.source.id === child.id || transition.target.id === child.id) {
-        this.container.machineController.linkTransition(transition.id);
+        this.container.machineController.transitions.linkTransition(transition.id);
       }
     });
 
@@ -273,7 +280,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   unlinkState(params: UnlinkStateParams, canUndo = true) {
     const { id } = params;
 
-    const state = this.states.get(id);
+    const state = this.items.get(id);
     if (!state || !state.parent) return;
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
@@ -292,20 +299,20 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.container.app.manager.unlinkState(id);
 
-    state.parent.children.remove('state', id);
+    state.parent.children.remove(state, Layer.NormalStates);
     const parentTransitionIds = state.parent.children.getTransitionIds();
     state.parent.children.clearTransitions();
     state.parent = undefined;
     parentTransitionIds.forEach((id) => {
-      this.container.machineController.linkTransition(id);
+      this.container.machineController.transitions.linkTransition(id);
     });
-    this.container.children.add('state', id);
+    this.container.children.add(state, Layer.NormalStates);
 
     this.container.isDirty = true;
   }
 
   deleteState = (id: string, canUndo = true) => {
-    const state = this.states.get(id);
+    const state = this.items.get(id);
     if (!state) return;
 
     // const parentId = state.data.parentId;
@@ -314,13 +321,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.transitions.forEach((data, transitionId) => {
       if (data.source.id === id || data.target.id === id) {
-        this.container.machineController.deleteTransition(transitionId, canUndo);
+        this.container.machineController.transitions.deleteTransition(transitionId, canUndo);
         // numberOfConnectedActions += 1;
       }
     });
 
     // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
-    this.states.forEach((childState) => {
+    this.items.forEach((childState) => {
       if (childState.data.parentId === id) {
         // Если есть родительское, перепривязываем к нему
         if (state.data.parentId) {
@@ -334,9 +341,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
     if (state.data.parentId) {
-      state.parent?.children.remove('state', id);
+      state.parent?.children.remove(state, Layer.NormalStates);
     } else {
-      this.container.children.remove('state', id);
+      this.container.children.remove(state, Layer.NormalStates);
     }
 
     // Если удаляемое состояние было начальным, стираем текущее значение
@@ -358,23 +365,34 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.container.app.manager.deleteState(id);
 
     this.unwatchState(state);
-    this.states.delete(id);
+    this.items.delete(id);
 
     this.container.isDirty = true;
   };
 
-  private createInitialState = (position: Point, _canUndo = true) => {
-    const newStateId = this.container.app.manager.createInitialState({ position });
+  private createInitialState = (target: State, _canUndo = true) => {
+    const newStateId = this.container.app.manager.createInitialState({
+      position: { x: target.position.x - 100, y: target.position.y - 100 },
+    });
 
     const state = new InitialState(this.container, newStateId);
 
-    this.states.set(state.id, state);
+    this.items.set(state.id, state);
 
-    this.container.children.add('state', state.id);
+    this.container.children.add(state, Layer.InitialStates);
+
+    this.container.machineController.transitions.createTransition(
+      {
+        color: '#FFF',
+        source: state.id,
+        target: target.id,
+      },
+      false
+    );
   };
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
-    const state = this.states.get(stateId);
+    const state = this.items.get(stateId);
     if (!state || !(state instanceof State)) return;
 
     this.container.app.manager.createEvent(stateId, eventData, eventIdx);
@@ -385,7 +403,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createEventAction(stateId: string, event: EventSelection, value: Action) {
-    const state = this.states.get(stateId);
+    const state = this.items.get(stateId);
     if (!state || !(state instanceof State)) return;
 
     this.container.app.manager.createEventAction(stateId, event, value);
@@ -397,7 +415,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   // Редактирование события в состояниях
   changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
-    const state = this.states.get(stateId);
+    const state = this.items.get(stateId);
     if (!state || !(state instanceof State)) return;
 
     const { eventIdx, actionIdx } = event;
@@ -434,7 +452,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в состоянии(модалка)
   deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
-    const state = this.states.get(stateId);
+    const state = this.items.get(stateId);
     if (!state || !(state instanceof State)) return;
 
     const { eventIdx, actionIdx } = event;
@@ -568,9 +586,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleDrag: DragHandler = throttle<DragHandler>((state, e) => {
     const possibleParent = (state.parent ?? this.container).getCapturedNode({
       position: e.event,
-      exclude: [state.id],
+      exclude: [state],
       includeChildrenHeight: false,
-      type: 'states',
+      layer: Layer.NormalStates,
     });
 
     this.dragInfo = null;

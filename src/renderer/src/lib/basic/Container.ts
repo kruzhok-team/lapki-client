@@ -1,9 +1,8 @@
-import { State } from '@renderer/lib/drawable/Node/State';
 import { picto } from '@renderer/lib/drawable/Picto';
 import { Shape } from '@renderer/lib/drawable/Shape';
+import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
+import { Point } from '@renderer/lib/types/graphics';
 import { getColor } from '@renderer/theme';
-import { getCapturedNodeArgs } from '@renderer/types/drawable';
-import { Point } from '@renderer/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -11,9 +10,8 @@ import { EventEmitter } from '../common/EventEmitter';
 import { History } from '../data/History';
 import { MachineController } from '../data/MachineController';
 import { NotesController } from '../data/NotesController';
-import { StatesController } from '../data/StatesController';
-import { TransitionsController } from '../data/TransitionsController';
 import { Children } from '../drawable/Children';
+import { Drawable } from '../types';
 import { clamp } from '../utils';
 
 export const MAX_SCALE = 10;
@@ -28,19 +26,17 @@ interface ContainerEvents {
   contextMenu: Point;
 }
 
-export class Container extends EventEmitter<ContainerEvents> {
+export class Container extends EventEmitter<ContainerEvents> implements Drawable {
   app!: CanvasEditor;
 
   isDirty = true;
 
   machineController!: MachineController;
-
-  transitionsController!: TransitionsController;
   notesController!: NotesController;
 
   history!: History;
 
-  children: Children;
+  children = new Children();
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
   constructor(app: CanvasEditor) {
@@ -48,17 +44,14 @@ export class Container extends EventEmitter<ContainerEvents> {
 
     this.app = app;
     this.machineController = new MachineController(this, this.history);
-    this.transitionsController = new TransitionsController(this);
     this.notesController = new NotesController(this);
 
     this.history = new History(this.machineController);
 
-    this.children = new Children(this.machineController);
-
     // Порядок важен, система очень тонкая
 
     this.initEvents();
-    this.transitionsController.initEvents();
+    this.machineController.transitions.initEvents();
     this.machineController.loadData();
   }
 
@@ -69,20 +62,19 @@ export class Container extends EventEmitter<ContainerEvents> {
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.drawGrid(ctx, canvas);
 
-    const drawChildren = (node: Container | Shape) => {
+    const drawChildren = (node: Drawable) => {
+      if (!node.children) return;
+
       node.children.forEach((child) => {
         child.draw(ctx, canvas);
 
-        if (!child.children.isEmpty) {
-          drawChildren(child);
-        }
+        drawChildren(child);
       });
     };
 
     drawChildren(this);
 
-    this.transitionsController.ghost.draw(ctx, canvas);
-    // this.statesController.initialStateMark?.draw(ctx);
+    this.machineController.transitions.ghost.draw(ctx, canvas);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -138,20 +130,23 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.app.mouse.on('rightclick', this.handleRightMouseClick);
   }
 
-  getCapturedNode(args: getCapturedNodeArgs) {
-    // const node = this.statesController.initialStateMark?.getIntersection(args);
-    // if (node) return node;
+  getCapturedNode(args: GetCapturedNodeParams) {
+    const { layer } = args;
 
-    const { type } = args;
+    if (layer !== undefined) {
+      for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
+        const node = (this.children.layers[layer][i] as Shape)?.getIntersection(args);
 
-    const end = type === 'states' ? this.children.statesSize : this.children.size;
+        if (node) return node;
+      }
+    } else {
+      for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
+          const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
 
-    for (let i = end - 1; i >= 0; i--) {
-      const node = (
-        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
-      )?.getIntersection(args);
-
-      if (node) return node;
+          if (node) return node;
+        }
+      }
     }
 
     return null;
@@ -164,21 +159,6 @@ export class Container extends EventEmitter<ContainerEvents> {
     this.isDirty = true;
   }
 
-  // ! Это на будущее
-  // handleDrop = (e: DragEvent) => {
-  //   e.preventDefault();
-
-  //   const rect = this.app.canvas.element.getBoundingClientRect();
-  //   const scale = this.app.manager.data.scale;
-  //   const offset = this.app.manager.data.offset;
-  //   const position = {
-  //     x: (e.clientX - rect.left) * scale - offset.x,
-  //     y: (e.clientY - rect.top) * scale - offset.y,
-  //   };
-
-  //   this.emit('stateDrop', position);
-  // };
-
   handleMouseDown = (e: MyMouseEvent) => {
     if (!e.left || this.isPan) return;
 
@@ -188,8 +168,7 @@ export class Container extends EventEmitter<ContainerEvents> {
       node.handleMouseDown(e);
 
       const parent = node.parent ?? this;
-      const type = node instanceof State ? 'state' : 'transition';
-      parent.children.moveToEnd(type, node.id);
+      parent.children.moveToTopOnLayer(node);
 
       this.mouseDownNode = node;
     }
@@ -211,7 +190,7 @@ export class Container extends EventEmitter<ContainerEvents> {
     if (node) {
       node.handleMouseUp(e);
     } else {
-      this.transitionsController.handleMouseUp();
+      this.machineController.transitions.handleMouseUp();
       this.machineController.removeSelection();
     }
   };

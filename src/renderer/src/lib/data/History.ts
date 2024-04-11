@@ -1,7 +1,22 @@
 import { useSyncExternalStore } from 'react';
 
 import {
-  INormalState as StateData,
+  AddComponentParams,
+  ChangeStateEventsParams,
+  ChangeTransitionParams,
+  CreateNoteParams,
+  CreateStateParams,
+} from '@renderer/types/EditorManager';
+import {
+  CreateTransitionParameters,
+  EditComponentParams,
+  RemoveComponentParams,
+  UnlinkStateParams,
+} from '@renderer/types/MachineController';
+
+import { Point } from '@renderer/lib/types/graphics';
+import {
+  NormalState as StateData,
   Transition as TransitionData,
   Note as NoteData,
   Action as EventAction,
@@ -10,20 +25,6 @@ import {
   EventData,
   InitialState,
 } from '@renderer/types/diagram';
-import {
-  AddComponentParams,
-  ChangeStateEventsParams,
-  ChangeTransitionParams,
-  CreateNoteParams,
-  CreateStateParams,
-} from '@renderer/types/EditorManager';
-import { Point } from '@renderer/types/graphics';
-import {
-  CreateTransitionParameters,
-  EditComponentParams,
-  RemoveComponentParams,
-  UnlinkStateParams,
-} from '@renderer/types/MachineController';
 
 import { MachineController } from './MachineController';
 

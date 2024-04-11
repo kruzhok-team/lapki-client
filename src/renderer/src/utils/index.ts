@@ -1,4 +1,4 @@
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
 import { ArgType } from '@renderer/types/platform';
 
 export const getVirtualElement = (position: Point) => {
@@ -19,20 +19,6 @@ export const getVirtualElement = (position: Point) => {
 };
 
 export const isDev = () => !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-
-export const indexOfMin = (arr: number[]) => {
-  let min = Infinity;
-  let minIndex = Infinity;
-
-  arr.forEach((v, i) => {
-    if (v < min) {
-      min = v;
-      minIndex = i;
-    }
-  });
-
-  return minIndex;
-};
 
 // Валидаторы типов arduino, в платформе это поле type
 export const validators: Record<string, (value: string) => boolean> = {

@@ -1,11 +1,12 @@
-import { getCapturedNodeArgs } from '@renderer/types/drawable';
-import { Dimensions, Point } from '@renderer/types/graphics';
+import { GetCapturedNodeParams, Layer } from '@renderer/lib/types/drawable';
+import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Children } from './Children';
 
 import { Container } from '../basic/Container';
 import { EventEmitter } from '../common/EventEmitter';
+import { Drawable } from '../types';
 import { isPointInRectangle } from '../utils';
 
 /**
@@ -35,11 +36,8 @@ interface ShapeEvents {
   dragend: { dragStartPosition: Point; dragEndPosition: Point };
 }
 
-export abstract class Shape extends EventEmitter<ShapeEvents> {
-  container!: Container;
-  id!: string;
-  children!: Children;
-  parent?: Shape;
+export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawable {
+  children = new Children();
 
   private dragStartPosition: Point | null = null;
 
@@ -50,13 +48,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
 
   childrenPadding = 15;
 
-  constructor(container: Container, id: string, parent?: Shape) {
+  constructor(protected container: Container, public id: string, public parent?: Shape) {
     super();
-
-    this.container = container;
-    this.id = id;
-    this.parent = parent;
-    this.children = new Children(this.container.machineController);
   }
 
   abstract get position(): Point;
@@ -95,9 +88,14 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
   get computedWidth() {
     let width = this.dimensions.width / this.container.app.manager.data.scale;
     if (!this.children.isEmpty) {
-      let rightChildren = this.children.getByIndex(0) as Shape;
+      const children = [
+        ...this.children.getLayer(Layer.NormalStates),
+        ...this.children.getLayer(Layer.Transitions),
+      ] as Shape[];
 
-      this.children.forEach((children) => {
+      let rightChildren = children[0] as Shape;
+
+      children.forEach((children) => {
         const x = children.computedPosition.x;
         const width = children.computedWidth;
 
@@ -128,10 +126,15 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
   get childrenContainerHeight() {
     if (this.children.isEmpty) return 0;
 
-    let bottomChild = this.children.getByIndex(0) as Shape;
+    const children = [
+      ...this.children.getLayer(Layer.NormalStates),
+      ...this.children.getLayer(Layer.Transitions),
+    ] as Shape[];
+
+    let bottomChild = children[0] as Shape;
     let result = 0;
 
-    this.children.forEach((child) => {
+    children.forEach((child) => {
       const y = child.position.y;
       const height = child.dimensions.height;
       const childrenContainerHeight = child.childrenContainerHeight;
@@ -247,40 +250,76 @@ export abstract class Shape extends EventEmitter<ShapeEvents> {
     return isPointInRectangle(bounds, { x, y });
   }
 
-  getCapturedNode(args: getCapturedNodeArgs) {
-    const { type } = args;
+  getCapturedNode(args: GetCapturedNodeParams) {
+    // const { type } = args;
 
-    const end = type === 'states' ? this.children.statesSize : this.children.size;
+    // const end = type === 'states' ? this.children.getSize(0) : this.children.getSize();
 
-    for (let i = end - 1; i >= 0; i--) {
-      const node = (
-        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
-      )?.getIntersection(args);
+    // for (let i = end - 1; i >= 0; i--) {
+    //   const node = (
+    //     type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+    //   )?.getIntersection(args);
 
-      if (node) return node;
+    //   if (node) return node;
+    // }
+
+    // return null;
+
+    const { layer } = args;
+
+    if (layer !== undefined) {
+      for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
+        const node = (this.children.layers[layer][i] as Shape)?.getIntersection(args);
+
+        if (node) return node;
+      }
+    } else {
+      for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
+          const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
+
+          if (node) return node;
+        }
+      }
     }
 
     return null;
   }
 
-  getIntersection(args: getCapturedNodeArgs): Shape | null {
-    const { position, type, exclude, includeChildrenHeight } = args;
+  getIntersection(args: GetCapturedNodeParams): Shape | null {
+    const { position, layer, exclude, includeChildrenHeight } = args;
 
-    if (exclude?.includes(this.id)) return null;
+    if (exclude?.includes(this)) return null;
 
     if (this.isUnderMouse(position, includeChildrenHeight)) {
       return this;
     }
 
-    const end = type === 'states' ? this.children.statesSize : this.children.size;
+    if (layer !== undefined) {
+      for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
+        const node = (this.children.layers[layer][i] as Shape)?.getIntersection(args);
 
-    for (let i = end - 1; i >= 0; i--) {
-      const node = (
-        type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
-      )?.getIntersection(args);
+        if (node) return node;
+      }
+    } else {
+      for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
+          const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
 
-      if (node) return node;
+          if (node) return node;
+        }
+      }
     }
+
+    // const end = type === 'states' ? this.children.getSize(0) : this.children.getSize();
+
+    // for (let i = end - 1; i >= 0; i--) {
+    //   const node = (
+    //     type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
+    //   )?.getIntersection(args);
+
+    //   if (node) return node;
+    // }
 
     return null;
   }

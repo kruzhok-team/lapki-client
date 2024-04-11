@@ -2,7 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { icons } from '@renderer/lib/drawable/Picto';
 import { isPointInRectangle } from '@renderer/lib/utils';
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 /**

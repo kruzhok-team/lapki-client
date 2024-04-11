@@ -3,6 +3,7 @@ import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { Note } from '@renderer/lib/drawable/Note';
 import { Transition } from '@renderer/lib/drawable/Transition';
+import { Layer } from '@renderer/lib/types';
 
 import { MachineController } from './MachineController';
 
@@ -44,7 +45,7 @@ export class Initializer {
   private resetEntities() {
     this.container.children.clear();
     this.transitions.forEach((value) => {
-      this.container.transitionsController.unwatchTransition(value);
+      this.transitions.unwatchTransition(value);
     });
     this.states.forEach((value) => {
       this.states.unwatchState(value);
@@ -134,7 +135,7 @@ export class Initializer {
     const state = new State(this.container, id);
     this.states.set(state.id, state);
     this.states.watchState(state);
-    this.container.children.add('state', state.id);
+    this.container.children.add(state, Layer.NormalStates);
   }
 
   private linkStateView(parentId: string, childId: string) {
@@ -143,22 +144,22 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.container.children.remove('state', childId);
+    this.container.children.remove(child, Layer.NormalStates);
     child.parent = parent;
-    parent.children.add('state', childId);
+    parent.children.add(child, Layer.NormalStates);
   }
 
   private createTransitionView(id: string) {
     const transition = new Transition(this.container, id);
     this.transitions.set(id, transition);
-    this.machineController.linkTransition(id);
-    this.container.transitionsController.watchTransition(transition);
+    this.transitions.linkTransition(id);
+    this.transitions.watchTransition(transition);
   }
 
   private createNoteView(id: string) {
     const note = new Note(this.container, id);
     this.notes.set(id, note);
-    this.container.children.add('note', note.id);
+    this.container.children.add(note, Layer.Notes);
     this.container.notesController.watch(note);
   }
 

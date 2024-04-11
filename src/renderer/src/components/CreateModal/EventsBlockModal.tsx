@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { State } from '@renderer/lib/drawable/State';
+import { State } from '@renderer/lib/drawable/Node/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';

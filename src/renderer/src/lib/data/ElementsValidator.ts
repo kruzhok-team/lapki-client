@@ -1,6 +1,6 @@
 import {
   Elements,
-  INormalState,
+  NormalState,
   Component,
   ArgList,
   Transition,
@@ -98,7 +98,7 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList | u
 }
 
 function validateStates(
-  states: { [id: string]: INormalState },
+  states: { [id: string]: NormalState },
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {

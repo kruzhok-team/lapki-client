@@ -1,6 +1,7 @@
 import { Container } from '@renderer/lib/basic/Container';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { transitionStyle } from '@renderer/lib/styles';
+import { Point } from '@renderer/lib/types/graphics';
 import {
   degrees_to_radians,
   drawCircle,
@@ -8,7 +9,6 @@ import {
   drawTriangle,
   getLine,
 } from '@renderer/lib/utils';
-import { Point } from '@renderer/types/graphics';
 
 /**
  * Неоформленный («призрачный») переход.

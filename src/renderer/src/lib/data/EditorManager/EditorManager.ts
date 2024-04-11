@@ -2,8 +2,8 @@ import { useSyncExternalStore } from 'react';
 
 import { customAlphabet } from 'nanoid';
 
-import { generateId } from '@renderer/lib/utils';
-import { Event, Action, Transition, Component, Elements, EventData } from '@renderer/types/diagram';
+import { EventSelection } from '@renderer/lib/drawable/Events';
+import { stateStyle } from '@renderer/lib/styles';
 import {
   emptyEditorData,
   emptyDataListeners,
@@ -17,14 +17,21 @@ import {
   AddComponentParams,
   CreateNoteParams,
   CreateInitialStateParams,
-} from '@renderer/types/EditorManager';
-import { Point, Rectangle } from '@renderer/types/graphics';
+  Point,
+} from '@renderer/lib/types';
+import { generateId } from '@renderer/lib/utils';
+import {
+  Event,
+  Action,
+  Transition as TransitionData,
+  Component,
+  Elements,
+  EventData,
+  isNormalState,
+} from '@renderer/types/diagram';
 
 import { FilesManager } from './FilesManager';
 import { Serializer } from './Serializer';
-
-import { EventSelection } from '../../drawable/Events';
-import { stateStyle } from '../../styles';
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
@@ -162,13 +169,7 @@ export class EditorManager {
   createInitialState(args: CreateInitialStateParams) {
     const { id = generateId(Object.keys(this.data.elements.states)), position } = args;
 
-    this.data.elements.states[id] = {
-      position,
-      dimensions: {
-        width: 130,
-        height: 70,
-      },
-    };
+    this.data.elements.states[id] = { position };
 
     this.triggerDataUpdate('elements.states');
 
@@ -177,7 +178,7 @@ export class EditorManager {
 
   changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
     const state = this.data.elements.states[id];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     const eventIndex = state.events.findIndex(
       (value) =>
@@ -213,9 +214,10 @@ export class EditorManager {
   }
 
   changeStateName(id: string, name: string) {
-    if (!this.data.elements.states.hasOwnProperty(id)) return false;
+    const state = this.data.elements.states[id];
+    if (!state || !isNormalState(state)) return false;
 
-    this.data.elements.states[id].name = name;
+    state.name = name;
 
     this.triggerDataUpdate('elements.states');
 
@@ -223,11 +225,13 @@ export class EditorManager {
   }
 
   changeStateSelection(id: string, selection: boolean) {
-    if (!this.data.elements.states.hasOwnProperty(id)) return false;
+    const state = this.data.elements.states[id];
+    if (!state || !isNormalState(state)) return false;
 
-    this.data.elements.states[id].selection = selection;
+    state.selection = selection;
 
     this.triggerDataUpdate('elements.states');
+
     return true;
   }
 
@@ -314,7 +318,7 @@ export class EditorManager {
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     if (eventIdx !== undefined) {
       state.events.splice(eventIdx, 0, eventData);
@@ -329,7 +333,7 @@ export class EditorManager {
 
   createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.states[stateId];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     const { eventIdx, actionIdx } = event;
 
@@ -342,7 +346,7 @@ export class EditorManager {
 
   changeEvent(stateId: string, eventIdx: number, newValue: Event) {
     const state = this.data.elements.states[stateId];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     // const event = state.events.find(
     //   (value, id) =>
@@ -372,7 +376,7 @@ export class EditorManager {
 
   changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
     const state = this.data.elements.states[stateId];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     const { eventIdx, actionIdx } = event;
 
@@ -385,7 +389,7 @@ export class EditorManager {
 
   deleteEvent(stateId: string, eventIdx: number) {
     const state = this.data.elements.states[stateId];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     state.events.splice(eventIdx, 1);
 
@@ -396,7 +400,7 @@ export class EditorManager {
 
   deleteEventAction(stateId: string, event: EventSelection) {
     const state = this.data.elements.states[stateId];
-    if (!state) return false;
+    if (!state || !isNormalState(state)) return false;
 
     const { eventIdx, actionIdx } = event;
 
@@ -407,68 +411,23 @@ export class EditorManager {
     return true;
   }
 
-  createTransition({
-    id,
-    source,
-    target,
-    color,
-    position,
-    component,
-    method,
-    doAction,
-    condition,
-  }: CreateTransitionParams) {
-    const getNewId = () => {
-      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
+  createTransition(args: CreateTransitionParams) {
+    const { id = generateId(Object.keys(this.data.elements.transitions)), ...other } = args;
 
-      let id = nanoid();
-      while (this.data.elements.transitions.hasOwnProperty(id)) {
-        id = nanoid();
-      }
-
-      return id;
-    };
-
-    const newId = id ?? getNewId();
-
-    this.data.elements.transitions[newId] = {
-      source,
-      target,
-      color,
-      position,
-      trigger: {
-        component,
-        method,
-      },
-      do: doAction,
-      condition,
-    };
+    this.data.elements.transitions[id] = other;
 
     this.triggerDataUpdate('elements.transitions');
 
-    return String(newId);
+    return id;
   }
 
-  changeTransition({
-    id,
-    source,
-    target,
-    color,
-    component,
-    method,
-    doAction,
-    condition,
-  }: ChangeTransitionParams) {
-    const transition = this.data.elements.transitions[id] as Transition;
+  changeTransition(args: ChangeTransitionParams) {
+    const { id, ...other } = args;
+
+    const transition = this.data.elements.transitions[id] as TransitionData;
     if (!transition) return false;
 
-    transition.source = source;
-    transition.target = target;
-    transition.color = color;
-    transition.trigger.component = component;
-    transition.trigger.method = method;
-    transition.do = doAction;
-    transition.condition = condition;
+    this.data.elements.transitions[id] = other;
 
     this.triggerDataUpdate('elements.transitions');
 
@@ -477,9 +436,10 @@ export class EditorManager {
 
   //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
   changeTransitionSelection(id: string, selection: boolean) {
-    if (!this.data.elements.transitions.hasOwnProperty(id)) return false;
+    const transition = this.data.elements.transitions[id];
+    if (!transition || !transition.label) return false;
 
-    this.data.elements.transitions[id].selection = selection;
+    transition.label.selection = selection;
 
     this.triggerDataUpdate('elements.states');
     return true;
@@ -487,9 +447,9 @@ export class EditorManager {
 
   changeTransitionPosition(id: string, position: Point) {
     const transition = this.data.elements.transitions[id];
-    if (!transition) return false;
+    if (!transition || !transition.label) return false;
 
-    transition.position = position;
+    transition.label.position = position;
 
     this.triggerDataUpdate('elements.transitions');
 
@@ -507,16 +467,12 @@ export class EditorManager {
     return true;
   }
 
-  getIdGenerator() {
-    return customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-  }
-
   addComponent({ name, type, parameters = {} }: AddComponentParams) {
     if (this.data.elements.components.hasOwnProperty(name)) {
       console.log(['bad new component', name, type]);
       return false;
     }
-    const transitionId = this.getIdGenerator()();
+    const transitionId = generateId(Object.keys(this.data.elements.transitions));
     this.data.elements.components[name] = {
       transitionId,
       type,
@@ -572,19 +528,12 @@ export class EditorManager {
   }
 
   createNote(params: CreateNoteParams) {
-    const { id, text, placeInCenter = false } = params;
+    const {
+      id = generateId(Object.keys(this.data.elements.notes)),
+      text,
+      placeInCenter = false,
+    } = params;
     let position = params.position;
-
-    const getNewId = () => {
-      const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
-
-      let id = nanoid();
-      while (this.data.elements.notes.hasOwnProperty(id)) {
-        id = nanoid();
-      }
-
-      return id;
-    };
 
     const centerPosition = () => {
       return {
@@ -595,16 +544,14 @@ export class EditorManager {
 
     position = placeInCenter ? centerPosition() : position;
 
-    const newId = id ?? getNewId();
-
-    this.data.elements.notes[newId] = {
+    this.data.elements.notes[id] = {
       text,
       position,
     };
 
     this.triggerDataUpdate('elements.notes');
 
-    return newId;
+    return id;
   }
 
   changeNoteText(id: string, text: string) {

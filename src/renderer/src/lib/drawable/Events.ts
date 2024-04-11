@@ -2,7 +2,7 @@ import { Container } from '@renderer/lib//basic/Container';
 import { isPointInRectangle } from '@renderer/lib//utils';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { picto } from '@renderer/lib/drawable/Picto';
-import { Point, Rectangle } from '@renderer/types/graphics';
+import { Point, Rectangle } from '@renderer/lib/types/graphics';
 
 export type EventSelection = {
   eventIdx: number;

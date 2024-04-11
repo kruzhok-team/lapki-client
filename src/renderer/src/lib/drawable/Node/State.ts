@@ -6,7 +6,7 @@ import { icons } from '@renderer/lib/drawable/Picto';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
-import { INormalState } from '@renderer/types/diagram';
+import { NormalState as NormalStateData } from '@renderer/types/diagram';
 
 const style = theme.colors.diagram.state;
 
@@ -29,7 +29,7 @@ export class State extends BaseState {
   }
 
   get data() {
-    return this.container.app.manager.data.elements.states[this.id] as INormalState;
+    return this.container.app.manager.data.elements.states[this.id] as NormalStateData;
   }
 
   get position() {

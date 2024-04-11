@@ -1,25 +1,26 @@
-import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Note } from '@renderer/lib/drawable/Note';
-import {
-  Condition,
-  Variable,
-  INormalState as StateType,
-  Transition as TransitionType,
-  Note as NoteType,
-} from '@renderer/types/diagram';
 import {
   AddComponentParams,
   ChangeTransitionParams,
   CreateNoteParams,
 } from '@renderer/types/EditorManager';
-import { Point } from '@renderer/types/graphics';
 import {
   CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
 } from '@renderer/types/MachineController';
-import { indexOfMin } from '@renderer/utils';
+
+import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
+import { State } from '@renderer/lib/drawable/Node/State';
+import { Note } from '@renderer/lib/drawable/Note';
+import { Layer } from '@renderer/lib/types';
+import { Point } from '@renderer/lib/types/graphics';
+import {
+  Condition,
+  Variable,
+  NormalState as StateType,
+  Transition as TransitionType,
+  Note as NoteType,
+} from '@renderer/types/diagram';
 
 import { Initializer } from './Initializer';
 
@@ -28,6 +29,7 @@ import { Transition } from '../../drawable/Transition';
 import { History } from '../History';
 import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
 import { StatesController } from '../StatesController';
+import { TransitionsController } from '../TransitionsController';
 
 /**
  * Контроллер машины состояний.
@@ -49,8 +51,8 @@ export class MachineController {
   initializer!: Initializer;
 
   states!: StatesController;
+  transitions!: TransitionsController;
 
-  transitions: Map<string, Transition> = new Map();
   notes: Map<string, Note> = new Map();
 
   platform!: PlatformManager;
@@ -59,6 +61,7 @@ export class MachineController {
     this.initializer = new Initializer(this.container, this);
 
     this.states = new StatesController(this.container, this.history);
+    this.transitions = new TransitionsController(this.container, this.history);
   }
 
   loadData() {
@@ -195,128 +198,6 @@ export class MachineController {
   //   this.container.isDirty = true;
   // };
 
-  createTransition(params: CreateTransitionParameters, canUndo = true) {
-    const { source, target, color, component, method, doAction, condition, id: prevId } = params;
-
-    const sourceState = this.states.get(source);
-    const targetState = this.states.get(target);
-
-    if (!sourceState || !targetState) return;
-
-    const position = params.position ?? {
-      x: (sourceState.position.x + targetState.position.x) / 2,
-      y: (sourceState.position.y + targetState.position.y) / 2,
-    };
-
-    // Создание данных
-    const id = this.container.app.manager.createTransition({
-      id: prevId,
-      source,
-      target,
-      color,
-      position,
-      component,
-      method,
-      doAction,
-      condition,
-    });
-    // Создание модельки
-    const transition = new Transition(this.container, id);
-
-    this.transitions.set(id, transition);
-    this.linkTransition(id);
-
-    this.container.transitionsController.watchTransition(transition);
-
-    this.container.isDirty = true;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createTransition',
-        args: { id, params },
-      });
-    }
-  }
-
-  linkTransition(id: string) {
-    const transition = this.transitions.get(id);
-    if (!transition) return;
-
-    // Убираем из предыдущего родителя
-    transition.source.parent?.children.remove('transition', id);
-    transition.target.parent?.children.remove('transition', id);
-
-    if (!transition.source.parent || !transition.target.parent) {
-      this.container.children.add('transition', transition.id);
-      transition.parent = undefined;
-    } else {
-      this.container.children.remove('transition', id);
-
-      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
-      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
-      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.container;
-
-      if (parent instanceof State) {
-        transition.parent = parent;
-      }
-
-      parent.children.add('transition', transition.id);
-    }
-  }
-
-  changeTransition(args: ChangeTransitionParams, canUndo = true) {
-    const transition = this.transitions.get(args.id);
-    if (!transition) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeTransition',
-        args: { transition, args, prevData: structuredClone(transition.data) },
-      });
-    }
-
-    this.container.app.manager.changeTransition(args);
-
-    this.container.isDirty = true;
-  }
-
-  changeTransitionPosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
-    const transition = this.transitions.get(id);
-    if (!transition) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeTransitionPosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.container.app.manager.changeTransitionPosition(id, endPosition);
-
-    this.container.isDirty = true;
-  }
-
-  deleteTransition(id: string, canUndo = true) {
-    const transition = this.transitions.get(id);
-    if (!transition) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteTransition',
-        args: { transition, prevData: structuredClone(transition.data) },
-      });
-    }
-
-    this.container.app.manager.deleteTransition(id);
-
-    const parent = transition.parent ?? this.container;
-    parent.children.remove('transition', id);
-    this.container.transitionsController.unwatchTransition(transition);
-    this.transitions.delete(id);
-
-    this.container.isDirty = true;
-  }
-
   addComponent(args: AddComponentParams, canUndo = true) {
     const { name, type } = args;
 
@@ -328,12 +209,12 @@ export class MachineController {
 
     this.container.isDirty = true;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'addComponent',
-        args: { args },
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'addComponent',
+    //     args: { args },
+    //   });
+    // }
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
@@ -358,12 +239,12 @@ export class MachineController {
 
     this.container.isDirty = true;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'editComponent',
-        args: { args, prevComponent },
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'editComponent',
+    //     args: { args, prevComponent },
+    //   });
+    // }
   }
 
   removeComponent(args: RemoveComponentParams, canUndo = true) {
@@ -621,7 +502,7 @@ export class MachineController {
 
     this.notes.set(newNoteId, note);
     this.container.notesController.watch(note);
-    this.container.children.add('note', newNoteId);
+    this.container.children.add(note, Layer.Notes);
 
     this.container.isDirty = true;
 
@@ -681,7 +562,7 @@ export class MachineController {
 
     this.container.app.manager.deleteNote(id);
 
-    this.container.children.remove('note', id);
+    this.container.children.remove(note, Layer.Notes);
     this.container.notesController.unwatch(note);
     this.notes.delete(id);
 

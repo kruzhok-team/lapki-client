@@ -1,9 +1,13 @@
 import { Container } from '@renderer/lib/basic/Container';
 import { EventEmitter } from '@renderer/lib/common/EventEmitter';
+import { History } from '@renderer/lib/data/History';
 import { GhostTransition } from '@renderer/lib/drawable/GhostTransition';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
-import { Point } from '@renderer/types/graphics';
+import { Layer } from '@renderer/lib/types';
+import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorManager';
+import { Point } from '@renderer/lib/types/graphics';
+import { indexOfMin } from '@renderer/lib/utils';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 /**
@@ -21,10 +25,148 @@ interface TransitionsControllerEvents {
 export class TransitionsController extends EventEmitter<TransitionsControllerEvents> {
   ghost!: GhostTransition;
 
-  constructor(public container: Container) {
+  items: Map<string, Transition> = new Map();
+
+  constructor(private container: Container, private history: History) {
     super();
 
     this.ghost = new GhostTransition(container);
+  }
+
+  get(id: string) {
+    return this.items.get(id);
+  }
+
+  forEach(callback: (transition: Transition) => void) {
+    return this.items.forEach(callback);
+  }
+
+  clear() {
+    return this.items.clear();
+  }
+
+  set(id: string, transition: Transition) {
+    return this.items.set(id, transition);
+  }
+
+  createTransition(params: CreateTransitionParams, canUndo = true) {
+    const { source, target, color, id: prevId, label } = params;
+
+    const sourceState = this.container.machineController.states.get(source);
+    const targetState = this.container.machineController.states.get(target);
+
+    if (!sourceState || !targetState) return;
+
+    if (label && !label.position) {
+      label.position = {
+        x: (sourceState.position.x + targetState.position.x) / 2,
+        y: (sourceState.position.y + targetState.position.y) / 2,
+      };
+    }
+
+    // Создание данных
+    const id = this.container.app.manager.createTransition({
+      id: prevId,
+      source,
+      target,
+      color,
+      label,
+    });
+    // Создание модельки
+    const transition = new Transition(this.container, id);
+
+    this.items.set(id, transition);
+    this.linkTransition(id);
+
+    this.watchTransition(transition);
+
+    this.container.isDirty = true;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createTransition',
+        args: { id, params },
+      });
+    }
+  }
+
+  linkTransition(id: string) {
+    const transition = this.items.get(id);
+    if (!transition) return;
+
+    // Убираем из предыдущего родителя
+    transition.source.parent?.children.remove(transition, Layer.Transitions);
+    transition.target.parent?.children.remove(transition, Layer.Transitions);
+
+    if (!transition.source.parent || !transition.target.parent) {
+      this.container.children.add(transition, Layer.Transitions);
+      transition.parent = undefined;
+    } else {
+      this.container.children.remove(transition, Layer.Transitions);
+
+      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
+      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
+      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.container;
+
+      if (parent instanceof State) {
+        transition.parent = parent;
+      }
+
+      parent.children.add(transition, Layer.Transitions);
+    }
+  }
+
+  changeTransition(args: ChangeTransitionParams, canUndo = true) {
+    const transition = this.items.get(args.id);
+    if (!transition) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeTransition',
+        args: { transition, args, prevData: structuredClone(transition.data) },
+      });
+    }
+
+    this.container.app.manager.changeTransition(args);
+
+    this.container.isDirty = true;
+  }
+
+  changeTransitionPosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const transition = this.items.get(id);
+    if (!transition) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeTransitionPosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.container.app.manager.changeTransitionPosition(id, endPosition);
+
+    this.container.isDirty = true;
+  }
+
+  deleteTransition(id: string, canUndo = true) {
+    const transition = this.items.get(id);
+    if (!transition) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteTransition',
+        args: { transition, prevData: structuredClone(transition.data) },
+      });
+    }
+
+    this.container.app.manager.deleteTransition(id);
+
+    const parent = transition.parent ?? this.container;
+    parent.children.remove(transition, Layer.Transitions);
+    this.unwatchTransition(transition);
+    this.items.delete(id);
+
+    this.container.isDirty = true;
   }
 
   initEvents() {
@@ -85,11 +227,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     transition: Transition,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.container.machineController.changeTransitionPosition(
-      transition.id,
-      e.dragStartPosition,
-      e.dragEndPosition
-    );
+    this.changeTransitionPosition(transition.id, e.dragStartPosition, e.dragEndPosition);
   };
 
   watchTransition(transition: Transition) {

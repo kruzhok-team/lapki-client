@@ -73,7 +73,7 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.container.transitionsController.on('changeTransition', (target) => {
+    editor.container.machineController.transitions.on('changeTransition', (target) => {
       ClearUseState();
       setEvents(target.data.do ?? []);
       setTransition(target);
@@ -81,7 +81,7 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования новой связи
-    editor.container.transitionsController.on('createTransition', ({ source, target }) => {
+    editor.container.machineController.transitions.on('createTransition', ({ source, target }) => {
       ClearUseState();
       setNewTransition({ source, target });
       openCreateModal();
@@ -129,14 +129,14 @@ export const DiagramEditor: React.FC = () => {
 
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.machineController.states.changeStateEvents({
+      editor.container.machineController.states.changeStateEvents({
         id: data.id,
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,
         actions: events,
       });
     } else if (transition && data.key === 3) {
-      editor?.container.machineController.changeTransition({
+      editor.container.machineController.transitions.changeTransition({
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
@@ -147,15 +147,19 @@ export const DiagramEditor: React.FC = () => {
         condition: data.condition,
       });
     } else if (newTransition) {
-      editor?.container.machineController.createTransition({
+      editor.container.machineController.transitions.createTransition({
         source: newTransition.source.id,
         target: newTransition.target.id,
         color: data.color ?? defaultTransColor,
-        component: data.trigger.component,
-        method: data.trigger.method,
-        doAction: events,
-        condition: data.condition,
-      });
+        label: {
+          condition: data.condition,
+          do: events,
+          trigger: {
+            component: data.trigger.component,
+            method: data.trigger.method,
+          },
+        },
+      } as any);
     }
     closeCreateModal();
   };

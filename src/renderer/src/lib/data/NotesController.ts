@@ -1,4 +1,4 @@
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { Container } from '../basic/Container';

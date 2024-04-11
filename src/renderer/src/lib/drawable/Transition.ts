@@ -1,17 +1,16 @@
-import { State } from '@renderer/lib/drawable/Node/State';
+import { Container } from '@renderer/lib/basic/Container';
+import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
 import { picto } from '@renderer/lib/drawable/Picto';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { Transition as TransitionType } from '@renderer/types/diagram';
-
-import { Container } from '../basic/Container';
-import { stateStyle, transitionStyle } from '../styles';
+import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import {
   degrees_to_radians,
   drawCircle,
   drawCurvedLine,
   drawTriangle,
+  getLine,
   getTransitionLines,
-} from '../utils';
+} from '@renderer/lib/utils';
 
 /**
  * Переход между состояниями.
@@ -25,26 +24,34 @@ export class Transition extends Shape {
     super(container, id);
   }
 
-  get data(): TransitionType {
+  get data() {
     return this.container.app.manager.data.elements.transitions[this.id];
   }
 
   get source() {
-    return this.container.machineController.states.get(this.data.source) as State;
+    return this.container.machineController.states.get(this.data.source) as BaseState;
   }
 
   get target() {
-    return this.container.machineController.states.get(this.data.target) as State;
+    return this.container.machineController.states.get(this.data.target) as BaseState;
   }
 
   get position() {
-    return this.data.position;
+    return this.data.label?.position ?? { x: 0, y: 0 };
   }
   set position(value) {
-    this.data.position = value;
+    if (!this.data.label) {
+      throw new Error(`Transition with id ${this.id} does not have label`);
+    }
+
+    this.data.label.position = value;
   }
   get dimensions() {
-    return { width: 450, height: 95 };
+    if (!this.data.label) {
+      return { width: 0, height: 0 };
+    }
+
+    return { width: 130, height: 70 };
   }
   set dimensions(_value) {
     throw new Error('Transition does not have dimensions');
@@ -53,19 +60,30 @@ export class Transition extends Shape {
 
   draw(ctx: CanvasRenderingContext2D) {
     this.drawArrows(ctx);
-    this.drawCondition(ctx);
+    this.drawLabel(ctx);
   }
 
-  private drawCondition(ctx: CanvasRenderingContext2D) {
+  private drawLabel(ctx: CanvasRenderingContext2D) {
+    if (!this.data.label) return;
+
     const { x, y, width, height } = this.drawBounds;
     const eventMargin = picto.eventMargin;
     const p = 15 / this.container.app.manager.data.scale;
+    const px = x + p;
+    const py = y + p;
+    const yDx = picto.eventHeight + 10;
     const fontSize = stateStyle.titleFontSize / this.container.app.manager.data.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
+
+    const platform = this.container.machineController.platform;
+    const eventRowLength = Math.max(
+      3,
+      Math.floor((width * this.container.app.manager.data.scale - 30) / (picto.eventWidth + 5)) - 1
+    );
+
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
-
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();
@@ -75,62 +93,63 @@ export class Transition extends Shape {
 
     ctx.fillStyle = transitionStyle.bgColor;
 
-    const trigger = this.data.trigger;
-    const platform = this.container.machineController.platform;
-    ctx.beginPath();
-    platform.drawEvent(ctx, trigger, x + p, y + p);
-    ctx.closePath();
+    if (this.data.label.trigger) {
+      const trigger = this.data.label.trigger;
+      ctx.beginPath();
+      platform.drawEvent(ctx, trigger, x + p, y + p);
+      ctx.closePath();
+    }
 
     //Здесь начинается прорисовка действий и условий для связей
-    const eventRowLength = Math.max(
-      3,
-      Math.floor((width * this.container.app.manager.data.scale - 30) / (picto.eventWidth + 5)) - 1
-    );
-    const px = x + p;
-    const py = y + p;
-    const yDx = picto.eventHeight + 10;
-
-    //Условия
-    //TODO: Требуется допиливание прорисовки условий
-    ctx.beginPath();
-    if (this.data.condition) {
-      const ax = 1;
-      const ay = 0;
-      const aX =
-        px +
-        (eventMargin + (picto.eventWidth + eventMargin) * ax) /
-          this.container.app.manager.data.scale;
-      const aY = py + (ay * yDx) / this.container.app.manager.data.scale;
-      platform.drawCondition(ctx, this.data.condition, aX, aY, opacity);
+    if (this.data.label.condition) {
+      //TODO: Требуется допиливание прорисовки условий
+      ctx.beginPath();
+      if (this.data.label.condition) {
+        const ax = 1;
+        const ay = 0;
+        const aX =
+          px +
+          (eventMargin + (picto.eventWidth + eventMargin) * ax) /
+            this.container.app.manager.data.scale;
+        const aY = py + (ay * yDx) / this.container.app.manager.data.scale;
+        platform.drawCondition(ctx, this.data.label.condition, aX, aY, opacity);
+      }
+      ctx.closePath();
     }
-    ctx.closePath();
 
-    //Действия
-    ctx.beginPath();
-    this.data.do?.forEach((data, actIdx) => {
-      const ax = 1 + (actIdx % eventRowLength);
-      const ay = 1 + Math.floor(actIdx / eventRowLength);
-      const aX =
-        px +
-        (eventMargin + (picto.eventWidth + eventMargin) * ax) /
-          this.container.app.manager.data.scale;
-      const aY = py + (ay * yDx) / this.container.app.manager.data.scale;
-      platform.drawAction(ctx, data, aX, aY, opacity);
-    });
-    ctx.closePath();
-
-    /*
-    ctx.fillText(trigger.component, x + p, y + p);
-    ctx.fillText(trigger.method, x + p, y + fontSize + p);
-    ctx.closePath();
-    */
+    if (this.data.label.do) {
+      ctx.beginPath();
+      this.data.label.do?.forEach((data, actIdx) => {
+        const ax = 1 + (actIdx % eventRowLength);
+        const ay = 1 + Math.floor(actIdx / eventRowLength);
+        const aX =
+          px +
+          (eventMargin + (picto.eventWidth + eventMargin) * ax) /
+            this.container.app.manager.data.scale;
+        const aY = py + (ay * yDx) / this.container.app.manager.data.scale;
+        platform.drawAction(ctx, data, aX, aY, opacity);
+      });
+      ctx.closePath();
+    }
 
     if (this.isSelected) {
       this.drawSelection(ctx);
     }
   }
 
-  private drawArrows(ctx: CanvasRenderingContext2D) {
+  private drawSelection(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+
+    // NOTE: Для каждого нового объекта рисования требуется указывать их начало и конец,
+    //       а перед ними прописывать стили!
+    ctx.beginPath();
+    ctx.strokeStyle = transitionStyle.bgColor;
+    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.container.app.manager.data.scale);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  private drawArrowsWithLabel(ctx: CanvasRenderingContext2D) {
     const sourceBounds = this.source.drawBounds;
     const targetBounds = this.target.drawBounds;
 
@@ -138,9 +157,7 @@ export class Transition extends Shape {
       { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
       { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
       this.drawBounds,
-      10,
-      3,
-      3
+      10
     );
 
     ctx.lineWidth = transitionStyle.width;
@@ -162,16 +179,29 @@ export class Transition extends Shape {
     );
   }
 
-  private drawSelection(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height, childrenHeight } = this.drawBounds;
+  private drawArrowsWithoutLabel(ctx: CanvasRenderingContext2D) {
+    const line = getLine(this.target.drawBounds, this.source.drawBounds, 10);
 
-    // NOTE: Для каждого нового объекта рисования требуется указывать их начало и конец,
-    //       а перед ними прописывать стили!
-    ctx.beginPath();
-    ctx.strokeStyle = transitionStyle.bgColor;
-    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.container.app.manager.data.scale);
-    ctx.stroke();
-    ctx.closePath();
+    ctx.lineWidth = transitionStyle.width;
+    ctx.strokeStyle = this.data.color;
+    ctx.fillStyle = this.data.color;
+
+    drawCurvedLine(ctx, line, 12 / this.container.app.manager.data.scale);
+    drawCircle(ctx, line.end, transitionStyle.startSize / this.container.app.manager.data.scale);
+    drawTriangle(
+      ctx,
+      line.start,
+      10 / this.container.app.manager.data.scale,
+      degrees_to_radians(line.se)
+    );
+  }
+
+  private drawArrows(ctx: CanvasRenderingContext2D) {
+    if (this.data.label) {
+      return this.drawArrowsWithLabel(ctx);
+    }
+
+    return this.drawArrowsWithoutLabel(ctx);
   }
 
   setIsSelected(value: boolean) {

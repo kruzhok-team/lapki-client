@@ -1,4 +1,4 @@
-import { Dimensions, Point } from './graphics';
+import { Dimensions, Point } from '@renderer/lib/types';
 
 // FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string };
@@ -29,27 +29,25 @@ export type EventData = {
   // TODO: condition?: Condition;
 };
 
-export interface IBaseState {
+interface BaseState {
   parentId?: string;
   position: Point;
-  dimensions: Dimensions;
 }
 
-export interface INormalState extends IBaseState {
+export interface NormalState extends BaseState {
   name: string;
   events: EventData[];
+  dimensions: Dimensions;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 }
 
-export type IInitialStateNew = IBaseState;
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface InitialState extends BaseState {}
 
-export type IState = INormalState | IInitialStateNew;
+export type State = NormalState | InitialState;
 
-// export type InitialState = {
-//   target: string;
-//   position: Point;
-// };
+export const isNormalState = (state: State): state is NormalState => 'name' in state;
 
 export type Variable = {
   component: string;
@@ -62,20 +60,19 @@ export type Condition = {
   value: Condition[] | Variable | number | string;
 };
 
-export type Transition = {
-  //id: string;
+export interface Transition {
   source: string;
   target: string;
   color: string;
-  position: Point;
-  trigger: Event;
-  condition?: Condition | null;
-  do?: Action[];
-  //TODO: В дальнейшем планируется убрать
-  selection?: boolean;
-};
-
-// export type
+  label?: {
+    position: Point;
+    trigger?: Event;
+    condition?: Condition | null;
+    do?: Action[];
+    //TODO: В дальнейшем планируется убрать
+    selection?: boolean;
+  };
+}
 
 export type Component = {
   transitionId: string;
@@ -90,8 +87,7 @@ export type Note = {
 
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
-  states: { [id: string]: IState };
-  // initialStates: { [id: string]: InitialState };
+  states: { [id: string]: State };
   transitions: { [id: string]: Transition };
   components: { [id: string]: Component };
   notes: { [id: string]: Note };

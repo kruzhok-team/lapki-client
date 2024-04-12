@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { State } from '@renderer/lib/drawable/Node/State';
+import { State } from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types/graphics';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
-import { Point } from '@renderer/lib/types/graphics';
 
 export type DiagramContextMenuItem = {
   label: string;
@@ -60,13 +60,13 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить заметку',
           type: 'note',
           action: () => {
-            const note = editor.container.machineController.createNote({
+            const note = editor.container.machineController.notes.createNote({
               position: canvasPos,
               placeInCenter: true,
               text: '',
             });
 
-            editor.container.notesController.emit('change', note);
+            editor.container.machineController.notes.emit('change', note);
           },
         },
         {
@@ -186,14 +186,9 @@ export const useDiagramContextMenu = () => {
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             action: () => {
               editor.container.machineController.transitions.changeTransition({
+                ...transition.data,
                 id: transition.id,
                 source: state.id,
-                target: transition.data.target,
-                color: transition.data.color,
-                component: transition.data.trigger.component,
-                method: transition.data.trigger.method,
-                doAction: transition.data.do!,
-                condition: transition.data.condition!,
               });
             },
           };
@@ -206,14 +201,9 @@ export const useDiagramContextMenu = () => {
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             action: () => {
               editor.container.machineController.transitions.changeTransition({
+                ...transition.data,
                 id: transition.id,
-                source: transition.data.source,
                 target: state.id,
-                color: transition.data.color,
-                component: transition.data.trigger.component,
-                method: transition.data.trigger.method,
-                doAction: transition.data.do!,
-                condition: transition.data.condition!,
               });
             },
           };
@@ -278,20 +268,20 @@ export const useDiagramContextMenu = () => {
       }
     );
 
-    editor.container.notesController.on('contextMenu', ({ note, position }) => {
+    editor.container.machineController.notes.on('contextMenu', ({ note, position }) => {
       handleEvent(position, [
         {
           label: 'Редактировать',
           type: 'edit',
           action: () => {
-            editor.container.notesController.emit('change', note);
+            editor.container.machineController.notes.emit('change', note);
           },
         },
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machineController.deleteNote(note.id);
+            editor?.container.machineController.notes.deleteNote(note.id);
           },
         },
       ]);

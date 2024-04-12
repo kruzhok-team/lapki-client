@@ -1,9 +1,5 @@
-import { Container } from '@renderer/lib/basic/Container';
-import { Events } from '@renderer/lib/drawable/Events';
-import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
-import { EdgeHandlers } from '@renderer/lib/drawable/Node/EdgeHandlers';
-import { icons } from '@renderer/lib/drawable/Picto';
-import { Shape } from '@renderer/lib/drawable/Shape';
+import { Container } from '@renderer/lib/basic';
+import { Events, BaseState, EdgeHandlers, icons, Shape } from '@renderer/lib/drawable';
 import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
 import { NormalState as NormalStateData } from '@renderer/types/diagram';

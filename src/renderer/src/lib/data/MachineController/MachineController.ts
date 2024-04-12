@@ -1,8 +1,6 @@
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Note } from '@renderer/lib/drawable/Note';
-import { Layer } from '@renderer/lib/types';
-import { AddComponentParams, CreateNoteParams } from '@renderer/lib/types/EditorManager';
-import { Point } from '@renderer/lib/types/graphics';
+import { Container } from '@renderer/lib/basic';
+import { State } from '@renderer/lib/drawable';
+import { AddComponentParams } from '@renderer/lib/types/EditorManager';
 import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/MachineController';
 import {
   Condition,
@@ -14,8 +12,8 @@ import {
 
 import { Initializer } from './Initializer';
 
-import { Container } from '../../basic/Container';
 import { History } from '../History';
+import { NotesController } from '../NotesController';
 import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
 import { StatesController } from '../StatesController';
 import { TransitionsController } from '../TransitionsController';
@@ -41,8 +39,7 @@ export class MachineController {
 
   states!: StatesController;
   transitions!: TransitionsController;
-
-  notes: Map<string, Note> = new Map();
+  notes!: NotesController;
 
   platform!: PlatformManager;
 
@@ -51,6 +48,7 @@ export class MachineController {
 
     this.states = new StatesController(this.container, this.history);
     this.transitions = new TransitionsController(this.container, this.history);
+    this.notes = new NotesController(this.container, this.history);
   }
 
   loadData() {
@@ -198,12 +196,12 @@ export class MachineController {
 
     this.container.isDirty = true;
 
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'addComponent',
-    //     args: { args },
-    //   });
-    // }
+    if (canUndo) {
+      this.history.do({
+        type: 'addComponent',
+        args: { args },
+      });
+    }
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
@@ -228,12 +226,12 @@ export class MachineController {
 
     this.container.isDirty = true;
 
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'editComponent',
-    //     args: { args, prevComponent },
-    //   });
-    // }
+    if (canUndo) {
+      this.history.do({
+        type: 'editComponent',
+        args: { args, prevComponent },
+      });
+    }
   }
 
   removeComponent(args: RemoveComponentParams, canUndo = true) {
@@ -350,7 +348,7 @@ export class MachineController {
     this.notes.forEach((note) => {
       if (!note.isSelected) return;
 
-      this.deleteNote(note.id);
+      this.notes.deleteNote(note.id);
     });
   };
 
@@ -398,7 +396,7 @@ export class MachineController {
     }
 
     if ('text' in copyData) {
-      return this.createNote(copyData);
+      return this.notes.createNote(copyData);
     }
 
     return this.transitions.createTransition({
@@ -480,78 +478,5 @@ export class MachineController {
       });
     }
     return vacant;
-  }
-
-  createNote(params: CreateNoteParams, canUndo = true) {
-    const newNoteId = this.container.app.manager.createNote(params);
-    const note = new Note(this.container, newNoteId);
-
-    this.notes.set(newNoteId, note);
-    this.container.notesController.watch(note);
-    this.container.children.add(note, Layer.Notes);
-
-    this.container.isDirty = true;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createNote',
-        args: { id: newNoteId, params },
-      });
-    }
-
-    return note;
-  }
-
-  changeNoteText = (id: string, text: string, canUndo = true) => {
-    const note = this.notes.get(id);
-    if (!note) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeNoteText',
-        args: { id, text, prevText: note.data.text },
-      });
-    }
-
-    this.container.app.manager.changeNoteText(id, text);
-    note.prepareText();
-
-    this.container.isDirty = true;
-  };
-
-  changeNotePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
-    const note = this.notes.get(id);
-    if (!note) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeNotePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.container.app.manager.changeNotePosition(id, endPosition);
-
-    this.container.isDirty = true;
-  }
-
-  deleteNote(id: string, canUndo = true) {
-    const note = this.notes.get(id);
-    if (!note) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteNote',
-        args: { id, prevData: structuredClone(note.data) },
-      });
-    }
-
-    this.container.app.manager.deleteNote(id);
-
-    this.container.children.remove(note, Layer.Notes);
-    this.container.notesController.unwatch(note);
-    this.notes.delete(id);
-
-    this.container.isDirty = true;
   }
 }

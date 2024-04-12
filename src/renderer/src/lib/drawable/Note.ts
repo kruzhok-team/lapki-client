@@ -1,5 +1,5 @@
-import { Container } from '@renderer/lib/basic/Container';
-import { Shape } from '@renderer/lib/drawable/Shape';
+import { Container } from '@renderer/lib/basic';
+import { Shape } from '@renderer/lib/drawable';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
 

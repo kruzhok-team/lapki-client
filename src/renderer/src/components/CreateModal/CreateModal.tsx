@@ -5,8 +5,7 @@ import { SingleValue } from 'react-select';
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import {
   Action,
@@ -232,7 +231,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     //Позволяет найти начальные значения условия(условий), если таковые имеются
     const tryGetCondition = () => {
       if (!transition) return;
-      const c = transition.data.condition;
+      const c = transition.data.label?.condition;
       if (!c) return undefined;
       condition.handleChangeConditionShow(true);
       const operator = c.type;
@@ -288,8 +287,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     const init = (transition: Transition) => {
       const { data } = transition;
 
-      setSelectedComponent(data.trigger.component);
-      setSelectedMethod(data.trigger.method);
+      if (!data.label?.trigger) return;
+
+      setSelectedComponent(data.label.trigger.component);
+      setSelectedMethod(data.label.trigger.method);
 
       tryGetCondition();
     };

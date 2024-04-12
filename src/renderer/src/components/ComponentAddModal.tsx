@@ -6,7 +6,7 @@ import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
-import { icons } from '@renderer/lib/drawable/Picto';
+import { icons } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { convert } from './utils/html-element-to-react';

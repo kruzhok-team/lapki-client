@@ -1,7 +1,5 @@
-import { Container } from '@renderer/lib/basic/Container';
-import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
-import { picto } from '@renderer/lib/drawable/Picto';
-import { Shape } from '@renderer/lib/drawable/Shape';
+import { Container } from '@renderer/lib/basic';
+import { BaseState, picto, Shape } from '@renderer/lib/drawable';
 import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import {
   degrees_to_radians,

@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Scale } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
-import { EventSelection } from '@renderer/lib/drawable/Events';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { EventSelection, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 import { defaultTransColor } from '@renderer/utils';
@@ -75,7 +73,7 @@ export const DiagramEditor: React.FC = () => {
     //Здесь мы открываем модальное окно редактирования созданной связи
     editor.container.machineController.transitions.on('changeTransition', (target) => {
       ClearUseState();
-      setEvents(target.data.do ?? []);
+      setEvents(target.data.label?.do ?? []);
       setTransition(target);
       openCreateModal();
     });
@@ -141,10 +139,11 @@ export const DiagramEditor: React.FC = () => {
         source: transition.source.id,
         target: transition.target.id,
         color: data.color ?? defaultTransColor,
-        component: data.trigger.component,
-        method: data.trigger.method,
-        doAction: events,
-        condition: data.condition,
+        label: {
+          trigger: data.trigger,
+          do: events,
+          condition: data.condition,
+        } as any,
       });
     } else if (newTransition) {
       editor.container.machineController.transitions.createTransition({
@@ -158,8 +157,8 @@ export const DiagramEditor: React.FC = () => {
             component: data.trigger.component,
             method: data.trigger.method,
           },
-        },
-      } as any);
+        } as any,
+      });
     }
     closeCreateModal();
   };

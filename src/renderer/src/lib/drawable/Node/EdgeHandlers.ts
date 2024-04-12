@@ -1,8 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { icons } from '@renderer/lib/drawable/Picto';
-import { isPointInRectangle } from '@renderer/lib/utils';
+import { State, icons } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
+import { isPointInRectangle } from '@renderer/lib/utils';
 import { MyMouseEvent } from '@renderer/types/mouse';
 
 /**

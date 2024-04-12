@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 
 import { EditorManager } from './EditorManager';
 
-import { emptyElements } from '../../../types/diagram';
+import { NormalState, emptyElements } from '../../../types/diagram';
 
 const em = new EditorManager();
 em.init('basename', 'name', emptyElements());
@@ -72,7 +72,7 @@ describe('states', () => {
         ],
       });
 
-      const state = em.data.elements.states['0'];
+      const state = em.data.elements.states['0'] as NormalState;
 
       expect(state.events).toEqual([
         {

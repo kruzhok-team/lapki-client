@@ -1,18 +1,14 @@
-import { picto } from '@renderer/lib/drawable/Picto';
-import { Shape } from '@renderer/lib/drawable/Shape';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { EventEmitter } from '@renderer/lib/common';
+import { History } from '@renderer/lib/data/History';
+import { MachineController } from '@renderer/lib/data/MachineController';
+import { Children, picto, Shape } from '@renderer/lib/drawable';
+import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { Point } from '@renderer/lib/types/graphics';
+import { clamp } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 import { MyMouseEvent } from '@renderer/types/mouse';
-
-import { CanvasEditor } from '../CanvasEditor';
-import { EventEmitter } from '../common/EventEmitter';
-import { History } from '../data/History';
-import { MachineController } from '../data/MachineController';
-import { NotesController } from '../data/NotesController';
-import { Children } from '../drawable/Children';
-import { Drawable } from '../types';
-import { clamp } from '../utils';
 
 export const MAX_SCALE = 10;
 export const MIN_SCALE = 0.2;
@@ -27,26 +23,19 @@ interface ContainerEvents {
 }
 
 export class Container extends EventEmitter<ContainerEvents> implements Drawable {
-  app!: CanvasEditor;
-
   isDirty = true;
 
   machineController!: MachineController;
-  notesController!: NotesController;
 
-  history!: History;
+  history = new History(this);
   children = new Children();
 
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
-  constructor(app: CanvasEditor) {
+  constructor(public app: CanvasEditor) {
     super();
 
-    this.app = app;
-    this.history = new History(this.machineController);
-
     this.machineController = new MachineController(this, this.history);
-    this.notesController = new NotesController(this);
 
     // Порядок важен, система очень тонкая
 

@@ -21,7 +21,7 @@ import {
   preloadPlatforms,
   preparePreloadImages,
 } from '@renderer/lib/data/PlatformLoader';
-import { preloadPicto } from '@renderer/lib/drawable/Picto';
+import { preloadPicto } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { NotInitialized } from './NotInitialized';

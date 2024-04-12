@@ -1,8 +1,5 @@
-import { Container } from '@renderer/lib/basic/Container';
-import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
-import { icons } from '@renderer/lib/drawable/Picto';
-import { Shape } from '@renderer/lib/drawable/Shape';
-import { drawCircle, drawImageFit } from '@renderer/lib/utils';
+import { Container } from '@renderer/lib/basic';
+import { BaseState, icons, Shape } from '@renderer/lib/drawable';
 import { getColor } from '@renderer/theme';
 import { InitialState as InitialStateData } from '@renderer/types/diagram';
 
@@ -51,7 +48,6 @@ export class InitialState extends BaseState {
     ctx.clip();
     // drawCircle(ctx, { x: x + width / 2, y: y + height / 2 }, width / 2);
 
-    // drawImageFit(ctx, this.image, this.drawBounds);
     ctx.drawImage(icon, x, y, width, height);
     ctx.restore();
 

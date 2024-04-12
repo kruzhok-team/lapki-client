@@ -1,9 +1,7 @@
-import { Container } from '@renderer/lib/basic/Container';
-import { EventEmitter } from '@renderer/lib/common/EventEmitter';
+import { Container } from '@renderer/lib/basic';
+import { EventEmitter } from '@renderer/lib/common';
 import { History } from '@renderer/lib/data/History';
-import { GhostTransition } from '@renderer/lib/drawable/GhostTransition';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { GhostTransition, State, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorManager';
 import { Point } from '@renderer/lib/types/graphics';

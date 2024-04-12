@@ -4,8 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
@@ -46,12 +45,12 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
     if (state && stateEvents) {
       return setEvents(stateEvents.do);
     }
-    if (transition) {
+    if (transition && transition.data.label?.trigger) {
       if (
-        transition.data.trigger.component === selectedComponent &&
-        transition.data.trigger.method === selectedMethod
+        transition.data.label.trigger.component === selectedComponent &&
+        transition.data.label.trigger.method === selectedMethod
       ) {
-        return setEvents(transition.data.do!);
+        return setEvents(transition.data.label.do ?? []);
       }
     }
     return setEvents([]);

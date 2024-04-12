@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { State } from '@renderer/lib/drawable/Node/State';
+import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 export const useDiagramStateName = () => {
@@ -26,7 +26,7 @@ export const useDiagramStateName = () => {
     if (!editor) return;
 
     editor.container.machineController.states.on('changeStateName', (state) => {
-      const globalOffset = state.container.app.mouse.getOffset();
+      const globalOffset = editor.container.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {
         x: statePos.x + globalOffset.x,

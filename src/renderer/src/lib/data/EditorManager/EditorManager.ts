@@ -1,8 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-import { customAlphabet } from 'nanoid';
-
-import { EventSelection } from '@renderer/lib/drawable/Events';
+import { EventSelection } from '@renderer/lib/drawable';
 import { stateStyle } from '@renderer/lib/styles';
 import {
   emptyEditorData,

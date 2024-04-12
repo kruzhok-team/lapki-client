@@ -1,10 +1,8 @@
-import { Canvas } from './basic/Canvas';
-import { Container } from './basic/Container';
-import { Keyboard } from './basic/Keyboard';
-import { Mouse } from './basic/Mouse';
-import { Render } from './common/Render';
+import { Canvas, Container, Keyboard, Mouse } from '@renderer/lib/basic';
+import { Render } from '@renderer/lib/common';
+import { preloadPicto } from '@renderer/lib/drawable';
+
 import { EditorManager } from './data/EditorManager';
-import { preloadPicto } from './drawable/Picto';
 
 /**
  * Редактор машин состояний.

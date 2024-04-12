@@ -1,7 +1,6 @@
+import { BubbleEventEmitter } from '@renderer/lib/common';
 import { Point } from '@renderer/lib/types/graphics';
 import { Button, MouseEvents } from '@renderer/types/mouse';
-
-import { BubbleEventEmitter } from '../common/BubbleEventEmitter';
 
 /**
  * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.

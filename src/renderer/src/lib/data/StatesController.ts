@@ -1,6 +1,8 @@
 import throttle from 'lodash.throttle';
 
-import { State } from '@renderer/lib/drawable/Node/State';
+import { Container } from '@renderer/lib/basic';
+import { EventEmitter } from '@renderer/lib/common';
+import { State, EventSelection, BaseState, InitialState } from '@renderer/lib/drawable';
 import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorManager';
 import { Point } from '@renderer/lib/types/graphics';
 import { UnlinkStateParams } from '@renderer/lib/types/MachineController';
@@ -9,11 +11,6 @@ import { MyMouseEvent } from '@renderer/types/mouse';
 
 import { History } from './History';
 
-import { Container } from '../basic/Container';
-import { EventEmitter } from '../common/EventEmitter';
-import { EventSelection } from '../drawable/Events';
-import { BaseState } from '../drawable/Node/BaseState';
-import { InitialState } from '../drawable/Node/InitialState';
 import { Layer } from '../types';
 
 type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
@@ -44,7 +41,6 @@ interface StatesControllerEvents {
 
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
-  // initialStateMark: InitialState | null = null;
 
   private items: Map<string, BaseState> = new Map();
 
@@ -81,11 +77,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   set(id: string, state: BaseState) {
     return this.items.set(id, state);
-  }
-
-  // TODO
-  get transitions() {
-    return this.container.machineController.transitions;
   }
 
   createState = (args: CreateStateParams, canUndo = true) => {
@@ -248,7 +239,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     console.log(parent);
 
     // TODO Сделать удобный проход по переходам состояния
-    this.transitions.forEach((transition) => {
+    this.container.machineController.transitions.forEach((transition) => {
       if (transition.source.id === child.id || transition.target.id === child.id) {
         this.container.machineController.transitions.linkTransition(transition.id);
       }
@@ -260,38 +251,36 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.container.isDirty = true;
   }
 
-  // TODO
-  linkStateByPoint(_state: State, _position: Point) {
-    // TODO
+  linkStateByPoint(state: State, position: Point) {
     // назначаем родительское состояние по месту его создания
-    // let possibleParent: State | undefined = undefined;
-    // for (const item of this.states.values()) {
-    //   if (state.id == item.id) continue;
-    //   if (item.isUnderMouse(position, true)) {
-    //     if (typeof possibleParent === 'undefined') {
-    //       possibleParent = item;
-    //     } else {
-    //       // учитываем вложенность, нужно поместить состояние
-    //       // в максимально дочернее
-    //       let searchPending = true;
-    //       while (searchPending) {
-    //         searchPending = false;
-    //         for (const child of possibleParent.children) {
-    //           if (!(child instanceof State)) continue;
-    //           if (state.id == child.id) continue;
-    //           if (child.isUnderMouse(position, true)) {
-    //             possibleParent = child as State;
-    //             searchPending = true;
-    //             break;
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-    // if (possibleParent !== state && possibleParent) {
-    //   this.linkState(possibleParent.id, state.id, true, true);
-    // }
+    let possibleParent: State | undefined = undefined;
+    for (const item of this.items.values()) {
+      if (state.id == item.id || !(item instanceof State)) continue;
+      if (item.isUnderMouse(position, true)) {
+        if (typeof possibleParent === 'undefined') {
+          possibleParent = item;
+        } else {
+          // учитываем вложенность, нужно поместить состояние
+          // в максимально дочернее
+          let searchPending = true;
+          while (searchPending) {
+            searchPending = false;
+            for (const child of possibleParent.children.layers[Layer.NormalStates]) {
+              if (!(child instanceof State)) continue;
+              if (state.id == child.id) continue;
+              if (child.isUnderMouse(position, true)) {
+                possibleParent = child as State;
+                searchPending = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    if (possibleParent !== state && possibleParent) {
+      this.linkState(possibleParent.id, state.id, true, true);
+    }
   }
 
   unlinkState(params: UnlinkStateParams, canUndo = true) {

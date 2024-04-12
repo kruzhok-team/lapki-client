@@ -1,3 +1,5 @@
+import { isNormalState } from '@renderer/types/diagram';
+
 import { EditorManager } from './EditorManager';
 
 import { exportCGML } from '../GraphmlBuilder';
@@ -22,16 +24,16 @@ export class Serializer {
 
   getState(id: string) {
     const state = this.data.elements.states[id];
-    if (!state) return null;
+    if (!state || !isNormalState(state)) return null;
     delete state.selection;
     return JSON.stringify(state, undefined, 2);
   }
 
   getTransition(id: string) {
     const transition = this.data.elements.transitions[id];
-    if (!transition) return null;
+    if (!transition || !transition.label) return null;
 
-    delete transition.selection;
+    delete transition.label.selection;
     return JSON.stringify(transition, undefined, 2);
   }
 

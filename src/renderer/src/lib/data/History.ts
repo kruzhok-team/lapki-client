@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
+import { Container } from '@renderer/lib/basic';
+import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
@@ -22,13 +24,9 @@ import {
   Event,
   Component,
   EventData,
-  InitialState,
 } from '@renderer/types/diagram';
 
 import { MachineController } from './MachineController';
-
-import { EventSelection } from '../drawable/Events';
-import { Transition } from '../drawable/Transition';
 
 export type PossibleActions = {
   stateCreate: CreateStateParams & { newStateId: string };
@@ -224,20 +222,20 @@ export const actionFunctions: ActionFunctions = {
   }),
 
   createNote: (sM, { id, params }) => ({
-    redo: sM.createNote.bind(sM, { id, ...params }, false),
-    undo: sM.deleteNote.bind(sM, id, false),
+    redo: sM.notes.createNote.bind(sM, { id, ...params }, false),
+    undo: sM.notes.deleteNote.bind(sM, id, false),
   }),
   changeNoteText: (sM, { id, text, prevText }) => ({
-    redo: sM.changeNoteText.bind(sM, id, text, false),
-    undo: sM.changeNoteText.bind(sM, id, prevText, false),
+    redo: sM.notes.changeNoteText.bind(sM, id, text, false),
+    undo: sM.notes.changeNoteText.bind(sM, id, prevText, false),
   }),
   changeNotePosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.changeNotePosition.bind(sM, id, startPosition, endPosition, false),
-    undo: sM.changeNotePosition.bind(sM, id, endPosition, startPosition, false),
+    redo: sM.notes.changeNotePosition.bind(sM, id, startPosition, endPosition, false),
+    undo: sM.notes.changeNotePosition.bind(sM, id, endPosition, startPosition, false),
   }),
   deleteNote: (sM, { id, prevData }) => ({
-    redo: sM.deleteNote.bind(sM, id, false),
-    undo: sM.createNote.bind(sM, { id, ...prevData }, false),
+    redo: sM.notes.deleteNote.bind(sM, id, false),
+    undo: sM.notes.createNote.bind(sM, { id, ...prevData }, false),
   }),
 };
 
@@ -368,7 +366,11 @@ export class History {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(private stateMachine: MachineController) {}
+  constructor(private container: Container) {}
+
+  private get stateMachine() {
+    return this.container.machineController;
+  }
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;

@@ -1,8 +1,6 @@
-import { Container } from '@renderer/lib/basic/Container';
+import { Container } from '@renderer/lib/basic';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { State } from '@renderer/lib/drawable/Node/State';
-import { Note } from '@renderer/lib/drawable/Note';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { State, Note, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
 import { MachineController } from './MachineController';
@@ -51,7 +49,7 @@ export class Initializer {
       this.states.unwatchState(value);
     });
     this.notes.forEach((value) => {
-      this.container.notesController.unwatch(value);
+      this.notes.unwatch(value);
     });
 
     this.states.clear();
@@ -160,7 +158,7 @@ export class Initializer {
     const note = new Note(this.container, id);
     this.notes.set(id, note);
     this.container.children.add(note, Layer.Notes);
-    this.container.notesController.watch(note);
+    this.notes.watch(note);
   }
 
   // private createInitialStateView(data: InitialState) {

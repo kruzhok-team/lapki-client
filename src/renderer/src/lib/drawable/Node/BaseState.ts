@@ -1,5 +1,5 @@
 import { Container } from '@renderer/lib/basic';
-import { Shape } from '@renderer/lib/drawable';
+import { Shape } from '@renderer/lib/drawable/Shape';
 import { State } from '@renderer/types/diagram';
 
 export abstract class BaseState extends Shape {

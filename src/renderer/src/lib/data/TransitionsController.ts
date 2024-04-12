@@ -5,8 +5,8 @@ import { GhostTransition, State, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorManager';
 import { Point } from '@renderer/lib/types/graphics';
+import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
-import { MyMouseEvent } from '@renderer/types/mouse';
 
 /**
  * Контроллер {@link Transition|переходов}.
@@ -37,6 +37,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   forEach(callback: (transition: Transition) => void) {
     return this.items.forEach(callback);
+  }
+
+  forEachByStateId(stateId: string, callback: (transition: Transition) => void) {
+    return this.items.forEach((transition) => {
+      if (transition.data.source === stateId || transition.data.target === stateId) {
+        callback(transition);
+      }
+    });
   }
 
   clear() {

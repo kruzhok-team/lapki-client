@@ -2,7 +2,7 @@ import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
 import { GetCapturedNodeParams, Layer } from '@renderer/lib/types/drawable';
 import { Dimensions, Point } from '@renderer/lib/types/graphics';
-import { MyMouseEvent } from '@renderer/types/mouse';
+import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 import { Children } from './Children';
 

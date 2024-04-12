@@ -6,9 +6,9 @@ import { Children, picto, Shape } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { Point } from '@renderer/lib/types/graphics';
+import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { clamp } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
-import { MyMouseEvent } from '@renderer/types/mouse';
 
 export const MAX_SCALE = 10;
 export const MIN_SCALE = 0.2;

@@ -13,8 +13,8 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
+import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { MyMouseEvent } from '@renderer/types/mouse';
 import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';

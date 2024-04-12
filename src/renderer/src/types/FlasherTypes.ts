@@ -56,9 +56,11 @@ export class FlashResult {
     const deviceDesc = this.device ? `${this.device.name} (${this.device.portName})` : 'неизвестно';
     const serialID = this.device?.serialID ? this.device?.serialID : 'отсутствует';
     const avrdudeMsg = this.avrdudeMsg ? this.avrdudeMsg : 'отсутствует сообщение';
-    return `Устройство: ${deviceDesc}\n
-    Серийный номер устройства: ${serialID}\n
-    Результат прошивки: ${this.result}\n
-    avrdude: ${avrdudeMsg}\n`;
+    return `
+Устройство: ${deviceDesc}\n
+Серийный номер устройства: ${serialID}\n
+Результат прошивки: ${this.result}\n
+Вывод avrdude\n 
+${avrdudeMsg}\n`;
   }
 }

@@ -254,8 +254,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       }
       platform = platform?.toLowerCase();
       const device = devices.get(currentDeviceID)?.name.toLowerCase();
+      // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+      // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
       switch (platform) {
         case 'arduinomicro':
+          // arduino micro - состоит из двух устройств, прошивку можно загрузить в любое
           if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
             return true;
           }

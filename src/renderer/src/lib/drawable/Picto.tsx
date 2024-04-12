@@ -4,6 +4,7 @@ import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
+import InitialStateIcon from '@renderer/assets/images.jpeg';
 import { Rectangle } from '@renderer/lib/types/graphics';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
@@ -31,6 +32,7 @@ const basePicto = {
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
   pen: Pen,
+  InitialStateIcon,
   system: resolveImg('common/system.svg'),
   variable: resolveImg('common/variable.svg'),
 

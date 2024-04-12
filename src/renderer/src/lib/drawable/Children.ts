@@ -40,6 +40,8 @@ export class Children implements IChildren {
   }
 
   remove(drawable: Drawable, layer: Layer) {
+    if (!this.layers[layer]) return;
+
     const index = this.layers[layer].findIndex((item) => item === drawable);
 
     if (index !== -1) {

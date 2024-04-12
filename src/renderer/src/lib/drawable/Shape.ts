@@ -25,6 +25,9 @@ import { isPointInRectangle } from '../utils';
  * TODO: Это явно нужно переделать.
  */
 
+const LONG_PRESS_TIMEOUT = 2000;
+const CHILDREN_PADDING = 15;
+
 interface ShapeEvents {
   mousedown: { event: MyMouseEvent };
   mouseup: { event: MyMouseEvent };
@@ -40,13 +43,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   children = new Children();
 
   private dragStartPosition: Point | null = null;
-
   private isMouseDown = false;
-
   private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
-  longPressTimeout = 2000;
-
-  childrenPadding = 15;
 
   constructor(protected container: Container, public id: string, public parent?: Shape) {
     super();
@@ -69,8 +67,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     if (this.parent) {
       const { x: px, y: py } = this.parent.compoundPosition;
 
-      x += px + this.childrenPadding;
-      y += py + this.parent.dimensions.height + this.childrenPadding;
+      x += px + CHILDREN_PADDING;
+      y += py + this.parent.dimensions.height + CHILDREN_PADDING;
     }
 
     return { x, y };
@@ -90,6 +88,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     if (!this.children.isEmpty) {
       const children = [
         ...this.children.getLayer(Layer.NormalStates),
+        ...this.children.getLayer(Layer.InitialStates),
         ...this.children.getLayer(Layer.Transitions),
       ] as Shape[];
 
@@ -112,7 +111,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         cx +
           rightChildren.computedDimensions.width -
           x +
-          this.childrenPadding / this.container.app.manager.data.scale
+          CHILDREN_PADDING / this.container.app.manager.data.scale
       );
     }
 
@@ -128,6 +127,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
 
     const children = [
       ...this.children.getLayer(Layer.NormalStates),
+      ...this.children.getLayer(Layer.InitialStates),
       ...this.children.getLayer(Layer.Transitions),
     ] as Shape[];
 
@@ -149,7 +149,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     });
 
     result =
-      (bottomChild.position.y + bottomChild.dimensions.height + this.childrenPadding * 2) /
+      (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
         this.container.app.manager.data.scale +
       bottomChild.childrenContainerHeight;
 
@@ -193,7 +193,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
 
     this.mouseDownTimerId = setTimeout(() => {
       this.emit('longpress', { event: e });
-    }, this.longPressTimeout);
+    }, LONG_PRESS_TIMEOUT);
 
     this.emit('mousedown', { event: e });
 

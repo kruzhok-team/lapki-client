@@ -35,18 +35,18 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   notesController!: NotesController;
 
   history!: History;
-
   children = new Children();
+
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
   constructor(app: CanvasEditor) {
     super();
 
     this.app = app;
+    this.history = new History(this.machineController);
+
     this.machineController = new MachineController(this, this.history);
     this.notesController = new NotesController(this);
-
-    this.history = new History(this.machineController);
 
     // Порядок важен, система очень тонкая
 
@@ -310,13 +310,6 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   viewCentering() {
     const arrX: number[] = [];
     const arrY: number[] = [];
-
-    // TODO
-    // const initialPos = this.machineController.getInitialStatePosition();
-    // if (initialPos) {
-    //   arrX.push(initialPos.x);
-    //   arrY.push(initialPos.y);
-    // }
 
     this.machineController.states.forEach((state) => {
       arrX.push(state.position.x);

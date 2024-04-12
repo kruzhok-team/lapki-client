@@ -3,18 +3,17 @@ import { useSyncExternalStore } from 'react';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
+  CreateTransitionParams,
   ChangeTransitionParams,
   CreateNoteParams,
   CreateStateParams,
-} from '@renderer/types/EditorManager';
+} from '@renderer/lib/types/EditorManager';
+import { Point } from '@renderer/lib/types/graphics';
 import {
-  CreateTransitionParameters,
   EditComponentParams,
   RemoveComponentParams,
   UnlinkStateParams,
-} from '@renderer/types/MachineController';
-
-import { Point } from '@renderer/lib/types/graphics';
+} from '@renderer/lib/types/MachineController';
 import {
   NormalState as StateData,
   Transition as TransitionData,
@@ -38,17 +37,17 @@ export type PossibleActions = {
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; params: UnlinkStateParams };
-  createTransition: { id: string; params: CreateTransitionParameters };
+  createTransition: { id: string; params: CreateTransitionParams };
   deleteTransition: { transition: Transition; prevData: TransitionData };
   changeTransition: {
     transition: Transition;
     args: ChangeTransitionParams;
     prevData: TransitionData;
   };
-  createInitialState: InitialState;
-  changeInitialState: { prevTargetId: string; newTargetId: string };
-  changeInitialStatePosition: { startPosition: Point; endPosition: Point };
-  deleteInitialState: InitialState;
+  // createInitialState: InitialState;
+  // changeInitialState: { prevTargetId: string; newTargetId: string };
+  // changeInitialStatePosition: { startPosition: Point; endPosition: Point };
+  // deleteInitialState: InitialState;
   changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   changeTransitionPosition: { id: string; startPosition: Point; endPosition: Point };
   changeEvent: { stateId: string; event: EventSelection; newValue: Event; prevValue: Event };
@@ -91,17 +90,21 @@ type ActionDescriptions = {
 
 export const actionFunctions: ActionFunctions = {
   stateCreate: (sM, args) => ({
-    redo: sM.createState.bind(sM, { ...args, id: args.newStateId, linkByPoint: false }, false),
-    undo: sM.deleteState.bind(sM, args.newStateId, false),
+    redo: sM.states.createState.bind(
+      sM,
+      { ...args, id: args.newStateId, linkByPoint: false },
+      false
+    ),
+    undo: sM.states.deleteState.bind(sM, args.newStateId, false),
   }),
   deleteState: (sM, { id, stateData }) => ({
-    redo: sM.deleteState.bind(sM, id, false),
-    undo: sM.createState.bind(
+    redo: sM.states.deleteState.bind(sM, id, false),
+    undo: sM.states.createState.bind(
       sM,
       {
         name: stateData.name,
         id,
-        position: stateData.bounds,
+        position: stateData.position,
         parentId: stateData.parentId,
         events: stateData.events,
         linkByPoint: false,
@@ -110,12 +113,12 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
   changeStateName: (sM, { id, name, prevName }) => ({
-    redo: sM.changeStateName.bind(sM, id, name, false),
-    undo: sM.changeStateName.bind(sM, id, prevName, false),
+    redo: sM.states.changeStateName.bind(sM, id, name, false),
+    undo: sM.states.changeStateName.bind(sM, id, prevName, false),
   }),
   changeStateEvents: (sM, { args, prevActions }) => ({
-    redo: sM.changeStateEvents.bind(sM, args, false),
-    undo: sM.changeStateEvents.bind(
+    redo: sM.states.changeStateEvents.bind(sM, args, false),
+    undo: sM.states.changeStateEvents.bind(
       sM,
       {
         ...args,
@@ -125,88 +128,79 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
   linkState: (sM, { parentId, childId }) => ({
-    redo: sM.linkState.bind(sM, parentId, childId, false),
-    undo: sM.unlinkState.bind(sM, { id: childId }, false),
+    redo: sM.states.linkState.bind(sM, parentId, childId, false),
+    undo: sM.states.unlinkState.bind(sM, { id: childId }, false),
   }),
   unlinkState: (sM, { parentId, params }) => ({
-    redo: sM.unlinkState.bind(sM, params, false),
-    undo: sM.linkState.bind(sM, parentId, params.id, false),
+    redo: sM.states.unlinkState.bind(sM, params, false),
+    undo: sM.states.linkState.bind(sM, parentId, params.id, false),
   }),
   createTransition: (sM, { id, params }) => ({
-    redo: sM.createTransition.bind(sM, { ...params, id }, false),
-    undo: sM.deleteTransition.bind(sM, id, false),
+    redo: sM.transitions.createTransition.bind(sM, { ...params, id }, false),
+    undo: sM.transitions.deleteTransition.bind(sM, id, false),
   }),
   deleteTransition: (sM, { transition, prevData }) => ({
-    redo: sM.deleteTransition.bind(sM, transition.id, false),
-    undo: sM.createTransition.bind(
+    redo: sM.transitions.deleteTransition.bind(sM, transition.id, false),
+    undo: sM.transitions.createTransition.bind(
       sM,
       {
         id: transition.id,
         ...prevData,
-        component: prevData.trigger.component,
-        method: prevData.trigger.method,
-        condition: prevData.condition!,
-        doAction: prevData.do!,
       },
       false
     ),
   }),
   changeTransition: (sM, { transition, args, prevData }) => ({
-    redo: sM.changeTransition.bind(sM, args, false),
-    undo: sM.changeTransition.bind(
+    redo: sM.transitions.changeTransition.bind(sM, args, false),
+    undo: sM.transitions.changeTransition.bind(
       sM,
       {
         id: transition.id,
-        source: prevData.source,
-        target: prevData.target,
-        color: prevData.color,
-        component: prevData.trigger.component,
-        method: prevData.trigger.method,
-        doAction: prevData.do!,
-        condition: prevData.condition!,
+        ...prevData,
       },
       false
     ),
   }),
-  createInitialState: (sM, { target, position }) => ({
-    redo: sM.createInitialState.bind(sM, target, position, false),
-    undo: sM.deleteInitialState.bind(sM, false),
-  }),
-  changeInitialState: (sM, { prevTargetId, newTargetId }) => ({
-    redo: sM.changeInitialState.bind(sM, prevTargetId, newTargetId, false),
-    undo: sM.changeInitialState.bind(sM, newTargetId, prevTargetId, false),
-  }),
-  changeInitialStatePosition: (sM, { startPosition, endPosition }) => ({
-    redo: sM.changeInitialStatePosition.bind(sM, startPosition, endPosition, false),
-    undo: sM.changeInitialStatePosition.bind(sM, endPosition, startPosition, false),
-  }),
-  deleteInitialState: (sM, { target, position }) => ({
-    redo: sM.deleteInitialState.bind(sM, false),
-    undo: sM.createInitialState.bind(sM, target, position, false),
-  }),
+  // TODO
+  // createInitialState: (sM, { target, position }) => ({
+  //   redo: sM.createInitialState.bind(sM, target, position, false),
+  //   undo: sM.deleteInitialState.bind(sM, false),
+  // }),
+  // changeInitialState: (sM, { prevTargetId, newTargetId }) => ({
+  //   redo: sM.changeInitialState.bind(sM, prevTargetId, newTargetId, false),
+  //   undo: sM.changeInitialState.bind(sM, newTargetId, prevTargetId, false),
+  // }),
+  // changeInitialStatePosition: (sM, { startPosition, endPosition }) => ({
+  //   redo: sM.changeInitialStatePosition.bind(sM, startPosition, endPosition, false),
+  //   undo: sM.changeInitialStatePosition.bind(sM, endPosition, startPosition, false),
+  // }),
+  // deleteInitialState: (sM, { target, position }) => ({
+  //   redo: sM.deleteInitialState.bind(sM, false),
+  //   undo: sM.createInitialState.bind(sM, target, position, false),
+  // }),
   changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.changeStatePosition.bind(sM, id, startPosition, endPosition, false),
-    undo: sM.changeStatePosition.bind(sM, id, endPosition, startPosition, false),
+    redo: sM.states.changeStatePosition.bind(sM, id, startPosition, endPosition, false),
+    undo: sM.states.changeStatePosition.bind(sM, id, endPosition, startPosition, false),
   }),
   changeTransitionPosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.changeTransitionPosition.bind(sM, id, startPosition, endPosition, false),
-    undo: sM.changeTransitionPosition.bind(sM, id, endPosition, startPosition, false),
+    redo: sM.transitions.changeTransitionPosition.bind(sM, id, startPosition, endPosition, false),
+    undo: sM.transitions.changeTransitionPosition.bind(sM, id, endPosition, startPosition, false),
   }),
   changeEvent: (sM, { stateId, event, newValue, prevValue }) => ({
-    redo: sM.changeEvent.bind(sM, stateId, event, newValue, false),
-    undo: sM.changeEvent.bind(sM, stateId, event, prevValue, false),
+    redo: sM.states.changeEvent.bind(sM, stateId, event, newValue, false),
+    undo: sM.states.changeEvent.bind(sM, stateId, event, prevValue, false),
   }),
   changeEventAction: (sM, { stateId, event, newValue, prevValue }) => ({
-    redo: sM.changeEvent.bind(sM, stateId, event, newValue, false),
-    undo: sM.changeEvent.bind(sM, stateId, event, prevValue, false),
+    redo: sM.states.changeEvent.bind(sM, stateId, event, newValue, false),
+    undo: sM.states.changeEvent.bind(sM, stateId, event, prevValue, false),
   }),
   deleteEvent: (sM, { stateId, eventIdx, prevValue }) => ({
-    redo: sM.deleteEvent.bind(sM, stateId, { eventIdx, actionIdx: null }, false),
-    undo: sM.createEvent.bind(sM, stateId, prevValue, eventIdx),
+    redo: sM.states.deleteEvent.bind(sM, stateId, { eventIdx, actionIdx: null }, false),
+    undo: sM.states.createEvent.bind(sM, stateId, prevValue, eventIdx),
   }),
   deleteEventAction: (sM, { stateId, event, prevValue }) => ({
-    redo: sM.deleteEvent.bind(sM, stateId, event, false),
-    undo: sM.createEventAction.bind(sM, stateId, event, prevValue),
+    redo: sM.states.deleteEvent.bind(sM, stateId, event, false),
+    undo: sM.states.createEventAction.bind(sM, stateId, event, prevValue),
   }),
   addComponent: (sM, { args }) => ({
     redo: sM.addComponent.bind(sM, args, false),
@@ -280,22 +274,23 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id: ${args.transition.id}`,
   }),
   changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
-  createInitialState: (args) => ({
-    name: 'Создание начального состояния',
-    description: `На состояние ${args.target}`,
-  }),
-  deleteInitialState: (args) => ({
-    name: 'Удаление начального состояния',
-    description: `Из состояния ${args.target}`,
-  }),
-  changeInitialState: (args) => ({
-    name: 'Изменение начального состояния',
-    description: `Было: "${args.prevTargetId}"\nСтало: ${args.newTargetId}`,
-  }),
-  changeInitialStatePosition: (args) => ({
-    name: 'Перемещение начального состояния',
-    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
-  }),
+  // TODO
+  // createInitialState: (args) => ({
+  //   name: 'Создание начального состояния',
+  //   description: ``,
+  // }),
+  // deleteInitialState: (args) => ({
+  //   name: 'Удаление начального состояния',
+  //   description: ``,
+  // }),
+  // changeInitialState: (args) => ({
+  //   name: 'Изменение начального состояния',
+  //   description: `Было: "${args.prevTargetId}"\nСтало: ${args.newTargetId}`,
+  // }),
+  // changeInitialStatePosition: (args) => ({
+  //   name: 'Перемещение начального состояния',
+  //   description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
+  // }),
   changeStatePosition: (args) => ({
     name: 'Перемещение состояния',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
@@ -373,7 +368,7 @@ export class History {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(public stateMachine: MachineController) {}
+  constructor(private stateMachine: MachineController) {}
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;

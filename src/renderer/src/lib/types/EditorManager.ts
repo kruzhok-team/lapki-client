@@ -4,6 +4,7 @@ import {
   Action,
   EventData,
   Transition as TransitionData,
+  InitialState as InitialStateData,
 } from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
@@ -45,11 +46,7 @@ export interface CreateStateParams {
   linkByPoint?: boolean;
 }
 
-export interface CreateInitialStateParams {
-  id?: string;
-  position: Point;
-}
-
+export type CreateInitialStateParams = InitialStateData & { id?: string };
 export type CreateTransitionParams = TransitionData & { id?: string };
 export type ChangeTransitionParams = TransitionData & { id: string };
 

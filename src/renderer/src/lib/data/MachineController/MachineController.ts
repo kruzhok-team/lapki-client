@@ -1,19 +1,9 @@
-import {
-  AddComponentParams,
-  ChangeTransitionParams,
-  CreateNoteParams,
-} from '@renderer/types/EditorManager';
-import {
-  CreateTransitionParameters,
-  EditComponentParams,
-  RemoveComponentParams,
-} from '@renderer/types/MachineController';
-
-import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
 import { State } from '@renderer/lib/drawable/Node/State';
 import { Note } from '@renderer/lib/drawable/Note';
 import { Layer } from '@renderer/lib/types';
+import { AddComponentParams, CreateNoteParams } from '@renderer/lib/types/EditorManager';
 import { Point } from '@renderer/lib/types/graphics';
+import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/MachineController';
 import {
   Condition,
   Variable,
@@ -25,7 +15,6 @@ import {
 import { Initializer } from './Initializer';
 
 import { Container } from '../../basic/Container';
-import { Transition } from '../../drawable/Transition';
 import { History } from '../History';
 import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
 import { StatesController } from '../StatesController';
@@ -296,23 +285,24 @@ export class MachineController {
       }
     });
 
-    this.transitions.forEach((value) => {
-      if (value.data.trigger.component == name) {
-        value.data.trigger.component = newName;
-      }
-      // do
-      if (value.data.do) {
-        for (const act of value.data.do) {
-          if (act.component == name) {
-            act.component = newName;
-          }
-        }
-      }
-      // condition
-      if (value.data.condition) {
-        this.renameCondition(value.data.condition, name, newName);
-      }
-    });
+    // TODO
+    // this.transitions.forEach((value) => {
+    //   if (value.data.trigger.component == name) {
+    //     value.data.trigger.component = newName;
+    //   }
+    //   // do
+    //   if (value.data.do) {
+    //     for (const act of value.data.do) {
+    //       if (act.component == name) {
+    //         act.component = newName;
+    //       }
+    //     }
+    //   }
+    //   // condition
+    //   if (value.data.condition) {
+    //     this.renameCondition(value.data.condition, name, newName);
+    //   }
+    // });
 
     this.container.isDirty = true;
   }
@@ -354,7 +344,7 @@ export class MachineController {
     this.transitions.forEach((transition) => {
       if (!transition.isSelected) return;
 
-      this.deleteTransition(transition.id);
+      this.transitions.deleteTransition(transition.id);
     });
 
     this.notes.forEach((note) => {
@@ -411,12 +401,8 @@ export class MachineController {
       return this.createNote(copyData);
     }
 
-    return this.createTransition({
+    return this.transitions.createTransition({
       ...copyData,
-      component: copyData.trigger.component,
-      method: copyData.trigger.method,
-      doAction: copyData.do ?? [],
-      condition: copyData.condition ?? undefined,
     });
   };
 

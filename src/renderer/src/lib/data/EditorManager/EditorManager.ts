@@ -167,9 +167,9 @@ export class EditorManager {
   }
 
   createInitialState(args: CreateInitialStateParams) {
-    const { id = generateId(Object.keys(this.data.elements.states)), position } = args;
+    const { id = generateId(Object.keys(this.data.elements.states)), ...other } = args;
 
-    this.data.elements.states[id] = { position };
+    this.data.elements.states[id] = other;
 
     this.triggerDataUpdate('elements.states');
 

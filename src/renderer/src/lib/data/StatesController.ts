@@ -112,14 +112,17 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     // Если не было начального состояния, им станет новое
+    if ((state.parent || this.container).children.layers[Layer.NormalStates].length === 1) {
+      this.createInitialState(state, canUndo);
+      // numberOfConnectedActions += 1;
+      // state.parent.children.layers[Layer.NormalStates].add(state, Layer.NormalStates);
+    }
+
     // TODO
     // if (!this.container.app.manager.data.elements.initialState) {
     //   this.setInitialState(state.id, canUndo);
     //   numberOfConnectedActions += 1;
     // }
-
-    this.createInitialState(state, canUndo);
-    // numberOfConnectedActions += 1;
 
     this.watchState(state);
 
@@ -199,7 +202,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const parent = this.items.get(parentId);
     const child = this.items.get(childId);
 
-    if (!parent || !child || !(parent instanceof State)) return;
+    if (!parent || !child || !(parent instanceof State) || !(child instanceof State)) return;
 
     let numberOfConnectedActions = 0;
     if (child.data.parentId) {
@@ -230,15 +233,29 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     }
 
-    child.parent?.children.remove(child, Layer.NormalStates);
+    (child.parent || this.container).children.remove(child, Layer.NormalStates);
     child.parent = parent;
     parent.children.add(child, Layer.NormalStates);
+
+    // Если не было начального состояния, им станет новое
+    if (child.parent.children.layers[Layer.NormalStates].length === 1) {
+      this.createInitialState(child, canUndo);
+      // numberOfConnectedActions += 1;
+      // state.parent.children.layers[Layer.NormalStates].add(state, Layer.NormalStates);
+    }
+
+    console.log(this.container);
+    console.log(parent);
+
     // TODO Сделать удобный проход по переходам состояния
     this.transitions.forEach((transition) => {
       if (transition.source.id === child.id || transition.target.id === child.id) {
         this.container.machineController.transitions.linkTransition(transition.id);
       }
     });
+
+    // console.log(parent, child);
+    // console.log(this.container.children);
 
     this.container.isDirty = true;
   }
@@ -313,10 +330,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   deleteState = (id: string, canUndo = true) => {
     const state = this.items.get(id);
-    if (!state) return;
+    if (!state || !(state instanceof State)) return;
 
-    // const parentId = state.data.parentId;
-    // let numberOfConnectedActions = 0;
+    const parentId = state.data.parentId;
+    const numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
     this.container.machineController.transitions.forEach((transition) => {
@@ -339,12 +356,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     });
 
-    // Отсоединяемся от родительского состояния, если такое есть. Опять же это нужно делать тут из-за поля children
-    if (state.data.parentId) {
-      state.parent?.children.remove(state, Layer.NormalStates);
-    } else {
-      this.container.children.remove(state, Layer.NormalStates);
-    }
+    // Отсоединяемся от родительского состояния, если такое есть.
+    (state.parent || this.container).children.remove(state, Layer.NormalStates);
 
     // Если удаляемое состояние было начальным, стираем текущее значение
     // TODO
@@ -354,12 +367,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // }
 
     if (canUndo) {
-      // TODO
-      // this.history.do({
-      //   type: 'deleteState',
-      //   args: { id, stateData: { ...structuredClone(state.data), parentId: parentId } },
-      //   numberOfConnectedActions,
-      // });
+      this.history.do({
+        type: 'deleteState',
+        args: { id, stateData: { ...structuredClone(state.data), parentId } },
+        numberOfConnectedActions,
+      });
     }
 
     this.container.app.manager.deleteState(id);
@@ -373,13 +385,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   private createInitialState = (target: State, _canUndo = true) => {
     const newStateId = this.container.app.manager.createInitialState({
       position: { x: target.position.x - 100, y: target.position.y - 100 },
+      parentId: target.data.parentId,
     });
 
     const state = new InitialState(this.container, newStateId);
 
     this.items.set(state.id, state);
 
-    this.container.children.add(state, Layer.InitialStates);
+    (target.parent || this.container).children.add(state, Layer.InitialStates);
+
+    if (target.parent) {
+      state.parent = target.parent;
+    }
 
     this.container.machineController.transitions.createTransition(
       {

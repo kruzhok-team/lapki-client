@@ -1,7 +1,8 @@
 import { Container } from '@renderer/lib/basic/Container';
 import { BaseState } from '@renderer/lib/drawable/Node/BaseState';
+import { icons } from '@renderer/lib/drawable/Picto';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { drawCircle } from '@renderer/lib/utils';
+import { drawCircle, drawImageFit } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 import { InitialState as InitialStateData } from '@renderer/types/diagram';
 
@@ -11,6 +12,8 @@ import { InitialState as InitialStateData } from '@renderer/types/diagram';
  * данные на момент создания этого класса уже должны существовать
  */
 export class InitialState extends BaseState {
+  image!: HTMLImageElement;
+
   constructor(container: Container, id: string, parent?: Shape) {
     super(container, id, parent);
   }
@@ -27,17 +30,31 @@ export class InitialState extends BaseState {
   }
 
   get dimensions() {
-    return { width: 70, height: 70 };
+    return { width: 60, height: 60 };
   }
   set dimensions(_value) {
     throw new Error('InitialState does not have dimensions');
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    const icon = icons.get('InitialStateIcon');
+    if (!icon) return;
+
     const { x, y, width, height } = this.drawBounds;
 
     ctx.fillStyle = getColor('primary');
 
-    drawCircle(ctx, { x: x + width / 2, y: y + height / 2 }, width / 2);
+    ctx.beginPath();
+
+    ctx.save();
+    ctx.arc(x + width / 2, y + height / 2, width / 2, 0, 2 * Math.PI);
+    ctx.clip();
+    // drawCircle(ctx, { x: x + width / 2, y: y + height / 2 }, width / 2);
+
+    // drawImageFit(ctx, this.image, this.drawBounds);
+    ctx.drawImage(icon, x, y, width, height);
+    ctx.restore();
+
+    ctx.closePath();
   }
 }

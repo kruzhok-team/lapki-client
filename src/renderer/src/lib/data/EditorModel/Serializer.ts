@@ -1,13 +1,11 @@
-import { isNormalState } from '@renderer/types/diagram';
-
-import { EditorManager } from './EditorManager';
+import { EditorModel } from './EditorModel';
 
 import { exportCGML } from '../GraphmlBuilder';
 
 type SaveMode = 'JSON' | 'Cyberiada';
 
 export class Serializer {
-  constructor(private editorManager: EditorManager) {}
+  constructor(private editorManager: EditorModel) {}
 
   private get data() {
     return this.editorManager.data;
@@ -24,7 +22,7 @@ export class Serializer {
 
   getState(id: string) {
     const state = this.data.elements.states[id];
-    if (!state || !isNormalState(state)) return null;
+    if (!state) return null;
     delete state.selection;
     return JSON.stringify(state, undefined, 2);
   }

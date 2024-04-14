@@ -46,7 +46,7 @@ export class Initializer {
       this.transitions.unwatchTransition(value);
     });
     this.states.forEach((value) => {
-      this.states.unwatchState(value);
+      this.states.unwatch(value);
     });
     this.notes.forEach((value) => {
       this.notes.unwatch(value);
@@ -131,9 +131,9 @@ export class Initializer {
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
   private createStateView(id: string) {
     const state = new State(this.container, id);
-    this.states.set(state.id, state);
-    this.states.watchState(state);
-    this.container.children.add(state, Layer.NormalStates);
+    this.states.setState(state.id, state);
+    this.states.watch(state);
+    this.container.children.add(state, Layer.States);
   }
 
   private linkStateView(parentId: string, childId: string) {
@@ -142,9 +142,9 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.container.children.remove(child, Layer.NormalStates);
+    this.container.children.remove(child, Layer.States);
     child.parent = parent;
-    parent.children.add(child, Layer.NormalStates);
+    parent.children.add(child, Layer.States);
   }
 
   private createTransitionView(id: string) {

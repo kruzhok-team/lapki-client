@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import { EditorManager } from './EditorManager';
+import { EditorModel } from './EditorModel';
 
 import { NormalState, emptyElements } from '../../../types/diagram';
 
-const em = new EditorManager();
+const em = new EditorModel();
 em.init('basename', 'name', emptyElements());
 
 describe('states', () => {

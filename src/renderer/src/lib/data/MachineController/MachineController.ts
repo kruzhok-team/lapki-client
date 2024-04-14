@@ -1,13 +1,14 @@
+import { AddComponentParams } from '@renderer/lib/types/EditorModel';
+
 import { Container } from '@renderer/lib/basic';
 import { State } from '@renderer/lib/drawable';
-import { AddComponentParams } from '@renderer/lib/types/EditorManager';
 import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/MachineController';
 import {
   Condition,
   Variable,
-  NormalState as StateType,
-  Transition as TransitionType,
-  Note as NoteType,
+  State as StateData,
+  Transition as TransitionData,
+  Note as NoteData,
 } from '@renderer/types/diagram';
 
 import { Initializer } from './Initializer';
@@ -268,7 +269,7 @@ export class MachineController {
     this.platform.nameToVisual.delete(name);
 
     // А сейчас будет занимательное путешествие по схеме с заменой всего
-    this.states.forEachNormalStates((state) => {
+    this.states.forEachState((state) => {
       for (const ev of state.eventBox.data) {
         // заменяем в триггере
         if (ev.trigger.component == name) {
@@ -328,7 +329,7 @@ export class MachineController {
   }
 
   deleteSelected = () => {
-    this.states.forEachNormalStates((state) => {
+    this.states.forEachState((state) => {
       if (!state.isSelected) return;
 
       if (state.eventBox.selection) {
@@ -354,7 +355,7 @@ export class MachineController {
   };
 
   copySelected = () => {
-    this.states.forEachNormalStates((state) => {
+    this.states.forEachState((state) => {
       if (!state.isSelected) return;
 
       const data = this.container.app.manager.serializer.getState(state.id);
@@ -385,7 +386,7 @@ export class MachineController {
   pasteSelected = async () => {
     const data = await navigator.clipboard.readText();
 
-    const copyData = JSON.parse(data) as StateType | TransitionType | NoteType;
+    const copyData = JSON.parse(data) as StateData | TransitionData | NoteData;
 
     if ('name' in copyData) {
       return this.states.createState({
@@ -446,7 +447,7 @@ export class MachineController {
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
   removeSelection() {
-    this.states.forEachNormalStates((state) => {
+    this.states.forEachState((state) => {
       state.setIsSelected(false);
       this.container.app.manager.changeStateSelection(state.id, false);
       state.eventBox.selection = undefined;

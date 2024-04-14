@@ -87,7 +87,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     let width = this.dimensions.width / this.container.app.manager.data.scale;
     if (!this.children.isEmpty) {
       const children = [
-        ...this.children.getLayer(Layer.NormalStates),
+        ...this.children.getLayer(Layer.States),
         ...this.children.getLayer(Layer.InitialStates),
         ...this.children.getLayer(Layer.Transitions),
       ] as Shape[];
@@ -126,7 +126,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     if (this.children.isEmpty) return 0;
 
     const children = [
-      ...this.children.getLayer(Layer.NormalStates),
+      ...this.children.getLayer(Layer.States),
       ...this.children.getLayer(Layer.InitialStates),
       ...this.children.getLayer(Layer.Transitions),
     ] as Shape[];

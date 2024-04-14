@@ -2,7 +2,7 @@ import { Canvas, Container, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
-import { EditorManager } from './data/EditorManager';
+import { EditorModel } from './data/EditorModel';
 
 /**
  * Редактор машин состояний.
@@ -16,10 +16,10 @@ export class CanvasEditor {
   private _render: Render | null = null;
   private _container: Container | null = null;
 
-  manager!: EditorManager;
+  manager!: EditorModel;
 
   constructor() {
-    this.manager = new EditorManager();
+    this.manager = new EditorModel();
     this.manager.resetEditor = () => {
       this.container.machineController.loadData();
     };

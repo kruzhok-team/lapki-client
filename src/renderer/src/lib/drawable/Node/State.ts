@@ -1,8 +1,8 @@
 import { Container } from '@renderer/lib/basic';
-import { Events, BaseState, EdgeHandlers, icons, Shape } from '@renderer/lib/drawable';
+import { Events, EdgeHandlers, icons } from '@renderer/lib/drawable';
+import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
-import { NormalState as NormalStateData } from '@renderer/types/diagram';
 
 const style = theme.colors.diagram.state;
 
@@ -11,7 +11,7 @@ const style = theme.colors.diagram.state;
  * Класс выполняет отрисовку, обработку событий (за счёт {@link Shape}),
  * управление собственным выделением и отображение «хваталок».
  */
-export class State extends BaseState {
+export class State extends Shape {
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
@@ -25,7 +25,7 @@ export class State extends BaseState {
   }
 
   get data() {
-    return this.container.app.manager.data.elements.states[this.id] as NormalStateData;
+    return this.container.app.manager.data.elements.states[this.id];
   }
 
   get position() {

@@ -1,14 +1,14 @@
 import { Container } from '@renderer/lib/basic';
-import { BaseState, icons, Shape } from '@renderer/lib/drawable';
+import { icons } from '@renderer/lib/drawable';
+import { Shape } from '@renderer/lib/drawable/Shape';
 import { getColor } from '@renderer/theme';
-import { InitialState as InitialStateData } from '@renderer/types/diagram';
 
 /**
  * Класс для отрисовки начального состояния
- * плотно завязан на данные в EditorManager, то есть
+ * плотно завязан на данные в EditorModel, то есть
  * данные на момент создания этого класса уже должны существовать
  */
-export class InitialState extends BaseState {
+export class InitialState extends Shape {
   image!: HTMLImageElement;
 
   constructor(container: Container, id: string, parent?: Shape) {
@@ -16,7 +16,7 @@ export class InitialState extends BaseState {
   }
 
   get data() {
-    return this.container.app.manager.data.elements.states[this.id] as InitialStateData;
+    return this.container.app.manager.data.elements.initialStates[this.id];
   }
 
   get position() {

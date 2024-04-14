@@ -25,7 +25,6 @@ import {
   Component,
   Elements,
   EventData,
-  isNormalState,
 } from '@renderer/types/diagram';
 
 import { FilesManager } from './FilesManager';
@@ -39,7 +38,7 @@ import { Serializer } from './Serializer';
  * а внутри конвертируем в объект
  * возможно новый формат это поправит
  */
-export class EditorManager {
+export class EditorModel {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   files = new FilesManager(this);
@@ -131,11 +130,17 @@ export class EditorManager {
     }
   }
 
+  private getNodeIds() {
+    return Object.keys(this.data.elements.states).concat(
+      Object.keys(this.data.elements.initialStates)
+    );
+  }
+
   createState(args: CreateStateParams) {
     const {
       name,
       parentId,
-      id = generateId(Object.keys(this.data.elements.states)),
+      id = generateId(this.getNodeIds()),
       events = [],
       placeInCenter = false,
     } = args;
@@ -164,19 +169,9 @@ export class EditorManager {
     return id;
   }
 
-  createInitialState(args: CreateInitialStateParams) {
-    const { id = generateId(Object.keys(this.data.elements.states)), ...other } = args;
-
-    this.data.elements.states[id] = other;
-
-    this.triggerDataUpdate('elements.states');
-
-    return id;
-  }
-
   changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
     const state = this.data.elements.states[id];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     const eventIndex = state.events.findIndex(
       (value) =>
@@ -213,7 +208,7 @@ export class EditorManager {
 
   changeStateName(id: string, name: string) {
     const state = this.data.elements.states[id];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     state.name = name;
 
@@ -224,7 +219,7 @@ export class EditorManager {
 
   changeStateSelection(id: string, selection: boolean) {
     const state = this.data.elements.states[id];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     state.selection = selection;
 
@@ -306,17 +301,30 @@ export class EditorManager {
   //   return true;
   // }
 
-  // deleteInitialState() {
-  //   this.data.elements.initialState = null;
+  createInitialState(args: CreateInitialStateParams) {
+    const { id = generateId(this.getNodeIds()), ...other } = args;
 
-  //   this.triggerDataUpdate('elements.initialState');
+    this.data.elements.initialStates[id] = other;
 
-  //   return true;
-  // }
+    this.triggerDataUpdate('elements.states');
+
+    return id;
+  }
+
+  deleteInitialState(id: string) {
+    const state = this.data.elements.initialStates[id];
+    if (!state) return false;
+
+    delete this.data.elements.initialStates[id];
+
+    this.triggerDataUpdate('elements.initialStates');
+
+    return true;
+  }
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     if (eventIdx !== undefined) {
       state.events.splice(eventIdx, 0, eventData);
@@ -331,7 +339,7 @@ export class EditorManager {
 
   createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.states[stateId];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
@@ -344,7 +352,7 @@ export class EditorManager {
 
   changeEvent(stateId: string, eventIdx: number, newValue: Event) {
     const state = this.data.elements.states[stateId];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     // const event = state.events.find(
     //   (value, id) =>
@@ -374,7 +382,7 @@ export class EditorManager {
 
   changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
     const state = this.data.elements.states[stateId];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
@@ -387,7 +395,7 @@ export class EditorManager {
 
   deleteEvent(stateId: string, eventIdx: number) {
     const state = this.data.elements.states[stateId];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     state.events.splice(eventIdx, 1);
 
@@ -398,7 +406,7 @@ export class EditorManager {
 
   deleteEventAction(stateId: string, event: EventSelection) {
     const state = this.data.elements.states[stateId];
-    if (!state || !isNormalState(state)) return false;
+    if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 

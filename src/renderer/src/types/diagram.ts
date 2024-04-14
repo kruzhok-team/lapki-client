@@ -34,7 +34,7 @@ interface BaseState {
   position: Point;
 }
 
-export interface NormalState extends BaseState {
+export interface State extends BaseState {
   name: string;
   events: EventData[];
   dimensions: Dimensions;
@@ -44,10 +44,6 @@ export interface NormalState extends BaseState {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface InitialState extends BaseState {}
-
-export type State = NormalState | InitialState;
-
-export const isNormalState = (state: State): state is NormalState => 'name' in state;
 
 export type Variable = {
   component: string;
@@ -88,11 +84,10 @@ export type Note = {
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
+  initialStates: { [id: string]: InitialState };
   transitions: { [id: string]: Transition };
   components: { [id: string]: Component };
   notes: { [id: string]: Note };
-
-  // initialState: InitialState | null;
 
   platform: string;
   parameters?: { [key: string]: string };
@@ -103,11 +98,10 @@ export type Elements = {
 export function emptyElements(): Elements {
   return {
     states: {},
-    // initialStates: {},
+    initialStates: {},
     transitions: {},
     components: {},
     notes: {},
-    // initialState: null,
 
     platform: '',
     parameters: {},

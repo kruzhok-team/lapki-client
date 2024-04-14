@@ -8,7 +8,7 @@ export interface GetCapturedNodeParams {
 }
 
 export enum Layer {
-  NormalStates,
+  States,
   InitialStates,
   Transitions,
   Notes,

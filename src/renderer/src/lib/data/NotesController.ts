@@ -1,7 +1,8 @@
+import { CreateNoteParams } from '@renderer/lib/types/EditorModel';
+
 import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
 import { Note } from '@renderer/lib/drawable';
-import { CreateNoteParams } from '@renderer/lib/types/EditorManager';
 import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 

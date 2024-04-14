@@ -210,13 +210,13 @@ export const useDiagramContextMenu = () => {
         };
 
         const sourceArray = [
-          ...Array.from(editor.container.machineController.states.getNormalStates()).filter(
+          ...Array.from(editor.container.machineController.states.getStates()).filter(
             (value) => transition.data.source !== value[0]
           ),
         ];
 
         const targetArray = [
-          ...Array.from(editor.container.machineController.states.getNormalStates()).filter(
+          ...Array.from(editor.container.machineController.states.getStates()).filter(
             (value) => transition.data.target !== value[0]
           ),
         ];

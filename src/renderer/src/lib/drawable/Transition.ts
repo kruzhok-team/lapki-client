@@ -1,5 +1,5 @@
 import { Container } from '@renderer/lib/basic';
-import { BaseState, picto, Shape } from '@renderer/lib/drawable';
+import { picto, Shape } from '@renderer/lib/drawable';
 import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import {
   degrees_to_radians,
@@ -27,11 +27,23 @@ export class Transition extends Shape {
   }
 
   get source() {
-    return this.container.machineController.states.get(this.data.source) as BaseState;
+    const state = this.container.machineController.states.get(this.data.source);
+
+    if (!state) {
+      throw new Error(`State with id ${this.data.source} does not exist`);
+    }
+
+    return state;
   }
 
   get target() {
-    return this.container.machineController.states.get(this.data.target) as BaseState;
+    const state = this.container.machineController.states.get(this.data.target);
+
+    if (!state) {
+      throw new Error(`State with id ${this.data.target} does not exist`);
+    }
+
+    return state;
   }
 
   get position() {

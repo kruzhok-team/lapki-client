@@ -1,7 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-import { Container } from '@renderer/lib/basic';
-import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
@@ -9,7 +7,10 @@ import {
   ChangeTransitionParams,
   CreateNoteParams,
   CreateStateParams,
-} from '@renderer/lib/types/EditorManager';
+} from '@renderer/lib/types/EditorModel';
+
+import { Container } from '@renderer/lib/basic';
+import { EventSelection, Transition } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   EditComponentParams,

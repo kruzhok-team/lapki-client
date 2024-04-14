@@ -15,7 +15,6 @@ import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { isNormalState } from '@renderer/types/diagram';
 import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';
@@ -58,27 +57,23 @@ export const Hierarchy: React.FC = () => {
     for (const stateId in states) {
       const state = states[stateId];
 
-      if (isNormalState(state)) {
-        data[stateId] = {
-          index: stateId,
-          isFolder: false,
-          data: { title: state.name ?? 'asd', type: 'state' },
-          children: [],
-          canRename: true,
-          canMove: true,
-        };
-
-        continue;
-      }
-
       data[stateId] = {
         index: stateId,
         isFolder: false,
-        data: { title: 'Начальное состояние', type: 'initialState' },
+        data: { title: state.name ?? 'asd', type: 'state' },
         children: [],
-        canRename: false,
-        canMove: false,
+        canRename: true,
+        canMove: true,
       };
+
+      // data[stateId] = {
+      //   index: stateId,
+      //   isFolder: false,
+      //   data: { title: 'Начальное состояние', type: 'initialState' },
+      //   children: [],
+      //   canRename: false,
+      //   canMove: false,
+      // };
     }
 
     for (const stateId in states) {
@@ -96,7 +91,9 @@ export const Hierarchy: React.FC = () => {
       const transition = transitions[transitionId];
       const target = states[transition.target];
 
-      if (!isNormalState(target)) continue;
+      if (!target) continue;
+
+      // if (!isNormalState(target)) continue;
 
       data[transitionId] = {
         index: transitionId,
@@ -253,8 +250,6 @@ export const Hierarchy: React.FC = () => {
     setSelectedItems([]);
 
     for (const [stateId, state] of Object.entries(states)) {
-      if (!isNormalState(state)) continue;
-
       if (state.selection) {
         return setSelectedItems([stateId]);
       }

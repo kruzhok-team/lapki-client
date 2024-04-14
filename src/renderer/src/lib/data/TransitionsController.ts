@@ -1,9 +1,10 @@
+import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
+
 import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
 import { History } from '@renderer/lib/data/History';
 import { GhostTransition, State, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
-import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorManager';
 import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';

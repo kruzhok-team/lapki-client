@@ -89,7 +89,7 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Иерархия состояний</h3>
           </button>
 
-          {isMounted ? <Hierarchy /> : 'Недоступно до открытия схемы'}
+          {/* {isMounted ? <Hierarchy /> : 'Недоступно до открытия схемы'} */}
         </Panel>
       </PanelGroup>
     </section>

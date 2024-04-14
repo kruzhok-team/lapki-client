@@ -1,4 +1,4 @@
-import { Container } from '@renderer/lib/basic';
+import { EditorView } from '@renderer/lib/basic';
 import { State } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
 import { Point } from '@renderer/lib/types/graphics';
@@ -18,7 +18,7 @@ export class GhostTransition {
   source!: State | null;
   target!: Point | null;
 
-  constructor(public container: Container) {}
+  constructor(public editorView: EditorView) {}
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (!this.source || !this.target) return;
@@ -37,12 +37,12 @@ export class GhostTransition {
 
     ctx.lineWidth = transitionStyle.width;
 
-    drawCurvedLine(ctx, line, 12 / this.container.app.model.data.scale);
-    drawCircle(ctx, line.start, transitionStyle.startSize / this.container.app.model.data.scale);
+    drawCurvedLine(ctx, line, 12 / this.editorView.app.model.data.scale);
+    drawCircle(ctx, line.start, transitionStyle.startSize / this.editorView.app.model.data.scale);
     drawTriangle(
       ctx,
       line.end,
-      10 / this.container.app.model.data.scale,
+      10 / this.editorView.app.model.data.scale,
       degrees_to_radians(line.ee)
     );
   }

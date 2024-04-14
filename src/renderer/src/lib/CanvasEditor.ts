@@ -1,4 +1,4 @@
-import { Canvas, Container, Keyboard, Mouse } from '@renderer/lib/basic';
+import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
@@ -14,14 +14,14 @@ export class CanvasEditor {
   private _mouse: Mouse | null = null;
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
-  private _container: Container | null = null;
+  private _container: EditorView | null = null;
 
   model!: EditorModel;
 
   constructor() {
     this.model = new EditorModel();
     this.model.resetEditor = () => {
-      this.container.editorController.loadData();
+      this.editorView.editorController.loadData();
     };
   }
 
@@ -56,9 +56,9 @@ export class CanvasEditor {
     }
     return this._render;
   }
-  get container() {
+  get editorView() {
     if (!this._container) {
-      throw new Error('Cannot access container before initialization');
+      throw new Error('Cannot access editorView before initialization');
     }
     return this._container;
   }
@@ -73,30 +73,30 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    this._container = new Container(this);
+    this._container = new EditorView(this);
     this.canvas.onResize = () => {
       this.mouse.setOffset();
-      this.container.isDirty = true;
+      this.editorView.isDirty = true;
     };
 
     preloadPicto(() => {
-      this.container.isDirty = true;
+      this.editorView.isDirty = true;
     });
 
     this.render.subscribe(() => {
-      if (!this.container.isDirty) return;
+      if (!this.editorView.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
-        this.container.draw(ctx, canvas);
+        this.editorView.draw(ctx, canvas);
       });
-      this.container.isDirty = false;
+      this.editorView.isDirty = false;
     });
 
     this.model.data.isMounted = true;
     this.model.triggerDataUpdate('isMounted');
 
-    this.container.editorController.loadData();
+    this.editorView.editorController.loadData();
   }
 
   cleanUp() {

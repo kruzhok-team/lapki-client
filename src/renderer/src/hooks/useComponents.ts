@@ -23,7 +23,7 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const machine = editor?.container.editorController;
+    const machine = editor?.editorView.editorController;
     const vacantComponents = machine?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
@@ -32,7 +32,7 @@ export const useComponents = () => {
   };
 
   const onRequestEditComponent = (idx: string) => {
-    const machine = editor?.container.editorController;
+    const machine = editor?.editorView.editorController;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     const proto = machine?.platform.data.components[component.type];
@@ -48,7 +48,7 @@ export const useComponents = () => {
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor?.container.editorController;
+    const machine = editor?.editorView.editorController;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
@@ -62,13 +62,13 @@ export const useComponents = () => {
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor?.container.editorController.addComponent({ name: realName, type: idx });
+    editor?.editorView.editorController.addComponent({ name: realName, type: idx });
 
     onRequestEditComponent(realName);
   };
 
   const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor?.container.editorController.editComponent({
+    editor?.editorView.editorController.editComponent({
       name: idx,
       parameters: data.parameters,
       newName,
@@ -76,7 +76,7 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor?.container.editorController.removeComponent({ name: idx, purge: false });
+    editor?.editorView.editorController.removeComponent({ name: idx, purge: false });
 
     editClose();
   };

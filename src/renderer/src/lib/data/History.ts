@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-import { Container } from '@renderer/lib/basic';
+import { EditorView } from '@renderer/lib/basic';
 import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
   EditComponentParams,
@@ -368,10 +368,10 @@ export class History {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(private container: Container) {}
+  constructor(private editorView: EditorView) {}
 
   private get stateMachine() {
-    return this.container.editorController;
+    return this.editorView.editorController;
   }
 
   do<T extends PossibleActionTypes>(action: Action<T>) {

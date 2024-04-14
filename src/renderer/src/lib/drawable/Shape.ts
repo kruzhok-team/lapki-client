@@ -1,4 +1,4 @@
-import { Container } from '@renderer/lib/basic';
+import { EditorView } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
 import { CHILDREN_PADDING, LONG_PRESS_TIMEOUT } from '@renderer/lib/constants';
 import { Drawable } from '@renderer/lib/types';
@@ -43,7 +43,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   private isMouseDown = false;
   private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
 
-  constructor(protected container: Container, public id: string, public parent?: Shape) {
+  constructor(protected editorView: EditorView, public id: string, public parent?: Shape) {
     super();
   }
 
@@ -75,13 +75,13 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const { x, y } = this.compoundPosition;
 
     return {
-      x: (x + this.container.app.model.data.offset.x) / this.container.app.model.data.scale,
-      y: (y + this.container.app.model.data.offset.y) / this.container.app.model.data.scale,
+      x: (x + this.editorView.app.model.data.offset.x) / this.editorView.app.model.data.scale,
+      y: (y + this.editorView.app.model.data.offset.y) / this.editorView.app.model.data.scale,
     };
   }
 
   get computedWidth() {
-    let width = this.dimensions.width / this.container.app.model.data.scale;
+    let width = this.dimensions.width / this.editorView.app.model.data.scale;
     if (!this.children.isEmpty) {
       const children = [
         ...this.children.getLayer(Layer.States),
@@ -108,7 +108,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         cx +
           rightChildren.computedDimensions.width -
           x +
-          CHILDREN_PADDING / this.container.app.model.data.scale
+          CHILDREN_PADDING / this.editorView.app.model.data.scale
       );
     }
 
@@ -116,7 +116,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   }
 
   get computedHeight() {
-    return this.dimensions.height / this.container.app.model.data.scale;
+    return this.dimensions.height / this.editorView.app.model.data.scale;
   }
 
   get childrenContainerHeight() {
@@ -147,7 +147,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
 
     result =
       (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
-        this.container.app.model.data.scale +
+        this.editorView.app.model.data.scale +
       bottomChild.childrenContainerHeight;
 
     return result;
@@ -205,8 +205,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     }
 
     this.position = {
-      x: this.position.x + e.dx * this.container.app.model.data.scale,
-      y: this.position.y + e.dy * this.container.app.model.data.scale,
+      x: this.position.x + e.dx * this.editorView.app.model.data.scale,
+      y: this.position.y + e.dy * this.editorView.app.model.data.scale,
     };
 
     if (this.parent) {

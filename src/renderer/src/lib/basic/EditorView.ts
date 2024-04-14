@@ -15,12 +15,12 @@ import { getColor } from '@renderer/theme';
  * Контейнер с машиной состояний, в котором происходит отрисовка,
  * управление камерой, обработка событий и сериализация.
  */
-interface ContainerEvents {
+interface EditorViewEvents {
   dblclick: Point;
   contextMenu: Point;
 }
 
-export class Container extends EventEmitter<ContainerEvents> implements Drawable {
+export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
   isDirty = true;
 
   editorController!: EditorController;

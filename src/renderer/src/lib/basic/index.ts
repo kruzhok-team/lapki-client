@@ -1,4 +1,4 @@
 export * from './Canvas';
-export * from './Container';
+export * from './EditorView';
 export * from './Keyboard';
 export * from './Mouse';

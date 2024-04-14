@@ -1,4 +1,4 @@
-import { Container } from '@renderer/lib/basic';
+import { EditorView } from '@renderer/lib/basic';
 import { icons } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { getColor } from '@renderer/theme';
@@ -11,12 +11,12 @@ import { getColor } from '@renderer/theme';
 export class InitialState extends Shape {
   image!: HTMLImageElement;
 
-  constructor(container: Container, id: string, parent?: Shape) {
-    super(container, id, parent);
+  constructor(editorView: EditorView, id: string, parent?: Shape) {
+    super(editorView, id, parent);
   }
 
   get data() {
-    return this.container.app.model.data.elements.initialStates[this.id];
+    return this.editorView.app.model.data.elements.initialStates[this.id];
   }
 
   get position() {

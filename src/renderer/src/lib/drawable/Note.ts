@@ -1,4 +1,4 @@
-import { Container } from '@renderer/lib/basic';
+import { EditorView } from '@renderer/lib/basic';
 import { Shape } from '@renderer/lib/drawable';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
@@ -14,14 +14,14 @@ export class Note extends Shape {
   private visible = true;
   isSelected = false;
 
-  constructor(container: Container, id: string, parent?: Shape) {
-    super(container, id, parent);
+  constructor(editorView: EditorView, id: string, parent?: Shape) {
+    super(editorView, id, parent);
 
     this.prepareText();
   }
 
   get data() {
-    return this.container.app.model.data.elements.notes[this.id];
+    return this.editorView.app.model.data.elements.notes[this.id];
   }
 
   get bounds() {
@@ -48,7 +48,7 @@ export class Note extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.container.app.model.data.scale;
+    const scale = this.editorView.app.model.data.scale;
 
     return {
       padding: 10 / scale,
@@ -64,7 +64,7 @@ export class Note extends Shape {
 
   setVisible(value: boolean) {
     this.visible = value;
-    this.container.isDirty = true;
+    this.editorView.isDirty = true;
   }
 
   prepareText() {

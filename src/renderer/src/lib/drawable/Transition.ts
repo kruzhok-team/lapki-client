@@ -1,4 +1,4 @@
-import { Container } from '@renderer/lib/basic';
+import { EditorView } from '@renderer/lib/basic';
 import { picto, Shape } from '@renderer/lib/drawable';
 import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import {
@@ -18,16 +18,16 @@ import {
 export class Transition extends Shape {
   isSelected = false;
 
-  constructor(container: Container, id: string) {
-    super(container, id);
+  constructor(editorView: EditorView, id: string) {
+    super(editorView, id);
   }
 
   get data() {
-    return this.container.app.model.data.elements.transitions[this.id];
+    return this.editorView.app.model.data.elements.transitions[this.id];
   }
 
   get source() {
-    const state = this.container.editorController.states.get(this.data.source);
+    const state = this.editorView.editorController.states.get(this.data.source);
 
     if (!state) {
       throw new Error(`State with id ${this.data.source} does not exist`);
@@ -37,7 +37,7 @@ export class Transition extends Shape {
   }
 
   get target() {
-    const state = this.container.editorController.states.get(this.data.target);
+    const state = this.editorView.editorController.states.get(this.data.target);
 
     if (!state) {
       throw new Error(`State with id ${this.data.target} does not exist`);
@@ -78,17 +78,17 @@ export class Transition extends Shape {
 
     const { x, y, width, height } = this.drawBounds;
     const eventMargin = picto.eventMargin;
-    const p = 15 / this.container.app.model.data.scale;
+    const p = 15 / this.editorView.app.model.data.scale;
     const px = x + p;
     const py = y + p;
     const yDx = picto.eventHeight + 10;
-    const fontSize = stateStyle.titleFontSize / this.container.app.model.data.scale;
+    const fontSize = stateStyle.titleFontSize / this.editorView.app.model.data.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
 
-    const platform = this.container.editorController.platform;
+    const platform = this.editorView.editorController.platform;
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.container.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.editorView.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
@@ -97,7 +97,7 @@ export class Transition extends Shape {
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height, 8 / this.container.app.model.data.scale);
+    ctx.roundRect(x, y, width, height, 8 / this.editorView.app.model.data.scale);
     ctx.fill();
     ctx.closePath();
 
@@ -120,8 +120,8 @@ export class Transition extends Shape {
         const aX =
           px +
           (eventMargin + (picto.eventWidth + eventMargin) * ax) /
-            this.container.app.model.data.scale;
-        const aY = py + (ay * yDx) / this.container.app.model.data.scale;
+            this.editorView.app.model.data.scale;
+        const aY = py + (ay * yDx) / this.editorView.app.model.data.scale;
         platform.drawCondition(ctx, this.data.label.condition, aX, aY, opacity);
       }
       ctx.closePath();
@@ -135,8 +135,8 @@ export class Transition extends Shape {
         const aX =
           px +
           (eventMargin + (picto.eventWidth + eventMargin) * ax) /
-            this.container.app.model.data.scale;
-        const aY = py + (ay * yDx) / this.container.app.model.data.scale;
+            this.editorView.app.model.data.scale;
+        const aY = py + (ay * yDx) / this.editorView.app.model.data.scale;
         platform.drawAction(ctx, data, aX, aY, opacity);
       });
       ctx.closePath();
@@ -154,7 +154,7 @@ export class Transition extends Shape {
     //       а перед ними прописывать стили!
     ctx.beginPath();
     ctx.strokeStyle = transitionStyle.bgColor;
-    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.container.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.editorView.app.model.data.scale);
     ctx.stroke();
     ctx.closePath();
   }
@@ -174,17 +174,17 @@ export class Transition extends Shape {
     ctx.strokeStyle = this.data.color;
     ctx.fillStyle = this.data.color;
 
-    drawCurvedLine(ctx, sourceLine, 12 / this.container.app.model.data.scale);
-    drawCurvedLine(ctx, targetLine, 12 / this.container.app.model.data.scale);
+    drawCurvedLine(ctx, sourceLine, 12 / this.editorView.app.model.data.scale);
+    drawCurvedLine(ctx, targetLine, 12 / this.editorView.app.model.data.scale);
     drawCircle(
       ctx,
       sourceLine.start,
-      transitionStyle.startSize / this.container.app.model.data.scale
+      transitionStyle.startSize / this.editorView.app.model.data.scale
     );
     drawTriangle(
       ctx,
       targetLine.start,
-      10 / this.container.app.model.data.scale,
+      10 / this.editorView.app.model.data.scale,
       degrees_to_radians(targetLine.se)
     );
   }
@@ -196,12 +196,12 @@ export class Transition extends Shape {
     ctx.strokeStyle = this.data.color;
     ctx.fillStyle = this.data.color;
 
-    drawCurvedLine(ctx, line, 12 / this.container.app.model.data.scale);
-    drawCircle(ctx, line.end, transitionStyle.startSize / this.container.app.model.data.scale);
+    drawCurvedLine(ctx, line, 12 / this.editorView.app.model.data.scale);
+    drawCircle(ctx, line.end, transitionStyle.startSize / this.editorView.app.model.data.scale);
     drawTriangle(
       ctx,
       line.start,
-      10 / this.container.app.model.data.scale,
+      10 / this.editorView.app.model.data.scale,
       degrees_to_radians(line.se)
     );
   }

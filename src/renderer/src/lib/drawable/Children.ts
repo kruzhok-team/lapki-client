@@ -2,7 +2,7 @@ import { Drawable, Children as IChildren, Layer } from '@renderer/lib/types';
 
 /**
  * Пока что это странный класс предназначенный только для отрисовки,
- * у {@link Container} и {@link Shape} объявляется этот класс и рендер идёт по дереву
+ * у {@link EditorView} и {@link Shape} объявляется этот класс и рендер идёт по дереву
  * Плюс у переходов приоритет на отрисовку, в своём слое они всегда выше
  */
 export class Children implements IChildren {

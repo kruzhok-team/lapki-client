@@ -13,6 +13,7 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
+import { State } from '@renderer/lib/drawable';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { escapeRegExp } from '@renderer/utils';
@@ -34,10 +35,8 @@ export const Hierarchy: React.FC = () => {
   const [theme] = useSettings('theme');
 
   const states = manager.useData('elements.states');
+  const initialStates = manager.useData('elements.initialStates');
   const transitions = manager.useData('elements.transitions');
-
-  //TODO
-  // const initialState = manager.useData('elements.initialState')?.target;
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -65,19 +64,32 @@ export const Hierarchy: React.FC = () => {
         canRename: true,
         canMove: true,
       };
+    }
 
-      // data[stateId] = {
-      //   index: stateId,
-      //   isFolder: false,
-      //   data: { title: 'Начальное состояние', type: 'initialState' },
-      //   children: [],
-      //   canRename: false,
-      //   canMove: false,
-      // };
+    for (const stateId in initialStates) {
+      data[stateId] = {
+        index: stateId,
+        isFolder: false,
+        data: { title: 'Начальное состояние', type: 'initialState' },
+        children: [],
+        canRename: false,
+        canMove: false,
+      };
     }
 
     for (const stateId in states) {
       const state = states[stateId];
+
+      if (!state.parentId) {
+        data.root.children?.push(stateId);
+      } else {
+        data[state.parentId].children?.push(stateId);
+        data[state.parentId].isFolder = true;
+      }
+    }
+
+    for (const stateId in initialStates) {
+      const state = initialStates[stateId];
 
       if (!state.parentId) {
         data.root.children?.push(stateId);
@@ -92,8 +104,6 @@ export const Hierarchy: React.FC = () => {
       const target = states[transition.target];
 
       if (!target) continue;
-
-      // if (!isNormalState(target)) continue;
 
       data[transitionId] = {
         index: transitionId,
@@ -110,7 +120,7 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [states, transitions]);
+  }, [initialStates, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
@@ -180,7 +190,7 @@ export const Hierarchy: React.FC = () => {
     };
 
     const state = machine.states.get(item.index.toString());
-    if (state) {
+    if (state && state instanceof State) {
       return machine.states.handleContextMenu(state, { event: mouse });
     }
     const transition = machine.transitions.get(item.index.toString());
@@ -290,9 +300,6 @@ export const Hierarchy: React.FC = () => {
           <TitleRender
             type={data.item.data.type}
             title={data.item.data.title}
-            // isInitial={false}
-            // TODO
-            // isInitial={initialState === data.item.index.toString()}
             search={escapeRegExp(search)}
           />
         )}

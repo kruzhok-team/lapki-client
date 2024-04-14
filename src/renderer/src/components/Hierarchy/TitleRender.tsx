@@ -10,17 +10,6 @@ interface TitleRenderProps {
   type: 'state' | 'initialState' | 'transition';
 }
 
-// interface TransitionTitleRenderProps extends BaseTitleRenderProps {
-//   type: 'transition';
-// }
-
-// interface StateTitleRenderProps extends BaseTitleRenderProps {
-//   type: 'state';
-//   isInitial: boolean;
-// }
-
-// type TitleRenderProps = TransitionTitleRenderProps | StateTitleRenderProps;
-
 const icons = {
   state: StateIcon,
   initialState: InitialStateIcon,
@@ -57,16 +46,6 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
           </div>
         )}
       </WithHint>
-
-      {/* {type === 'state' && props.isInitial && (
-        <WithHint hint="Начальное состояние" placement="right" offset={5} delay={100}>
-          {(props) => (
-            <div {...props}>
-              <InitialStateIcon className="h-5 w-5" />
-            </div>
-          )}
-        </WithHint>
-      )} */}
     </div>
   );
 };

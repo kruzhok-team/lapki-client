@@ -1,14 +1,11 @@
-import { CreateNoteParams } from '@renderer/lib/types/EditorModel';
-
 import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
+import { History } from '@renderer/lib/data/History';
 import { Note } from '@renderer/lib/drawable';
+import { Layer } from '@renderer/lib/types';
+import { CreateNoteParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
-
-import { History } from './History';
-
-import { Layer } from '../types';
 
 interface NotesControllerEvents {
   change: Note;

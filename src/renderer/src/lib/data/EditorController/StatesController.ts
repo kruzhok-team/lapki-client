@@ -1,15 +1,14 @@
-import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorModel';
+import { UnlinkStateParams } from '@renderer/lib/types/EditorController';
 import throttle from 'lodash.throttle';
 
 import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
+import { History } from '@renderer/lib/data/History';
 import { State, EventSelection, InitialState } from '@renderer/lib/drawable';
 import { MyMouseEvent, Layer } from '@renderer/lib/types';
+import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
-import { UnlinkStateParams } from '@renderer/lib/types/MachineController';
 import { Action, Event, EventData } from '@renderer/types/diagram';
-
-import { History } from './History';
 
 const INITIAL_STATE_OFFSET = 100;
 
@@ -100,8 +99,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       this.linkStateByPoint(state, position);
     }
 
-    // TODO
     // Если не было начального состояния, им станет новое
+    // TODO(bryzZz) тут не приятно что проверка идёт по вью а не по модели
     if ((state.parent || this.container).children.layers[Layer.States].length === 1) {
       this.createInitialStateWithTransition(state, canUndo);
       // numberOfConnectedActions += 1;

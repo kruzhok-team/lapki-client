@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
+import { Container } from '@renderer/lib/basic';
+import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
@@ -8,18 +10,15 @@ import {
   CreateNoteParams,
   CreateStateParams,
 } from '@renderer/lib/types/EditorModel';
-
-import { Container } from '@renderer/lib/basic';
-import { EventSelection, Transition } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   EditComponentParams,
   RemoveComponentParams,
   UnlinkStateParams,
-} from '@renderer/lib/types/MachineController';
+} from '@renderer/lib/types/EditorController';
 import {
   InitialState as InitialStateData,
-  NormalState as NormalStateData,
+  State as StateData,
   Transition as TransitionData,
   Note as NoteData,
   Action as EventAction,
@@ -28,11 +27,11 @@ import {
   EventData,
 } from '@renderer/types/diagram';
 
-import { MachineController } from './MachineController';
+import { EditorController } from './EditorController';
 
 export type PossibleActions = {
   stateCreate: CreateStateParams & { newStateId: string };
-  deleteState: { id: string; stateData: NormalStateData };
+  deleteState: { id: string; stateData: StateData };
   changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
@@ -78,7 +77,7 @@ export type Action<T extends PossibleActionTypes> = {
 export type Stack = Array<Action<any>>;
 type ActionFunctions = {
   [Type in PossibleActionTypes]: (
-    sm: MachineController,
+    sm: EditorController,
     args: PossibleActions[Type]
   ) => { undo: () => void; redo: () => void };
 };

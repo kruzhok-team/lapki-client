@@ -3,14 +3,14 @@ import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
 import { State, Note, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
-import { MachineController } from './MachineController';
+import { EditorController } from './EditorController';
 
 /**
- * Класс инкапсулирующий логику инициализации {@link MachineController|контроллера машины состояний}
+ * Класс инкапсулирующий логику инициализации {@link EditorController|контроллера машины состояний}
  * который эджектится (https://en.wikipedia.org/wiki/Dependency_injection#Constructor_injection) в конструкторе. Наружу отдаёт только метод init
  */
 export class Initializer {
-  constructor(private container: Container, private machineController: MachineController) {}
+  constructor(private container: Container, private machineController: EditorController) {}
 
   init() {
     this.resetEntities();
@@ -53,7 +53,6 @@ export class Initializer {
     });
 
     this.states.clear();
-    // this.container.statesController.clearInitialStateMark();
     this.transitions.clear();
     this.notes.clear();
     this.history.clear();
@@ -81,9 +80,6 @@ export class Initializer {
 
       this.linkStateView(data.parentId, id);
     }
-
-    // const initialState = this.container.app.manager.data.elements.initialState;
-    // if (initialState) this.createInitialStateView(initialState);
   }
 
   private initTransitions() {
@@ -107,7 +103,6 @@ export class Initializer {
 
     for (const name in items) {
       const component = items[name];
-      // this.components.set(name, new Component(component));
       this.platform.nameToVisual.set(name, {
         component: component.type,
         label: component.parameters['label'],

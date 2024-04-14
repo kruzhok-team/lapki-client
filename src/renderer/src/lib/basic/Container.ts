@@ -1,7 +1,8 @@
+import { EditorController } from '@renderer/lib/data/EditorController';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { History } from '@renderer/lib/data/History';
-import { MachineController } from '@renderer/lib/data/MachineController';
 import { Children, picto, Shape } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
@@ -25,7 +26,7 @@ interface ContainerEvents {
 export class Container extends EventEmitter<ContainerEvents> implements Drawable {
   isDirty = true;
 
-  machineController!: MachineController;
+  machineController!: EditorController;
 
   history = new History(this);
   children = new Children();
@@ -35,7 +36,7 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   constructor(public app: CanvasEditor) {
     super();
 
-    this.machineController = new MachineController(this, this.history);
+    this.machineController = new EditorController(this, this.history);
 
     // Порядок важен, система очень тонкая
 

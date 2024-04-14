@@ -1,8 +1,9 @@
-import { AddComponentParams } from '@renderer/lib/types/EditorModel';
+import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
 
 import { Container } from '@renderer/lib/basic';
+import { History } from '@renderer/lib/data/History';
 import { State } from '@renderer/lib/drawable';
-import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/MachineController';
+import { AddComponentParams } from '@renderer/lib/types/EditorModel';
 import {
   Condition,
   Variable,
@@ -12,12 +13,11 @@ import {
 } from '@renderer/types/diagram';
 
 import { Initializer } from './Initializer';
+import { NotesController } from './NotesController';
+import { StatesController } from './StatesController';
+import { TransitionsController } from './TransitionsController';
 
-import { History } from '../History';
-import { NotesController } from '../NotesController';
 import { ComponentEntry, PlatformManager, operatorSet } from '../PlatformManager';
-import { StatesController } from '../StatesController';
-import { TransitionsController } from '../TransitionsController';
 
 /**
  * Контроллер машины состояний.
@@ -35,7 +35,7 @@ import { TransitionsController } from '../TransitionsController';
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
-export class MachineController {
+export class EditorController {
   initializer!: Initializer;
 
   states!: StatesController;

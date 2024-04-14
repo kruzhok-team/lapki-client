@@ -31,7 +31,7 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
 }) => {
   const editor = useEditorContext();
 
-  const machine = editor.editorView.editorController;
+  const machine = editor.view.controller;
 
   //-----------------------------------------------------------------------------------------------------
 

@@ -368,10 +368,10 @@ export class History {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(private editorView: EditorView) {}
+  constructor(private view: EditorView) {}
 
   private get stateMachine() {
-    return this.editorView.editorController;
+    return this.view.controller;
   }
 
   do<T extends PossibleActionTypes>(action: Action<T>) {

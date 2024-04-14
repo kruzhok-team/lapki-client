@@ -54,7 +54,7 @@ export const ComponentsList: React.FC = () => {
   };
 
   const renderComponent = (name: string) => {
-    const proto = editor?.editorView.editorController.platform.getComponent(name);
+    const proto = editor?.view.controller.platform.getComponent(name);
 
     return (
       <WithHint key={name} hint={proto?.description ?? ''} placement="right">
@@ -72,7 +72,7 @@ export const ComponentsList: React.FC = () => {
             onKeyDown={(e) => onCompKeyDown(e, name)}
             {...props}
           >
-            {editor?.editorView.editorController.platform?.getFullComponentIcon(name)}
+            {editor?.view.controller.platform?.getFullComponentIcon(name)}
             <p className="ml-2 line-clamp-1">{name}</p>
           </button>
         )}

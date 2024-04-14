@@ -22,7 +22,7 @@ export const NoteEdit: React.FC = () => {
 
     if (!el || !note) return;
 
-    editor.editorView.editorController.notes.changeNoteText(note.id, value);
+    editor.view.controller.notes.changeNoteText(note.id, value);
   }, [editor, note]);
 
   const handleClose = useCallback(() => {
@@ -38,11 +38,11 @@ export const NoteEdit: React.FC = () => {
   }, [handleClose]);
 
   useEffect(() => {
-    editor.editorView.editorController.notes.on('change', (note) => {
+    editor.view.controller.notes.on('change', (note) => {
       const el = ref.current;
       if (!el) return;
 
-      const globalOffset = editor.editorView.app.mouse.getOffset();
+      const globalOffset = editor.view.app.mouse.getOffset();
       const statePos = note.computedPosition;
       const position = {
         x: statePos.x + globalOffset.x,

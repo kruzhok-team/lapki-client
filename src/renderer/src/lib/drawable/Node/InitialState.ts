@@ -11,12 +11,12 @@ import { getColor } from '@renderer/theme';
 export class InitialState extends Shape {
   image!: HTMLImageElement;
 
-  constructor(editorView: EditorView, id: string, parent?: Shape) {
-    super(editorView, id, parent);
+  constructor(view: EditorView, id: string, parent?: Shape) {
+    super(view, id, parent);
   }
 
   get data() {
-    return this.editorView.app.model.data.elements.initialStates[this.id];
+    return this.view.app.model.data.elements.initialStates[this.id];
   }
 
   get position() {

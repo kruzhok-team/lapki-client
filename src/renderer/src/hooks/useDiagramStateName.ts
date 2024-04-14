@@ -17,7 +17,7 @@ export const useDiagramStateName = () => {
     const stateId = state.id;
     if (!stateId) return;
 
-    editor.editorView.editorController.states.changeStateName(stateId, name);
+    editor.view.controller.states.changeStateName(stateId, name);
 
     onClose();
   };
@@ -25,8 +25,8 @@ export const useDiagramStateName = () => {
   useEffect(() => {
     if (!editor) return;
 
-    editor.editorView.editorController.states.on('changeStateName', (state) => {
-      const globalOffset = editor.editorView.app.mouse.getOffset();
+    editor.view.controller.states.on('changeStateName', (state) => {
+      const globalOffset = editor.view.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {
         x: statePos.x + globalOffset.x,

@@ -16,15 +16,15 @@ export const Scale: React.FC = () => {
   const scale = model.useData('scale');
 
   const handleZoomOut = () => {
-    editor.editorView.changeScale(0.1);
+    editor.view.changeScale(0.1);
   };
 
   const handleZoomIn = () => {
-    editor.editorView.changeScale(-0.1);
+    editor.view.changeScale(-0.1);
   };
 
   const handleReset = () => {
-    editor.editorView.changeScale(1, true);
+    editor.view.changeScale(1, true);
   };
 
   return (

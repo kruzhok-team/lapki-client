@@ -25,10 +25,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   items: Map<string, Transition> = new Map();
 
-  constructor(private editorView: EditorView, private history: History) {
+  constructor(private view: EditorView, private history: History) {
     super();
 
-    this.ghost = new GhostTransition(editorView);
+    this.ghost = new GhostTransition(view);
   }
 
   get = this.items.get.bind(this.items);
@@ -61,8 +61,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 
-    const sourceState = this.editorView.editorController.states.get(source);
-    const targetState = this.editorView.editorController.states.get(target);
+    const sourceState = this.view.controller.states.get(source);
+    const targetState = this.view.controller.states.get(target);
 
     if (!sourceState || !targetState) return;
 
@@ -74,7 +74,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     }
 
     // Создание данных
-    const id = this.editorView.app.model.createTransition({
+    const id = this.view.app.model.createTransition({
       id: prevId,
       source,
       target,
@@ -82,14 +82,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       label,
     });
     // Создание модельки
-    const transition = new Transition(this.editorView, id);
+    const transition = new Transition(this.view, id);
 
     this.items.set(id, transition);
     this.linkTransition(id);
 
     this.watchTransition(transition);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
 
     if (canUndo) {
       this.history.do({
@@ -108,14 +108,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     transition.target.parent?.children.remove(transition, Layer.Transitions);
 
     if (!transition.source.parent || !transition.target.parent) {
-      this.editorView.children.add(transition, Layer.Transitions);
+      this.view.children.add(transition, Layer.Transitions);
       transition.parent = undefined;
     } else {
-      this.editorView.children.remove(transition, Layer.Transitions);
+      this.view.children.remove(transition, Layer.Transitions);
 
       const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
       const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
-      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.editorView;
+      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.view;
 
       if (parent instanceof State) {
         transition.parent = parent;
@@ -136,9 +136,9 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.editorView.app.model.changeTransition(args);
+    this.view.app.model.changeTransition(args);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   changeTransitionPosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
@@ -152,9 +152,9 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.editorView.app.model.changeTransitionPosition(id, endPosition);
+    this.view.app.model.changeTransitionPosition(id, endPosition);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   deleteTransition(id: string, canUndo = true) {
@@ -168,21 +168,21 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.editorView.app.model.deleteTransition(id);
+    this.view.app.model.deleteTransition(id);
 
-    const parent = transition.parent ?? this.editorView;
+    const parent = transition.parent ?? this.view;
     parent.children.remove(transition, Layer.Transitions);
     this.unwatchTransition(transition);
     this.items.delete(id);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   initEvents() {
-    this.editorView.app.mouse.on('mousemove', this.handleMouseMove);
+    this.view.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.editorView.editorController.states.on('startNewTransition', this.handleStartNewTransition);
-    this.editorView.editorController.states.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.view.controller.states.on('startNewTransition', this.handleStartNewTransition);
+    this.view.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -190,7 +190,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionClick = (transition: Transition) => {
-    this.editorView.editorController.selectTransition(transition.id);
+    this.view.controller.selectTransition(transition.id);
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
@@ -198,7 +198,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
-    this.editorView.editorController.removeSelection();
+    this.view.controller.removeSelection();
     transition.setIsSelected(true);
 
     this.emit('transitionContextMenu', {
@@ -212,7 +212,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     this.ghost.setTarget({ x: e.x, y: e.y });
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   };
 
   handleMouseUpOnState = (state: State) => {
@@ -223,13 +223,13 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.emit('createTransition', { source: this.ghost.source, target: state });
     }
     this.ghost.clear();
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   };
 
   handleMouseUp = () => {
     if (!this.ghost.source) return;
     this.ghost.clear();
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   };
 
   handleDragEnd = (

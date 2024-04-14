@@ -34,22 +34,22 @@ export const useDiagramContextMenu = () => {
     };
 
     // контекстное меню для пустого поля
-    editor.editorView.on('contextMenu', (pos) => {
-      const canvasPos = editor.editorView.relativeMousePos(pos);
+    editor.view.on('contextMenu', (pos) => {
+      const canvasPos = editor.view.relativeMousePos(pos);
 
       handleEvent(pos, [
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.editorView.editorController.pasteSelected();
+            editor?.view.controller.pasteSelected();
           },
         },
         {
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor.editorView.editorController.states.createState({
+            editor.view.controller.states.createState({
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
@@ -60,13 +60,13 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить заметку',
           type: 'note',
           action: () => {
-            const note = editor.editorView.editorController.notes.createNote({
+            const note = editor.view.controller.notes.createNote({
               position: canvasPos,
               placeInCenter: true,
               text: '',
             });
 
-            editor.editorView.editorController.notes.emit('change', note);
+            editor.view.controller.notes.emit('change', note);
           },
         },
         {
@@ -85,29 +85,29 @@ export const useDiagramContextMenu = () => {
           label: 'Центрировать камеру',
           type: 'centerCamera',
           action: () => {
-            editor?.editorView.viewCentering();
+            editor?.view.viewCentering();
           },
         },
       ]);
     });
 
     // контекстное меню для состояния
-    editor.editorView.editorController.states.on('stateContextMenu', ({ state, position }) => {
-      const canvasPos = editor.editorView.relativeMousePos(position);
+    editor.view.controller.states.on('stateContextMenu', ({ state, position }) => {
+      const canvasPos = editor.view.relativeMousePos(position);
 
       handleEvent(position, [
         {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.editorView.editorController.copySelected();
+            editor?.view.controller.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.editorView.editorController.pasteSelected();
+            editor?.view.controller.pasteSelected();
           },
         },
         {
@@ -119,14 +119,14 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                // editor?.editorView.editorController.setInitialState(state.id);
+                // editor?.view.controller.setInitialState(state.id);
               },
             },
             {
               label: 'Вставить состояние',
               type: 'pasteState',
               action: () => {
-                editor.editorView.editorController.states.createState({
+                editor.view.controller.states.createState({
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
@@ -153,135 +153,129 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.editorView.editorController.states.deleteState(state.id as string);
+            editor.view.controller.states.deleteState(state.id as string);
           },
         },
       ]);
     });
 
     // контекстное меню для события
-    editor.editorView.editorController.states.on(
-      'eventContextMenu',
-      ({ state, position, event }) => {
-        handleEvent(position, [
-          {
-            label: 'Удалить',
-            type: 'delete',
-            action: () => {
-              editor.editorView.editorController.states.deleteEvent(state.id, event);
-            },
-          },
-        ]);
-      }
-    );
-
-    // контекстное меню для связи
-    editor.editorView.editorController.transitions.on(
-      'transitionContextMenu',
-      ({ transition, position }) => {
-        const source = (state: State) => {
-          return {
-            label: state.eventBox.parent.data.name,
-            type: 'source',
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {
-              editor.editorView.editorController.transitions.changeTransition({
-                ...transition.data,
-                id: transition.id,
-                source: state.id,
-              });
-            },
-          };
-        };
-
-        const target = (state: State) => {
-          return {
-            label: state.eventBox.parent.data.name,
-            type: 'target',
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {
-              editor.editorView.editorController.transitions.changeTransition({
-                ...transition.data,
-                id: transition.id,
-                target: state.id,
-              });
-            },
-          };
-        };
-
-        const sourceArray = [
-          ...Array.from(editor.editorView.editorController.states.getStates()).filter(
-            (value) => transition.data.source !== value[0]
-          ),
-        ];
-
-        const targetArray = [
-          ...Array.from(editor.editorView.editorController.states.getStates()).filter(
-            (value) => transition.data.target !== value[0]
-          ),
-        ];
-
-        handleEvent(position, [
-          {
-            label: 'Копировать',
-            type: 'copy',
-            action: () => {
-              editor?.editorView.editorController.copySelected();
-            },
-          },
-          {
-            label: 'Выбрать исход(source)',
-            type: 'source',
-            isFolder: true,
-            children: [...sourceArray.map(([_id, value]) => source(value))],
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {},
-          },
-          {
-            label: 'Выбрать цель(target)',
-            type: 'target',
-            isFolder: true,
-            children: [...targetArray.map(([_id, value]) => target(value))],
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {},
-          },
-          {
-            label: 'Посмотреть код',
-            type: 'showCodeAll',
-            action: () => {
-              openTab({
-                type: 'transition',
-                name: transition.id,
-                code: editor.model.serializer.getTransition(transition.id) ?? '',
-                language: 'json',
-              });
-            },
-          },
-          {
-            label: 'Удалить',
-            type: 'delete',
-            action: () => {
-              editor.editorView.editorController.transitions.deleteTransition(transition.id);
-            },
-          },
-        ]);
-      }
-    );
-
-    editor.editorView.editorController.notes.on('contextMenu', ({ note, position }) => {
+    editor.view.controller.states.on('eventContextMenu', ({ state, position, event }) => {
       handleEvent(position, [
         {
-          label: 'Редактировать',
-          type: 'edit',
+          label: 'Удалить',
+          type: 'delete',
           action: () => {
-            editor.editorView.editorController.notes.emit('change', note);
+            editor.view.controller.states.deleteEvent(state.id, event);
+          },
+        },
+      ]);
+    });
+
+    // контекстное меню для связи
+    editor.view.controller.transitions.on('transitionContextMenu', ({ transition, position }) => {
+      const source = (state: State) => {
+        return {
+          label: state.eventBox.parent.data.name,
+          type: 'source',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {
+            editor.view.controller.transitions.changeTransition({
+              ...transition.data,
+              id: transition.id,
+              source: state.id,
+            });
+          },
+        };
+      };
+
+      const target = (state: State) => {
+        return {
+          label: state.eventBox.parent.data.name,
+          type: 'target',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {
+            editor.view.controller.transitions.changeTransition({
+              ...transition.data,
+              id: transition.id,
+              target: state.id,
+            });
+          },
+        };
+      };
+
+      const sourceArray = [
+        ...Array.from(editor.view.controller.states.getStates()).filter(
+          (value) => transition.data.source !== value[0]
+        ),
+      ];
+
+      const targetArray = [
+        ...Array.from(editor.view.controller.states.getStates()).filter(
+          (value) => transition.data.target !== value[0]
+        ),
+      ];
+
+      handleEvent(position, [
+        {
+          label: 'Копировать',
+          type: 'copy',
+          action: () => {
+            editor?.view.controller.copySelected();
+          },
+        },
+        {
+          label: 'Выбрать исход(source)',
+          type: 'source',
+          isFolder: true,
+          children: [...sourceArray.map(([_id, value]) => source(value))],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
+        },
+        {
+          label: 'Выбрать цель(target)',
+          type: 'target',
+          isFolder: true,
+          children: [...targetArray.map(([_id, value]) => target(value))],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
+        },
+        {
+          label: 'Посмотреть код',
+          type: 'showCodeAll',
+          action: () => {
+            openTab({
+              type: 'transition',
+              name: transition.id,
+              code: editor.model.serializer.getTransition(transition.id) ?? '',
+              language: 'json',
+            });
           },
         },
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.editorView.editorController.notes.deleteNote(note.id);
+            editor.view.controller.transitions.deleteTransition(transition.id);
+          },
+        },
+      ]);
+    });
+
+    editor.view.controller.notes.on('contextMenu', ({ note, position }) => {
+      handleEvent(position, [
+        {
+          label: 'Редактировать',
+          type: 'edit',
+          action: () => {
+            editor.view.controller.notes.emit('change', note);
+          },
+        },
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor?.view.controller.notes.deleteNote(note.id);
           },
         },
       ]);

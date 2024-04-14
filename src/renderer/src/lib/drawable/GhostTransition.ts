@@ -18,7 +18,7 @@ export class GhostTransition {
   source!: State | null;
   target!: Point | null;
 
-  constructor(public editorView: EditorView) {}
+  constructor(public view: EditorView) {}
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (!this.source || !this.target) return;
@@ -37,14 +37,9 @@ export class GhostTransition {
 
     ctx.lineWidth = transitionStyle.width;
 
-    drawCurvedLine(ctx, line, 12 / this.editorView.app.model.data.scale);
-    drawCircle(ctx, line.start, transitionStyle.startSize / this.editorView.app.model.data.scale);
-    drawTriangle(
-      ctx,
-      line.end,
-      10 / this.editorView.app.model.data.scale,
-      degrees_to_radians(line.ee)
-    );
+    drawCurvedLine(ctx, line, 12 / this.view.app.model.data.scale);
+    drawCircle(ctx, line.start, transitionStyle.startSize / this.view.app.model.data.scale);
+    drawTriangle(ctx, line.end, 10 / this.view.app.model.data.scale, degrees_to_radians(line.ee));
   }
 
   setSource(state: State) {

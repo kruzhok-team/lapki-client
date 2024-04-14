@@ -15,7 +15,7 @@ interface NotesControllerEvents {
 export class NotesController extends EventEmitter<NotesControllerEvents> {
   private items: Map<string, Note> = new Map();
 
-  constructor(private editorView: EditorView, private history: History) {
+  constructor(private view: EditorView, private history: History) {
     super();
   }
 
@@ -25,14 +25,14 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   forEach = this.items.forEach.bind(this.items);
 
   createNote(params: CreateNoteParams, canUndo = true) {
-    const newNoteId = this.editorView.app.model.createNote(params);
-    const note = new Note(this.editorView, newNoteId);
+    const newNoteId = this.view.app.model.createNote(params);
+    const note = new Note(this.view, newNoteId);
 
     this.items.set(newNoteId, note);
     this.watch(note);
-    this.editorView.children.add(note, Layer.Notes);
+    this.view.children.add(note, Layer.Notes);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
 
     if (canUndo) {
       this.history.do({
@@ -55,10 +55,10 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.editorView.app.model.changeNoteText(id, text);
+    this.view.app.model.changeNoteText(id, text);
     note.prepareText();
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   };
 
   changeNotePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
@@ -72,9 +72,9 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.editorView.app.model.changeNotePosition(id, endPosition);
+    this.view.app.model.changeNotePosition(id, endPosition);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   deleteNote(id: string, canUndo = true) {
@@ -88,17 +88,17 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.editorView.app.model.deleteNote(id);
+    this.view.app.model.deleteNote(id);
 
-    this.editorView.children.remove(note, Layer.Notes);
+    this.view.children.remove(note, Layer.Notes);
     this.unwatch(note);
     this.items.delete(id);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   handleMouseDown = (note: Note) => {
-    this.editorView.editorController.selectNote(note.id);
+    this.view.controller.selectNote(note.id);
   };
 
   handleDoubleClick = (note: Note) => {
@@ -106,9 +106,9 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
-    this.editorView.editorController.selectNote(note.id);
+    this.view.controller.selectNote(note.id);
 
-    const offset = this.editorView.app.mouse.getOffset();
+    const offset = this.view.app.mouse.getOffset();
 
     this.emit('contextMenu', {
       note,

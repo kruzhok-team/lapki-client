@@ -14,14 +14,14 @@ export class Note extends Shape {
   private visible = true;
   isSelected = false;
 
-  constructor(editorView: EditorView, id: string, parent?: Shape) {
-    super(editorView, id, parent);
+  constructor(view: EditorView, id: string, parent?: Shape) {
+    super(view, id, parent);
 
     this.prepareText();
   }
 
   get data() {
-    return this.editorView.app.model.data.elements.notes[this.id];
+    return this.view.app.model.data.elements.notes[this.id];
   }
 
   get bounds() {
@@ -48,7 +48,7 @@ export class Note extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.editorView.app.model.data.scale;
+    const scale = this.view.app.model.data.scale;
 
     return {
       padding: 10 / scale,
@@ -64,7 +64,7 @@ export class Note extends Shape {
 
   setVisible(value: boolean) {
     this.visible = value;
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   prepareText() {

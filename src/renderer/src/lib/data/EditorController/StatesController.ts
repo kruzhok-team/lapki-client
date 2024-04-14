@@ -42,7 +42,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   private states: Map<string, State> = new Map();
   private initialStates: Map<string, InitialState> = new Map();
 
-  constructor(private editorView: EditorView, private history: History) {
+  constructor(private view: EditorView, private history: History) {
     super();
   }
 
@@ -81,12 +81,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   createState = (args: CreateStateParams, canUndo = true) => {
     const { parentId, position, linkByPoint = true } = args;
 
-    const newStateId = this.editorView.app.model.createState(args); // Создание данных
-    const state = new State(this.editorView, newStateId); // Создание вьюшки
+    const newStateId = this.view.app.model.createState(args); // Создание данных
+    const state = new State(this.view, newStateId); // Создание вьюшки
 
     this.states.set(state.id, state);
 
-    this.editorView.children.add(state, Layer.States);
+    this.view.children.add(state, Layer.States);
 
     let numberOfConnectedActions = 0;
 
@@ -100,14 +100,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     // Если не было начального состояния, им станет новое
     // TODO(bryzZz) тут не приятно что проверка идёт по вью а не по модели
-    if ((state.parent || this.editorView).children.layers[Layer.States].length === 1) {
+    if ((state.parent || this.view).children.layers[Layer.States].length === 1) {
       this.createInitialStateWithTransition(state, canUndo);
       // numberOfConnectedActions += 1;
     }
 
     this.watch(state);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
 
     if (canUndo) {
       this.history.do({
@@ -140,11 +140,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    this.editorView.app.model.changeStateEvents(args);
+    this.view.app.model.changeStateEvents(args);
 
     state.updateEventBox();
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   changeStateName = (id: string, name: string, canUndo = true) => {
@@ -158,9 +158,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    this.editorView.app.model.changeStateName(id, name);
+    this.view.app.model.changeStateName(id, name);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   };
 
   changeStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
@@ -174,9 +174,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    this.editorView.app.model.changeStatePosition(id, endPosition);
+    this.view.app.model.changeStatePosition(id, endPosition);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   linkState(parentId: string, childId: string, canUndo = true, addOnceOff = false) {
@@ -191,10 +191,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       numberOfConnectedActions += 1;
     }
 
-    this.editorView.app.model.linkState(parentId, childId);
+    this.view.app.model.linkState(parentId, childId);
     this.changeStatePosition(childId, child.position, { x: 0, y: 0 }, false);
 
-    (child.parent || this.editorView).children.remove(child, Layer.States);
+    (child.parent || this.view).children.remove(child, Layer.States);
     child.parent = parent;
     parent.children.add(child, Layer.States);
 
@@ -213,8 +213,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       // state.parent.children.layers[Layer.NormalStates].add(state, Layer.NormalStates);
     }
 
-    this.editorView.editorController.transitions.forEachByStateId(childId, (transition) => {
-      this.editorView.editorController.transitions.linkTransition(transition.id);
+    this.view.controller.transitions.forEachByStateId(childId, (transition) => {
+      this.view.controller.transitions.linkTransition(transition.id);
     });
 
     if (canUndo) {
@@ -228,7 +228,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     }
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   linkStateByPoint(state: State, position: Point) {
@@ -275,10 +275,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const newPosition = { ...state.compoundPosition };
     this.changeStatePosition(id, state.position, newPosition, canUndo);
 
-    this.editorView.app.model.unlinkState(id);
+    this.view.app.model.unlinkState(id);
 
     state.parent.children.remove(state, Layer.States);
-    this.editorView.children.add(state, Layer.States);
+    this.view.children.add(state, Layer.States);
     state.parent = undefined;
 
     if (canUndo) {
@@ -290,7 +290,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       state.addOnceOff('dragend');
     }
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   deleteState = (id: string, canUndo = true) => {
@@ -301,7 +301,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
-    this.editorView.editorController.transitions.forEachByStateId(id, (transition) => {
+    this.view.controller.transitions.forEachByStateId(id, (transition) => {
       // Если удаляемое состояние было начальным, стираем текущее значение
       if (transition.source instanceof InitialState && transition.target.id === state.id) {
         this.deleteInitialState(transition.source, canUndo);
@@ -318,7 +318,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         }
       }
 
-      this.editorView.editorController.transitions.deleteTransition(transition.id, canUndo);
+      this.view.controller.transitions.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });
 
@@ -342,27 +342,27 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    (state.parent || this.editorView).children.remove(state, Layer.States); // Отсоединяемся вью от родителя
+    (state.parent || this.view).children.remove(state, Layer.States); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обрабочик событий с вью
     this.states.delete(id); // Удаляем само вью
-    this.editorView.app.model.deleteState(id); // Удаляем модель
+    this.view.app.model.deleteState(id); // Удаляем модель
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   };
 
   private deleteInitialState(state: InitialState, canUndo = true) {
     // Отсоединяемся от родительского состояния, если такое есть.
-    (state.parent || this.editorView).children.remove(state, Layer.InitialStates);
+    (state.parent || this.view).children.remove(state, Layer.InitialStates);
 
-    this.editorView.app.model.deleteInitialState(state.id);
+    this.view.app.model.deleteInitialState(state.id);
     this.unwatch(state);
     this.initialStates.delete(state.id);
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   private createInitialStateWithTransition(target: State, canUndo = true) {
-    const id = this.editorView.app.model.createInitialState({
+    const id = this.view.app.model.createInitialState({
       position: {
         x: target.position.x - INITIAL_STATE_OFFSET,
         y: target.position.y - INITIAL_STATE_OFFSET,
@@ -370,11 +370,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       parentId: target.data.parentId,
     });
 
-    const state = new InitialState(this.editorView, id);
+    const state = new InitialState(this.view, id);
 
     this.initialStates.set(id, state);
 
-    (target.parent || this.editorView).children.add(state, Layer.InitialStates);
+    (target.parent || this.view).children.add(state, Layer.InitialStates);
 
     if (target.parent) {
       state.parent = target.parent;
@@ -389,7 +389,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     //   });
     // }
 
-    this.editorView.editorController.transitions.createTransition(
+    this.view.controller.transitions.createTransition(
       {
         color: '#FFF',
         source: state.id,
@@ -403,22 +403,22 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.states.get(stateId);
     if (!state) return;
 
-    this.editorView.app.model.createEvent(stateId, eventData, eventIdx);
+    this.view.app.model.createEvent(stateId, eventData, eventIdx);
 
     state.updateEventBox();
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.states.get(stateId);
     if (!state) return;
 
-    this.editorView.app.model.createEventAction(stateId, event, value);
+    this.view.app.model.createEventAction(stateId, event, value);
 
     state.updateEventBox();
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   // Редактирование события в состояниях
@@ -431,7 +431,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (actionIdx !== null) {
       const prevValue = state.data.events[eventIdx].do[actionIdx];
 
-      this.editorView.app.model.changeEventAction(stateId, event, newValue);
+      this.view.app.model.changeEventAction(stateId, event, newValue);
 
       if (canUndo) {
         this.history.do({
@@ -442,7 +442,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       const prevValue = state.data.events[eventIdx].trigger;
 
-      this.editorView.app.model.changeEvent(stateId, eventIdx, newValue);
+      this.view.app.model.changeEvent(stateId, eventIdx, newValue);
 
       if (canUndo) {
         this.history.do({
@@ -454,7 +454,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     state.updateEventBox();
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   // Удаление события в состояниях
@@ -473,7 +473,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
       const prevValue = state.data.events[eventIdx].do[actionIdx];
 
-      this.editorView.app.model.deleteEventAction(stateId, event);
+      this.view.app.model.deleteEventAction(stateId, event);
 
       if (canUndo) {
         this.history.do({
@@ -484,7 +484,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       const prevValue = state.data.events[eventIdx];
 
-      this.editorView.app.model.deleteEvent(stateId, eventIdx);
+      this.view.app.model.deleteEvent(stateId, eventIdx);
 
       if (canUndo) {
         this.history.do({
@@ -496,7 +496,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     state.updateEventBox();
 
-    this.editorView.isDirty = true;
+    this.view.isDirty = true;
   }
 
   handleStartNewTransition = (state: State) => {
@@ -513,13 +513,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const y = e.event.y - drawBounds.y;
     const x = e.event.x - drawBounds.x;
 
-    if (y <= titleHeight && x >= drawBounds.width - 25 / this.editorView.app.model.data.scale) {
+    if (y <= titleHeight && x >= drawBounds.width - 25 / this.view.app.model.data.scale) {
       this.emit('changeStateName', state);
     }
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    this.editorView.editorController.selectState(state.id);
+    this.view.controller.selectState(state.id);
 
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
@@ -557,14 +557,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
-    this.editorView.editorController.selectState(state.id);
+    this.view.controller.selectState(state.id);
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,
       y: e.event.y,
     });
 
-    const offset = this.editorView.app.mouse.getOffset();
+    const offset = this.view.app.mouse.getOffset();
 
     if (eventIdx) {
       this.emit('eventContextMenu', {
@@ -592,7 +592,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleDrag: DragHandler = throttle<DragHandler>((state, e) => {
-    const possibleParent = (state.parent ?? this.editorView).getCapturedNode({
+    const possibleParent = (state.parent ?? this.view).getCapturedNode({
       position: e.event,
       exclude: [state],
       includeChildrenHeight: false,

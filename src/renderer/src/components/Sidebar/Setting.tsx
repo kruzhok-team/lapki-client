@@ -35,7 +35,7 @@ export const Setting: React.FC = () => {
     document.documentElement.dataset.theme = value;
 
     if (isMounted) {
-      editor.editorView.isDirty = true;
+      editor.view.isDirty = true;
     }
   };
 

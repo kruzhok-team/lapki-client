@@ -14,14 +14,14 @@ export class CanvasEditor {
   private _mouse: Mouse | null = null;
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
-  private _container: EditorView | null = null;
+  private _view: EditorView | null = null;
 
   model!: EditorModel;
 
   constructor() {
     this.model = new EditorModel();
     this.model.resetEditor = () => {
-      this.editorView.editorController.loadData();
+      this.view.controller.loadData();
     };
   }
 
@@ -56,11 +56,11 @@ export class CanvasEditor {
     }
     return this._render;
   }
-  get editorView() {
-    if (!this._container) {
-      throw new Error('Cannot access editorView before initialization');
+  get view() {
+    if (!this._view) {
+      throw new Error('Cannot access view before initialization');
     }
-    return this._container;
+    return this._view;
   }
 
   mount(root: HTMLDivElement) {
@@ -73,30 +73,30 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    this._container = new EditorView(this);
+    this._view = new EditorView(this);
     this.canvas.onResize = () => {
       this.mouse.setOffset();
-      this.editorView.isDirty = true;
+      this.view.isDirty = true;
     };
 
     preloadPicto(() => {
-      this.editorView.isDirty = true;
+      this.view.isDirty = true;
     });
 
     this.render.subscribe(() => {
-      if (!this.editorView.isDirty) return;
+      if (!this.view.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
-        this.editorView.draw(ctx, canvas);
+        this.view.draw(ctx, canvas);
       });
-      this.editorView.isDirty = false;
+      this.view.isDirty = false;
     });
 
     this.model.data.isMounted = true;
     this.model.triggerDataUpdate('isMounted');
 
-    this.editorView.editorController.loadData();
+    this.view.controller.loadData();
   }
 
   cleanUp() {

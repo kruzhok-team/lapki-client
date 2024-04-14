@@ -75,8 +75,8 @@ export const useDiagramContextMenu = () => {
           action: () => {
             openTab({
               type: 'code',
-              name: editor.manager.data.name ?? 'Безымянная',
-              code: editor.manager.serializer.getAll('JSON'),
+              name: editor.model.data.name ?? 'Безымянная',
+              code: editor.model.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -144,7 +144,7 @@ export const useDiagramContextMenu = () => {
             openTab({
               type: 'state',
               name: state.data.name,
-              code: editor.manager.serializer.getState(state.id) ?? '',
+              code: editor.model.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -252,7 +252,7 @@ export const useDiagramContextMenu = () => {
               openTab({
                 type: 'transition',
                 name: transition.id,
-                code: editor.manager.serializer.getTransition(transition.id) ?? '',
+                code: editor.model.serializer.getTransition(transition.id) ?? '',
                 language: 'json',
               });
             },

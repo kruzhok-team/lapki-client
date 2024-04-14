@@ -29,10 +29,10 @@ import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const isInitialized = manager.useData('isInitialized');
-  const isMounted = manager.useData('isMounted');
+  const isInitialized = model.useData('isInitialized');
+  const isMounted = model.useData('isMounted');
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 

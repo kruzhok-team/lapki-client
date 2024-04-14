@@ -8,9 +8,9 @@ import { useModal } from './useModal';
 
 export const useComponents = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const components = manager.useData('elements.components');
+  const components = model.useData('elements.components');
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<ComponentData>({ transitionId: '', type: '', parameters: {} });

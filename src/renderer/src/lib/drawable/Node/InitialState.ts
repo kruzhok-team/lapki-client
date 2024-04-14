@@ -16,7 +16,7 @@ export class InitialState extends Shape {
   }
 
   get data() {
-    return this.container.app.manager.data.elements.initialStates[this.id];
+    return this.container.app.model.data.elements.initialStates[this.id];
   }
 
   get position() {

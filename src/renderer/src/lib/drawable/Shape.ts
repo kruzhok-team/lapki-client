@@ -1,13 +1,13 @@
 import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
+import { CHILDREN_PADDING, LONG_PRESS_TIMEOUT } from '@renderer/lib/constants';
+import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams, Layer } from '@renderer/lib/types/drawable';
 import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
+import { isPointInRectangle } from '@renderer/lib/utils';
 
 import { Children } from './Children';
-
-import { Drawable } from '../types';
-import { isPointInRectangle } from '../utils';
 
 /**
  * Перемещаемый элемент холста.
@@ -24,9 +24,6 @@ import { isPointInRectangle } from '../utils';
  *
  * TODO: Это явно нужно переделать.
  */
-
-const LONG_PRESS_TIMEOUT = 2000;
-const CHILDREN_PADDING = 15;
 
 interface ShapeEvents {
   mousedown: { event: MyMouseEvent };
@@ -78,13 +75,13 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const { x, y } = this.compoundPosition;
 
     return {
-      x: (x + this.container.app.manager.data.offset.x) / this.container.app.manager.data.scale,
-      y: (y + this.container.app.manager.data.offset.y) / this.container.app.manager.data.scale,
+      x: (x + this.container.app.model.data.offset.x) / this.container.app.model.data.scale,
+      y: (y + this.container.app.model.data.offset.y) / this.container.app.model.data.scale,
     };
   }
 
   get computedWidth() {
-    let width = this.dimensions.width / this.container.app.manager.data.scale;
+    let width = this.dimensions.width / this.container.app.model.data.scale;
     if (!this.children.isEmpty) {
       const children = [
         ...this.children.getLayer(Layer.States),
@@ -111,7 +108,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         cx +
           rightChildren.computedDimensions.width -
           x +
-          CHILDREN_PADDING / this.container.app.manager.data.scale
+          CHILDREN_PADDING / this.container.app.model.data.scale
       );
     }
 
@@ -119,7 +116,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   }
 
   get computedHeight() {
-    return this.dimensions.height / this.container.app.manager.data.scale;
+    return this.dimensions.height / this.container.app.model.data.scale;
   }
 
   get childrenContainerHeight() {
@@ -150,7 +147,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
 
     result =
       (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
-        this.container.app.manager.data.scale +
+        this.container.app.model.data.scale +
       bottomChild.childrenContainerHeight;
 
     return result;
@@ -208,8 +205,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     }
 
     this.position = {
-      x: this.position.x + e.dx * this.container.app.manager.data.scale,
-      y: this.position.y + e.dy * this.container.app.manager.data.scale,
+      x: this.position.x + e.dx * this.container.app.model.data.scale,
+      y: this.position.y + e.dy * this.container.app.model.data.scale,
     };
 
     if (this.parent) {

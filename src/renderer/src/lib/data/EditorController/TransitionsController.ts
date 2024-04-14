@@ -74,7 +74,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     }
 
     // Создание данных
-    const id = this.container.app.manager.createTransition({
+    const id = this.container.app.model.createTransition({
       id: prevId,
       source,
       target,
@@ -136,7 +136,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.container.app.manager.changeTransition(args);
+    this.container.app.model.changeTransition(args);
 
     this.container.isDirty = true;
   }
@@ -152,7 +152,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.container.app.manager.changeTransitionPosition(id, endPosition);
+    this.container.app.model.changeTransitionPosition(id, endPosition);
 
     this.container.isDirty = true;
   }
@@ -168,7 +168,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.container.app.manager.deleteTransition(id);
+    this.container.app.model.deleteTransition(id);
 
     const parent = transition.parent ?? this.container;
     parent.children.remove(transition, Layer.Transitions);

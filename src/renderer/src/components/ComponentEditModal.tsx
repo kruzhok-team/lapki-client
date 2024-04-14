@@ -27,8 +27,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { manager } = useEditorContext();
-  const components = manager.useData('elements.components');
+  const { model } = useEditorContext();
+  const components = model.useData('elements.components');
 
   const [name, setName] = useState('');
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});

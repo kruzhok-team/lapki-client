@@ -59,12 +59,12 @@ export class Events {
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.container.app.manager.data.scale;
+    const titleHeight = this.parent.titleHeight / this.container.app.model.data.scale;
 
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
-    const px = this.bounds.x / this.container.app.manager.data.scale;
-    const py = this.bounds.y / this.container.app.manager.data.scale;
+    const px = this.bounds.x / this.container.app.model.data.scale;
+    const py = this.bounds.y / this.container.app.model.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -81,7 +81,7 @@ export class Events {
       const event = this.data[eventIdx];
       const triggerRect = {
         x: baseX,
-        y: baseY + (eventRow * yDx) / this.container.app.manager.data.scale,
+        y: baseY + (eventRow * yDx) / this.container.app.model.data.scale,
         width: pW,
         height: pH,
       };
@@ -94,7 +94,7 @@ export class Events {
         const ay = eventRow + Math.floor(actionIdx / eventRowLength);
         const actRect = {
           x: baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale,
-          y: baseY + (ay * yDx) / this.container.app.manager.data.scale,
+          y: baseY + (ay * yDx) / this.container.app.model.data.scale,
           width: pW,
           height: pH,
         };
@@ -130,15 +130,15 @@ export class Events {
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.container.app.manager.data.scale;
+    const titleHeight = this.parent.titleHeight / this.container.app.model.data.scale;
 
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.container.app.manager.data.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.container.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
-    const px = this.bounds.x / this.container.app.manager.data.scale;
-    const py = this.bounds.y / this.container.app.manager.data.scale;
+    const px = this.bounds.x / this.container.app.model.data.scale;
+    const py = this.bounds.y / this.container.app.model.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -150,7 +150,7 @@ export class Events {
 
     this.data.map((events, eventIdx) => {
       const eX = baseX;
-      const eY = baseY + (eventRow * yDx) / this.container.app.manager.data.scale;
+      const eY = baseY + (eventRow * yDx) / this.container.app.model.data.scale;
       if (typeof this.selection !== 'undefined') {
         if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
           picto.drawCursor(ctx, eX, eY);
@@ -162,7 +162,7 @@ export class Events {
         const ax = 1 + (actIdx % eventRowLength);
         const ay = eventRow + Math.floor(actIdx / eventRowLength);
         const aX = baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
-        const aY = baseY + (ay * yDx) / this.container.app.manager.data.scale;
+        const aY = baseY + (ay * yDx) / this.container.app.model.data.scale;
         if (typeof this.selection !== 'undefined') {
           if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
             picto.drawCursor(ctx, aX, aY);

@@ -121,8 +121,8 @@ const HistoryWithEditor: React.FC = () => {
 };
 
 export const History: React.FC = () => {
-  const { manager } = useEditorContext();
-  const isMounted = manager.useData('isMounted');
+  const { model } = useEditorContext();
+  const isMounted = model.useData('isMounted');
 
   return (
     <section className="flex flex-col">

@@ -50,9 +50,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   onClose,
 }) => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const componentsData = manager.useData('elements.components');
+  const componentsData = model.useData('elements.components');
   const machine = editor.container.machineController;
   const isEditingState = state !== undefined;
 

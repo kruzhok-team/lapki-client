@@ -16,11 +16,11 @@ export class CanvasEditor {
   private _render: Render | null = null;
   private _container: Container | null = null;
 
-  manager!: EditorModel;
+  model!: EditorModel;
 
   constructor() {
-    this.manager = new EditorModel();
-    this.manager.resetEditor = () => {
+    this.model = new EditorModel();
+    this.model.resetEditor = () => {
       this.container.machineController.loadData();
     };
   }
@@ -93,8 +93,8 @@ export class CanvasEditor {
       this.container.isDirty = false;
     });
 
-    this.manager.data.isMounted = true;
-    this.manager.triggerDataUpdate('isMounted');
+    this.model.data.isMounted = true;
+    this.model.triggerDataUpdate('isMounted');
 
     this.container.machineController.loadData();
   }

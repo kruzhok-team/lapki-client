@@ -22,7 +22,7 @@ const themeOptions = [
 
 export const Setting: React.FC = () => {
   const editor = useEditorContext();
-  const isMounted = editor.manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
 
   const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);

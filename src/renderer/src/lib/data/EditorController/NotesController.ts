@@ -25,7 +25,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   forEach = this.items.forEach.bind(this.items);
 
   createNote(params: CreateNoteParams, canUndo = true) {
-    const newNoteId = this.container.app.manager.createNote(params);
+    const newNoteId = this.container.app.model.createNote(params);
     const note = new Note(this.container, newNoteId);
 
     this.items.set(newNoteId, note);
@@ -55,7 +55,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.container.app.manager.changeNoteText(id, text);
+    this.container.app.model.changeNoteText(id, text);
     note.prepareText();
 
     this.container.isDirty = true;
@@ -72,7 +72,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.container.app.manager.changeNotePosition(id, endPosition);
+    this.container.app.model.changeNotePosition(id, endPosition);
 
     this.container.isDirty = true;
   }
@@ -88,7 +88,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.container.app.manager.deleteNote(id);
+    this.container.app.model.deleteNote(id);
 
     this.container.children.remove(note, Layer.Notes);
     this.unwatch(note);

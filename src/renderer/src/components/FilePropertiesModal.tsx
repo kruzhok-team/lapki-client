@@ -10,7 +10,7 @@ interface FilePropertiesModalProps {
 }
 
 export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClose, ...props }) => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
   const [fileSize, setFileSize] = useState<number>(0);
   const [fileLastModified, setFileLastModified] = useState<Date>();
@@ -18,15 +18,15 @@ export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClos
   const [platform, setPlatform] = useState<Platform | undefined>(undefined);
   // получение метаданных о файле
   const onAfterOpen = () => {
-    if (!manager.data?.basename) return;
+    if (!model.data?.basename) return;
 
-    window.api.fileHandlers.getMetadata(manager.data?.basename).then((stat) => {
+    window.api.fileHandlers.getMetadata(model.data?.basename).then((stat) => {
       setFileBirthDate(stat['birthtime']);
       setFileLastModified(stat['mtime']);
       setFileSize(stat['size']);
     });
 
-    setPlatform(getPlatform(manager.data.elements.platform));
+    setPlatform(getPlatform(model.data.elements.platform));
   };
   // получить строку, предназначенную для чтения пользователем
   function dateFormat(date: Date | undefined): string {
@@ -41,11 +41,11 @@ export const FilePropertiesModal: React.FC<FilePropertiesModalProps> = ({ onClos
   return (
     <Modal {...props} onRequestClose={onClose} onAfterOpen={onAfterOpen} title="Свойства">
       <div>
-        <b>Название:</b> {manager.data.name}
+        <b>Название:</b> {model.data.name}
         <br />
         <b>Платформа:</b> {platform?.name}
         <br />
-        <b>Путь к файлу:</b> {manager.data.basename}
+        <b>Путь к файлу:</b> {model.data.basename}
         <br />
         <b>Дата и время последнего изменения файла:</b> {dateFormat(fileLastModified)}
         <br />

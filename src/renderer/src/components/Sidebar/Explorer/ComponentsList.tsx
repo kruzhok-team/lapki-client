@@ -11,10 +11,10 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 
 export const ComponentsList: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const isInitialized = manager.useData('isInitialized');
-  const components = manager.useData('elements.components');
+  const isInitialized = model.useData('isInitialized');
+  const components = model.useData('elements.components');
 
   const {
     addProps,

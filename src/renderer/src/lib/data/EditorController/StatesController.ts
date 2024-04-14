@@ -1,16 +1,15 @@
-import { UnlinkStateParams } from '@renderer/lib/types/EditorController';
 import throttle from 'lodash.throttle';
 
 import { Container } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
+import { INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { State, EventSelection, InitialState } from '@renderer/lib/drawable';
 import { MyMouseEvent, Layer } from '@renderer/lib/types';
+import { UnlinkStateParams } from '@renderer/lib/types/EditorController';
 import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import { Action, Event, EventData } from '@renderer/types/diagram';
-
-const INITIAL_STATE_OFFSET = 100;
 
 type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
 
@@ -82,7 +81,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   createState = (args: CreateStateParams, canUndo = true) => {
     const { parentId, position, linkByPoint = true } = args;
 
-    const newStateId = this.container.app.manager.createState(args); // Создание данных
+    const newStateId = this.container.app.model.createState(args); // Создание данных
     const state = new State(this.container, newStateId); // Создание вьюшки
 
     this.states.set(state.id, state);
@@ -141,7 +140,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    this.container.app.manager.changeStateEvents(args);
+    this.container.app.model.changeStateEvents(args);
 
     state.updateEventBox();
 
@@ -159,7 +158,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    this.container.app.manager.changeStateName(id, name);
+    this.container.app.model.changeStateName(id, name);
 
     this.container.isDirty = true;
   };
@@ -175,7 +174,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       });
     }
 
-    this.container.app.manager.changeStatePosition(id, endPosition);
+    this.container.app.model.changeStatePosition(id, endPosition);
 
     this.container.isDirty = true;
   }
@@ -192,7 +191,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       numberOfConnectedActions += 1;
     }
 
-    this.container.app.manager.linkState(parentId, childId);
+    this.container.app.model.linkState(parentId, childId);
     this.changeStatePosition(childId, child.position, { x: 0, y: 0 }, false);
 
     (child.parent || this.container).children.remove(child, Layer.States);
@@ -276,7 +275,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const newPosition = { ...state.compoundPosition };
     this.changeStatePosition(id, state.position, newPosition, canUndo);
 
-    this.container.app.manager.unlinkState(id);
+    this.container.app.model.unlinkState(id);
 
     state.parent.children.remove(state, Layer.States);
     this.container.children.add(state, Layer.States);
@@ -346,7 +345,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     (state.parent || this.container).children.remove(state, Layer.States); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обрабочик событий с вью
     this.states.delete(id); // Удаляем само вью
-    this.container.app.manager.deleteState(id); // Удаляем модель
+    this.container.app.model.deleteState(id); // Удаляем модель
 
     this.container.isDirty = true;
   };
@@ -355,7 +354,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // Отсоединяемся от родительского состояния, если такое есть.
     (state.parent || this.container).children.remove(state, Layer.InitialStates);
 
-    this.container.app.manager.deleteInitialState(state.id);
+    this.container.app.model.deleteInitialState(state.id);
     this.unwatch(state);
     this.initialStates.delete(state.id);
 
@@ -363,7 +362,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   private createInitialStateWithTransition(target: State, canUndo = true) {
-    const id = this.container.app.manager.createInitialState({
+    const id = this.container.app.model.createInitialState({
       position: {
         x: target.position.x - INITIAL_STATE_OFFSET,
         y: target.position.y - INITIAL_STATE_OFFSET,
@@ -404,7 +403,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.states.get(stateId);
     if (!state) return;
 
-    this.container.app.manager.createEvent(stateId, eventData, eventIdx);
+    this.container.app.model.createEvent(stateId, eventData, eventIdx);
 
     state.updateEventBox();
 
@@ -415,7 +414,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.states.get(stateId);
     if (!state) return;
 
-    this.container.app.manager.createEventAction(stateId, event, value);
+    this.container.app.model.createEventAction(stateId, event, value);
 
     state.updateEventBox();
 
@@ -432,7 +431,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (actionIdx !== null) {
       const prevValue = state.data.events[eventIdx].do[actionIdx];
 
-      this.container.app.manager.changeEventAction(stateId, event, newValue);
+      this.container.app.model.changeEventAction(stateId, event, newValue);
 
       if (canUndo) {
         this.history.do({
@@ -443,7 +442,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       const prevValue = state.data.events[eventIdx].trigger;
 
-      this.container.app.manager.changeEvent(stateId, eventIdx, newValue);
+      this.container.app.model.changeEvent(stateId, eventIdx, newValue);
 
       if (canUndo) {
         this.history.do({
@@ -474,7 +473,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
       const prevValue = state.data.events[eventIdx].do[actionIdx];
 
-      this.container.app.manager.deleteEventAction(stateId, event);
+      this.container.app.model.deleteEventAction(stateId, event);
 
       if (canUndo) {
         this.history.do({
@@ -485,7 +484,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       const prevValue = state.data.events[eventIdx];
 
-      this.container.app.manager.deleteEvent(stateId, eventIdx);
+      this.container.app.model.deleteEvent(stateId, eventIdx);
 
       if (canUndo) {
         this.history.do({
@@ -514,7 +513,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const y = e.event.y - drawBounds.y;
     const x = e.event.x - drawBounds.x;
 
-    if (y <= titleHeight && x >= drawBounds.width - 25 / this.container.app.manager.data.scale) {
+    if (y <= titleHeight && x >= drawBounds.width - 25 / this.container.app.model.data.scale) {
       this.emit('changeStateName', state);
     }
   };

@@ -15,7 +15,7 @@ import { StateNameModal } from './StateNameModal';
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const isMounted = editor.manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State | null>(null);
@@ -87,7 +87,7 @@ export const DiagramEditor: React.FC = () => {
 
     return () => {
       // снятие слежки произойдёт по смене редактора новым
-      // manager.unwatchEditor();
+      // model.unwatchEditor();
       editor?.cleanUp();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.

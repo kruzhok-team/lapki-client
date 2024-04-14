@@ -21,7 +21,7 @@ export class Note extends Shape {
   }
 
   get data() {
-    return this.container.app.manager.data.elements.notes[this.id];
+    return this.container.app.model.data.elements.notes[this.id];
   }
 
   get bounds() {
@@ -48,7 +48,7 @@ export class Note extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.container.app.manager.data.scale;
+    const scale = this.container.app.model.data.scale;
 
     return {
       padding: 10 / scale,

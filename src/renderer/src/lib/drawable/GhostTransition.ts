@@ -37,12 +37,12 @@ export class GhostTransition {
 
     ctx.lineWidth = transitionStyle.width;
 
-    drawCurvedLine(ctx, line, 12 / this.container.app.manager.data.scale);
-    drawCircle(ctx, line.start, transitionStyle.startSize / this.container.app.manager.data.scale);
+    drawCurvedLine(ctx, line, 12 / this.container.app.model.data.scale);
+    drawCircle(ctx, line.start, transitionStyle.startSize / this.container.app.model.data.scale);
     drawTriangle(
       ctx,
       line.end,
-      10 / this.container.app.manager.data.scale,
+      10 / this.container.app.model.data.scale,
       degrees_to_radians(line.ee)
     );
   }

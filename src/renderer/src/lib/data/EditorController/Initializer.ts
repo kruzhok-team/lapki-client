@@ -67,7 +67,7 @@ export class Initializer {
    * Демо: child-before-parent.json
    */
   private initStates() {
-    const items = this.container.app.manager.data.elements.states;
+    const items = this.container.app.model.data.elements.states;
 
     for (const id in items) {
       this.createStateView(id);
@@ -83,7 +83,7 @@ export class Initializer {
   }
 
   private initTransitions() {
-    const items = this.container.app.manager.data.elements.transitions;
+    const items = this.container.app.model.data.elements.transitions;
 
     for (const id in items) {
       this.createTransitionView(id);
@@ -91,7 +91,7 @@ export class Initializer {
   }
 
   private initNotes() {
-    const items = this.container.app.manager.data.elements.notes;
+    const items = this.container.app.model.data.elements.notes;
 
     for (const id in items) {
       this.createNoteView(id);
@@ -99,7 +99,7 @@ export class Initializer {
   }
 
   private initComponents() {
-    const items = this.container.app.manager.data.elements.components;
+    const items = this.container.app.model.data.elements.components;
 
     for (const name in items) {
       const component = items[name];
@@ -112,7 +112,7 @@ export class Initializer {
   }
 
   private initPlatform() {
-    const platformName = this.container.app.manager.data.elements.platform;
+    const platformName = this.container.app.model.data.elements.platform;
 
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     const platform = loadPlatform(platformName);

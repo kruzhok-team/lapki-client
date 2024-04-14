@@ -1,8 +1,7 @@
-import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
-
 import { Container } from '@renderer/lib/basic';
 import { History } from '@renderer/lib/data/History';
 import { State } from '@renderer/lib/drawable';
+import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
 import { AddComponentParams } from '@renderer/lib/types/EditorModel';
 import {
   Condition,
@@ -64,7 +63,7 @@ export class EditorController {
    * или перестановки его на другое {@link State|состояние}
    */
   // setInitialState = (stateId: string, canUndo = true) => {
-  //   const initialState = this.container.app.manager.data.elements.initialState;
+  //   const initialState = this.container.app.model.data.elements.initialState;
 
   //   if (!initialState) {
   //     return this.createInitialState(stateId, undefined, canUndo);
@@ -102,7 +101,7 @@ export class EditorController {
   //     },
   //   };
 
-  //   this.container.app.manager.changeInitialState(data);
+  //   this.container.app.model.changeInitialState(data);
   //   this.container.statesController.initInitialStateMark();
 
   //   if (canUndo) {
@@ -127,7 +126,7 @@ export class EditorController {
   //     x: target.compoundPosition.x - 100,
   //     y: target.compoundPosition.y - 100,
   //   };
-  //   this.container.app.manager.changeInitialState({
+  //   this.container.app.model.changeInitialState({
   //     target: newTargetId,
   //     position,
   //   });
@@ -147,7 +146,7 @@ export class EditorController {
   //  * Изменение позиции {@link InitialState|маркера начального состояния}
   //  */
   // changeInitialStatePosition = (startPosition: Point, endPosition: Point, canUndo = true) => {
-  //   const initialState = this.container.app.manager.data.elements.initialState;
+  //   const initialState = this.container.app.model.data.elements.initialState;
   //   if (!initialState) return;
 
   //   if (canUndo) {
@@ -157,19 +156,19 @@ export class EditorController {
   //     });
   //   }
 
-  //   this.container.app.manager.changeInitialStatePosition(endPosition);
+  //   this.container.app.model.changeInitialStatePosition(endPosition);
 
   //   this.container.isDirty = true;
   // };
 
   // getInitialStatePosition = () => {
-  //   const initialState = this.container.app.manager.data.elements.initialState;
+  //   const initialState = this.container.app.model.data.elements.initialState;
   //   if (!initialState) return null;
   //   return initialState.position;
   // };
 
   // deleteInitialState = (canUndo = true) => {
-  //   const initialStateData = this.container.app.manager.data.elements.initialState;
+  //   const initialStateData = this.container.app.model.data.elements.initialState;
 
   //   if (!initialStateData) return;
 
@@ -181,7 +180,7 @@ export class EditorController {
   //   }
 
   //   this.container.statesController.clearInitialStateMark();
-  //   this.container.app.manager.deleteInitialState();
+  //   this.container.app.model.deleteInitialState();
 
   //   this.container.isDirty = true;
   // };
@@ -189,7 +188,7 @@ export class EditorController {
   addComponent(args: AddComponentParams, canUndo = true) {
     const { name, type } = args;
 
-    this.container.app.manager.addComponent(args);
+    this.container.app.model.addComponent(args);
 
     this.platform.nameToVisual.set(name, {
       component: type,
@@ -208,13 +207,11 @@ export class EditorController {
   editComponent(args: EditComponentParams, canUndo = true) {
     const { name, parameters, newName } = args;
 
-    const prevComponent = structuredClone(
-      this.container.app.manager.data.elements.components[name]
-    );
+    const prevComponent = structuredClone(this.container.app.model.data.elements.components[name]);
 
-    this.container.app.manager.editComponent(name, parameters);
+    this.container.app.model.editComponent(name, parameters);
 
-    const component = this.container.app.manager.data.elements.components[name];
+    const component = this.container.app.model.data.elements.components[name];
     this.platform.nameToVisual.set(name, {
       component: component.type,
       label: component.parameters['label'],
@@ -238,8 +235,8 @@ export class EditorController {
   removeComponent(args: RemoveComponentParams, canUndo = true) {
     const { name, purge } = args;
 
-    const prevComponent = this.container.app.manager.data.elements.components[name];
-    this.container.app.manager.removeComponent(name);
+    const prevComponent = this.container.app.model.data.elements.components[name];
+    this.container.app.model.removeComponent(name);
 
     if (purge) {
       // TODO: «вымарывание» компонента из машины
@@ -259,7 +256,7 @@ export class EditorController {
   }
 
   private renameComponent(name: string, newName: string) {
-    this.container.app.manager.renameComponent(name, newName);
+    this.container.app.model.renameComponent(name, newName);
 
     const visualCompo = this.platform.nameToVisual.get(name);
 
@@ -358,7 +355,7 @@ export class EditorController {
     this.states.forEachState((state) => {
       if (!state.isSelected) return;
 
-      const data = this.container.app.manager.serializer.getState(state.id);
+      const data = this.container.app.model.serializer.getState(state.id);
       if (!data) return;
 
       navigator.clipboard.writeText(data);
@@ -367,7 +364,7 @@ export class EditorController {
     this.transitions.forEach((transition) => {
       if (!transition.isSelected) return;
 
-      const data = this.container.app.manager.serializer.getTransition(transition.id);
+      const data = this.container.app.model.serializer.getTransition(transition.id);
       if (!data) return;
 
       navigator.clipboard.writeText(data);
@@ -376,7 +373,7 @@ export class EditorController {
     this.notes.forEach((note) => {
       if (!note.isSelected) return;
 
-      const data = this.container.app.manager.serializer.getNote(note.id);
+      const data = this.container.app.model.serializer.getNote(note.id);
       if (!data) return;
 
       navigator.clipboard.writeText(data);
@@ -412,7 +409,7 @@ export class EditorController {
 
     this.removeSelection();
 
-    this.container.app.manager.changeStateSelection(id, true);
+    this.container.app.model.changeStateSelection(id, true);
 
     state.setIsSelected(true);
   }
@@ -423,7 +420,7 @@ export class EditorController {
 
     this.removeSelection();
 
-    this.container.app.manager.changeTransitionSelection(id, true);
+    this.container.app.model.changeTransitionSelection(id, true);
 
     transition.setIsSelected(true);
   }
@@ -449,13 +446,13 @@ export class EditorController {
   removeSelection() {
     this.states.forEachState((state) => {
       state.setIsSelected(false);
-      this.container.app.manager.changeStateSelection(state.id, false);
+      this.container.app.model.changeStateSelection(state.id, false);
       state.eventBox.selection = undefined;
     });
 
     this.transitions.forEach((transition) => {
       transition.setIsSelected(false);
-      this.container.app.manager.changeTransitionSelection(transition.id, false);
+      this.container.app.model.changeTransitionSelection(transition.id, false);
     });
 
     this.notes.forEach((note) => {
@@ -466,7 +463,7 @@ export class EditorController {
   }
 
   getVacantComponents(): ComponentEntry[] {
-    const components = this.container.app.manager.data.elements.components;
+    const components = this.container.app.model.data.elements.components;
     const vacant: ComponentEntry[] = [];
     for (const idx in this.platform.data.components) {
       const compo = this.platform.data.components[idx];

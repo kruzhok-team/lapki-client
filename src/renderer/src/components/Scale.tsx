@@ -9,11 +9,11 @@ import { useDoc } from '@renderer/store/useDoc';
 
 export const Scale: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
   const isDocOpen = useDoc((state) => state.isOpen);
 
-  const scale = manager.useData('scale');
+  const scale = model.useData('scale');
 
   const handleZoomOut = () => {
     editor.container.changeScale(0.1);

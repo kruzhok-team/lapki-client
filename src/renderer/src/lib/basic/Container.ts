@@ -1,7 +1,7 @@
-import { EditorController } from '@renderer/lib/data/EditorController';
-
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
+import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
+import { EditorController } from '@renderer/lib/data/EditorController';
 import { History } from '@renderer/lib/data/History';
 import { Children, picto, Shape } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
@@ -10,9 +10,6 @@ import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { clamp } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
-
-export const MAX_SCALE = 10;
-export const MIN_SCALE = 0.2;
 
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
@@ -70,8 +67,8 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
 
-    const scale = this.app.manager.data.scale;
-    const offset = this.app.manager.data.offset;
+    const scale = this.app.model.data.scale;
+    const offset = this.app.model.data.offset;
 
     let size = 30;
     const top = (offset.y % size) / scale;
@@ -109,8 +106,8 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
     this.app.keyboard.on('ctrly', this.history.redo);
     this.app.keyboard.on('ctrlc', this.machineController.copySelected);
     this.app.keyboard.on('ctrlv', this.machineController.pasteSelected);
-    this.app.keyboard.on('ctrls', this.app.manager.files.save);
-    this.app.keyboard.on('ctrlshifta', this.app.manager.files.saveAs);
+    this.app.keyboard.on('ctrls', this.app.model.files.save);
+    this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -143,7 +140,7 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   }
 
   setScale(value: number) {
-    this.app.manager.setScale(value);
+    this.app.model.setScale(value);
     picto.scale = value;
 
     this.isDirty = true;
@@ -226,16 +223,16 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
 
     if (this.isPan) {
       // TODO Много раз такие операции повторяются, нужно переделать на функции
-      this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
-      this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+      this.app.model.data.offset.x += e.dx * this.app.model.data.scale;
+      this.app.model.data.offset.y += e.dy * this.app.model.data.scale;
     } else if (this.mouseDownNode) {
       this.mouseDownNode.handleMouseMove(e);
     }
   }
 
   private handleRightMouseMove(e: MyMouseEvent) {
-    this.app.manager.data.offset.x += e.dx * this.app.manager.data.scale;
-    this.app.manager.data.offset.y += e.dy * this.app.manager.data.scale;
+    this.app.model.data.offset.x += e.dx * this.app.model.data.scale;
+    this.app.model.data.offset.y += e.dy * this.app.model.data.scale;
 
     this.app.canvas.element.style.cursor = 'grabbing';
   }
@@ -257,11 +254,11 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
       this.handleChangeScale(e);
     } else {
       if (this.app.keyboard.shiftPressed) {
-        this.app.manager.data.offset.y -= e.nativeEvent.deltaX * 0.1;
-        this.app.manager.data.offset.x -= e.nativeEvent.deltaY * 0.1;
+        this.app.model.data.offset.y -= e.nativeEvent.deltaX * 0.1;
+        this.app.model.data.offset.x -= e.nativeEvent.deltaY * 0.1;
       } else {
-        this.app.manager.data.offset.y -= e.nativeEvent.deltaY * 0.1;
-        this.app.manager.data.offset.x -= e.nativeEvent.deltaX * 0.1;
+        this.app.model.data.offset.y -= e.nativeEvent.deltaY * 0.1;
+        this.app.model.data.offset.x -= e.nativeEvent.deltaX * 0.1;
       }
 
       this.isDirty = true;
@@ -269,12 +266,12 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   };
 
   private handleChangeScale(e: MyMouseEvent & { nativeEvent: WheelEvent }) {
-    const prevScale = this.app.manager.data.scale;
+    const prevScale = this.app.model.data.scale;
     const newScale = Number(
       clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.app.manager.data.offset.x -= e.x * prevScale - e.x * newScale;
-    this.app.manager.data.offset.y -= e.y * prevScale - e.y * newScale;
+    this.app.model.data.offset.x -= e.x * prevScale - e.x * newScale;
+    this.app.model.data.offset.y -= e.y * prevScale - e.y * newScale;
 
     this.setScale(newScale);
   }
@@ -289,8 +286,8 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
 
   relativeMousePos(e: Point): Point {
     // const rect = this.app.canvas.element.getBoundingClientRect();
-    const scale = this.app.manager.data.scale;
-    const offset = this.app.manager.data.offset;
+    const scale = this.app.model.data.scale;
+    const offset = this.app.model.data.offset;
     return {
       x: e.x * scale - offset.x,
       y: e.y * scale - offset.y,
@@ -321,7 +318,7 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
     minY += 40;
 
     this.setScale(1);
-    this.app.manager.data.offset = { x: minX, y: minY };
+    this.app.model.data.offset = { x: minX, y: minY };
 
     this.isDirty = true;
   }
@@ -330,12 +327,12 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
     const x = this.app.canvas.width / 2;
     const y = this.app.canvas.height / 2;
 
-    const prevScale = this.app.manager.data.scale;
+    const prevScale = this.app.model.data.scale;
     const newScale = Number(
       clamp(replace ? delta : prevScale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.app.manager.data.offset.x -= x * prevScale - x * newScale;
-    this.app.manager.data.offset.y -= y * prevScale - y * newScale;
+    this.app.model.data.offset.x -= x * prevScale - x * newScale;
+    this.app.model.data.offset.y -= y * prevScale - y * newScale;
 
     this.setScale(newScale);
   }

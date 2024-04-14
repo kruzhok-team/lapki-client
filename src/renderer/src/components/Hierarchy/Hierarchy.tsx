@@ -29,14 +29,14 @@ export interface HierarchyItemData {
 
 export const Hierarchy: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
   const machine = editor.container.machineController;
 
   const [theme] = useSettings('theme');
 
-  const states = manager.useData('elements.states');
-  const initialStates = manager.useData('elements.initialStates');
-  const transitions = manager.useData('elements.transitions');
+  const states = model.useData('elements.states');
+  const initialStates = model.useData('elements.initialStates');
+  const transitions = model.useData('elements.transitions');
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();

@@ -15,8 +15,8 @@ export const useCreateModalCondition = ({
   formState,
 }: useCreateModalConditionParams) => {
   const editor = useEditorContext();
-  const manager = editor.manager;
-  const componentsData = manager.useData('elements.components');
+  const model = editor.model;
+  const componentsData = model.useData('elements.components');
   const machine = editor.container.machineController;
 
   const [errors, setErrors] = useState({} as Record<string, string>);

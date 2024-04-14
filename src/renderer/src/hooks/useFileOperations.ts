@@ -16,9 +16,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
   const editor = useEditorContext();
-  const manager = editor.manager;
-  const isStale = manager.useData('isStale');
-  const name = manager.useData('name');
+  const model = editor.model;
+  const isStale = model.useData('isStale');
+  const name = model.useData('name');
 
   const clearTabs = useTabs((state) => state.clearTabs);
 
@@ -47,7 +47,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performOpenFile = async (path?: string) => {
-    const result = await manager?.files.open(openImportError, path);
+    const result = await model?.files.open(openImportError, path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -62,7 +62,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const handleOpenFromTemplate = (type: string, name: string) => {
-    manager.files.createFromTemplate(type, name, openImportError);
+    model.files.createFromTemplate(type, name, openImportError);
 
     clearTabs();
   };
@@ -84,12 +84,12 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (idx: string) => {
-    manager?.files.newFile(idx);
+    model?.files.newFile(idx);
     clearTabs();
   };
 
   const handleSaveAsFile = async () => {
-    const result = await manager?.files.saveAs();
+    const result = await model?.files.saveAs();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
@@ -99,7 +99,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const handleSaveFile = async () => {
-    const result = await manager?.files.save();
+    const result = await model?.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {

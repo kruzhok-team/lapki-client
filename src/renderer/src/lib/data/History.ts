@@ -17,7 +17,8 @@ import {
   UnlinkStateParams,
 } from '@renderer/lib/types/MachineController';
 import {
-  NormalState as StateData,
+  InitialState as InitialStateData,
+  NormalState as NormalStateData,
   Transition as TransitionData,
   Note as NoteData,
   Action as EventAction,
@@ -30,7 +31,7 @@ import { MachineController } from './MachineController';
 
 export type PossibleActions = {
   stateCreate: CreateStateParams & { newStateId: string };
-  deleteState: { id: string; stateData: StateData };
+  deleteState: { id: string; stateData: NormalStateData };
   changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
   linkState: { parentId: string; childId: string };
@@ -42,7 +43,8 @@ export type PossibleActions = {
     args: ChangeTransitionParams;
     prevData: TransitionData;
   };
-  // createInitialState: InitialState;
+  // TODO
+  // createInitialState: { target: State; position: Point };
   // changeInitialState: { prevTargetId: string; newTargetId: string };
   // changeInitialStatePosition: { startPosition: Point; endPosition: Point };
   // deleteInitialState: InitialState;
@@ -159,11 +161,11 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  // TODO
   // createInitialState: (sM, { target, position }) => ({
   //   redo: sM.createInitialState.bind(sM, target, position, false),
   //   undo: sM.deleteInitialState.bind(sM, false),
   // }),
+  // TODO
   // changeInitialState: (sM, { prevTargetId, newTargetId }) => ({
   //   redo: sM.changeInitialState.bind(sM, prevTargetId, newTargetId, false),
   //   undo: sM.changeInitialState.bind(sM, newTargetId, prevTargetId, false),

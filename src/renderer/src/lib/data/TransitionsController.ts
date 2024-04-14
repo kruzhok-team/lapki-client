@@ -31,13 +31,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.ghost = new GhostTransition(container);
   }
 
-  get(id: string) {
-    return this.items.get(id);
-  }
-
-  forEach(callback: (transition: Transition) => void) {
-    return this.items.forEach(callback);
-  }
+  get = this.items.get.bind(this.items);
+  set = this.items.set.bind(this.items);
+  clear = this.items.clear.bind(this.items);
+  forEach = this.items.forEach.bind(this.items);
 
   forEachByStateId(stateId: string, callback: (transition: Transition) => void) {
     return this.items.forEach((transition) => {
@@ -47,12 +44,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     });
   }
 
-  clear() {
-    return this.items.clear();
-  }
-
-  set(id: string, transition: Transition) {
-    return this.items.set(id, transition);
+  forEachByTargetId(targetId: string, callback: (transition: Transition) => void) {
+    return this.items.forEach((transition) => {
+      if (transition.data.target === targetId) {
+        callback(transition);
+      }
+    });
   }
 
   getIdsByStateId(stateId: string) {

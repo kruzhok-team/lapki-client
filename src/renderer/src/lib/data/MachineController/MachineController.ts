@@ -283,24 +283,25 @@ export class MachineController {
       }
     });
 
-    // TODO
-    // this.transitions.forEach((value) => {
-    //   if (value.data.trigger.component == name) {
-    //     value.data.trigger.component = newName;
-    //   }
-    //   // do
-    //   if (value.data.do) {
-    //     for (const act of value.data.do) {
-    //       if (act.component == name) {
-    //         act.component = newName;
-    //       }
-    //     }
-    //   }
-    //   // condition
-    //   if (value.data.condition) {
-    //     this.renameCondition(value.data.condition, name, newName);
-    //   }
-    // });
+    this.transitions.forEach((transition) => {
+      if (!transition.data.label) return;
+
+      if (transition.data.label.trigger?.component === name) {
+        transition.data.label.trigger.component = newName;
+      }
+
+      if (transition.data.label.do) {
+        for (const act of transition.data.label.do) {
+          if (act.component === name) {
+            act.component = newName;
+          }
+        }
+      }
+
+      if (transition.data.label.condition) {
+        this.renameCondition(transition.data.label.condition, name, newName);
+      }
+    });
 
     this.container.isDirty = true;
   }

@@ -4,24 +4,26 @@ import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transit
 
 import { WithHint } from '../UI';
 
-interface BaseTitleRenderProps {
+interface TitleRenderProps {
   title: string;
   search: string;
+  type: 'state' | 'initialState' | 'transition';
 }
 
-interface TransitionTitleRenderProps extends BaseTitleRenderProps {
-  type: 'transition';
-}
+// interface TransitionTitleRenderProps extends BaseTitleRenderProps {
+//   type: 'transition';
+// }
 
-interface StateTitleRenderProps extends BaseTitleRenderProps {
-  type: 'state';
-  isInitial: boolean;
-}
+// interface StateTitleRenderProps extends BaseTitleRenderProps {
+//   type: 'state';
+//   isInitial: boolean;
+// }
 
-type TitleRenderProps = TransitionTitleRenderProps | StateTitleRenderProps;
+// type TitleRenderProps = TransitionTitleRenderProps | StateTitleRenderProps;
 
 const icons = {
   state: StateIcon,
+  initialState: InitialStateIcon,
   transition: TransitionIcon,
 };
 /* Отрисовка заголовка ноды в иерархии состояний, можно подсвечивать подстроку (для отображения поиска) */
@@ -37,7 +39,9 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
       <WithHint hint={title} placement="right" offset={5} delay={100}>
         {(props) => (
           <div {...props} className="flex w-full items-center gap-1">
-            <Icon className="h-6 w-6" />
+            <div className="text-[#737373]">
+              <Icon className="h-6 w-6" />
+            </div>
 
             <span className="line-clamp-1">
               {parts.map((part, i) => (
@@ -54,7 +58,7 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
         )}
       </WithHint>
 
-      {type === 'state' && props.isInitial && (
+      {/* {type === 'state' && props.isInitial && (
         <WithHint hint="Начальное состояние" placement="right" offset={5} delay={100}>
           {(props) => (
             <div {...props}>
@@ -62,7 +66,7 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
             </div>
           )}
         </WithHint>
-      )}
+      )} */}
     </div>
   );
 };

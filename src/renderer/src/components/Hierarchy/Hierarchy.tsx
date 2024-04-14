@@ -15,6 +15,7 @@ import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { isNormalState } from '@renderer/types/diagram';
 import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';
@@ -23,12 +24,13 @@ import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
-  type: 'state' | 'transition';
+  type: 'state' | 'initialState' | 'transition';
 }
 
 export const Hierarchy: React.FC = () => {
   const editor = useEditorContext();
   const manager = editor.manager;
+  const machine = editor.container.machineController;
 
   const [theme] = useSettings('theme');
 
@@ -37,8 +39,6 @@ export const Hierarchy: React.FC = () => {
 
   //TODO
   // const initialState = manager.useData('elements.initialState')?.target;
-
-  const machine = editor.container.machineController;
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -58,13 +58,26 @@ export const Hierarchy: React.FC = () => {
     for (const stateId in states) {
       const state = states[stateId];
 
+      if (isNormalState(state)) {
+        data[stateId] = {
+          index: stateId,
+          isFolder: false,
+          data: { title: state.name ?? 'asd', type: 'state' },
+          children: [],
+          canRename: true,
+          canMove: true,
+        };
+
+        continue;
+      }
+
       data[stateId] = {
         index: stateId,
         isFolder: false,
-        data: { title: state.name ?? 'asd', type: 'state' },
+        data: { title: 'Начальное состояние', type: 'initialState' },
         children: [],
-        canRename: true,
-        canMove: true,
+        canRename: false,
+        canMove: false,
       };
     }
 
@@ -81,13 +94,15 @@ export const Hierarchy: React.FC = () => {
 
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const target = states[transition.target]?.name;
+      const target = states[transition.target];
+
+      if (!isNormalState(target)) continue;
 
       data[transitionId] = {
         index: transitionId,
         isFolder: false,
         data: {
-          title: target,
+          title: target.name,
           type: 'transition',
         },
         canRename: false,
@@ -109,7 +124,7 @@ export const Hierarchy: React.FC = () => {
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
   const handleRename = (item: TreeItem, name: string) => {
-    machine.changeStateName(item.index.toString(), name);
+    machine.states.changeStateName(item.index.toString(), name);
   };
 
   const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
@@ -117,18 +132,18 @@ export const Hierarchy: React.FC = () => {
       const childId = value.index.toString();
 
       if (target.targetType === 'root') {
-        return machine.unlinkState({ id: childId });
+        return machine.states.unlinkState({ id: childId });
       }
 
       const parent = target.parentItem.toString();
 
       if (parent === 'root') {
-        return machine.unlinkState({ id: childId });
+        return machine.states.unlinkState({ id: childId });
       }
 
       if (parent === childId) return;
 
-      return machine.linkState(parent, childId);
+      return machine.states.linkState(parent, childId);
     });
   };
 
@@ -173,7 +188,7 @@ export const Hierarchy: React.FC = () => {
     }
     const transition = machine.transitions.get(item.index.toString());
     if (transition) {
-      return editor.container.transitionsController.handleContextMenu(transition, {
+      return machine.transitions.handleContextMenu(transition, {
         event: mouse,
       });
     }
@@ -238,13 +253,15 @@ export const Hierarchy: React.FC = () => {
     setSelectedItems([]);
 
     for (const [stateId, state] of Object.entries(states)) {
+      if (!isNormalState(state)) continue;
+
       if (state.selection) {
         return setSelectedItems([stateId]);
       }
     }
 
     for (const [transitionId, transition] of Object.entries(transitions)) {
-      if (transition.selection) {
+      if (transition.label?.selection) {
         return setSelectedItems([transitionId]);
       }
     }
@@ -278,7 +295,7 @@ export const Hierarchy: React.FC = () => {
           <TitleRender
             type={data.item.data.type}
             title={data.item.data.title}
-            isInitial={false}
+            // isInitial={false}
             // TODO
             // isInitial={initialState === data.item.index.toString()}
             search={escapeRegExp(search)}

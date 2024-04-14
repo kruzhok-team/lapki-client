@@ -21,18 +21,10 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     super();
   }
 
-  get(id: string) {
-    return this.items.get(id);
-  }
-  forEach(callback: (note: Note) => void) {
-    return this.items.forEach(callback);
-  }
-  clear() {
-    return this.items.clear();
-  }
-  set(id: string, note: Note) {
-    return this.items.set(id, note);
-  }
+  get = this.items.get.bind(this.items);
+  set = this.items.set.bind(this.items);
+  clear = this.items.clear.bind(this.items);
+  forEach = this.items.forEach.bind(this.items);
 
   createNote(params: CreateNoteParams, canUndo = true) {
     const newNoteId = this.container.app.manager.createNote(params);

@@ -31,7 +31,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const model = editor.model;
 
   const componentsData = model.useData('elements.components');
-  const machine = editor.container.machineController;
+  const machine = editor.container.editorController;
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

@@ -61,8 +61,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 
-    const sourceState = this.container.machineController.states.get(source);
-    const targetState = this.container.machineController.states.get(target);
+    const sourceState = this.container.editorController.states.get(source);
+    const targetState = this.container.editorController.states.get(target);
 
     if (!sourceState || !targetState) return;
 
@@ -181,8 +181,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   initEvents() {
     this.container.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.container.machineController.states.on('startNewTransition', this.handleStartNewTransition);
-    this.container.machineController.states.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.container.editorController.states.on('startNewTransition', this.handleStartNewTransition);
+    this.container.editorController.states.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -190,7 +190,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionClick = (transition: Transition) => {
-    this.container.machineController.selectTransition(transition.id);
+    this.container.editorController.selectTransition(transition.id);
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
@@ -198,7 +198,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
-    this.container.machineController.removeSelection();
+    this.container.editorController.removeSelection();
     transition.setIsSelected(true);
 
     this.emit('transitionContextMenu', {

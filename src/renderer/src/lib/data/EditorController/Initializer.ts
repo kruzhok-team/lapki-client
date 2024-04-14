@@ -10,7 +10,7 @@ import { EditorController } from './EditorController';
  * который эджектится (https://en.wikipedia.org/wiki/Dependency_injection#Constructor_injection) в конструкторе. Наружу отдаёт только метод init
  */
 export class Initializer {
-  constructor(private container: Container, private machineController: EditorController) {}
+  constructor(private container: Container, private editorController: EditorController) {}
 
   init() {
     this.resetEntities();
@@ -25,16 +25,16 @@ export class Initializer {
   }
 
   private get states() {
-    return this.machineController.states;
+    return this.editorController.states;
   }
   private get transitions() {
-    return this.machineController.transitions;
+    return this.editorController.transitions;
   }
   private get notes() {
-    return this.machineController.notes;
+    return this.editorController.notes;
   }
   private get platform() {
-    return this.machineController.platform;
+    return this.editorController.platform;
   }
   private get history() {
     return this.container.history;
@@ -120,7 +120,7 @@ export class Initializer {
       throw Error("couldn't init platform " + platformName);
     }
 
-    this.machineController.platform = platform;
+    this.editorController.platform = platform;
   }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта

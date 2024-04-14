@@ -21,7 +21,7 @@ export class CanvasEditor {
   constructor() {
     this.model = new EditorModel();
     this.model.resetEditor = () => {
-      this.container.machineController.loadData();
+      this.container.editorController.loadData();
     };
   }
 
@@ -96,7 +96,7 @@ export class CanvasEditor {
     this.model.data.isMounted = true;
     this.model.triggerDataUpdate('isMounted');
 
-    this.container.machineController.loadData();
+    this.container.editorController.loadData();
   }
 
   cleanUp() {

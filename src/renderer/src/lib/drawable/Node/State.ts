@@ -70,7 +70,7 @@ export class State extends Shape {
       this.edgeHandlers.draw(ctx);
     }
 
-    if (this.container.machineController.states.dragInfo?.parentId === this.id) {
+    if (this.container.editorController.states.dragInfo?.parentId === this.id) {
       this.drawHighlight(ctx);
     }
   }

@@ -143,7 +143,7 @@ export class Events {
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
 
-    const platform = this.container.machineController.platform;
+    const platform = this.container.editorController.platform;
 
     let eventRow = 0;
     ctx.beginPath();

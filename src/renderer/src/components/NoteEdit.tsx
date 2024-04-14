@@ -22,7 +22,7 @@ export const NoteEdit: React.FC = () => {
 
     if (!el || !note) return;
 
-    editor.container.machineController.notes.changeNoteText(note.id, value);
+    editor.container.editorController.notes.changeNoteText(note.id, value);
   }, [editor, note]);
 
   const handleClose = useCallback(() => {
@@ -38,7 +38,7 @@ export const NoteEdit: React.FC = () => {
   }, [handleClose]);
 
   useEffect(() => {
-    editor.container.machineController.notes.on('change', (note) => {
+    editor.container.editorController.notes.on('change', (note) => {
       const el = ref.current;
       if (!el) return;
 

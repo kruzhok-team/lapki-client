@@ -27,7 +27,7 @@ export class Transition extends Shape {
   }
 
   get source() {
-    const state = this.container.machineController.states.get(this.data.source);
+    const state = this.container.editorController.states.get(this.data.source);
 
     if (!state) {
       throw new Error(`State with id ${this.data.source} does not exist`);
@@ -37,7 +37,7 @@ export class Transition extends Shape {
   }
 
   get target() {
-    const state = this.container.machineController.states.get(this.data.target);
+    const state = this.container.editorController.states.get(this.data.target);
 
     if (!state) {
       throw new Error(`State with id ${this.data.target} does not exist`);
@@ -85,7 +85,7 @@ export class Transition extends Shape {
     const fontSize = stateStyle.titleFontSize / this.container.app.model.data.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
 
-    const platform = this.container.machineController.platform;
+    const platform = this.container.editorController.platform;
     const eventRowLength = Math.max(
       3,
       Math.floor((width * this.container.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1

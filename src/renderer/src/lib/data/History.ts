@@ -3,6 +3,11 @@ import { useSyncExternalStore } from 'react';
 import { Container } from '@renderer/lib/basic';
 import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
+  EditComponentParams,
+  RemoveComponentParams,
+  UnlinkStateParams,
+} from '@renderer/lib/types/EditorController';
+import {
   AddComponentParams,
   ChangeStateEventsParams,
   CreateTransitionParams,
@@ -11,11 +16,6 @@ import {
   CreateStateParams,
 } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
-import {
-  EditComponentParams,
-  RemoveComponentParams,
-  UnlinkStateParams,
-} from '@renderer/lib/types/EditorController';
 import {
   InitialState as InitialStateData,
   State as StateData,
@@ -371,7 +371,7 @@ export class History {
   constructor(private container: Container) {}
 
   private get stateMachine() {
-    return this.container.machineController;
+    return this.container.editorController;
   }
 
   do<T extends PossibleActionTypes>(action: Action<T>) {

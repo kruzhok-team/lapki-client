@@ -213,8 +213,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       // state.parent.children.layers[Layer.NormalStates].add(state, Layer.NormalStates);
     }
 
-    this.container.machineController.transitions.forEachByStateId(childId, (transition) => {
-      this.container.machineController.transitions.linkTransition(transition.id);
+    this.container.editorController.transitions.forEachByStateId(childId, (transition) => {
+      this.container.editorController.transitions.linkTransition(transition.id);
     });
 
     if (canUndo) {
@@ -301,7 +301,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
-    this.container.machineController.transitions.forEachByStateId(id, (transition) => {
+    this.container.editorController.transitions.forEachByStateId(id, (transition) => {
       // Если удаляемое состояние было начальным, стираем текущее значение
       if (transition.source instanceof InitialState && transition.target.id === state.id) {
         this.deleteInitialState(transition.source, canUndo);
@@ -318,7 +318,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         }
       }
 
-      this.container.machineController.transitions.deleteTransition(transition.id, canUndo);
+      this.container.editorController.transitions.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });
 
@@ -389,7 +389,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     //   });
     // }
 
-    this.container.machineController.transitions.createTransition(
+    this.container.editorController.transitions.createTransition(
       {
         color: '#FFF',
         source: state.id,
@@ -519,7 +519,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    this.container.machineController.selectState(state.id);
+    this.container.editorController.selectState(state.id);
 
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
@@ -557,7 +557,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
-    this.container.machineController.selectState(state.id);
+    this.container.editorController.selectState(state.id);
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,

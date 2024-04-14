@@ -23,7 +23,7 @@ interface ContainerEvents {
 export class Container extends EventEmitter<ContainerEvents> implements Drawable {
   isDirty = true;
 
-  machineController!: EditorController;
+  editorController!: EditorController;
 
   history = new History(this);
   children = new Children();
@@ -33,13 +33,13 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
   constructor(public app: CanvasEditor) {
     super();
 
-    this.machineController = new EditorController(this, this.history);
+    this.editorController = new EditorController(this, this.history);
 
     // Порядок важен, система очень тонкая
 
     this.initEvents();
-    this.machineController.transitions.initEvents();
-    this.machineController.loadData();
+    this.editorController.transitions.initEvents();
+    this.editorController.loadData();
   }
 
   get isPan() {
@@ -61,7 +61,7 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
 
     drawChildren(this);
 
-    this.machineController.transitions.ghost.draw(ctx, canvas);
+    this.editorController.transitions.ghost.draw(ctx, canvas);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -101,11 +101,11 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('delete', this.machineController.deleteSelected);
+    this.app.keyboard.on('delete', this.editorController.deleteSelected);
     this.app.keyboard.on('ctrlz', this.history.undo);
     this.app.keyboard.on('ctrly', this.history.redo);
-    this.app.keyboard.on('ctrlc', this.machineController.copySelected);
-    this.app.keyboard.on('ctrlv', this.machineController.pasteSelected);
+    this.app.keyboard.on('ctrlc', this.editorController.copySelected);
+    this.app.keyboard.on('ctrlv', this.editorController.pasteSelected);
     this.app.keyboard.on('ctrls', this.app.model.files.save);
     this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
 
@@ -177,8 +177,8 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
     if (node) {
       node.handleMouseUp(e);
     } else {
-      this.machineController.transitions.handleMouseUp();
-      this.machineController.removeSelection();
+      this.editorController.transitions.handleMouseUp();
+      this.editorController.removeSelection();
     }
   };
 
@@ -298,12 +298,12 @@ export class Container extends EventEmitter<ContainerEvents> implements Drawable
     const arrX: number[] = [];
     const arrY: number[] = [];
 
-    this.machineController.states.forEach((state) => {
+    this.editorController.states.forEach((state) => {
       arrX.push(state.position.x);
       arrY.push(state.position.y);
     });
 
-    this.machineController.transitions.forEach((transition) => {
+    this.editorController.transitions.forEach((transition) => {
       arrX.push(transition.position.x);
       arrY.push(transition.position.y);
     });

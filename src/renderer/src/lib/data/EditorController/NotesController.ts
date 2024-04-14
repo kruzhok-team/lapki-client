@@ -98,7 +98,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   }
 
   handleMouseDown = (note: Note) => {
-    this.container.machineController.selectNote(note.id);
+    this.container.editorController.selectNote(note.id);
   };
 
   handleDoubleClick = (note: Note) => {
@@ -106,7 +106,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
-    this.container.machineController.selectNote(note.id);
+    this.container.editorController.selectNote(note.id);
 
     const offset = this.container.app.mouse.getOffset();
 

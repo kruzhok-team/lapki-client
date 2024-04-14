@@ -31,7 +31,7 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
 }) => {
   const editor = useEditorContext();
 
-  const machine = editor.view.controller;
+  const controller = editor.view.controller;
 
   //-----------------------------------------------------------------------------------------------------
 
@@ -113,11 +113,11 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
                   'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
                 )}
               >
-                {machine.platform.getFullComponentIcon(data.component)}
+                {controller.platform.getFullComponentIcon(data.component)}
                 <div className="h-full w-[2px] bg-border-primary"></div>
                 <img
                   style={{ height: '32px', width: '32px' }}
-                  src={machine.platform.getActionIconUrl(data.component, data.method, true)}
+                  src={controller.platform.getActionIconUrl(data.component, data.method, true)}
                 />
               </div>
               <div className="flex items-center">

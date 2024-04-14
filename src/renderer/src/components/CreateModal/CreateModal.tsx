@@ -53,7 +53,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const model = editor.model;
 
   const componentsData = model.useData('elements.components');
-  const machine = editor.view.controller;
+  const controller = editor.view.controller;
   const isEditingState = state !== undefined;
 
   const [formState, setFormState] = useState<'submitted' | 'default'>('default');
@@ -63,13 +63,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const componentOptions: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = machine.platform.getComponent(id);
+      const proto = controller.platform.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: machine.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -80,28 +80,28 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
 
     return result;
-  }, [componentsData, isEditingState, machine]);
+  }, [componentsData, isEditingState, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
-    const getAll = machine.platform['getAvailableEvents'];
-    const getImg = machine.platform['getEventIconUrl'];
+    const getAll = controller.platform['getAvailableEvents'];
+    const getImg = controller.platform['getEventIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(machine.platform, selectedComponent).map(({ name, description }) => {
+    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
       return {
         value: name,
         label: name,
         hint: description,
         icon: (
           <img
-            src={getImg.call(machine.platform, selectedComponent, name, true)}
+            src={getImg.call(controller.platform, selectedComponent, name, true)}
             className="mr-1 h-7 w-7 object-contain"
           />
         ),
       };
     });
-  }, [machine, selectedComponent]);
+  }, [controller, selectedComponent]);
 
   const handleComponentChange = (value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? '');
@@ -295,7 +295,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       tryGetCondition();
     };
     return init(transition);
-  }, [machine, isEditingState, state, transition]);
+  }, [controller, isEditingState, state, transition]);
 
   return (
     //--------------------------------------Показ модального окна------------------------------------------

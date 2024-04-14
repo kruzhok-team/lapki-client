@@ -30,7 +30,7 @@ export interface HierarchyItemData {
 export const Hierarchy: React.FC = () => {
   const editor = useEditorContext();
   const model = editor.model;
-  const machine = editor.view.controller;
+  const controller = editor.view.controller;
 
   const [theme] = useSettings('theme');
 
@@ -131,7 +131,7 @@ export const Hierarchy: React.FC = () => {
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
   const handleRename = (item: TreeItem, name: string) => {
-    machine.states.changeStateName(item.index.toString(), name);
+    controller.states.changeStateName(item.index.toString(), name);
   };
 
   const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
@@ -139,24 +139,24 @@ export const Hierarchy: React.FC = () => {
       const childId = value.index.toString();
 
       if (target.targetType === 'root') {
-        return machine.states.unlinkState({ id: childId });
+        return controller.states.unlinkState({ id: childId });
       }
 
       const parent = target.parentItem.toString();
 
       if (parent === 'root') {
-        return machine.states.unlinkState({ id: childId });
+        return controller.states.unlinkState({ id: childId });
       }
 
       if (parent === childId) return;
 
-      return machine.states.linkState(parent, childId);
+      return controller.states.linkState(parent, childId);
     });
   };
 
   const onFocus = (item: TreeItem) => () => {
-    machine.selectState(item.index.toString());
-    machine.selectTransition(item.index.toString());
+    controller.selectState(item.index.toString());
+    controller.selectTransition(item.index.toString());
   };
 
   const onClick =
@@ -189,13 +189,13 @@ export const Hierarchy: React.FC = () => {
       nativeEvent: e.nativeEvent,
     };
 
-    const state = machine.states.get(item.index.toString());
+    const state = controller.states.get(item.index.toString());
     if (state && state instanceof State) {
-      return machine.states.handleContextMenu(state, { event: mouse });
+      return controller.states.handleContextMenu(state, { event: mouse });
     }
-    const transition = machine.transitions.get(item.index.toString());
+    const transition = controller.transitions.get(item.index.toString());
     if (transition) {
-      return machine.transitions.handleContextMenu(transition, {
+      return controller.transitions.handleContextMenu(transition, {
         event: mouse,
       });
     }

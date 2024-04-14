@@ -23,8 +23,8 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const machine = editor?.view.controller;
-    const vacantComponents = machine?.getVacantComponents() as ComponentEntry[];
+    const controller = editor?.view.controller;
+    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
 
@@ -32,10 +32,10 @@ export const useComponents = () => {
   };
 
   const onRequestEditComponent = (idx: string) => {
-    const machine = editor?.view.controller;
+    const controller = editor?.view.controller;
     const component = components[idx];
     if (typeof component === 'undefined') return;
-    const proto = machine?.platform.data.components[component.type];
+    const proto = controller?.platform.data.components[component.type];
     if (typeof proto === 'undefined') {
       console.error('non-existing %s %s', idx, component.type);
       return;
@@ -48,11 +48,11 @@ export const useComponents = () => {
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor?.view.controller;
+    const controller = editor?.view.controller;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    const proto = machine?.platform.data.components[component.type] ?? systemComponent;
+    const proto = controller?.platform.data.components[component.type] ?? systemComponent;
 
     setIdx(idx);
     setData(component);

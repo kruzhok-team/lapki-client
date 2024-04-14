@@ -17,7 +17,7 @@ export const useCreateModalCondition = ({
   const editor = useEditorContext();
   const model = editor.model;
   const componentsData = model.useData('elements.components');
-  const machine = editor.view.controller;
+  const controller = editor.view.controller;
 
   const [errors, setErrors] = useState({} as Record<string, string>);
 
@@ -41,13 +41,13 @@ export const useCreateModalCondition = ({
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = machine.platform.getComponent(id);
+      const proto = controller.platform.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: machine.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -58,17 +58,17 @@ export const useCreateModalCondition = ({
     }
 
     return result;
-  }, [componentsData, isEditingState, machine]);
+  }, [componentsData, isEditingState, controller]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = machine.platform.getComponent(id);
+      const proto = controller.platform.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: machine.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -79,49 +79,53 @@ export const useCreateModalCondition = ({
     }
 
     return result;
-  }, [componentsData, isEditingState, machine]);
+  }, [componentsData, isEditingState, controller]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1) return [];
-    const getAll = machine.platform['getAvailableVariables'];
-    const getImg = machine.platform['getVariableIconUrl'];
+    const getAll = controller.platform['getAvailableVariables'];
+    const getImg = controller.platform['getVariableIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(machine.platform, selectedComponentParam1).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(machine.platform, selectedComponentParam1, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-        ),
-      };
-    });
-  }, [machine, selectedComponentParam1]);
+    return getAll
+      .call(controller.platform, selectedComponentParam1)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform, selectedComponentParam1, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
+  }, [controller, selectedComponentParam1]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam2) return [];
-    const getAll = machine.platform['getAvailableVariables'];
-    const getImg = machine.platform['getVariableIconUrl'];
+    const getAll = controller.platform['getAvailableVariables'];
+    const getImg = controller.platform['getVariableIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(machine.platform, selectedComponentParam2).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(machine.platform, selectedComponentParam2, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-        ),
-      };
-    });
-  }, [machine, selectedComponentParam2]);
+    return getAll
+      .call(controller.platform, selectedComponentParam2)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform, selectedComponentParam2, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
+  }, [controller, selectedComponentParam2]);
 
   const checkForErrors = useCallback(() => {
     const newErrors: Record<string, string> = {};

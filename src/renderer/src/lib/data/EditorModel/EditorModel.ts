@@ -14,8 +14,8 @@ import {
   ChangeStateEventsParams,
   AddComponentParams,
   CreateNoteParams,
-  CreateInitialStateParams,
   Point,
+  CreateInitialStateParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {

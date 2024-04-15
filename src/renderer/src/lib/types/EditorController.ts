@@ -15,7 +15,7 @@ export interface UnlinkStateParams {
   id: string;
 }
 
-export interface CreateInitialStateParams {
+export interface CCreateInitialStateParams {
   id?: string;
   targetId: string;
 }

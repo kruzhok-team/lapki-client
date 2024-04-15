@@ -290,11 +290,11 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id: ${args.transition.id}`,
   }),
   changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
-  createInitialState: (args) => ({
+  createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,
   }),
-  deleteInitialState: (args) => ({
+  deleteInitialState: () => ({
     name: 'Удаление начального состояния',
     description: ``,
   }),

@@ -6,7 +6,7 @@ import { DEFAULT_TRANSITION_COLOR, INITIAL_STATE_OFFSET } from '@renderer/lib/co
 import { History } from '@renderer/lib/data/History';
 import { State, EventSelection, InitialState } from '@renderer/lib/drawable';
 import { MyMouseEvent, Layer, DeleteInitialStateParams } from '@renderer/lib/types';
-import { CreateInitialStateParams, UnlinkStateParams } from '@renderer/lib/types/EditorController';
+import { CCreateInitialStateParams, UnlinkStateParams } from '@renderer/lib/types/EditorController';
 import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import { Action, Event, EventData } from '@renderer/types/diagram';
@@ -375,7 +375,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.deleteInitialState({ id: initialStateId, targetId }, canUndo);
   }
 
-  createInitialState(params: CreateInitialStateParams, canUndo = true) {
+  createInitialState(params: CCreateInitialStateParams, canUndo = true) {
     const { id: prevId, targetId } = params;
 
     const target = this.states.get(targetId);

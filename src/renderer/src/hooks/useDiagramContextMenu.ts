@@ -4,6 +4,7 @@ import { State } from '@renderer/lib/drawable/State';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
+import { defaultStateColor } from '@renderer/utils';
 
 export type DiagramContextMenuItem = {
   label: string;
@@ -53,6 +54,7 @@ export const useDiagramContextMenu = () => {
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
+              color: defaultStateColor,
             });
           },
         },
@@ -130,6 +132,7 @@ export const useDiagramContextMenu = () => {
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
+                  color: defaultStateColor,
                 });
               },
             },

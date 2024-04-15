@@ -44,6 +44,7 @@ export interface CreateStateParams {
   events?: EventData[];
   placeInCenter?: boolean;
   linkByPoint?: boolean;
+  canBeInitial?: boolean;
 }
 
 export type CreateInitialStateParams = InitialStateData & { id?: string };

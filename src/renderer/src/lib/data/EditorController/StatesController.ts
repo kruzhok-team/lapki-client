@@ -2,11 +2,11 @@ import throttle from 'lodash.throttle';
 
 import { EditorView } from '@renderer/lib/basic';
 import { EventEmitter } from '@renderer/lib/common';
-import { INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
+import { DEFAULT_TRANSITION_COLOR, INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { State, EventSelection, InitialState } from '@renderer/lib/drawable';
-import { MyMouseEvent, Layer } from '@renderer/lib/types';
-import { UnlinkStateParams } from '@renderer/lib/types/EditorController';
+import { MyMouseEvent, Layer, DeleteInitialStateParams } from '@renderer/lib/types';
+import { CreateInitialStateParams, UnlinkStateParams } from '@renderer/lib/types/EditorController';
 import { ChangeStateEventsParams, CreateStateParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import { Action, Event, EventData } from '@renderer/types/diagram';
@@ -35,6 +35,7 @@ interface StatesControllerEvents {
 
 /**
  * Контроллер состояний.
+ * TODO numberOfConnectedActions неочивидный, нужно чтобы функция сама возвращала сколько действий в историю она положила
  */
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
@@ -79,7 +80,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createState = (args: CreateStateParams, canUndo = true) => {
-    const { parentId, position, linkByPoint = true } = args;
+    const { parentId, position, linkByPoint = true, canBeInitial = true } = args;
 
     const newStateId = this.view.app.model.createState(args); // Создание данных
     const state = new State(this.view, newStateId); // Создание вьюшки
@@ -100,9 +101,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     // Если не было начального состояния, им станет новое
     // TODO(bryzZz) тут не приятно что проверка идёт по вью а не по модели
-    if ((state.parent || this.view).children.layers[Layer.States].length === 1) {
-      this.createInitialStateWithTransition(state, canUndo);
-      // numberOfConnectedActions += 1;
+    if (canBeInitial && (state.parent || this.view).children.layers[Layer.States].length === 1) {
+      this.createInitialStateWithTransition(state.id, canUndo);
+      numberOfConnectedActions += 2; // Создание начального состояния и перехода
     }
 
     this.watch(state);
@@ -208,7 +209,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
         false
       );
-      this.createInitialStateWithTransition(child, canUndo);
+      this.createInitialStateWithTransition(child.id, canUndo);
       // numberOfConnectedActions += 1;
       // state.parent.children.layers[Layer.NormalStates].add(state, Layer.NormalStates);
     }
@@ -304,8 +305,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.controller.transitions.forEachByStateId(id, (transition) => {
       // Если удаляемое состояние было начальным, стираем текущее значение
       if (transition.source instanceof InitialState && transition.target.id === state.id) {
-        this.deleteInitialState(transition.source, canUndo);
-        // numberOfConnectedActions += 1;
+        this.deleteInitialStateWithTransition(transition.source.id, canUndo);
+        numberOfConnectedActions += 2;
 
         // Перемещаем начальное состояние, на первое найденное в родителе
         const newState = [...this.states.values()].find(
@@ -313,8 +314,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         ) as State | undefined;
 
         if (newState) {
-          this.createInitialStateWithTransition(newState, canUndo);
-          // numberOfConnectedActions += 1;
+          this.createInitialStateWithTransition(newState.id, canUndo);
+          numberOfConnectedActions += 2; // Создание состояния и перехода
         }
       }
 
@@ -350,24 +351,43 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  private deleteInitialState(state: InitialState, canUndo = true) {
-    // Отсоединяемся от родительского состояния, если такое есть.
-    (state.parent || this.view).children.remove(state, Layer.InitialStates);
+  private createInitialStateWithTransition(targetId: string, canUndo = true) {
+    const state = this.createInitialState({ targetId }, canUndo);
+    const target = this.states.get(targetId);
+    if (!state || !target) return;
 
-    this.view.app.model.deleteInitialState(state.id);
-    this.unwatch(state);
-    this.initialStates.delete(state.id);
+    this.view.controller.transitions.createTransition(
+      {
+        color: DEFAULT_TRANSITION_COLOR,
+        source: state.id,
+        target: target.id,
+      },
+      canUndo
+    );
+  }
+  private deleteInitialStateWithTransition(initialStateId: string, canUndo = true) {
+    const transition = this.view.controller.transitions.getBySourceId(initialStateId);
+    const targetId = transition?.data.target;
+    if (!transition || !targetId) return;
 
-    this.view.isDirty = true;
+    this.view.controller.transitions.deleteTransition(transition.id, canUndo);
+
+    this.deleteInitialState({ id: initialStateId, targetId }, canUndo);
   }
 
-  private createInitialStateWithTransition(target: State, canUndo = true) {
+  createInitialState(params: CreateInitialStateParams, canUndo = true) {
+    const { id: prevId, targetId } = params;
+
+    const target = this.states.get(targetId);
+    if (!target) return;
+
     const id = this.view.app.model.createInitialState({
       position: {
         x: target.position.x - INITIAL_STATE_OFFSET,
         y: target.position.y - INITIAL_STATE_OFFSET,
       },
       parentId: target.data.parentId,
+      id: prevId,
     });
 
     const state = new InitialState(this.view, id);
@@ -382,21 +402,51 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.watch(state);
 
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'createInitialState',
-    //     args: structuredClone(state.data),
-    //   });
-    // }
+    if (canUndo) {
+      this.history.do({
+        type: 'createInitialState',
+        args: { id, targetId },
+      });
+    }
 
-    this.view.controller.transitions.createTransition(
-      {
-        color: '#FFF',
-        source: state.id,
-        target: target.id,
-      },
-      false
-    );
+    return state;
+  }
+
+  deleteInitialState(params: DeleteInitialStateParams, canUndo = true) {
+    const { id } = params;
+
+    const state = this.initialStates.get(id);
+    if (!state) return;
+
+    (state.parent || this.view).children.remove(state, Layer.InitialStates); // Отсоединяемся вью от родителя
+    this.unwatch(state); // Убираем обрабочик событий с вью
+    this.initialStates.delete(state.id); // Удаляем само вью
+    this.view.app.model.deleteInitialState(state.id); // Удаляем модель
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteInitialState',
+        args: params,
+      });
+    }
+
+    this.view.isDirty = true;
+  }
+
+  changeInitialStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const state = this.initialStates.get(id);
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeInitialStatePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.view.app.model.changeInitialStatePosition(id, endPosition);
+
+    this.view.isDirty = true;
   }
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
@@ -609,10 +659,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   }, 100);
 
-  handleDragEnd = (
-    state: State | InitialState,
-    e: { dragStartPosition: Point; dragEndPosition: Point }
-  ) => {
+  handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     if (this.dragInfo && state instanceof State) {
       this.linkState(this.dragInfo.parentId, this.dragInfo.childId);
       this.dragInfo = null;
@@ -621,6 +668,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.changeStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
   };
+
+  handleInitialStateDragEnd(
+    state: InitialState,
+    e: { dragStartPosition: Point; dragEndPosition: Point }
+  ) {
+    this.changeInitialStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+  }
 
   watch(state: State | InitialState) {
     if (state instanceof State) {
@@ -663,9 +717,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.edgeHandlers.unbindEvents();
   }
   private watchInitialState(state: InitialState) {
-    state.on('dragend', this.handleDragEnd.bind(this, state));
+    state.on('dragend', this.handleInitialStateDragEnd.bind(this, state));
   }
   private unwatchInitialState(state: InitialState) {
-    state.off('dragend', this.handleDragEnd.bind(this, state));
+    state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
   }
 }

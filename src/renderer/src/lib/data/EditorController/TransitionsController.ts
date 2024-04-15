@@ -58,6 +58,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       .map(([id]) => id);
   }
 
+  getBySourceId(sourceId: string) {
+    return [...this.items.values()].find(({ source }) => source.id === sourceId);
+  }
+
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 

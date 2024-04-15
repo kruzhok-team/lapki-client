@@ -5,3 +5,6 @@ export const INITIAL_STATE_OFFSET = 100;
 
 export const LONG_PRESS_TIMEOUT = 2000;
 export const CHILDREN_PADDING = 15;
+
+// цвет связи по-умолчанию
+export const DEFAULT_TRANSITION_COLOR = '#FFFFFF';

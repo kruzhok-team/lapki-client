@@ -317,6 +317,17 @@ export class EditorModel {
     return true;
   }
 
+  changeInitialStatePosition(id: string, position: Point) {
+    const state = this.data.elements.initialStates[id];
+    if (!state) return false;
+
+    state.position = position;
+
+    this.triggerDataUpdate('elements.initialStates');
+
+    return true;
+  }
+
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;

@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
+import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -14,7 +15,6 @@ import {
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
 
 import { Condition } from './Condition';
 import { EventsBlockModal } from './EventsBlockModal';
@@ -113,7 +113,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
 
   //Хранение цвета связи
-  const [color, setColor] = useState(defaultTransColor);
+  const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
 
   const condition = useCreateModalCondition({ isEditingState, formState });
 
@@ -207,7 +207,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.setSelectedMethodParam1('');
     condition.setSelectedMethodParam2('');
     condition.setArgsParam2('');
-    setColor(transition?.data?.color ?? defaultTransColor);
+    setColor(transition?.data?.color ?? DEFAULT_TRANSITION_COLOR);
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);

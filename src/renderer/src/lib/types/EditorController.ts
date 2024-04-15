@@ -14,3 +14,13 @@ export interface RemoveComponentParams {
 export interface UnlinkStateParams {
   id: string;
 }
+
+export interface CreateInitialStateParams {
+  id?: string;
+  targetId: string;
+}
+
+export interface DeleteInitialStateParams {
+  id: string;
+  targetId: string;
+}

@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Scale } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
+import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
 
 import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
@@ -138,7 +138,7 @@ export const DiagramEditor: React.FC = () => {
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
-        color: data.color ?? defaultTransColor,
+        color: data.color ?? DEFAULT_TRANSITION_COLOR,
         label: {
           trigger: data.trigger,
           do: events,
@@ -149,7 +149,7 @@ export const DiagramEditor: React.FC = () => {
       editor.view.controller.transitions.createTransition({
         source: newTransition.source.id,
         target: newTransition.target.id,
-        color: data.color ?? defaultTransColor,
+        color: data.color ?? DEFAULT_TRANSITION_COLOR,
         label: {
           condition: data.condition,
           do: events,

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Scale } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
+import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
@@ -51,6 +51,7 @@ export const DiagramEditor: React.FC = () => {
         name: 'Состояние',
         position,
         placeInCenter: true,
+        color: DEFAULT_STATE_COLOR,
       });
     });
 
@@ -132,6 +133,7 @@ export const DiagramEditor: React.FC = () => {
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,
         actions: events,
+        color: data.color ?? DEFAULT_STATE_COLOR,
       });
     } else if (transition && data.key === 3) {
       editor.view.controller.transitions.changeTransition({

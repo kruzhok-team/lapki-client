@@ -105,6 +105,7 @@ export const actionFunctions: ActionFunctions = {
         parentId: stateData.parentId,
         events: stateData.events,
         linkByPoint: false,
+        color: stateData.color,
       },
       false
     ),

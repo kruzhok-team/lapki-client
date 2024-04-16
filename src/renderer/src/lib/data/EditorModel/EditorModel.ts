@@ -138,6 +138,7 @@ export class EditorModel {
       id = generateId(this.getNodeIds()),
       events = [],
       placeInCenter = false,
+      color,
     } = args;
     let position = args.position;
     const { width, height } = stateStyle;
@@ -156,7 +157,8 @@ export class EditorModel {
       dimensions: { width, height },
       events: events,
       name,
-      parentId: parentId,
+      parentId,
+      color,
     };
 
     this.triggerDataUpdate('elements.states');
@@ -164,7 +166,9 @@ export class EditorModel {
     return id;
   }
 
-  changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
+  changeStateEvents(args: ChangeStateEventsParams) {
+    const { id, triggerComponent, triggerMethod, actions, color } = args;
+
     const state = this.data.elements.states[id];
     if (!state) return false;
 
@@ -195,6 +199,8 @@ export class EditorModel {
         state.events.splice(eventIndex, 1);
       }
     }
+
+    state.color = color;
 
     this.triggerDataUpdate('elements.states');
 

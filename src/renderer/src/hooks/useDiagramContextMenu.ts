@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -53,6 +54,7 @@ export const useDiagramContextMenu = () => {
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
+              color: DEFAULT_STATE_COLOR,
             });
           },
         },
@@ -130,6 +132,7 @@ export const useDiagramContextMenu = () => {
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
+                  color: DEFAULT_STATE_COLOR,
                 });
               },
             },

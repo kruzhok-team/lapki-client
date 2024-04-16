@@ -145,7 +145,7 @@ export class State extends Shape {
     ctx.canvas.hidden;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = style.selectedBorderColor;
+    ctx.strokeStyle = this.data.color;
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.view.app.model.data.scale);

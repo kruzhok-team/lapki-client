@@ -8,3 +8,4 @@ export const CHILDREN_PADDING = 15;
 
 // цвет связи по-умолчанию
 export const DEFAULT_TRANSITION_COLOR = '#FFFFFF';
+export const DEFAULT_STATE_COLOR = '#FFFFFF';

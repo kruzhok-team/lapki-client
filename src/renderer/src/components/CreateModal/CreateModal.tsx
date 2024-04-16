@@ -4,7 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
-import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
+import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -207,7 +207,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.setSelectedMethodParam1('');
     condition.setSelectedMethodParam2('');
     condition.setArgsParam2('');
-    setColor(transition?.data?.color ?? DEFAULT_TRANSITION_COLOR);
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);
@@ -222,6 +221,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       const init = (state: State) => {
         const { data } = state;
 
+        setColor(data.color ?? DEFAULT_STATE_COLOR);
         setSelectedComponent(data.events[0].trigger.component);
         setSelectedMethod(data.events[0].trigger.method);
       };
@@ -291,6 +291,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
       setSelectedComponent(data.label.trigger.component);
       setSelectedMethod(data.label.trigger.method);
+      setColor(data?.color ?? DEFAULT_TRANSITION_COLOR);
 
       tryGetCondition();
     };
@@ -343,12 +344,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         isOpen={isOpen}
       />
 
-      {!isEditingState && (
-        <div className="flex items-center gap-2">
-          <span className="font-bold">Цвет связи:</span>
-          <ColorInput value={color} onChange={setColor} />
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="font-bold">Цвет:</span>
+        <ColorInput value={color} onChange={setColor} />
+      </div>
     </Modal>
   );
 };

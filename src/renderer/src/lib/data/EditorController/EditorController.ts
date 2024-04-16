@@ -391,6 +391,7 @@ export class EditorController {
         position: copyData.position,
         events: copyData.events,
         parentId: copyData.parentId,
+        color: copyData.color,
       });
     }
 

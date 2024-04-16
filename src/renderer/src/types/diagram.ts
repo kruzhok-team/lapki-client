@@ -38,6 +38,7 @@ export interface State extends BaseState {
   name: string;
   events: EventData[];
   dimensions: Dimensions;
+  color: string;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 }

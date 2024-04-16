@@ -451,6 +451,43 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
+  /**
+   * Назначить состояние начальным
+   * TODO(bryzZz) Очень сложно искать переход из начального состояния в обычное состояние
+   */
+  setInitialState(stateId: string, canUndo = true) {
+    const state = this.states.get(stateId);
+    if (!state) return;
+
+    // Проверка на то что состояние уже является, тем на которое есть переход из начального
+    const stateTransitions = this.view.controller.transitions.getAllByTargetId(stateId) ?? [];
+    if (stateTransitions.find(({ source }) => source instanceof InitialState)) return;
+
+    const siblingsIds = [...this.states.values()]
+      .filter((s) => s.data.parentId === state.data.parentId && s.id !== state.id)
+      .map((s) => s.id);
+    const siblingsTransitions = this.view.controller.transitions.getAllByTargetId(siblingsIds);
+    const transitionFromInitialState = siblingsTransitions.find(
+      (transition) => transition.source instanceof InitialState
+    );
+
+    const initialState = transitionFromInitialState?.source as InitialState;
+
+    if (!transitionFromInitialState) return;
+
+    this.view.controller.transitions.changeTransition({
+      id: transitionFromInitialState.id,
+      ...transitionFromInitialState.data,
+      target: stateId,
+    });
+    this.changeInitialStatePosition(
+      initialState.id,
+      initialState.position,
+      { x: state.position.x - INITIAL_STATE_OFFSET, y: state.position.y - INITIAL_STATE_OFFSET },
+      canUndo
+    );
+  }
+
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.states.get(stateId);
     if (!state) return;

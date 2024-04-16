@@ -52,6 +52,15 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     });
   }
 
+  getAllByTargetId(targetId: string | string[]) {
+    return [...this.items.values()].filter(({ target }) => {
+      if (Array.isArray(targetId)) {
+        return targetId.includes(target.id);
+      }
+      return targetId === target.id;
+    });
+  }
+
   getIdsByStateId(stateId: string) {
     return [...this.items.entries()]
       .filter(([_, { source, target }]) => source.id === stateId || target.id === stateId)

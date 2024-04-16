@@ -121,7 +121,7 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                // editor?.view.controller.setInitialState(state.id);
+                editor.view.controller.states.setInitialState(state.id);
               },
             },
             {

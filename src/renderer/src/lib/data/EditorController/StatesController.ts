@@ -96,7 +96,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       this.linkState(parentId, newStateId, canUndo);
       numberOfConnectedActions += 1;
     } else if (linkByPoint) {
-      this.linkStateByPoint(state, position);
+      const isLinked = this.linkStateByPoint(state, position, canUndo);
+      numberOfConnectedActions += Number(isLinked);
     }
 
     // Если не было начального состояния, им станет новое
@@ -232,36 +233,44 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  linkStateByPoint(state: State, position: Point) {
+  linkStateByPoint(state: State, position: Point, canUndo = true) {
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | undefined = undefined;
     for (const item of this.states.values()) {
-      if (state.id == item.id) continue;
-      if (item.isUnderMouse(position, true)) {
-        if (typeof possibleParent === 'undefined') {
-          possibleParent = item;
-        } else {
-          // учитываем вложенность, нужно поместить состояние
-          // в максимально дочернее
-          let searchPending = true;
-          while (searchPending) {
-            searchPending = false;
-            for (const child of possibleParent.children.layers[Layer.States]) {
-              if (!(child instanceof State)) continue;
-              if (state.id === child.id) continue;
-              if (child.isUnderMouse(position, true)) {
-                possibleParent = child as State;
-                searchPending = true;
-                break;
-              }
-            }
-          }
+      if (state.id === item.id) continue;
+      if (!item.isUnderMouse(position, true)) continue;
+
+      if (typeof possibleParent === 'undefined') {
+        possibleParent = item;
+        continue;
+      }
+
+      // учитываем вложенность, нужно поместить состояние
+      // в максимально дочернее
+      let searchPending = true;
+      while (searchPending) {
+        searchPending = false;
+        for (const child of possibleParent.children.layers[Layer.States]) {
+          if (
+            !(child instanceof State) ||
+            state.id === child.id ||
+            !child.isUnderMouse(position, true)
+          )
+            continue;
+
+          possibleParent = child as State;
+          searchPending = true;
+          break;
         }
       }
     }
+
     if (possibleParent !== state && possibleParent) {
-      this.linkState(possibleParent.id, state.id, true, true);
+      this.linkState(possibleParent.id, state.id, canUndo, true);
+      return true;
     }
+
+    return false;
   }
 
   unlinkState(params: UnlinkStateParams, canUndo = true) {

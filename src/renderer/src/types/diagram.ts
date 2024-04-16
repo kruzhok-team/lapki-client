@@ -34,6 +34,7 @@ export type State = {
   name: string;
   bounds: Rectangle;
   events: EventData[];
+  color: string;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 };

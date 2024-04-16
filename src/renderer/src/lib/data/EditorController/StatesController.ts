@@ -301,7 +301,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const parentId = state.data.parentId;
     let numberOfConnectedActions = 0;
 
-    // Удаляем зависимые события, нужно это делать тут а нет в данных потому что модели тоже должны быть удалены и события на них должны быть отвязаны
+    // Удаляем зависимые переходы
     this.view.controller.transitions.forEachByStateId(id, (transition) => {
       // Если удаляемое состояние было начальным, стираем текущее значение
       if (transition.source instanceof InitialState && transition.target.id === state.id) {
@@ -317,13 +317,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
           this.createInitialStateWithTransition(newState.id, canUndo);
           numberOfConnectedActions += 2; // Создание состояния и перехода
         }
+
+        return;
       }
 
       this.view.controller.transitions.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });
 
-    // Ищем дочерние состояния и отвязываем их от текущего, делать это нужно тут потому что поле children есть только в модели и его нужно поменять
+    // Ищем дочерние состояния и отвязываем их от текущего
     this.forEachByParentId(id, (childState) => {
       // Если есть родительское, перепривязываем к нему
       if (state.data.parentId) {

@@ -10,6 +10,8 @@ import {
   getLine,
 } from '@renderer/lib/utils';
 
+import { DEFAULT_TRANSITION_COLOR } from '../constants';
+
 /**
  * Неоформленный («призрачный») переход.
  * Используется для визуализации создаваемого перехода.
@@ -36,9 +38,14 @@ export class GhostTransition {
     );
 
     ctx.lineWidth = transitionStyle.width;
+    ctx.fillStyle = DEFAULT_TRANSITION_COLOR;
 
     drawCurvedLine(ctx, line, 12 / this.view.app.model.data.scale);
-    drawCircle(ctx, line.start, transitionStyle.startSize / this.view.app.model.data.scale);
+    drawCircle(ctx, {
+      position: line.start,
+      radius: transitionStyle.startSize / this.view.app.model.data.scale,
+      fillStyle: DEFAULT_TRANSITION_COLOR,
+    });
     drawTriangle(ctx, line.end, 10 / this.view.app.model.data.scale, degrees_to_radians(line.ee));
   }
 

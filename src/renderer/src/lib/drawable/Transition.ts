@@ -174,7 +174,11 @@ export class Transition extends Shape {
 
     drawCurvedLine(ctx, sourceLine, 12 / this.view.app.model.data.scale);
     drawCurvedLine(ctx, targetLine, 12 / this.view.app.model.data.scale);
-    drawCircle(ctx, sourceLine.start, transitionStyle.startSize / this.view.app.model.data.scale);
+    drawCircle(ctx, {
+      position: sourceLine.start,
+      radius: transitionStyle.startSize / this.view.app.model.data.scale,
+      fillStyle: this.data.color,
+    });
     drawTriangle(
       ctx,
       targetLine.start,
@@ -191,7 +195,11 @@ export class Transition extends Shape {
     ctx.fillStyle = this.data.color;
 
     drawCurvedLine(ctx, line, 12 / this.view.app.model.data.scale);
-    drawCircle(ctx, line.end, transitionStyle.startSize / this.view.app.model.data.scale);
+    drawCircle(ctx, {
+      position: line.end,
+      radius: transitionStyle.startSize / this.view.app.model.data.scale,
+      fillStyle: this.data.color,
+    });
     drawTriangle(ctx, line.start, 10 / this.view.app.model.data.scale, degrees_to_radians(line.se));
   }
 

@@ -311,13 +311,27 @@ export const drawCurvedLine = (
   ctx.closePath();
 };
 
-export const drawCircle = (ctx: CanvasRenderingContext2D, position: Point, radius: number) => {
+interface DrawCircleOptions {
+  position: Point;
+  radius: number;
+  fillStyle?: CanvasFillStrokeStyles['fillStyle'];
+}
+
+export const drawCircle = (ctx: CanvasRenderingContext2D, options: DrawCircleOptions) => {
+  const { position, radius, fillStyle } = options;
+
+  const prevFillStyle = ctx.fillStyle;
+
+  if (fillStyle) ctx.fillStyle = fillStyle;
+
   ctx.beginPath();
 
   ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
   ctx.fill();
 
   ctx.closePath();
+
+  ctx.fillStyle = prevFillStyle;
 };
 
 export const drawTriangle = (

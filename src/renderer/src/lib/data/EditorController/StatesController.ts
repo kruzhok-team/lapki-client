@@ -200,6 +200,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     let numberOfConnectedActions = 0;
 
+    // Проверка на то что состояние является, тем на которое есть переход из начального
+    // TODO(bryzZz) Вынести в функцию
+    const stateTransitions = this.view.controller.transitions.getAllByTargetId(childId) ?? [];
+    const transitionFromInitialState = stateTransitions.find(
+      ({ source }) => source instanceof InitialState
+    );
+
+    if (transitionFromInitialState) {
+      this.setInitialState(parentId, canUndo);
+      numberOfConnectedActions += 2;
+    }
+
     this.view.app.model.linkState(parentId, childId);
     this.changeStatePosition(childId, child.position, { x: 0, y: 0 }, false);
 

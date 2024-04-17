@@ -248,20 +248,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   }
 
   getCapturedNode(args: GetCapturedNodeParams) {
-    // const { type } = args;
-
-    // const end = type === 'states' ? this.children.getSize(0) : this.children.getSize();
-
-    // for (let i = end - 1; i >= 0; i--) {
-    //   const node = (
-    //     type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
-    //   )?.getIntersection(args);
-
-    //   if (node) return node;
-    // }
-
-    // return null;
-
     const { layer } = args;
 
     if (layer !== undefined) {
@@ -272,6 +258,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       }
     } else {
       for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        if (!this.children.layers[i]) continue;
+
         for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
           const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
 
@@ -300,6 +288,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       }
     } else {
       for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        if (!this.children.layers[i]) continue;
+
         for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
           const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
 
@@ -307,16 +297,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         }
       }
     }
-
-    // const end = type === 'states' ? this.children.getSize(0) : this.children.getSize();
-
-    // for (let i = end - 1; i >= 0; i--) {
-    //   const node = (
-    //     type === 'states' ? this.children.getStateByIndex(i) : this.children.getByIndex(i)
-    //   )?.getIntersection(args);
-
-    //   if (node) return node;
-    // }
 
     return null;
   }

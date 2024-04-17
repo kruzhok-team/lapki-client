@@ -129,6 +129,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       }
     } else {
       for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        if (!this.children.layers[i]) continue;
+
         for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
           const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
 

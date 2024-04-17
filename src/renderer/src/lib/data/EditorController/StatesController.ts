@@ -39,7 +39,7 @@ interface StatesControllerEvents {
 
 /**
  * Контроллер состояний.
- * TODO numberOfConnectedActions неочивидный, нужно чтобы функция сама возвращала сколько действий в историю она положила
+ * TODO(bryzZz) numberOfConnectedActions неочивидный, нужно чтобы функция сама возвращала сколько действий в историю она положила
  */
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
@@ -284,10 +284,34 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (!state || !state.parent) return;
 
     const parentId = state.parent.id;
+    let numberOfConnectedActions = 0;
+
+    // Проверка на то что состояние является, тем на которое есть переход из начального
+    // TODO(bryzZz) Вынести в функцию
+    const stateTransitions = this.view.controller.transitions.getAllByTargetId(id) ?? [];
+    const transitionFromInitialState = stateTransitions.find(
+      ({ source }) => source instanceof InitialState
+    );
+
+    if (transitionFromInitialState) {
+      // Перемещаем начальное состояние, на первое найденное в родителе
+      const newState = [...this.states.values()].find(
+        (s) => s.data.parentId === parentId && s.id !== id
+      );
+
+      if (newState) {
+        this.setInitialState(newState?.id, canUndo);
+      } else {
+        this.deleteInitialStateWithTransition(transitionFromInitialState.source.id, canUndo);
+      }
+
+      numberOfConnectedActions += 2;
+    }
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newPosition = { ...state.compoundPosition };
     this.changeStatePosition(id, state.position, newPosition, canUndo);
+    numberOfConnectedActions += 1;
 
     this.view.app.model.unlinkState(id);
 
@@ -299,7 +323,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       this.history.do({
         type: 'unlinkState',
         args: { parentId, params },
-        numberOfConnectedActions: 1, // Изменение позиции
+        numberOfConnectedActions,
       });
       state.addOnceOff('dragend');
     }
@@ -704,7 +728,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   // TODO: визуальная обратная связь
   // если состояние вложено – отсоединяем
   handleLongPress = (state: State) => {
-    if (typeof state.parent === 'undefined') return;
+    if (!state.data.parentId) return;
 
     this.unlinkState({ id: state.id });
   };

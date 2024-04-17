@@ -127,12 +127,12 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
   linkState: (sM, { parentId, childId }) => ({
-    redo: sM.states.linkState.bind(sM.states, parentId, childId, false),
+    redo: sM.states.linkState.bind(sM.states, { parentId, childId, canBeInitial: false }, false),
     undo: sM.states.unlinkState.bind(sM.states, { id: childId }, false),
   }),
   unlinkState: (sM, { parentId, params }) => ({
     redo: sM.states.unlinkState.bind(sM.states, params, false),
-    undo: sM.states.linkState.bind(sM.states, parentId, params.id, false),
+    undo: sM.states.linkState.bind(sM.states, { parentId, childId: params.id }, false),
   }),
   createTransition: (sM, { id, params }) => ({
     redo: sM.transitions.createTransition.bind(sM.transitions, { ...params, id }, false),

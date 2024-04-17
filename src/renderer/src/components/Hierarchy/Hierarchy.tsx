@@ -150,7 +150,7 @@ export const Hierarchy: React.FC = () => {
 
       if (parent === childId) return;
 
-      return controller.states.linkState(parent, childId);
+      return controller.states.linkState({ parentId: parent, childId });
     });
   };
 

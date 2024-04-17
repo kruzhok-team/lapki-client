@@ -11,6 +11,13 @@ export interface RemoveComponentParams {
   purge?: boolean;
 }
 
+export interface LinkStateParams {
+  parentId: string;
+  childId: string;
+  addOnceOff?: boolean;
+  canBeInitial?: boolean;
+}
+
 export interface UnlinkStateParams {
   id: string;
 }

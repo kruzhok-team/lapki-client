@@ -103,7 +103,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     // вкладываем состояние, если оно создано над другим
     if (parentId) {
-      this.linkState({ parentId, childId: newStateId }, canUndo);
+      this.linkState({ parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
     } else if (linkByPoint) {
       const isLinked = this.linkStateByPoint(state, position, canUndo);
@@ -314,26 +314,29 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const parentId = state.data.parentId;
     let numberOfConnectedActions = 0;
 
-    // Удаляем зависимые переходы
-    this.view.controller.transitions.forEachByStateId(id, (transition) => {
-      // Если удаляемое состояние было начальным, стираем текущее значение
-      if (transition.source instanceof InitialState && transition.target.id === state.id) {
-        this.deleteInitialStateWithTransition(transition.source.id, canUndo);
-        numberOfConnectedActions += 2;
+    // Проверка на то что состояние является, тем на которое есть переход из начального
+    const stateTransitions = this.view.controller.transitions.getAllByTargetId(id) ?? [];
+    const transitionFromInitialState = stateTransitions.find(
+      ({ source }) => source instanceof InitialState
+    );
 
-        // Перемещаем начальное состояние, на первое найденное в родителе
-        const newState = [...this.states.values()].find(
-          (s) => s.data.parentId === parentId && s.id !== id
-        ) as State | undefined;
+    if (transitionFromInitialState) {
+      // Перемещаем начальное состояние, на первое найденное в родителе
+      const newState = [...this.states.values()].find(
+        (s) => s.data.parentId === parentId && s.id !== id
+      );
 
-        if (newState) {
-          this.createInitialStateWithTransition(newState.id, canUndo);
-          numberOfConnectedActions += 2; // Создание состояния и перехода
-        }
-
-        return;
+      if (newState) {
+        this.setInitialState(newState?.id, canUndo);
+      } else {
+        this.deleteInitialStateWithTransition(transitionFromInitialState.source.id, canUndo);
       }
 
+      numberOfConnectedActions += 2;
+    }
+
+    // Удаляем зависимые переходы
+    this.view.controller.transitions.forEachByStateId(id, (transition) => {
       this.view.controller.transitions.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });
@@ -396,11 +399,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const target = this.states.get(targetId);
     if (!target) return;
 
+    const position = {
+      x: target.position.x - INITIAL_STATE_OFFSET,
+      y: target.position.y - INITIAL_STATE_OFFSET,
+    };
+
+    if (target.data.parentId) {
+      position.x = Math.max(0, position.x);
+      position.y = Math.max(0, position.y);
+    }
+
     const id = this.view.app.model.createInitialState({
-      position: {
-        x: target.position.x - INITIAL_STATE_OFFSET,
-        y: target.position.y - INITIAL_STATE_OFFSET,
-      },
+      position,
       parentId: target.data.parentId,
       id: prevId,
     });
@@ -486,17 +496,25 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     if (!transitionFromInitialState) return;
 
-    this.view.controller.transitions.changeTransition({
-      id: transitionFromInitialState.id,
-      ...transitionFromInitialState.data,
-      target: stateId,
-    });
-    this.changeInitialStatePosition(
-      initialState.id,
-      initialState.position,
-      { x: state.position.x - INITIAL_STATE_OFFSET, y: state.position.y - INITIAL_STATE_OFFSET },
+    const position = {
+      x: state.position.x - INITIAL_STATE_OFFSET,
+      y: state.position.y - INITIAL_STATE_OFFSET,
+    };
+
+    if (state.data.parentId) {
+      position.x = Math.max(0, position.x);
+      position.y = Math.max(0, position.y);
+    }
+
+    this.view.controller.transitions.changeTransition(
+      {
+        id: transitionFromInitialState.id,
+        ...transitionFromInitialState.data,
+        target: stateId,
+      },
       canUndo
     );
+    this.changeInitialStatePosition(initialState.id, initialState.position, position, canUndo);
   }
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {

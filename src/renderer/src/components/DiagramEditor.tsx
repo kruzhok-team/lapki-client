@@ -7,7 +7,7 @@ import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
+import { defaultStateColor, defaultTransitionColor } from '@renderer/utils';
 
 import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
@@ -53,6 +53,7 @@ export const DiagramEditor: React.FC = () => {
         name: 'Состояние',
         position,
         placeInCenter: true,
+        color: defaultStateColor,
       });
     });
 
@@ -134,13 +135,14 @@ export const DiagramEditor: React.FC = () => {
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,
         actions: events,
+        color: data.color ?? defaultStateColor,
       });
     } else if (transition && data.key === 3) {
       editor?.container.machineController.changeTransition({
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
-        color: data.color ?? defaultTransColor,
+        color: data.color ?? defaultTransitionColor,
         component: data.trigger.component,
         method: data.trigger.method,
         doAction: events,
@@ -150,7 +152,7 @@ export const DiagramEditor: React.FC = () => {
       editor?.container.machineController.createTransition({
         source: newTransition.source.id,
         target: newTransition.target.id,
-        color: data.color ?? defaultTransColor,
+        color: data.color ?? defaultTransitionColor,
         component: data.trigger.component,
         method: data.trigger.method,
         doAction: events,

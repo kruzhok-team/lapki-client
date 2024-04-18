@@ -134,7 +134,7 @@ export class EditorManager {
   }
 
   createState(args: CreateStateParameters) {
-    const { name, parentId, id, events = [], placeInCenter = false } = args;
+    const { name, parentId, id, events = [], placeInCenter = false, color } = args;
     let position = args.position;
     const { width, height } = stateStyle;
 
@@ -165,6 +165,7 @@ export class EditorManager {
       events: events,
       name,
       parent: parentId,
+      color,
     };
 
     this.triggerDataUpdate('elements.states');
@@ -172,7 +173,9 @@ export class EditorManager {
     return newId;
   }
 
-  changeStateEvents({ id, triggerComponent, triggerMethod, actions }: ChangeStateEventsParams) {
+  changeStateEvents(args: ChangeStateEventsParams) {
+    const { id, triggerComponent, triggerMethod, actions, color } = args;
+
     const state = this.data.elements.states[id];
     if (!state) return false;
 
@@ -203,6 +206,8 @@ export class EditorManager {
         state.events.splice(eventIndex, 1);
       }
     }
+
+    state.color = color;
 
     this.triggerDataUpdate('elements.states');
 

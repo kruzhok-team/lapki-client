@@ -15,7 +15,7 @@ import {
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
+import { defaultTransitionColor, defaultStateColor } from '@renderer/utils';
 
 import { Condition } from './Condition';
 import { EventsBlockModal } from './EventsBlockModal';
@@ -114,7 +114,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
 
   //Хранение цвета связи
-  const [color, setColor] = useState(defaultTransColor);
+  const [color, setColor] = useState('#FFFFFF');
 
   const condition = useCreateModalCondition({ isEditingState, formState });
 
@@ -208,7 +208,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.setSelectedMethodParam1('');
     condition.setSelectedMethodParam2('');
     condition.setArgsParam2('');
-    setColor(transition?.data?.color ?? defaultTransColor);
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);
@@ -223,6 +222,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       const init = (state: State) => {
         const { data } = state;
 
+        setColor(data.color ?? defaultStateColor);
         setSelectedComponent(data.events[0].trigger.component);
         setSelectedMethod(data.events[0].trigger.method);
       };
@@ -290,6 +290,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
       setSelectedComponent(data.trigger.component);
       setSelectedMethod(data.trigger.method);
+      setColor(data?.color ?? defaultTransitionColor);
 
       tryGetCondition();
     };
@@ -342,12 +343,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         isOpen={isOpen}
       />
 
-      {!isEditingState && (
-        <div className="flex items-center gap-2">
-          <span className="font-bold">Цвет связи:</span>
-          <ColorInput value={color} onChange={setColor} />
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="font-bold">Цвет:</span>
+        <ColorInput value={color} onChange={setColor} />
+      </div>
     </Modal>
   );
 };

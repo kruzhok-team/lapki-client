@@ -33,6 +33,7 @@ export const emptyDataListeners = Object.fromEntries([
 export interface CreateStateParameters {
   name: string;
   position: Point;
+  color: string;
   parentId?: string;
   id?: string;
   events?: EventData[];
@@ -75,6 +76,7 @@ export interface ChangeStateEventsParams {
   actions: Action[];
   triggerComponent: string;
   triggerMethod: string;
+  color: string;
 }
 
 export interface AddComponentParams {

@@ -79,7 +79,8 @@ export const formatArgType = (value: ArgType) => {
 };
 
 // цвет связи по-умолчанию
-export const defaultTransColor = '#0000FF';
+export const defaultTransitionColor = '#0000FF';
+export const defaultStateColor = '#FFFFFF';
 
 // пресеты цветов
 export const presetColors = ['#119da4', '#591f0a', '#f26419', '#1f487e', '#4b296b'];

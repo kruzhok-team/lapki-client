@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 
-import { CodeTab, Tab } from '@renderer/types/tabs';
+import { Tab } from '@renderer/types/tabs';
 
 interface TabsState {
   items: Tab[];
-  activeTab: string;
+  activeTab: string | null;
   setActiveTab: (tabName: string) => void;
-  openTab: (tab: CodeTab) => void;
+  openTab: (tab: Tab) => void;
   closeTab: (tabName: string) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
 }
 
 export const useTabs = create<TabsState>((set) => ({
-  items: [{ type: 'editor', name: 'editor' }],
+  items: [],
   activeTab: 'editor',
   setActiveTab: (activeTab) => set({ activeTab }),
   openTab: (tab) =>
@@ -32,16 +32,28 @@ export const useTabs = create<TabsState>((set) => ({
     set(({ items, activeTab }) => {
       const closedTabIndex = items.findIndex((tab) => tab.name === tabName);
       const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
+      const newItems = items.filter((tab) => tab.name !== tabName);
+
+      if (newItems.length === 0) {
+        return {
+          items: newItems,
+          activeTab: null,
+        };
+      }
 
       let newActiveTab = activeTab;
 
       // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
       if (closedTabIndex === activeTabIndex) {
-        newActiveTab = items[activeTabIndex - 1].name;
+        if (closedTabIndex === items.length - 1) {
+          newActiveTab = newItems[newItems.length - 1].name;
+        } else {
+          newActiveTab = newItems[closedTabIndex].name;
+        }
       }
 
       return {
-        items: items.filter((tab) => tab.name !== tabName),
+        items: newItems,
         activeTab: newActiveTab,
       };
     }),
@@ -60,7 +72,7 @@ export const useTabs = create<TabsState>((set) => ({
     }),
   clearTabs: () =>
     set(() => ({
-      items: [{ type: 'editor', name: 'editor' }],
-      activeTab: 'editor',
+      items: [],
+      activeTab: null,
     })),
 }));

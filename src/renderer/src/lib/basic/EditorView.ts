@@ -1,3 +1,5 @@
+import * as TWEEN from '@tweenjs/tween.js';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
@@ -321,9 +323,37 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     const newScale = Number(
       clamp(replace ? delta : prevScale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.app.model.data.offset.x -= x * prevScale - x * newScale;
-    this.app.model.data.offset.y -= y * prevScale - y * newScale;
 
-    this.setScale(newScale);
+    const to = {
+      x: this.app.model.data.offset.x - (x * prevScale - x * newScale),
+      y: this.app.model.data.offset.y - (y * prevScale - y * newScale),
+      scale: newScale,
+    };
+
+    if (this.app.settings.animations) {
+      const from = {
+        x: this.app.model.data.offset.x,
+        y: this.app.model.data.offset.y,
+        scale: prevScale,
+      };
+
+      new TWEEN.Tween(from)
+        .to(to, 200)
+        .easing(TWEEN.Easing.Linear.None)
+        .onUpdate(({ x, y, scale }) => {
+          this.app.model.data.offset = { x, y };
+          this.app.model.data.scale = scale;
+          picto.scale = scale;
+          this.isDirty = true;
+        })
+        .onComplete(({ scale }) => {
+          this.setScale(scale);
+        })
+        .start();
+    } else {
+      this.app.model.data.offset.x = to.x;
+      this.app.model.data.offset.y = to.y;
+      this.setScale(to.scale);
+    }
   }
 }

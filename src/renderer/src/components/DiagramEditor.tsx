@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Scale } from '@renderer/components';
+import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State, Transition } from '@renderer/lib/drawable';
@@ -16,6 +17,8 @@ export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
 
   const isMounted = editor.model.useData('isMounted');
+
+  const [canvasSettings] = useSettings('canvas');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State | null>(null);
@@ -96,6 +99,12 @@ export const DiagramEditor: React.FC = () => {
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
   }, [editor, openCreateModal, openEventsModal]);
+
+  useEffect(() => {
+    if (!canvasSettings) return;
+
+    editor.setSettings(canvasSettings);
+  }, [canvasSettings, editor]);
 
   const handleEventsModalSubmit = (data: Event) => {
     // Если есть какие-то данные то мы редактируем событие а не добавляем

@@ -1,8 +1,14 @@
+import * as TWEEN from '@tweenjs/tween.js';
+
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { EditorController } from '@renderer/lib/data/EditorController';
 import { EditorModel } from '@renderer/lib/data/EditorModel';
 import { preloadPicto } from '@renderer/lib/drawable';
+
+interface CanvasEditorSettings {
+  animations: boolean;
+}
 
 /**
  * Редактор машин состояний.
@@ -18,6 +24,9 @@ export class CanvasEditor {
   private _controller: EditorController | null = null;
 
   model = new EditorModel();
+  settings: CanvasEditorSettings = {
+    animations: true,
+  };
 
   constructor() {
     this.model.resetEditor = () => {
@@ -97,6 +106,10 @@ export class CanvasEditor {
     });
 
     this.render.subscribe(() => {
+      if (this.settings.animations) {
+        TWEEN.update();
+      }
+
       if (!this.view.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();
@@ -110,6 +123,14 @@ export class CanvasEditor {
     this.model.triggerDataUpdate('isMounted');
 
     this.controller.loadData();
+  }
+
+  setSettings(settings: CanvasEditorSettings) {
+    this.settings = settings;
+
+    if (this.model.data.isMounted) {
+      this.view.isDirty = true;
+    }
   }
 
   cleanUp() {

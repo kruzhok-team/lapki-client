@@ -20,7 +20,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const isStale = model.useData('isStale');
   const name = model.useData('name');
 
-  const clearTabs = useTabs((state) => state.clearTabs);
+  const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -58,6 +58,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
     if (result && isRight(result)) {
       clearTabs();
+      openTab({ type: 'editor', name: 'editor' });
     }
   };
 
@@ -65,6 +66,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     model.files.createFromTemplate(type, name, openImportError);
 
     clearTabs();
+    openTab({ type: 'editor', name: 'editor' });
   };
 
   //Создание нового файла
@@ -86,6 +88,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const performNewFile = (idx: string) => {
     model?.files.newFile(idx);
     clearTabs();
+    openTab({ type: 'editor', name: 'editor' });
   };
 
   const handleSaveAsFile = async () => {

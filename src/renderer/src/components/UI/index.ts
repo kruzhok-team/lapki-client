@@ -7,4 +7,5 @@ export * from './ColorInput';
 export * from './TextField';
 export * from './TextInput';
 export * from './Checkbox';
+export * from './Switch';
 export * from './TextAreaAutoResize';

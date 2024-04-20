@@ -24,15 +24,12 @@ import {
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { NotInitialized } from './NotInitialized';
 import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
   const editor = useEditorContext();
-  const model = editor.model;
 
-  const isInitialized = model.useData('isInitialized');
-  const isMounted = model.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
@@ -92,7 +89,7 @@ export const MainContainer: React.FC = () => {
         >
           <input {...getInputProps()} />
 
-          {isInitialized ? <Tabs /> : <NotInitialized />}
+          <Tabs />
 
           <Documentation topOffset={!!isMounted} />
         </div>

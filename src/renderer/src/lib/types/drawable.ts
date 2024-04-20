@@ -12,6 +12,7 @@ export enum Layer {
   InitialStates,
   FinalStates,
   Transitions,
+  GhostTransition,
   Notes,
 }
 

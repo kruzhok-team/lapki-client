@@ -49,9 +49,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     };
 
     drawChildren(this);
-
-    // TODO(bryzZz) Засунуть в Children
-    this.app.controller.transitions.ghost.draw(ctx, canvas);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -121,7 +118,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
         if (!this.children.layers[i]) continue;
 
         for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
-          const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
+          const node = (this.children.layers[i][j] as Shape)?.getIntersection?.(args);
 
           if (node) return node;
         }

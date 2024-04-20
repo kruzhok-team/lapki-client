@@ -91,11 +91,6 @@ export class CanvasEditor {
     this._controller = new EditorController(this);
     this._view = new EditorView(this);
 
-    //! Подписка на события только после создания контроллера и вью
-    this.view.initEvents();
-    this.controller.transitions.initEvents();
-    this.controller.loadData();
-
     this.canvas.onResize = () => {
       this.mouse.setOffset();
       this.view.isDirty = true;
@@ -123,6 +118,8 @@ export class CanvasEditor {
     this.model.triggerDataUpdate('isMounted');
 
     this.controller.loadData();
+    this.view.initEvents();
+    this.controller.transitions.initEvents();
   }
 
   setSettings(settings: CanvasEditorSettings) {

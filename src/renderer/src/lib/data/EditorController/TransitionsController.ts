@@ -203,6 +203,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   initEvents() {
+    this.app.view.children.add(this.ghost, Layer.GhostTransition);
+
     this.app.mouse.on('mousemove', this.handleMouseMove);
 
     this.controller.states.on('startNewTransition', this.handleStartNewTransition);

@@ -1,16 +1,14 @@
-import { EditorView } from '@renderer/lib/basic';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
 import { State, Note, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
-
-import { EditorController } from './EditorController';
 
 /**
  * Класс инкапсулирующий логику инициализации {@link EditorController|контроллера машины состояний}
  * который эджектится (https://en.wikipedia.org/wiki/Dependency_injection#Constructor_injection) в конструкторе. Наружу отдаёт только метод init
  */
 export class Initializer {
-  constructor(private view: EditorView, private controller: EditorController) {}
+  constructor(private app: CanvasEditor) {}
 
   init() {
     this.resetEntities();
@@ -21,27 +19,27 @@ export class Initializer {
     this.initPlatform();
     this.initComponents();
 
-    this.view.viewCentering();
+    this.app.view.viewCentering();
   }
 
   private get states() {
-    return this.controller.states;
+    return this.app.controller.states;
   }
   private get transitions() {
-    return this.controller.transitions;
+    return this.app.controller.transitions;
   }
   private get notes() {
-    return this.controller.notes;
+    return this.app.controller.notes;
   }
   private get platform() {
-    return this.controller.platform;
+    return this.app.controller.platform;
   }
   private get history() {
-    return this.view.history;
+    return this.app.controller.history;
   }
 
   private resetEntities() {
-    this.view.children.clear();
+    this.app.view.children.clear();
     this.transitions.forEach((value) => {
       this.transitions.unwatchTransition(value);
     });
@@ -67,7 +65,7 @@ export class Initializer {
    * Демо: child-before-parent.json
    */
   private initStates() {
-    const items = this.view.app.model.data.elements.states;
+    const items = this.app.model.data.elements.states;
 
     for (const id in items) {
       this.createStateView(id);
@@ -83,7 +81,7 @@ export class Initializer {
   }
 
   private initTransitions() {
-    const items = this.view.app.model.data.elements.transitions;
+    const items = this.app.model.data.elements.transitions;
 
     for (const id in items) {
       this.createTransitionView(id);
@@ -91,7 +89,7 @@ export class Initializer {
   }
 
   private initNotes() {
-    const items = this.view.app.model.data.elements.notes;
+    const items = this.app.model.data.elements.notes;
 
     for (const id in items) {
       this.createNoteView(id);
@@ -99,7 +97,7 @@ export class Initializer {
   }
 
   private initComponents() {
-    const items = this.view.app.model.data.elements.components;
+    const items = this.app.model.data.elements.components;
 
     for (const name in items) {
       const component = items[name];
@@ -112,7 +110,7 @@ export class Initializer {
   }
 
   private initPlatform() {
-    const platformName = this.view.app.model.data.elements.platform;
+    const platformName = this.app.model.data.elements.platform;
 
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     const platform = loadPlatform(platformName);
@@ -120,15 +118,15 @@ export class Initializer {
       throw Error("couldn't init platform " + platformName);
     }
 
-    this.controller.platform = platform;
+    this.app.controller.platform = platform;
   }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
   private createStateView(id: string) {
-    const state = new State(this.view, id);
+    const state = new State(this.app, id);
     this.states.setState(state.id, state);
     this.states.watch(state);
-    this.view.children.add(state, Layer.States);
+    this.app.view.children.add(state, Layer.States);
   }
 
   private linkStateView(parentId: string, childId: string) {
@@ -137,22 +135,22 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.view.children.remove(child, Layer.States);
+    this.app.view.children.remove(child, Layer.States);
     child.parent = parent;
     parent.children.add(child, Layer.States);
   }
 
   private createTransitionView(id: string) {
-    const transition = new Transition(this.view, id);
+    const transition = new Transition(this.app, id);
     this.transitions.set(id, transition);
     this.transitions.linkTransition(id);
     this.transitions.watchTransition(transition);
   }
 
   private createNoteView(id: string) {
-    const note = new Note(this.view, id);
+    const note = new Note(this.app, id);
     this.notes.set(id, note);
-    this.view.children.add(note, Layer.Notes);
+    this.app.view.children.add(note, Layer.Notes);
     this.notes.watch(note);
   }
 

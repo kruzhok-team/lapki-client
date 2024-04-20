@@ -43,14 +43,14 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.view.controller.pasteSelected();
+            editor?.controller.pasteSelected();
           },
         },
         {
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor.view.controller.states.createState({
+            editor.controller.states.createState({
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
@@ -59,16 +59,25 @@ export const useDiagramContextMenu = () => {
           },
         },
         {
+          label: 'Вставить конечное состояние',
+          type: 'pasteState',
+          action: () => {
+            editor.controller.states.createFinalState({
+              position: canvasPos,
+            });
+          },
+        },
+        {
           label: 'Вставить заметку',
           type: 'note',
           action: () => {
-            const note = editor.view.controller.notes.createNote({
+            const note = editor.controller.notes.createNote({
               position: canvasPos,
               placeInCenter: true,
               text: '',
             });
 
-            editor.view.controller.notes.emit('change', note);
+            editor.controller.notes.emit('change', note);
           },
         },
         {
@@ -94,7 +103,7 @@ export const useDiagramContextMenu = () => {
     });
 
     // контекстное меню для состояния
-    editor.view.controller.states.on('stateContextMenu', ({ state, position }) => {
+    editor.controller.states.on('stateContextMenu', ({ state, position }) => {
       const canvasPos = editor.view.relativeMousePos(position);
 
       handleEvent(position, [
@@ -102,14 +111,14 @@ export const useDiagramContextMenu = () => {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.view.controller.copySelected();
+            editor?.controller.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.view.controller.pasteSelected();
+            editor?.controller.pasteSelected();
           },
         },
         {
@@ -121,14 +130,14 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                editor.view.controller.states.setInitialState(state.id);
+                editor.controller.states.setInitialState(state.id);
               },
             },
             {
               label: 'Вставить состояние',
               type: 'pasteState',
               action: () => {
-                editor.view.controller.states.createState({
+                editor.controller.states.createState({
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
@@ -156,34 +165,34 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.view.controller.states.deleteState(state.id as string);
+            editor.controller.states.deleteState(state.id as string);
           },
         },
       ]);
     });
 
     // контекстное меню для события
-    editor.view.controller.states.on('eventContextMenu', ({ state, position, event }) => {
+    editor.controller.states.on('eventContextMenu', ({ state, position, event }) => {
       handleEvent(position, [
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.view.controller.states.deleteEvent(state.id, event);
+            editor.controller.states.deleteEvent(state.id, event);
           },
         },
       ]);
     });
 
     // контекстное меню для связи
-    editor.view.controller.transitions.on('transitionContextMenu', ({ transition, position }) => {
+    editor.controller.transitions.on('transitionContextMenu', ({ transition, position }) => {
       const source = (state: State) => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'source',
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
-            editor.view.controller.transitions.changeTransition({
+            editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
               source: state.id,
@@ -198,7 +207,7 @@ export const useDiagramContextMenu = () => {
           type: 'target',
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
-            editor.view.controller.transitions.changeTransition({
+            editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
               target: state.id,
@@ -208,13 +217,13 @@ export const useDiagramContextMenu = () => {
       };
 
       const sourceArray = [
-        ...Array.from(editor.view.controller.states.getStates()).filter(
+        ...Array.from(editor.controller.states.getStates()).filter(
           (value) => transition.data.source !== value[0]
         ),
       ];
 
       const targetArray = [
-        ...Array.from(editor.view.controller.states.getStates()).filter(
+        ...Array.from(editor.controller.states.getStates()).filter(
           (value) => transition.data.target !== value[0]
         ),
       ];
@@ -224,7 +233,7 @@ export const useDiagramContextMenu = () => {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.view.controller.copySelected();
+            editor?.controller.copySelected();
           },
         },
         {
@@ -259,26 +268,26 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.view.controller.transitions.deleteTransition(transition.id);
+            editor.controller.transitions.deleteTransition(transition.id);
           },
         },
       ]);
     });
 
-    editor.view.controller.notes.on('contextMenu', ({ note, position }) => {
+    editor.controller.notes.on('contextMenu', ({ note, position }) => {
       handleEvent(position, [
         {
           label: 'Редактировать',
           type: 'edit',
           action: () => {
-            editor.view.controller.notes.emit('change', note);
+            editor.controller.notes.emit('change', note);
           },
         },
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.view.controller.notes.deleteNote(note.id);
+            editor?.controller.notes.deleteNote(note.id);
           },
         },
       ]);

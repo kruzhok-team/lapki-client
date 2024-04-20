@@ -16,6 +16,7 @@ import {
   CreateNoteParams,
   Point,
   CreateInitialStateParams,
+  CreateFinalStateParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {
@@ -280,34 +281,12 @@ export class EditorModel {
     return true;
   }
 
-  // TODO
-  // changeInitialState(initialState: InitialState) {
-  //   const state = this.data.elements.states[initialState.target];
-  //   if (!state) return false;
-
-  //   this.data.elements.initialState = initialState;
-
-  //   this.triggerDataUpdate('elements.states');
-
-  //   return true;
-  // }
-
-  // changeInitialStatePosition(position: Point) {
-  //   if (!this.data.elements.initialState) return;
-
-  //   this.data.elements.initialState.position = position;
-
-  //   this.triggerDataUpdate('elements.initialState');
-
-  //   return true;
-  // }
-
   createInitialState(args: CreateInitialStateParams) {
     const { id = generateId(this.getNodeIds()), ...other } = args;
 
     this.data.elements.initialStates[id] = other;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.initialStates');
 
     return id;
   }
@@ -330,6 +309,27 @@ export class EditorModel {
     state.position = position;
 
     this.triggerDataUpdate('elements.initialStates');
+
+    return true;
+  }
+
+  createFinalState(args: CreateFinalStateParams) {
+    const { id = generateId(this.getNodeIds()), ...other } = args;
+
+    this.data.elements.finalStates[id] = other;
+
+    this.triggerDataUpdate('elements.finalStates');
+
+    return id;
+  }
+
+  changeFinalStatePosition(id: string, position: Point) {
+    const state = this.data.elements.finalStates[id];
+    if (!state) return false;
+
+    state.position = position;
+
+    this.triggerDataUpdate('elements.finalStates');
 
     return true;
   }

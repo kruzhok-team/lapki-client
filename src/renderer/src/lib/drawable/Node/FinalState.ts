@@ -4,17 +4,15 @@ import { drawCircle } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 
 /**
- * Класс для отрисовки начального состояния
- * плотно завязан на данные в EditorModel, то есть
- * данные на момент создания этого класса уже должны существовать
+ * Класс для отрисовки конечного состояния
  */
-export class InitialState extends Shape {
+export class FinalState extends Shape {
   constructor(app: CanvasEditor, id: string, parent?: Shape) {
     super(app, id, parent);
   }
 
   get data() {
-    return this.app.model.data.elements.initialStates[this.id];
+    return this.app.model.data.elements.finalStates[this.id];
   }
 
   get position() {
@@ -28,7 +26,7 @@ export class InitialState extends Shape {
     return { width: 50, height: 50 };
   }
   set dimensions(_value) {
-    throw new Error('InitialState does not have dimensions');
+    throw new Error('FinalState does not have dimensions');
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -38,8 +36,14 @@ export class InitialState extends Shape {
 
     drawCircle(ctx, {
       position,
-      radius,
+      radius: radius - 5 / this.app.model.data.scale,
       fillStyle: getColor('primary'),
+    });
+    drawCircle(ctx, {
+      position,
+      radius,
+      lineWidth: 2 / this.app.model.data.scale,
+      strokeStyle: getColor('primary'),
     });
   }
 }

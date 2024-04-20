@@ -53,7 +53,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const model = editor.model;
 
   const componentsData = model.useData('elements.components');
-  const controller = editor.view.controller;
+  const controller = editor.controller;
   const isEditingState = state !== undefined;
 
   const [formState, setFormState] = useState<'submitted' | 'default'>('default');

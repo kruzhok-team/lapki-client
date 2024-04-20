@@ -315,23 +315,33 @@ interface DrawCircleOptions {
   position: Point;
   radius: number;
   fillStyle?: CanvasFillStrokeStyles['fillStyle'];
+  strokeStyle?: CanvasFillStrokeStyles['strokeStyle'];
+  lineWidth?: CanvasPathDrawingStyles['lineWidth'];
 }
 
 export const drawCircle = (ctx: CanvasRenderingContext2D, options: DrawCircleOptions) => {
-  const { position, radius, fillStyle } = options;
+  const { position, radius, fillStyle, strokeStyle, lineWidth } = options;
 
   const prevFillStyle = ctx.fillStyle;
+  const prevStrokeStyle = ctx.strokeStyle;
+  const prevLineWidth = ctx.lineWidth;
 
   if (fillStyle) ctx.fillStyle = fillStyle;
+  if (strokeStyle) ctx.strokeStyle = strokeStyle;
+  if (lineWidth) ctx.lineWidth = lineWidth;
 
   ctx.beginPath();
 
   ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
-  ctx.fill();
+
+  if (fillStyle) ctx.fill();
+  if (strokeStyle) ctx.stroke();
 
   ctx.closePath();
 
   ctx.fillStyle = prevFillStyle;
+  ctx.strokeStyle = prevStrokeStyle;
+  ctx.lineWidth = prevLineWidth;
 };
 
 export const drawTriangle = (

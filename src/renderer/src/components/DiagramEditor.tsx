@@ -47,7 +47,7 @@ export const DiagramEditor: React.FC = () => {
     };
 
     editor.view.on('dblclick', (position) => {
-      editor.view.controller.states.createState({
+      editor.controller.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
@@ -56,13 +56,13 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
-    editor.view.controller.states.on('changeState', (state) => {
+    editor.controller.states.on('changeState', (state) => {
       ClearUseState();
       setState(state);
       openCreateModal();
     });
 
-    editor.view.controller.states.on('changeEvent', (data) => {
+    editor.controller.states.on('changeEvent', (data) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       ClearUseState();
@@ -72,7 +72,7 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.view.controller.transitions.on('changeTransition', (target) => {
+    editor.controller.transitions.on('changeTransition', (target) => {
       ClearUseState();
       setEvents(target.data.label?.do ?? []);
       setTransition(target);
@@ -80,7 +80,7 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования новой связи
-    editor.view.controller.transitions.on('createTransition', ({ source, target }) => {
+    editor.controller.transitions.on('createTransition', ({ source, target }) => {
       ClearUseState();
       setNewTransition({ source, target });
       openCreateModal();
@@ -117,7 +117,7 @@ export const DiagramEditor: React.FC = () => {
     }
 
     if (!isCreateModalOpen && eventsModalParentData) {
-      editor?.view.controller.states.changeEvent(
+      editor?.controller.states.changeEvent(
         eventsModalParentData.state.id,
         eventsModalParentData.eventSelection,
         data
@@ -128,7 +128,7 @@ export const DiagramEditor: React.FC = () => {
 
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor.view.controller.states.changeStateEvents({
+      editor.controller.states.changeStateEvents({
         id: data.id,
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,
@@ -136,7 +136,7 @@ export const DiagramEditor: React.FC = () => {
         color: data.color ?? DEFAULT_STATE_COLOR,
       });
     } else if (transition && data.key === 3) {
-      editor.view.controller.transitions.changeTransition({
+      editor.controller.transitions.changeTransition({
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
@@ -148,7 +148,7 @@ export const DiagramEditor: React.FC = () => {
         } as any,
       });
     } else if (newTransition) {
-      editor.view.controller.transitions.createTransition({
+      editor.controller.transitions.createTransition({
         source: newTransition.source.id,
         target: newTransition.target.id,
         color: data.color ?? DEFAULT_TRANSITION_COLOR,

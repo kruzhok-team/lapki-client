@@ -1,8 +1,8 @@
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
+import { EditorController } from '@renderer/lib/data/EditorController';
+import { EditorModel } from '@renderer/lib/data/EditorModel';
 import { preloadPicto } from '@renderer/lib/drawable';
-
-import { EditorModel } from './data/EditorModel';
 
 /**
  * Редактор машин состояний.
@@ -15,13 +15,13 @@ export class CanvasEditor {
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
   private _view: EditorView | null = null;
+  private _controller: EditorController | null = null;
 
-  model!: EditorModel;
+  model = new EditorModel();
 
   constructor() {
-    this.model = new EditorModel();
     this.model.resetEditor = () => {
-      this.view.controller.loadData();
+      this.controller.loadData();
     };
   }
 
@@ -62,6 +62,12 @@ export class CanvasEditor {
     }
     return this._view;
   }
+  get controller() {
+    if (!this._controller) {
+      throw new Error('Cannot access controller before initialization');
+    }
+    return this._controller;
+  }
 
   mount(root: HTMLDivElement) {
     this._root = root;
@@ -73,7 +79,14 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
+    this._controller = new EditorController(this);
     this._view = new EditorView(this);
+
+    //! Подписка на события только после создания контроллера и вью
+    this.view.initEvents();
+    this.controller.transitions.initEvents();
+    this.controller.loadData();
+
     this.canvas.onResize = () => {
       this.mouse.setOffset();
       this.view.isDirty = true;
@@ -96,7 +109,7 @@ export class CanvasEditor {
     this.model.data.isMounted = true;
     this.model.triggerDataUpdate('isMounted');
 
-    this.view.controller.loadData();
+    this.controller.loadData();
   }
 
   cleanUp() {

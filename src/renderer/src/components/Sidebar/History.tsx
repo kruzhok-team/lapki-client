@@ -66,15 +66,15 @@ const HistoryWithoutEditor: React.FC = () => {
 const HistoryWithEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const { undoStack, redoStack } = editor.view.history.use();
+  const { undoStack, redoStack } = editor.controller.history.use();
 
   return (
     <div>
       <div className="mb-4 flex gap-1">
-        <button className="btn-secondary" onClick={() => editor.view.history.undo()}>
+        <button className="btn-secondary" onClick={() => editor.controller.history.undo()}>
           Назад
         </button>
-        <button className="btn-secondary" onClick={() => editor.view.history.redo()}>
+        <button className="btn-secondary" onClick={() => editor.controller.history.redo()}>
           Вперёд
         </button>
       </div>

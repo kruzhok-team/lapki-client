@@ -1,8 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
-import { EditorController } from '@renderer/lib/data/EditorController';
-import { History } from '@renderer/lib/data/History';
 import { Children, picto, Shape } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
@@ -23,24 +21,12 @@ interface EditorViewEvents {
 export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
   isDirty = true;
 
-  // TODO(bryzZz) Котроллер не должен быть внутри вью
-  controller!: EditorController;
-
-  history = new History(this);
   children = new Children();
 
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
   constructor(public app: CanvasEditor) {
     super();
-
-    this.controller = new EditorController(this, this.history);
-
-    // Порядок важен, система очень тонкая
-
-    this.initEvents();
-    this.controller.transitions.initEvents();
-    this.controller.loadData();
   }
 
   get isPan() {
@@ -62,7 +48,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
     drawChildren(this);
 
-    this.controller.transitions.ghost.draw(ctx, canvas);
+    // TODO(bryzZz) Засунуть в Children
+    this.app.controller.transitions.ghost.draw(ctx, canvas);
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -95,18 +82,18 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     ctx.closePath();
   }
 
-  private initEvents() {
+  initEvents() {
     // ! Это на будущее
     // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
     // this.app.canvas.element.addEventListener('drop', this.handleDrop);
 
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('delete', this.controller.deleteSelected);
-    this.app.keyboard.on('ctrlz', this.history.undo);
-    this.app.keyboard.on('ctrly', this.history.redo);
-    this.app.keyboard.on('ctrlc', this.controller.copySelected);
-    this.app.keyboard.on('ctrlv', this.controller.pasteSelected);
+    this.app.keyboard.on('delete', this.app.controller.deleteSelected);
+    this.app.keyboard.on('ctrlz', this.app.controller.history.undo);
+    this.app.keyboard.on('ctrly', this.app.controller.history.redo);
+    this.app.keyboard.on('ctrlc', this.app.controller.copySelected);
+    this.app.keyboard.on('ctrlv', this.app.controller.pasteSelected);
     this.app.keyboard.on('ctrls', this.app.model.files.save);
     this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
 
@@ -180,8 +167,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     if (node) {
       node.handleMouseUp(e);
     } else {
-      this.controller.transitions.handleMouseUp();
-      this.controller.removeSelection();
+      this.app.controller.transitions.handleMouseUp();
+      this.app.controller.removeSelection();
     }
   };
 
@@ -301,12 +288,12 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     const arrX: number[] = [];
     const arrY: number[] = [];
 
-    this.controller.states.forEach((state) => {
+    this.app.controller.states.forEach((state) => {
       arrX.push(state.position.x);
       arrY.push(state.position.y);
     });
 
-    this.controller.transitions.forEach((transition) => {
+    this.app.controller.transitions.forEach((transition) => {
       arrX.push(transition.position.x);
       arrY.push(transition.position.y);
     });

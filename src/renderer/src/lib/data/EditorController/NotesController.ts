@@ -1,6 +1,5 @@
-import { EditorView } from '@renderer/lib/basic';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { History } from '@renderer/lib/data/History';
 import { Note } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { CreateNoteParams } from '@renderer/lib/types/EditorModel';
@@ -15,8 +14,20 @@ interface NotesControllerEvents {
 export class NotesController extends EventEmitter<NotesControllerEvents> {
   private items: Map<string, Note> = new Map();
 
-  constructor(private view: EditorView, private history: History) {
+  constructor(private app: CanvasEditor) {
     super();
+  }
+
+  private get view() {
+    return this.app.view;
+  }
+
+  private get controller() {
+    return this.app.controller;
+  }
+
+  private get history() {
+    return this.app.controller.history;
   }
 
   get = this.items.get.bind(this.items);
@@ -25,8 +36,8 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   forEach = this.items.forEach.bind(this.items);
 
   createNote(params: CreateNoteParams, canUndo = true) {
-    const newNoteId = this.view.app.model.createNote(params);
-    const note = new Note(this.view, newNoteId);
+    const newNoteId = this.app.model.createNote(params);
+    const note = new Note(this.app, newNoteId);
 
     this.items.set(newNoteId, note);
     this.watch(note);
@@ -55,7 +66,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.view.app.model.changeNoteText(id, text);
+    this.app.model.changeNoteText(id, text);
     note.prepareText();
 
     this.view.isDirty = true;
@@ -72,7 +83,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.view.app.model.changeNotePosition(id, endPosition);
+    this.app.model.changeNotePosition(id, endPosition);
 
     this.view.isDirty = true;
   }
@@ -88,7 +99,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.view.app.model.deleteNote(id);
+    this.app.model.deleteNote(id);
 
     this.view.children.remove(note, Layer.Notes);
     this.unwatch(note);
@@ -98,7 +109,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   }
 
   handleMouseDown = (note: Note) => {
-    this.view.controller.selectNote(note.id);
+    this.controller.selectNote(note.id);
   };
 
   handleDoubleClick = (note: Note) => {
@@ -106,9 +117,9 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
-    this.view.controller.selectNote(note.id);
+    this.controller.selectNote(note.id);
 
-    const offset = this.view.app.mouse.getOffset();
+    const offset = this.app.mouse.getOffset();
 
     this.emit('contextMenu', {
       note,

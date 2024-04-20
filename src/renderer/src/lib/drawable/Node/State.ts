@@ -1,4 +1,4 @@
-import { EditorView } from '@renderer/lib/basic';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Events, EdgeHandlers, icons } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawText } from '@renderer/lib/utils/text';
@@ -16,16 +16,16 @@ export class State extends Shape {
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
 
-  constructor(view: EditorView, id: string, parent?: Shape) {
-    super(view, id, parent);
+  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+    super(app, id, parent);
 
-    this.eventBox = new Events(this.view, this);
+    this.eventBox = new Events(this.app, this);
     this.updateEventBox();
-    this.edgeHandlers = new EdgeHandlers(view.app, this);
+    this.edgeHandlers = new EdgeHandlers(this.app, this);
   }
 
   get data() {
-    return this.view.app.model.data.elements.states[this.id];
+    return this.app.model.data.elements.states[this.id];
   }
 
   get position() {
@@ -70,7 +70,7 @@ export class State extends Shape {
       this.edgeHandlers.draw(ctx);
     }
 
-    if (this.view.controller.states.dragInfo?.parentId === this.id) {
+    if (this.app.controller.states.dragInfo?.parentId === this.id) {
       this.drawHighlight(ctx);
     }
   }
@@ -84,10 +84,10 @@ export class State extends Shape {
     ctx.beginPath();
 
     ctx.roundRect(x, y, width, height, [
-      6 / this.view.app.model.data.scale,
-      6 / this.view.app.model.data.scale,
-      (this.children.isEmpty ? 6 : 0) / this.view.app.model.data.scale,
-      (this.children.isEmpty ? 6 : 0) / this.view.app.model.data.scale,
+      6 / this.app.model.data.scale,
+      6 / this.app.model.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.app.model.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.app.model.data.scale,
     ]);
     ctx.fill();
 
@@ -102,11 +102,11 @@ export class State extends Shape {
 
   get computedTitleSizes() {
     return {
-      height: this.titleHeight / this.view.app.model.data.scale,
+      height: this.titleHeight / this.app.model.data.scale,
       width: this.drawBounds.width,
-      fontSize: 15 / this.view.app.model.data.scale,
-      paddingX: 15 / this.view.app.model.data.scale,
-      paddingY: 10 / this.view.app.model.data.scale,
+      fontSize: 15 / this.app.model.data.scale,
+      paddingX: 15 / this.app.model.data.scale,
+      paddingY: 10 / this.app.model.data.scale,
     };
   }
 
@@ -121,8 +121,8 @@ export class State extends Shape {
     ctx.fillStyle = style.titleBg;
 
     ctx.roundRect(x, y, width, height, [
-      6 / this.view.app.model.data.scale,
-      6 / this.view.app.model.data.scale,
+      6 / this.app.model.data.scale,
+      6 / this.app.model.data.scale,
       0,
       0,
     ]);
@@ -148,7 +148,7 @@ export class State extends Shape {
     ctx.strokeStyle = this.data.color;
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.view.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);
     ctx.stroke();
     ctx.closePath();
 
@@ -159,15 +159,15 @@ export class State extends Shape {
     //Добавляет стиль заднему фону
     ctx.fillStyle = style.bodyBg;
     //создает указательный треугольник
-    ctx.moveTo(x + 100 / this.view.app.model.data.scale, y - 20 / this.view.app.model.data.scale);
-    ctx.lineTo(x + 110 / this.view.app.model.data.scale, y - 2 / this.view.app.model.data.scale);
-    ctx.lineTo(x + 120 / this.view.app.model.data.scale, y - 20 / this.view.app.model.data.scale);
+    ctx.moveTo(x + 100 / this.app.model.data.scale, y - 20 / this.app.model.data.scale);
+    ctx.lineTo(x + 110 / this.app.model.data.scale, y - 2 / this.app.model.data.scale);
+    ctx.lineTo(x + 120 / this.app.model.data.scale, y - 20 / this.app.model.data.scale);
     //Строит прямоугольник
     ctx.roundRect(
       x,
-      y - 120 / this.view.app.model.data.scale,
+      y - 120 / this.app.model.data.scale,
       width,
-      100 / this.view.app.model.data.scale,
+      100 / this.app.model.data.scale,
       transitionStyle.startSize
     );
     //Добавляет задний фон объекту канвы
@@ -178,7 +178,7 @@ export class State extends Shape {
     ctx.beginPath();
     //Добавляет стиль тексту
     ctx.fillStyle = transitionStyle.bgColor;
-    ctx.fillText(this.isState, x, y - 80 / this.view.app.model.data.scale);
+    ctx.fillText(this.isState, x, y - 80 / this.app.model.data.scale);
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
@@ -193,7 +193,7 @@ export class State extends Shape {
     ctx.strokeStyle = getColor('primaryActive');
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.view.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);
     ctx.stroke();
     ctx.closePath();
   }
@@ -210,8 +210,8 @@ export class State extends Shape {
     ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
       0,
       0,
-      6 / this.view.app.model.data.scale,
-      6 / this.view.app.model.data.scale,
+      6 / this.app.model.data.scale,
+      6 / this.app.model.data.scale,
     ]);
     ctx.stroke();
 
@@ -224,8 +224,8 @@ export class State extends Shape {
 
     const { x, y } = this.drawBounds;
     const { width } = this.computedTitleSizes;
-    const size = 16 / this.view.app.model.data.scale;
-    const p = 9 / this.view.app.model.data.scale;
+    const size = 16 / this.app.model.data.scale;
+    const p = 9 / this.app.model.data.scale;
 
     ctx.beginPath();
     ctx.fillStyle = style.titleColor;

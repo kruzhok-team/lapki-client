@@ -1,4 +1,4 @@
-import { EditorView } from '@renderer/lib/basic';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { History } from '@renderer/lib/data/History';
 import { State } from '@renderer/lib/drawable';
 import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
@@ -43,12 +43,18 @@ export class EditorController {
 
   platform!: PlatformManager;
 
-  constructor(private view: EditorView, private history: History) {
-    this.initializer = new Initializer(this.view, this);
+  history = new History(this);
 
-    this.states = new StatesController(this.view, this.history);
-    this.transitions = new TransitionsController(this.view, this.history);
-    this.notes = new NotesController(this.view, this.history);
+  constructor(private app: CanvasEditor) {
+    this.initializer = new Initializer(app);
+
+    this.states = new StatesController(app);
+    this.transitions = new TransitionsController(app);
+    this.notes = new NotesController(app);
+  }
+
+  private get view() {
+    return this.app.view;
   }
 
   loadData() {
@@ -57,138 +63,10 @@ export class EditorController {
     this.view.isDirty = true;
   }
 
-  // TODO
-  /**
-   * Обёртка для удобного создания {@link InitialState|маркера начального состояния}
-   * или перестановки его на другое {@link State|состояние}
-   */
-  // setInitialState = (stateId: string, canUndo = true) => {
-  //   const initialState = this.view.app.model.data.elements.initialState;
-
-  //   if (!initialState) {
-  //     return this.createInitialState(stateId, undefined, canUndo);
-  //   }
-
-  //   if (initialState.target === stateId) return;
-
-  //   return this.changeInitialState(initialState.target, stateId, canUndo);
-  // };
-
-  // /**
-  //  * Вызывается при удлении {@link State|состояния} чтобы
-  //  * {@link InitialState|маркер начального состояния} перепрыгнул на другое состояние
-  //  * или удалился если состояний нет
-  //  */
-  // removeInitialState = (stateId: string, canUndo = true) => {
-  //   for (const id of this.states.keys()) {
-  //     if (id === stateId) continue;
-
-  //     return this.changeInitialState(stateId, id, canUndo);
-  //   }
-
-  //   this.deleteInitialState(canUndo);
-  // };
-
-  // createInitialState = (targetId: string, initialPosition?: Point, canUndo = true) => {
-  //   const target = this.states.get(targetId);
-  //   if (!target) return;
-
-  //   const data = {
-  //     target: targetId,
-  //     position: initialPosition ?? {
-  //       x: target.compoundPosition.x - 100,
-  //       y: target.compoundPosition.y - 100,
-  //     },
-  //   };
-
-  //   this.view.app.model.changeInitialState(data);
-  //   this.view.statesController.initInitialStateMark();
-
-  //   if (canUndo) {
-  //     this.undoRedo.do({
-  //       type: 'createInitialState',
-  //       args: data,
-  //     });
-  //   }
-
-  //   this.view.isDirty = true;
-  // };
-
-  // /**
-  //  * Перемещение {@link InitialState|маркера начального состояния}
-  //  * с одного {@link State|состояния} на другое
-  //  */
-  // changeInitialState = (prevTargetId: string, newTargetId: string, canUndo = true) => {
-  //   const target = this.states.get(newTargetId);
-  //   if (!target) return;
-
-  //   const position = {
-  //     x: target.compoundPosition.x - 100,
-  //     y: target.compoundPosition.y - 100,
-  //   };
-  //   this.view.app.model.changeInitialState({
-  //     target: newTargetId,
-  //     position,
-  //   });
-  //   this.view.statesController.initInitialStateMark();
-
-  //   if (canUndo) {
-  //     this.undoRedo.do({
-  //       type: 'changeInitialState',
-  //       args: { prevTargetId, newTargetId },
-  //     });
-  //   }
-
-  //   this.view.isDirty = true;
-  // };
-
-  // /**
-  //  * Изменение позиции {@link InitialState|маркера начального состояния}
-  //  */
-  // changeInitialStatePosition = (startPosition: Point, endPosition: Point, canUndo = true) => {
-  //   const initialState = this.view.app.model.data.elements.initialState;
-  //   if (!initialState) return;
-
-  //   if (canUndo) {
-  //     this.undoRedo.do({
-  //       type: 'changeInitialStatePosition',
-  //       args: { startPosition, endPosition },
-  //     });
-  //   }
-
-  //   this.view.app.model.changeInitialStatePosition(endPosition);
-
-  //   this.view.isDirty = true;
-  // };
-
-  // getInitialStatePosition = () => {
-  //   const initialState = this.view.app.model.data.elements.initialState;
-  //   if (!initialState) return null;
-  //   return initialState.position;
-  // };
-
-  // deleteInitialState = (canUndo = true) => {
-  //   const initialStateData = this.view.app.model.data.elements.initialState;
-
-  //   if (!initialStateData) return;
-
-  //   if (canUndo) {
-  //     this.undoRedo.do({
-  //       type: 'deleteInitialState',
-  //       args: initialStateData,
-  //     });
-  //   }
-
-  //   this.view.statesController.clearInitialStateMark();
-  //   this.view.app.model.deleteInitialState();
-
-  //   this.view.isDirty = true;
-  // };
-
   addComponent(args: AddComponentParams, canUndo = true) {
     const { name, type } = args;
 
-    this.view.app.model.addComponent(args);
+    this.app.model.addComponent(args);
 
     this.platform.nameToVisual.set(name, {
       component: type,
@@ -207,11 +85,11 @@ export class EditorController {
   editComponent(args: EditComponentParams, canUndo = true) {
     const { name, parameters, newName } = args;
 
-    const prevComponent = structuredClone(this.view.app.model.data.elements.components[name]);
+    const prevComponent = structuredClone(this.app.model.data.elements.components[name]);
 
-    this.view.app.model.editComponent(name, parameters);
+    this.app.model.editComponent(name, parameters);
 
-    const component = this.view.app.model.data.elements.components[name];
+    const component = this.app.model.data.elements.components[name];
     this.platform.nameToVisual.set(name, {
       component: component.type,
       label: component.parameters['label'],
@@ -235,8 +113,8 @@ export class EditorController {
   removeComponent(args: RemoveComponentParams, canUndo = true) {
     const { name, purge } = args;
 
-    const prevComponent = this.view.app.model.data.elements.components[name];
-    this.view.app.model.removeComponent(name);
+    const prevComponent = this.app.model.data.elements.components[name];
+    this.app.model.removeComponent(name);
 
     if (purge) {
       // TODO: «вымарывание» компонента из машины
@@ -256,7 +134,7 @@ export class EditorController {
   }
 
   private renameComponent(name: string, newName: string) {
-    this.view.app.model.renameComponent(name, newName);
+    this.app.model.renameComponent(name, newName);
 
     const visualCompo = this.platform.nameToVisual.get(name);
 
@@ -355,7 +233,7 @@ export class EditorController {
     this.states.forEachState((state) => {
       if (!state.isSelected) return;
 
-      const data = this.view.app.model.serializer.getState(state.id);
+      const data = this.app.model.serializer.getState(state.id);
       if (!data) return;
 
       navigator.clipboard.writeText(data);
@@ -364,7 +242,7 @@ export class EditorController {
     this.transitions.forEach((transition) => {
       if (!transition.isSelected) return;
 
-      const data = this.view.app.model.serializer.getTransition(transition.id);
+      const data = this.app.model.serializer.getTransition(transition.id);
       if (!data) return;
 
       navigator.clipboard.writeText(data);
@@ -373,7 +251,7 @@ export class EditorController {
     this.notes.forEach((note) => {
       if (!note.isSelected) return;
 
-      const data = this.view.app.model.serializer.getNote(note.id);
+      const data = this.app.model.serializer.getNote(note.id);
       if (!data) return;
 
       navigator.clipboard.writeText(data);
@@ -410,7 +288,7 @@ export class EditorController {
 
     this.removeSelection();
 
-    this.view.app.model.changeStateSelection(id, true);
+    this.app.model.changeStateSelection(id, true);
 
     state.setIsSelected(true);
   }
@@ -421,7 +299,7 @@ export class EditorController {
 
     this.removeSelection();
 
-    this.view.app.model.changeTransitionSelection(id, true);
+    this.app.model.changeTransitionSelection(id, true);
 
     transition.setIsSelected(true);
   }
@@ -447,13 +325,13 @@ export class EditorController {
   removeSelection() {
     this.states.forEachState((state) => {
       state.setIsSelected(false);
-      this.view.app.model.changeStateSelection(state.id, false);
+      this.app.model.changeStateSelection(state.id, false);
       state.eventBox.selection = undefined;
     });
 
     this.transitions.forEach((transition) => {
       transition.setIsSelected(false);
-      this.view.app.model.changeTransitionSelection(transition.id, false);
+      this.app.model.changeTransitionSelection(transition.id, false);
     });
 
     this.notes.forEach((note) => {
@@ -464,7 +342,7 @@ export class EditorController {
   }
 
   getVacantComponents(): ComponentEntry[] {
-    const components = this.view.app.model.data.elements.components;
+    const components = this.app.model.data.elements.components;
     const vacant: ComponentEntry[] = [];
     for (const idx in this.platform.data.components) {
       const compo = this.platform.data.components[idx];

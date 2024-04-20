@@ -30,7 +30,7 @@ export interface HierarchyItemData {
 export const Hierarchy: React.FC = () => {
   const editor = useEditorContext();
   const model = editor.model;
-  const controller = editor.view.controller;
+  const controller = editor.controller;
 
   const [theme] = useSettings('theme');
 

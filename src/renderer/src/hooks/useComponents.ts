@@ -23,7 +23,7 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const controller = editor?.view.controller;
+    const controller = editor?.controller;
     const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
@@ -32,7 +32,7 @@ export const useComponents = () => {
   };
 
   const onRequestEditComponent = (idx: string) => {
-    const controller = editor?.view.controller;
+    const controller = editor?.controller;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     const proto = controller?.platform.data.components[component.type];
@@ -48,7 +48,7 @@ export const useComponents = () => {
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const controller = editor?.view.controller;
+    const controller = editor?.controller;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
@@ -62,13 +62,13 @@ export const useComponents = () => {
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor?.view.controller.addComponent({ name: realName, type: idx });
+    editor?.controller.addComponent({ name: realName, type: idx });
 
     onRequestEditComponent(realName);
   };
 
   const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor?.view.controller.editComponent({
+    editor?.controller.editComponent({
       name: idx,
       parameters: data.parameters,
       newName,
@@ -76,7 +76,7 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor?.view.controller.removeComponent({ name: idx, purge: false });
+    editor?.controller.removeComponent({ name: idx, purge: false });
 
     editClose();
   };

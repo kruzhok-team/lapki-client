@@ -1,6 +1,5 @@
-import { EditorView } from '@renderer/lib/basic';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { History } from '@renderer/lib/data/History';
 import { GhostTransition, State, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
@@ -25,10 +24,22 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   items: Map<string, Transition> = new Map();
 
-  constructor(private view: EditorView, private history: History) {
+  constructor(private app: CanvasEditor) {
     super();
 
-    this.ghost = new GhostTransition(view);
+    this.ghost = new GhostTransition(this.app);
+  }
+
+  private get view() {
+    return this.app.view;
+  }
+
+  private get controller() {
+    return this.app.controller;
+  }
+
+  private get history() {
+    return this.app.controller.history;
   }
 
   get = this.items.get.bind(this.items);
@@ -63,7 +74,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   getIdsByStateId(stateId: string) {
     return [...this.items.entries()]
-      .filter(([_, { source, target }]) => source.id === stateId || target.id === stateId)
+      .filter(([, { source, target }]) => source.id === stateId || target.id === stateId)
       .map(([id]) => id);
   }
 
@@ -74,8 +85,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 
-    const sourceState = this.view.controller.states.get(source);
-    const targetState = this.view.controller.states.get(target);
+    const sourceState = this.controller.states.get(source);
+    const targetState = this.controller.states.get(target);
 
     if (!sourceState || !targetState) return;
 
@@ -87,7 +98,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     }
 
     // Создание данных
-    const id = this.view.app.model.createTransition({
+    const id = this.app.model.createTransition({
       id: prevId,
       source,
       target,
@@ -95,7 +106,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       label,
     });
     // Создание модельки
-    const transition = new Transition(this.view, id);
+    const transition = new Transition(this.app, id);
 
     this.items.set(id, transition);
     this.linkTransition(id);
@@ -149,7 +160,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.view.app.model.changeTransition(args);
+    this.app.model.changeTransition(args);
 
     this.view.isDirty = true;
   }
@@ -165,7 +176,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.view.app.model.changeTransitionPosition(id, endPosition);
+    this.app.model.changeTransitionPosition(id, endPosition);
 
     this.view.isDirty = true;
   }
@@ -181,7 +192,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.view.app.model.deleteTransition(id);
+    this.app.model.deleteTransition(id);
 
     const parent = transition.parent ?? this.view;
     parent.children.remove(transition, Layer.Transitions);
@@ -192,10 +203,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   initEvents() {
-    this.view.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.view.controller.states.on('startNewTransition', this.handleStartNewTransition);
-    this.view.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.controller.states.on('startNewTransition', this.handleStartNewTransition);
+    this.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
   }
 
   handleStartNewTransition = (state: State) => {
@@ -203,7 +214,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionClick = (transition: Transition) => {
-    this.view.controller.selectTransition(transition.id);
+    this.controller.selectTransition(transition.id);
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
@@ -211,7 +222,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
-    this.view.controller.removeSelection();
+    this.controller.removeSelection();
     transition.setIsSelected(true);
 
     this.emit('transitionContextMenu', {

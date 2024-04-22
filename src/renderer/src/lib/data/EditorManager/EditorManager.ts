@@ -641,8 +641,6 @@ export class EditorManager {
   }
 
   setMeta(meta: Meta) {
-    console.log('setMeta', meta);
-
     this.data.elements.meta = meta;
 
     this.triggerDataUpdate('elements.meta');

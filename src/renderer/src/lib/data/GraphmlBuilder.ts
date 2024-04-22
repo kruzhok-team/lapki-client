@@ -28,7 +28,7 @@ function exportMeta(meta: Meta): string {
   let stringMeta = '';
   for (const propName in meta) {
     const property = meta[propName];
-    stringMeta += `${propName}/ ${property}\n`;
+    stringMeta += `${propName}/ ${property}\n\n`;
   }
   return stringMeta;
 }

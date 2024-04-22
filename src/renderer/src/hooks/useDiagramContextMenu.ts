@@ -168,7 +168,19 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.controller.states.deleteState(state.id as string);
+            editor.controller.states.deleteState(state.id);
+          },
+        },
+      ]);
+    });
+
+    editor.controller.states.on('finalStateContextMenu', ({ state, position }) => {
+      handleEvent(position, [
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor.controller.states.deleteFinalState(state.id);
           },
         },
       ]);
@@ -295,7 +307,7 @@ export const useDiagramContextMenu = () => {
         },
       ]);
     });
-  }, [editor]);
+  }, [editor, openTab]);
 
   return { isOpen, onClose, items, position };
 };

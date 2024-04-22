@@ -334,11 +334,35 @@ export class EditorModel {
     return id;
   }
 
+  deleteFinalState(id: string) {
+    const state = this.data.elements.finalStates[id];
+    if (!state) return false;
+
+    delete this.data.elements.finalStates[id];
+
+    this.triggerDataUpdate('elements.finalStates');
+
+    return true;
+  }
+
   changeFinalStatePosition(id: string, position: Point) {
     const state = this.data.elements.finalStates[id];
     if (!state) return false;
 
     state.position = position;
+
+    this.triggerDataUpdate('elements.finalStates');
+
+    return true;
+  }
+
+  linkFinalState(stateId: string, parentId: string) {
+    const state = this.data.elements.finalStates[stateId];
+    const parent = this.data.elements.states[parentId];
+
+    if (!state || !parent) return false;
+
+    state.parentId = parentId;
 
     this.triggerDataUpdate('elements.finalStates');
 

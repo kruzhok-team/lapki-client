@@ -187,7 +187,14 @@ export class Transition extends Shape {
   }
 
   private drawArrowsWithoutLabel(ctx: CanvasRenderingContext2D) {
-    const line = getLine(this.target.drawBounds, this.source.drawBounds, 10);
+    const targetBounds = this.target.drawBounds;
+    const sourceBounds = this.source.drawBounds;
+
+    const line = getLine(
+      { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      10
+    );
 
     ctx.lineWidth = transitionStyle.width;
     ctx.strokeStyle = this.data.color;

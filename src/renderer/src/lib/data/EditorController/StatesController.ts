@@ -41,6 +41,7 @@ interface StatesControllerEvents {
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
+  finalStateContextMenu: { state: FinalState; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -124,7 +125,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   private getSiblings(
-    stateId: string,
+    stateId: string | undefined,
     parentId: string | undefined,
     stateType: StateType = 'states'
   ) {
@@ -172,7 +173,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     if (canUndo) {
       this.history.do({
-        type: 'stateCreate',
+        type: 'createState',
         args: { ...args, newStateId },
         numberOfConnectedActions,
       });
@@ -317,7 +318,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       while (searchPending) {
         searchPending = false;
         // TODO(bryzZz) Нужно проверять по модели а не по вью
-        for (const child of possibleParent.children.layers[Layer.States]) {
+        for (const child of possibleParent.children.layers?.[Layer.States] || []) {
           if (!(child instanceof State)) continue;
           if (exclude.includes(child.id)) continue;
           if (!child.isUnderMouse(position, true)) continue;
@@ -553,71 +554,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  createFinalState(params: CreateFinalStateParams, canUndo = true) {
-    const { position, parentId, linkByPoint = true } = params;
-
-    const id = this.app.model.createFinalState(params);
-
-    const state = new FinalState(this.app, id);
-
-    this.data.finalStates.set(id, state);
-
-    this.view.children.add(state, Layer.FinalStates);
-
-    if (parentId) {
-      const parent = this.data.states.get(parentId);
-      if (!parent) {
-        throw new Error(`Unknown parent ${parentId}`);
-      }
-
-      state.parent = parent;
-      this.view.children.remove(state, Layer.FinalStates);
-      parent.children.add(state, Layer.FinalStates);
-    } else if (linkByPoint) {
-      const possibleParent = this.getPossibleParentState(position);
-      if (possibleParent) {
-        const newPosition = {
-          x: position.x - possibleParent.compoundPosition.x,
-          y: position.y - possibleParent.compoundPosition.y - possibleParent.data.dimensions.height,
-        };
-
-        state.parent = possibleParent;
-        this.view.children.remove(state, Layer.FinalStates);
-        possibleParent.children.add(state, Layer.FinalStates);
-        this.app.model.changeFinalStatePosition(id, newPosition);
-      }
-    }
-
-    this.watch(state);
-
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'createFinalState',
-    //     args: { id, targetId },
-    //   });
-    // }
-
-    this.view.isDirty = true;
-
-    return state;
-  }
-
-  changeFinalStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
-    const state = this.data.finalStates.get(id);
-    if (!state) return;
-
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'changeFinalStatePosition',
-    //     args: { id, startPosition, endPosition },
-    //   });
-    // }
-
-    this.app.model.changeFinalStatePosition(id, endPosition);
-
-    this.view.isDirty = true;
-  }
-
   /**
    * Назначить состояние начальным
    * TODO(bryzZz) Очень сложно искать переход из начального состояния в обычное состояние
@@ -659,6 +595,113 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       canUndo
     );
     this.changeInitialStatePosition(initialState.id, initialState.position, position, canUndo);
+  }
+
+  createFinalState(params: CreateFinalStateParams, canUndo = true) {
+    const { parentId, linkByPoint = true } = params;
+
+    // Проверка на то что в скоупе уже есть конечное состояние
+    // Страшно, очень страшно
+    const parent = parentId
+      ? this.data.states.get(parentId)
+      : linkByPoint
+      ? this.getPossibleParentState(params.position)
+      : null;
+    const siblings = this.getSiblings(params.id, parent?.id, 'finalStates');
+    if (siblings.length) return;
+
+    const id = this.app.model.createFinalState(params);
+
+    const state = new FinalState(this.app, id);
+
+    this.data.finalStates.set(id, state);
+
+    this.view.children.add(state, Layer.FinalStates);
+
+    if (parentId) {
+      this.linkFinalState(id, parentId);
+    } else if (linkByPoint && parent) {
+      const newPosition = {
+        x: state.data.position.x - parent.compoundPosition.x,
+        y: state.data.position.y - parent.compoundPosition.y - parent.data.dimensions.height,
+      };
+
+      this.linkFinalState(id, parent.id);
+      this.app.model.changeFinalStatePosition(id, newPosition);
+    }
+
+    this.watch(state);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createFinalState',
+        args: { ...params, ...state.data, newStateId: id },
+        numberOfConnectedActions: 0,
+      });
+    }
+
+    this.view.isDirty = true;
+
+    return state;
+  }
+
+  deleteFinalState(id: string, canUndo = true) {
+    const state = this.data.finalStates.get(id);
+    if (!state) return;
+
+    const parentId = state.data.parentId;
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    this.controller.transitions.forEachByTargetId(id, (transition) => {
+      this.controller.transitions.deleteTransition(transition.id, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteFinalState',
+        args: { id, stateData: { ...structuredClone(state.data), parentId } },
+        numberOfConnectedActions,
+      });
+    }
+
+    (state.parent || this.view).children.remove(state, Layer.FinalStates); // Отсоединяемся вью от родителя
+    this.unwatch(state); // Убираем обрабочик событий с вью
+    this.data.finalStates.delete(id); // Удаляем само вью
+    this.app.model.deleteFinalState(id); // Удаляем модель
+
+    this.view.isDirty = true;
+  }
+
+  private linkFinalState(stateId: string, parentId: string) {
+    const state = this.data.finalStates.get(stateId);
+    const parent = this.data.states.get(parentId);
+    if (!state || !parent) return;
+
+    this.app.model.linkFinalState(stateId, parentId);
+
+    state.parent = parent;
+    this.view.children.remove(state, Layer.FinalStates);
+    parent.children.add(state, Layer.FinalStates);
+
+    this.view.isDirty = true;
+  }
+
+  changeFinalStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const state = this.data.finalStates.get(id);
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeFinalStatePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.app.model.changeFinalStatePosition(id, endPosition);
+
+    this.view.isDirty = true;
   }
 
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
@@ -899,6 +942,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.changeFinalStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
   }
 
+  handleFinalStateContextMenu = (state: FinalState, e: { event: MyMouseEvent }) => {
+    this.emit('finalStateContextMenu', {
+      state,
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
+    });
+  };
+
   watch(state: StateVariant) {
     if (state instanceof State) {
       return this.watchState(state);
@@ -956,9 +1006,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   private watchFinalState(state: FinalState) {
     state.on('dragend', this.handleFinalStateDragEnd.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnFinalState.bind(this, state));
+    state.on('contextmenu', this.handleFinalStateContextMenu.bind(this, state));
   }
   private unwatchFinalState(state: FinalState) {
     state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnFinalState.bind(this, state));
+    state.off('contextmenu', this.handleFinalStateContextMenu.bind(this, state));
   }
 }

@@ -13,10 +13,12 @@ import {
   ChangeTransitionParams,
   CreateNoteParams,
   CreateStateParams,
+  CreateFinalStateParams,
 } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   State as StateData,
+  FinalState as FinalStateData,
   Transition as TransitionData,
   Note as NoteData,
   Action as EventAction,
@@ -28,12 +30,22 @@ import {
 import { EditorController } from './EditorController';
 
 export type PossibleActions = {
-  stateCreate: CreateStateParams & { newStateId: string };
+  createState: CreateStateParams & { newStateId: string };
   deleteState: { id: string; stateData: StateData };
   changeStateName: { id: string; name: string; prevName: string };
   changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
+  changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; params: UnlinkStateParams };
+
+  createInitialState: { id: string; targetId: string };
+  deleteInitialState: { id: string; targetId: string };
+  changeInitialStatePosition: { id: string; startPosition: Point; endPosition: Point };
+
+  createFinalState: CreateFinalStateParams & { newStateId: string };
+  deleteFinalState: { id: string; stateData: FinalStateData };
+  changeFinalStatePosition: { id: string; startPosition: Point; endPosition: Point };
+
   createTransition: { id: string; params: CreateTransitionParams };
   deleteTransition: { transition: Transition; prevData: TransitionData };
   changeTransition: {
@@ -41,11 +53,8 @@ export type PossibleActions = {
     args: ChangeTransitionParams;
     prevData: TransitionData;
   };
-  createInitialState: { id: string; targetId: string };
-  deleteInitialState: { id: string; targetId: string };
-  changeInitialStatePosition: { id: string; startPosition: Point; endPosition: Point };
-  changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   changeTransitionPosition: { id: string; startPosition: Point; endPosition: Point };
+
   changeEvent: { stateId: string; event: EventSelection; newValue: Event; prevValue: Event };
   changeEventAction: {
     stateId: string;
@@ -55,6 +64,7 @@ export type PossibleActions = {
   };
   deleteEvent: { stateId: string; eventIdx: number; prevValue: EventData };
   deleteEventAction: { stateId: string; event: EventSelection; prevValue: EventAction };
+
   addComponent: { args: AddComponentParams };
   removeComponent: { args: RemoveComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
@@ -85,7 +95,7 @@ type ActionDescriptions = {
 };
 
 export const actionFunctions: ActionFunctions = {
-  stateCreate: (sM, args) => ({
+  createState: (sM, args) => ({
     redo: sM.states.createState.bind(
       sM.states,
       { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
@@ -133,6 +143,62 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.states.unlinkState.bind(sM.states, params, false),
     undo: sM.states.linkState.bind(sM.states, { parentId, childId: params.id }, false),
   }),
+  changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.states.changeStatePosition.bind(sM.states, id, startPosition, endPosition, false),
+    undo: sM.states.changeStatePosition.bind(sM.states, id, endPosition, startPosition, false),
+  }),
+
+  createInitialState: (sM, args) => ({
+    redo: sM.states.createInitialState.bind(sM.states, args, false),
+    undo: sM.states.deleteInitialState.bind(sM.states, args, false),
+  }),
+  deleteInitialState: (sM, args) => ({
+    redo: sM.states.deleteInitialState.bind(sM.states, args, false),
+    undo: sM.states.createInitialState.bind(sM.states, args, false),
+  }),
+  changeInitialStatePosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.states.changeInitialStatePosition.bind(
+      sM.states,
+      id,
+      startPosition,
+      endPosition,
+      false
+    ),
+    undo: sM.states.changeInitialStatePosition.bind(
+      sM.states,
+      id,
+      endPosition,
+      startPosition,
+      false
+    ),
+  }),
+
+  createFinalState: (sM, args) => ({
+    redo: sM.states.createFinalState.bind(
+      sM.states,
+      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      false
+    ),
+    undo: sM.states.deleteFinalState.bind(sM.states, args.newStateId, false),
+  }),
+  deleteFinalState: (sM, { id, stateData }) => ({
+    redo: sM.states.deleteFinalState.bind(sM.states, id, false),
+    undo: sM.states.createFinalState.bind(
+      sM.states,
+      {
+        id,
+        position: stateData.position,
+        parentId: stateData.parentId,
+        linkByPoint: false,
+      },
+      false
+    ),
+  }),
+  changeFinalStatePosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.states.changeFinalStatePosition.bind(sM.states, id, startPosition, endPosition, false),
+    undo: sM.states.changeFinalStatePosition.bind(sM.states, id, endPosition, startPosition, false),
+  }),
+
   createTransition: (sM, { id, params }) => ({
     redo: sM.transitions.createTransition.bind(sM.transitions, { ...params, id }, false),
     undo: sM.transitions.deleteTransition.bind(sM.transitions, id, false),
@@ -159,34 +225,6 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  createInitialState: (sM, args) => ({
-    redo: sM.states.createInitialState.bind(sM.states, args, false),
-    undo: sM.states.deleteInitialState.bind(sM.states, args, false),
-  }),
-  deleteInitialState: (sM, args) => ({
-    redo: sM.states.deleteInitialState.bind(sM.states, args, false),
-    undo: sM.states.createInitialState.bind(sM.states, args, false),
-  }),
-  changeInitialStatePosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.states.changeInitialStatePosition.bind(
-      sM.states,
-      id,
-      startPosition,
-      endPosition,
-      false
-    ),
-    undo: sM.states.changeInitialStatePosition.bind(
-      sM.states,
-      id,
-      endPosition,
-      startPosition,
-      false
-    ),
-  }),
-  changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.states.changeStatePosition.bind(sM.states, id, startPosition, endPosition, false),
-    undo: sM.states.changeStatePosition.bind(sM.states, id, endPosition, startPosition, false),
-  }),
   changeTransitionPosition: (sM, { id, startPosition, endPosition }) => ({
     redo: sM.transitions.changeTransitionPosition.bind(
       sM.transitions,
@@ -203,6 +241,7 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
+
   changeEvent: (sM, { stateId, event, newValue, prevValue }) => ({
     redo: sM.states.changeEvent.bind(sM.states, stateId, event, newValue, false),
     undo: sM.states.changeEvent.bind(sM.states, stateId, event, prevValue, false),
@@ -219,6 +258,7 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.states.deleteEvent.bind(sM.states, stateId, event, false),
     undo: sM.states.createEventAction.bind(sM.states, stateId, event, prevValue),
   }),
+
   addComponent: (sM, { args }) => ({
     redo: sM.addComponent.bind(sM, args, false),
     undo: sM.removeComponent.bind(sM, { name: args.name, purge: false }, false),
@@ -259,7 +299,7 @@ export const actionFunctions: ActionFunctions = {
 };
 
 export const actionDescriptions: ActionDescriptions = {
-  stateCreate: (args) => ({
+  createState: (args) => ({
     name: 'Создание состояния',
     description: `Имя: ${args.name}`,
   }),
@@ -285,12 +325,13 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Отсоединение состояния',
     description: `Id: "${args.params.id}"\nId родителя: "${args.parentId}"`,
   }),
-  createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),
-  deleteTransition: (args) => ({
-    name: 'Удаление перехода',
-    description: `Id: ${args.transition.id}`,
+  changeStatePosition: (args) => ({
+    name: 'Перемещение состояния',
+    description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
+      args.startPosition
+    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
   }),
-  changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
+
   createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,
@@ -303,18 +344,33 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Перемещение начального состояния',
     description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
   }),
-  changeStatePosition: (args) => ({
-    name: 'Перемещение состояния',
-    description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
-      args.startPosition
-    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+
+  createFinalState: () => ({
+    name: 'Создание конечного состояния',
+    description: ``,
   }),
+  deleteFinalState: () => ({
+    name: 'Удаление конечного состояния',
+    description: ``,
+  }),
+  changeFinalStatePosition: (args) => ({
+    name: 'Перемещение конечного состояния',
+    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
+  }),
+
+  createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),
+  deleteTransition: (args) => ({
+    name: 'Удаление перехода',
+    description: `Id: ${args.transition.id}`,
+  }),
+  changeTransition: (args) => ({ name: 'Изменение перехода', description: `Id: ${args.args.id}` }),
   changeTransitionPosition: (args) => ({
     name: 'Перемещение перехода',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
       args.startPosition
     )}\nСтало: ${JSON.stringify(args.endPosition)}`,
   }),
+
   changeEvent: (args) => ({
     name: 'Изменение события состояния',
     description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(
@@ -335,6 +391,7 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Удаление действия в событии',
     description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(args.event)}`,
   }),
+
   addComponent: ({ args }) => ({
     name: 'Добавление компонента',
     description: `Имя: ${args.name}\nТип: ${args.type}`,

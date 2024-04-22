@@ -24,7 +24,7 @@ import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
-  type: 'state' | 'initialState' | 'transition';
+  type: 'state' | 'initialState' | 'finalState' | 'transition';
 }
 
 export const Hierarchy: React.FC = () => {
@@ -36,6 +36,7 @@ export const Hierarchy: React.FC = () => {
 
   const states = model.useData('elements.states');
   const initialStates = model.useData('elements.initialStates');
+  const finalStates = model.useData('elements.finalStates');
   const transitions = model.useData('elements.transitions');
 
   const [search, setSearch] = useState('');
@@ -77,20 +78,22 @@ export const Hierarchy: React.FC = () => {
       };
     }
 
-    for (const stateId in states) {
-      const state = states[stateId];
-
-      if (!state.parentId) {
-        data.root.children?.push(stateId);
-      } else {
-        data[state.parentId].children?.push(stateId);
-        data[state.parentId].isFolder = true;
-      }
+    for (const stateId in finalStates) {
+      data[stateId] = {
+        index: stateId,
+        isFolder: false,
+        data: { title: 'Конечное состояние', type: 'finalState' },
+        children: [],
+        canRename: false,
+        canMove: false,
+      };
     }
 
-    for (const stateId in initialStates) {
-      const state = initialStates[stateId];
-
+    for (const [stateId, state] of [
+      ...Object.entries(states),
+      ...Object.entries(initialStates),
+      ...Object.entries(finalStates),
+    ]) {
       if (!state.parentId) {
         data.root.children?.push(stateId);
       } else {
@@ -101,7 +104,7 @@ export const Hierarchy: React.FC = () => {
 
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const target = states[transition.target];
+      const target = states[transition.target] ?? finalStates[transition.target];
 
       if (!target) continue;
 
@@ -109,7 +112,7 @@ export const Hierarchy: React.FC = () => {
         index: transitionId,
         isFolder: false,
         data: {
-          title: target.name,
+          title: target?.name || 'Конечное состояние',
           type: 'transition',
         },
         canRename: false,
@@ -120,7 +123,7 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [initialStates, states, transitions]);
+  }, [finalStates, initialStates, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);

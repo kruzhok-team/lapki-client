@@ -32,6 +32,7 @@ type Data = {
 };
 
 type StateType = keyof Data;
+type StateVariant = Data[StateType] extends Map<unknown, infer T> ? T : never;
 
 interface StatesControllerEvents {
   mouseUpOnState: State;
@@ -60,7 +61,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     states: new Map(),
     initialStates: new Map(),
     finalStates: new Map(),
-  } as const;
+  };
 
   constructor(private app: CanvasEditor) {
     super();
@@ -83,11 +84,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
    */
   get(id: string) {
     for (const key in this.data) {
-      const item = this.data[key].get(id);
+      const item = this.data[key as StateType].get(id);
       if (item) {
         return item;
       }
     }
+
+    return undefined;
   }
   setState = this.data.states.set.bind(this.data.states);
   clear() {
@@ -95,7 +98,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.data.initialStates.clear();
     this.data.finalStates.clear();
   }
-  forEach(callback: (state: State | InitialState | FinalState) => void) {
+  forEach(callback: (state: StateVariant) => void) {
     this.data.states.forEach(callback);
     this.data.initialStates.forEach(callback);
     this.data.finalStates.forEach(callback);
@@ -120,9 +123,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   }
 
-  getSiblings(state: State) {
-    return [...this.data.states.values()].filter(
-      (s) => s.data.parentId === state.data.parentId && s.id !== state.id
+  private getSiblings(
+    stateId: string,
+    parentId: string | undefined,
+    stateType: StateType = 'states'
+  ) {
+    return [...this.data[stateType].values()].filter(
+      (s) => s.data.parentId === parentId && s.id !== stateId
     );
   }
 
@@ -154,7 +161,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     // Если не было начального состояния, им станет новое
-    if (canBeInitial && this.getSiblings(state).length === 0) {
+    if (canBeInitial && this.getSiblings(state.id, state.data.parentId, 'states').length === 0) {
       this.createInitialStateWithTransition(state.id, canUndo);
       numberOfConnectedActions += 2; // Создание начального состояния и перехода
     }
@@ -263,7 +270,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     parent.children.add(child, Layer.States);
 
     // Если не было начального состояния, им станет новое
-    if (canBeInitial && this.getSiblings(child).length === 0) {
+    if (canBeInitial && this.getSiblings(child.id, child.data.parentId, 'states').length === 0) {
       this.changeStatePosition(
         childId,
         child.position,
@@ -547,13 +554,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createFinalState(params: CreateFinalStateParams, canUndo = true) {
-    const { id: prevId, position, parentId, linkByPoint = true } = params;
+    const { position, parentId, linkByPoint = true } = params;
 
-    const id = this.app.model.createFinalState({
-      position,
-      id: prevId,
-      parentId,
-    });
+    const id = this.app.model.createFinalState(params);
 
     const state = new FinalState(this.app, id);
 
@@ -574,8 +577,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       const possibleParent = this.getPossibleParentState(position);
       if (possibleParent) {
         const newPosition = {
-          x: position.x - possibleParent.position.x,
-          y: position.y - possibleParent.position.y,
+          x: position.x - possibleParent.compoundPosition.x,
+          y: position.y - possibleParent.compoundPosition.y - possibleParent.data.dimensions.height,
         };
 
         state.parent = possibleParent;
@@ -627,7 +630,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const stateTransitions = this.controller.transitions.getAllByTargetId(stateId) ?? [];
     if (stateTransitions.find(({ source }) => source instanceof InitialState)) return;
 
-    const siblingsIds = this.getSiblings(state).map((s) => s.id);
+    const siblingsIds = this.getSiblings(state.id, state.data.parentId, 'states').map((s) => s.id);
     const siblingsTransitions = this.controller.transitions.getAllByTargetId(siblingsIds);
     const transitionFromInitialState = siblingsTransitions.find(
       (transition) => transition.source instanceof InitialState
@@ -896,7 +899,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.changeFinalStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
   }
 
-  watch(state: State | InitialState | FinalState) {
+  watch(state: StateVariant) {
     if (state instanceof State) {
       return this.watchState(state);
     }
@@ -908,7 +911,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.watchInitialState(state);
   }
 
-  unwatch(state: State | InitialState | FinalState) {
+  unwatch(state: StateVariant) {
     if (state instanceof State) {
       return this.unwatchState(state);
     }

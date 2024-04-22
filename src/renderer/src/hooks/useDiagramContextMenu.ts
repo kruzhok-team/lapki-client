@@ -35,10 +35,14 @@ export const useDiagramContextMenu = () => {
     };
 
     // контекстное меню для пустого поля
-    editor.view.on('contextMenu', (pos) => {
-      const canvasPos = editor.view.relativeMousePos(pos);
+    editor.view.on('contextMenu', (position) => {
+      const mouseOffset = editor.view.app.mouse.getOffset();
+      const canvasPos = editor.view.relativeMousePos({
+        x: position.x - mouseOffset.x,
+        y: position.y - mouseOffset.y,
+      });
 
-      handleEvent(pos, [
+      handleEvent(position, [
         {
           label: 'Вставить',
           type: 'paste',
@@ -64,6 +68,7 @@ export const useDiagramContextMenu = () => {
           action: () => {
             editor.controller.states.createFinalState({
               position: canvasPos,
+              placeInCenter: true,
             });
           },
         },
@@ -104,8 +109,6 @@ export const useDiagramContextMenu = () => {
 
     // контекстное меню для состояния
     editor.controller.states.on('stateContextMenu', ({ state, position }) => {
-      const canvasPos = editor.view.relativeMousePos(position);
-
       handleEvent(position, [
         {
           label: 'Копировать',
@@ -139,7 +142,7 @@ export const useDiagramContextMenu = () => {
               action: () => {
                 editor.controller.states.createState({
                   name: 'Состояние',
-                  position: canvasPos,
+                  position: editor.view.relativeMousePos(position),
                   parentId: state.id,
                   color: DEFAULT_STATE_COLOR,
                 });

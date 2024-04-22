@@ -176,26 +176,14 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
     const offset = this.app.mouse.getOffset();
 
-    //Крайняя необходимость, по-другому пока не стал делать, хотя есть способ как можно это сделать, но сколько займёт реализация не могу знать
-    const position = {
+    if (node) {
+      return node.handleMouseContextMenu(e);
+    }
+
+    this.emit('contextMenu', {
       x: e.x + offset.x,
       y: e.y + offset.y,
-      dx: e.dx,
-      dy: e.dy,
-      /**
-       * Наличие зажатой левой кнопки.
-       * Полезно для отслеживания перетаскивания.
-       */
-      left: e.left,
-      button: e.button,
-      stopPropagation: e.stopPropagation,
-      nativeEvent: e.nativeEvent,
-    };
-    if (node) {
-      node.handleMouseContextMenu(e);
-    } else {
-      this.emit('contextMenu', position);
-    }
+    });
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
@@ -274,7 +262,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   };
 
   relativeMousePos(e: Point): Point {
-    // const rect = this.app.canvas.element.getBoundingClientRect();
     const scale = this.app.model.data.scale;
     const offset = this.app.model.data.offset;
     return {

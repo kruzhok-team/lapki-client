@@ -50,7 +50,11 @@ export interface CreateStateParams {
 }
 
 export type CreateInitialStateParams = InitialStateData & { id?: string };
-export type CreateFinalStateParams = FinalStateData & { id?: string; linkByPoint?: boolean };
+export type CreateFinalStateParams = FinalStateData & {
+  id?: string;
+  placeInCenter?: boolean;
+  linkByPoint?: boolean;
+};
 export type CreateTransitionParams = TransitionData & { id?: string };
 export type ChangeTransitionParams = TransitionData & { id: string };
 

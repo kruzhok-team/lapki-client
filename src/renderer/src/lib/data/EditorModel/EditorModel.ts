@@ -314,9 +314,20 @@ export class EditorModel {
   }
 
   createFinalState(args: CreateFinalStateParams) {
-    const { id = generateId(this.getNodeIds()), ...other } = args;
+    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
 
-    this.data.elements.finalStates[id] = other;
+    const centerPosition = () => {
+      const size = 50;
+      return {
+        x: position.x - size / 2,
+        y: position.y - size / 2,
+      };
+    };
+
+    this.data.elements.finalStates[id] = {
+      ...other,
+      position: placeInCenter ? centerPosition() : position,
+    };
 
     this.triggerDataUpdate('elements.finalStates');
 
@@ -603,20 +614,4 @@ export class EditorModel {
 
     return true;
   }
-
-  // createInitialState(params: CreateInitialStateParams) {
-  //   const {
-  //     id = generateId(Object.keys(this.data.elements.initialStates)),
-  //     stateId,
-  //     position,
-  //   } = params;
-
-  //   this.data.elements.initialStates[id] = {
-
-  //   };
-
-  //   this.triggerDataUpdate('elements.notes');
-
-  //   return newId;
-  // }
 }

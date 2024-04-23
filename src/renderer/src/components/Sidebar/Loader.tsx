@@ -17,8 +17,9 @@ import {
   FlasherSelectModalFormValues,
 } from '@renderer/components/serverSelect/FlasherSelectModal';
 import { useSettings } from '@renderer/hooks';
+import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { Device } from '@renderer/types/FlasherTypes';
+import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
@@ -28,7 +29,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.avrdude;
-  const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
+  const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -49,15 +50,25 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     setMsgModalData(data);
     setIsMsgModalOpen(true);
   };
+
+  const [flashResult, setFlashResult] = useState<FlashResult>();
+
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
-  const isActive = (id: string) => currentDevice === id;
+  const openTab = useTabs((state) => state.openTab);
+
+  const isActive = (id: string) => currentDeviceID === id;
 
   const handleGetList = async () => {
     Flasher.getList();
   };
 
   const handleFlash = async () => {
+    if (currentDeviceID == null || currentDeviceID == undefined) {
+      console.log('Не удаётся начать прошивку, currentDeviceID =', currentDeviceID);
+      return;
+    }
+    const currentDevice = devices.get(currentDeviceID);
     if (currentDevice == null || currentDevice == undefined) {
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
@@ -65,7 +76,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     if (flasherFile) {
       Flasher.flash(currentDevice);
     } else {
-      Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
+      Flasher.flashCompiler(compilerData!.binary!, currentDevice);
     }
   };
 
@@ -160,6 +171,16 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     openMsgModal(msg);
   };
 
+  // добавление вкладки с сообщением от avrdude
+  const handleAddAvrdudeTab = () => {
+    openTab({
+      type: 'code',
+      name: 'avrdude',
+      code: flashResult?.report() ?? '',
+      language: 'txt',
+    });
+  };
+
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,
@@ -167,7 +188,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       setFlasherLog,
       setFlasherFile,
       setFlashing,
-      setFlasherError
+      setFlasherError,
+      setFlashResult
     );
 
     Flasher.initReader(new FileReader());
@@ -212,10 +234,10 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     if (flashing || connectionStatus != FLASHER_CONNECTED) {
       return true;
     }
-    if (!currentDevice) {
+    if (!currentDeviceID) {
       return true;
     }
-    if (!devices.has(currentDevice)) {
+    if (!devices.has(currentDeviceID)) {
       setCurrentDevice(undefined);
       return true;
     }
@@ -229,9 +251,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         return;
       }
       platform = platform?.toLowerCase();
-      const device = devices.get(currentDevice)?.name.toLowerCase();
+      const device = devices.get(currentDeviceID)?.name.toLowerCase();
+      // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+      // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
       switch (platform) {
         case 'arduinomicro':
+          // arduino micro - состоит из двух устройств, прошивку можно загрузить в любое
           if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
             return true;
           }
@@ -372,6 +397,15 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         ) : (
           ''
         )}
+        <div>
+          <button
+            className="btn-primary mb-2"
+            onClick={handleAddAvrdudeTab}
+            disabled={flashResult == undefined}
+          >
+            {'Результат прошивки'}
+          </button>
+        </div>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>
           {avrdudeCheck()}

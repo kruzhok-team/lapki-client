@@ -28,7 +28,7 @@ export interface FlasherProps {
 export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
-  
+
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -94,8 +94,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
   const handleFileChoose = () => {
     if (flasherFile) {
-      setFlasherFile(undefined);
       console.log('cancel file choose');
+      setFlasherFile(undefined);
     } else {
       console.log('file chooser');
       Flasher.setFile();
@@ -276,7 +276,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
     return false;
   };
-  
+
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">

@@ -1,5 +1,4 @@
 import settings from 'electron-settings';
-import { lookpath } from 'lookpath';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
@@ -108,20 +107,6 @@ export class ModuleManager {
                 avrdudePath = `${osPath}\\avrdude.exe`;
                 configPath = `${osPath}\\avrdude.conf`;
                 break;
-            }
-            const AVRDUDE_SETTING = 'flasher.avrdude';
-            if (existsSync(avrdudePath)) {
-              flasherArgs.push(`-avrdudePath=${avrdudePath}`);
-              settings.setSync(AVRDUDE_SETTING, true);
-              console.log('AVRDUDE TRUE');
-            } else {
-              await lookpath('avrdude').then((path: string | undefined) => {
-                if (path) {
-                  settings.set(AVRDUDE_SETTING, true);
-                } else {
-                  settings.set(AVRDUDE_SETTING, false);
-                }
-              });
             }
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);

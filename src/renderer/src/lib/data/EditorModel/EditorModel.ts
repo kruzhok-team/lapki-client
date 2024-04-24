@@ -26,6 +26,7 @@ import {
   Component,
   Elements,
   EventData,
+  Meta,
 } from '@renderer/types/diagram';
 
 import { FilesManager } from './FilesManager';
@@ -635,6 +636,14 @@ export class EditorModel {
     delete this.data.elements.notes[id];
 
     this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  setMeta(meta: Meta) {
+    this.data.elements.meta = meta;
+
+    this.triggerDataUpdate('elements.meta');
 
     return true;
   }

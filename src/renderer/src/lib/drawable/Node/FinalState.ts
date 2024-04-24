@@ -36,13 +36,13 @@ export class FinalState extends Shape {
 
     drawCircle(ctx, {
       position,
-      radius: radius - 5 / this.app.model.data.scale,
+      radius: radius - 10 / this.app.model.data.scale,
       fillStyle: getColor('primary'),
     });
     drawCircle(ctx, {
       position,
       radius,
-      lineWidth: 2 / this.app.model.data.scale,
+      lineWidth: 3 / this.app.model.data.scale,
       strokeStyle: getColor('primary'),
     });
   }

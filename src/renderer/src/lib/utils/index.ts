@@ -56,7 +56,7 @@ const getSectors = (
   rect1Bottom: number,
   rect2XCenter: number,
   rect2YCenter: number,
-  rectPadding
+  rectPadding: number
 ) => {
   let sectorH: HSector = 'center';
   let sectorV: VSector = 'center';

@@ -31,7 +31,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       >
         {label}
         <TextInput className={className} ref={ref as any} error={error} maxLength={20} {...props} />
-        <p className="text-[14px] text-error">{errorMessage}</p>
+        <p className="text-sm text-error">{errorMessage}</p>
       </label>
     );
   }

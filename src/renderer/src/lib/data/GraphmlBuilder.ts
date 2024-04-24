@@ -17,15 +17,20 @@ import {
   Transition,
   Component,
   Event,
+  Meta,
   Condition,
   Variable,
 } from '@renderer/types/diagram';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
-// TODO: редактор мета-данных
-function exportMeta(meta: string): string {
-  return meta;
+function exportMeta(meta: Meta): string {
+  let stringMeta = '';
+  for (const propName in meta) {
+    const property = meta[propName];
+    stringMeta += `${propName}/ ${property}\n\n`;
+  }
+  return stringMeta;
 }
 
 function serializeArgs(args: ArgList | undefined) {
@@ -223,7 +228,7 @@ function serializeComponents(components: { [id: string]: Component }): {
 
 export function exportCGML(elements: Elements): string {
   const cgmlElements: CGMLElements = emptyCGMLElements();
-  cgmlElements.meta = exportMeta('');
+  cgmlElements.meta = exportMeta(elements.meta);
   cgmlElements.format = 'Cyberiada-GraphML';
   cgmlElements.platform = elements.platform;
   if (elements.platform.startsWith('Arduino')) {

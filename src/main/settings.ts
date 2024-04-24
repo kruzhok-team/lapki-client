@@ -14,7 +14,6 @@ const defaultSettings = {
     port: 0,
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
     type: 'local' as 'local' | 'remote',
-    avrdude: false,
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',

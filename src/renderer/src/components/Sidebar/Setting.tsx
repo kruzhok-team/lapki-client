@@ -41,7 +41,6 @@ export const Setting: React.FC = () => {
   };
 
   const CanvasSetting = useSettings('canvas');
-  console.log(CanvasSetting);
   const handleChangeCanvasAnimations = (value: boolean) => {
     setCanvasSettings({ animations: value, net: CanvasSetting[0]?.net ?? false });
   };

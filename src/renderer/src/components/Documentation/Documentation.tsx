@@ -32,38 +32,23 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
-  const [isOpen, toggle, isCollapsed, setIsCollapsed] = useDoc((state) => [
-    state.isOpen,
-    state.toggle,
-    state.isCollapsed,
-    state.setIsCollapsed,
-  ]);
+  const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
   const [width, setWidth] = useState(0);
   const [minWidth, setMinWidth] = useState(5);
   const [maxWidth, setMaxWidth] = useState('75vw');
 
   const handleResize = (e, _direction, ref) => {
-    if (e.pageX < 0.95 * window.innerWidth && !isCollapsed) {
-      setIsCollapsed(true);
+    if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
+      toggle();
     }
 
-    if (e.pageX >= 0.95 * window.innerWidth && isCollapsed) {
-      setIsCollapsed(false);
+    if (e.pageX >= 0.95 * window.innerWidth && isOpen) {
+      toggle();
     }
     //Получаем ширину блока документации
     setWidth(parseInt(ref.style.width));
   };
-
-  useEffect(() => {
-    if (!isCollapsed) {
-      setMaxWidth('5px');
-      setMinWidth(5);
-    } else {
-      setMaxWidth('75vw');
-      setMinWidth(420);
-    }
-  }, [isCollapsed]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -74,6 +59,19 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       setMinWidth(420);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'F1') {
+        toggle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [toggle]);
 
   const onItemClick = (filePath: string) => {
     if (width < 840) {
@@ -146,13 +144,13 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex h-full justify-end',
+        'absolute right-0 top-0 flex justify-end',
         isOpen && 'translate-x-0',
         topOffset && 'top-[44.19px] h-[95.85vh]'
       )}
     >
-      <button className="m-2 mt-auto" onClick={toggle}>
-        <Question height={40} width={40} />
+      <button className={twMerge('m-2 mb-auto', topOffset && 'top-[44.19px]')} onClick={toggle}>
+        <Question height={35} width={35} />
       </button>
       <Resizable
         enable={{ left: true }}

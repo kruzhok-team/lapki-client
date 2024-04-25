@@ -146,7 +146,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       className={twMerge(
         'absolute right-0 top-0 flex justify-end',
         isOpen && 'translate-x-0',
-        topOffset && 'top-[44.19px] h-[95.85vh]'
+        topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
     >
       <button className={twMerge('m-2 mb-auto', topOffset && 'top-[44.19px]')} onClick={toggle}>

@@ -64,7 +64,7 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    if (this.app.settings.net) {
+    if (this.app.settings.grid) {
       this.drawGrid(ctx, canvas);
     }
 

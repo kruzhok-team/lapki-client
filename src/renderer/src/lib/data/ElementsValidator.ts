@@ -14,7 +14,7 @@ const defaultComponents = {
   System: { onEnter: 'entry', onExit: 'exit' },
 };
 
-const defaultParameters = ['label', 'labelColor'] as const;
+const defaultParameters = ['label', 'labelColor', 'name', 'description'] as const;
 
 export function convertDefaultComponent(component: string, method: string): string {
   return defaultComponents[component][method];

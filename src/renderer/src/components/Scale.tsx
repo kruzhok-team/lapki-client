@@ -33,7 +33,7 @@ export const Scale: React.FC = () => {
   const handleCanvasGrid = () => {
     setCanvasSettings({
       animations: canvasSettings?.animations ?? false,
-      net: !canvasSettings?.net,
+      grid: !canvasSettings?.grid,
     });
   };
 

@@ -58,7 +58,7 @@ interface StatesControllerEvents {
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
 
-  private data: Data = {
+  data: Data = {
     states: new Map(),
     initialStates: new Map(),
     finalStates: new Map(),
@@ -93,7 +93,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     return undefined;
   }
-  setState = this.data.states.set.bind(this.data.states);
   clear() {
     this.data.states.clear();
     this.data.initialStates.clear();

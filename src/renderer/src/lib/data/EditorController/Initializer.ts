@@ -1,6 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { State, Note, Transition } from '@renderer/lib/drawable';
+import { State, Note, Transition, InitialState, FinalState } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
 /**
@@ -14,6 +14,8 @@ export class Initializer {
     this.resetEntities();
 
     this.initStates();
+    this.initInitialStates();
+    this.initFinalStates();
     this.initTransitions();
     this.initNotes();
     this.initPlatform();
@@ -80,6 +82,38 @@ export class Initializer {
     }
   }
 
+  private initInitialStates() {
+    const items = this.app.model.data.elements.initialStates;
+
+    for (const id in items) {
+      this.createInitialStateView(id);
+    }
+
+    for (const id in items) {
+      const data = items[id];
+
+      if (!data.parentId) continue;
+
+      this.linkInitialStateView(data.parentId, id);
+    }
+  }
+
+  private initFinalStates() {
+    const items = this.app.model.data.elements.finalStates;
+
+    for (const id in items) {
+      this.createFinalStateView(id);
+    }
+
+    for (const id in items) {
+      const data = items[id];
+
+      if (!data.parentId) continue;
+
+      this.linkFinalStateView(data.parentId, id);
+    }
+  }
+
   private initTransitions() {
     const items = this.app.model.data.elements.transitions;
 
@@ -124,7 +158,7 @@ export class Initializer {
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
   private createStateView(id: string) {
     const state = new State(this.app, id);
-    this.states.setState(state.id, state);
+    this.states.data.states.set(state.id, state);
     this.states.watch(state);
     this.app.view.children.add(state, Layer.States);
   }
@@ -154,10 +188,39 @@ export class Initializer {
     this.notes.watch(note);
   }
 
-  // private createInitialStateView(data: InitialState) {
-  //   const target = this.states.get(data.target);
-  //   if (!target) return;
+  private createInitialStateView(id: string) {
+    const state = new InitialState(this.app, id);
+    this.states.data.initialStates.set(state.id, state);
+    this.states.watch(state);
+    this.app.view.children.add(state, Layer.InitialStates);
+  }
 
-  //   this.view.statesController.initInitialStateMark();
-  // }
+  private linkInitialStateView(parentId: string, childId: string) {
+    const parent = this.states.data.states.get(parentId);
+    const child = this.states.data.initialStates.get(childId);
+
+    if (!parent || !child) return;
+
+    this.app.view.children.remove(child, Layer.InitialStates);
+    child.parent = parent;
+    parent.children.add(child, Layer.InitialStates);
+  }
+
+  private createFinalStateView(id: string) {
+    const state = new FinalState(this.app, id);
+    this.states.data.finalStates.set(state.id, state);
+    this.states.watch(state);
+    this.app.view.children.add(state, Layer.FinalStates);
+  }
+
+  private linkFinalStateView(parentId: string, childId: string) {
+    const parent = this.states.data.states.get(parentId);
+    const child = this.states.data.finalStates.get(childId);
+
+    if (!parent || !child) return;
+
+    this.app.view.children.remove(child, Layer.FinalStates);
+    child.parent = parent;
+    parent.children.add(child, Layer.FinalStates);
+  }
 }

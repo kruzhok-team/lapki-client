@@ -40,12 +40,8 @@ export const Setting: React.FC = () => {
     }
   };
 
-  const CanvasSetting = useSettings('canvas');
   const handleChangeCanvasAnimations = (value: boolean) => {
-    setCanvasSettings({ animations: value, net: CanvasSetting[0]?.net ?? false });
-  };
-  const handleChangeCanvasNet = (value: boolean) => {
-    setCanvasSettings({ animations: CanvasSetting[0]?.animations ?? false, net: value });
+    setCanvasSettings({ animations: value, net: canvasSettings?.net ?? false });
   };
 
   return (
@@ -73,19 +69,14 @@ export const Setting: React.FC = () => {
           Док-сервер…
         </button>
 
-        <div className="mb-auto items-center">
-          <div className="mb-2 flex justify-between">
-            Анимации на холсте
-            <Switch
-              checked={canvasSettings?.animations}
-              onCheckedChange={handleChangeCanvasAnimations}
-            />
-          </div>
-          <div className="mb-2 flex justify-between">
-            Сетка редактора
-            <Switch checked={canvasSettings?.net} onCheckedChange={handleChangeCanvasNet} />
-          </div>
+        <div className="mb-auto flex items-center justify-between">
+          Анимации на холсте
+          <Switch
+            checked={canvasSettings?.animations}
+            onCheckedChange={handleChangeCanvasAnimations}
+          />
         </div>
+
         <button className="btn-primary" onClick={openAboutModal}>
           О программе
         </button>

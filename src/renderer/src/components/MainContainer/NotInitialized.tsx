@@ -31,6 +31,13 @@ const combination = [
       button2: undefined,
     },
   },
+  {
+    name: 'Справка',
+    command: {
+      button1: 'F1',
+      button2: undefined,
+    },
+  },
 ];
 
 export const NotInitialized: React.FC = () => {

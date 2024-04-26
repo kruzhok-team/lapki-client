@@ -7,6 +7,7 @@ import {
   CGMLComponent,
   CGMLAction,
   CGMLTransitionAction,
+  CGMLVertex,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -19,7 +20,8 @@ import {
   InitialState,
   State,
   Transition,
-  Event
+  Event,
+  FinalState
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform';
 
@@ -70,7 +72,9 @@ function checkConditionTokenType(token: string): Condition {
 }
 
 function parseCondition(condition: string): Condition {
+  console.log(condition);
   const tokens = condition.split(' ');
+  console.log(tokens);
   const lval = checkConditionTokenType(tokens[0]);
   const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
@@ -142,6 +146,21 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
   return resultActions;
 }
 
+function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]: FinalState} {
+  const finalStates: { [id: string]: FinalState} = {};
+  for (const finalId in rawFinalStates) {
+    const final = rawFinalStates[finalId];
+    finalStates[finalId] = {
+      position: final.position ? {
+        x: final.position.x,
+        y: final.position.y
+      } : {x: -1, y: -1},
+      parentId: final.parent
+    }
+  }
+  return finalStates;
+}
+
 function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): { [id: string]: InitialState } {
   const initialStates: { [id: string]: InitialState }  = {}
   for (const initialId in rawInitialStates) {
@@ -202,7 +221,7 @@ function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>
     if (action.action) {
       const parsedActions = parseActions(action.action);
       if (parsedActions) {
-        doActions.concat(parsedActions);
+        doActions.push(...parsedActions);
       }
     }
     if (action.trigger) {
@@ -214,6 +233,7 @@ function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>
     if (action.condition) {
       eventData.condition = parseCondition(action.condition);
     }
+    eventData.do = doActions;
     eventDataArr.push(eventData);
   }
   return eventDataArr;
@@ -393,6 +413,7 @@ export function importGraphml(
     }
     elements.meta = rawElements.meta.values;
     elements.initialStates = getInitialStates(rawElements.initialStates)
+    elements.finalStates = getFinals(rawElements.finals);
     elements.notes = rawElements.notes;
     elements.states = getStates(rawElements.states);
     elements.transitions = getTransitions(rawElements.transitions);

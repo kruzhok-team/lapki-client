@@ -31,7 +31,7 @@
   <node id="nMeta">
     <data key="dNote">formal</data>
     <data key="dName">CGML_META</data>
-    <data key="dData">platform/ BearsTowerDefence
+    <data key="dData">platform/ BearlogaDefend-Autoborder
 
 standardVersion/ 1.0
 
@@ -55,7 +55,7 @@ target/ Autoborder
 exit/
 </data>
     <data key="dGeometry"> 
-      <rect x="-578.005" y="438.187256"
+      <rect x="578.005" y="438.187256"
             width="672.532166" height="802.962646" /> </data>
     <graph id="n0::">
       <node id="n0::n1">
@@ -66,7 +66,7 @@ exit/
 exit/
 </data>
         <data key="dGeometry"> 
-          <rect x="-525.738953" y="609.6686" 
+          <rect x="83.25999999999968" y="278.1059329999999" 
                 width="468" height="170" /> </data>
       </node>
       <node id="n0::n2">
@@ -77,7 +77,7 @@ exit/
 exit/
 </data>
         <data key="dGeometry"> 
-          <rect x="-630.2711" y="206.705933" 
+          <rect x="83.30000000000007" y="206.705933" 
                 width="468" height="170" /> </data>
       </node>
     </graph>
@@ -97,29 +97,37 @@ exit/
   <node id="init">
     <data key="dVertex">initial</data>
     <data key="dGeometry"> 
-      <rect x="-1482.03857" y="606.497559" 
+      <rect x="-1700.9985699999997" y="564.177559" 
             width="20" height="20" /> </data>      
   </node>
   
   <edge id="init-n3" source="init" target="n3"/>
   <edge id="n0-n3" source="n0" target="n3">
-    <data key="dData">АнализаторЦели.ЦельУничтожена/
-</data>
-  </edge>
-  <edge id="n0-n3" source="n0" target="n3">
     <data key="dData">АнализаторЦели.ЦельПотеряна/
 </data>
+    <data key="dGeometry"> 
+      <point x="-932.0399999999997" y="372.5199999999993"> </point>
+    </data>
   </edge>
   <edge id="n3-n0::n1" source="n3" target="n0::n1">
     <data key="dData">Сенсор.ЦельПолучена/
 </data>
+    <data key="dGeometry"> 
+      <point x="-821.6400000000001" y="865.6400000000003"> </point>
+    </data>
   </edge>
   <edge id="n0::n1-n0::n2" source="n0::n1" target="n0::n2">
       <data key="dData">ОружиеЦелевое.ЦельВошлаВЗонуАтаки/
 </data>
+  <data key="dGeometry"> 
+    <point x="472.8799999999997" y="266.80000000000047"> </point>
+  </data>
   </edge>
   <edge id="n0::n2-n0::n1" source="n0::n2" target="n0::n1">
       <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/
+</data>
+<data key="dGeometry"> 
+  <point x="414.95000000000033" y="266.80000000000047"> </point>
 </data>
   </edge>
 

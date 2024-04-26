@@ -427,8 +427,7 @@ export function importGraphml(
       platform.components,
       elements.components
     );
-    console.log(elements)
-    // validateElements(elements, platform);
+    validateElements(elements, platform);
     return elements;
   } catch (error) {
     console.log(error);

@@ -112,13 +112,13 @@ timer1.start(1000)
         <data key="dData">timer1.timeout/</data>
         <data key="dColor">#F29727</data>
         <data key="dLabelGeometry">
-            <point x="81.5" y="193.46"/>
+            <point x="389" y="193"/>
         </data> 
     </edge>
     <edge id="edge4" source="diod2" target="diod1">
         <data key="dData">timer1.timeout/</data>
         <data key="dLabelGeometry">
-            <point x="87" y="175"/>
+            <point x="81.5" y="193.46"/>
         </data> 
         <data key="dColor">#F24C3D</data>
     </edge>

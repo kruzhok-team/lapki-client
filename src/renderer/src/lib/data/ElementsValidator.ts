@@ -1,6 +1,6 @@
 import {
   Elements,
-  NormalState,
+  State,
   Component,
   ArgList,
   Transition,
@@ -98,7 +98,7 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList | u
 }
 
 function validateStates(
-  states: { [id: string]: NormalState },
+  states: { [id: string]: State },
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
@@ -128,8 +128,8 @@ function validateTransitions(
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const transition of Object.values(transitions)) {
-    if (transition.do !== undefined) {
-      for (const action of transition.do) {
+    if (transition.label?.do !== undefined) {
+      for (const action of transition.label.do) {
         validateEvent(action.component, action.method, action.args, components, platformComponents);
       }
     }

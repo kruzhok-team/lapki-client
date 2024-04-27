@@ -13,7 +13,7 @@ export const useComponents = () => {
   const components = model.useData('elements.components');
 
   const [idx, setIdx] = useState('');
-  const [data, setData] = useState<ComponentData>({ transitionId: '', type: '', parameters: {} });
+  const [data, setData] = useState<ComponentData>({ type: '', parameters: {} });
   const [proto, setProto] = useState(systemComponent);
 
   const [vacantComponents, setVacantComponents] = useState([] as ComponentEntry[]);

@@ -523,12 +523,10 @@ export class EditorModel {
 
   addComponent({ name, type, parameters = {} }: AddComponentParams) {
     if (this.data.elements.components.hasOwnProperty(name)) {
-      console.log(['bad new component', name, type]);
+      console.error(['bad new component', name, type]);
       return false;
     }
-    const transitionId = generateId(Object.keys(this.data.elements.transitions));
     this.data.elements.components[name] = {
-      transitionId,
       type,
       parameters,
     };

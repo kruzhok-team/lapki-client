@@ -36,7 +36,7 @@ export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) =>
                 onItemClick(item.path ?? '');
               }}
             >
-              <span className="block truncate p-2 transition hover:bg-[#4391bf] hover:bg-opacity-50">
+              <span className="block max-w-[341px] truncate p-2 pl-0 transition hover:bg-[#4391bf] hover:bg-opacity-50">
                 <FileIcon className="mr-2 inline-block h-5 w-5" />
                 {item.name}
               </span>

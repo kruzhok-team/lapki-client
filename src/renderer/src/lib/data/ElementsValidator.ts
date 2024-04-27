@@ -1,11 +1,4 @@
-import {
-  Elements,
-  NormalState,
-  Component,
-  ArgList,
-  Transition,
-  Event,
-} from '@renderer/types/diagram';
+import { Elements, State, Component, ArgList, Transition, Event } from '@renderer/types/diagram';
 import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 
 import { getProtoComponent, getProtoMethod } from './GraphmlParser';
@@ -14,7 +7,7 @@ const defaultComponents = {
   System: { onEnter: 'entry', onExit: 'exit' },
 };
 
-const defaultParameters = ['label', 'labelColor'] as const;
+const defaultParameters = ['label', 'labelColor', 'name', 'description'] as const;
 
 export function convertDefaultComponent(component: string, method: string): string {
   return defaultComponents[component][method];
@@ -98,7 +91,7 @@ function validateArgs(methodName: string, method: MethodProto, args: ArgList | u
 }
 
 function validateStates(
-  states: { [id: string]: NormalState },
+  states: { [id: string]: State },
   components: { [id: string]: Component },
   platformComponents: { [name: string]: ComponentProto }
 ) {
@@ -128,8 +121,8 @@ function validateTransitions(
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const transition of Object.values(transitions)) {
-    if (transition.do !== undefined) {
-      for (const action of transition.do) {
+    if (transition.label?.do !== undefined) {
+      for (const action of transition.label.do) {
         validateEvent(action.component, action.method, action.args, components, platformComponents);
       }
     }

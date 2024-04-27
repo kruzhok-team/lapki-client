@@ -64,7 +64,9 @@ export class Container extends EventEmitter<ContainerEvents> {
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.drawGrid(ctx, canvas);
+    if (this.app.settings.grid) {
+      this.drawGrid(ctx, canvas);
+    }
 
     const drawChildren = (node: Container | Node) => {
       node.children.forEach((child) => {

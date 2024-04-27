@@ -19,6 +19,7 @@ const defaultSettings = {
   theme: 'light' as 'light' | 'dark',
   canvas: {
     animations: true,
+    grid: true,
   },
 };
 

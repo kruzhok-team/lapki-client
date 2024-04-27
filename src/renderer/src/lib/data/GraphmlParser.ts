@@ -21,14 +21,14 @@ import {
   State,
   Transition,
   Event,
-  FinalState
+  FinalState,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
-type EventWithCondition = EventData & {condition?: Condition}
+type EventWithCondition = EventData & { condition?: Condition };
 
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
@@ -72,9 +72,7 @@ function checkConditionTokenType(token: string): Condition {
 }
 
 function parseCondition(condition: string): Condition {
-  console.log(condition);
   const tokens = condition.split(' ');
-  console.log(tokens);
   const lval = checkConditionTokenType(tokens[0]);
   const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
@@ -131,7 +129,6 @@ function parseAction(unproccessedAction: string): Action | undefined {
 
 function parseActions(unsplitedActions: string): Action[] | undefined {
   if (unsplitedActions === '') {
-    console.log('Отсутствуют действия на событие');
     return;
   }
   // Считаем, что действия находятся на разных строках
@@ -146,32 +143,36 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
   return resultActions;
 }
 
-function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]: FinalState} {
-  const finalStates: { [id: string]: FinalState} = {};
+function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]: FinalState } {
+  const finalStates: { [id: string]: FinalState } = {};
   for (const finalId in rawFinalStates) {
     const final = rawFinalStates[finalId];
     finalStates[finalId] = {
-      position: final.position ? {
-        x: final.position.x,
-        y: final.position.y
-      } : {x: -1, y: -1},
-      parentId: final.parent
-    }
+      position: final.position
+        ? {
+            x: final.position.x,
+            y: final.position.y,
+          }
+        : { x: -1, y: -1 },
+      parentId: final.parent,
+    };
   }
   return finalStates;
 }
 
-function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): { [id: string]: InitialState } {
-  const initialStates: { [id: string]: InitialState }  = {}
+function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): {
+  [id: string]: InitialState;
+} {
+  const initialStates: { [id: string]: InitialState } = {};
   for (const initialId in rawInitialStates) {
     const rawInitial = rawInitialStates[initialId];
     if (!rawInitial.position) {
-      throw new Error(`Не указана позиция начального состояния с идентификатором ${initialId}`)
+      throw new Error(`Не указана позиция начального состояния с идентификатором ${initialId}`);
     }
     initialStates[initialId] = {
       position: rawInitial.position,
-      parentId: rawInitial.parent
-    }
+      parentId: rawInitial.parent,
+    };
   }
   return initialStates;
 }
@@ -183,40 +184,40 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
     const events: EventData[] = actionsToEventData(rawState.actions).map((value): EventData => {
       return {
         trigger: value.trigger,
-        do: value.do
-      }
-    })
+        do: value.do,
+      };
+    });
     states[rawStateId] = {
       // ПОМЕНЯТЬ ЦВЕТ
       color: rawState.color ?? '#FFFFFF',
       name: rawState.name,
       dimensions: {
         width: rawState.bounds.width,
-        height: rawState.bounds.height
+        height: rawState.bounds.height,
       },
       position: {
         x: rawState.bounds.x,
-        y: rawState.bounds.y
+        y: rawState.bounds.y,
       },
       parentId: rawState.parent,
       events: events,
     };
-
-    
   }
   return states;
 }
 
-function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>): EventWithCondition[] {
+function actionsToEventData(
+  rawActions: Array<CGMLAction | CGMLTransitionAction>
+): EventWithCondition[] {
   const eventDataArr: EventWithCondition[] = [];
   for (const action of rawActions) {
     const eventData: EventWithCondition = {
       trigger: {
         component: '',
-        method: ''
+        method: '',
       },
-      do: []
-    }
+      do: [],
+    };
     const doActions: Action[] = [];
     if (action.action) {
       const parsedActions = parseActions(action.action);
@@ -225,7 +226,7 @@ function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>
       }
     }
     if (action.trigger) {
-      const trigger = parseEvent(action.trigger)
+      const trigger = parseEvent(action.trigger);
       if (trigger) {
         eventData.trigger = trigger;
       }
@@ -249,12 +250,12 @@ function getTransitions(
       transitions[id] = {
         source: rawTransition.source,
         target: rawTransition.target,
-        color: rawTransition.color ?? randomColor()
+        color: rawTransition.color ?? randomColor(),
       };
       continue;
     }
     // В данный момент поддерживается только один триггер на переход
-    const eventData = actionsToEventData(rawTransition.actions)[0]
+    const eventData = actionsToEventData(rawTransition.actions)[0];
     transitions[id] = {
       source: rawTransition.source,
       target: rawTransition.target,
@@ -263,8 +264,8 @@ function getTransitions(
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
         trigger: eventData.trigger,
         do: eventData.do,
-        condition: eventData.condition
-      }
+        condition: eventData.condition,
+      },
     };
   }
   return transitions;
@@ -276,7 +277,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   const components: { [id: string]: Component } = {};
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
-    components[rawComponent.id] = {type: rawComponent.type, parameters: rawComponent.parameters};
+    components[rawComponent.id] = { type: rawComponent.type, parameters: rawComponent.parameters };
   }
   return components;
 }
@@ -412,7 +413,7 @@ export function importGraphml(
       elements.components = getComponents(rawElements.components);
     }
     elements.meta = rawElements.meta.values;
-    elements.initialStates = getInitialStates(rawElements.initialStates)
+    elements.initialStates = getInitialStates(rawElements.initialStates);
     elements.finalStates = getFinals(rawElements.finals);
     elements.notes = rawElements.notes;
     elements.states = getStates(rawElements.states);
@@ -430,7 +431,7 @@ export function importGraphml(
     validateElements(elements, platform);
     return elements;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     openImportError((error as any).message);
     return;
   }

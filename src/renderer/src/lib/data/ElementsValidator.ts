@@ -1,11 +1,4 @@
-import {
-  Elements,
-  State,
-  Component,
-  ArgList,
-  Transition,
-  Event,
-} from '@renderer/types/diagram';
+import { Elements, State, Component, ArgList, Transition, Event } from '@renderer/types/diagram';
 import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
 
 import { getProtoComponent, getProtoMethod } from './GraphmlParser';

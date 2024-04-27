@@ -36,7 +36,7 @@ function exportMeta(meta: Meta): CGMLMeta {
   return {
     id: 'coreMeta',
     values: meta,
-  }
+  };
 }
 
 function serializeArgs(args: ArgList | undefined) {
@@ -66,14 +66,18 @@ function serializeActions(actions: Action[]): string {
   return serialized.trim();
 }
 
-export function serializeTransitionEvents(doActions: Action[] | undefined, trigger: Event | undefined, condition: null | undefined | Condition): CGMLTransitionAction[] {
+export function serializeTransitionEvents(
+  doActions: Action[] | undefined,
+  trigger: Event | undefined,
+  condition: null | undefined | Condition
+): CGMLTransitionAction[] {
   return [
     {
       trigger: trigger ? serializeEvent(trigger) : undefined,
       condition: condition ? serializeCondition(condition) : undefined,
       action: doActions ? serializeActions(doActions) : undefined,
-    }
-  ]
+    },
+  ];
 }
 
 export function serializeStateEvents(events: EventData[]): CGMLAction[] {
@@ -81,7 +85,7 @@ export function serializeStateEvents(events: EventData[]): CGMLAction[] {
   for (const event of events) {
     serializedActions.push({
       trigger: serializeEvent(event.trigger),
-      action: serializeActions(event.do)
+      action: serializeActions(event.do),
     });
   }
   return serializedActions;
@@ -99,8 +103,8 @@ function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLS
       color: state.color,
       bounds: {
         ...state.position,
-        ...state.dimensions
-      }
+        ...state.dimensions,
+      },
     };
   }
   return cgmlStates;
@@ -142,21 +146,23 @@ function serializeCondition(condition: Condition): string {
   return `[${lval} ${invertOperatorAlias[condition.type]} ${rval}]`;
 }
 
-function serializeFinals(finalStates: {[id: string]: FinalState}): { [id: string]: CGMLVertex } {
+function serializeFinals(finalStates: { [id: string]: FinalState }): { [id: string]: CGMLVertex } {
   const finals: { [id: string]: CGMLVertex } = {};
   for (const finalId in finalStates) {
     const final = finalStates[finalId];
     finals[finalId] = {
-      data: '', 
+      data: '',
       type: 'final',
       parent: final.parentId,
       position: final.position,
-    }
+    };
   }
   return finals;
 }
 
-function serializeInitials(initialStates: {[id: string]: InitialState}): { [id: string]: CGMLVertex } {
+function serializeInitials(initialStates: { [id: string]: InitialState }): {
+  [id: string]: CGMLVertex;
+} {
   const initials: { [id: string]: CGMLVertex } = {};
   for (const initialId in initialStates) {
     const initial = initialStates[initialId];
@@ -164,10 +170,10 @@ function serializeInitials(initialStates: {[id: string]: InitialState}): { [id: 
       data: '',
       type: 'initial',
       parent: initial.parentId,
-      position: initial.position
-    }
+      position: initial.position,
+    };
   }
-  return initials
+  return initials;
 }
 
 function serializeTransitions(
@@ -184,16 +190,17 @@ function serializeTransitions(
       unsupportedDataNodes: [],
       color: transition.color,
       labelPosition: transition.label?.position,
-      actions: []
+      actions: [],
     };
     if (transition.label === undefined) {
       cgmlTransitions[id] = cgmlTransition;
       continue;
     }
     cgmlTransition.actions = serializeTransitionEvents(
-        transition.label.do, 
-        transition.label.trigger, 
-        transition.label.condition)
+      transition.label.do,
+      transition.label.trigger,
+      transition.label.condition
+    );
     cgmlTransitions[id] = cgmlTransition;
   }
   return cgmlTransitions;
@@ -256,8 +263,8 @@ function serializeNotes(notes: { [id: string]: Note }): { [id: string]: CGMLNote
       name: undefined,
       text: note.text,
       position: note.position,
-      type: 'informal'
-    }
+      type: 'informal',
+    };
   }
   return cgmlNotes;
 }
@@ -293,6 +300,5 @@ export function exportCGML(elements: Elements): string {
   cgmlElements.initialStates = serializeInitials(elements.initialStates);
   cgmlElements.finals = serializeFinals(elements.finalStates);
   cgmlElements.keys = getKeys();
-  console.log(cgmlElements);
   return exportGraphml(cgmlElements);
 }

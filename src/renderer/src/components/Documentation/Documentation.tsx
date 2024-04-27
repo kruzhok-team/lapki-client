@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { Resizable } from 're-resizable';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+import { ReactComponent as Question } from '@renderer/assets/icons/question-mark.svg';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
@@ -29,13 +30,53 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     url && `${url}/index.json?nocache=true`
   );
 
-  const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
+  const [width, setWidth] = useState(0);
+  const [minWidth, setMinWidth] = useState(5);
+  const [maxWidth, setMaxWidth] = useState('75vw');
+
+  const handleResize = (e, _direction, ref) => {
+    if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
+      toggle();
+    }
+
+    if (e.pageX >= 0.95 * window.innerWidth && isOpen) {
+      toggle();
+    }
+    //Получаем ширину блока документации
+    setWidth(parseInt(ref.style.width));
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setMaxWidth('5px');
+      setMinWidth(5);
+    } else {
+      setMaxWidth('75vw');
+      setMinWidth(420);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'F1') {
+        toggle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [toggle]);
+
   const onItemClick = (filePath: string) => {
-    setActiveTab(1);
+    if (width < 840) {
+      setWidth(840);
+    }
 
     if (filePath.endsWith('html')) {
       return setCurrentItem({
@@ -70,40 +111,31 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
     return (
       <section className="flex h-full select-none flex-col px-2 pt-4">
-        <div className="grid grid-cols-2 gap-1 pb-2">
-          <button
-            className={twMerge(
-              'rounded border border-primary p-2',
-              activeTab === 0 && 'bg-primary'
-            )}
-            onClick={() => setActiveTab(0)}
-          >
-            Содержание
-          </button>
-          <button
-            className={twMerge(
-              'rounded border border-primary p-2',
-              activeTab === 1 && 'bg-primary'
-            )}
-            onClick={() => setActiveTab(1)}
-          >
-            Просмотр
-          </button>
-        </div>
-
-        <div className="h-full overflow-y-hidden">
-          <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
-            {<Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />}
+        <div className="grid h-full w-full grid-cols-2 overflow-y-hidden">
+          <div className={twMerge('col-span-2', width >= 840 && 'col-span-1')}>
+            <div className="py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled">
+              Содержание
+            </div>
+            <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
           </div>
 
-          <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
-            {currentItem && (
-              <>
-                <Show item={currentItem} />
-                <Navigation data={data} onItemClick={onItemClick} currentPath={currentItem.path} />
-              </>
-            )}
-          </div>
+          {width >= 840 && (
+            <div className="flex w-full flex-col">
+              <div className="py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled">
+                Просмотр
+              </div>
+              {currentItem && (
+                <>
+                  <Show item={currentItem} />
+                  <Navigation
+                    data={data}
+                    onItemClick={onItemClick}
+                    currentPath={currentItem.path}
+                  />
+                </>
+              )}
+            </div>
+          )}
         </div>
       </section>
     );
@@ -112,16 +144,24 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
+        'absolute right-0 top-0 flex justify-end',
         isOpen && 'translate-x-0',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
     >
-      <button className="w-8 border-r border-border-primary" onClick={toggle}>
-        <Arrow className={twMerge('rotate-180 transition-transform', isOpen && 'rotate-0')} />
+      <button className={twMerge('m-2 mb-auto', topOffset && 'top-[44.19px]')} onClick={toggle}>
+        <Question height={35} width={35} />
       </button>
-
-      <div className="w-[400px]">{renderContent()}</div>
+      <Resizable
+        enable={{ left: true }}
+        size={{ width: width, height: topOffset ? '95.85vh' : '100vh' }}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onResize={handleResize}
+        className={twMerge('border-l border-border-primary bg-bg-secondary')}
+      >
+        <div className="w-[${maxWidth}] h-full">{renderContent()}</div>
+      </Resizable>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { emptyElements, Action, Condition, EventData } from '@renderer/types/dia
 import { Point } from '@renderer/types/graphics';
 
 export const emptyEditorData = () => ({
+  isMounted: false,
   isInitialized: false,
   isStale: false,
   basename: null as string | null,
@@ -32,6 +33,7 @@ export const emptyDataListeners = Object.fromEntries([
 export interface CreateStateParameters {
   name: string;
   position: Point;
+  color: string;
   parentId?: string;
   id?: string;
   events?: EventData[];
@@ -51,6 +53,13 @@ export interface CreateTransitionParameters {
   condition: Condition | undefined;
 }
 
+export interface CreateNoteParameters {
+  id?: string;
+  position: Point;
+  text: string;
+  placeInCenter?: boolean;
+}
+
 export interface ChangeTransitionParameters {
   id: string;
   source: string;
@@ -67,6 +76,7 @@ export interface ChangeStateEventsParams {
   actions: Action[];
   triggerComponent: string;
   triggerMethod: string;
+  color: string;
 }
 
 export interface AddComponentParams {

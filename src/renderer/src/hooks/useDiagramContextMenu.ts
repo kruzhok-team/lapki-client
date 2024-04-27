@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { State } from '@renderer/lib/drawable/State';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Point } from '@renderer/types/graphics';
+import { defaultStateColor } from '@renderer/utils';
 
 export type DiagramContextMenuItem = {
   label: string;
@@ -14,7 +14,9 @@ export type DiagramContextMenuItem = {
   action: () => void;
 };
 
-export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: EditorManager) => {
+export const useDiagramContextMenu = () => {
+  const editor = useEditorContext();
+
   const openTab = useTabs((state) => state.openTab);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -27,11 +29,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
     if (!editor) return;
 
     const handleEvent = (pos: Point, items: DiagramContextMenuItem[]) => {
-      const offset = editor.mouse.getOffset();
-      const position = { x: pos.x + offset.x, y: pos.y + offset.y };
-
       setIsOpen(true);
-      setPosition(position);
+      setPosition(pos);
       setItems(items);
     };
 
@@ -55,7 +54,21 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
+              color: defaultStateColor,
             });
+          },
+        },
+        {
+          label: 'Вставить заметку',
+          type: 'note',
+          action: () => {
+            const note = editor?.container.machineController.createNote({
+              position: canvasPos,
+              placeInCenter: true,
+              text: '',
+            });
+
+            editor.container.notesController.emit('change', note);
           },
         },
         {
@@ -64,8 +77,8 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
           action: () => {
             openTab({
               type: 'code',
-              name: manager.data.name ?? 'Безымянная',
-              code: manager.serializer.getAll('JSON'),
+              name: editor.manager.data.name ?? 'Безымянная',
+              code: editor.manager.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -119,6 +132,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
                   name: 'Состояние',
                   position: canvasPos,
                   parentId: state.id,
+                  color: defaultStateColor,
                 });
               },
             },
@@ -133,7 +147,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
             openTab({
               type: 'state',
               name: state.data.name,
-              code: manager.serializer.getState(state.id) ?? '',
+              code: editor.manager.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -248,7 +262,7 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
               openTab({
                 type: 'transition',
                 name: transition.id,
-                code: manager.serializer.getTransition(transition.id) ?? '',
+                code: editor.manager.serializer.getTransition(transition.id) ?? '',
                 language: 'json',
               });
             },
@@ -263,6 +277,25 @@ export const useDiagramContextMenu = (editor: CanvasEditor | null, manager: Edit
         ]);
       }
     );
+
+    editor.container.notesController.on('contextMenu', ({ note, position }) => {
+      handleEvent(position, [
+        {
+          label: 'Редактировать',
+          type: 'edit',
+          action: () => {
+            editor.container.notesController.emit('change', note);
+          },
+        },
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor?.container.machineController.deleteNote(note.id);
+          },
+        },
+      ]);
+    });
   }, [editor]);
 
   return { isOpen, onClose, items, position };

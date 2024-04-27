@@ -1,3 +1,4 @@
+import { Note } from '@renderer/lib/drawable/Note';
 import {
   Action,
   Condition,
@@ -5,12 +6,14 @@ import {
   Variable,
   State as StateType,
   Transition as TransitionType,
+  Note as NoteType,
   EventData,
 } from '@renderer/types/diagram';
 import {
   AddComponentParams,
   ChangeStateEventsParams,
   ChangeTransitionParameters,
+  CreateNoteParameters,
   CreateStateParameters,
 } from '@renderer/types/EditorManager';
 import { Point } from '@renderer/types/graphics';
@@ -52,6 +55,7 @@ export class MachineController {
 
   states: Map<string, State> = new Map();
   transitions: Map<string, Transition> = new Map();
+  notes: Map<string, Note> = new Map();
 
   platform!: PlatformManager;
 
@@ -594,93 +598,6 @@ export class MachineController {
     this.container.isDirty = true;
   }
 
-  deleteSelected = () => {
-    let removed = false;
-
-    const killList: string[] = [];
-    this.states.forEach((state) => {
-      if (state.isSelected) {
-        if (state.eventBox.selection) {
-          this.deleteEvent(state.id, state.eventBox.selection);
-          state.eventBox.selection = undefined;
-          removed = true;
-          return;
-        } else {
-          killList.push(state.id);
-        }
-      }
-    });
-    for (const k of killList) {
-      this.deleteState(k);
-      removed = true;
-    }
-
-    killList.length = 0;
-
-    this.transitions.forEach((value) => {
-      if (value.isSelected) {
-        killList.push(value.id);
-      }
-    });
-
-    for (const k of killList) {
-      this.deleteTransition(k);
-      removed = true;
-    }
-
-    if (removed) {
-      this.container.isDirty = true;
-    }
-  };
-
-  //Глубокое рекурсивное копирование выбранного состояния или связи и занесения его данных в буфер обмена
-  copySelected = () => {
-    //Выделено состояние для копирования
-    this.states.forEach((state) => {
-      if (state.isSelected) {
-        navigator.clipboard.writeText(JSON.stringify(state.data)).then(() => {
-          console.log('Скопировано состояние!');
-        });
-      }
-    });
-
-    //Выделена связь для копирования
-    this.transitions.forEach((transition) => {
-      if (transition.isSelected) {
-        navigator.clipboard.writeText(JSON.stringify(transition.data)).then(() => {
-          console.log('Скопирована связь!');
-        });
-      }
-    });
-    this.container.isDirty = true;
-  };
-
-  //Вставляем код из буфера обмена в редактор машин состояний
-  pasteSelected = () => {
-    navigator.clipboard.readText().then((data) => {
-      const copyData = JSON.parse(data) as StateType | TransitionType;
-      //Проверяем, нет ли нужного нам элемента в объекте с разными типами
-      if ('name' in copyData) {
-        this.createState({
-          name: copyData.name,
-          position: copyData.bounds,
-          events: copyData.events,
-          parentId: copyData.parent,
-        });
-      } else {
-        this.createTransition({
-          ...copyData,
-          component: copyData.trigger.component,
-          method: copyData.trigger.method,
-          doAction: copyData.do!,
-          condition: copyData.condition!,
-        });
-      }
-      console.log('Объект вставлен!');
-    });
-    this.container.isDirty = true;
-  };
-
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.states.get(stateId);
     if (!state) return;
@@ -918,11 +835,97 @@ export class MachineController {
     }
   }
 
+  deleteSelected = () => {
+    this.states.forEach((state) => {
+      if (!state.isSelected) return;
+
+      if (state.eventBox.selection) {
+        this.deleteEvent(state.id, state.eventBox.selection);
+        state.eventBox.selection = undefined;
+        return;
+      }
+
+      this.deleteState(state.id);
+    });
+
+    this.transitions.forEach((transition) => {
+      if (!transition.isSelected) return;
+
+      this.deleteTransition(transition.id);
+    });
+
+    this.notes.forEach((note) => {
+      if (!note.isSelected) return;
+
+      this.deleteNote(note.id);
+    });
+  };
+
+  copySelected = () => {
+    this.states.forEach((state) => {
+      if (!state.isSelected) return;
+
+      const data = this.container.app.manager.serializer.getState(state.id);
+      if (!data) return;
+
+      navigator.clipboard.writeText(data);
+    });
+
+    this.transitions.forEach((transition) => {
+      if (!transition.isSelected) return;
+
+      const data = this.container.app.manager.serializer.getTransition(transition.id);
+      if (!data) return;
+
+      navigator.clipboard.writeText(data);
+    });
+
+    this.notes.forEach((note) => {
+      if (!note.isSelected) return;
+
+      const data = this.container.app.manager.serializer.getNote(note.id);
+      if (!data) return;
+
+      navigator.clipboard.writeText(data);
+    });
+  };
+
+  pasteSelected = async () => {
+    const data = await navigator.clipboard.readText();
+
+    const copyData = JSON.parse(data) as StateType | TransitionType | NoteType;
+
+    if ('name' in copyData) {
+      return this.createState({
+        name: copyData.name,
+        position: copyData.bounds,
+        events: copyData.events,
+        parentId: copyData.parent,
+        color: copyData.color,
+      });
+    }
+
+    if ('text' in copyData) {
+      return this.createNote(copyData);
+    }
+
+    return this.createTransition({
+      ...copyData,
+      component: copyData.trigger.component,
+      method: copyData.trigger.method,
+      doAction: copyData.do ?? [],
+      condition: copyData.condition ?? undefined,
+    });
+  };
+
   selectState(id: string) {
     const state = this.states.get(id);
     if (!state) return;
 
     this.removeSelection();
+
+    this.container.app.manager.changeStateSelection(id, true);
+
     state.setIsSelected(true);
   }
 
@@ -931,7 +934,19 @@ export class MachineController {
     if (!transition) return;
 
     this.removeSelection();
+
+    this.container.app.manager.changeTransitionSelection(id, true);
+
     transition.setIsSelected(true);
+  }
+
+  selectNote(id: string) {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    this.removeSelection();
+
+    note.setIsSelected(true);
   }
 
   /**
@@ -946,11 +961,17 @@ export class MachineController {
   removeSelection() {
     this.states.forEach((state) => {
       state.setIsSelected(false);
+      this.container.app.manager.changeStateSelection(state.id, false);
       state.eventBox.selection = undefined;
     });
 
-    this.transitions.forEach((value) => {
-      value.setIsSelected(false);
+    this.transitions.forEach((transition) => {
+      transition.setIsSelected(false);
+      this.container.app.manager.changeTransitionSelection(transition.id, false);
+    });
+
+    this.notes.forEach((note) => {
+      note.setIsSelected(false);
     });
 
     this.container.isDirty = true;
@@ -971,5 +992,78 @@ export class MachineController {
       });
     }
     return vacant;
+  }
+
+  createNote(params: CreateNoteParameters, canUndo = true) {
+    const newNoteId = this.container.app.manager.createNote(params);
+    const note = new Note(this.container, newNoteId);
+
+    this.notes.set(newNoteId, note);
+    this.container.notesController.watch(note);
+    this.container.children.add('note', newNoteId);
+
+    this.container.isDirty = true;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'createNote',
+        args: { id: newNoteId, params },
+      });
+    }
+
+    return note;
+  }
+
+  changeNoteText = (id: string, text: string, canUndo = true) => {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeNoteText',
+        args: { id, text, prevText: note.data.text },
+      });
+    }
+
+    this.container.app.manager.changeNoteText(id, text);
+    note.prepareText();
+
+    this.container.isDirty = true;
+  };
+
+  changeNotePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'changeNotePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.container.app.manager.changeNotePosition(id, endPosition);
+
+    this.container.isDirty = true;
+  }
+
+  deleteNote(id: string, canUndo = true) {
+    const note = this.notes.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.undoRedo.do({
+        type: 'deleteNote',
+        args: { id, prevData: structuredClone(note.data) },
+      });
+    }
+
+    this.container.app.manager.deleteNote(id);
+
+    this.container.children.remove('note', id);
+    this.container.notesController.unwatch(note);
+    this.notes.delete(id);
+
+    this.container.isDirty = true;
   }
 }

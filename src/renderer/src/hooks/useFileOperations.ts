@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
 interface useFileOperationsArgs {
-  manager: EditorManager;
   openLoadError: (cause: any) => void;
   openSaveError: (cause: any) => void;
   openCreateSchemeModal: () => void;
@@ -14,12 +13,14 @@ interface useFileOperationsArgs {
 }
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
-  const { manager, openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
+  const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
+  const editor = useEditorContext();
+  const manager = editor.manager;
   const isStale = manager.useData('isStale');
   const name = manager.useData('name');
 
-  const clearTabs = useTabs((state) => state.clearTabs);
+  const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -57,6 +58,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
     if (result && isRight(result)) {
       clearTabs();
+      openTab({ type: 'editor', name: 'editor' });
     }
   };
 
@@ -64,6 +66,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     manager.files.createFromTemplate(type, name, openImportError);
 
     clearTabs();
+    openTab({ type: 'editor', name: 'editor' });
   };
 
   //Создание нового файла
@@ -85,6 +88,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const performNewFile = (idx: string) => {
     manager?.files.newFile(idx);
     clearTabs();
+    openTab({ type: 'editor', name: 'editor' });
   };
 
   const handleSaveAsFile = async () => {

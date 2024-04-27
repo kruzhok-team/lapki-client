@@ -3,16 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Settings } from '@renderer/components/Modules/Settings';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useSettings } from '@renderer/hooks';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { languageMappers } from '@renderer/utils';
 
 export interface CompilerProps {
-  manager: EditorManager;
-  editor: CanvasEditor | null;
   openData: [boolean, string | null, string | null, string] | undefined;
   compilerData: CompilerResult | undefined;
   setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
@@ -22,13 +20,16 @@ export interface CompilerProps {
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
-  manager,
   openData,
   compilerData,
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
 }) => {
+  const { manager } = useEditorContext();
+
+  const [compilerSetting] = useSettings('compiler');
+
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
@@ -81,7 +82,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
-        language: 'xml',
+        language: languageMappers[element.extension] ?? element.extension,
       });
     });
   };
@@ -98,12 +99,13 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   }, [importData]);
 
   useEffect(() => {
-    console.log('CONNECTING TO COMPILER');
-    Settings.getCompilerSettings().then((compiler) => {
-      Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
-      Compiler.connect(compiler.host, compiler.port);
-    });
-  }, []);
+    if (!compilerSetting) return;
+
+    const { host, port } = compilerSetting;
+
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    Compiler.connect(host, port);
+  }, [compilerSetting]);
 
   const button = [
     {

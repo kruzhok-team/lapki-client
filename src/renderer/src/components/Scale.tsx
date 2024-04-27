@@ -4,16 +4,13 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useDoc } from '@renderer/store/useDoc';
 
-interface ScaleProps {
-  editor: CanvasEditor;
-  manager: EditorManager;
-}
+export const Scale: React.FC = () => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
 
-export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const isDocOpen = useDoc((state) => state.isOpen);
 
   const scale = manager.useData('scale');

@@ -4,11 +4,10 @@ import { SingleValue } from 'react-select';
 
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable/State';
 import { Transition } from '@renderer/lib/drawable/Transition';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import {
   Action,
   Condition as ConditionData,
@@ -16,7 +15,7 @@ import {
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
+import { defaultTransitionColor, defaultStateColor } from '@renderer/utils';
 
 import { Condition } from './Condition';
 import { EventsBlockModal } from './EventsBlockModal';
@@ -31,8 +30,6 @@ export interface CreateModalResult {
 }
 
 interface CreateModalProps {
-  editor: CanvasEditor;
-  manager: EditorManager;
   state: State | undefined;
   transition: Transition | undefined;
   events: Action[];
@@ -44,8 +41,6 @@ interface CreateModalProps {
 }
 
 export const CreateModal: React.FC<CreateModalProps> = ({
-  editor,
-  manager,
   state,
   transition,
   events,
@@ -55,6 +50,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   onSubmit,
   onClose,
 }) => {
+  const editor = useEditorContext();
+  const manager = editor.manager;
+
   const componentsData = manager.useData('elements.components');
   const machine = editor.container.machineController;
   const isEditingState = state !== undefined;
@@ -116,9 +114,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
 
   //Хранение цвета связи
-  const [color, setColor] = useState(defaultTransColor);
+  const [color, setColor] = useState('#FFFFFF');
 
-  const condition = useCreateModalCondition({ editor, manager, isEditingState, formState });
+  const condition = useCreateModalCondition({ isEditingState, formState });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,7 +208,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.setSelectedMethodParam1('');
     condition.setSelectedMethodParam2('');
     condition.setArgsParam2('');
-    setColor(transition?.data?.color ?? defaultTransColor);
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);
@@ -225,6 +222,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       const init = (state: State) => {
         const { data } = state;
 
+        setColor(data.color ?? defaultStateColor);
         setSelectedComponent(data.events[0].trigger.component);
         setSelectedMethod(data.events[0].trigger.method);
       };
@@ -292,6 +290,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
       setSelectedComponent(data.trigger.component);
       setSelectedMethod(data.trigger.method);
+      setColor(data?.color ?? defaultTransitionColor);
 
       tryGetCondition();
     };
@@ -334,7 +333,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       {!isEditingState && <Condition {...condition} />}
 
       <EventsBlockModal
-        editor={editor}
         state={state}
         transition={transition}
         selectedComponent={selectedComponent}
@@ -345,12 +343,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
         isOpen={isOpen}
       />
 
-      {!isEditingState && (
-        <label className="flex items-center gap-2">
-          <span className="font-bold">Цвет связи:</span>
-          <ColorInput value={color} onChange={setColor} />
-        </label>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="font-bold">Цвет:</span>
+        <ColorInput value={color} onChange={setColor} />
+      </div>
     </Modal>
   );
 };

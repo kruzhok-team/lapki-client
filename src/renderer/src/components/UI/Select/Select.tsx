@@ -8,7 +8,6 @@ import ReactSelect, {
   SingleValueProps,
   components,
 } from 'react-select';
-
 import './style.css';
 import { twMerge } from 'tailwind-merge';
 

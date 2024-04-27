@@ -5,7 +5,7 @@ import { EditorManager } from './EditorManager';
 import { emptyElements } from '../../../types/diagram';
 
 const em = new EditorManager();
-em.init('basename', 'name', { ...emptyElements(), transitions: [] });
+em.init('basename', 'name', emptyElements());
 
 describe('states', () => {
   describe('create', () => {
@@ -14,24 +14,32 @@ describe('states', () => {
     });
 
     test('basic', () => {
-      em.createState({ name: 'state', position: { x: 100, y: 150 }, id: '0' });
+      em.createState({ name: 'state', position: { x: 100, y: 150 }, id: '0', color: '#FFFFFF' });
 
       expect(em.data.elements.states).toHaveProperty('0', {
         name: 'state',
         bounds: { x: 100, y: 150, width: 450, height: 100 },
         events: [],
         parent: undefined,
+        color: '#FFFFFF',
       });
     });
 
     test('in center', () => {
-      em.createState({ name: 'state', position: { x: 100, y: 150 }, placeInCenter: true, id: '0' });
+      em.createState({
+        name: 'state',
+        position: { x: 100, y: 150 },
+        placeInCenter: true,
+        id: '0',
+        color: '#FFFFFF',
+      });
 
       expect(em.data.elements.states).toHaveProperty('0', {
         name: 'state',
         bounds: { x: -125, y: 100, width: 450, height: 100 },
         events: [],
         parent: undefined,
+        color: '#FFFFFF',
       });
     });
 
@@ -39,7 +47,7 @@ describe('states', () => {
       const count = 10;
 
       for (let i = 0; i < count; i++) {
-        em.createState({ name: 'state', position: { x: 0, y: 0 } });
+        em.createState({ name: 'state', position: { x: 0, y: 0 }, color: '#FFFFFF' });
       }
 
       const ids = Object.keys(em.data.elements.states);
@@ -48,7 +56,13 @@ describe('states', () => {
     });
 
     test('with parentId', () => {
-      em.createState({ name: 'state', position: { x: 0, y: 0 }, id: '0', parentId: '1' });
+      em.createState({
+        name: 'state',
+        position: { x: 0, y: 0 },
+        id: '0',
+        parentId: '1',
+        color: '#FFFFFF',
+      });
 
       expect(em.data.elements.states).toHaveProperty('0', expect.objectContaining({ parent: '1' }));
     });
@@ -70,6 +84,7 @@ describe('states', () => {
             ],
           },
         ],
+        color: '#FFFFFF',
       });
 
       const state = em.data.elements.states['0'];
@@ -100,6 +115,7 @@ describe('states', () => {
         actions: [],
         triggerComponent: '',
         triggerMethod: '',
+        color: '#FFFFFF',
       });
 
       expect(res, 'Должно вернуться false если состояния не существует').toBe(false);

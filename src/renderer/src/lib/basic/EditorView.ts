@@ -36,7 +36,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    this.drawGrid(ctx, canvas);
+    if (this.app.settings.grid) {
+      this.drawGrid(ctx, canvas);
+    }
 
     const drawChildren = (node: Drawable) => {
       if (!node.children) return;

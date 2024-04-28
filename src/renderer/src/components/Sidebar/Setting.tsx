@@ -41,7 +41,10 @@ export const Setting: React.FC = () => {
   };
 
   const handleChangeCanvasAnimations = (value: boolean) => {
-    setCanvasSettings({ animations: value });
+    setCanvasSettings({
+      ...canvasSettings!,
+      animations: value,
+    });
   };
 
   return (

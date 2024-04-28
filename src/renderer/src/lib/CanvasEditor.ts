@@ -8,6 +8,7 @@ import { preloadPicto } from '@renderer/lib/drawable';
 
 interface CanvasEditorSettings {
   animations: boolean;
+  grid: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export class CanvasEditor {
   model = new EditorModel();
   settings: CanvasEditorSettings = {
     animations: true,
+    grid: true,
   };
 
   constructor() {

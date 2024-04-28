@@ -2,8 +2,10 @@ import React from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
+import { useSettings } from '@renderer/hooks/useSettings';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useDoc } from '@renderer/store/useDoc';
 
@@ -14,6 +16,7 @@ export const Scale: React.FC = () => {
   const isDocOpen = useDoc((state) => state.isOpen);
 
   const scale = model.useData('scale');
+  const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
     editor.view.changeScale(0.1);
@@ -27,6 +30,13 @@ export const Scale: React.FC = () => {
     editor.view.changeScale(1, true);
   };
 
+  const handleCanvasGrid = () => {
+    setCanvasSettings({
+      ...canvasSettings!,
+      grid: !canvasSettings?.grid,
+    });
+  };
+
   return (
     <div
       className={twMerge(
@@ -34,6 +44,13 @@ export const Scale: React.FC = () => {
         isDocOpen && '-translate-x-[400px]'
       )}
     >
+      <button
+        className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+        onClick={handleCanvasGrid}
+      >
+        <Grid width={20} height={20} />
+      </button>
+
       <button
         className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
         onClick={handleZoomOut}

@@ -10,6 +10,7 @@ import { preloadPicto } from './drawable/Picto';
 
 interface CanvasEditorSettings {
   animations: boolean;
+  grid: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export class CanvasEditor {
 
   settings: CanvasEditorSettings = {
     animations: true,
+    grid: true,
   };
 
   manager!: EditorManager;

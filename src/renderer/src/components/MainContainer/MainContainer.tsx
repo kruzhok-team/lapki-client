@@ -56,7 +56,7 @@ export const MainContainer: React.FC = () => {
     noKeyboard: true,
     noClick: true,
     accept: {
-      '.graphml': [],
+      'application/xml': ['.graphml'],
     },
     multiple: false,
     onDrop,

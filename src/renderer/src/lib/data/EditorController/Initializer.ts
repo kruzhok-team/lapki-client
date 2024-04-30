@@ -64,7 +64,6 @@ export class Initializer {
    * а создание и линковка переходов была после вызова этого метода
    *
    * Это нужно потому что в схемы могут идти сначала дети а потом родители
-   * Демо: child-before-parent.json
    */
   private initStates() {
     const items = this.app.model.data.elements.states;

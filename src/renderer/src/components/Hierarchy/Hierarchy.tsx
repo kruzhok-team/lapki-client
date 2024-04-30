@@ -269,7 +269,7 @@ export const Hierarchy: React.FC = () => {
     }
 
     for (const [transitionId, transition] of Object.entries(transitions)) {
-      if (transition.label?.selection) {
+      if (transition?.selection) {
         return setSelectedItems([transitionId]);
       }
     }

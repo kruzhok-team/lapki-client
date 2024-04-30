@@ -28,7 +28,7 @@ export class InitialState extends Shape {
     return { width: 50, height: 50 };
   }
   set dimensions(_value) {
-    throw new Error('InitialState does not have dimensions');
+    throw new Error('InitialState dimensions are immutable');
   }
 
   draw(ctx: CanvasRenderingContext2D) {

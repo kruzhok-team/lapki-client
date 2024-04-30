@@ -45,6 +45,8 @@ export interface CreateStateParams {
   id?: string;
   events?: EventData[];
   placeInCenter?: boolean;
+
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
   canBeInitial?: boolean;
 }
@@ -53,6 +55,8 @@ export type CreateInitialStateParams = InitialStateData & { id?: string };
 export type CreateFinalStateParams = FinalStateData & {
   id?: string;
   placeInCenter?: boolean;
+
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
 export type CreateTransitionParams = TransitionData & { id?: string };

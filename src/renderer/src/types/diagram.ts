@@ -69,8 +69,8 @@ export interface Transition {
     condition?: Condition | null;
     do?: Action[];
     //TODO: В дальнейшем планируется убрать
-    selection?: boolean;
   };
+  selection?: boolean;
 }
 
 export type Component = {

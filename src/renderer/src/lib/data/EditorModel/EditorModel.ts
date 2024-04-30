@@ -493,7 +493,7 @@ export class EditorModel {
     const transition = this.data.elements.transitions[id];
     if (!transition || !transition.label) return false;
 
-    transition.label.selection = selection;
+    transition.selection = selection;
 
     this.triggerDataUpdate('elements.states');
     return true;

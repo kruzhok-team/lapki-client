@@ -5,6 +5,9 @@ import { getColor } from '@renderer/theme';
 
 const placeholder = 'Придумайте заметку';
 
+/**
+ * Класс который отрисовывает данные заметки
+ */
 export class Note extends Shape {
   private textData = {
     height: 100,
@@ -43,8 +46,7 @@ export class Note extends Shape {
     return { width: 200, height: 10 * 2 + this.textData.height };
   }
   set dimensions(_value) {
-    throw new Error('Note does not have dimensions');
-    // this.data.dimensions = value;
+    throw new Error('Note dimensions are immutable');
   }
 
   get computedStyles() {

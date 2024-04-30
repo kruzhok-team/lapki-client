@@ -31,7 +31,7 @@ export class Serializer {
     const transition = this.data.elements.transitions[id];
     if (!transition || !transition.label) return null;
 
-    delete transition.label.selection;
+    delete transition.selection;
     return JSON.stringify(transition, undefined, 2);
   }
 

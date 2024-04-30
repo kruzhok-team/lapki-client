@@ -14,6 +14,8 @@ export interface RemoveComponentParams {
 export interface LinkStateParams {
   parentId: string;
   childId: string;
+
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
   addOnceOff?: boolean;
   canBeInitial?: boolean;
 }

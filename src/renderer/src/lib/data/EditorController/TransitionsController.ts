@@ -8,18 +8,17 @@ import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
-/**
- * Контроллер {@link Transition|переходов}.
- * Обрабатывает события, связанные с переходами.
- * Отрисовывает {@link GhostTransition|«призрачный» переход}.
- */
-
 interface TransitionsControllerEvents {
   createTransition: { source: State; target: State };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
 
+/**
+ * Контроллер {@link Transition|переходов}.
+ * Обрабатывает события, связанные с переходами.
+ * Отрисовывает {@link GhostTransition|«призрачный» переход}.
+ */
 export class TransitionsController extends EventEmitter<TransitionsControllerEvents> {
   ghost!: GhostTransition;
 

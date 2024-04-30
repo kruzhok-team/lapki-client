@@ -8,6 +8,17 @@ import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { isPointInRectangle } from '@renderer/lib/utils';
 
+interface ShapeEvents {
+  mousedown: { event: MyMouseEvent };
+  mouseup: { event: MyMouseEvent };
+  click: { event: MyMouseEvent };
+  dblclick: { event: MyMouseEvent };
+  contextmenu: { event: MyMouseEvent };
+  longpress: { event: MyMouseEvent };
+  drag: { event: MyMouseEvent };
+  dragend: { dragStartPosition: Point; dragEndPosition: Point };
+}
+
 /**
  * Перемещаемый элемент холста.
  * Класс реализует перемещение фигуры с помощью мыши и рассчитывает
@@ -24,18 +35,6 @@ import { isPointInRectangle } from '@renderer/lib/utils';
  * TODO: Это явно нужно переделать.
  * TODO(bryzZz) Вложенность нужно сделать у конкретных объектов которым это надо
  */
-
-interface ShapeEvents {
-  mousedown: { event: MyMouseEvent };
-  mouseup: { event: MyMouseEvent };
-  click: { event: MyMouseEvent };
-  dblclick: { event: MyMouseEvent };
-  contextmenu: { event: MyMouseEvent };
-  longpress: { event: MyMouseEvent };
-  drag: { event: MyMouseEvent };
-  dragend: { dragStartPosition: Point; dragEndPosition: Point };
-}
-
 export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawable {
   children = new Children();
 

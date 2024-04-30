@@ -11,6 +11,10 @@ interface NotesControllerEvents {
   contextMenu: { note: Note; position: Point };
 }
 
+/**
+ * Контроллер {@link Note|заметок}.
+ * Обрабатывает события, связанные с ними.
+ */
 export class NotesController extends EventEmitter<NotesControllerEvents> {
   private items: Map<string, Note> = new Map();
 

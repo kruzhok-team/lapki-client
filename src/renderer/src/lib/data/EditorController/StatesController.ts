@@ -53,7 +53,11 @@ interface StatesControllerEvents {
 
 /**
  * Контроллер состояний.
- * TODO(bryzZz) numberOfConnectedActions неочивидный, нужно чтобы функция сама возвращала сколько действий в историю она положила
+ * Хранит вью всех видов состояний.
+ * Реализовывает все действия связанные со всеми видами состояний.
+ * Навешивает события на вью состояний.
+ *
+ * TODO(bryzZz) numberOfConnectedActions неочевидный, нужно чтобы функция сама возвращала сколько действий в историю она положила
  */
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;

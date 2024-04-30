@@ -42,7 +42,7 @@ export const Scale: React.FC = () => {
     <div
       className={twMerge(
         'absolute bottom-3 right-10 flex items-stretch overflow-hidden rounded bg-bg-secondary transition-transform',
-        isDocOpen && `-translate-x-[400px]`
+        isDocOpen && '-translate-x-[400px]'
       )}
     >
       <button

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Resizable } from 're-resizable';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Question } from '@renderer/assets/icons/question-mark.svg';
+import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
@@ -145,13 +145,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     <div
       className={twMerge(
         'absolute right-0 top-0 flex justify-end',
-        isOpen && 'translate-x-0',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
+      onDoubleClick={toggle}
     >
-      <button className={twMerge('m-2 mb-auto', topOffset && 'top-[44.19px]')} onClick={toggle}>
-        <Question height={35} width={35} />
-      </button>
       <Resizable
         enable={{ left: true }}
         size={{ width: width, height: topOffset ? '95.85vh' : '100vh' }}
@@ -160,7 +157,12 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         onResize={handleResize}
         className={twMerge('border-l border-border-primary bg-bg-secondary')}
       >
-        <div className="w-[${maxWidth}] h-full">{renderContent()}</div>
+        {!topOffset && (
+          <button className={`absolute -left-[4vw] bottom-0 m-2`} onClick={toggle}>
+            <Question height={40} width={40} />
+          </button>
+        )}
+        <div className="h-full">{renderContent()}</div>
       </Resizable>
     </div>
   );

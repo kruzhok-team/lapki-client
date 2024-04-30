@@ -144,7 +144,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex justify-end',
+        'absolute right-0 top-0 flex',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
       onDoubleClick={toggle}

@@ -1,55 +1,57 @@
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { Events, EdgeHandlers, icons } from '@renderer/lib/drawable';
+import { Shape } from '@renderer/lib/drawable/Shape';
+import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
-
-import { EdgeHandlers } from './EdgeHandlers';
-import { Events } from './Events';
-import { Node } from './Node';
-import { icons } from './Picto';
-
-import { Container } from '../basic/Container';
-import { drawText } from '../utils/text';
 
 const style = theme.colors.diagram.state;
 
 /**
  * Нода машины состояний.
- * Класс выполняет отрисовку, обработку событий (за счёт {@link Node}),
+ * Класс выполняет отрисовку, обработку событий (за счёт {@link Shape}),
  * управление собственным выделением и отображение «хваталок».
  */
-export class State extends Node {
+export class State extends Shape {
   isSelected = false;
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
 
-  constructor(container: Container, id: string, parent?: Node) {
-    super(container, id, parent);
+  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+    super(app, id, parent);
 
-    this.eventBox = new Events(this.container, this);
+    this.eventBox = new Events(this.app, this);
     this.updateEventBox();
-    this.edgeHandlers = new EdgeHandlers(container.app, this);
+    this.edgeHandlers = new EdgeHandlers(this.app, this);
   }
 
   get data() {
-    return this.container.app.manager.data.elements.states[this.id];
+    return this.app.model.data.elements.states[this.id];
   }
 
-  get bounds() {
-    return this.data.bounds;
+  get position() {
+    return this.data.position;
   }
-
-  set bounds(value) {
-    this.data.bounds = value;
+  set position(value) {
+    this.data.position = value;
+  }
+  get dimensions() {
+    return this.data.dimensions;
+  }
+  set dimensions(value) {
+    this.data.dimensions = value;
   }
 
   updateEventBox() {
     this.eventBox.recalculate();
     // console.log(['State.updateEventBox', this.id, this.bounds, this.eventBox.bounds]);
-    this.bounds.width = Math.max(
-      this.bounds.width,
-      this.eventBox.bounds.width + this.eventBox.bounds.x
-    );
     const calcHeight = this.titleHeight + this.eventBox.bounds.height + this.eventBox.bounds.y;
+
+    this.dimensions = {
+      height: calcHeight,
+      width: Math.max(this.dimensions.width, this.eventBox.bounds.width + this.eventBox.bounds.x),
+    };
+
     // this.bounds.height = Math.max(this.bounds.height, calcHeight);
-    this.bounds.height = calcHeight;
     // console.log(['/State.updateEventBox', this.id, this.bounds]);
   }
 
@@ -68,7 +70,7 @@ export class State extends Node {
       this.edgeHandlers.draw(ctx);
     }
 
-    if (this.container.statesController.dragInfo?.parentId === this.id) {
+    if (this.app.controller.states.dragInfo?.parentId === this.id) {
       this.drawHighlight(ctx);
     }
   }
@@ -82,10 +84,10 @@ export class State extends Node {
     ctx.beginPath();
 
     ctx.roundRect(x, y, width, height, [
-      6 / this.container.app.manager.data.scale,
-      6 / this.container.app.manager.data.scale,
-      (this.children.isEmpty ? 6 : 0) / this.container.app.manager.data.scale,
-      (this.children.isEmpty ? 6 : 0) / this.container.app.manager.data.scale,
+      6 / this.app.model.data.scale,
+      6 / this.app.model.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.app.model.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.app.model.data.scale,
     ]);
     ctx.fill();
 
@@ -100,11 +102,11 @@ export class State extends Node {
 
   get computedTitleSizes() {
     return {
-      height: this.titleHeight / this.container.app.manager.data.scale,
+      height: this.titleHeight / this.app.model.data.scale,
       width: this.drawBounds.width,
-      fontSize: 15 / this.container.app.manager.data.scale,
-      paddingX: 15 / this.container.app.manager.data.scale,
-      paddingY: 10 / this.container.app.manager.data.scale,
+      fontSize: 15 / this.app.model.data.scale,
+      paddingX: 15 / this.app.model.data.scale,
+      paddingY: 10 / this.app.model.data.scale,
     };
   }
 
@@ -119,8 +121,8 @@ export class State extends Node {
     ctx.fillStyle = style.titleBg;
 
     ctx.roundRect(x, y, width, height, [
-      6 / this.container.app.manager.data.scale,
-      6 / this.container.app.manager.data.scale,
+      6 / this.app.model.data.scale,
+      6 / this.app.model.data.scale,
       0,
       0,
     ]);
@@ -146,7 +148,7 @@ export class State extends Node {
     ctx.strokeStyle = this.data.color;
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);
     ctx.stroke();
     ctx.closePath();
 
@@ -157,15 +159,15 @@ export class State extends Node {
     //Добавляет стиль заднему фону
     ctx.fillStyle = style.bodyBg;
     //создает указательный треугольник
-    ctx.moveTo(x + 100 / this.container.app.manager.data.scale, y - 20 / this.container.app.manager.data.scale);
-    ctx.lineTo(x + 110 / this.container.app.manager.data.scale, y - 2 / this.container.app.manager.data.scale);
-    ctx.lineTo(x + 120 / this.container.app.manager.data.scale, y - 20 / this.container.app.manager.data.scale);
+    ctx.moveTo(x + 100 / this.app.model.data.scale, y - 20 / this.app.model.data.scale);
+    ctx.lineTo(x + 110 / this.app.model.data.scale, y - 2 / this.app.model.data.scale);
+    ctx.lineTo(x + 120 / this.app.model.data.scale, y - 20 / this.app.model.data.scale);
     //Строит прямоугольник
     ctx.roundRect(
       x,
-      y - 120 / this.container.app.manager.data.scale,
+      y - 120 / this.app.model.data.scale,
       width,
-      100 / this.container.app.manager.data.scale,
+      100 / this.app.model.data.scale,
       transitionStyle.startSize
     );
     //Добавляет задний фон объекту канвы
@@ -176,7 +178,7 @@ export class State extends Node {
     ctx.beginPath();
     //Добавляет стиль тексту
     ctx.fillStyle = transitionStyle.bgColor;
-    ctx.fillText(this.isState, x, y - 80 / this.container.app.manager.data.scale);
+    ctx.fillText(this.isState, x, y - 80 / this.app.model.data.scale);
     //Добавляет задний фон объекту канвы
     ctx.fill();
     ctx.closePath();
@@ -191,7 +193,7 @@ export class State extends Node {
     ctx.strokeStyle = getColor('primaryActive');
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.container.app.manager.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);
     ctx.stroke();
     ctx.closePath();
   }
@@ -208,8 +210,8 @@ export class State extends Node {
     ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
       0,
       0,
-      6 / this.container.app.manager.data.scale,
-      6 / this.container.app.manager.data.scale,
+      6 / this.app.model.data.scale,
+      6 / this.app.model.data.scale,
     ]);
     ctx.stroke();
 
@@ -222,8 +224,8 @@ export class State extends Node {
 
     const { x, y } = this.drawBounds;
     const { width } = this.computedTitleSizes;
-    const size = 16 / this.container.app.manager.data.scale;
-    const p = 9 / this.container.app.manager.data.scale;
+    const size = 16 / this.app.model.data.scale;
+    const p = 9 / this.app.model.data.scale;
 
     ctx.beginPath();
     ctx.fillStyle = style.titleColor;

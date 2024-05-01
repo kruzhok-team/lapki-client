@@ -1,10 +1,10 @@
+import { extendPreloadPicto, resolveImg } from '@renderer/lib/drawable';
 import { Either, isLeft, makeLeft, makeRight, unwrapEither } from '@renderer/types/Either';
 import { Platform, PlatformInfo, Platforms } from '@renderer/types/platform';
 
 import { PlatformManager } from './PlatformManager';
 
 import PlatformsJSONCodec from '../codecs/PlatformsJSONCodec';
-import { extendPreloadPicto, resolveImg } from '../drawable/Picto';
 // TODO? выдача стандартного файла для платформы
 
 const platformPaths = await window.api.fileHandlers.getPlatforms();

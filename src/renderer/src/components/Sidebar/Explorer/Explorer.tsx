@@ -16,7 +16,7 @@ import { ComponentsList } from './ComponentsList';
 
 export const Explorer: React.FC = () => {
   const editor = useEditorContext();
-  const isMounted = editor.manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);

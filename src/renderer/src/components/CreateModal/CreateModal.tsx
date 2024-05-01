@@ -4,9 +4,9 @@ import { SingleValue } from 'react-select';
 
 import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
 import { useCreateModalCondition } from '@renderer/hooks';
+import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { State } from '@renderer/lib/drawable/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import {
   Action,
@@ -15,7 +15,6 @@ import {
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { defaultTransitionColor, defaultStateColor } from '@renderer/utils';
 
 import { Condition } from './Condition';
 import { EventsBlockModal } from './EventsBlockModal';
@@ -51,10 +50,10 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   onClose,
 }) => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const componentsData = manager.useData('elements.components');
-  const machine = editor.container.machineController;
+  const componentsData = model.useData('elements.components');
+  const controller = editor.controller;
   const isEditingState = state !== undefined;
 
   const [formState, setFormState] = useState<'submitted' | 'default'>('default');
@@ -64,13 +63,13 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   const componentOptions: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = machine.platform.getComponent(id);
+      const proto = controller.platform.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: machine.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -81,28 +80,28 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
 
     return result;
-  }, [componentsData, isEditingState, machine]);
+  }, [componentsData, isEditingState, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
-    const getAll = machine.platform['getAvailableEvents'];
-    const getImg = machine.platform['getEventIconUrl'];
+    const getAll = controller.platform['getAvailableEvents'];
+    const getImg = controller.platform['getEventIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(machine.platform, selectedComponent).map(({ name, description }) => {
+    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
       return {
         value: name,
         label: name,
         hint: description,
         icon: (
           <img
-            src={getImg.call(machine.platform, selectedComponent, name, true)}
+            src={getImg.call(controller.platform, selectedComponent, name, true)}
             className="mr-1 h-7 w-7 object-contain"
           />
         ),
       };
     });
-  }, [machine, selectedComponent]);
+  }, [controller, selectedComponent]);
 
   const handleComponentChange = (value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? '');
@@ -114,7 +113,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   };
 
   //Хранение цвета связи
-  const [color, setColor] = useState('#FFFFFF');
+  const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
 
   const condition = useCreateModalCondition({ isEditingState, formState });
 
@@ -222,7 +221,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       const init = (state: State) => {
         const { data } = state;
 
-        setColor(data.color ?? defaultStateColor);
+        setColor(data.color ?? DEFAULT_STATE_COLOR);
         setSelectedComponent(data.events[0].trigger.component);
         setSelectedMethod(data.events[0].trigger.method);
       };
@@ -232,7 +231,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     //Позволяет найти начальные значения условия(условий), если таковые имеются
     const tryGetCondition = () => {
       if (!transition) return;
-      const c = transition.data.condition;
+      const c = transition.data.label?.condition;
       if (!c) return undefined;
       condition.handleChangeConditionShow(true);
       const operator = c.type;
@@ -288,14 +287,16 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     const init = (transition: Transition) => {
       const { data } = transition;
 
-      setSelectedComponent(data.trigger.component);
-      setSelectedMethod(data.trigger.method);
-      setColor(data?.color ?? defaultTransitionColor);
+      if (!data.label?.trigger) return;
+
+      setSelectedComponent(data.label.trigger.component);
+      setSelectedMethod(data.label.trigger.method);
+      setColor(data?.color ?? DEFAULT_TRANSITION_COLOR);
 
       tryGetCondition();
     };
     return init(transition);
-  }, [machine, isEditingState, state, transition]);
+  }, [controller, isEditingState, state, transition]);
 
   return (
     //--------------------------------------Показ модального окна------------------------------------------

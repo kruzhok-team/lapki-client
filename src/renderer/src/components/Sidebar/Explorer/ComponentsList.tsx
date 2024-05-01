@@ -11,10 +11,10 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 
 export const ComponentsList: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const isInitialized = manager.useData('isInitialized');
-  const components = manager.useData('elements.components');
+  const isInitialized = model.useData('isInitialized');
+  const components = model.useData('elements.components');
 
   const {
     addProps,
@@ -54,7 +54,7 @@ export const ComponentsList: React.FC = () => {
   };
 
   const renderComponent = (name: string) => {
-    const proto = editor?.container.machineController.platform.getComponent(name);
+    const proto = editor?.controller.platform.getComponent(name);
 
     return (
       <WithHint key={name} hint={proto?.description ?? ''} placement="right">
@@ -72,7 +72,7 @@ export const ComponentsList: React.FC = () => {
             onKeyDown={(e) => onCompKeyDown(e, name)}
             {...props}
           >
-            {editor?.container.machineController.platform?.getFullComponentIcon(name)}
+            {editor?.controller.platform?.getFullComponentIcon(name)}
             <p className="ml-2 line-clamp-1">{name}</p>
           </button>
         )}

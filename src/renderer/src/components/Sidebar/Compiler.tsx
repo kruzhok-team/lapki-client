@@ -26,7 +26,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   compilerStatus,
   setCompilerStatus,
 }) => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
 
@@ -34,8 +34,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = manager.useData('name');
-  const isInitialized = manager.useData('isInitialized');
+  const name = model.useData('name');
+  const isInitialized = model.useData('isInitialized');
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
@@ -44,18 +44,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    manager.files.saveIntoFolder(preparedData);
+    model.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    manager.files.compile();
+    model.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager.files.saveIntoFolder(compilerData!.source!);
+    await model.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -93,7 +93,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      manager.files.parseImportData(importData, openData!);
+      model.files.parseImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);

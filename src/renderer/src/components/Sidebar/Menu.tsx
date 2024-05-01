@@ -15,10 +15,10 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
-  const isStale = manager.useData('isStale');
-  const isInitialized = manager.useData('isInitialized');
+  const isStale = model.useData('isStale');
+  const isInitialized = model.useData('isInitialized');
 
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);

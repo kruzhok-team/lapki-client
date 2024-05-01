@@ -1,11 +1,8 @@
-import { Point } from '@renderer/types/graphics';
-import { MyMouseEvent } from '@renderer/types/mouse';
-
-import { icons } from './Picto';
-import { State } from './State';
-
-import { CanvasEditor } from '../CanvasEditor';
-import { isPointInRectangle } from '../utils';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { State, icons } from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types/graphics';
+import { MyMouseEvent } from '@renderer/lib/types/mouse';
+import { isPointInRectangle } from '@renderer/lib/utils';
 
 /**
  * «Хваталки» для ноды, надстройка над State, отрисовывающая
@@ -31,7 +28,7 @@ export class EdgeHandlers {
   }
 
   get position(): Point[] {
-    const offset = 4 / this.app.manager.data.scale;
+    const offset = 4 / this.app.model.data.scale;
     let {
       x: stateX,
       y: stateY,
@@ -63,7 +60,7 @@ export class EdgeHandlers {
   }
 
   get size() {
-    return 20 / this.app.manager.data.scale;
+    return 20 / this.app.model.data.scale;
   }
 
   setCurrentState(state: State) {

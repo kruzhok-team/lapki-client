@@ -1,11 +1,11 @@
-import { EditorManager } from './EditorManager';
+import { EditorModel } from './EditorModel';
 
 import { exportCGML } from '../GraphmlBuilder';
 
 type SaveMode = 'JSON' | 'Cyberiada';
 
 export class Serializer {
-  constructor(private editorManager: EditorManager) {}
+  constructor(private editorManager: EditorModel) {}
 
   private get data() {
     return this.editorManager.data;
@@ -29,7 +29,7 @@ export class Serializer {
 
   getTransition(id: string) {
     const transition = this.data.elements.transitions[id];
-    if (!transition) return null;
+    if (!transition || !transition.label) return null;
 
     delete transition.selection;
     return JSON.stringify(transition, undefined, 2);

@@ -12,23 +12,23 @@ import { useDoc } from '@renderer/store/useDoc';
 
 export const Scale: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
   const [isDocOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
-  const scale = manager.useData('scale');
+  const scale = model.useData('scale');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
-    editor.container.changeScale(0.1);
+    editor.view.changeScale(0.1);
   };
 
   const handleZoomIn = () => {
-    editor.container.changeScale(-0.1);
+    editor.view.changeScale(-0.1);
   };
 
   const handleReset = () => {
-    editor.container.changeScale(1, true);
+    editor.view.changeScale(1, true);
   };
 
   const handleCanvasGrid = () => {

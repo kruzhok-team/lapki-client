@@ -1,5 +1,12 @@
-import { emptyElements, Action, Condition, EventData } from '@renderer/types/diagram';
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
+import {
+  emptyElements,
+  Action,
+  EventData,
+  Transition as TransitionData,
+  InitialState as InitialStateData,
+  FinalState as FinalStateData,
+} from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
   isMounted: false,
@@ -30,7 +37,7 @@ export const emptyDataListeners = Object.fromEntries([
   ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
 ]) as any as EditorDataListeners;
 
-export interface CreateStateParameters {
+export interface CreateStateParams {
   name: string;
   position: Point;
   color: string;
@@ -38,37 +45,28 @@ export interface CreateStateParameters {
   id?: string;
   events?: EventData[];
   placeInCenter?: boolean;
+
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
+  canBeInitial?: boolean;
 }
 
-export interface CreateTransitionParameters {
+export type CreateInitialStateParams = InitialStateData & { id?: string };
+export type CreateFinalStateParams = FinalStateData & {
   id?: string;
-  source: string;
-  target: string;
-  color: string;
-  position: Point;
-  component: string;
-  method: string;
-  doAction: Action[];
-  condition: Condition | undefined;
-}
+  placeInCenter?: boolean;
 
-export interface CreateNoteParameters {
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
+  linkByPoint?: boolean;
+};
+export type CreateTransitionParams = TransitionData & { id?: string };
+export type ChangeTransitionParams = TransitionData & { id: string };
+
+export interface CreateNoteParams {
   id?: string;
   position: Point;
   text: string;
   placeInCenter?: boolean;
-}
-
-export interface ChangeTransitionParameters {
-  id: string;
-  source: string;
-  target: string;
-  color: string;
-  component: string;
-  method: string;
-  doAction: Action[];
-  condition: Condition | undefined;
 }
 
 export interface ChangeStateEventsParams {

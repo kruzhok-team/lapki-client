@@ -1,4 +1,6 @@
-import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/types/graphics';
+import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/lib/types/graphics';
+
+export * from './generateId';
 
 export const isPointInRectangle = (rectangle: Rectangle, point: Point) => {
   return (
@@ -54,7 +56,7 @@ const getSectors = (
   rect1Bottom: number,
   rect2XCenter: number,
   rect2YCenter: number,
-  rectPadding
+  rectPadding: number
 ) => {
   let sectorH: HSector = 'center';
   let sectorV: VSector = 'center';
@@ -82,13 +84,7 @@ const getArrowAngle = (start: Point, end: Point) => {
   return start.x >= end.x ? 0 : 180;
 };
 
-export const getLine = (
-  rect1: Rectangle,
-  rect2: Rectangle,
-  rectPadding: number,
-  _startLinePadding: number,
-  _endLinePadding: number
-) => {
+export const getLine = (rect1: Rectangle, rect2: Rectangle, rectPadding: number) => {
   const rect2Left = rect2.x;
   const rect2Right = rect2.x + rect2.width;
   const rect2Top = rect2.y;
@@ -216,24 +212,10 @@ export const getTransitionLines = (
   state1: Rectangle,
   state2: Rectangle,
   condition: Rectangle,
-  rectPadding = 0,
-  startLinePadding = 0,
-  endLinePadding = 0
+  rectPadding = 0
 ) => {
-  // const d1 = getDistanceBetweenRectangles(state1, condition);
-  // const d2 = getDistanceBetweenRectangles(state2, condition);
-  // let minDState: Rectangle;
-  // let maxDState: Rectangle;
-  // if (d1 <= d2) {
-  //   minDState = state1;
-  //   maxDState = state2;
-  // } else {
-  //   minDState = state2;
-  //   maxDState = state1;
-  // }
-
-  const sourceLine = getLine(state1, condition, rectPadding, startLinePadding, endLinePadding);
-  const targetLine = getLine(state2, condition, rectPadding, startLinePadding, endLinePadding);
+  const sourceLine = getLine(state1, condition, rectPadding);
+  const targetLine = getLine(state2, condition, rectPadding);
 
   return { sourceLine, targetLine };
 };
@@ -329,13 +311,37 @@ export const drawCurvedLine = (
   ctx.closePath();
 };
 
-export const drawCircle = (ctx: CanvasRenderingContext2D, position: Point, radius: number) => {
+interface DrawCircleOptions {
+  position: Point;
+  radius: number;
+  fillStyle?: CanvasFillStrokeStyles['fillStyle'];
+  strokeStyle?: CanvasFillStrokeStyles['strokeStyle'];
+  lineWidth?: CanvasPathDrawingStyles['lineWidth'];
+}
+
+export const drawCircle = (ctx: CanvasRenderingContext2D, options: DrawCircleOptions) => {
+  const { position, radius, fillStyle, strokeStyle, lineWidth } = options;
+
+  const prevFillStyle = ctx.fillStyle;
+  const prevStrokeStyle = ctx.strokeStyle;
+  const prevLineWidth = ctx.lineWidth;
+
+  if (fillStyle) ctx.fillStyle = fillStyle;
+  if (strokeStyle) ctx.strokeStyle = strokeStyle;
+  if (lineWidth) ctx.lineWidth = lineWidth;
+
   ctx.beginPath();
 
   ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
-  ctx.fill();
+
+  if (fillStyle) ctx.fill();
+  if (strokeStyle) ctx.stroke();
 
   ctx.closePath();
+
+  ctx.fillStyle = prevFillStyle;
+  ctx.strokeStyle = prevStrokeStyle;
+  ctx.lineWidth = prevLineWidth;
 };
 
 export const drawTriangle = (
@@ -357,4 +363,18 @@ export const drawTriangle = (
   ctx.fill();
 
   ctx.closePath();
+};
+
+export const indexOfMin = (arr: number[]) => {
+  let min = Infinity;
+  let minIndex = Infinity;
+
+  arr.forEach((v, i) => {
+    if (v < min) {
+      min = v;
+      minIndex = i;
+    }
+  });
+
+  return minIndex;
 };

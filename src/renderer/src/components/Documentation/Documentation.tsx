@@ -147,7 +147,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         'absolute right-0 top-0 flex',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
-      onDoubleClick={toggle}
     >
       <Resizable
         enable={{ left: true }}
@@ -158,7 +157,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         className={twMerge('border-l border-border-primary bg-bg-secondary')}
       >
         {!topOffset && (
-          <button className={`absolute -left-[4vw] bottom-0 m-2`} onClick={toggle}>
+          <button className="absolute -left-[4vw] bottom-0 m-2" onClick={toggle}>
             <Question height={40} width={40} />
           </button>
         )}

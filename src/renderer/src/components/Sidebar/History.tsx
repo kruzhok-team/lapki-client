@@ -47,7 +47,7 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
         )}
       >
         {actionDescriptions[type](data.args).name}
-        <Arrow height={20} width={20} />
+        <Arrow className="shrink-0" height={20} width={20} />
       </label>
 
       <div className="max-h-0 overflow-hidden rounded-b-sm bg-bg-hover transition-all peer-checked:max-h-[1000px]">

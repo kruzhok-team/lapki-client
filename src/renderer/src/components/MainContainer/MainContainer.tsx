@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 
 import { useDropzone } from 'react-dropzone';
+import { Toaster } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import {
@@ -106,6 +107,16 @@ export const MainContainer: React.FC = () => {
         onCreateFromTemplate={handleOpenFromTemplate}
       />
       <UpdateModal />
+
+      <Toaster
+        offset="3rem"
+        toastOptions={{
+          classNames: {
+            error: 'bg-error text-text-primary border-none text-[0.875rem]',
+            success: 'bg-success',
+          },
+        }}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { base64StringToBlob } from 'blob-util';
 import Websocket from 'isomorphic-ws';
+import { toast } from 'sonner';
 
 import { Buffer } from 'buffer';
 
@@ -213,7 +214,10 @@ export class Compiler {
       if (this.connection) {
         console.log('Compiler: connection closed');
       }
+
       this.setCompilerStatus('Не подключен');
+      toast.error('Ошибка при подключении к компилятору');
+
       this.connection = undefined;
       this.connecting = false;
       if (

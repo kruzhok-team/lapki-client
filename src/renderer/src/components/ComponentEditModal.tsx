@@ -27,8 +27,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { manager } = useEditorContext();
-  const components = manager.useData('elements.components');
+  const { model } = useEditorContext();
+  const components = model.useData('elements.components');
 
   const [name, setName] = useState('');
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
@@ -49,7 +49,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       if (errors[key]) return;
     }
 
-    const submitData = { transitionId: data.transitionId, type: data.type, parameters };
+    const submitData = { type: data.type, parameters };
     const newName = name === idx ? undefined : name;
 
     onEdit(idx, submitData, newName);

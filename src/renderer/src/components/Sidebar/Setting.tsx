@@ -22,7 +22,7 @@ const themeOptions = [
 
 export const Setting: React.FC = () => {
   const editor = useEditorContext();
-  const isMounted = editor.manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
@@ -36,7 +36,7 @@ export const Setting: React.FC = () => {
     document.documentElement.dataset.theme = value;
 
     if (isMounted) {
-      editor.container.isDirty = true;
+      editor.view.isDirty = true;
     }
   };
 

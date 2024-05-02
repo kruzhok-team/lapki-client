@@ -7,7 +7,7 @@ const defaultComponents = {
   System: { onEnter: 'entry', onExit: 'exit' },
 };
 
-const defaultParameters = ['label', 'labelColor'] as const;
+const defaultParameters = ['label', 'labelColor', 'name', 'description'] as const;
 
 export function convertDefaultComponent(component: string, method: string): string {
   return defaultComponents[component][method];
@@ -96,8 +96,8 @@ function validateStates(
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const state of Object.values(states)) {
-    if (state.parent !== undefined && states[state.parent] === undefined) {
-      throw new Error(`Unknown parent state ${state.parent}`);
+    if (state.parentId !== undefined && states[state.parentId] === undefined) {
+      throw new Error(`Unknown parent state ${state.parentId}`);
     }
     for (const event of state.events) {
       const trigger = event.trigger;
@@ -121,8 +121,8 @@ function validateTransitions(
   platformComponents: { [name: string]: ComponentProto }
 ) {
   for (const transition of Object.values(transitions)) {
-    if (transition.do !== undefined) {
-      for (const action of transition.do) {
+    if (transition.label?.do !== undefined) {
+      for (const action of transition.label.do) {
         validateEvent(action.component, action.method, action.args, components, platformComponents);
       }
     }

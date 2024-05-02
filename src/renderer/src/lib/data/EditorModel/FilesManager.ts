@@ -6,7 +6,7 @@ import { emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { TemplatesList } from '@renderer/types/templates';
 
-import { EditorManager } from './EditorManager';
+import { EditorModel } from './EditorModel';
 
 import ElementsJSONCodec from '../../codecs/ElementsJSONCodec';
 import { importGraphml } from '../GraphmlParser';
@@ -18,7 +18,7 @@ type FileError = {
 };
 
 export class FilesManager {
-  constructor(private editorManager: EditorManager) {}
+  constructor(private editorManager: EditorModel) {}
 
   private get data() {
     return this.editorManager.data;

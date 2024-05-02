@@ -3,10 +3,10 @@ import { useEffect } from 'react';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 export const useAppTitle = () => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
-  const name = manager.useData('name');
-  const platformName = manager.useData('elements.platform');
+  const name = model.useData('name');
+  const platformName = model.useData('elements.platform');
 
   useEffect(() => {
     if (!name || !platformName) return;

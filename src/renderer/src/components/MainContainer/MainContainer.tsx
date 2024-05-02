@@ -21,16 +21,15 @@ import {
   preloadPlatforms,
   preparePreloadImages,
 } from '@renderer/lib/data/PlatformLoader';
-import { preloadPicto } from '@renderer/lib/drawable/Picto';
+import { preloadPicto } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
 
-  const isMounted = manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 

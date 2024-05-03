@@ -20,7 +20,7 @@ export const NoteEdit: React.FC = () => {
     const el = ref.current;
     const value = (el?.textContent ?? '').trim();
 
-    if (!el || !note) return;
+    if (!el || !note || note.data.text === value) return;
 
     editor.controller.notes.changeNoteText(note.id, value);
   }, [editor, note]);

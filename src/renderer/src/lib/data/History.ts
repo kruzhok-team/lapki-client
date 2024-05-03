@@ -505,6 +505,8 @@ export class History {
   clear() {
     this.undoStack.length = 0;
     this.redoStack.length = 0;
+
+    this.updateSnapshot();
   }
 
   private updateSnapshot = () => {

@@ -183,7 +183,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       language: 'txt',
     });
   };
-  console.log(connectionStatus);
+
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,

@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { twMerge } from 'tailwind-merge';
-
 import { Select, Switch } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useFlasher } from '@renderer/hooks/useFlasher';

@@ -101,13 +101,6 @@ export const Setting: React.FC = () => {
         >
           Загрузчик…
         </button>
-        <button
-          className="btn-primary px-2"
-          onClick={handleHostChange}
-          disabled={connectionStatus == FLASHER_CONNECTING || flashing}
-        >
-          Проверка блокировки кнопки
-        </button>
         <button className="btn-primary mb-4" onClick={openDocModal}>
           Документация…
         </button>

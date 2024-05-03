@@ -221,7 +221,7 @@ export class Flasher {
           }
           case 'flash-not-supported': {
             this.flashingEnd(
-              `Устройство ${response.payload} не поддерживается для прошивки в данной версии IDE`,
+              `Устройство ${response.payload} не поддерживается для прошивки в данной версии IDE.`,
               undefined
             );
             break;
@@ -230,7 +230,7 @@ export class Flasher {
             if (this.addDevice(response.payload as Device)) {
               this.setFlasherLog('Добавлено устройство!');
             } else {
-              this.setFlasherLog('Состояние об устройстве синхронизировано');
+              this.setFlasherLog('Состояние об устройстве синхронизировано.');
             }
             break;
           }
@@ -243,15 +243,15 @@ export class Flasher {
             break;
           }
           case 'unmarshal-error': {
-            this.setFlasherLog('Не удалось распарсить JSON-сообщение от клиента');
+            this.setFlasherLog('Не удалось распарсить JSON-сообщение от клиента.');
             break;
           }
           case 'flash-done': {
-            this.flashingEnd('Загрузка завершена', `${response.payload}`);
+            this.flashingEnd('Загрузка завершена.', `${response.payload}.`);
             break;
           }
           case 'flash-blocked': {
-            this.setFlasherLog('Устройство заблокировано другим пользователем для прошивки');
+            this.setFlasherLog('Устройство заблокировано другим пользователем для прошивки.');
             break;
           }
           case 'flash-large-file': {
@@ -262,44 +262,44 @@ export class Flasher {
             break;
           }
           case 'flash-avrdude-error': {
-            this.flashingEnd('Возникла ошибка во время прошивки', `${response.payload}`);
+            this.flashingEnd('Возникла ошибка во время прошивки.', `${response.payload}.`);
             break;
           }
           case 'flash-disconnected': {
             this.flashingEnd(
-              'Не удалось выполнить операцию прошивки, так как устройство больше не подключено',
+              'Не удалось выполнить операцию прошивки, так как устройство больше не подключено.',
               undefined
             );
             break;
           }
           case 'flash-wrong-id': {
             this.flashingEnd(
-              'Не удалось выполнить операцию прошивки, так как так устройство не подключено',
+              'Не удалось выполнить операцию прошивки, так как так устройство не подключено.',
               undefined
             );
             break;
           }
           case 'flash-not-finished': {
-            this.setFlasherLog('Предыдущая операция прошивки ещё не завершена');
+            this.setFlasherLog('Предыдущая операция прошивки ещё не завершена.');
             break;
           }
           // эта ошибка скорее для разработчиков, чем для пользователя, она означает, что-то пошло не так на клиенте (либо на сервере)
           case 'flash-not-started': {
-            this.setFlasherLog('Получены бинарные данных, хотя запроса на прошивку не было');
+            this.setFlasherLog('Получены бинарные данных, хотя запроса на прошивку не было.');
             break;
           }
           case 'event-not-supported': {
-            this.setFlasherLog('Загрузчик получил неизвестный тип сообщения');
+            this.setFlasherLog('Загрузчик получил неизвестный тип сообщения.');
             break;
           }
           case 'get-list-cooldown': {
             this.setFlasherLog(
-              'Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён'
+              'Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён.'
             );
             break;
           }
           case 'empty-list': {
-            this.setFlasherLog('Устройства не найдены');
+            this.setFlasherLog('Устройства не найдены.');
           }
         }
       };
@@ -308,10 +308,10 @@ export class Flasher {
     ws.onclose = async (event) => {
       if (!event.wasClean) {
         if (this.connecting) {
-          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}`);
+          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}.`);
         } else {
           this.setErrorMessage(
-            `Соедиение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере`
+            `Соединение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере.`
           );
         }
       }

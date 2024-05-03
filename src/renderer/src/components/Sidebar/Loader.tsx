@@ -17,6 +17,8 @@ import {
   FlasherSelectModalFormValues,
 } from '@renderer/components/serverSelect/FlasherSelectModal';
 import { useSettings } from '@renderer/hooks';
+import { useFlasher } from '@renderer/hooks/useFlasher';
+import { useModal } from '@renderer/hooks/useModal';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
@@ -29,19 +31,17 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
 
+  const { connectionStatus, setFlasherConnectionStatus, flashing, setFlashing } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
-  const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
-  const [flashing, setFlashing] = useState(false);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
 
-  const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
-  const openFlasherModal = () => setIsFlasherModalOpen(true);
+  const [isFlasherOpen, openFlasher, closeFlasher] = useModal(false);
   const closeFlasherModal = () => {
     Flasher.freezeReconnectionTimer(false);
-    setIsFlasherModalOpen(false);
+    closeFlasher();
   };
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
@@ -82,7 +82,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
   const handleHostChange = () => {
     Flasher.freezeReconnectionTimer(true);
-    openFlasherModal();
+    openFlasher();
   };
 
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
@@ -286,10 +286,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       <div className="px-4">
         <div className="mb-2 flex rounded">
           <button
-            className={twMerge(
-              'btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0',
-              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
-            )}
+            className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
             onClick={() => {
               switch (connectionStatus) {
                 case FLASHER_CONNECTED:
@@ -309,10 +306,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             {display()}
           </button>
           <button
-            className={twMerge(
-              'btn-primary px-2',
-              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-70'
-            )}
+            className="btn-primary px-2"
             onClick={handleHostChange}
             disabled={connectionStatus == FLASHER_CONNECTING || flashing}
           >
@@ -369,7 +363,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             Загрузить
           </button>
           <button
-            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-70'}
+            className={flasherFile ? 'btn-primary mb-2 px-4' : 'btn-primary mb-2 px-4 opacity-70'}
             onClick={handleFileChoose}
             disabled={flashing}
           >
@@ -383,22 +377,20 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         ) : (
           ''
         )}
-        <div>
-          <button
-            className="btn-primary mb-2"
-            onClick={handleAddAvrdudeTab}
-            disabled={flashResult == undefined}
-          >
-            {'Результат прошивки'}
-          </button>
-        </div>
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddAvrdudeTab}
+          disabled={flashResult == undefined}
+        >
+          Результат прошивки
+        </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}
         </div>
       </div>
 
       <FlasherSelectModal
-        isOpen={isFlasherModalOpen}
+        isOpen={isFlasherOpen}
         onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
       />

@@ -2,11 +2,17 @@ import React from 'react';
 
 import { Select, Switch } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
+import { useFlasher } from '@renderer/hooks/useFlasher';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
+import { FLASHER_CONNECTING, Flasher } from '../Modules/Flasher';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
+import {
+  FlasherSelectModal,
+  FlasherSelectModalFormValues,
+} from '../serverSelect/FlasherSelectModal';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 
 const themeOptions = [
@@ -25,8 +31,11 @@ export const Setting: React.FC = () => {
   const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
+  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const { connectionStatus, flashing } = useFlasher();
 
   const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
+  const [isFlasherOpen, openFlasher, closeFlasher] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
 
@@ -45,6 +54,22 @@ export const Setting: React.FC = () => {
       ...canvasSettings!,
       animations: value,
     });
+  };
+
+  const handleHostChange = () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasher();
+  };
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    closeFlasher();
+  };
+
+  const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
+    if (!flasherSetting) return;
+
+    Flasher.setAutoReconnect(data.type === 'remote');
+    setFlasherSetting({ ...flasherSetting, ...data });
   };
 
   return (
@@ -68,6 +93,13 @@ export const Setting: React.FC = () => {
         <button className="btn-primary" onClick={openCompiler}>
           Компилятор…
         </button>
+        <button
+          className="btn-primary"
+          onClick={handleHostChange}
+          disabled={connectionStatus == FLASHER_CONNECTING || flashing}
+        >
+          Загрузчик…
+        </button>
         <button className="btn-primary mb-4" onClick={openDocModal}>
           Док-сервер…
         </button>
@@ -86,6 +118,11 @@ export const Setting: React.FC = () => {
       </div>
 
       <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />
+      <FlasherSelectModal
+        isOpen={isFlasherOpen}
+        onSubmit={handleFlasherModalSubmit}
+        onClose={closeFlasherModal}
+      />
       <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
     </section>

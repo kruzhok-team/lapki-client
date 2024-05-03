@@ -27,6 +27,8 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     null
   );
 
+  const submitDisabled = tabValue === 0 ? !selectedPlatformIdx : !selectedTemplate;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -50,7 +52,13 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   };
 
   return (
-    <Modal {...props} onRequestClose={handleCLose} onSubmit={handleSubmit} title="Создание схемы">
+    <Modal
+      {...props}
+      onRequestClose={handleCLose}
+      onSubmit={handleSubmit}
+      submitDisabled={submitDisabled}
+      title="Создание схемы"
+    >
       <Tabs
         className="mb-4"
         tabs={['Создать пустую', 'Выбрать шаблон']}

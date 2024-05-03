@@ -33,6 +33,7 @@ export class CanvasEditor {
   constructor() {
     this.model.resetEditor = () => {
       this.controller.loadData();
+      this.controller.history.clear();
     };
   }
 

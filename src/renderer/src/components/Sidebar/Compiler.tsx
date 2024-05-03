@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useSettings } from '@renderer/hooks';
+import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { languageMappers } from '@renderer/utils';
+
+import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -29,7 +33,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const { model } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
-
+  const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
@@ -149,13 +153,21 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       </h3>
 
       <div className="flex flex-col px-4">
-        <button
-          disabled={processing || (!processing && !canCompile && compilerStatus != 'Не подключен')}
-          className="btn-primary mb-4 flex justify-center"
-          onClick={canCompile ? handleCompile : handleReconnect}
-        >
-          {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
-        </button>
+        <div className="mb-2 flex rounded">
+          <button
+            disabled={
+              processing || (!processing && !canCompile && compilerStatus != 'Не подключен')
+            }
+            className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
+            onClick={canCompile ? handleCompile : handleReconnect}
+          >
+            {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
+          </button>
+
+          <button className="btn-primary px-2" onClick={openCompiler}>
+            <Setting width="1.5rem" height="1.5rem" />
+          </button>
+        </div>
 
         <p>
           Статус:{' '}
@@ -176,6 +188,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </button>
         ))}
       </div>
+      <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />
     </section>
   );
 };

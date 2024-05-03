@@ -31,6 +31,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     url && `${url}/index.json?nocache=true`
   );
 
+  const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
@@ -75,9 +76,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   }, [toggle]);
 
   const onItemClick = (filePath: string) => {
-    if (width < 840) {
-      setWidth(840);
-    }
+    setActiveTab(1);
 
     if (filePath.endsWith('html')) {
       return setCurrentItem({
@@ -112,31 +111,39 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
     return (
       <section className="flex h-full select-none flex-col px-2 pt-4">
-        <div className="grid h-full w-full grid-cols-2 overflow-y-hidden">
-          <div className={twMerge('col-span-2', width >= 840 && 'col-span-1')}>
-            <div className="py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled">
-              Содержание
-            </div>
-            <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
+        <div className="grid grid-cols-2 gap-1 pb-2">
+          <button
+            className={twMerge(
+              'rounded border border-primary p-2',
+              activeTab === 0 && 'bg-primary'
+            )}
+            onClick={() => setActiveTab(0)}
+          >
+            Содержание
+          </button>
+          <button
+            className={twMerge(
+              'rounded border border-primary p-2',
+              activeTab === 1 && 'bg-primary'
+            )}
+            onClick={() => setActiveTab(1)}
+          >
+            Просмотр
+          </button>
+        </div>
+        <div className="h-full overflow-y-hidden">
+          <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
+            {<Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />}
           </div>
 
-          {width >= 840 && (
-            <div className="flex w-full flex-col">
-              <div className="py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled">
-                Просмотр
-              </div>
-              {currentItem && (
-                <>
-                  <Show item={currentItem} />
-                  <Navigation
-                    data={data}
-                    onItemClick={onItemClick}
-                    currentPath={currentItem.path}
-                  />
-                </>
-              )}
-            </div>
-          )}
+          <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
+            {currentItem && (
+              <>
+                <Show item={currentItem} />
+                <Navigation data={data} onItemClick={onItemClick} currentPath={currentItem.path} />
+              </>
+            )}
+          </div>
         </div>
       </section>
     );

@@ -170,7 +170,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         minWidth={minWidth}
         maxWidth={maxWidth}
         onResize={handleResize}
-        className={twMerge('border-l border-border-primary bg-bg-secondary')}
+        className="border-l border-border-primary bg-bg-secondary"
       >
         {!topOffset && (
           <button className="absolute -left-[4vw] bottom-0 m-2" onClick={toggle}>

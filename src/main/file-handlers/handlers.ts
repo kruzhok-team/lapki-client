@@ -30,31 +30,35 @@ export async function handleFileOpen(platform: string, path?: string): HandleFil
     let filePath = path;
     let canceled = false;
 
-    if (!path) {
-      dialog
-        .showOpenDialog({
-          filters: [{ name: 'graphml', extensions: platforms.get(platform)! }],
-          properties: ['openFile'],
-        })
-        .then((res) => {
-          filePath = res.filePaths[0];
-          canceled = res.canceled;
-          return [filePath, canceled] as const;
-        })
-        .then(([filePath, canceled]) => {
-          if (!canceled && filePath) {
-            fs.readFile(filePath, 'utf-8', (err, data) => {
-              if (err) {
-                resolve([false, filePath ?? null, basename(filePath as string), err.message]);
-              } else {
-                resolve([true, filePath ?? null, basename(filePath as string), data]);
-              }
-            });
+    const open = (filePath: string | undefined, canceled: boolean) => {
+      if (!canceled && filePath) {
+        fs.readFile(filePath, 'utf-8', (err, data) => {
+          if (err) {
+            resolve([false, filePath ?? null, basename(filePath as string), err.message]);
           } else {
-            resolve([false, null, null, '']);
+            resolve([true, filePath ?? null, basename(filePath as string), data]);
           }
         });
+      } else {
+        resolve([false, null, null, '']);
+      }
+    };
+
+    if (path) {
+      return open(filePath, canceled);
     }
+
+    return dialog
+      .showOpenDialog({
+        filters: [{ name: 'graphml', extensions: platforms.get(platform)! }],
+        properties: ['openFile'],
+      })
+      .then((res) => {
+        filePath = res.filePaths[0];
+        canceled = res.canceled;
+        return [filePath, canceled] as const;
+      })
+      .then(([filePath, canceled]) => open(filePath, canceled));
   });
 }
 

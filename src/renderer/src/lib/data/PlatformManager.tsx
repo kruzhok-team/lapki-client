@@ -1,7 +1,7 @@
+import { MarkedIconData, icons, picto } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
 
-import { MarkedIconData, icons, picto } from '../drawable/Picto';
 import { stateStyle } from '../styles';
 
 export type VisualCompoData = {

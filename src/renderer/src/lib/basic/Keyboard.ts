@@ -1,4 +1,4 @@
-import { EventEmitter } from '../common/EventEmitter';
+import { EventEmitter } from '@renderer/lib/common';
 
 /**
  * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.

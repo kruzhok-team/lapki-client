@@ -13,7 +13,7 @@
 - Linux-дистрибутивы с менеджером **Systemd**.
   - Для прошивки потребуется `libusb`, для опроса устройств также используется `udevadm`. Возможна работа с `eudev`, но это не тестировалось.
 - macOS (тестировалось на 14-ой версии "Sonoma")
-  - См. [Модуль загрузчика на macOS]([https://github.com/kruzhok-team/lapki-client/wiki/%D0%9C%D0%BE%D0%B4%D1%83%D0%BB%D1%8C-%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D1%87%D0%B8%D0%BA%D0%B0-%D0%BD%D0%B0-macOS](https://github.com/kruzhok-team/lapki-client/wiki/%D0%9C%D0%BE%D0%B4%D1%83%D0%BB%D1%8C-%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D1%87%D0%B8%D0%BA%D0%B0-%D0%BD%D0%B0-macOS#%D0%B1%D0%B5%D0%B7%D0%BE%D0%BF%D0%B0%D1%81%D0%BD%D0%BE%D1%81%D1%82%D1%8C)) для решения проблем с открытием Lapki IDE.
+  - См. раздел [Безопасность](https://github.com/kruzhok-team/lapki-client/wiki/%D0%9C%D0%BE%D0%B4%D1%83%D0%BB%D1%8C-%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D1%87%D0%B8%D0%BA%D0%B0-%D0%BD%D0%B0-macOS#%D0%B1%D0%B5%D0%B7%D0%BE%D0%BF%D0%B0%D1%81%D0%BD%D0%BE%D1%81%D1%82%D1%8C) для решения проблем с открытием Lapki IDE.
 
 Также для прошивки потребуется **avrdude**. В Linux достаточно установить утилиту встроенным пакетным менеджером, под Windows предлагается установить [форк от maurisgreuel](https://github.com/mariusgreuel/avrdude), положить в рабочую директорию или PATH. Инструкцию по установке avrdude на macOS можно посмотреть [здесь](https://github.com/kruzhok-team/lapki-client/wiki/%D0%9C%D0%BE%D0%B4%D1%83%D0%BB%D1%8C-%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D1%87%D0%B8%D0%BA%D0%B0-%D0%BD%D0%B0-macOS#avrdude).
 

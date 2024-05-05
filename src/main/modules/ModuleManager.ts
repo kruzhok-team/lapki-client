@@ -1,9 +1,10 @@
 import settings from 'electron-settings';
+// импорт старой версии (3.0 вместо 4.0), так как новая версия требует ESM
+import fixPath from 'fix-path';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
-
 export type ModuleName = 'lapki-flasher';
 
 export class ModuleStatus {
@@ -47,7 +48,13 @@ export class ModuleManager {
       let modulePath: string = '';
       let osPath = '';
       switch (platform) {
-        case 'darwin':
+        case 'darwin': {
+          // позволяет унаследовать $PATH, то есть системный путь
+          // это нужно для того, чтобы загрузчик смог получить доступ к avrdude, если путь к нему прописан в $PATH
+          fixPath();
+          // break не нужен, так как дальнейшие действия одинаковы для Lunix и macOS
+        }
+        // eslint-disable-next-line no-fallthrough
         case 'linux': {
           osPath = `${basePath}/modules/${platform}`;
           modulePath = `${osPath}/${module}`;

@@ -52,7 +52,7 @@ export class ModuleManager {
           // позволяет унаследовать $PATH, то есть системный путь
           // это нужно для того, чтобы загрузчик смог получить доступ к avrdude, если путь к нему прописан в $PATH
           fixPath();
-          // break не нужен, так как дальнейшие действия одинаковы для Lunix и macOS
+          // break не нужен, так как дальнейшие действия одинаковы для Linux и macOS
         }
         // eslint-disable-next-line no-fallthrough
         case 'linux': {

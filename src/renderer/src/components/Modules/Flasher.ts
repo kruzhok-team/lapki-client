@@ -243,7 +243,9 @@ export class Flasher {
             break;
           }
           case 'unmarshal-error': {
-            this.setFlasherLog('Не удалось распарсить JSON-сообщение от клиента.');
+            this.setFlasherLog(
+              'Не удалось прочесть запрос от клиента (возможно, конфликт версий).'
+            );
             break;
           }
           case 'flash-done': {
@@ -285,7 +287,7 @@ export class Flasher {
           }
           // эта ошибка скорее для разработчиков, чем для пользователя, она означает, что-то пошло не так на клиенте (либо на сервере)
           case 'flash-not-started': {
-            this.setFlasherLog('Получены бинарные данных, хотя запроса на прошивку не было.');
+            this.setFlasherLog('Получен файл, хотя процесс прошивки не запускался.');
             break;
           }
           case 'event-not-supported': {

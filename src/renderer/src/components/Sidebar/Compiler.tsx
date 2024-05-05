@@ -33,7 +33,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const { model } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
-  const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
+  const [isCompilerSettings, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
@@ -164,7 +164,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
           </button>
 
-          <button className="btn-primary px-2" onClick={openCompiler}>
+          <button className="btn-primary px-2" onClick={openCompilerSettings}>
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
@@ -188,7 +188,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </button>
         ))}
       </div>
-      <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />
+      <ServerSelectModal isOpen={isCompilerSettings} onClose={closeCompilerSettings} />
     </section>
   );
 };

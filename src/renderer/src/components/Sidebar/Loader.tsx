@@ -38,10 +38,10 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
 
-  const [isFlasherOpen, openFlasher, closeFlasher] = useModal(false);
+  const [isFlasherSettings, openFlasherSettings, closeFlasherSettings] = useModal(false);
   const closeFlasherModal = () => {
     Flasher.freezeReconnectionTimer(false);
-    closeFlasher();
+    closeFlasherSettings();
   };
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
@@ -82,7 +82,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
   const handleHostChange = () => {
     Flasher.freezeReconnectionTimer(true);
-    openFlasher();
+    openFlasherSettings();
   };
 
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
@@ -390,7 +390,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       </div>
 
       <FlasherSelectModal
-        isOpen={isFlasherOpen}
+        isOpen={isFlasherSettings}
         onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
       />

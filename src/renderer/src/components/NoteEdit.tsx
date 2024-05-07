@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { TextAreaAutoResize } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { Note } from '@renderer/lib/drawable/Note';
+import { Note } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { placeCaretAtEnd } from '@renderer/utils';
 
@@ -20,9 +20,9 @@ export const NoteEdit: React.FC = () => {
     const el = ref.current;
     const value = (el?.textContent ?? '').trim();
 
-    if (!el || !note) return;
+    if (!el || !note || note.data.text === value) return;
 
-    editor.container.machineController.changeNoteText(note.id, value);
+    editor.controller.notes.changeNoteText(note.id, value);
   }, [editor, note]);
 
   const handleClose = useCallback(() => {
@@ -38,11 +38,11 @@ export const NoteEdit: React.FC = () => {
   }, [handleClose]);
 
   useEffect(() => {
-    editor.container.notesController.on('change', (note) => {
+    editor.controller.notes.on('change', (note) => {
       const el = ref.current;
       if (!el) return;
 
-      const globalOffset = editor.container.app.mouse.getOffset();
+      const globalOffset = editor.view.app.mouse.getOffset();
       const statePos = note.computedPosition;
       const position = {
         x: statePos.x + globalOffset.x,

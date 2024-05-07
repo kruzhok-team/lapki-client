@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   callbacks: { onRequestNewFile, onRequestOpenFile, onRequestSaveFile, onRequestSaveAsFile },
   openImportError,
 }) => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
@@ -44,10 +44,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
-  const isEditorDataStale = manager.useData('isStale');
+  const isEditorDataStale = model.useData('isStale');
 
   const handleImport = async () => {
-    await manager.files.import(setOpenData);
+    await model.files.import(setOpenData);
   };
 
   const menus = useMemo(
@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
-        hint: 'Меню',
+        hint: 'Документ',
       },
       {
         Icon: <ComponentsIcon />,

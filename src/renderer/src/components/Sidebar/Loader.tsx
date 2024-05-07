@@ -201,9 +201,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     if (!flasherSetting) return;
     const { host, port, localPort, type } = flasherSetting;
     if (type == 'local' && port != localPort) {
-      setFlasherSetting({ ...flasherSetting, ...{ port: localPort } });
+      setFlasherSetting({ ...flasherSetting, ...{ port: localPort } }).then(() => {
+        Flasher.connect(host, localPort);
+      });
+    } else {
+      Flasher.connect(host, port);
     }
-    Flasher.connect(host, port);
   }, [flasherSetting, setFlasherSetting]);
 
   const display = () => {

@@ -6,9 +6,9 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
+import { ResetSettingsModal } from '../ResetSettingsModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
 import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
-
 const themeOptions = [
   {
     label: 'Светлая',
@@ -28,6 +28,7 @@ export const Setting: React.FC = () => {
 
   const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
+  const [isResetWarningOpen, openResetWarning, closeResetWarning] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
 
   const handleChangeTheme = ({ value }: any) => {
@@ -80,7 +81,9 @@ export const Setting: React.FC = () => {
           />
         </div>
 
-        <button className="btn-primary">Сбросить настройки</button>
+        <button className="btn-primary" onClick={openResetWarning}>
+          Сбросить настройки
+        </button>
 
         <button className="btn-primary" onClick={openAboutModal}>
           О программе
@@ -90,6 +93,7 @@ export const Setting: React.FC = () => {
       <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />
       <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
+      <ResetSettingsModal isOpen={isResetWarningOpen} onClose={closeResetWarning} />
     </section>
   );
 };

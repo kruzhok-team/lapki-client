@@ -80,6 +80,8 @@ export const Setting: React.FC = () => {
           />
         </div>
 
+        <button className="btn-primary">Сбросить настройки</button>
+
         <button className="btn-primary" onClick={openAboutModal}>
           О программе
         </button>

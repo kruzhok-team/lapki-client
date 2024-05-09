@@ -1,7 +1,13 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { FinalState, GhostTransition, State, Transition } from '@renderer/lib/drawable';
+import {
+  ChoiceState,
+  FinalState,
+  GhostTransition,
+  State,
+  Transition,
+} from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
@@ -9,7 +15,7 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
-  createTransition: { source: State; target: State };
+  createTransition: { source: State | ChoiceState; target: State | ChoiceState };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
@@ -212,7 +218,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (state: State) => {
+  handleStartNewTransition = (state: State | ChoiceState) => {
     this.ghost.setSource(state);
   };
 
@@ -242,7 +248,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
-  handleMouseUpOnState = (state: State) => {
+  handleMouseUpOnState = (state: State | ChoiceState) => {
     if (!this.ghost.source) return;
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
@@ -250,6 +256,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.emit('createTransition', { source: this.ghost.source, target: state });
     }
     this.ghost.clear();
+
     this.view.isDirty = true;
   };
 
@@ -268,6 +275,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUp = () => {
     if (!this.ghost.source) return;
+
     this.ghost.clear();
     this.view.isDirty = true;
   };

@@ -5,17 +5,78 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as InitialIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as CameraIcon } from '@renderer/assets/icons/center_focus_2.svg';
+import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
 import { ReactComponent as CodeAllIcon } from '@renderer/assets/icons/code_all_2.svg';
 import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event_add.svg';
+import { ReactComponent as FinalStateIcon } from '@renderer/assets/icons/final_state.svg';
 import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { getVirtualElement } from '@renderer/utils';
+
+const contextData = {
+  copy: {
+    icon: <CopyIcon />,
+    combination: 'Ctrl+C',
+  },
+  paste: {
+    icon: <PasteIcon />,
+    combination: 'Ctrl+V',
+  },
+  pasteState: {
+    icon: <StateIcon />,
+    combination: undefined,
+  },
+  pasteFinalState: {
+    icon: <FinalStateIcon className="h-full w-full" />,
+    combination: undefined,
+  },
+  pasteChoiceState: {
+    icon: <ChoiceStateIcon className="h-full w-full" />,
+    combination: undefined,
+  },
+  pasteEvent: {
+    icon: <EventIcon />,
+    combination: undefined,
+  },
+  initialState: {
+    icon: <InitialIcon />,
+    combination: undefined,
+  },
+  showCodeAll: {
+    icon: <CodeAllIcon />,
+    combination: undefined,
+  },
+  edit: {
+    icon: <EditIcon />,
+    combination: undefined,
+  },
+  centerCamera: {
+    icon: <CameraIcon />,
+    combination: undefined,
+  },
+  delete: {
+    icon: <DeleteIcon />,
+    combination: 'Del',
+  },
+  source: {
+    icon: undefined,
+    combination: undefined,
+  },
+  target: {
+    icon: undefined,
+    combination: undefined,
+  },
+  note: {
+    icon: <NoteIcon />,
+    combination: undefined,
+  },
+};
 
 export const DiagramContextMenu: React.FC = () => {
   const { position, items, isOpen, onClose } = useDiagramContextMenu();
@@ -36,62 +97,11 @@ export const DiagramContextMenu: React.FC = () => {
 
   useClickOutside(refs.floating.current, onClose, !isOpen);
 
-  const contextData = {
-    copy: {
-      icon: <CopyIcon />,
-      combination: 'Ctrl+C',
-    },
-    paste: {
-      icon: <PasteIcon />,
-      combination: 'Ctrl+V',
-    },
-    pasteState: {
-      icon: <StateIcon />,
-      combination: undefined,
-    },
-    pasteEvent: {
-      icon: <EventIcon />,
-      combination: undefined,
-    },
-    initialState: {
-      icon: <InitialIcon />,
-      combination: undefined,
-    },
-    showCodeAll: {
-      icon: <CodeAllIcon />,
-      combination: undefined,
-    },
-    edit: {
-      icon: <EditIcon />,
-      combination: undefined,
-    },
-    centerCamera: {
-      icon: <CameraIcon />,
-      combination: undefined,
-    },
-    delete: {
-      icon: <DeleteIcon />,
-      combination: 'Del',
-    },
-    source: {
-      icon: undefined,
-      combination: undefined,
-    },
-    target: {
-      icon: undefined,
-      combination: undefined,
-    },
-    note: {
-      icon: <NoteIcon />,
-      combination: undefined,
-    },
-  };
-
   return (
     <div
       ref={refs.setFloating}
       style={floatingStyles}
-      className={twMerge('z-50 w-64 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
+      className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
     >
       {items.map(({ label, type, isFolder, children, action }, i) => (
         <Fragment key={i}>

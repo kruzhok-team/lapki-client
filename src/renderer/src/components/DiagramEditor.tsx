@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Scale } from '@renderer/components';
-import { useSettings } from '@renderer/hooks';
-import { useModal } from '@renderer/hooks/useModal';
+import { useSettings, useModal } from '@renderer/hooks';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { EventSelection, State, Transition } from '@renderer/lib/drawable';
+import { ChoiceState, EventSelection, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
@@ -24,7 +23,10 @@ export const DiagramEditor: React.FC = () => {
   const [state, setState] = useState<State | null>(null);
   const [events, setEvents] = useState<Action[]>([]);
   const [transition, setTransition] = useState<Transition | null>(null);
-  const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
+  const [newTransitionData, setNewTransitionData] = useState<{
+    source: State | ChoiceState;
+    target: State | ChoiceState;
+  }>();
 
   const [isCreateModalOpen, openCreateModal, closeCreateModal] = useModal(false);
 
@@ -46,7 +48,7 @@ export const DiagramEditor: React.FC = () => {
       setState(null);
       setEvents([]);
       setTransition(null);
-      setNewTransition(undefined);
+      setNewTransitionData(undefined);
     };
 
     editor.view.on('dblclick', (position) => {
@@ -83,9 +85,9 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования новой связи
-    editor.controller.transitions.on('createTransition', ({ source, target }) => {
+    editor.controller.transitions.on('createTransition', (data) => {
       ClearUseState();
-      setNewTransition({ source, target });
+      setNewTransitionData(data);
       openCreateModal();
     });
 
@@ -135,12 +137,16 @@ export const DiagramEditor: React.FC = () => {
     closeEventsModal();
   };
 
+  // TODO(bryzZz) Нужно делить на две модалки
+  // Тут возникло много as any
+  // это потому что для состояния и перехода типы разные но модалка одна
+  // и приходится приводить к какому-то обшему типу
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
       editor.controller.states.changeStateEvents({
         id: data.id,
-        triggerComponent: data.trigger.component,
-        triggerMethod: data.trigger.method,
+        triggerComponent: (data.trigger as any).component,
+        triggerMethod: (data.trigger as any).method,
         actions: events,
         color: data.color ?? DEFAULT_STATE_COLOR,
       });
@@ -156,18 +162,15 @@ export const DiagramEditor: React.FC = () => {
           condition: data.condition,
         } as any,
       });
-    } else if (newTransition) {
+    } else if (newTransitionData) {
       editor.controller.transitions.createTransition({
-        source: newTransition.source.id,
-        target: newTransition.target.id,
+        source: newTransitionData.source.id,
+        target: newTransitionData.target.id,
         color: data.color ?? DEFAULT_TRANSITION_COLOR,
         label: {
+          trigger: data.trigger,
           condition: data.condition,
           do: events,
-          trigger: {
-            component: data.trigger.component,
-            method: data.trigger.method,
-          },
         } as any,
       });
     }
@@ -180,6 +183,19 @@ export const DiagramEditor: React.FC = () => {
 
     openEventsModal();
   };
+
+  // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
+  const showTrigger = useMemo(() => {
+    if (newTransitionData) {
+      return !(newTransitionData.source instanceof ChoiceState);
+    }
+
+    if (transition) {
+      return !(transition.source instanceof ChoiceState);
+    }
+
+    return true;
+  }, [newTransitionData, transition]);
 
   return (
     <>
@@ -200,9 +216,10 @@ export const DiagramEditor: React.FC = () => {
           />
 
           <CreateModal
-            state={state ? state : undefined}
-            transition={transition ? transition : undefined}
+            state={state ?? undefined}
+            transition={transition ?? undefined}
             events={events}
+            showTrigger={showTrigger}
             setEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}
             onSubmit={handleCreateModalSubmit}

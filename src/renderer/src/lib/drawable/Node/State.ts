@@ -142,7 +142,6 @@ export class State extends Shape {
   //Обводка блока состояния при нажатии
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    ctx.canvas.hidden;
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = this.data.color;
@@ -238,5 +237,7 @@ export class State extends Shape {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
+
+    this.edgeHandlers.disabled = value;
   }
 }

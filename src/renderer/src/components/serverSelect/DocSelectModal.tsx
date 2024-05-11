@@ -38,7 +38,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
     <Modal
       {...props}
       onRequestClose={onClose}
-      title="Выберите док-сервер"
+      title="Укажите адрес документации"
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
       onAfterClose={handleAfterClose}

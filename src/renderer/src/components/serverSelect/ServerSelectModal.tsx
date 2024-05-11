@@ -38,7 +38,7 @@ export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({ onClose, .
     <Modal
       {...props}
       onRequestClose={onClose}
-      title="Выберите компилятор"
+      title="Укажите адрес компилятора"
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
       onAfterClose={handleAfterClose}

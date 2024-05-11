@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
-        hint: 'Меню',
+        hint: 'Документ',
       },
       {
         Icon: <ComponentsIcon />,

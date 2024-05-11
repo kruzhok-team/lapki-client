@@ -58,9 +58,9 @@ export class Flasher {
   private static currentFlashingDevice: Device | undefined = undefined;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
-  static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
+  static setFlasherConnectionStatus: (newConnectionStatus: string) => void;
   static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
-  static setFlashing: Dispatch<SetStateAction<boolean>>;
+  static setFlashing: (flashing: boolean) => void;
   // сообщение об ошибке, undefined означает, что ошибки нет
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
   // сообщение о результате последней попытки прошить устройство
@@ -91,10 +91,10 @@ export class Flasher {
 
   static bindReact(
     setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>,
-    setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
+    setFlasherConnectionStatus: (newConnectionStatus: string) => void,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
-    setFlashing: Dispatch<SetStateAction<boolean>>,
+    setFlashing: (flashing: boolean) => void,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
     setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>
   ): void {

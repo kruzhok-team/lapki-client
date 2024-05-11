@@ -5,14 +5,11 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useSettings } from '@renderer/hooks';
-import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { languageMappers } from '@renderer/utils';
-
-import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -21,10 +18,12 @@ export interface CompilerProps {
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
+  openCompilerSettings: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   openData,
+  openCompilerSettings,
   compilerData,
   setCompilerData,
   compilerStatus,
@@ -33,7 +32,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const { model } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
-  const [isCompilerSettings, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
@@ -188,7 +186,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </button>
         ))}
       </div>
-      <ServerSelectModal isOpen={isCompilerSettings} onClose={closeCompilerSettings} />
     </section>
   );
 };

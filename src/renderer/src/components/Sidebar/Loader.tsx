@@ -12,23 +12,19 @@ import {
   FLASHER_NO_CONNECTION,
   Flasher,
 } from '@renderer/components/Modules/Flasher';
-import {
-  FlasherSelectModal,
-  FlasherSelectModalFormValues,
-} from '@renderer/components/serverSelect/FlasherSelectModal';
-import { useSettings } from '@renderer/hooks';
-import { useFlasher } from '@renderer/hooks/useFlasher';
-import { useModal } from '@renderer/hooks/useModal';
+import { useSettings } from '@renderer/hooks/useSettings';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
+  handleHostChange: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
-  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange }) => {
+  const [flasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
 
   const { connectionStatus, setFlasherConnectionStatus, flashing, setFlashing } = useFlasher();
@@ -37,12 +33,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
-
-  const [isFlasherSettings, openFlasherSettings, closeFlasherSettings] = useModal(false);
-  const closeFlasherModal = () => {
-    Flasher.freezeReconnectionTimer(false);
-    closeFlasherSettings();
-  };
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -78,18 +68,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     } else {
       Flasher.flashCompiler(compilerData!.binary!, currentDevice);
     }
-  };
-
-  const handleHostChange = () => {
-    Flasher.freezeReconnectionTimer(true);
-    openFlasherSettings();
-  };
-
-  const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
-    if (!flasherSetting) return;
-
-    Flasher.setAutoReconnect(data.type === 'remote');
-    setFlasherSetting({ ...flasherSetting, ...data });
   };
 
   const handleFileChoose = () => {
@@ -388,12 +366,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           {flasherLog}
         </div>
       </div>
-
-      <FlasherSelectModal
-        isOpen={isFlasherSettings}
-        onSubmit={handleFlasherModalSubmit}
-        onClose={closeFlasherModal}
-      />
     </section>
   );
 };

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 
 import { Modal } from '@renderer/components/UI';
-import { useSettings } from '@renderer/hooks';
+import { fullResetSetting } from '@renderer/hooks';
 
 interface ResetSettingsModalProps {
   isOpen: boolean;
@@ -16,6 +16,9 @@ export const ResetSettingsModal: React.FC<ResetSettingsModalProps> = ({ onClose,
   const handleSubmit = hookHandleSubmit(() => {
     //TODO: реализовать функционал
     console.log('СБРОС НАСТРОЕК');
+    fullResetSetting().then(() => {
+      console.log('reset completed');
+    });
     onClose();
   });
 

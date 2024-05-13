@@ -174,7 +174,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         className="border-l border-border-primary bg-bg-secondary"
       >
         {!topOffset ? (
-          <button className="absolute -left-[4vw] bottom-0 m-2" onClick={toggle}>
+          <button className="absolute -left-14 bottom-0 m-2" onClick={toggle}>
             <Question height={40} width={40} />
           </button>
         ) : (

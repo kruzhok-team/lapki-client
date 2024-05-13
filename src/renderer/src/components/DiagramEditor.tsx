@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Scale } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
@@ -183,9 +182,7 @@ export const DiagramEditor: React.FC = () => {
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        {isMounted && <Scale />}
-      </div>
+      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
 
       {isMounted && (
         <>

@@ -1,22 +1,22 @@
 import React from 'react';
 
-import { twMerge } from 'tailwind-merge';
-
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { useDoc } from '@renderer/store/useDoc';
 
-export const Scale: React.FC = () => {
+export interface EditorSettingsProps {
+  toggle: () => void;
+}
+
+export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
   const editor = useEditorContext();
   const model = editor.model;
 
-  const [isDocOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
-
   const scale = model.useData('scale');
+  const isMounted = editor.model.useData('isMounted');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
@@ -38,13 +38,10 @@ export const Scale: React.FC = () => {
     });
   };
 
+  if (!isMounted) return null;
+
   return (
-    <div
-      className={twMerge(
-        'absolute bottom-3 right-10 flex items-stretch overflow-hidden rounded bg-bg-secondary transition-transform',
-        isDocOpen && '-translate-x-[400px]'
-      )}
-    >
+    <div className="absolute -left-60 bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
       <button
         className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
         onClick={handleCanvasGrid}

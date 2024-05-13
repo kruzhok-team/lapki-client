@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
+import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
@@ -38,7 +39,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
   const [width, setWidth] = useState(0);
   const [minWidth, setMinWidth] = useState(5);
-  const [maxWidth, setMaxWidth] = useState('75vw');
+  const [maxWidth, setMaxWidth] = useState('60vw');
 
   const handleResize = (e, _direction, ref) => {
     if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
@@ -57,7 +58,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       setMaxWidth('5px');
       setMinWidth(5);
     } else {
-      setMaxWidth('75vw');
+      setMaxWidth('60vw');
       setMinWidth(420);
     }
   }, [isOpen]);
@@ -172,10 +173,12 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         onResize={handleResize}
         className="border-l border-border-primary bg-bg-secondary"
       >
-        {!topOffset && (
+        {!topOffset ? (
           <button className="absolute -left-[4vw] bottom-0 m-2" onClick={toggle}>
             <Question height={40} width={40} />
           </button>
+        ) : (
+          <EditorSettings toggle={toggle} />
         )}
         <div className="h-full">{renderContent()}</div>
       </Resizable>

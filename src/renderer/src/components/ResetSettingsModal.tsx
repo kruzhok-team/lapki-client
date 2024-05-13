@@ -14,12 +14,9 @@ export const ResetSettingsModal: React.FC<ResetSettingsModalProps> = ({ onClose,
   const { handleSubmit: hookHandleSubmit } = useForm();
   const RESET_LABEL = 'Сбросить настройки';
   const handleSubmit = hookHandleSubmit(() => {
-    //TODO: реализовать функционал
-    console.log('СБРОС НАСТРОЕК');
     fullResetSetting().then(() => {
-      console.log('reset completed');
+      location.reload();
     });
-    onClose();
   });
 
   return (

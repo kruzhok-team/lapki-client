@@ -99,9 +99,9 @@ function createWindow(): void {
 app.whenReady().then(() => {
   initFileHandlersIPC();
 
-  ipcMain.handle('Module:reboot', (_event, module: ModuleName) => {
+  ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
     ModuleManager.stopModule(module);
-    ModuleManager.startLocalModule(module);
+    await ModuleManager.startLocalModule(module);
   });
 
   ipcMain.handle('Module:getStatus', (_event, module: ModuleName) => {
@@ -125,9 +125,6 @@ app.whenReady().then(() => {
   });
 
   const startFlasher = async () => {
-    const port = await findFreePort();
-    await settings.set('flasher.localPort', port);
-
     ModuleManager.startLocalModule('lapki-flasher');
   };
   startFlasher();

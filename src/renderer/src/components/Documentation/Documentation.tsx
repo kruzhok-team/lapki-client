@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 
+import { Resizable } from 're-resizable';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
@@ -34,6 +35,45 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
   const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
+
+  const [width, setWidth] = useState(0);
+  const [minWidth, setMinWidth] = useState(5);
+  const [maxWidth, setMaxWidth] = useState('75vw');
+
+  const handleResize = (e, _direction, ref) => {
+    if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
+      toggle();
+    }
+
+    if (e.pageX >= 0.95 * window.innerWidth && isOpen) {
+      toggle();
+    }
+    //Получаем ширину блока документации
+    setWidth(parseInt(ref.style.width));
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setMaxWidth('5px');
+      setMinWidth(5);
+    } else {
+      setMaxWidth('75vw');
+      setMinWidth(420);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'F1') {
+        toggle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [toggle]);
 
   const onItemClick = (filePath: string) => {
     setActiveTab(1);
@@ -91,7 +131,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
             Просмотр
           </button>
         </div>
-
         <div className="h-full overflow-y-hidden">
           <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
             {<Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />}
@@ -121,16 +160,25 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
-        isOpen && 'translate-x-0',
+        'absolute right-0 top-0 flex',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
     >
-      <button className="w-8 border-r border-border-primary" onClick={toggle}>
-        <Arrow className={twMerge('rotate-180 transition-transform', isOpen && 'rotate-0')} />
-      </button>
-
-      <div className="w-[400px]">{renderContent()}</div>
+      <Resizable
+        enable={{ left: true }}
+        size={{ width: width, height: topOffset ? '95.85vh' : '100vh' }}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onResize={handleResize}
+        className="border-l border-border-primary bg-bg-secondary"
+      >
+        {!topOffset && (
+          <button className="absolute -left-[4vw] bottom-0 m-2" onClick={toggle}>
+            <Question height={40} width={40} />
+          </button>
+        )}
+        <div className="h-full">{renderContent()}</div>
+      </Resizable>
     </div>
   );
 };

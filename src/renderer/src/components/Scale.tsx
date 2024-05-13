@@ -3,6 +3,7 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
+import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -13,7 +14,7 @@ export const Scale: React.FC = () => {
   const editor = useEditorContext();
   const model = editor.model;
 
-  const isDocOpen = useDoc((state) => state.isOpen);
+  const [isDocOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
 
   const scale = model.useData('scale');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
@@ -70,6 +71,10 @@ export const Scale: React.FC = () => {
         onClick={handleZoomIn}
       >
         <ZoomIn width={20} height={20} />
+      </button>
+
+      <button className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active" onClick={toggle}>
+        <Question height={20} width={20} />
       </button>
     </div>
   );

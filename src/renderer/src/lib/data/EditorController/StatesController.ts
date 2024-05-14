@@ -37,7 +37,7 @@ type StateVariant = Data[StateType] extends Map<unknown, infer T> ? T : never;
 interface StatesControllerEvents {
   mouseUpOnState: State;
   mouseUpOnFinalState: FinalState;
-  startNewTransition: State;
+  startNewTransitionState: State;
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
@@ -670,7 +670,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     (state.parent || this.view).children.remove(state, Layer.FinalStates); // Отсоединяемся вью от родителя
-    this.unwatch(state); // Убираем обрабочик событий с вью
+    this.unwatch(state); // Убираем обработчик событий с вью
     this.data.finalStates.delete(id); // Удаляем само вью
     this.app.model.deleteFinalState(id); // Удаляем модель
 
@@ -808,7 +808,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   handleStartNewTransition = (state: State) => {
-    this.emit('startNewTransition', state);
+    this.emit('startNewTransitionState', state);
   };
 
   handleMouseUpOnState = (state: State) => {
@@ -986,7 +986,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('drag', this.handleDrag.bind(this, state));
     state.on('longpress', this.handleLongPress.bind(this, state));
 
-    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition;
+    state.edgeHandlers.onStartNewTransitionState = this.handleStartNewTransition.bind(this, state);
   }
   private unwatchState(state: State) {
     state.off('dragend', this.handleDragEnd.bind(this, state));

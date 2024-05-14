@@ -8,6 +8,7 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 interface NotesControllerEvents {
   change: Note;
+  startNewTransitionNote: Note;
   contextMenu: { note: Note; position: Point };
 }
 
@@ -112,6 +113,10 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   }
 
+  handleStartNewTransition = (note: Note) => {
+    this.emit('startNewTransitionNote', note);
+  };
+
   handleMouseDown = (note: Note) => {
     this.controller.selectNote(note.id);
   };
@@ -140,6 +145,8 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.on('dblclick', this.handleDoubleClick.bind(this, note));
     note.on('contextmenu', this.handleContextMenu.bind(this, note));
     note.on('dragend', this.handleDragEnd.bind(this, note));
+
+    note.edgeHandlers.onStartNewTransitionNote = this.handleStartNewTransition.bind(this, note);
   }
 
   unwatch(note: Note) {
@@ -147,5 +154,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.off('dblclick', this.handleDoubleClick.bind(this, note));
     note.off('contextmenu', this.handleContextMenu.bind(this, note));
     note.off('dragend', this.handleDragEnd.bind(this, note));
+
+    note.edgeHandlers.unbindEvents();
   }
 }

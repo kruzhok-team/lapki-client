@@ -1,7 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { FinalState, GhostTransition, State, Transition } from '@renderer/lib/drawable';
+import { FinalState, GhostTransition, Note, State, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
@@ -9,7 +9,7 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
-  createTransition: { source: State; target: State };
+  createTransition: { source: State | Note; target: State };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
@@ -86,15 +86,24 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const { source, target, color, id: prevId, label } = params;
 
     const sourceState = this.controller.states.get(source);
+    const sourceNote = this.controller.notes.get(source);
     const targetState = this.controller.states.get(target);
 
-    if (!sourceState || !targetState) return;
+    if (!targetState) return;
 
     if (label && !label.position) {
-      label.position = {
-        x: (sourceState.position.x + targetState.position.x) / 2,
-        y: (sourceState.position.y + targetState.position.y) / 2,
-      };
+      if (sourceState) {
+        label.position = {
+          x: (sourceState.position.x + targetState.position.x) / 2,
+          y: (sourceState.position.y + targetState.position.y) / 2,
+        };
+      }
+      if (sourceNote) {
+        label.position = {
+          x: (sourceNote.position.x + targetState.position.x) / 2,
+          y: (sourceNote.position.y + targetState.position.y) / 2,
+        };
+      }
     }
 
     // Создание данных
@@ -207,13 +216,18 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     this.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.controller.states.on('startNewTransition', this.handleStartNewTransition);
+    this.controller.states.on('startNewTransitionState', this.handleStartNewTransitionState);
+    this.controller.notes.on('startNewTransitionNote', this.handleStartNewTransitionNote);
     this.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (state: State) => {
-    this.ghost.setSource(state);
+  handleStartNewTransitionState = (state: State) => {
+    this.ghost.setSourceState(state);
+  };
+
+  handleStartNewTransitionNote = (note: Note) => {
+    this.ghost.setSourceNote(note);
   };
 
   handleConditionClick = (transition: Transition) => {

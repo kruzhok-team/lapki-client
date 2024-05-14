@@ -118,8 +118,10 @@ export const Hierarchy: React.FC = () => {
         canRename: false,
         canMove: false,
       };
-      data[transition.source].children?.push(transitionId);
-      data[transition.source].isFolder = true;
+      if (data[transition.source]) {
+        data[transition.source].children?.push(transitionId);
+        data[transition.source].isFolder = true;
+      }
     }
 
     return data;

@@ -29,9 +29,11 @@ export class Transition extends Shape {
 
   get source() {
     const state = this.app.controller.states.get(this.data.source);
+    const note = this.app.controller.notes.get(this.data.source);
 
     if (!state) {
-      throw new Error(`State with id ${this.data.source} does not exist`);
+      return note!;
+      //throw new Error(`State with id ${this.data.source} does not exist`);
     }
 
     return state;

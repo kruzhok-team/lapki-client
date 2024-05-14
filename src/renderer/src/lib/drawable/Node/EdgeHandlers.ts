@@ -1,5 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { State, icons } from '@renderer/lib/drawable';
+import { Shape, icons } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { isPointInRectangle } from '@renderer/lib/utils';
@@ -13,13 +13,16 @@ import { isPointInRectangle } from '@renderer/lib/utils';
  */
 export class EdgeHandlers {
   app!: CanvasEditor;
-  state!: State;
+  shape!: Shape;
 
-  onStartNewTransition?: (state: State) => void;
+  disabled = true;
 
-  constructor(app: CanvasEditor, state: State) {
+  onStartNewTransitionState?: () => void;
+  onStartNewTransitionNote?: () => void;
+
+  constructor(app: CanvasEditor, shape: Shape) {
     this.app = app;
-    this.state = state;
+    this.shape = shape;
     this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 
@@ -29,32 +32,26 @@ export class EdgeHandlers {
 
   get position(): Point[] {
     const offset = 4 / this.app.model.data.scale;
-    let {
-      x: stateX,
-      y: stateY,
-      width: stateWidth,
-      height: stateHeight,
-      childrenHeight,
-    } = this.state.drawBounds;
+    let { x, y, width, height, childrenHeight } = this.shape.drawBounds;
 
-    stateHeight += childrenHeight ?? 0;
+    height += childrenHeight ?? 0;
 
     return [
       {
-        x: stateX + stateWidth / 2 - this.size / 2,
-        y: stateY - this.size - offset,
+        x: x + width / 2 - this.size / 2,
+        y: y - this.size - offset,
       },
       {
-        x: stateX + stateWidth / 2 - this.size / 2,
-        y: stateY + stateHeight + offset,
+        x: x + width / 2 - this.size / 2,
+        y: y + height + offset,
       },
       {
-        x: stateX - this.size - offset,
-        y: stateY + stateHeight / 2 - this.size / 2,
+        x: x - this.size - offset,
+        y: y + height / 2 - this.size / 2,
       },
       {
-        x: stateX + stateWidth + offset,
-        y: stateY + stateHeight / 2 - this.size / 2,
+        x: x + width + offset,
+        y: y + height / 2 - this.size / 2,
       },
     ];
   }
@@ -63,12 +60,6 @@ export class EdgeHandlers {
     return 20 / this.app.model.data.scale;
   }
 
-  setCurrentState(state: State) {
-    this.state = state;
-  }
-  toJSON() {
-    return this.state;
-  }
   draw(ctx: CanvasRenderingContext2D) {
     const icon = icons.get('EdgeHandle');
     if (!icon) return;
@@ -86,11 +77,12 @@ export class EdgeHandlers {
   }
 
   handleMouseDown = (e: MyMouseEvent) => {
-    if (!this.state.isSelected || !this.isMouseOver(e)) return;
+    if (!this.disabled || !this.isMouseOver(e)) return;
 
     e.stopPropagation();
 
-    this.onStartNewTransition?.(this.state);
+    this.onStartNewTransitionState?.();
+    this.onStartNewTransitionNote?.();
   };
 
   isMouseOver(e: MyMouseEvent) {

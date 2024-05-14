@@ -16,6 +16,7 @@ import {
   CreateFinalStateParams,
 } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
+import { roundPoint } from '@renderer/lib/utils';
 import {
   State as StateData,
   FinalState as FinalStateData,
@@ -327,9 +328,9 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeStatePosition: (args) => ({
     name: 'Перемещение состояния',
-    description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
-      args.startPosition
-    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+    description: `Было: "${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
 
   createInitialState: () => ({
@@ -342,7 +343,9 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeInitialStatePosition: (args) => ({
     name: 'Перемещение начального состояния',
-    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
+    description: `Было: "${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
 
   createFinalState: () => ({
@@ -355,7 +358,9 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeFinalStatePosition: (args) => ({
     name: 'Перемещение конечного состояния',
-    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
+    description: `Было: "${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
 
   createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),
@@ -367,8 +372,8 @@ export const actionDescriptions: ActionDescriptions = {
   changeTransitionPosition: (args) => ({
     name: 'Перемещение перехода',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
-      args.startPosition
-    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+      roundPoint(args.startPosition)
+    )}\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
 
   changeEvent: (args) => ({
@@ -419,8 +424,8 @@ export const actionDescriptions: ActionDescriptions = {
   changeNotePosition: (args) => ({
     name: 'Перемещение заметки',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(
-      args.startPosition
-    )}\nСтало: ${JSON.stringify(args.endPosition)}`,
+      roundPoint(args.startPosition)
+    )}\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
   deleteNote: (args) => ({
     name: 'Удаление заметки',

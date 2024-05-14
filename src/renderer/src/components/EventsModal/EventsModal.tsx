@@ -28,10 +28,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   onClose,
 }) => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const componentsData = manager.useData('elements.components');
-  const machine = editor.container.machineController;
+  const componentsData = model.useData('elements.components');
+  const controller = editor.controller;
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -42,13 +42,13 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
   const componentOptions: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = machine.platform.getComponent(id);
+      const proto = controller.platform.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: machine.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -59,28 +59,29 @@ export const EventsModal: React.FC<EventsModalProps> = ({
     }
 
     return result;
-  }, [componentsData, isEditingEvent, machine]);
+  }, [componentsData, isEditingEvent, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
-    const getAll = machine.platform[isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
-    const getImg = machine.platform[isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
+    const getAll =
+      controller.platform[isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
+    const getImg = controller.platform[isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(machine.platform, selectedComponent).map(({ name, description }) => {
+    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
       return {
         value: name,
         label: name,
         hint: description,
         icon: (
           <img
-            src={getImg.call(machine.platform, selectedComponent, name, true)}
+            src={getImg.call(controller.platform, selectedComponent, name, true)}
             className="mr-1 h-7 w-7 object-contain"
           />
         ),
       };
     });
-  }, [isEditingEvent, machine, selectedComponent]);
+  }, [isEditingEvent, controller, selectedComponent]);
 
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
@@ -95,7 +96,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       }
     }
 
-    const componentProto = machine.platform.getComponent(componentName);
+    const componentProto = controller.platform.getComponent(componentName);
     const componentProtoPath = isEditingEvent ? 'signals' : 'methods';
     const argumentProto = componentProto?.[componentProtoPath][method]?.parameters ?? [];
 
@@ -155,7 +156,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
     const init = (event: Event, path: 'signals' | 'methods') => {
       const { component, method, args = {} } = event;
-      const componentProto = machine.platform.getComponent(component);
+      const componentProto = controller.platform.getComponent(component);
       const argumentProto = componentProto?.[path][method]?.parameters ?? [];
 
       setSelectedComponent(component);
@@ -174,7 +175,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
     const { event, isEditingEvent } = initialData;
 
     init(event, isEditingEvent ? 'signals' : 'methods');
-  }, [machine, initialData]);
+  }, [controller, initialData]);
 
   return (
     <Modal

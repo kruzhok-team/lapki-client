@@ -4,7 +4,7 @@ import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
-import { Rectangle } from '@renderer/types/graphics';
+import { Rectangle } from '@renderer/lib/types/graphics';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
 

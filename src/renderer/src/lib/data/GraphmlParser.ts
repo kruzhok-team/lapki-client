@@ -5,6 +5,9 @@ import {
   CGMLState,
   CGMLTransition,
   CGMLComponent,
+  CGMLAction,
+  CGMLTransitionAction,
+  CGMLVertex,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -17,12 +20,15 @@ import {
   InitialState,
   State,
   Transition,
-  Meta,
+  Event,
+  FinalState,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto } from '@renderer/types/platform';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
+
+type EventWithCondition = EventData & { condition?: Condition };
 
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
@@ -79,79 +85,9 @@ function parseCondition(condition: string): Condition {
   throw new Error(`Неизвестный оператор ${operator}`);
 }
 
-function emptyComponent(): Component {
-  return {
-    transitionId: '',
-    type: '',
-    parameters: {},
-  };
-}
-
-function parseComponentNode(content: string, componentId: string): [Component, Meta] {
-  const component: Component = emptyComponent();
-  const meta: { [id: string]: string } = {};
-  const unprocessedParameters = content.split('\n');
-  for (const parameter of unprocessedParameters) {
-    let [parameterName, value] = parameter.split('/');
-    parameterName = parameterName.trim();
-    value = value.trim();
-    switch (parameterName) {
-      case 'type': {
-        if (component.type === '') {
-          component.type = value;
-        } else {
-          throw new Error(
-            `Тип у компонента ${componentId} уже указан! Предыдущий тип ${component.type}, новый - ${value}`
-          );
-        }
-        break;
-      }
-      case 'description': {
-        if (meta['description'] === undefined) {
-          meta['description'] = value;
-        } else {
-          throw new Error(
-            `Описание компонента у ${componentId} уже указано! Предыдущее описание ${meta['description']}, новое - ${value}`
-          );
-        }
-        break;
-      }
-      case 'labelColor':
-      case 'label': {
-        component.parameters[parameterName] = value;
-        break;
-      }
-      case 'name': {
-        if (meta['name'] === undefined) {
-          meta['name'] = value;
-        } else {
-          throw new Error(
-            `Имя компонента ${componentId} уже указано! Предыдущее имя ${meta['name']}, новое - ${value}`
-          );
-        }
-        break;
-      }
-      default:
-        component.parameters[parameterName] = value;
-    }
-  }
-  return [component, meta];
-}
-
-function parseEvent(event: string): [EventData, Condition?] | undefined {
-  if (!event.includes('/')) throw new Error(`Не определен триггер для действий ${event}`);
-  let [trigger, stringActions] = event.split('/');
-  trigger = trigger.trim();
-  stringActions = stringActions.trim();
-  let condition: Condition | undefined;
-  const actions = parseActions(stringActions);
+function parseEvent(trigger: string): Event | undefined {
   if (trigger === undefined) return;
-  if (trigger.includes('[')) {
-    const event = trigger.split('[');
-    trigger = event[0];
-    condition = parseCondition(event[1].replace(']', ''));
-  }
-  let ev = systemComponentAlias[trigger]; // Подстановка exit/entry на System.onExit/System.onEnter
+  let ev: Event = systemComponentAlias[trigger]; // Подстановка exit/entry на System.onExit/System.onEnter
   if (ev === undefined) {
     const [component, method] = trigger.split('.');
     ev = {
@@ -159,13 +95,7 @@ function parseEvent(event: string): [EventData, Condition?] | undefined {
       method: method,
     };
   }
-  return [
-    {
-      trigger: ev,
-      do: actions !== undefined ? actions : [],
-    },
-    condition,
-  ];
+  return ev;
 }
 
 // Затычка, чтобы не прокидывать повсюду платформу и компоненты.
@@ -199,7 +129,6 @@ function parseAction(unproccessedAction: string): Action | undefined {
 
 function parseActions(unsplitedActions: string): Action[] | undefined {
   if (unsplitedActions === '') {
-    console.log('Отсутствуют действия на событие');
     return;
   }
   // Считаем, что действия находятся на разных строках
@@ -214,117 +143,132 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
   return resultActions;
 }
 
-function getInitialState(rawInitialState: CGMLInitialState | null): InitialState | null {
-  if (rawInitialState !== null) {
-    if (rawInitialState.position !== undefined) {
-      return {
-        target: rawInitialState.target,
-        position: {
-          x: rawInitialState.position.x,
-          y: rawInitialState.position.y,
-        },
-      };
-    } else {
-      throw new Error('No position of initial state!');
-    }
+function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]: FinalState } {
+  const finalStates: { [id: string]: FinalState } = {};
+  for (const finalId in rawFinalStates) {
+    const final = rawFinalStates[finalId];
+    finalStates[finalId] = {
+      position: final.position
+        ? {
+            x: final.position.x,
+            y: final.position.y,
+          }
+        : { x: -1, y: -1 },
+      parentId: final.parent,
+    };
   }
-  return null;
+  return finalStates;
+}
+
+function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): {
+  [id: string]: InitialState;
+} {
+  const initialStates: { [id: string]: InitialState } = {};
+  for (const initialId in rawInitialStates) {
+    const rawInitial = rawInitialStates[initialId];
+    if (!rawInitial.position) {
+      throw new Error(`Не указана позиция начального состояния с идентификатором ${initialId}`);
+    }
+    initialStates[initialId] = {
+      position: rawInitial.position,
+      parentId: rawInitial.parent,
+    };
+  }
+  return initialStates;
 }
 
 function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: State } {
   const states: { [id: string]: State } = {};
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
+    const events: EventData[] = actionsToEventData(rawState.actions).map((value): EventData => {
+      return {
+        trigger: value.trigger,
+        do: value.do,
+      };
+    });
     states[rawStateId] = {
+      // ПОМЕНЯТЬ ЦВЕТ
+      color: rawState.color ?? '#FFFFFF',
       name: rawState.name,
-      bounds: rawState.bounds,
-      parent: rawState.parent,
-      events: parseStateEvents(rawState.actions),
+      dimensions: {
+        width: rawState.bounds.width,
+        height: rawState.bounds.height,
+      },
+      position: {
+        x: rawState.bounds.x,
+        y: rawState.bounds.y,
+      },
+      parentId: rawState.parent,
+      events: events,
     };
   }
   return states;
 }
 
-export function parseTransitionEvents(rawEvents: string): [EventData, Condition?] | undefined {
-  const rawTriggerAndAction = rawEvents.split('\n\n');
-  if (rawTriggerAndAction.length > 1) {
-    throw new Error('Поддерживаются события только с одним триггером!');
+export function actionsToEventData(
+  rawActions: Array<CGMLAction | CGMLTransitionAction>
+): EventWithCondition[] {
+  const eventDataArr: EventWithCondition[] = [];
+  for (const action of rawActions) {
+    const eventData: EventWithCondition = {
+      trigger: {
+        component: '',
+        method: '',
+      },
+      do: [],
+    };
+    const doActions: Action[] = [];
+    if (action.action) {
+      const parsedActions = parseActions(action.action);
+      if (parsedActions) {
+        doActions.push(...parsedActions);
+      }
+    }
+    if (action.trigger) {
+      const trigger = parseEvent(action.trigger);
+      if (trigger) {
+        eventData.trigger = trigger;
+      }
+    }
+    if (action.condition) {
+      eventData.condition = parseCondition(action.condition);
+    }
+    eventData.do = doActions;
+    eventDataArr.push(eventData);
   }
-  const result = parseEvent(rawTriggerAndAction[0]);
-  if (result !== undefined) {
-    return result;
-  }
-  return;
+  return eventDataArr;
 }
 
 function getTransitions(
-  rawTransitions: Record<string, CGMLTransition>,
-  initialStateId?: string
+  rawTransitions: Record<string, CGMLTransition>
 ): Record<string, Transition> {
   const transitions: Record<string, Transition> = {};
   for (const id in rawTransitions) {
     const rawTransition = rawTransitions[id];
-    if (rawTransition.actions == undefined) {
-      if (initialStateId == rawTransition.source) continue;
-      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
+    if (rawTransition.actions.length == 0) {
+      transitions[id] = {
+        source: rawTransition.source,
+        target: rawTransition.target,
+        color: rawTransition.color ?? randomColor(),
+      };
+      continue;
     }
-    const parsedEvent = parseTransitionEvents(rawTransition.actions);
-    if (parsedEvent == undefined) {
-      throw new Error('Безусловный (без триггеров) переход не поддерживается.');
-    }
-    const [eventData, condition] = parsedEvent;
+    // В данный момент поддерживается только один триггер на переход
+    const eventData = actionsToEventData(rawTransition.actions)[0];
     transitions[id] = {
       source: rawTransition.source,
       target: rawTransition.target,
       color: rawTransition.color ?? randomColor(),
-      position: rawTransition.position ?? { x: -1, y: -1 },
-      trigger: eventData.trigger,
-      do: eventData.do,
-      condition: condition,
+      label: {
+        position: rawTransition.labelPosition ?? { x: -1, y: -1 },
+        trigger: eventData.trigger,
+        do: eventData.do,
+        condition: eventData.condition,
+      },
     };
   }
   return transitions;
-}
-
-export function parseStateEvents(content: string | undefined): EventData[] {
-  // По формату CyberiadaGraphML события разделены пустой строкой.
-  if (content === undefined) {
-    return [];
-  }
-  const events: EventData[] = [];
-  const unprocessedEventsAndActions = content.split('\n\n');
-  for (const unprocessedEvent of unprocessedEventsAndActions) {
-    const result = parseEvent(unprocessedEvent);
-    if (result !== undefined) {
-      const event = result[0]; // У нас не поддерживаются условия в событиях в состоянии
-      events.push(event);
-    }
-  }
-  return events;
-}
-
-// Функция получает на вход строку, в которой мета-информация разделена символами / и \n
-function parseMeta(unproccessedMeta: string | undefined): { [id: string]: string } {
-  if (unproccessedMeta === undefined) {
-    return {};
-  }
-  const splitedMeta = unproccessedMeta.split('\n');
-  const meta: { [id: string]: string } = {};
-  let lastPropertyKey: string = '';
-  for (const property of splitedMeta) {
-    if (property.includes('/')) {
-      const keyValuePair = property.split('/');
-      const key = keyValuePair[0].trim();
-      const value = keyValuePair[1].trim();
-      meta[key] = value;
-      lastPropertyKey = key;
-    } else {
-      if (lastPropertyKey) {
-        meta[lastPropertyKey] += property;
-      }
-    }
-  }
-  return meta;
 }
 
 function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
@@ -333,8 +277,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   const components: { [id: string]: Component } = {};
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
-    const component = parseComponentNode(rawComponent.parameters, id)[0];
-    components[id] = { ...component, transitionId: rawComponent.transitionId };
+    components[rawComponent.id] = { type: rawComponent.type, parameters: rawComponent.parameters };
   }
   return components;
 }
@@ -403,9 +346,9 @@ function labelTransitionParameters(
 
   for (const id in transitions) {
     const labeledTransition: Transition = transitions[id];
-    if (labeledTransition.do !== undefined) {
-      for (const actionIdx in labeledTransition.do) {
-        const action = labeledTransition.do[actionIdx];
+    if (labeledTransition.label?.do !== undefined) {
+      for (const actionIdx in labeledTransition.label.do) {
+        const action = labeledTransition.label.do[actionIdx];
         // FIXME: DRY
         if (action.args !== undefined) {
           const component: ComponentProto | undefined = getProtoComponent(
@@ -415,7 +358,7 @@ function labelTransitionParameters(
           );
           const method: MethodProto | undefined = getProtoMethod(action.method, component);
           if (component !== undefined && method !== undefined) {
-            labeledTransition.do[actionIdx].args = labelParameters(action.args, method);
+            labeledTransition.label.do[actionIdx].args = labelParameters(action.args, method);
           }
         }
       }
@@ -433,7 +376,6 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   } = {};
   for (const id in platformComponents) {
     components[id] = {
-      transitionId: '',
       type: id,
       parameters: {},
     };
@@ -451,7 +393,8 @@ export function importGraphml(
       states: {},
       transitions: {},
       notes: {},
-      initialState: null,
+      finalStates: {},
+      initialStates: {},
       components: {},
       platform: rawElements.platform,
       meta: {},
@@ -469,14 +412,12 @@ export function importGraphml(
     } else {
       elements.components = getComponents(rawElements.components);
     }
-    elements.meta = parseMeta(rawElements.meta);
-    const initialState: InitialState | null = getInitialState(rawElements.initialState);
-    if (initialState !== null) {
-      elements.initialState = initialState;
-    }
+    elements.meta = rawElements.meta.values;
+    elements.initialStates = getInitialStates(rawElements.initialStates);
+    elements.finalStates = getFinals(rawElements.finals);
     elements.notes = rawElements.notes;
     elements.states = getStates(rawElements.states);
-    elements.transitions = getTransitions(rawElements.transitions, rawElements.initialState?.id);
+    elements.transitions = getTransitions(rawElements.transitions);
     elements.states = labelStateParameters(
       elements.states,
       platform.components,
@@ -490,7 +431,7 @@ export function importGraphml(
     validateElements(elements, platform);
     return elements;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     openImportError((error as any).message);
     return;
   }

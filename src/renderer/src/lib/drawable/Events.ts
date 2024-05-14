@@ -1,13 +1,13 @@
+import { State, picto } from '@renderer/lib/drawable';
+import { Dimensions, Point } from '@renderer/lib/types/graphics';
+
+// import { serializeEvents } from '../data/GraphmlBuilder';
+
+import { isPointInRectangle } from '@renderer/lib/utils';
+import { drawText, getTextHeight, getTextWidth, prepareText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
-import { Point, Sizes } from '@renderer/types/graphics';
 
-import { picto } from './Picto';
-import { State } from './State';
-
-import { Container } from '../basic/Container';
-import { serializeEvents } from '../data/GraphmlBuilder';
-import { isPointInRectangle } from '../utils';
-import { drawText, getTextHeight, getTextWidth, prepareText } from '../utils/text';
+import { CanvasEditor } from '../CanvasEditor';
 
 export type EventSelection = {
   eventIdx: number;
@@ -20,10 +20,10 @@ export type EventSelection = {
  * обработку событий мыши.
  */
 export class Events {
+  dimensions!: Dimensions;
+
   // private textArray = [] as string[];
   private textEvents = [] as string[];
-
-  sizes!: Sizes;
 
   selection?: EventSelection;
 
@@ -32,8 +32,8 @@ export class Events {
   minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
   minHeight = picto.eventHeight;
 
-  constructor(public container: Container, public parent: State) {
-    this.sizes = {
+  constructor(private app: CanvasEditor, public parent: State) {
+    this.dimensions = {
       width: this.minWidth,
       height: this.minHeight,
     };
@@ -46,7 +46,7 @@ export class Events {
   }
 
   update() {
-    if (this.container.app.textMode) {
+    if (this.app.textMode) {
       // const { width } = this.parent.drawBounds;
       // const pX = 15 / this.container.app.manager.data.scale;
       // const pY = 10 / this.container.app.manager.data.scale;
@@ -90,17 +90,17 @@ export class Events {
     this.data.map((ev) => {
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
     });
-    this.sizes.height = Math.max(this.minHeight, 50 * eventRows);
+    this.dimensions.height = Math.max(this.minHeight, 50 * eventRows);
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.container.app.manager.data.scale;
+    const titleHeight = this.parent.titleHeight / this.app.model.data.scale;
 
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
-    const px = 15 / this.container.app.manager.data.scale;
-    const py = 10 / this.container.app.manager.data.scale;
+    const px = 15 / this.app.model.data.scale;
+    const py = 10 / this.app.model.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -117,7 +117,7 @@ export class Events {
       const event = this.data[eventIdx];
       const triggerRect = {
         x: baseX,
-        y: baseY + (eventRow * yDx) / this.container.app.manager.data.scale,
+        y: baseY + (eventRow * yDx) / this.app.model.data.scale,
         width: pW,
         height: pH,
       };
@@ -130,7 +130,7 @@ export class Events {
         const ay = eventRow + Math.floor(actionIdx / eventRowLength);
         const actRect = {
           x: baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale,
-          y: baseY + (ay * yDx) / this.container.app.manager.data.scale,
+          y: baseY + (ay * yDx) / this.app.model.data.scale,
           width: pW,
           height: pH,
         };
@@ -159,7 +159,7 @@ export class Events {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (this.container.app.textMode) {
+    if (this.app.textMode) {
       return this.drawTextEvents(ctx);
     }
 
@@ -169,27 +169,27 @@ export class Events {
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.container.app.manager.data.scale;
+    const titleHeight = this.parent.titleHeight / this.app.model.data.scale;
 
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.container.app.manager.data.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
-    const px = 15 / this.container.app.manager.data.scale;
-    const py = 10 / this.container.app.manager.data.scale;
+    const px = 15 / this.app.model.data.scale;
+    const py = 10 / this.app.model.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
 
-    const platform = this.container.machineController.platform;
+    const platform = this.app.controller.platform;
 
     let eventRow = 0;
     ctx.beginPath();
 
     this.data.map((events, eventIdx) => {
       const eX = baseX;
-      const eY = baseY + (eventRow * yDx) / this.container.app.manager.data.scale;
+      const eY = baseY + (eventRow * yDx) / this.app.model.data.scale;
       if (typeof this.selection !== 'undefined') {
         if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
           picto.drawCursor(ctx, eX, eY);
@@ -201,7 +201,7 @@ export class Events {
         const ax = 1 + (actIdx % eventRowLength);
         const ay = eventRow + Math.floor(actIdx / eventRowLength);
         const aX = baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
-        const aY = baseY + (ay * yDx) / this.container.app.manager.data.scale;
+        const aY = baseY + (ay * yDx) / this.app.model.data.scale;
         if (typeof this.selection !== 'undefined') {
           if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
             picto.drawCursor(ctx, aX, aY);
@@ -217,7 +217,7 @@ export class Events {
   }
 
   private drawTriggers(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    const scale = this.container.app.manager.data.scale;
+    const scale = this.app.model.data.scale;
 
     const fontSize = 16 / scale;
     const textHeight = getTextHeight({ fontSize });
@@ -292,7 +292,7 @@ export class Events {
   }
 
   private drawTextEvents(ctx: CanvasRenderingContext2D) {
-    const scale = this.container.app.manager.data.scale;
+    const scale = this.app.model.data.scale;
     const { x, y } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / scale;
     const px = 15 / scale;

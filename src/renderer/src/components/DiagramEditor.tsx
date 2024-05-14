@@ -6,22 +6,23 @@ import {
   EventsModal,
   EventsModalData,
   NoteEdit,
-  NodeTextEdit,
+  ShapeTextEdit,
   StateNameModal,
   Scale,
 } from '@renderer/components';
+import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { EventSelection } from '@renderer/lib/drawable/Events';
-import { State } from '@renderer/lib/drawable/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
+import { EventSelection, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
 
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const isMounted = editor.manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
+
+  const [canvasSettings] = useSettings('canvas');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State | null>(null);
@@ -52,16 +53,17 @@ export const DiagramEditor: React.FC = () => {
       setNewTransition(undefined);
     };
 
-    editor.container.on('dblclick', (position) => {
-      editor?.container.machineController.createState({
+    editor.view.on('dblclick', (position) => {
+      editor.controller.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
+        color: DEFAULT_STATE_COLOR,
       });
     });
 
     //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.statesController.on('changeState', (state) => {
+    editor.controller.states.on('changeState', (state) => {
       if (editor.textMode) return;
 
       ClearUseState();
@@ -69,7 +71,7 @@ export const DiagramEditor: React.FC = () => {
       openCreateModal();
     });
 
-    editor.container.statesController.on('changeEvent', (data) => {
+    editor.controller.states.on('changeEvent', (data) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       ClearUseState();
@@ -79,17 +81,17 @@ export const DiagramEditor: React.FC = () => {
     });
 
     //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.container.transitionsController.on('changeTransition', (target) => {
+    editor.controller.transitions.on('changeTransition', (target) => {
       if (editor.textMode) return;
 
       ClearUseState();
-      setEvents(target.data.do ?? []);
+      setEvents(target.data.label?.do ?? []);
       setTransition(target);
       openCreateModal();
     });
 
     //Здесь мы открываем модальное окно редактирования новой связи
-    editor.container.transitionsController.on('createTransition', ({ source, target }) => {
+    editor.controller.transitions.on('createTransition', ({ source, target }) => {
       ClearUseState();
       setNewTransition({ source, target });
       openCreateModal();
@@ -97,7 +99,7 @@ export const DiagramEditor: React.FC = () => {
 
     return () => {
       // снятие слежки произойдёт по смене редактора новым
-      // manager.unwatchEditor();
+      // model.unwatchEditor();
       editor?.cleanUp();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.
@@ -105,6 +107,12 @@ export const DiagramEditor: React.FC = () => {
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
   }, [editor, openCreateModal, openEventsModal]);
+
+  useEffect(() => {
+    if (!canvasSettings) return;
+
+    editor.setSettings(canvasSettings);
+  }, [canvasSettings, editor]);
 
   const handleEventsModalSubmit = (data: Event) => {
     // Если есть какие-то данные то мы редактируем событие а не добавляем
@@ -126,7 +134,7 @@ export const DiagramEditor: React.FC = () => {
     }
 
     if (!isCreateModalOpen && eventsModalParentData) {
-      editor?.container.machineController.changeEvent(
+      editor?.controller.states.changeEvent(
         eventsModalParentData.state.id,
         eventsModalParentData.eventSelection,
         data
@@ -137,32 +145,38 @@ export const DiagramEditor: React.FC = () => {
 
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.machineController.changeStateEvents({
+      editor.controller.states.changeStateEvents({
         id: data.id,
         triggerComponent: data.trigger.component,
         triggerMethod: data.trigger.method,
         actions: events,
+        color: data.color ?? DEFAULT_STATE_COLOR,
       });
     } else if (transition && data.key === 3) {
-      editor?.container.machineController.changeTransition({
+      editor.controller.transitions.changeTransition({
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
-        color: data.color ?? defaultTransColor,
-        component: data.trigger.component,
-        method: data.trigger.method,
-        doAction: events,
-        condition: data.condition,
+        color: data.color ?? DEFAULT_TRANSITION_COLOR,
+        label: {
+          trigger: data.trigger,
+          do: events,
+          condition: data.condition,
+        } as any,
       });
     } else if (newTransition) {
-      editor?.container.machineController.createTransition({
+      editor.controller.transitions.createTransition({
         source: newTransition.source.id,
         target: newTransition.target.id,
-        color: data.color ?? defaultTransColor,
-        component: data.trigger.component,
-        method: data.trigger.method,
-        doAction: events,
-        condition: data.condition,
+        color: data.color ?? DEFAULT_TRANSITION_COLOR,
+        label: {
+          condition: data.condition,
+          do: events,
+          trigger: {
+            component: data.trigger.component,
+            method: data.trigger.method,
+          },
+        } as any,
       });
     }
     closeCreateModal();
@@ -184,7 +198,7 @@ export const DiagramEditor: React.FC = () => {
       {isMounted && (
         <>
           <StateNameModal />
-          <NodeTextEdit />
+          <ShapeTextEdit />
           <NoteEdit />
 
           <EventsModal

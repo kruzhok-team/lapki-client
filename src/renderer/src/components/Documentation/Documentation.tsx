@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
@@ -108,6 +109,14 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
       </section>
     );
   };
+
+  useEffect(() => {
+    if (!error) return;
+
+    toast.error('Ошибка при подключении к серверу документации', {
+      description: error.toString(),
+    });
+  }, [error]);
 
   return (
     <div

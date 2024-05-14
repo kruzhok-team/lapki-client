@@ -1,11 +1,15 @@
-import { Canvas } from './basic/Canvas';
-import { Container } from './basic/Container';
-import { Keyboard } from './basic/Keyboard';
-import { Mouse } from './basic/Mouse';
-import { EventEmitter } from './common/EventEmitter';
-import { Render } from './common/Render';
-import { EditorManager } from './data/EditorManager';
-import { preloadPicto } from './drawable/Picto';
+import * as TWEEN from '@tweenjs/tween.js';
+
+import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
+import { EventEmitter, Render } from '@renderer/lib/common';
+import { EditorController } from '@renderer/lib/data/EditorController';
+import { EditorModel } from '@renderer/lib/data/EditorModel';
+import { preloadPicto } from '@renderer/lib/drawable';
+
+interface CanvasEditorSettings {
+  animations: boolean;
+  grid: boolean;
+}
 
 interface CanvasEditorEvents {
   changeTextMode: { textMode: boolean };
@@ -21,18 +25,23 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
   private _mouse: Mouse | null = null;
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
-  private _container: Container | null = null;
+  private _view: EditorView | null = null;
+  private _controller: EditorController | null = null;
 
-  manager!: EditorManager;
+  model = new EditorModel();
+  settings: CanvasEditorSettings = {
+    animations: true,
+    grid: true,
+  };
 
   textMode = true;
 
   constructor() {
     super();
 
-    this.manager = new EditorManager();
-    this.manager.resetEditor = () => {
-      this.container.machineController.loadData();
+    this.model.resetEditor = () => {
+      this.controller.loadData();
+      this.controller.history.clear();
     };
   }
 
@@ -67,11 +76,17 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
     }
     return this._render;
   }
-  get container() {
-    if (!this._container) {
-      throw new Error('Cannot access container before initialization');
+  get view() {
+    if (!this._view) {
+      throw new Error('Cannot access view before initialization');
     }
-    return this._container;
+    return this._view;
+  }
+  get controller() {
+    if (!this._controller) {
+      throw new Error('Cannot access controller before initialization');
+    }
+    return this._controller;
   }
 
   mount(root: HTMLDivElement) {
@@ -84,30 +99,46 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    this._container = new Container(this);
+    this._controller = new EditorController(this);
+    this._view = new EditorView(this);
+
     this.canvas.onResize = () => {
       this.mouse.setOffset();
-      this.container.isDirty = true;
+      this.view.isDirty = true;
     };
 
     preloadPicto(() => {
-      this.container.isDirty = true;
+      this.view.isDirty = true;
     });
 
     this.render.subscribe(() => {
-      if (!this.container.isDirty) return;
+      if (this.settings.animations) {
+        TWEEN.update();
+      }
+
+      if (!this.view.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
-        this.container.draw(ctx, canvas);
+        this.view.draw(ctx, canvas);
       });
-      this.container.isDirty = false;
+      this.view.isDirty = false;
     });
 
-    this.manager.data.isMounted = true;
-    this.manager.triggerDataUpdate('isMounted');
+    this.model.data.isMounted = true;
+    this.model.triggerDataUpdate('isMounted');
 
-    this.container.machineController.loadData();
+    this.controller.loadData();
+    this.view.initEvents();
+    this.controller.transitions.initEvents();
+  }
+
+  setSettings(settings: CanvasEditorSettings) {
+    this.settings = settings;
+
+    if (this.model.data.isMounted) {
+      this.view.isDirty = true;
+    }
   }
 
   cleanUp() {
@@ -121,6 +152,6 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
 
     this.emit('changeTextMode', { textMode: value });
 
-    this.container.isDirty = true;
+    this.view.isDirty = true;
   }
 }

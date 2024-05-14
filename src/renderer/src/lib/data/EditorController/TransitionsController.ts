@@ -258,11 +258,24 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUpOnState = (state: State) => {
     if (!this.ghost.source) return;
-    // Переход создаётся только на другое состояние
-    // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
-    if (state !== this.ghost.source) {
+
+    if (this.ghost.source instanceof Note) {
+      const source = this.ghost.source;
+      const target = this.controller.states.data.states.get(state.id);
+      if (!source || !target) return;
+
+      this.controller.transitions.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: source.id,
+        target: target.id,
+      });
+
+      // Переход создаётся только на другое состояние
+      // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
+    } else if (state !== this.ghost.source) {
       this.emit('createTransition', { source: this.ghost.source, target: state });
     }
+
     this.ghost.clear();
     this.view.isDirty = true;
   };

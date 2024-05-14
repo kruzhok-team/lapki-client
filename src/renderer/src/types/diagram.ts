@@ -65,7 +65,7 @@ export interface Transition {
   color: string;
   label?: {
     position: Point;
-    trigger?: Event;
+    trigger?: Event | string;
     condition?: Condition | null;
     do?: Action[];
     //TODO: В дальнейшем планируется убрать

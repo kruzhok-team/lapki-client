@@ -29,7 +29,6 @@ export const ShapeTextEdit: React.FC = () => {
   const [isOpen, open, close] = useModal(false);
   const [nodeData, setShapeData] = useState<ShapeData | null>(null);
   const [style, setStyle] = useState({} as CSSProperties);
-  const [paddingLeft, setPaddingLeft] = useState('');
 
   const handleSubmit = useCallback(() => {
     const codeEditor = editorRef.current;
@@ -105,7 +104,8 @@ export const ShapeTextEdit: React.FC = () => {
         padding: `${pY}px 0`,
         borderRadius: `0px 0px ${borderRadius}px ${borderRadius}px`,
       });
-      setPaddingLeft(pX + 'px');
+
+      editorRef.current.view?.dom.style.setProperty('--data-pl', pX + 'px');
 
       open();
       placeCaretAtEnd();
@@ -144,7 +144,8 @@ export const ShapeTextEdit: React.FC = () => {
         padding: `${p}px 0`,
         borderRadius: borderRadius + 'px',
       });
-      setPaddingLeft(p + 'px');
+
+      editorRef.current.view?.dom.style.setProperty('--data-pl', p + 'px');
 
       open();
       placeCaretAtEnd();
@@ -163,7 +164,6 @@ export const ShapeTextEdit: React.FC = () => {
     <CodeMirror
       ref={editorRef}
       style={style}
-      data-pl={paddingLeft}
       className={twMerge('fixed overflow-hidden', nodeData?.type ?? 'state', !isOpen && 'hidden')}
       value={nodeData?.initialValue ?? ''}
       onBlur={handleClose}

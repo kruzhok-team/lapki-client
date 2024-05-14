@@ -82,7 +82,7 @@ export const DiagramEditor: React.FC = () => {
 
     //Здесь мы открываем модальное окно редактирования созданной связи
     editor.controller.transitions.on('changeTransition', (target) => {
-      if (editor.textMode) return;
+      // if (editor.textMode) return;
 
       ClearUseState();
       setEvents(target.data.label?.do ?? []);
@@ -198,7 +198,7 @@ export const DiagramEditor: React.FC = () => {
       {isMounted && (
         <>
           <StateNameModal />
-          <ShapeTextEdit />
+          {/* <ShapeTextEdit /> */}
           <NoteEdit />
 
           <EventsModal
@@ -211,6 +211,7 @@ export const DiagramEditor: React.FC = () => {
           <CreateModal
             state={state ? state : undefined}
             transition={transition ? transition : undefined}
+            showTrigger
             events={events}
             setEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}

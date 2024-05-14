@@ -224,13 +224,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
   };
 
-  const handleReconnect = () => {
+  const handleReconnect = async () => {
     if (flasherIsLocal) {
-      window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
-        // после выполнения перезагрузки ('Module:reboot') значение localPort в electron-settings обновляется
-        // для того, чтобы снова подключиться нужно стриггерить хук (useEffect), привязанный к flasherSetting
-        setFlasherSetting(flasherSetting);
-      });
+      await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
     } else {
       Flasher.reconnect();
     }

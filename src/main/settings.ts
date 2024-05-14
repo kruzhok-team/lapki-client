@@ -36,13 +36,16 @@ export const initSettings = (webContents: WebContents) => {
     return settings.get(key);
   });
   ipcMain.handle('settings:set', async (_event, key: string, value) => {
-    await settings.set(key, value);
-
-    webContents.send(`settings:change:${key}`, value);
+    await settings_change(webContents, key, value);
   });
   ipcMain.handle('settings:reset', async (_event, key: string) => {
-    await settings.set(key, defaultSettings[key]);
-
-    webContents.send(`settings:change:${key}`, defaultSettings[key]);
+    await settings_change(webContents, key, defaultSettings[key]);
   });
 };
+
+// изменение настройки и отправка сообщения через webContents
+export async function settings_change(webContents: WebContents, key: string, value) {
+  await settings.set(key, value);
+
+  webContents.send(`settings:change:${key}`, value);
+}

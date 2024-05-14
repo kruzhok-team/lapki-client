@@ -85,24 +85,40 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 
-    const sourceState = this.controller.states.get(source);
     const sourceNote = this.controller.notes.get(source);
+    const targetNote = this.controller.notes.get(target);
+
+    const sourceState = this.controller.states.get(source);
     const targetState = this.controller.states.get(target);
 
-    if (!targetState) return;
+    const targetTransition = this.controller.transitions.get(target);
 
     if (label && !label.position) {
       if (sourceState) {
+        if (!targetState) return;
         label.position = {
           x: (sourceState.position.x + targetState.position.x) / 2,
           y: (sourceState.position.y + targetState.position.y) / 2,
         };
-      }
-      if (sourceNote) {
-        label.position = {
-          x: (sourceNote.position.x + targetState.position.x) / 2,
-          y: (sourceNote.position.y + targetState.position.y) / 2,
-        };
+      } else {
+        if (!sourceNote) return;
+
+        if (targetState) {
+          label.position = {
+            x: (sourceNote.position.x + targetState.position.x) / 2,
+            y: (sourceNote.position.y + targetState.position.y) / 2,
+          };
+        } else if (targetTransition) {
+          label.position = {
+            x: (sourceNote.position.x + targetTransition.position.x) / 2,
+            y: (sourceNote.position.y + targetTransition.position.y) / 2,
+          };
+        } else if (targetNote) {
+          label.position = {
+            x: (sourceNote.position.x + targetNote.position.x) / 2,
+            y: (sourceNote.position.y + targetNote.position.y) / 2,
+          };
+        }
       }
     }
 
@@ -216,8 +232,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     this.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.controller.states.on('startNewTransitionState', this.handleStartNewTransitionState);
     this.controller.notes.on('startNewTransitionNote', this.handleStartNewTransitionNote);
+    this.controller.notes.on('mouseUpOnNote', this.handleMouseUpOnNote);
+
+    this.controller.states.on('startNewTransitionState', this.handleStartNewTransitionState);
     this.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
@@ -262,7 +280,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (this.ghost.source instanceof Note) {
       const source = this.ghost.source;
       const target = this.controller.states.data.states.get(state.id);
-      if (!source || !target) return;
+      if (!target) return;
 
       this.controller.transitions.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
@@ -274,6 +292,44 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
     } else if (state !== this.ghost.source) {
       this.emit('createTransition', { source: this.ghost.source, target: state });
+    }
+
+    this.ghost.clear();
+    this.view.isDirty = true;
+  };
+
+  handleMouseUpOnTransition = (transition: Transition) => {
+    if (!this.ghost.source) return;
+
+    if (this.ghost.source instanceof Note) {
+      const source = this.ghost.source;
+      const target = this.controller.transitions.get(transition.id);
+      if (!target) return;
+      console.log(target);
+      this.controller.transitions.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: source.id,
+        target: target.id,
+      });
+    }
+
+    this.ghost.clear();
+    this.view.isDirty = true;
+  };
+
+  handleMouseUpOnNote = (note: Note) => {
+    if (!this.ghost.source) return;
+
+    if (this.ghost.source instanceof Note) {
+      const source = this.ghost.source;
+      const target = this.controller.notes.get(note.id);
+      if (!target) return;
+
+      this.controller.transitions.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: source.id,
+        target: target.id,
+      });
     }
 
     this.ghost.clear();
@@ -309,6 +365,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   watchTransition(transition: Transition) {
     transition.on('click', this.handleConditionClick.bind(this, transition));
     transition.on('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    transition.on('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
     transition.on('contextmenu', this.handleContextMenu.bind(this, transition));
     transition.on('dragend', this.handleDragEnd.bind(this, transition));
   }
@@ -316,6 +373,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   unwatchTransition(transition: Transition) {
     transition.off('click', this.handleConditionClick.bind(this, transition));
     transition.off('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    transition.off('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
     transition.off('contextmenu', this.handleContextMenu.bind(this, transition));
     transition.off('dragend', this.handleDragEnd.bind(this, transition));
   }

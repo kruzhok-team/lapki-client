@@ -41,11 +41,16 @@ export class Transition extends Shape {
 
   get target() {
     const state = this.app.controller.states.get(this.data.target);
+    const transition = this.app.controller.transitions.get(this.data.target);
+    const note = this.app.controller.notes.get(this.data.target);
 
     if (!state) {
-      throw new Error(`State with id ${this.data.target} does not exist`);
+      if (!transition) {
+        return note;
+      }
+      return transition;
+      //throw new Error(`State with id ${this.data.target} does not exist`);
     }
-
     return state;
   }
 

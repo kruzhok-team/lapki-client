@@ -44,8 +44,13 @@ export const initSettings = (webContents: WebContents) => {
 };
 
 // изменение настройки и отправка сообщения через webContents
-export async function settings_change(webContents: WebContents, key: string, value) {
+async function settings_change(webContents: WebContents, key: string, value) {
   await settings.set(key, value);
 
+  settings_change_send(webContents, key, value);
+}
+
+// отправка сообщения об изменение настроек через webContents
+function settings_change_send(webContents: WebContents, key: string, value) {
   webContents.send(`settings:change:${key}`, value);
 }

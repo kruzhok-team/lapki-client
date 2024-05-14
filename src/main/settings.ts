@@ -36,21 +36,21 @@ export const initSettings = (webContents: WebContents) => {
     return settings.get(key);
   });
   ipcMain.handle('settings:set', async (_event, key: string, value) => {
-    await settings_change(webContents, key, value);
+    await settingsChange(webContents, key, value);
   });
   ipcMain.handle('settings:reset', async (_event, key: string) => {
-    await settings_change(webContents, key, defaultSettings[key]);
+    await settingsChange(webContents, key, defaultSettings[key]);
   });
 };
 
 // изменение настройки и отправка сообщения через webContents
-async function settings_change(webContents: WebContents, key: string, value) {
+async function settingsChange(webContents: WebContents, key: string, value) {
   await settings.set(key, value);
 
-  settings_change_send(webContents, key, value);
+  settingsChangeSend(webContents, key, value);
 }
 
 // отправка сообщения об изменение настроек через webContents
-function settings_change_send(webContents: WebContents, key: string, value) {
+export function settingsChangeSend(webContents: WebContents, key: string, value) {
   webContents.send(`settings:change:${key}`, value);
 }

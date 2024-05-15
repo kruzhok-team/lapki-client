@@ -5,7 +5,7 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-export const useTrigger = (isEditingState: boolean) => {
+export const useTrigger = (addSystemComponents: boolean) => {
   const editor = useEditorContext();
   const model = editor.model;
 
@@ -29,12 +29,12 @@ export const useTrigger = (isEditingState: boolean) => {
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingState) {
+    if (addSystemComponents) {
       result.unshift(getComponentOption('System'));
     }
 
     return result;
-  }, [componentsData, isEditingState, controller]);
+  }, [componentsData, addSystemComponents, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
@@ -58,12 +58,12 @@ export const useTrigger = (isEditingState: boolean) => {
   }, [controller, selectedComponent]);
 
   const handleComponentChange = (value: SingleValue<SelectOption>) => {
-    setSelectedComponent(value?.value ?? '');
-    setSelectedMethod('');
+    setSelectedComponent(value?.value ?? null);
+    setSelectedMethod(null);
   };
 
   const handleMethodChange = (value: SingleValue<SelectOption>) => {
-    setSelectedMethod(value?.value ?? '');
+    setSelectedMethod(value?.value ?? null);
   };
 
   return {

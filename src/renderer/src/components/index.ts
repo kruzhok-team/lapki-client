@@ -1,5 +1,5 @@
 export * from './CodeEditor';
-export * from './CreateModal/CreateModal';
+export * from './NodeModal';
 export * from './EventsModal/EventsModal';
 export * from './DiagramEditor';
 export * from './Documentation/Documentation';

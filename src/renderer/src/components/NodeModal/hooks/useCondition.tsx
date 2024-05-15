@@ -5,12 +5,7 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-interface UseConditionParams {
-  isEditingState: boolean;
-  formState: 'submitted' | 'default';
-}
-
-export const useCondition = ({ isEditingState, formState }: UseConditionParams) => {
+export const useCondition = (formState: 'submitted' | 'default') => {
   const editor = useEditorContext();
   const model = editor.model;
   const componentsData = model.useData('elements.components');
@@ -50,12 +45,8 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingState) {
-      result.unshift(getComponentOption('System'));
-    }
-
     return result;
-  }, [componentsData, isEditingState, controller]);
+  }, [componentsData, controller]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -71,12 +62,8 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingState) {
-      result.unshift(getComponentOption('System'));
-    }
-
     return result;
-  }, [componentsData, isEditingState, controller]);
+  }, [componentsData, controller]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1) return [];

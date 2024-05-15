@@ -83,7 +83,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   createTransition(params: CreateTransitionParams, canUndo = true) {
-    const { source, target, color, id: prevId, label } = params;
+    const { source, target, label } = params;
 
     const sourceState = this.controller.states.get(source);
     const targetState = this.controller.states.get(target);
@@ -97,16 +97,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       };
     }
 
-    // Создание данных
-    const id = this.app.model.createTransition({
-      id: prevId,
-      source,
-      target,
-      color,
-      label,
-    });
-    // Создание модельки
-    const transition = new Transition(this.app, id);
+    const id = this.app.model.createTransition(params); // Создание данных
+    const transition = new Transition(this.app, id); // Создание представления
 
     this.items.set(id, transition);
     this.linkTransition(id);

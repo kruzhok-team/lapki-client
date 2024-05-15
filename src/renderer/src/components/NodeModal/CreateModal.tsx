@@ -25,7 +25,7 @@ export interface CreateModalResult {
   trigger: StateEvent | undefined;
   condition?: ConditionData;
   do: Action[];
-  color?: string;
+  color: string;
 }
 
 interface CreateModalProps {
@@ -258,24 +258,28 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       onRequestClose={onClose}
       onAfterClose={handleAfterClose}
     >
-      {showTrigger && <Trigger {...trigger} />}
+      <div
+        /* className="grid grid-cols-[3.5rem,_1fr] gap-2 gap-y-3" */ className="flex flex-col gap-3"
+      >
+        {showTrigger && <Trigger {...trigger} />}
 
-      {!isEditingState && <Condition {...condition} />}
+        {!isEditingState && <Condition {...condition} />}
 
-      <EventsBlock
-        state={state}
-        transition={transition}
-        selectedComponent={trigger.selectedComponent}
-        selectedMethod={trigger.selectedMethod}
-        events={events}
-        setEvents={setEvents}
-        onOpenEventsModal={onOpenEventsModal}
-        isOpen={isOpen}
-      />
+        <EventsBlock
+          state={state}
+          transition={transition}
+          selectedComponent={trigger.selectedComponent}
+          selectedMethod={trigger.selectedMethod}
+          events={events}
+          setEvents={setEvents}
+          onOpenEventsModal={onOpenEventsModal}
+          isOpen={isOpen}
+        />
 
-      <div className="flex items-center gap-2">
-        <span className="font-bold">Цвет:</span>
-        <ColorInput value={color} onChange={setColor} />
+        <div className="flex items-center gap-2">
+          <p className="font-bold">Цвет:</p>
+          <ColorInput value={color} onChange={setColor} />
+        </div>
       </div>
     </Modal>
   );

@@ -5,6 +5,8 @@ import fixPath from 'fix-path';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
+
+import { defaultSettings } from '../settings';
 export type ModuleName = 'lapki-flasher';
 
 export class ModuleStatus {
@@ -73,6 +75,7 @@ export class ModuleManager {
         switch (module) {
           case 'lapki-flasher': {
             const port = await settings.get('flasher.localPort');
+            defaultSettings.flasher.localPort = Number(port);
             /*
             параметры локального загрузчика:
               -address string

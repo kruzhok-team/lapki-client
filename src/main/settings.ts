@@ -1,7 +1,7 @@
 import { ipcMain, WebContents } from 'electron';
 import settings from 'electron-settings';
 
-const defaultSettings = {
+export const defaultSettings = {
   doc: {
     host: 'https://lapki-doc.polyus-nt.ru/',
   },

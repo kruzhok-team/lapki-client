@@ -35,7 +35,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
-  const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
+  const [isOpen, onDocumentationToggle] = useDoc((state) => [
+    state.isOpen,
+    state.onDocumentationToggle,
+  ]);
 
   const [width, setWidth] = useState(0);
   const [minWidth, setMinWidth] = useState(5);
@@ -43,11 +46,11 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
 
   const handleResize = (e, _direction, ref) => {
     if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
-      toggle();
+      onDocumentationToggle();
     }
 
     if (e.pageX >= 0.95 * window.innerWidth && isOpen) {
-      toggle();
+      onDocumentationToggle();
     }
     //Получаем ширину блока документации
     setWidth(parseInt(ref.style.width));
@@ -66,7 +69,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'F1') {
-        toggle();
+        onDocumentationToggle();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
@@ -74,7 +77,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [toggle]);
+  }, [onDocumentationToggle]);
 
   const onItemClick = (filePath: string) => {
     setActiveTab(1);
@@ -116,7 +119,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
           <button
             className={twMerge(
               'rounded border border-primary p-2',
-              activeTab === 0 && 'bg-primary'
+              activeTab === 0 && 'bg-primary text-white'
             )}
             onClick={() => setActiveTab(0)}
           >
@@ -125,7 +128,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
           <button
             className={twMerge(
               'rounded border border-primary p-2',
-              activeTab === 1 && 'bg-primary'
+              activeTab === 1 && 'bg-primary text-white'
             )}
             onClick={() => setActiveTab(1)}
           >
@@ -167,18 +170,18 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     >
       <Resizable
         enable={{ left: true }}
-        size={{ width: width, height: topOffset ? '95.85vh' : '100vh' }}
+        size={{ width: width, height: topOffset ? 'calc(100vh-44.19px)' : '100vh' }}
         minWidth={minWidth}
         maxWidth={maxWidth}
         onResize={handleResize}
         className="border-l border-border-primary bg-bg-secondary"
       >
         {!topOffset ? (
-          <button className="absolute -left-14 bottom-0 m-2" onClick={toggle}>
+          <button className="absolute -left-14 bottom-0 m-2" onClick={onDocumentationToggle}>
             <Question height={40} width={40} />
           </button>
         ) : (
-          <EditorSettings toggle={toggle} />
+          <EditorSettings toggle={onDocumentationToggle} />
         )}
         <div className="h-full">{renderContent()}</div>
       </Resizable>

@@ -2,10 +2,10 @@ import { create } from 'zustand';
 
 interface DocState {
   isOpen: boolean;
-  toggle: () => void;
+  onDocumentationToggle: () => void;
 }
 
 export const useDoc = create<DocState>((set) => ({
   isOpen: false,
-  toggle: () => set(({ isOpen }) => ({ isOpen: !isOpen })),
+  onDocumentationToggle: () => set(({ isOpen }) => ({ isOpen: !isOpen })),
 }));

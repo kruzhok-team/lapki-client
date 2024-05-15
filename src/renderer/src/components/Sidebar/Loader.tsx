@@ -27,7 +27,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
   const [flasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
 
-  const { connectionStatus, setFlasherConnectionStatus, flashing, setFlashing } = useFlasher();
+  const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -167,7 +167,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
       setFlasherConnectionStatus,
       setFlasherLog,
       setFlasherFile,
-      setFlashing,
+      setIsFlashing,
       setFlasherError,
       setFlashResult
     );
@@ -211,7 +211,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
   };
 
   const flashButtonDisabled = () => {
-    if (flashing || connectionStatus != FLASHER_CONNECTED) {
+    if (isFlashing || connectionStatus !== FLASHER_CONNECTED) {
       return true;
     }
     if (!currentDeviceID) {
@@ -286,7 +286,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
           <button
             className="btn-primary px-2"
             onClick={handleHostChange}
-            disabled={connectionStatus == FLASHER_CONNECTING || flashing}
+            disabled={connectionStatus == FLASHER_CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
           </button>
@@ -341,9 +341,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
             Загрузить
           </button>
           <button
-            className={flasherFile ? 'btn-primary mb-2 px-4' : 'btn-primary mb-2 px-4 opacity-70'}
+            className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
             onClick={handleFileChoose}
-            disabled={flashing}
+            disabled={isFlashing}
           >
             {flasherFile ? '✖' : '…'}
           </button>
@@ -358,7 +358,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}
-          disabled={flashResult == undefined}
+          disabled={flashResult === undefined}
         >
           Результат прошивки
         </button>

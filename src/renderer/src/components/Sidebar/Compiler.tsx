@@ -144,6 +144,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const processing =
     compilerStatus == 'Идет компиляция...' || compilerStatus == 'Идет подключение...';
   const canCompile = compilerStatus == 'Подключен' && isInitialized;
+  const disabled = processing || (!processing && !canCompile && compilerStatus !== 'Не подключен');
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -153,13 +154,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       <div className="flex flex-col px-4">
         <div className="mb-2 flex rounded">
           <button
-            disabled={
-              processing || (!processing && !canCompile && compilerStatus != 'Не подключен')
-            }
+            disabled={disabled}
             className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
             onClick={canCompile ? handleCompile : handleReconnect}
           >
-            {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
+            {compilerStatus !== 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
           </button>
 
           <button className="btn-primary px-2" onClick={openCompilerSettings}>

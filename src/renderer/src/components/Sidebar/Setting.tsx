@@ -31,7 +31,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHo
   const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
-  const { connectionStatus, flashing } = useFlasher();
+  const { connectionStatus, isFlashing } = useFlasher();
 
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
@@ -77,7 +77,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHo
         <button
           className="btn-primary"
           onClick={handleHostChange}
-          disabled={connectionStatus == FLASHER_CONNECTING || flashing}
+          disabled={connectionStatus === FLASHER_CONNECTING || isFlashing}
         >
           Загрузчик…
         </button>

@@ -1,6 +1,7 @@
 import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/lib/types/graphics';
 
 export * from './generateId';
+export * from './roundPoint';
 
 export const isPointInRectangle = (rectangle: Rectangle, point: Point) => {
   return (

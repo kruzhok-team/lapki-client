@@ -177,8 +177,11 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
         className="border-l border-border-primary bg-bg-secondary"
       >
         {!topOffset ? (
-          <button className="absolute -left-14 bottom-0 m-2" onClick={onDocumentationToggle}>
-            <Question height={40} width={40} />
+          <button
+            className="absolute -left-14 bottom-0 m-2 text-primary"
+            onClick={onDocumentationToggle}
+          >
+            <Question height={40} width={40} fill="currentColor" />
           </button>
         ) : (
           <EditorSettings toggle={onDocumentationToggle} />

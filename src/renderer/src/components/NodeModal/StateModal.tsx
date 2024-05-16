@@ -6,11 +6,8 @@ import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { ColorField } from './ColorField';
-import { Events } from './Events';
-import { useEvents } from './hooks/useEvents';
-import { useTrigger } from './hooks/useTrigger';
-import { Trigger } from './Trigger';
+import { Events, ColorField, Trigger } from './components';
+import { useTrigger, useEvents } from './hooks';
 
 export const StateModal: React.FC = () => {
   const editor = useEditorContext();
@@ -24,16 +21,20 @@ export const StateModal: React.FC = () => {
   const events = useEvents();
   const [color, setColor] = useState(DEFAULT_STATE_COLOR);
 
-  const { setEvents } = events;
+  const { setEvents, onTabChange: onEventsTabChange, onChangeText: onEventsChangeText } = events;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!state) return;
 
-    const { selectedComponent, selectedMethod, tabValue, text } = trigger;
+    const { selectedComponent, selectedMethod, tabValue } = trigger;
+    const triggerText = trigger.text.trim();
 
-    if ((tabValue === 0 && (!selectedComponent || !selectedMethod)) || (tabValue === 1 && !text)) {
+    if (
+      (tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+      (tabValue === 1 && !triggerText)
+    ) {
       return;
     }
 
@@ -41,14 +42,22 @@ export const StateModal: React.FC = () => {
       if (tabValue === 0)
         return { component: selectedComponent as string, method: selectedMethod as string };
 
-      return text;
+      return triggerText;
+    };
+
+    const getEvents = () => {
+      if (events.tabValue === 0) {
+        return events.events;
+      }
+
+      return events.text.trim();
     };
 
     editor.controller.states.changeStateEvents({
       id: state.id,
       eventData: {
         trigger: getTrigger(),
-        do: events.events,
+        do: getEvents(),
       },
       color,
     });
@@ -82,7 +91,13 @@ export const StateModal: React.FC = () => {
           trigger.onTabChange(1);
         }
 
-        events.setEvents(eventData.do ?? []);
+        if (typeof eventData.do !== 'string') {
+          events.setEvents(eventData.do);
+          events.onTabChange(0);
+        } else {
+          events.onChangeText(eventData.do);
+          events.onTabChange(1);
+        }
       }
 
       setColor(data.color);
@@ -112,12 +127,18 @@ export const StateModal: React.FC = () => {
       return false;
     });
 
-    if (stateEvents) {
-      return setEvents(stateEvents.do);
-    }
+    if (!stateEvents) return setEvents([]);
 
-    return setEvents([]);
+    if (typeof stateEvents.do === 'string') {
+      onEventsChangeText(stateEvents.do);
+      onEventsTabChange(1);
+    } else {
+      setEvents(stateEvents.do);
+      onEventsTabChange(0);
+    }
   }, [
+    onEventsChangeText,
+    onEventsTabChange,
     setEvents,
     state,
     trigger.selectedComponent,

@@ -33,8 +33,6 @@ export const DiagramEditor: React.FC = () => {
     eventSelection: EventSelection;
   }>();
 
-  console.log('DiagramEditor update');
-
   useEffect(() => {
     if (!containerRef.current) return;
 

@@ -1,4 +1,5 @@
-import { Component } from '@renderer/types/diagram';
+import { Point } from '@renderer/lib/types/graphics';
+import { Component, Transition as TransitionData } from '@renderer/types/diagram';
 
 export interface EditComponentParams {
   name: string;
@@ -33,3 +34,11 @@ export interface DeleteInitialStateParams {
   id: string;
   targetId: string;
 }
+
+export type CreateTransitionParams = Omit<TransitionData, 'selection' | 'label'> & {
+  label?: Omit<Required<TransitionData>['label'], 'position'> & { position?: Point };
+} & { id?: string };
+
+export type ChangeTransitionParams = Omit<TransitionData, 'selection' | 'label'> & {
+  label: Omit<Required<TransitionData>['label'], 'position'> & { position?: Point };
+} & { id: string };

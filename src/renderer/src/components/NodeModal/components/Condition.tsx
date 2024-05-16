@@ -6,9 +6,9 @@ import { twMerge } from 'tailwind-merge';
 
 import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 
-import { useCondition } from './hooks/useCondition';
+import { useCondition } from '../hooks';
 
-import './style.css';
+import '../style.css';
 
 const operand = [
   {
@@ -80,8 +80,6 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
     errors,
   } = props;
 
-  console.log('Condition update');
-
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
   const handleTabChange = (tab: number) => {
@@ -111,17 +109,10 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-2">
-        <p className={twMerge('min-w-11 text-lg font-bold', show && 'mt-2')}>Если</p>
+      <div className={twMerge('flex items-center gap-2', show && 'items-end')}>
+        <p className="text-lg font-bold">Если</p>
 
-        <Tabs
-          className={twMerge('mr-2', !show && 'hidden')}
-          tabs={['Выбор', 'Код']}
-          value={tabValue}
-          onChange={handleTabChange}
-        />
-
-        <label className={twMerge('btn border-primary px-3', show && 'btn-primary mt-0')}>
+        <label className={twMerge('btn border-primary px-3', show && 'btn-primary')}>
           <input
             type="checkbox"
             checked={show}
@@ -130,9 +121,16 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
           />
           <span>{show ? 'Убрать условие' : 'Добавить условие'}</span>
         </label>
+
+        <Tabs
+          className={twMerge('ml-auto', !show && 'hidden')}
+          tabs={['Выбор', 'Код']}
+          value={tabValue}
+          onChange={handleTabChange}
+        />
       </div>
 
-      <div className={twMerge('pl-4', !show && 'hidden')}>
+      <div className={twMerge('mt-2 pl-4', !show && 'hidden')}>
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
             <div className="flex items-start">
@@ -242,7 +240,6 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
               lineNumbers: false,
               foldGutter: false,
             }}
-            minHeight="4.7rem"
             width="100%"
             extensions={[EditorState.changeFilter.of(handleLengthLimit)]}
           />

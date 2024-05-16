@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
@@ -8,13 +8,8 @@ import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Variable as VariableData } from '@renderer/types/diagram';
 
-import { ColorField } from './ColorField';
-import { Condition } from './Condition';
-import { Events } from './Events';
-import { useCondition } from './hooks/useCondition';
-import { useEvents } from './hooks/useEvents';
-import { useTrigger } from './hooks/useTrigger';
-import { Trigger } from './Trigger';
+import { Events, Condition, ColorField, Trigger } from './components';
+import { useTrigger, useCondition, useEvents } from './hooks';
 
 export const TransitionModal: React.FC = () => {
   const editor = useEditorContext();
@@ -33,9 +28,13 @@ export const TransitionModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { selectedComponent, selectedMethod, tabValue, text } = trigger;
+    const { selectedComponent, selectedMethod, tabValue } = trigger;
+    const triggerText = trigger.text.trim();
 
-    if ((tabValue === 0 && (!selectedComponent || !selectedMethod)) || (tabValue === 1 && !text)) {
+    if (
+      (tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+      (tabValue === 1 && !triggerText)
+    ) {
       return;
     }
 
@@ -93,14 +92,22 @@ export const TransitionModal: React.FC = () => {
         };
       }
 
-      return condition.text;
+      return condition.text.trim() || undefined;
     };
 
     const getTrigger = () => {
       if (tabValue === 0)
         return { component: selectedComponent as string, method: selectedMethod as string };
 
-      return text;
+      return triggerText;
+    };
+
+    const getEvents = () => {
+      if (events.tabValue === 0) {
+        return events.events;
+      }
+
+      return events.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
     };
 
     if (transition) {
@@ -112,7 +119,7 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: events.events,
+          do: getEvents(),
         },
       });
 
@@ -127,7 +134,7 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: events.events,
+          do: getEvents(),
         },
       });
     }
@@ -148,8 +155,6 @@ export const TransitionModal: React.FC = () => {
 
   useEffect(() => {
     editor.controller.transitions.on('changeTransition', (target) => {
-      // if (editor.textMode) return;
-
       const { data: initialData } = target;
 
       if (initialData.label?.trigger) {
@@ -227,9 +232,18 @@ export const TransitionModal: React.FC = () => {
 
       parseCondition();
 
+      if (initialData.label?.do) {
+        if (typeof initialData.label.do !== 'string') {
+          events.setEvents(initialData.label.do);
+          events.onTabChange(0);
+        } else {
+          events.onChangeText(initialData.label.do);
+          events.onTabChange(1);
+        }
+      }
+
       setColor(initialData.color);
 
-      events.setEvents(target.data.label?.do ?? []);
       setTransition(target);
       open();
     });
@@ -251,7 +265,7 @@ export const TransitionModal: React.FC = () => {
         onRequestClose={close}
         onAfterClose={handleAfterClose}
       >
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <Trigger {...trigger} />
           <Condition {...condition} />
           <Events {...events} />

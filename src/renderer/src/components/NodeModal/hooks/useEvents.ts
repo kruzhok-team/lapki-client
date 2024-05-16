@@ -5,10 +5,13 @@ import { useModal } from '@renderer/hooks/useModal';
 import { Event } from '@renderer/types/diagram';
 
 export const useEvents = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
+
+  const [tabValue, setTabValue] = useState(0);
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [text, setText] = useState('');
 
   const handleAddEvent = () => {
     setEventsModalData(undefined);
@@ -54,6 +57,8 @@ export const useEvents = () => {
 
   const clear = () => {
     setEvents([]);
+    setText('');
+    setTabValue(0);
   };
 
   return {
@@ -64,6 +69,12 @@ export const useEvents = () => {
     onChangeEvent: handleChangeEvent,
     onDeleteEvent: handleDeleteEvent,
     onReorderEvent: handleReorderEvent,
+
+    tabValue,
+    onTabChange: setTabValue,
+
+    text,
+    onChangeText: setText,
 
     modal: {
       isOpen: isEventsModalOpen,

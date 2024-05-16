@@ -25,7 +25,7 @@ export type Event = {
 
 export type EventData = {
   trigger: Event | string;
-  do: Action[];
+  do: Action[] | string;
   // TODO: condition?: Condition;
 };
 
@@ -67,9 +67,9 @@ export interface Transition {
     position: Point;
     trigger?: Event | string;
     condition?: Condition | null | string;
-    do?: Action[];
-    //TODO: В дальнейшем планируется убрать
+    do?: Action[] | string;
   };
+  //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 }
 

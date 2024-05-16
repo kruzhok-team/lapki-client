@@ -5,9 +5,9 @@ import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
 
-import { useTrigger } from './hooks/useTrigger';
+import { useTrigger } from '../hooks';
 
-import './style.css';
+import '../style.css';
 
 type TriggerProps = ReturnType<typeof useTrigger>;
 
@@ -27,8 +27,6 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
     text,
     onChangeText,
   } = props;
-
-  console.log('Trigger update');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
@@ -62,11 +60,11 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <p className="mb-1 min-w-11 text-lg font-bold">Когда</p>
+      <div className="mb-2 flex items-end gap-2">
+        <p className="text-lg font-bold">Когда</p>
 
         <Tabs
-          className="mb-4"
+          className="ml-auto"
           tabs={['Выбор', 'Код']}
           value={tabValue}
           onChange={handleTabChange}
@@ -97,15 +95,14 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
           <TabPanel value={1} tabValue={tabValue}>
             <CodeMirror
               ref={editorRef}
+              className="editor"
               value={text}
               onChange={handleChangeText}
               placeholder={'Напишите код'}
-              className="editor"
               basicSetup={{
                 lineNumbers: false,
                 foldGutter: false,
               }}
-              minHeight="4.7rem"
               width="100%"
               extensions={[EditorState.changeFilter.of(handleLengthLimit)]}
             />

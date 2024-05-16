@@ -3,7 +3,10 @@ import { EventEmitter } from '@renderer/lib/common';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { FinalState, GhostTransition, State, Transition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
-import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
+import {
+  ChangeTransitionParams,
+  CreateTransitionParams,
+} from '@renderer/lib/types/EditorController';
 import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
@@ -97,7 +100,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       };
     }
 
-    const id = this.app.model.createTransition(params); // Создание данных
+    const id = this.app.model.createTransition(params as any); // Создание данных
     const transition = new Transition(this.app, id); // Создание представления
 
     this.items.set(id, transition);
@@ -110,7 +113,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (canUndo) {
       this.history.do({
         type: 'createTransition',
-        args: { id, params },
+        args: { id, params: params as any },
       });
     }
   }
@@ -148,11 +151,11 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
-        args: { transition, args, prevData: structuredClone(transition.data) },
+        args: { transition, args: args as any, prevData: structuredClone(transition.data) },
       });
     }
 
-    this.app.model.changeTransition(args);
+    this.app.model.changeTransition(args as any);
 
     this.view.isDirty = true;
   }

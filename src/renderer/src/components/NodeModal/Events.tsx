@@ -18,27 +18,6 @@ export const Events: React.FC<EventsProps> = (props) => {
 
   const controller = editor.controller;
 
-  // useLayoutEffect(() => {
-  //   //Делаем проверку на наличие событий в состояниях
-  //   const stateEvents = state?.eventBox.data.find(
-  //     (value) =>
-  //       selectedComponent === value.trigger.component && selectedMethod === value.trigger.method
-  //   );
-
-  //   if (state && stateEvents) {
-  //     return setEvents(stateEvents.do);
-  //   }
-  //   if (transition && transition.data.label?.trigger) {
-  //     if (
-  //       transition.data.label.trigger.component === selectedComponent &&
-  //       transition.data.label.trigger.method === selectedMethod
-  //     ) {
-  //       return setEvents(transition.data.label.do ?? []);
-  //     }
-  //   }
-  //   return setEvents([]);
-  // }, [state, transition, isOpen, selectedComponent, selectedMethod]);
-
   const [selectedEventIndex, setSelectedEventIndex] = useState<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
@@ -61,7 +40,7 @@ export const Events: React.FC<EventsProps> = (props) => {
       <p className="mb-1 text-lg font-bold">Делай</p>
 
       <div className="flex gap-2 pl-4">
-        <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {events.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
 
           {events.map((data, i) => (

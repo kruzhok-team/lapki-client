@@ -138,7 +138,19 @@ export const useCondition = () => {
     setErrors(newErrors);
 
     return newErrors;
-  }, []);
+  }, [
+    argsParam1,
+    argsParam2,
+    conditionOperator,
+    isParamOneInput1,
+    isParamOneInput2,
+    selectedComponentParam1,
+    selectedComponentParam2,
+    selectedMethodParam1,
+    selectedMethodParam2,
+    tabValue,
+    text,
+  ]);
 
   const handleComponentParam1Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponentParam1(value?.value ?? '');

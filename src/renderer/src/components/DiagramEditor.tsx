@@ -25,8 +25,6 @@ export const DiagramEditor: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [isCreateModalOpen] = useModal(false);
-
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
   // Дополнительные данные о родителе события
@@ -34,6 +32,8 @@ export const DiagramEditor: React.FC = () => {
     state: State;
     eventSelection: EventSelection;
   }>();
+
+  console.log('DiagramEditor update');
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -75,13 +75,14 @@ export const DiagramEditor: React.FC = () => {
   }, [canvasSettings, editor]);
 
   const handleEventsModalSubmit = (data: Event) => {
-    if (!isCreateModalOpen && eventsModalParentData) {
-      editor?.controller.states.changeEvent(
-        eventsModalParentData.state.id,
-        eventsModalParentData.eventSelection,
-        data
-      );
-    }
+    if (!eventsModalParentData) return;
+
+    editor?.controller.states.changeEvent(
+      eventsModalParentData.state.id,
+      eventsModalParentData.eventSelection,
+      data
+    );
+
     closeEventsModal();
   };
 

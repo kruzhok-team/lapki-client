@@ -127,6 +127,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
 
     // Если есть ошибка то не отправляем форму
     for (const key in errors) {

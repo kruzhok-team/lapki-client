@@ -58,7 +58,7 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
     <>
       <button
         type="button"
-        className="h-7 w-7 cursor-pointer rounded"
+        className="h-7 w-7 cursor-pointer rounded border border-border-primary"
         style={{ backgroundColor: value }}
         ref={refs.setReference}
         {...getReferenceProps()}

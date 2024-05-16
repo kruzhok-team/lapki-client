@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
-import { Modal, ColorInput } from '@renderer/components/UI';
+import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
@@ -8,6 +8,7 @@ import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Variable as VariableData } from '@renderer/types/diagram';
 
+import { ColorField } from './ColorField';
 import { Condition } from './Condition';
 import { Events } from './Events';
 import { useCondition } from './hooks/useCondition';
@@ -28,6 +29,8 @@ export const TransitionModal: React.FC = () => {
   const condition = useCondition();
   const events = useEvents();
   const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
+
+  const { setEvents } = events;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,6 +244,41 @@ export const TransitionModal: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useLayoutEffect(() => {
+    //Делаем проверку на наличие событий в состояниях
+    // const stateEvents = state?.eventBox.data.find(
+    //   (value) =>
+    //     selectedComponent === value.trigger.component && selectedMethod === value.trigger.method
+    // );
+
+    // if (state && stateEvents) {
+    //   return setEvents(stateEvents.do);
+    // }
+
+    if (!transition || transition.data.label?.trigger === undefined) return;
+
+    const label = transition.data.label;
+
+    if (label.trigger === undefined) return;
+
+    if (typeof label.trigger === 'string') {
+      if (label.trigger === trigger.text) {
+        return setEvents(transition.data.label.do ?? []);
+      }
+
+      return setEvents([]);
+    }
+
+    if (
+      label.trigger.component === trigger.selectedComponent &&
+      label.trigger.method === trigger.selectedMethod
+    ) {
+      return setEvents(transition.data.label.do ?? []);
+    }
+
+    return setEvents([]);
+  }, [setEvents, transition, trigger.selectedComponent, trigger.selectedMethod, trigger.text]);
+
   return (
     <>
       <Modal
@@ -254,7 +292,7 @@ export const TransitionModal: React.FC = () => {
           <Trigger {...trigger} />
           <Condition {...condition} />
           <Events {...events} />
-          <ColorInput value={color} onChange={setColor} />
+          <ColorField value={color} onChange={setColor} />
         </div>
       </Modal>
     </>

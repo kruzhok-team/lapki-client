@@ -14,7 +14,7 @@ import {
 } from '@renderer/types/diagram';
 
 import { Condition } from './Condition';
-import { EventsBlock } from './EventsBlock';
+import { Events } from './Events';
 import { useCondition } from './hooks/useCondition';
 import { useTrigger } from './hooks/useTrigger';
 import { Trigger } from './Trigger';
@@ -265,7 +265,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
         {!isEditingState && <Condition {...condition} />}
 
-        <EventsBlock
+        <Events
           state={state}
           transition={transition}
           selectedComponent={trigger.selectedComponent}

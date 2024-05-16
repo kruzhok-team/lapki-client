@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
@@ -61,21 +61,21 @@ export const useTrigger = (addSystemComponents: boolean) => {
     });
   }, [controller, selectedComponent]);
 
-  const handleComponentChange = (value: SingleValue<SelectOption>) => {
+  const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? null);
     setSelectedMethod(null);
-  };
+  }, []);
 
-  const handleMethodChange = (value: SingleValue<SelectOption>) => {
+  const handleMethodChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethod(value?.value ?? null);
-  };
+  }, []);
 
-  const clear = () => {
+  const clear = useCallback(() => {
     setSelectedComponent(null);
     setSelectedMethod(null);
     setText('');
     setTabValue(0);
-  };
+  }, []);
 
   return {
     componentOptions,

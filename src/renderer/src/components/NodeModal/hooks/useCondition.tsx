@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
@@ -29,9 +29,6 @@ export const useCondition = () => {
   const [show, setShow] = useState(false);
   const [isParamOneInput1, setIsParamOneInput1] = useState(true);
   const [isParamOneInput2, setIsParamOneInput2] = useState(true);
-  const handleChangeConditionShow = (value: boolean) => setShow(value);
-  const handleParamOneInput1 = (value: boolean) => setIsParamOneInput1(value);
-  const handleParamOneInput2 = (value: boolean) => setIsParamOneInput2(value);
 
   const [text, setText] = useState('');
 
@@ -115,7 +112,7 @@ export const useCondition = () => {
       });
   }, [controller, selectedComponentParam2]);
 
-  const checkForErrors = () => {
+  const checkForErrors = useCallback(() => {
     const newErrors: Record<string, string> = {};
 
     if (tabValue === 0) {
@@ -141,37 +138,29 @@ export const useCondition = () => {
     setErrors(newErrors);
 
     return newErrors;
-  };
+  }, []);
 
-  const handleComponentParam1Change = (value: SingleValue<SelectOption>) => {
+  const handleComponentParam1Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponentParam1(value?.value ?? '');
     setSelectedMethodParam1('');
-  };
-  const handleComponentParam2Change = (value: SingleValue<SelectOption>) => {
+  }, []);
+  const handleComponentParam2Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponentParam2(value?.value ?? '');
     setSelectedMethodParam2('');
-  };
+  }, []);
 
-  const handleMethodParam1Change = (value: SingleValue<SelectOption>) => {
+  const handleMethodParam1Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethodParam1(value?.value ?? '');
-  };
-  const handleMethodParam2Change = (value: SingleValue<SelectOption>) => {
+  }, []);
+  const handleMethodParam2Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethodParam2(value?.value ?? '');
-  };
+  }, []);
 
-  const handleConditionOperatorChange = (value: SingleValue<SelectOption>) => {
+  const handleConditionOperatorChange = useCallback((value: SingleValue<SelectOption>) => {
     setConditionOperator(value?.value ?? null);
-  };
+  }, []);
 
-  const handleArgsParam1Change = (value: string) => {
-    setArgsParam1(value);
-  };
-
-  const handleArgsParam2Change = (value: string) => {
-    setArgsParam2(value);
-  };
-
-  const clear = () => {
+  const clear = useCallback(() => {
     setSelectedComponentParam1('');
     setSelectedComponentParam2('');
     setArgsParam1('');
@@ -179,31 +168,57 @@ export const useCondition = () => {
     setSelectedMethodParam1('');
     setSelectedMethodParam2('');
     setArgsParam2('');
-    handleChangeConditionShow(false);
-    handleParamOneInput1(true);
-    handleParamOneInput2(true);
+    setShow(false);
+    setIsParamOneInput1(true);
+    setIsParamOneInput2(true);
 
     setText('');
     setTabValue(0);
 
     setErrors({});
-  };
+  }, []);
 
   return {
     show,
+    handleChangeConditionShow: setShow,
 
     tabValue,
     onTabChange: setTabValue,
 
     isParamOneInput1,
+    handleParamOneInput1: setIsParamOneInput1,
     isParamOneInput2,
+    handleParamOneInput2: setIsParamOneInput2,
+
+    componentOptionsParam1,
+    handleComponentParam1Change,
     selectedComponentParam1,
-    selectedComponentParam2,
+    methodOptionsParam1,
+    handleMethodParam1Change,
     selectedMethodParam1,
-    selectedMethodParam2,
-    argsParam1,
-    argsParam2,
+
     conditionOperator,
+    handleConditionOperatorChange,
+
+    componentOptionsParam2,
+    handleComponentParam2Change,
+    selectedComponentParam2,
+    methodOptionsParam2,
+    handleMethodParam2Change,
+    selectedMethodParam2,
+
+    argsParam1,
+    handleArgsParam1Change: setArgsParam1,
+    argsParam2,
+    handleArgsParam2Change: setArgsParam2,
+
+    text,
+    onChangeText: setText,
+
+    errors,
+    setErrors,
+    checkForErrors,
+
     setSelectedComponentParam1,
     setSelectedComponentParam2,
     setArgsParam1,
@@ -211,28 +226,6 @@ export const useCondition = () => {
     setSelectedMethodParam1,
     setSelectedMethodParam2,
     setArgsParam2,
-    handleChangeConditionShow,
-    handleParamOneInput1,
-    handleParamOneInput2,
-    componentOptionsParam1,
-    componentOptionsParam2,
-    methodOptionsParam1,
-    methodOptionsParam2,
-    handleComponentParam1Change,
-    handleComponentParam2Change,
-    handleMethodParam1Change,
-    handleMethodParam2Change,
-
-    errors,
-    setErrors,
-
-    checkForErrors,
-    handleArgsParam1Change,
-    handleArgsParam2Change,
-    handleConditionOperatorChange,
-
-    text,
-    onChangeText: setText,
 
     clear,
   };

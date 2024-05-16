@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, memo } from 'react';
 
 import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -39,7 +39,7 @@ const operand = [
 
 type ConditionProps = ReturnType<typeof useCondition>;
 
-export const Condition: React.FC<ConditionProps> = (props) => {
+export const Condition: React.FC<ConditionProps> = memo((props) => {
   const {
     show,
     handleChangeConditionShow,
@@ -79,6 +79,8 @@ export const Condition: React.FC<ConditionProps> = (props) => {
 
     errors,
   } = props;
+
+  console.log('Condition update');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
@@ -248,4 +250,4 @@ export const Condition: React.FC<ConditionProps> = (props) => {
       </div>
     </div>
   );
-};
+});

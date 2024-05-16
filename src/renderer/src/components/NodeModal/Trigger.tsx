@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -11,10 +11,11 @@ import './style.css';
 
 type TriggerProps = ReturnType<typeof useTrigger>;
 
-export const Trigger: React.FC<TriggerProps> = (props) => {
+export const Trigger: React.FC<TriggerProps> = memo((props) => {
   const {
     componentOptions,
     methodOptions,
+
     tabValue,
     onTabChange,
 
@@ -26,6 +27,8 @@ export const Trigger: React.FC<TriggerProps> = (props) => {
     text,
     onChangeText,
   } = props;
+
+  console.log('Trigger update');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
@@ -111,4 +114,4 @@ export const Trigger: React.FC<TriggerProps> = (props) => {
       </div>
     </div>
   );
-};
+});

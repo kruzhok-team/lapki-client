@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 
-import { EventsModal, EventsModalData } from '@renderer/components';
 import { Modal, ColorInput } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { Action, Event, Variable as VariableData } from '@renderer/types/diagram';
+import { Variable as VariableData } from '@renderer/types/diagram';
 
 import { Condition } from './Condition';
-import { EventsBlock } from './EventsBlock';
+import { Events } from './Events';
 import { useCondition } from './hooks/useCondition';
+import { useEvents } from './hooks/useEvents';
 import { useTrigger } from './hooks/useTrigger';
 import { Trigger } from './Trigger';
 
@@ -23,47 +23,11 @@ export const TransitionModal: React.FC = () => {
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransition, setNewTransition] = useState<{ source: State; target: State } | null>();
 
-  const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
-  const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
-
   // Данные формы
   const trigger = useTrigger(false);
   const condition = useCondition();
-  const [events, setEvents] = useState<Action[]>([]);
+  const events = useEvents();
   const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
-
-  const handleAddEvent = () => {
-    setEventsModalData(undefined);
-    openEventsModal();
-  };
-  const handleChangeEvent = (event: Action) => {
-    setEventsModalData(event && { event, isEditingEvent: false });
-    openEventsModal();
-  };
-  const handleDeleteEvent = (index: number) => {
-    setEvents((p) => p.filter((_, i) => index !== i));
-  };
-
-  const handleEventsModalSubmit = (data: Event) => {
-    if (eventsModalData) {
-      setEvents((p) => {
-        const { component, method } = eventsModalData.event;
-        const prevEventIndex = p.findIndex((v) => v.component === component && v.method === method);
-
-        if (prevEventIndex === -1) return p;
-
-        const newEvents = [...p];
-
-        newEvents[prevEventIndex] = data;
-
-        return newEvents;
-      });
-    } else {
-      setEvents((p) => [...p, data]);
-    }
-
-    closeEventsModal();
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +111,7 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: events,
+          do: events.events,
         },
       });
 
@@ -162,7 +126,7 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: events,
+          do: events.events,
         },
       });
     }
@@ -174,7 +138,7 @@ export const TransitionModal: React.FC = () => {
   const handleAfterClose = () => {
     trigger.clear();
     condition.clear();
-    setEvents([]);
+    events.clear();
     setColor(DEFAULT_TRANSITION_COLOR);
 
     setTransition(null);
@@ -264,52 +228,35 @@ export const TransitionModal: React.FC = () => {
 
       setColor(initialData.color);
 
-      setEvents(target.data.label?.do ?? []);
+      events.setEvents(target.data.label?.do ?? []);
       setTransition(target);
       open();
     });
 
     editor.controller.transitions.on('createTransition', ({ source, target }) => {
       setNewTransition({ source, target });
-      setEvents([]);
+      events.setEvents([]);
       open();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <Modal
-      title="Редактор соединения"
-      onSubmit={handleSubmit}
-      isOpen={isOpen}
-      onRequestClose={close}
-      onAfterClose={handleAfterClose}
-    >
-      <div className="flex flex-col gap-3">
-        <Trigger {...trigger} />
-
-        <Condition {...condition} />
-
-        <EventsBlock
-          events={events}
-          setEvents={setEvents}
-          onAddEvent={handleAddEvent}
-          onChangeEvent={handleChangeEvent}
-          onDeleteEvent={handleDeleteEvent}
-        />
-
-        <div className="flex items-center gap-2">
-          <p className="text-lg font-bold">Цвет:</p>
+    <>
+      <Modal
+        title="Редактор соединения"
+        onSubmit={handleSubmit}
+        isOpen={isOpen}
+        onRequestClose={close}
+        onAfterClose={handleAfterClose}
+      >
+        <div className="flex flex-col gap-3">
+          <Trigger {...trigger} />
+          <Condition {...condition} />
+          <Events {...events} />
           <ColorInput value={color} onChange={setColor} />
         </div>
-      </div>
-
-      <EventsModal
-        initialData={eventsModalData}
-        onSubmit={handleEventsModalSubmit}
-        isOpen={isEventsModalOpen}
-        onClose={closeEventsModal}
-      />
-    </Modal>
+      </Modal>
+    </>
   );
 };

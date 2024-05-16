@@ -14,7 +14,7 @@ import {
   Transition as TransitionData,
 } from '@renderer/types/diagram';
 
-import { EventsBlock } from './EventsBlock';
+import { Events } from './EventsBlock';
 import { useTrigger } from './hooks/useTrigger';
 import { Trigger } from './Trigger';
 
@@ -98,10 +98,7 @@ export const StateModal: React.FC = () => {
           isOpen={isOpen}
         /> */}
 
-        <div className="flex items-center gap-2">
-          <p className="font-bold">Цвет:</p>
-          <ColorInput value={color} onChange={setColor} />
-        </div>
+        <ColorInput value={color} onChange={setColor} />
       </div>
     </Modal>
   );

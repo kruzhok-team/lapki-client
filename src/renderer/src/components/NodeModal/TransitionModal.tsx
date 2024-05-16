@@ -30,8 +30,6 @@ export const TransitionModal: React.FC = () => {
   const events = useEvents();
   const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
 
-  const { setEvents } = events;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -243,41 +241,6 @@ export const TransitionModal: React.FC = () => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useLayoutEffect(() => {
-    //Делаем проверку на наличие событий в состояниях
-    // const stateEvents = state?.eventBox.data.find(
-    //   (value) =>
-    //     selectedComponent === value.trigger.component && selectedMethod === value.trigger.method
-    // );
-
-    // if (state && stateEvents) {
-    //   return setEvents(stateEvents.do);
-    // }
-
-    if (!transition || transition.data.label?.trigger === undefined) return;
-
-    const label = transition.data.label;
-
-    if (label.trigger === undefined) return;
-
-    if (typeof label.trigger === 'string') {
-      if (label.trigger === trigger.text) {
-        return setEvents(transition.data.label.do ?? []);
-      }
-
-      return setEvents([]);
-    }
-
-    if (
-      label.trigger.component === trigger.selectedComponent &&
-      label.trigger.method === trigger.selectedMethod
-    ) {
-      return setEvents(transition.data.label.do ?? []);
-    }
-
-    return setEvents([]);
-  }, [setEvents, transition, trigger.selectedComponent, trigger.selectedMethod, trigger.text]);
 
   return (
     <>

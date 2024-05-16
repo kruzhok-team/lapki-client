@@ -1,8 +1,8 @@
 import { Point } from '@renderer/lib/types/graphics';
 import {
   emptyElements,
-  Action,
   EventData,
+  State as StateData,
   Transition as TransitionData,
   InitialState as InitialStateData,
   FinalState as FinalStateData,
@@ -74,9 +74,7 @@ export interface CreateNoteParams {
 
 export interface ChangeStateEventsParams {
   id: string;
-  actions: Action[];
-  triggerComponent: string;
-  triggerMethod: string;
+  eventData: StateData['events'][number];
   color: string;
 }
 

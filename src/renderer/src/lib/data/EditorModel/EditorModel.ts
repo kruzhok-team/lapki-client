@@ -169,34 +169,34 @@ export class EditorModel {
   }
 
   changeStateEvents(args: ChangeStateEventsParams) {
-    const { id, triggerComponent, triggerMethod, actions, color } = args;
+    const { id, eventData, color } = args;
 
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    const eventIndex = state.events.findIndex(
-      (value) =>
-        triggerComponent === value.trigger.component &&
-        triggerMethod === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
+    const eventIndex = state.events.findIndex((value) => {
+      if (typeof eventData.trigger === 'string' && typeof value.trigger === 'string') {
+        return value.trigger === eventData.trigger;
+      }
+
+      if (typeof eventData.trigger !== 'string' && typeof value.trigger !== 'string') {
+        return (
+          eventData.trigger.component === value.trigger.component &&
+          eventData.trigger.method === value.trigger.method &&
+          undefined === value.trigger.args
+        ); // FIXME: сравнение по args может не работать
+      }
+
+      return false;
+    });
+
     const event = state.events[eventIndex];
 
     if (event === undefined) {
-      state.events = [
-        ...state.events,
-        {
-          do: actions,
-          trigger: {
-            component: triggerComponent,
-            method: triggerMethod,
-            // args: {},
-          },
-        },
-      ];
+      state.events = [...state.events, eventData];
     } else {
-      if (actions.length) {
-        event.do = [...actions];
+      if (eventData.do.length) {
+        event.do = [...eventData.do];
       } else {
         state.events.splice(eventIndex, 1);
       }

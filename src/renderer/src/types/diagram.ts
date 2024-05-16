@@ -24,7 +24,7 @@ export type Event = {
 };
 
 export type EventData = {
-  trigger: Event;
+  trigger: Event | string;
   do: Action[];
   // TODO: condition?: Condition;
 };

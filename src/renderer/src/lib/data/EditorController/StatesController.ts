@@ -184,18 +184,27 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id } = args;
+    const { id, eventData } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
 
     if (canUndo) {
-      const prevEvent = state.data.events.find(
-        (value) =>
-          args.triggerComponent === value.trigger.component &&
-          args.triggerMethod === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
+      const prevEvent = state.data.events.find((value) => {
+        if (typeof eventData.trigger === 'string' && typeof value.trigger === 'string') {
+          return value.trigger === eventData.trigger;
+        }
+
+        if (typeof eventData.trigger !== 'string' && typeof value.trigger !== 'string') {
+          return (
+            eventData.trigger.component === value.trigger.component &&
+            eventData.trigger.method === value.trigger.method &&
+            undefined === value.trigger.args
+          ); // FIXME: сравнение по args может не работать
+        }
+
+        return false;
+      });
 
       const prevActions = structuredClone(prevEvent?.do ?? []);
 

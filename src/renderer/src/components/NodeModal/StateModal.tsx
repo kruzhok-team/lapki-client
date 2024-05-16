@@ -1,20 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
-import { Modal, ColorInput } from '@renderer/components/UI';
+import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import {
-  Action,
-  Condition as ConditionData,
-  Event,
-  Event as StateEvent,
-  Variable as VariableData,
-  Transition as TransitionData,
-} from '@renderer/types/diagram';
 
-import { Events } from './EventsBlock';
+import { ColorField } from './ColorField';
+import { Events } from './Events';
+import { useEvents } from './hooks/useEvents';
 import { useTrigger } from './hooks/useTrigger';
 import { Trigger } from './Trigger';
 
@@ -27,20 +21,35 @@ export const StateModal: React.FC = () => {
 
   // Данные формы
   const trigger = useTrigger(true);
+  const events = useEvents();
   const [color, setColor] = useState(DEFAULT_STATE_COLOR);
+
+  const { setEvents } = events;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { selectedComponent, selectedMethod } = trigger;
+    if (!state) return;
 
-    if (!selectedComponent || !selectedMethod || !state) return;
+    const { selectedComponent, selectedMethod, tabValue, text } = trigger;
+
+    if ((tabValue === 0 && (!selectedComponent || !selectedMethod)) || (tabValue === 1 && !text)) {
+      return;
+    }
+
+    const getTrigger = () => {
+      if (tabValue === 0)
+        return { component: selectedComponent as string, method: selectedMethod as string };
+
+      return text;
+    };
 
     editor.controller.states.changeStateEvents({
       id: state.id,
-      triggerComponent: selectedComponent,
-      triggerMethod: selectedMethod,
-      actions: [],
+      eventData: {
+        trigger: getTrigger(),
+        do: events.events,
+      },
       color,
     });
 
@@ -49,9 +58,8 @@ export const StateModal: React.FC = () => {
 
   // Сброс формы после закрытия
   const handleAfterClose = () => {
-    trigger.setSelectedComponent(null);
-    trigger.setSelectedMethod(null);
-
+    trigger.clear();
+    events.clear();
     setColor(DEFAULT_STATE_COLOR);
 
     setState(null);
@@ -59,22 +67,64 @@ export const StateModal: React.FC = () => {
 
   useEffect(() => {
     editor.controller.states.on('changeState', (state) => {
-      // if (editor.textMode) return;
-
       const { data } = state;
 
-      setColor(data.color);
+      const { data: initialData } = state;
+      const eventData = initialData.events[0];
 
-      if (data.events[0]) {
-        trigger.setSelectedComponent(data.events[0].trigger.component);
-        trigger.setSelectedMethod(data.events[0].trigger.method);
+      if (eventData) {
+        if (typeof eventData.trigger !== 'string') {
+          trigger.setSelectedComponent(eventData.trigger.component);
+          trigger.setSelectedMethod(eventData.trigger.method);
+          trigger.onTabChange(0);
+        } else {
+          trigger.onChangeText(eventData.trigger);
+          trigger.onTabChange(1);
+        }
+
+        events.setEvents(eventData.do ?? []);
       }
+
+      setColor(data.color);
 
       setState(state);
       open();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Синхронизвация trigger и event
+  useLayoutEffect(() => {
+    if (!state) return;
+
+    const stateEvents = state.data.events.find((value) => {
+      if (trigger.tabValue === 1) {
+        return value.trigger === trigger.text;
+      }
+
+      if (typeof value.trigger !== 'string') {
+        return (
+          trigger.selectedComponent === value.trigger.component &&
+          trigger.selectedMethod === value.trigger.method
+        );
+      }
+
+      return false;
+    });
+
+    if (stateEvents) {
+      return setEvents(stateEvents.do);
+    }
+
+    return setEvents([]);
+  }, [
+    setEvents,
+    state,
+    trigger.selectedComponent,
+    trigger.selectedMethod,
+    trigger.tabValue,
+    trigger.text,
+  ]);
 
   return (
     <Modal
@@ -86,19 +136,8 @@ export const StateModal: React.FC = () => {
     >
       <div className="flex flex-col gap-3">
         <Trigger {...trigger} />
-
-        {/* <EventsBlock
-          state={state}
-          transition={transition}
-          selectedComponent={trigger.selectedComponent}
-          selectedMethod={trigger.selectedMethod}
-          events={events}
-          setEvents={setEvents}
-          onOpenEventsModal={onOpenEventsModal}
-          isOpen={isOpen}
-        /> */}
-
-        <ColorInput value={color} onChange={setColor} />
+        <Events {...events} />
+        <ColorField value={color} onChange={setColor} />
       </div>
     </Modal>
   );

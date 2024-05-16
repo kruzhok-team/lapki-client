@@ -14,3 +14,5 @@ export * from './ComponentEditModal';
 export * from './ComponentDeleteModal';
 export * from './Scale';
 export * from './UpdateModal';
+export * from './DiagramContextMenu';
+export * from './PropertiesModal';

@@ -3,16 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { Settings } from '@renderer/components/Modules/Settings';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useSettings } from '@renderer/hooks';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { languageMappers } from '@renderer/utils';
 
 export interface CompilerProps {
-  manager: EditorManager;
-  editor: CanvasEditor | null;
   openData: [boolean, string | null, string | null, string] | undefined;
   compilerData: CompilerResult | undefined;
   setCompilerData: React.Dispatch<React.SetStateAction<CompilerResult | undefined>>;
@@ -22,19 +20,22 @@ export interface CompilerProps {
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
-  manager,
   openData,
   compilerData,
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
 }) => {
+  const { model } = useEditorContext();
+
+  const [compilerSetting] = useSettings('compiler');
+
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = manager.useData('name');
-  const isInitialized = manager.useData('isInitialized');
+  const name = model.useData('name');
+  const isInitialized = model.useData('isInitialized');
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
@@ -43,18 +44,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    manager.files.saveIntoFolder(preparedData);
+    model.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    manager.files.compile();
+    model.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager.files.saveIntoFolder(compilerData!.source!);
+    await model.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -81,7 +82,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
-        language: 'xml',
+        language: languageMappers[element.extension] ?? element.extension,
       });
     });
   };
@@ -92,18 +93,19 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      manager.files.parseImportData(importData, openData!);
+      model.files.parseImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);
 
   useEffect(() => {
-    console.log('CONNECTING TO COMPILER');
-    Settings.getCompilerSettings().then((compiler) => {
-      Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
-      Compiler.connect(compiler.host, compiler.port);
-    });
-  }, []);
+    if (!compilerSetting) return;
+
+    const { host, port } = compilerSetting;
+
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    Compiler.connect(host, port);
+  }, [compilerSetting]);
 
   const button = [
     {

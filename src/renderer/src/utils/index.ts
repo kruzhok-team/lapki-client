@@ -1,4 +1,4 @@
-import { Point } from '@renderer/types/graphics';
+import { Point } from '@renderer/lib/types/graphics';
 import { ArgType } from '@renderer/types/platform';
 
 export const getVirtualElement = (position: Point) => {
@@ -19,20 +19,6 @@ export const getVirtualElement = (position: Point) => {
 };
 
 export const isDev = () => !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-
-export const indexOfMin = (arr: number[]) => {
-  let min = Infinity;
-  let minIndex = Infinity;
-
-  arr.forEach((v, i) => {
-    if (v < min) {
-      min = v;
-      minIndex = i;
-    }
-  });
-
-  return minIndex;
-};
 
 // Валидаторы типов arduino, в платформе это поле type
 export const validators: Record<string, (value: string) => boolean> = {
@@ -78,8 +64,25 @@ export const formatArgType = (value: ArgType) => {
   return value;
 };
 
-// цвет связи по-умолчанию
-export const defaultTransColor = '#0000FF';
-
 // пресеты цветов
 export const presetColors = ['#119da4', '#591f0a', '#f26419', '#1f487e', '#4b296b'];
+
+export const placeCaretAtEnd = (el: HTMLElement) => {
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel?.removeAllRanges();
+  sel?.addRange(range);
+};
+
+export const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+};
+
+export const languageMappers = {
+  h: 'cpp',
+  ino: 'cpp',
+  graphml: 'xml',
+};

@@ -15,26 +15,22 @@ asarUnpack:
 win:
   executableName: lapki-ide
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}-v${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  artifactName: ${name}-v${version}.${ext}
+  category: 'public.app-category.developer-tools'
   entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-dmg:
-  artifactName: ${name}-${version}.${ext}
 linux:
+  artifactName: ${name}-v${version}.${ext}
   target:
     - AppImage
     - snap
     - deb
   maintainer: electronjs.org
   category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
   provider: generic

@@ -9,7 +9,7 @@ import { Item } from './Item';
 interface TreeProps {
   root: File;
   borderWidth?: number;
-  onItemClick: (item: File) => void;
+  onItemClick: (filePath: string) => void;
 }
 
 export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) => {
@@ -22,7 +22,7 @@ export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) =>
         borderLeftColor: `#${color_gen}`,
         borderLeftWidth: borderWidthVal,
       }}
-      className="menu bg-default text-content-700 mb-0 ml-2 mt-0 flex-1 p-2 pb-0 pt-0"
+      className="h-full max-h-[calc(100%-49.6px-41.6px)] w-full overflow-y-auto p-2 pb-0 pt-0 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {root?.children &&
         root.children.map((item) => {
@@ -33,7 +33,7 @@ export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) =>
               key={item.name}
               onClick={(event) => {
                 event.stopPropagation();
-                onItemClick(item);
+                onItemClick(item.path ?? '');
               }}
             >
               <span className="block max-w-[341px] truncate p-2 pl-0 transition hover:bg-[#4391bf] hover:bg-opacity-50">

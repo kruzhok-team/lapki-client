@@ -9,6 +9,8 @@
       content="default-src * ws://localhost:*; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
     />
     <link rel="stylesheet" href="./src/assets/styles/preload.css" />
+    <!-- Подгрузка темы до начала исполнения основного скрипта, чтобы не дёргалось -->
+    <script src="/src/initTheme.js"></script>
   </head>
 
   <body>

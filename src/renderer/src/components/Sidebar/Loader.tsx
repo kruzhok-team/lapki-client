@@ -12,27 +12,30 @@ import {
   FLASHER_NO_CONNECTION,
   Flasher,
 } from '@renderer/components/Modules/Flasher';
-import { FlasherSelectModal } from '@renderer/components/serverSelect/FlasherSelectModal';
+import {
+  FlasherSelectModal,
+  FlasherSelectModalFormValues,
+} from '@renderer/components/serverSelect/FlasherSelectModal';
+import { useSettings } from '@renderer/hooks';
+import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { Device } from '@renderer/types/FlasherTypes';
-
-import { Settings } from '../Modules/Settings';
-
-const LAPKI_FLASHER = window.api.LAPKI_FLASHER;
+import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
 }
 
 export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
-  const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
+  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const flasherIsLocal = flasherSetting?.type === 'local';
+
+  const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flashing, setFlashing] = useState(false);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
-  const [flasherIsLocal, setFlasherIslocal] = useState<boolean>(true);
 
   const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
   const openFlasherModal = () => setIsFlasherModalOpen(true);
@@ -47,19 +50,33 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     setMsgModalData(data);
     setIsMsgModalOpen(true);
   };
+
+  const [flashResult, setFlashResult] = useState<FlashResult>();
+
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
-  const isActive = (id: string) => currentDevice === id;
+  const openTab = useTabs((state) => state.openTab);
+
+  const isActive = (id: string) => currentDeviceID === id;
 
   const handleGetList = async () => {
     Flasher.getList();
   };
 
   const handleFlash = async () => {
+    if (currentDeviceID == null || currentDeviceID == undefined) {
+      console.log('Не удаётся начать прошивку, currentDeviceID =', currentDeviceID);
+      return;
+    }
+    const currentDevice = devices.get(currentDeviceID);
+    if (currentDevice == null || currentDevice == undefined) {
+      console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
+      return;
+    }
     if (flasherFile) {
-      Flasher.flash(currentDevice!);
+      Flasher.flash(currentDevice);
     } else {
-      Flasher.flashCompiler(compilerData!.binary!, currentDevice!);
+      Flasher.flashCompiler(compilerData!.binary!, currentDevice);
     }
   };
 
@@ -68,22 +85,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     openFlasherModal();
   };
 
-  const handleLocalFlasher = async () => {
-    console.log('local');
-    setFlasherIslocal(true);
-    Flasher.setAutoReconnect(false);
-    await Flasher.connect();
-  };
+  const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
+    if (!flasherSetting) return;
 
-  const handleRemoteFlasher = async (host: string, port: number) => {
-    setFlasherIslocal(false);
-    console.log('remote');
-    Flasher.setAutoReconnect(true);
-    await Settings.setFlasherSettings({
-      port: port,
-      host: host,
-    });
-    await Flasher.connect(host, port);
+    Flasher.setAutoReconnect(data.type === 'remote');
+    setFlasherSetting({ ...flasherSetting, ...data });
   };
 
   const handleFileChoose = () => {
@@ -101,7 +107,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
     if (flasherIsLocal) {
       await window.electron.ipcRenderer
-        .invoke('Module:getStatus', LAPKI_FLASHER)
+        .invoke('Module:getStatus', 'lapki-flasher')
         .then(function (obj) {
           const errorDetails = obj.details;
           switch (obj.code) {
@@ -167,6 +173,16 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     openMsgModal(msg);
   };
 
+  // добавление вкладки с сообщением от avrdude
+  const handleAddAvrdudeTab = () => {
+    openTab({
+      type: 'code',
+      name: 'avrdude',
+      code: flashResult?.report() ?? '',
+      language: 'txt',
+    });
+  };
+
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,
@@ -174,14 +190,19 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       setFlasherLog,
       setFlasherFile,
       setFlashing,
-      setFlasherError
+      setFlasherError,
+      setFlashResult
     );
-    const reader = new FileReader();
-    Flasher.initReader(reader);
-    console.log('CONNECTING TO FLASHER');
-    Flasher.connect();
-    // если не указывать второй аргумент '[]', то эта функция будет постоянно вызываться.
+
+    Flasher.initReader(new FileReader());
   }, []);
+
+  useEffect(() => {
+    if (!flasherSetting) return;
+    const { host, port } = flasherSetting;
+
+    Flasher.connect(host, port);
+  }, [flasherSetting]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
@@ -199,13 +220,61 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
   };
 
   const handleReconnect = () => {
+    if (!flasherSetting) return;
+    const { host, port } = flasherSetting;
+
     if (flasherIsLocal) {
       window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
-        Flasher.connect();
+        Flasher.connect(host, port);
       });
     } else {
       Flasher.reconnect();
     }
+  };
+
+  const flashButtonDisabled = () => {
+    if (flashing || connectionStatus != FLASHER_CONNECTED) {
+      return true;
+    }
+    if (!currentDeviceID) {
+      return true;
+    }
+    if (!devices.has(currentDeviceID)) {
+      setCurrentDevice(undefined);
+      return true;
+    }
+    if (flasherFile) {
+      return false;
+    }
+    // проверка на соответствие платформы схемы и типа устройства
+    if (!(compilerData?.binary === undefined || compilerData.binary.length == 0)) {
+      let platform = compilerData?.platform;
+      if (platform === undefined) {
+        return;
+      }
+      platform = platform?.toLowerCase();
+      const device = devices.get(currentDeviceID)?.name.toLowerCase();
+      // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+      // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+      switch (platform) {
+        case 'arduinomicro':
+          // arduino micro - состоит из двух устройств, прошивку можно загрузить в любое
+          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
+            return true;
+          }
+          break;
+        case 'arduinouno':
+          if (device != 'arduino uno') {
+            return true;
+          }
+          break;
+        default:
+          return true;
+      }
+    } else {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -215,11 +284,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       </h3>
 
       <div className="px-4">
-        <div className="mb-2 flex rounded border-2 border-[#557b91]">
+        <div className="mb-2 flex rounded">
           <button
             className={twMerge(
-              'flex w-full items-center p-1 hover:bg-[#557b91] hover:text-white',
-              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-50'
+              'btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0',
+              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
             )}
             onClick={() => {
               switch (connectionStatus) {
@@ -236,13 +305,13 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             }}
             disabled={connectionStatus == FLASHER_CONNECTING && flasherIsLocal}
           >
-            <Update width="1.5rem" height="1.5rem" className="mr-1" />
+            <Update width="1.5rem" height="1.5rem" />
             {display()}
           </button>
           <button
             className={twMerge(
-              'p-1 hover:bg-[#557b91] hover:text-white',
-              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-50'
+              'btn-primary px-2',
+              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-70'
             )}
             onClick={handleHostChange}
             disabled={connectionStatus == FLASHER_CONNECTING || flashing}
@@ -255,7 +324,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <p>{connectionStatus}</p>
           <br></br>
           <button
-            className="btn-primary mb-2"
+            className="btn-primary mb-2 w-full"
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
@@ -295,18 +364,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
           <button
             className="btn-primary mb-2 w-full"
             onClick={handleFlash}
-            disabled={
-              flashing ||
-              !currentDevice ||
-              connectionStatus != FLASHER_CONNECTED ||
-              (!flasherFile &&
-                (compilerData?.binary === undefined || compilerData.binary.length == 0))
-            }
+            disabled={flashButtonDisabled()}
           >
             Загрузить
           </button>
           <button
-            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-50'}
+            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-70'}
             onClick={handleFileChoose}
             disabled={flashing}
           >
@@ -320,6 +383,15 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         ) : (
           ''
         )}
+        <div>
+          <button
+            className="btn-primary mb-2"
+            onClick={handleAddAvrdudeTab}
+            disabled={flashResult == undefined}
+          >
+            {'Результат прошивки'}
+          </button>
+        </div>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}
         </div>
@@ -327,9 +399,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
       <FlasherSelectModal
         isOpen={isFlasherModalOpen}
-        isLocal={flasherIsLocal}
-        handleLocal={handleLocalFlasher}
-        handleRemote={handleRemoteFlasher}
+        onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
       />
     </section>

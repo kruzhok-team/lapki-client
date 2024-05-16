@@ -10,22 +10,15 @@ import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event_add.svg';
+import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
-import { DiagramContextMenuItem } from '@renderer/hooks/useDiagramContextMenu';
-import { Point } from '@renderer/types/graphics';
+import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { getVirtualElement } from '@renderer/utils';
 
-interface DiagramContextMenuProps {
-  items: DiagramContextMenuItem[];
-  position: Point;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => {
-  const { position, items, isOpen, onClose } = props;
+export const DiagramContextMenu: React.FC = () => {
+  const { position, items, isOpen, onClose } = useDiagramContextMenu();
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует
   const [openMenu, setOpenMenu] = useState('');
 
@@ -36,7 +29,7 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
     elements: {
-      reference: getVirtualElement(position),
+      reference: getVirtualElement(position) as Element,
     },
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
@@ -86,6 +79,10 @@ export const DiagramContextMenu: React.FC<DiagramContextMenuProps> = (props) => 
     },
     target: {
       icon: undefined,
+      combination: undefined,
+    },
+    note: {
+      icon: <NoteIcon />,
       combination: undefined,
     },
   };

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { State } from '@renderer/lib/drawable/State';
+import { State } from '@renderer/lib/drawable';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
-export const useDiagramStateName = (editor: CanvasEditor | null) => {
+export const useDiagramStateName = () => {
+  const editor = useEditorContext();
+
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState({} as State);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -15,7 +17,7 @@ export const useDiagramStateName = (editor: CanvasEditor | null) => {
     const stateId = state.id;
     if (!stateId) return;
 
-    editor?.container.machineController.changeStateName(stateId, name);
+    editor.controller.states.changeStateName(stateId, name);
 
     onClose();
   };
@@ -23,8 +25,8 @@ export const useDiagramStateName = (editor: CanvasEditor | null) => {
   useEffect(() => {
     if (!editor) return;
 
-    editor.container.statesController.on('changeStateName', (state) => {
-      const globalOffset = state.container.app.mouse.getOffset();
+    editor.controller.states.on('changeStateName', (state) => {
+      const globalOffset = editor.view.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {
         x: statePos.x + globalOffset.x,

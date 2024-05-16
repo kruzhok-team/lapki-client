@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
-export const useAppTitle = (manager: EditorManager) => {
-  const name = manager.useData('name');
-  const platformName = manager.useData('elements.platform');
+export const useAppTitle = () => {
+  const { model } = useEditorContext();
+
+  const name = model.useData('name');
+  const platformName = model.useData('elements.platform');
 
   useEffect(() => {
     if (!name || !platformName) return;

@@ -2,14 +2,14 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor, DiagramEditorProps } from '@renderer/components';
+import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
 
-export type TabsProps = DiagramEditorProps;
+import { NotInitialized } from '../NotInitialized';
 
-export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
+export const Tabs: React.FC = () => {
   const [items, activeTab, setActiveTab, swapTabs, closeTab] = useTabs((state) => [
     state.items,
     state.activeTab,
@@ -29,6 +29,10 @@ export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
 
     swapTabs(dragId, tabName);
   };
+
+  if (items.length === 0) {
+    return <NotInitialized />;
+  }
 
   return (
     <>
@@ -60,9 +64,9 @@ export const Tabs: React.FC<TabsProps> = (editorProps: TabsProps) => {
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
-            <DiagramEditor {...editorProps} />
+            <DiagramEditor />
           ) : (
-            <CodeEditor language={item.language} value={item.code} />
+            <CodeEditor initialValue={item.code} language={item.language} />
           )}
         </div>
       ))}

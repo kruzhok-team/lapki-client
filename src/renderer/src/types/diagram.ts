@@ -1,4 +1,4 @@
-import { Point, Rectangle } from './graphics';
+import { Dimensions, Point } from '@renderer/lib/types';
 
 // FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string };
@@ -8,6 +8,8 @@ export type Action = {
   method: string;
   args?: ArgList;
 };
+
+export type Meta = { [id: string]: string };
 
 export type CompilerSettings = {
   filename: string;
@@ -27,17 +29,24 @@ export type EventData = {
   // TODO: condition?: Condition;
 };
 
-export type State = {
-  parent?: string;
-  name: string;
-  bounds: Rectangle;
-  events: EventData[];
-};
-
-export type InitialState = {
-  target: string;
+interface BaseState {
+  parentId?: string;
   position: Point;
-};
+}
+
+export interface State extends BaseState {
+  name: string;
+  events: EventData[];
+  dimensions: Dimensions;
+  color: string;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface InitialState extends BaseState {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FinalState extends BaseState {}
 
 export type Variable = {
   component: string;
@@ -50,49 +59,57 @@ export type Condition = {
   value: Condition[] | Variable | number | string;
 };
 
-export type Transition = {
-  //id: string;
+export interface Transition {
   source: string;
   target: string;
   color: string;
-  position: Point;
-  trigger: Event;
-  condition?: Condition | null;
-  do?: Action[];
-};
+  label?: {
+    position: Point;
+    trigger?: Event;
+    condition?: Condition | null;
+    do?: Action[];
+    //TODO: В дальнейшем планируется убрать
+  };
+  selection?: boolean;
+}
 
 export type Component = {
   type: string;
   parameters: { [key: string]: string };
 };
 
+export type Note = {
+  position: Point;
+  text: string;
+};
+
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
-  transitions: Transition[];
+  initialStates: { [id: string]: InitialState };
+  finalStates: { [id: string]: FinalState };
+  transitions: { [id: string]: Transition };
   components: { [id: string]: Component };
-
-  initialState: InitialState | null;
+  notes: { [id: string]: Note };
 
   platform: string;
   parameters?: { [key: string]: string };
   compilerSettings?: CompilerSettings | null;
+  meta: Meta;
 };
 
-// Данные внутри редактора хранятся немного по-другому и это их описание
-export interface InnerElements extends Omit<Elements, 'transitions'> {
-  transitions: Record<string, Transition>;
-}
-
-export function emptyElements(): InnerElements {
+export function emptyElements(): Elements {
   return {
     states: {},
+    initialStates: {},
+    finalStates: {},
     transitions: {},
     components: {},
-    initialState: null,
+    notes: {},
 
     platform: '',
     parameters: {},
     compilerSettings: null,
+    meta: {},
   };
 }

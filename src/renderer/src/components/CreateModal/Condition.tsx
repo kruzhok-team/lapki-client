@@ -3,7 +3,7 @@ import React from 'react';
 import { SingleValue } from 'react-select';
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Select, SelectOption, TextInput } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption, TextField } from '@renderer/components/UI';
 
 const operand = [
   {
@@ -145,7 +145,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
               />
             </div>
           ) : (
-            <TextInput
+            <TextField
               label=""
               placeholder="Напишите параметр"
               onChange={(e) => handleArgsParam1Change(e.target.value)}
@@ -194,7 +194,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
               />
             </div>
           ) : (
-            <TextInput
+            <TextField
               label=""
               placeholder="Напишите параметр"
               onChange={(e) => handleArgsParam2Change(e.target.value)}

@@ -2,32 +2,39 @@ import React from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
+import { useSettings } from '@renderer/hooks/useSettings';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { useDoc } from '@renderer/store/useDoc';
 
-interface ScaleProps {
-  editor: CanvasEditor;
-  manager: EditorManager;
-}
+export const Scale: React.FC = () => {
+  const editor = useEditorContext();
+  const model = editor.model;
 
-export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
   const isDocOpen = useDoc((state) => state.isOpen);
 
-  const scale = manager.useData('scale');
+  const scale = model.useData('scale');
+  const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
-    editor.container.changeScale(0.1);
+    editor.view.changeScale(0.1);
   };
 
   const handleZoomIn = () => {
-    editor.container.changeScale(-0.1);
+    editor.view.changeScale(-0.1);
   };
 
   const handleReset = () => {
-    editor.container.changeScale(1, true);
+    editor.view.changeScale(1, true);
+  };
+
+  const handleCanvasGrid = () => {
+    setCanvasSettings({
+      ...canvasSettings!,
+      grid: !canvasSettings?.grid,
+    });
   };
 
   return (
@@ -37,6 +44,13 @@ export const Scale: React.FC<ScaleProps> = ({ editor, manager }) => {
         isDocOpen && '-translate-x-[400px]'
       )}
     >
+      <button
+        className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+        onClick={handleCanvasGrid}
+      >
+        <Grid width={20} height={20} />
+      </button>
+
       <button
         className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
         onClick={handleZoomOut}

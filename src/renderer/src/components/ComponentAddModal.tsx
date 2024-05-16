@@ -5,9 +5,9 @@ import { twMerge } from 'tailwind-merge';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { Modal } from '@renderer/components/UI';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
-import { icons } from '@renderer/lib/drawable/Picto';
+import { icons } from '@renderer/lib/drawable';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
@@ -18,18 +18,17 @@ interface ComponentAddModalProps {
 
   vacantComponents: ComponentEntry[];
   onSubmit: (idx: string, name: string | undefined) => void;
-
-  manager: EditorManager;
 }
 
 export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   onClose,
   onSubmit,
   vacantComponents,
-  manager,
   ...props
 }) => {
-  const components = manager.useData('elements.components');
+  const { model } = useEditorContext();
+
+  const components = model.useData('elements.components');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 

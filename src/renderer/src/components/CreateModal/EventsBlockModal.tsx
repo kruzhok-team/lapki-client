@@ -4,13 +4,11 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { State } from '@renderer/lib/drawable/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { State, Transition } from '@renderer/lib/drawable';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
 interface EventsBlockModalProps {
-  editor: CanvasEditor;
   state: State | undefined;
   transition: Transition | undefined;
   selectedComponent: string | null;
@@ -22,7 +20,6 @@ interface EventsBlockModalProps {
 }
 
 export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
-  editor,
   state,
   transition,
   selectedComponent,
@@ -32,7 +29,9 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
   onOpenEventsModal,
   isOpen,
 }) => {
-  const machine = editor.container.machineController;
+  const editor = useEditorContext();
+
+  const controller = editor.controller;
 
   //-----------------------------------------------------------------------------------------------------
 
@@ -46,12 +45,12 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
     if (state && stateEvents) {
       return setEvents(stateEvents.do);
     }
-    if (transition) {
+    if (transition && transition.data.label?.trigger) {
       if (
-        transition.data.trigger.component === selectedComponent &&
-        transition.data.trigger.method === selectedMethod
+        transition.data.label.trigger.component === selectedComponent &&
+        transition.data.label.trigger.method === selectedMethod
       ) {
-        return setEvents(transition.data.do!);
+        return setEvents(transition.data.label.do ?? []);
       }
     }
     return setEvents([]);
@@ -114,11 +113,11 @@ export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
                   'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
                 )}
               >
-                {machine.platform.getFullComponentIcon(data.component)}
+                {controller.platform.getFullComponentIcon(data.component)}
                 <div className="h-full w-[2px] bg-border-primary"></div>
                 <img
                   style={{ height: '32px', width: '32px' }}
-                  src={machine.platform.getActionIconUrl(data.component, data.method, true)}
+                  src={controller.platform.getActionIconUrl(data.component, data.method, true)}
                 />
               </div>
               <div className="flex items-center">

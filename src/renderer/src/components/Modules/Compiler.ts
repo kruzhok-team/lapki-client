@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { base64StringToBlob } from 'blob-util';
 import Websocket from 'isomorphic-ws';
+import { toast } from 'sonner';
 
 import { Buffer } from 'buffer';
 
@@ -64,6 +65,8 @@ export class Compiler {
 
   static binary: Array<Binary> | undefined = undefined;
   static source: Array<SourceFile> | undefined = undefined;
+  // платформа на которой произвелась последняя компиляция;
+  static platform: string | undefined = undefined;
 
   static checkConnection(connection: Websocket | undefined): connection is Websocket {
     return connection !== undefined;
@@ -177,6 +180,7 @@ export class Compiler {
             stderr: data.stderr,
             binary: this.binary,
             source: this.getSourceFiles(data.source),
+            platform: this.platform,
           } as CompilerResult);
           break;
         case 'import':
@@ -210,7 +214,10 @@ export class Compiler {
       if (this.connection) {
         console.log('Compiler: connection closed');
       }
+
       this.setCompilerStatus('Не подключен');
+      toast.error('Ошибка при подключении к компилятору');
+
       this.connection = undefined;
       this.connecting = false;
       if (
@@ -235,6 +242,7 @@ export class Compiler {
   }
 
   static async compile(platform: string, data: Elements | string) {
+    this.platform = platform;
     const route = this.base_address;
     const ws: Websocket | undefined = await this.connectRoute(route);
     if (ws !== undefined) {
@@ -251,6 +259,7 @@ export class Compiler {
           };
           const obj = {
             ...(data as Elements),
+            transitions: Object.values((data as Elements).transitions),
             compilerSettings: compilerSettings,
           };
           ws.send(JSON.stringify(obj));
@@ -266,6 +275,7 @@ export class Compiler {
           };
           const obj = {
             ...(data as Elements),
+            transitions: Object.values((data as Elements).transitions),
             compilerSettings: compilerSettings,
           };
           ws.send(JSON.stringify(obj));

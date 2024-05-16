@@ -1,14 +1,16 @@
 import { useState } from 'react';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EditorManager } from '@renderer/lib/data/EditorManager';
 import { systemComponent, ComponentEntry } from '@renderer/lib/data/PlatformManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { useModal } from './useModal';
 
-export const useComponents = (editor: CanvasEditor | null, manager: EditorManager) => {
-  const components = manager.useData('elements.components');
+export const useComponents = () => {
+  const editor = useEditorContext();
+  const model = editor.model;
+
+  const components = model.useData('elements.components');
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<ComponentData>({ type: '', parameters: {} });
@@ -21,8 +23,8 @@ export const useComponents = (editor: CanvasEditor | null, manager: EditorManage
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const machine = editor?.container.machineController;
-    const vacantComponents = machine?.getVacantComponents() as ComponentEntry[];
+    const controller = editor?.controller;
+    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
 
@@ -30,10 +32,10 @@ export const useComponents = (editor: CanvasEditor | null, manager: EditorManage
   };
 
   const onRequestEditComponent = (idx: string) => {
-    const machine = editor?.container.machineController;
+    const controller = editor?.controller;
     const component = components[idx];
     if (typeof component === 'undefined') return;
-    const proto = machine?.platform.data.components[component.type];
+    const proto = controller?.platform.data.components[component.type];
     if (typeof proto === 'undefined') {
       console.error('non-existing %s %s', idx, component.type);
       return;
@@ -46,11 +48,11 @@ export const useComponents = (editor: CanvasEditor | null, manager: EditorManage
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor?.container.machineController;
+    const controller = editor?.controller;
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    const proto = machine?.platform.data.components[component.type] ?? systemComponent;
+    const proto = controller?.platform.data.components[component.type] ?? systemComponent;
 
     setIdx(idx);
     setData(component);
@@ -60,13 +62,13 @@ export const useComponents = (editor: CanvasEditor | null, manager: EditorManage
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor?.container.machineController.addComponent({ name: realName, type: idx });
+    editor?.controller.addComponent({ name: realName, type: idx });
 
     onRequestEditComponent(realName);
   };
 
   const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor?.container.machineController.editComponent({
+    editor?.controller.editComponent({
       name: idx,
       parameters: data.parameters,
       newName,
@@ -74,7 +76,7 @@ export const useComponents = (editor: CanvasEditor | null, manager: EditorManage
   };
 
   const onDelete = (idx: string) => {
-    editor?.container.machineController.removeComponent({ name: idx, purge: false });
+    editor?.controller.removeComponent({ name: idx, purge: false });
 
     editClose();
   };

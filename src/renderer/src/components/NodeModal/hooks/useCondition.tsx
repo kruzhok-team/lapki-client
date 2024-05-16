@@ -1,15 +1,17 @@
-import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-export const useCondition = (formState: 'submitted' | 'default') => {
+export const useCondition = () => {
   const editor = useEditorContext();
   const model = editor.model;
   const componentsData = model.useData('elements.components');
   const controller = editor.controller;
+
+  const [tabValue, setTabValue] = useState(0);
 
   const [errors, setErrors] = useState({} as Record<string, string>);
 
@@ -30,6 +32,8 @@ export const useCondition = (formState: 'submitted' | 'default') => {
   const handleChangeConditionShow = (value: boolean) => setShow(value);
   const handleParamOneInput1 = (value: boolean) => setIsParamOneInput1(value);
   const handleParamOneInput2 = (value: boolean) => setIsParamOneInput2(value);
+
+  const [text, setText] = useState('');
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -111,39 +115,33 @@ export const useCondition = (formState: 'submitted' | 'default') => {
       });
   }, [controller, selectedComponentParam2]);
 
-  const checkForErrors = useCallback(() => {
+  const checkForErrors = () => {
     const newErrors: Record<string, string> = {};
 
-    if (isParamOneInput1) {
-      newErrors.selectedComponentParam1 = selectedComponentParam1 ? '' : 'Обязательно';
-      newErrors.selectedMethodParam1 = selectedMethodParam1 ? '' : 'Обязательно';
-    } else {
-      newErrors.argsParam1 = argsParam1 ? '' : 'Обязательно';
-    }
+    if (tabValue === 0) {
+      if (isParamOneInput1) {
+        newErrors.selectedComponentParam1 = selectedComponentParam1 ? '' : 'Обязательно';
+        newErrors.selectedMethodParam1 = selectedMethodParam1 ? '' : 'Обязательно';
+      } else {
+        newErrors.argsParam1 = argsParam1 ? '' : 'Обязательно';
+      }
 
-    if (isParamOneInput2) {
-      newErrors.selectedComponentParam2 = selectedComponentParam2 ? '' : 'Обязательно';
-      newErrors.selectedMethodParam2 = selectedMethodParam2 ? '' : 'Обязательно';
-    } else {
-      newErrors.argsParam2 = argsParam2 ? '' : 'Обязательно';
-    }
+      if (isParamOneInput2) {
+        newErrors.selectedComponentParam2 = selectedComponentParam2 ? '' : 'Обязательно';
+        newErrors.selectedMethodParam2 = selectedMethodParam2 ? '' : 'Обязательно';
+      } else {
+        newErrors.argsParam2 = argsParam2 ? '' : 'Обязательно';
+      }
 
-    newErrors.conditionOperator = conditionOperator ? '' : 'Обязательно';
+      newErrors.conditionOperator = conditionOperator ? '' : 'Обязательно';
+    } else {
+      newErrors.text = text ? '' : 'Обязательно';
+    }
 
     setErrors(newErrors);
 
     return newErrors;
-  }, [
-    argsParam1,
-    argsParam2,
-    conditionOperator,
-    isParamOneInput1,
-    isParamOneInput2,
-    selectedComponentParam1,
-    selectedComponentParam2,
-    selectedMethodParam1,
-    selectedMethodParam2,
-  ]);
+  };
 
   const handleComponentParam1Change = (value: SingleValue<SelectOption>) => {
     setSelectedComponentParam1(value?.value ?? '');
@@ -173,14 +171,30 @@ export const useCondition = (formState: 'submitted' | 'default') => {
     setArgsParam2(value);
   };
 
-  useLayoutEffect(() => {
-    if (formState === 'submitted') {
-      checkForErrors();
-    }
-  }, [checkForErrors, formState]);
+  const clear = () => {
+    setSelectedComponentParam1('');
+    setSelectedComponentParam2('');
+    setArgsParam1('');
+    setConditionOperator('');
+    setSelectedMethodParam1('');
+    setSelectedMethodParam2('');
+    setArgsParam2('');
+    handleChangeConditionShow(false);
+    handleParamOneInput1(true);
+    handleParamOneInput2(true);
+
+    setText('');
+    setTabValue(0);
+
+    setErrors({});
+  };
 
   return {
     show,
+
+    tabValue,
+    onTabChange: setTabValue,
+
     isParamOneInput1,
     isParamOneInput2,
     selectedComponentParam1,
@@ -208,11 +222,18 @@ export const useCondition = (formState: 'submitted' | 'default') => {
     handleComponentParam2Change,
     handleMethodParam1Change,
     handleMethodParam2Change,
+
     errors,
     setErrors,
+
     checkForErrors,
     handleArgsParam1Change,
     handleArgsParam2Change,
     handleConditionOperatorChange,
+
+    text,
+    onChangeText: setText,
+
+    clear,
   };
 };

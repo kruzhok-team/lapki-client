@@ -75,9 +75,9 @@ export const EventsBlock: React.FC<EventsBlockProps> = (props) => {
 
   return (
     <div>
-      <p className="mb-1 font-bold">Делай</p>
+      <p className="mb-1 text-lg font-bold">Делай</p>
 
-      <div className="flex gap-2 pl-2">
+      <div className="flex gap-2 pl-4">
         <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {method.length === 0 ||
             method.map((data, key) => (

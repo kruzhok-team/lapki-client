@@ -12,8 +12,12 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const componentsData = model.useData('elements.components');
   const controller = editor.controller;
 
+  const [tabValue, setTabValue] = useState(0);
+
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+
+  const [text, setText] = useState('');
 
   const componentOptions: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -66,14 +70,30 @@ export const useTrigger = (addSystemComponents: boolean) => {
     setSelectedMethod(value?.value ?? null);
   };
 
+  const clear = () => {
+    setSelectedComponent(null);
+    setSelectedMethod(null);
+    setText('');
+    setTabValue(0);
+  };
+
   return {
     componentOptions,
     methodOptions,
+
+    tabValue,
+    onTabChange: setTabValue,
+
+    text,
+    onChangeText: setText,
+
     selectedComponent,
     selectedMethod,
     onComponentChange: handleComponentChange,
     onMethodChange: handleMethodChange,
     setSelectedComponent,
     setSelectedMethod,
+
+    clear,
   };
 };

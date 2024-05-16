@@ -1,38 +1,38 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
-import { SingleValue } from 'react-select';
+import throttle from 'lodash.throttle';
 
-import { Select, SelectOption, TabPanel, Tabs } from '@renderer/components/UI';
+import { Select, TabPanel, Tabs } from '@renderer/components/UI';
+
+import { useTrigger } from './hooks/useTrigger';
 
 import './style.css';
 
-interface TriggerProps {
-  componentOptions: SelectOption[];
-  methodOptions: SelectOption[];
-  selectedComponent: string | null;
-  selectedMethod: string | null;
-  onComponentChange: (value: SingleValue<SelectOption>) => void;
-  onMethodChange: (value: SingleValue<SelectOption>) => void;
-}
+type TriggerProps = ReturnType<typeof useTrigger>;
 
 export const Trigger: React.FC<TriggerProps> = (props) => {
   const {
     componentOptions,
     methodOptions,
+    tabValue,
+    onTabChange,
+
     selectedComponent,
     selectedMethod,
     onComponentChange,
     onMethodChange,
-  } = props;
 
-  const [tabValue, setTabValue] = useState(0);
+    text,
+    onChangeText,
+  } = props;
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
   const handleTabChange = (tab: number) => {
-    setTabValue(tab);
+    onTabChange(tab);
 
+    // Фокусировка и установка каретки
     if (tab === 1) {
       setTimeout(() => {
         const view = editorRef?.current?.view;
@@ -51,12 +51,16 @@ export const Trigger: React.FC<TriggerProps> = (props) => {
 
   const handleLengthLimit = (tr: Transaction) => {
     return tr.newDoc.lines <= 10;
+
+    // return tr.startState.doc.length + tr.newDoc.length < 200;
   };
+
+  const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
 
   return (
     <div>
-      <div className="flex items-center gap-4">
-        <p className="mb-1 min-w-11 font-bold">Когда</p>
+      <div className="flex items-center gap-2">
+        <p className="mb-1 min-w-11 text-lg font-bold">Когда</p>
 
         <Tabs
           className="mb-4"
@@ -66,7 +70,7 @@ export const Trigger: React.FC<TriggerProps> = (props) => {
         />
       </div>
 
-      <div className="pl-2">
+      <div className="pl-4">
         <div className="w-full">
           <TabPanel value={0} tabValue={tabValue}>
             <div className="flex w-full gap-2">
@@ -90,7 +94,8 @@ export const Trigger: React.FC<TriggerProps> = (props) => {
           <TabPanel value={1} tabValue={tabValue}>
             <CodeMirror
               ref={editorRef}
-              value={''}
+              value={text}
+              onChange={handleChangeText}
               placeholder={'Напишите код'}
               className="editor"
               basicSetup={{

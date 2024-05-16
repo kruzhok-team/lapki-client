@@ -90,15 +90,18 @@ export class Transition extends Shape {
   prepareText() {
     if (!this.data.label?.trigger) return;
 
+    const text =
+      typeof this.data.label.trigger === 'string'
+        ? this.data.label.trigger
+        : serializeTransitionActions(this.data.label.trigger, this.data.label.do ?? []);
+
     this.textData = prepareText({
-      text: serializeTransitionActions(this.data.label.trigger, this.data.label.do ?? []),
+      text,
       maxWidth: 200 - 2 * 15,
       fontFamily: 'Fira Sans',
       fontSize: 16,
       lineHeight: 1.4,
     });
-
-    console.log(this.textData);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -200,6 +203,7 @@ export class Transition extends Shape {
       ctx.closePath();
     }
   }
+
   private drawTextCondition(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
     const p = 15 / this.app.model.data.scale;

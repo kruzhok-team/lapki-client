@@ -66,7 +66,7 @@ export interface Transition {
   label?: {
     position: Point;
     trigger?: Event | string;
-    condition?: Condition | null;
+    condition?: Condition | null | string;
     do?: Action[];
     //TODO: В дальнейшем планируется убрать
   };

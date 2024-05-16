@@ -14,7 +14,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { Action, Event } from '@renderer/types/diagram';
+import { Event } from '@renderer/types/diagram';
 
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
@@ -24,7 +24,6 @@ export const DiagramEditor: React.FC = () => {
   const [canvasSettings] = useSettings('canvas');
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [events, setEvents] = useState<Action[]>([]);
 
   const [isCreateModalOpen] = useModal(false);
 
@@ -76,24 +75,6 @@ export const DiagramEditor: React.FC = () => {
   }, [canvasSettings, editor]);
 
   const handleEventsModalSubmit = (data: Event) => {
-    // Если есть какие-то данные то мы редактируем событие а не добавляем
-    if (eventsModalData) {
-      setEvents((p) => {
-        const { component, method } = eventsModalData.event;
-        const prevEventIndex = p.findIndex((v) => v.component === component && v.method === method);
-
-        if (prevEventIndex === -1) return p;
-
-        const newEvents = [...p];
-
-        newEvents[prevEventIndex] = data;
-
-        return newEvents;
-      });
-    } else {
-      setEvents((p) => [...p, data]);
-    }
-
     if (!isCreateModalOpen && eventsModalParentData) {
       editor?.controller.states.changeEvent(
         eventsModalParentData.state.id,
@@ -102,13 +83,6 @@ export const DiagramEditor: React.FC = () => {
       );
     }
     closeEventsModal();
-  };
-
-  const handleOpenEventsModal = (event?: Event) => {
-    setEventsModalData(event && { event, isEditingEvent: false });
-    setEventsModalParentData(undefined);
-
-    openEventsModal();
   };
 
   return (

@@ -1,10 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 
 import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/react-codemirror';
-import { SingleValue } from 'react-select';
+import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Select, SelectOption, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+
+import { useCondition } from './hooks/useCondition';
+
+import './style.css';
 
 const operand = [
   {
@@ -33,45 +37,16 @@ const operand = [
   },
 ];
 
-interface ConditionProps {
-  show: boolean;
-  handleChangeConditionShow: (value: boolean) => void;
-  isParamOneInput1: boolean;
-  handleParamOneInput1: (value: boolean) => void;
-  isParamOneInput2: boolean;
-  handleParamOneInput2: (value: boolean) => void;
-
-  componentOptionsParam1: SelectOption[];
-  handleComponentParam1Change: (value: SingleValue<SelectOption>) => void;
-  selectedComponentParam1: string | null;
-  methodOptionsParam1: SelectOption[];
-  handleMethodParam1Change: (value: SingleValue<SelectOption>) => void;
-  selectedMethodParam1: string | null;
-
-  setConditionOperator: (value: string | null) => void;
-  conditionOperator: string | null;
-
-  componentOptionsParam2: SelectOption[];
-  handleComponentParam2Change: (value: SingleValue<SelectOption>) => void;
-  selectedComponentParam2: string | null;
-  methodOptionsParam2: SelectOption[];
-  handleMethodParam2Change: (value: SingleValue<SelectOption>) => void;
-  selectedMethodParam2: string | null;
-
-  argsParam1: string | number | null;
-  handleArgsParam1Change: (value: string) => void;
-  argsParam2: string | number | null;
-  handleArgsParam2Change: (value: string) => void;
-
-  handleConditionOperatorChange: (value: SingleValue<SelectOption>) => void;
-
-  errors: Record<string, string>;
-}
+type ConditionProps = ReturnType<typeof useCondition>;
 
 export const Condition: React.FC<ConditionProps> = (props) => {
   const {
     show,
     handleChangeConditionShow,
+
+    tabValue,
+    onTabChange,
+
     isParamOneInput1,
     handleParamOneInput1,
     isParamOneInput2,
@@ -99,15 +74,16 @@ export const Condition: React.FC<ConditionProps> = (props) => {
     argsParam2,
     handleArgsParam2Change,
 
+    text,
+    onChangeText,
+
     errors,
   } = props;
-
-  const [tabValue, setTabValue] = useState(0);
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
   const handleTabChange = (tab: number) => {
-    setTabValue(tab);
+    onTabChange(tab);
 
     if (tab === 1) {
       setTimeout(() => {
@@ -129,13 +105,15 @@ export const Condition: React.FC<ConditionProps> = (props) => {
     return tr.newDoc.lines <= 10;
   };
 
+  const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
+
   return (
     <div>
-      <div className="mb-3 flex items-center gap-4">
-        <p className={twMerge('min-w-11 font-bold', show && 'mt-2')}>Если</p>
+      <div className="mb-3 flex items-center gap-2">
+        <p className={twMerge('min-w-11 text-lg font-bold', show && 'mt-2')}>Если</p>
 
         <Tabs
-          className={show ? '' : 'hidden'}
+          className={twMerge('mr-2', !show && 'hidden')}
           tabs={['Выбор', 'Код']}
           value={tabValue}
           onChange={handleTabChange}
@@ -152,7 +130,7 @@ export const Condition: React.FC<ConditionProps> = (props) => {
         </label>
       </div>
 
-      <div className={twMerge('pl-2', !show && 'hidden')}>
+      <div className={twMerge('pl-4', !show && 'hidden')}>
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
             <div className="flex items-start">
@@ -254,7 +232,8 @@ export const Condition: React.FC<ConditionProps> = (props) => {
         <TabPanel value={1} tabValue={tabValue}>
           <CodeMirror
             ref={editorRef}
-            value={''}
+            value={text}
+            onChange={handleChangeText}
             placeholder={'Напишите код'}
             className="editor"
             basicSetup={{

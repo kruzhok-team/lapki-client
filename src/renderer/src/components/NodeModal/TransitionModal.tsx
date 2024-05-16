@@ -7,14 +7,7 @@ import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import {
-  Action,
-  Condition as ConditionData,
-  Event,
-  Event as StateEvent,
-  Variable as VariableData,
-  Transition as TransitionData,
-} from '@renderer/types/diagram';
+import { Action, Event, Variable as VariableData } from '@renderer/types/diagram';
 
 import { Condition } from './Condition';
 import { EventsBlock } from './EventsBlock';
@@ -30,14 +23,12 @@ export const TransitionModal: React.FC = () => {
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransition, setNewTransition] = useState<{ source: State; target: State } | null>();
 
-  const [formState, setFormState] = useState<'submitted' | 'default'>('default');
-
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
 
   // Данные формы
   const trigger = useTrigger(false);
-  const condition = useCondition(formState);
+  const condition = useCondition();
   const [events, setEvents] = useState<Action[]>([]);
   const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
 
@@ -77,11 +68,11 @@ export const TransitionModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    setFormState('submitted');
+    const { selectedComponent, selectedMethod, tabValue, text } = trigger;
 
-    const { selectedComponent, selectedMethod } = trigger;
-
-    if (!selectedComponent || !selectedMethod) return;
+    if ((tabValue === 0 && (!selectedComponent || !selectedMethod)) || (tabValue === 1 && !text)) {
+      return;
+    }
 
     const {
       show,
@@ -105,38 +96,47 @@ export const TransitionModal: React.FC = () => {
       }
     }
 
-    const resultCondition = !show
-      ? undefined
-      : {
-          type: conditionOperator!,
+    const getCondition = () => {
+      if (!show) return undefined;
+
+      if (condition.tabValue === 0) {
+        // Тут много as string потому что проверка на null в checkForErrors
+        return {
+          type: conditionOperator as string,
           value: [
             {
               type: isParamOneInput1 ? 'component' : 'value',
               value: isParamOneInput1
                 ? {
-                    component: selectedComponentParam1!,
-                    method: selectedMethodParam1!,
+                    component: selectedComponentParam1 as string,
+                    method: selectedMethodParam1 as string,
                     args: {},
                   }
-                : argsParam1!,
+                : (argsParam1 as string),
             },
             {
               type: isParamOneInput2 ? 'component' : 'value',
               value: isParamOneInput2
                 ? {
-                    component: selectedComponentParam2!,
-                    method: selectedMethodParam2!,
+                    component: selectedComponentParam2 as string,
+                    method: selectedMethodParam2 as string,
                     args: {},
                   }
-                : argsParam2!,
+                : (argsParam2 as string),
             },
           ],
         };
+      }
 
-    const resultTrigger =
-      selectedComponent && selectedMethod
-        ? { component: selectedComponent, method: selectedMethod }
-        : undefined;
+      return condition.text;
+    };
+
+    const getTrigger = () => {
+      if (tabValue === 0)
+        return { component: selectedComponent as string, method: selectedMethod as string };
+
+      return text;
+    };
 
     if (transition) {
       editor.controller.transitions.changeTransition({
@@ -145,9 +145,9 @@ export const TransitionModal: React.FC = () => {
         target: transition.data.target,
         color,
         label: {
-          trigger: resultTrigger,
-          condition: resultCondition,
-          do: [],
+          trigger: getTrigger(),
+          condition: getCondition(),
+          do: events,
         },
       });
 
@@ -160,9 +160,9 @@ export const TransitionModal: React.FC = () => {
         target: newTransition.target.id,
         color,
         label: {
-          trigger: resultTrigger,
-          condition: resultCondition,
-          do: [],
+          trigger: getTrigger(),
+          condition: getCondition(),
+          do: events,
         },
       });
     }
@@ -172,29 +172,13 @@ export const TransitionModal: React.FC = () => {
 
   // Сброс формы после закрытия
   const handleAfterClose = () => {
-    trigger.setSelectedComponent(null);
-    trigger.setSelectedMethod(null);
-
-    condition.setSelectedComponentParam1('');
-    condition.setSelectedComponentParam2('');
-    condition.setArgsParam1('');
-    condition.setConditionOperator('');
-    condition.setSelectedMethodParam1('');
-    condition.setSelectedMethodParam2('');
-    condition.setArgsParam2('');
-    condition.handleChangeConditionShow(false);
-    condition.handleParamOneInput1(true);
-    condition.handleParamOneInput2(true);
-    condition.setErrors({});
-
+    trigger.clear();
+    condition.clear();
     setEvents([]);
-
     setColor(DEFAULT_TRANSITION_COLOR);
 
     setTransition(null);
     setNewTransition(null);
-
-    setFormState('default');
   };
 
   useEffect(() => {
@@ -203,18 +187,30 @@ export const TransitionModal: React.FC = () => {
 
       const { data: initialData } = target;
 
-      if (initialData.label?.trigger && typeof initialData.label.trigger !== 'string') {
-        trigger.setSelectedComponent(initialData.label.trigger.component);
-        trigger.setSelectedMethod(initialData.label.trigger.method);
+      if (initialData.label?.trigger) {
+        if (typeof initialData.label.trigger !== 'string') {
+          trigger.setSelectedComponent(initialData.label.trigger.component);
+          trigger.setSelectedMethod(initialData.label.trigger.method);
+          trigger.onTabChange(0);
+        } else {
+          trigger.onChangeText(initialData.label.trigger);
+          trigger.onTabChange(1);
+        }
       }
 
-      setColor(initialData?.color ?? DEFAULT_TRANSITION_COLOR);
-
       //Позволяет найти начальные значения условия(условий), если таковые имеются
-      const tryGetCondition = () => {
+      const parseCondition = () => {
         const c = initialData.label?.condition;
         if (!c) return undefined;
         condition.handleChangeConditionShow(true);
+
+        if (typeof c === 'string') {
+          condition.onTabChange(1);
+          return condition.onChangeText(c);
+        }
+
+        condition.onTabChange(0);
+
         const operator = c.type;
         if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
           console.warn('👽 got condition from future (not comparsion)', c);
@@ -264,7 +260,9 @@ export const TransitionModal: React.FC = () => {
         return condition.setConditionOperator(operator);
       };
 
-      tryGetCondition();
+      parseCondition();
+
+      setColor(initialData.color);
 
       setEvents(target.data.label?.do ?? []);
       setTransition(target);
@@ -301,7 +299,7 @@ export const TransitionModal: React.FC = () => {
         />
 
         <div className="flex items-center gap-2">
-          <p className="font-bold">Цвет:</p>
+          <p className="text-lg font-bold">Цвет:</p>
           <ColorInput value={color} onChange={setColor} />
         </div>
       </div>

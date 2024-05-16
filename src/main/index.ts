@@ -103,7 +103,7 @@ app.whenReady().then(() => {
   ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
     ModuleManager.stopModule(module);
     await ModuleManager.startLocalModule(module);
-    if (module == 'lapki-flasher') {
+    if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
     }
   });

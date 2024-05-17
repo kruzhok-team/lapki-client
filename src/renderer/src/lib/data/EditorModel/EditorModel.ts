@@ -196,7 +196,7 @@ export class EditorModel {
       state.events = [...state.events, eventData];
     } else {
       if (eventData.do.length) {
-        event.do = [...eventData.do];
+        event.do = eventData.do;
       } else {
         state.events.splice(eventIndex, 1);
       }

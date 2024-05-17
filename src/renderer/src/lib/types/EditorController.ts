@@ -40,5 +40,5 @@ export type CreateTransitionParams = Omit<TransitionData, 'selection' | 'label'>
 } & { id?: string };
 
 export type ChangeTransitionParams = Omit<TransitionData, 'selection' | 'label'> & {
-  label: Omit<Required<TransitionData>['label'], 'position'> & { position?: Point };
+  label?: Omit<Required<TransitionData>['label'], 'position'> & { position?: Point };
 } & { id: string };

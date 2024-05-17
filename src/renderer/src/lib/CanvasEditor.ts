@@ -34,7 +34,7 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
     grid: true,
   };
 
-  textMode = true;
+  textMode = false;
 
   constructor() {
     super();

@@ -90,6 +90,8 @@ export class Transition extends Shape {
   prepareText() {
     if (!this.data.label?.trigger) return;
 
+    // const getText = () => {};
+
     const text =
       typeof this.data.label.trigger === 'string'
         ? this.data.label.trigger
@@ -168,7 +170,7 @@ export class Transition extends Shape {
 
     ctx.fillStyle = transitionStyle.bgColor;
 
-    if (this.data.label.trigger) {
+    if (this.data.label.trigger && typeof this.data.label.trigger !== 'string') {
       const trigger = this.data.label.trigger;
       ctx.beginPath();
       platform.drawEvent(ctx, trigger, x + p, y + p);
@@ -176,7 +178,7 @@ export class Transition extends Shape {
     }
 
     //Здесь начинается прорисовка действий и условий для связей
-    if (this.data.label.condition) {
+    if (this.data.label.condition && typeof this.data.label.condition !== 'string') {
       //TODO: Требуется допиливание прорисовки условий
       ctx.beginPath();
       if (this.data.label.condition) {
@@ -190,7 +192,7 @@ export class Transition extends Shape {
       ctx.closePath();
     }
 
-    if (this.data.label.do) {
+    if (this.data.label.do && typeof this.data.label.do !== 'string') {
       ctx.beginPath();
       this.data.label.do?.forEach((data, actIdx) => {
         const ax = 1 + (actIdx % eventRowLength);

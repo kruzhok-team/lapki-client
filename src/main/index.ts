@@ -96,6 +96,13 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
+const startFlasher = async () => {
+  ModuleManager.startLocalModule('lapki-flasher');
+};
+startFlasher();
+
+const mainWindow = createWindow();
+
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
   initFileHandlersIPC();
@@ -127,13 +134,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-
-  const startFlasher = async () => {
-    ModuleManager.startLocalModule('lapki-flasher');
-  };
-  startFlasher();
-
-  const mainWindow = createWindow();
 
   app.on('activate', function () {
     // Восстановление окна для macOS.

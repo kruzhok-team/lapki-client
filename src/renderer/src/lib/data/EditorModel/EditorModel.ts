@@ -478,7 +478,7 @@ export class EditorModel {
   changeTransition(args: ChangeTransitionParams) {
     const { id, ...other } = args;
 
-    const transition = this.data.elements.transitions[id] as TransitionData;
+    const transition = this.data.elements.transitions[id];
     if (!transition) return false;
 
     this.data.elements.transitions[id] = other;

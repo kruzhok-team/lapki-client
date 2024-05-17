@@ -110,6 +110,7 @@ export const TransitionModal: React.FC = () => {
       return events.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
     };
 
+    // Если редактируем состояние
     if (transition) {
       editor.controller.transitions.changeTransition({
         id: transition.id,
@@ -126,6 +127,7 @@ export const TransitionModal: React.FC = () => {
       close();
     }
 
+    // Если создаем новое
     if (newTransition) {
       editor.controller.transitions.createTransition({
         source: newTransition.source.id,
@@ -269,7 +271,7 @@ export const TransitionModal: React.FC = () => {
           <Trigger {...trigger} />
           <Condition {...condition} />
           <Events {...events} />
-          <ColorField value={color} onChange={setColor} />
+          <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>
     </>

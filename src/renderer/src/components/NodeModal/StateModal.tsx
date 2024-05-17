@@ -31,6 +31,7 @@ export const StateModal: React.FC = () => {
     const { selectedComponent, selectedMethod, tabValue } = trigger;
     const triggerText = trigger.text.trim();
 
+    // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
     if (
       (tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
       (tabValue === 1 && !triggerText)
@@ -75,13 +76,13 @@ export const StateModal: React.FC = () => {
   };
 
   useEffect(() => {
+    // Открытие окна и подстановка начальных данных формы на событие изменения состояния
     editor.controller.states.on('changeState', (state) => {
       const { data } = state;
 
-      const { data: initialData } = state;
-      const eventData = initialData.events[0];
-
+      const eventData = data.events[0];
       if (eventData) {
+        // Подстановка триггера, с переключение вкладок если он текстовый или выбранный
         if (typeof eventData.trigger !== 'string') {
           trigger.setSelectedComponent(eventData.trigger.component);
           trigger.setSelectedMethod(eventData.trigger.method);
@@ -91,6 +92,7 @@ export const StateModal: React.FC = () => {
           trigger.onTabChange(1);
         }
 
+        // Подставнока действией, тоже с переключение вкладок в зависимости от типа
         if (typeof eventData.do !== 'string') {
           events.setEvents(eventData.do);
           events.onTabChange(0);
@@ -158,7 +160,7 @@ export const StateModal: React.FC = () => {
       <div className="flex flex-col gap-3">
         <Trigger {...trigger} />
         <Events {...events} />
-        <ColorField value={color} onChange={setColor} />
+        <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>
     </Modal>
   );

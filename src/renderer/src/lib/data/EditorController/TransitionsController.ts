@@ -293,7 +293,11 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnNote = (note: Note) => {
     if (!this.ghost.source) return;
 
-    if (this.ghost.source instanceof Note) {
+    if (
+      this.ghost.source instanceof Note &&
+      //Запрещаем создавать связь комментарию для самого себя
+      this.ghost.source !== this.controller.notes.get(note.id)
+    ) {
       const source = this.ghost.source;
       const target = this.controller.notes.get(note.id);
       if (!target) return;

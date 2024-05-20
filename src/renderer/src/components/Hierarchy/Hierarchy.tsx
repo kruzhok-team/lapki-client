@@ -126,7 +126,6 @@ export const Hierarchy: React.FC = () => {
         states[transition.target] ??
         transitions[transition.target] ??
         finalStates[transition.target];
-      console.log(finalStates[transition.target], transitions[transition.target]);
       if (!target) continue;
 
       data[transitionId] = {
@@ -146,7 +145,6 @@ export const Hierarchy: React.FC = () => {
     return data;
   }, [finalStates, initialStates, notes, states, transitions]);
 
-  console.log(hierarchy);
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
   const handleExpandItem = (item: TreeItem<HierarchyItemData>) =>

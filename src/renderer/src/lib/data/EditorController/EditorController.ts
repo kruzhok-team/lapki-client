@@ -310,6 +310,8 @@ export class EditorController {
 
     this.removeSelection();
 
+    this.app.model.changeNoteSelection(id, true);
+
     note.setIsSelected(true);
   }
 
@@ -336,6 +338,7 @@ export class EditorController {
 
     this.notes.forEach((note) => {
       note.setIsSelected(false);
+      this.app.model.changeNoteSelection(note.id, false);
     });
 
     this.view.isDirty = true;

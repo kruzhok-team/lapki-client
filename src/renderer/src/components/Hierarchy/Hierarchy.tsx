@@ -13,7 +13,7 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
-import { State } from '@renderer/lib/drawable';
+import { FinalState, State } from '@renderer/lib/drawable';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { escapeRegExp } from '@renderer/utils';
@@ -179,6 +179,7 @@ export const Hierarchy: React.FC = () => {
 
   const onFocus = (item: TreeItem) => () => {
     controller.selectState(item.index.toString());
+    controller.selectNote(item.index.toString());
     controller.selectTransition(item.index.toString());
   };
 
@@ -216,9 +217,20 @@ export const Hierarchy: React.FC = () => {
     if (state && state instanceof State) {
       return controller.states.handleContextMenu(state, { event: mouse });
     }
+    if (state && state instanceof FinalState) {
+      return controller.states.handleFinalStateContextMenu(state, {
+        event: mouse,
+      });
+    }
     const transition = controller.transitions.get(item.index.toString());
     if (transition) {
       return controller.transitions.handleContextMenu(transition, {
+        event: mouse,
+      });
+    }
+    const note = controller.notes.get(item.index.toString());
+    if (note) {
+      return controller.notes.handleContextMenu(note, {
         event: mouse,
       });
     }
@@ -293,7 +305,13 @@ export const Hierarchy: React.FC = () => {
         return setSelectedItems([transitionId]);
       }
     }
-  }, [states, transitions]);
+
+    for (const [noteId, note] of Object.entries(notes)) {
+      if (note?.selection) {
+        return setSelectedItems([noteId]);
+      }
+    }
+  }, [notes, states, transitions]);
 
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>

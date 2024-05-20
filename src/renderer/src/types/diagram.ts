@@ -81,6 +81,8 @@ export type Component = {
 export type Note = {
   position: Point;
   text: string;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 // Это описание типа схемы которая хранится в json файле

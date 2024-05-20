@@ -133,11 +133,9 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
     this.controller.selectNote(note.id);
 
-    const offset = this.app.mouse.getOffset();
-
     this.emit('contextMenu', {
       note,
-      position: { x: e.event.x + offset.x, y: e.event.y + offset.y },
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
 

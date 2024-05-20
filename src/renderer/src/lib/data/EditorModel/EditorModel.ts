@@ -616,6 +616,18 @@ export class EditorModel {
     return true;
   }
 
+  //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
+  changeNoteSelection(id: string, selection: boolean) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    note.selection = selection;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
   changeNotePosition(id: string, position: Point) {
     const note = this.data.elements.notes[id];
     if (!note) return false;

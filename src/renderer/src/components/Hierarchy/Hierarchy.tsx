@@ -24,7 +24,7 @@ import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
-  type: 'state' | 'initialState' | 'finalState' | 'transition';
+  type: 'state' | 'initialState' | 'finalState' | 'transition' | 'note';
 }
 
 export const Hierarchy: React.FC = () => {
@@ -38,6 +38,7 @@ export const Hierarchy: React.FC = () => {
   const initialStates = model.useData('elements.initialStates');
   const finalStates = model.useData('elements.finalStates');
   const transitions = model.useData('elements.transitions');
+  const notes = model.useData('elements.notes');
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -89,6 +90,19 @@ export const Hierarchy: React.FC = () => {
       };
     }
 
+    for (const noteId in notes) {
+      const note = notes[noteId];
+
+      data[noteId] = {
+        index: noteId,
+        isFolder: false,
+        data: { title: note.text ?? 'Комментарий', type: 'note' },
+        children: [],
+        canRename: false,
+        canMove: false,
+      };
+    }
+
     for (const [stateId, state] of [
       ...Object.entries(states),
       ...Object.entries(initialStates),
@@ -102,31 +116,37 @@ export const Hierarchy: React.FC = () => {
       }
     }
 
+    for (const [noteId] of [...Object.entries(notes)]) {
+      data.root.children?.push(noteId);
+    }
+
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const target = states[transition.target] ?? finalStates[transition.target];
-
+      const target =
+        states[transition.target] ??
+        transitions[transition.target] ??
+        finalStates[transition.target];
+      console.log(finalStates[transition.target], transitions[transition.target]);
       if (!target) continue;
 
       data[transitionId] = {
         index: transitionId,
         isFolder: false,
         data: {
-          title: target?.name || 'Конечное состояние',
+          title: target?.name || (target?.color && 'Условный переход') || 'Конечное состояние',
           type: 'transition',
         },
         canRename: false,
         canMove: false,
       };
-      if (data[transition.source]) {
-        data[transition.source].children?.push(transitionId);
-        data[transition.source].isFolder = true;
-      }
+      data[transition.source].children?.push(transitionId);
+      data[transition.source].isFolder = true;
     }
 
     return data;
-  }, [finalStates, initialStates, states, transitions]);
+  }, [finalStates, initialStates, notes, states, transitions]);
 
+  console.log(hierarchy);
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
   const handleExpandItem = (item: TreeItem<HierarchyItemData>) =>

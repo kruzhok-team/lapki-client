@@ -28,30 +28,27 @@ export class Transition extends Shape {
   }
 
   get source() {
-    const state = this.app.controller.states.get(this.data.source);
-    const note = this.app.controller.notes.get(this.data.source);
+    const node =
+      this.app.controller.states.get(this.data.source) ||
+      this.app.controller.notes.get(this.data.source);
 
-    if (!state) {
-      return note!;
-      //throw new Error(`State with id ${this.data.source} does not exist`);
+    if (!node) {
+      throw new Error(`State with id ${this.data.source} does not exist`);
     }
 
-    return state;
+    return node;
   }
 
   get target() {
-    const state = this.app.controller.states.get(this.data.target);
-    const transition = this.app.controller.transitions.get(this.data.target);
-    const note = this.app.controller.notes.get(this.data.target);
+    const node =
+      this.app.controller.states.get(this.data.target) ||
+      this.app.controller.notes.get(this.data.target) ||
+      this.app.controller.transitions.get(this.data.target);
 
-    if (!state) {
-      if (!transition) {
-        return note;
-      }
-      return transition;
-      //throw new Error(`State with id ${this.data.target} does not exist`);
+    if (!node) {
+      throw new Error(`State with id ${this.data.target} does not exist`);
     }
-    return state;
+    return node;
   }
 
   get position() {

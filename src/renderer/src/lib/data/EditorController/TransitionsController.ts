@@ -85,41 +85,19 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
 
-    const sourceNote = this.controller.notes.get(source);
-    const targetNote = this.controller.notes.get(target);
+    const sourceId = this.controller.states.get(source) || this.controller.notes.get(source);
+    const targetId =
+      this.controller.states.get(target) ||
+      this.controller.notes.get(target) ||
+      this.controller.transitions.get(target);
 
-    const sourceState = this.controller.states.get(source);
-    const targetState = this.controller.states.get(target);
-
-    const targetTransition = this.controller.transitions.get(target);
+    if (!sourceId || !targetId) return;
 
     if (label && !label.position) {
-      if (sourceState) {
-        if (!targetState) return;
-        label.position = {
-          x: (sourceState.position.x + targetState.position.x) / 2,
-          y: (sourceState.position.y + targetState.position.y) / 2,
-        };
-      } else {
-        if (!sourceNote) return;
-
-        if (targetState) {
-          label.position = {
-            x: (sourceNote.position.x + targetState.position.x) / 2,
-            y: (sourceNote.position.y + targetState.position.y) / 2,
-          };
-        } else if (targetTransition) {
-          label.position = {
-            x: (sourceNote.position.x + targetTransition.position.x) / 2,
-            y: (sourceNote.position.y + targetTransition.position.y) / 2,
-          };
-        } else if (targetNote) {
-          label.position = {
-            x: (sourceNote.position.x + targetNote.position.x) / 2,
-            y: (sourceNote.position.y + targetNote.position.y) / 2,
-          };
-        }
-      }
+      label.position = {
+        x: (sourceId.position.x + targetId.position.x) / 2,
+        y: (sourceId.position.y + targetId.position.y) / 2,
+      };
     }
 
     // Создание данных
@@ -232,20 +210,16 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     this.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.controller.notes.on('startNewTransitionNote', this.handleStartNewTransitionNote);
+    this.controller.notes.on('startNewTransitionNote', this.handleStartNewTransition);
     this.controller.notes.on('mouseUpOnNote', this.handleMouseUpOnNote);
 
-    this.controller.states.on('startNewTransitionState', this.handleStartNewTransitionState);
+    this.controller.states.on('startNewTransitionState', this.handleStartNewTransition);
     this.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransitionState = (state: State) => {
-    this.ghost.setSourceState(state);
-  };
-
-  handleStartNewTransitionNote = (note: Note) => {
-    this.ghost.setSourceNote(note);
+  handleStartNewTransition = (node: State | Note) => {
+    this.ghost.setSource(node);
   };
 
   handleConditionClick = (transition: Transition) => {

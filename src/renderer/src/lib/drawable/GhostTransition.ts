@@ -48,12 +48,8 @@ export class GhostTransition {
     drawTriangle(ctx, line.end, 10 / this.app.model.data.scale, degrees_to_radians(line.ee));
   }
 
-  setSourceState(state: State) {
-    this.source = state;
-  }
-
-  setSourceNote(note: Note) {
-    this.source = note;
+  setSource(node: State | Note) {
+    this.source = node;
   }
 
   setTarget(target: Point) {

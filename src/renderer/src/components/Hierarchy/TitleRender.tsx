@@ -1,5 +1,6 @@
 import { ReactComponent as InitialStateIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as FinalStateIcon } from '@renderer/assets/icons/final_state.svg';
+import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition-alt.svg';
 
@@ -8,7 +9,7 @@ import { WithHint } from '../UI';
 interface TitleRenderProps {
   title: string;
   search: string;
-  type: 'state' | 'initialState' | 'finalState' | 'transition';
+  type: 'state' | 'initialState' | 'finalState' | 'transition' | 'note';
 }
 
 const icons = {
@@ -16,6 +17,7 @@ const icons = {
   initialState: InitialStateIcon,
   transition: TransitionIcon,
   finalState: FinalStateIcon,
+  note: NoteIcon,
 };
 /* Отрисовка заголовка ноды в иерархии состояний, можно подсвечивать подстроку (для отображения поиска) */
 export const TitleRender: React.FC<TitleRenderProps> = (props) => {

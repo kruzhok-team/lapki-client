@@ -4,10 +4,11 @@ import { Select, Switch } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useFlasher } from '@renderer/store/useFlasher';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
+import { FLASHER_CONNECTING } from '../Modules/Flasher';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
-import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 
 const themeOptions = [
   {
@@ -20,13 +21,18 @@ const themeOptions = [
   },
 ];
 
-export const Setting: React.FC = () => {
+export interface SettingProps {
+  openCompilerSettings: () => void;
+  handleHostChange: () => void;
+}
+
+export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHostChange }) => {
   const editor = useEditorContext();
   const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
+  const { connectionStatus, isFlashing } = useFlasher();
 
-  const [isCompilerOpen, openCompiler, closeCompiler] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
 
@@ -65,8 +71,15 @@ export const Setting: React.FC = () => {
           />
         </div>
 
-        <button className="btn-primary" onClick={openCompiler}>
+        <button className="btn-primary" onClick={openCompilerSettings}>
           Компилятор…
+        </button>
+        <button
+          className="btn-primary"
+          onClick={handleHostChange}
+          disabled={connectionStatus === FLASHER_CONNECTING || isFlashing}
+        >
+          Загрузчик…
         </button>
         <button className="btn-primary mb-4" onClick={openDocModal}>
           Документация…
@@ -85,7 +98,6 @@ export const Setting: React.FC = () => {
         </button>
       </div>
 
-      <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompiler} />
       <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
     </section>

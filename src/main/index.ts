@@ -101,10 +101,9 @@ const startFlasher = async () => {
 };
 startFlasher();
 
-const mainWindow = createWindow();
-
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
+  const mainWindow = createWindow();
   initFileHandlersIPC();
 
   ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {

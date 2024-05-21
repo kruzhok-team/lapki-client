@@ -148,7 +148,7 @@ export class Initializer {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     const platform = loadPlatform(platformName);
     if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
+      return;
     }
 
     this.app.controller.platform = platform;

@@ -24,7 +24,7 @@ export interface FlasherProps {
 }
 
 export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange }) => {
-  const [flasherSetting] = useSettings('flasher');
+  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
 
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();

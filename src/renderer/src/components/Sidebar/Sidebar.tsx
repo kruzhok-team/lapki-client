@@ -6,6 +6,8 @@ import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.sv
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
+import { useSettings } from '@renderer/hooks';
+import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
@@ -18,6 +20,12 @@ import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
 
+import { Flasher } from '../Modules/Flasher';
+import {
+  FlasherSelectModal,
+  FlasherSelectModalFormValues,
+} from '../serverSelect/FlasherSelectModal';
+import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 import { Badge } from '../UI';
 
 export interface SidebarCallbacks {
@@ -38,6 +46,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { model } = useEditorContext();
 
+  const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
+  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
+
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
@@ -48,6 +60,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleImport = async () => {
     await model.files.import(setOpenData);
+  };
+
+  const closeFlasherModal = () => {
+    Flasher.freezeReconnectionTimer(false);
+    closeFlasherSettings();
+  };
+
+  const handleHostChange = () => {
+    Flasher.freezeReconnectionTimer(true);
+    openFlasherSettings();
+  };
+
+  const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
+    if (!flasherSetting) return;
+
+    Flasher.setAutoReconnect(data.type === 'remote');
+    setFlasherSetting({ ...flasherSetting, ...data });
   };
 
   const menus = useMemo(
@@ -63,15 +92,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Explorer />,
       <CompilerTab
         openData={openData}
+        openCompilerSettings={openCompilerSettings}
         compilerData={compilerData}
         setCompilerData={setCompilerData}
         compilerStatus={compilerStatus}
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader compilerData={compilerData} />,
+      <Loader compilerData={compilerData} handleHostChange={handleHostChange} />,
       <History />,
-      <Setting />,
+      <Setting openCompilerSettings={openCompilerSettings} handleHostChange={handleHostChange} />,
     ],
     [compilerData, openData, compilerStatus]
   );
@@ -115,6 +145,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div className="flex">
       <Labels items={tabLabels} />
       <Menus items={menus} />
+
+      <FlasherSelectModal
+        isOpen={isFlasherOpen}
+        onSubmit={handleFlasherModalSubmit}
+        onClose={closeFlasherModal}
+      />
+      <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
     </div>
   );
 };

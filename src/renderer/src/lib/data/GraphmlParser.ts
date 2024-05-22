@@ -8,7 +8,6 @@ import {
   CGMLAction,
   CGMLTransitionAction,
   CGMLVertex,
-  CGMLChoice,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {

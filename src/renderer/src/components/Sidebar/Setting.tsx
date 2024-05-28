@@ -10,7 +10,6 @@ import { AboutTheProgramModal } from '../AboutTheProgramModal';
 import { FLASHER_CONNECTING } from '../Modules/Flasher';
 import { ResetSettingsModal } from '../ResetSettingsModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
-import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 
 const themeOptions = [
   {

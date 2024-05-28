@@ -17,75 +17,77 @@ import { useClickOutside } from '@renderer/hooks/useClickOutside';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
 import { getVirtualElement } from '@renderer/utils';
 
+const contextData = {
+  copy: {
+    icon: <CopyIcon />,
+    combination: 'Ctrl+C',
+  },
+  paste: {
+    icon: <PasteIcon />,
+    combination: 'Ctrl+V',
+  },
+  pasteState: {
+    icon: <StateIcon />,
+    combination: undefined,
+  },
+  pasteEvent: {
+    icon: <EventIcon />,
+    combination: undefined,
+  },
+  initialState: {
+    icon: <InitialIcon />,
+    combination: undefined,
+  },
+  showCodeAll: {
+    icon: <CodeAllIcon />,
+    combination: undefined,
+  },
+  edit: {
+    icon: <EditIcon />,
+    combination: undefined,
+  },
+  centerCamera: {
+    icon: <CameraIcon />,
+    combination: undefined,
+  },
+  delete: {
+    icon: <DeleteIcon />,
+    combination: 'Del',
+  },
+  source: {
+    icon: undefined,
+    combination: undefined,
+  },
+  target: {
+    icon: undefined,
+    combination: undefined,
+  },
+  note: {
+    icon: <NoteIcon />,
+    combination: undefined,
+  },
+};
+
 export const DiagramContextMenu: React.FC = () => {
   const { position, items, isOpen, onClose } = useDiagramContextMenu();
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует
   const [openMenu, setOpenMenu] = useState('');
 
-  useLayoutEffect(() => {
-    setOpenMenu('');
-  }, [isOpen]);
-
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
-    elements: {
-      reference: getVirtualElement(position) as Element,
-    },
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
 
   useClickOutside(refs.floating.current, onClose, !isOpen);
 
-  const contextData = {
-    copy: {
-      icon: <CopyIcon />,
-      combination: 'Ctrl+C',
-    },
-    paste: {
-      icon: <PasteIcon />,
-      combination: 'Ctrl+V',
-    },
-    pasteState: {
-      icon: <StateIcon />,
-      combination: undefined,
-    },
-    pasteEvent: {
-      icon: <EventIcon />,
-      combination: undefined,
-    },
-    initialState: {
-      icon: <InitialIcon />,
-      combination: undefined,
-    },
-    showCodeAll: {
-      icon: <CodeAllIcon />,
-      combination: undefined,
-    },
-    edit: {
-      icon: <EditIcon />,
-      combination: undefined,
-    },
-    centerCamera: {
-      icon: <CameraIcon />,
-      combination: undefined,
-    },
-    delete: {
-      icon: <DeleteIcon />,
-      combination: 'Del',
-    },
-    source: {
-      icon: undefined,
-      combination: undefined,
-    },
-    target: {
-      icon: undefined,
-      combination: undefined,
-    },
-    note: {
-      icon: <NoteIcon />,
-      combination: undefined,
-    },
-  };
+  // TODO(bryzZz) Два эффекта просто на синхронизацию разных состояний, нужно переделать на один источник истины
+  useLayoutEffect(() => {
+    refs.setPositionReference(getVirtualElement(position));
+  }, [position, refs]);
+
+  useLayoutEffect(() => {
+    setOpenMenu('');
+  }, [isOpen]);
 
   return (
     <div

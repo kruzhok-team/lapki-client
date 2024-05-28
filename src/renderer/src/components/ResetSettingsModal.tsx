@@ -28,7 +28,7 @@ export const ResetSettingsModal: React.FC<ResetSettingsModalProps> = ({ onClose,
       onSubmit={handleSubmit}
     >
       Вы уверены, что хотите сбросить настройки? Это действие нельзя будет отменить. После нажатия
-      на кнопку "{RESET_LABEL}" IDE перезапуститься, а все значения настроек вернутся к изначальным.
+      на кнопку "{RESET_LABEL}" IDE перезапустится, а все значения настроек вернутся к изначальным.
     </Modal>
   );
 };

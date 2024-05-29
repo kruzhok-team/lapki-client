@@ -278,12 +278,13 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (this.ghost.source instanceof Note) {
       const source = this.ghost.source;
       const target = this.get(transition.id);
-      if (!target) return;
-      this.createTransition({
-        color: DEFAULT_TRANSITION_COLOR,
-        source: source.id,
-        target: target.id,
-      });
+      if (target && target.data.label) {
+        this.createTransition({
+          color: DEFAULT_TRANSITION_COLOR,
+          source: source.id,
+          target: target.id,
+        });
+      }
     }
 
     this.ghost.clear();

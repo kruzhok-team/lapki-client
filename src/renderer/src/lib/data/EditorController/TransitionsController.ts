@@ -235,6 +235,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
+    if (!transition.data.label) return;
     this.emit('changeTransition', transition);
   };
 

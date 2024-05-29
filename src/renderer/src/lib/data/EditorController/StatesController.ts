@@ -36,6 +36,7 @@ type StateVariant = Data[StateType] extends Map<unknown, infer T> ? T : never;
 
 interface StatesControllerEvents {
   mouseUpOnState: State;
+  mouseUpOnInitialState: InitialState;
   mouseUpOnFinalState: FinalState;
   startNewTransitionState: State;
   changeState: State;
@@ -815,6 +816,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.emit('mouseUpOnState', state);
   };
 
+  handleMouseUpOnInitialState = (state: FinalState) => {
+    this.emit('mouseUpOnInitialState', state);
+  };
+
   handleMouseUpOnFinalState = (state: FinalState) => {
     this.emit('mouseUpOnFinalState', state);
   };
@@ -1002,9 +1007,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
   private watchInitialState(state: InitialState) {
     state.on('dragend', this.handleInitialStateDragEnd.bind(this, state));
+    state.on('mouseup', this.handleMouseUpOnInitialState.bind(this, state));
   }
   private unwatchInitialState(state: InitialState) {
     state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
+    state.off('mouseup', this.handleMouseUpOnInitialState.bind(this, state));
   }
   private watchFinalState(state: FinalState) {
     state.on('dragend', this.handleFinalStateDragEnd.bind(this, state));

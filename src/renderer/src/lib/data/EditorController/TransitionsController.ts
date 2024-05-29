@@ -1,7 +1,14 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { FinalState, GhostTransition, Note, State, Transition } from '@renderer/lib/drawable';
+import {
+  FinalState,
+  GhostTransition,
+  InitialState,
+  Note,
+  State,
+  Transition,
+} from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
@@ -215,6 +222,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     this.controller.states.on('startNewTransitionState', this.handleStartNewTransition);
     this.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.controller.states.on('mouseUpOnInitialState', this.handleMouseUpOnInitialState);
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
@@ -309,6 +317,19 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
         target: target.id,
       });
     }
+
+    this.ghost.clear();
+    this.view.isDirty = true;
+  };
+
+  handleMouseUpOnInitialState = (state: InitialState) => {
+    if (!this.ghost.source) return;
+
+    this.createTransition({
+      color: DEFAULT_TRANSITION_COLOR,
+      source: this.ghost.source.id,
+      target: state.id,
+    });
 
     this.ghost.clear();
     this.view.isDirty = true;

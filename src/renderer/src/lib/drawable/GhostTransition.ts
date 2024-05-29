@@ -37,6 +37,7 @@ export class GhostTransition {
     );
 
     ctx.lineWidth = transitionStyle.width;
+    ctx.strokeStyle = DEFAULT_TRANSITION_COLOR;
     ctx.fillStyle = DEFAULT_TRANSITION_COLOR;
 
     drawCurvedLine(ctx, line, 12 / this.app.model.data.scale);

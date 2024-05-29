@@ -262,6 +262,7 @@ function getTransitions(
       color: rawTransition.color ?? randomColor(),
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
+        transitionLine: rawTransition.labelLine,
         trigger: eventData.trigger,
         do: eventData.do,
         condition: eventData.condition,

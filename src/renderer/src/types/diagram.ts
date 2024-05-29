@@ -1,4 +1,4 @@
-import { Dimensions, Point } from '@renderer/lib/types';
+import { Dimensions, Point, TransitionLine } from '@renderer/lib/types';
 
 // FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string };
@@ -65,6 +65,7 @@ export interface Transition {
   color: string;
   label?: {
     position: Point;
+    transitionLine: TransitionLine;
     trigger?: Event;
     condition?: Condition | null;
     do?: Action[];

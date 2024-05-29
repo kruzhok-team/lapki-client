@@ -256,7 +256,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       const target = this.controller.states.data.states.get(state.id);
       if (!target) return;
 
-      this.controller.transitions.createTransition({
+      this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
         source: source.id,
         target: target.id,
@@ -277,9 +277,9 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note) {
       const source = this.ghost.source;
-      const target = this.controller.transitions.get(transition.id);
+      const target = this.get(transition.id);
       if (!target) return;
-      this.controller.transitions.createTransition({
+      this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
         source: source.id,
         target: target.id,
@@ -302,7 +302,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       const target = this.controller.notes.get(note.id);
       if (!target) return;
 
-      this.controller.transitions.createTransition({
+      this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
         source: source.id,
         target: target.id,

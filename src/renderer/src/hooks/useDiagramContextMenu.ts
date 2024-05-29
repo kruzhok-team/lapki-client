@@ -244,41 +244,45 @@ export const useDiagramContextMenu = () => {
       ];
 
       handleEvent(position, [
-        {
-          label: 'Копировать',
-          type: 'copy',
-          action: () => {
-            editor?.controller.copySelected();
-          },
-        },
-        {
-          label: 'Выбрать исход(source)',
-          type: 'source',
-          isFolder: true,
-          children: [...sourceArray.map(([_id, value]) => source(value))],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
-        },
-        {
-          label: 'Выбрать цель(target)',
-          type: 'target',
-          isFolder: true,
-          children: [...targetArray.map(([_id, value]) => target(value))],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
-        },
-        {
-          label: 'Посмотреть код',
-          type: 'showCodeAll',
-          action: () => {
-            openTab({
-              type: 'transition',
-              name: transition.id,
-              code: editor.model.serializer.getTransition(transition.id) ?? '',
-              language: 'json',
-            });
-          },
-        },
+        ...(transition.data.label
+          ? [
+              {
+                label: 'Копировать',
+                type: 'copy',
+                action: () => {
+                  editor?.controller.copySelected();
+                },
+              },
+              {
+                label: 'Выбрать исход(source)',
+                type: 'source',
+                isFolder: true,
+                children: [...sourceArray.map(([_id, value]) => source(value))],
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                action: () => {},
+              },
+              {
+                label: 'Выбрать цель(target)',
+                type: 'target',
+                isFolder: true,
+                children: [...targetArray.map(([_id, value]) => target(value))],
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                action: () => {},
+              },
+              {
+                label: 'Посмотреть код',
+                type: 'showCodeAll',
+                action: () => {
+                  openTab({
+                    type: 'transition',
+                    name: transition.id,
+                    code: editor.model.serializer.getTransition(transition.id) ?? '',
+                    language: 'json',
+                  });
+                },
+              },
+            ]
+          : []),
         {
           label: 'Удалить',
           type: 'delete',

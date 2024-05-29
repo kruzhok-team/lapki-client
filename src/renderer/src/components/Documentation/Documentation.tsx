@@ -170,9 +170,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     >
       <Resizable
         enable={{ left: true }}
-        size={{ width: width, height: topOffset ? 'calc(100vh-44.19px)' : '100vh' }}
+        size={{ width: width, height: '100vh' }}
         minWidth={minWidth}
         maxWidth={maxWidth}
+        maxHeight={topOffset ? `calc(100vh - 44.19px)` : '100vh'}
         onResize={handleResize}
         className="border-l border-border-primary bg-bg-secondary"
       >

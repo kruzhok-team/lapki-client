@@ -12,37 +12,27 @@ import {
   FLASHER_NO_CONNECTION,
   Flasher,
 } from '@renderer/components/Modules/Flasher';
-import {
-  FlasherSelectModal,
-  FlasherSelectModalFormValues,
-} from '@renderer/components/serverSelect/FlasherSelectModal';
-import { useSettings } from '@renderer/hooks';
+import { useSettings } from '@renderer/hooks/useSettings';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
+  handleHostChange: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
+export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
 
+  const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
-  const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
-  const [flashing, setFlashing] = useState(false);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
-
-  const [isFlasherModalOpen, setIsFlasherModalOpen] = useState(false);
-  const openFlasherModal = () => setIsFlasherModalOpen(true);
-  const closeFlasherModal = () => {
-    Flasher.freezeReconnectionTimer(false);
-    setIsFlasherModalOpen(false);
-  };
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -78,18 +68,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     } else {
       Flasher.flashCompiler(compilerData!.binary!, currentDevice);
     }
-  };
-
-  const handleHostChange = () => {
-    Flasher.freezeReconnectionTimer(true);
-    openFlasherModal();
-  };
-
-  const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
-    if (!flasherSetting) return;
-
-    Flasher.setAutoReconnect(data.type === 'remote');
-    setFlasherSetting({ ...flasherSetting, ...data });
   };
 
   const handleFileChoose = () => {
@@ -189,7 +167,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       setFlasherConnectionStatus,
       setFlasherLog,
       setFlasherFile,
-      setFlashing,
+      setIsFlashing,
       setFlasherError,
       setFlashResult
     );
@@ -199,10 +177,15 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
 
   useEffect(() => {
     if (!flasherSetting) return;
-    const { host, port } = flasherSetting;
-
-    Flasher.connect(host, port);
-  }, [flasherSetting]);
+    const { host, port, localPort, type } = flasherSetting;
+    if (type === 'local' && port !== localPort) {
+      setFlasherSetting({ ...flasherSetting, port: localPort }).then(() => {
+        Flasher.connect(host, localPort);
+      });
+    } else {
+      Flasher.connect(host, port);
+    }
+  }, [flasherSetting, setFlasherSetting]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
@@ -219,21 +202,16 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
     }
   };
 
-  const handleReconnect = () => {
-    if (!flasherSetting) return;
-    const { host, port } = flasherSetting;
-
+  const handleReconnect = async () => {
     if (flasherIsLocal) {
-      window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher').then(() => {
-        Flasher.connect(host, port);
-      });
+      await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
     } else {
       Flasher.reconnect();
     }
   };
 
   const flashButtonDisabled = () => {
-    if (flashing || connectionStatus != FLASHER_CONNECTED) {
+    if (isFlashing || connectionStatus !== FLASHER_CONNECTED) {
       return true;
     }
     if (!currentDeviceID) {
@@ -286,10 +264,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
       <div className="px-4">
         <div className="mb-2 flex rounded">
           <button
-            className={twMerge(
-              'btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0',
-              flasherIsLocal && connectionStatus == FLASHER_CONNECTING && 'opacity-70'
-            )}
+            className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
             onClick={() => {
               switch (connectionStatus) {
                 case FLASHER_CONNECTED:
@@ -309,12 +284,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             {display()}
           </button>
           <button
-            className={twMerge(
-              'btn-primary px-2',
-              (connectionStatus == FLASHER_CONNECTING || flashing) && 'opacity-70'
-            )}
+            className="btn-primary px-2"
             onClick={handleHostChange}
-            disabled={connectionStatus == FLASHER_CONNECTING || flashing}
+            disabled={connectionStatus == FLASHER_CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
           </button>
@@ -369,9 +341,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
             Загрузить
           </button>
           <button
-            className={flasherFile ? 'btn-primary mb-2' : 'btn-primary mb-2 opacity-70'}
+            className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
             onClick={handleFileChoose}
-            disabled={flashing}
+            disabled={isFlashing}
           >
             {flasherFile ? '✖' : '…'}
           </button>
@@ -383,25 +355,17 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData }) => {
         ) : (
           ''
         )}
-        <div>
-          <button
-            className="btn-primary mb-2"
-            onClick={handleAddAvrdudeTab}
-            disabled={flashResult == undefined}
-          >
-            {'Результат прошивки'}
-          </button>
-        </div>
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddAvrdudeTab}
+          disabled={flashResult === undefined}
+        >
+          Результат прошивки
+        </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}
         </div>
       </div>
-
-      <FlasherSelectModal
-        isOpen={isFlasherModalOpen}
-        onSubmit={handleFlasherModalSubmit}
-        onClose={closeFlasherModal}
-      />
     </section>
   );
 };

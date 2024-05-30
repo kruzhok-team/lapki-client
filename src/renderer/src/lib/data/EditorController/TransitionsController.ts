@@ -28,6 +28,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     super();
 
     this.ghost = new GhostTransition(this.app);
+    this.app.view.children.add(this.ghost, Layer.GhostTransition);
   }
 
   private get view() {
@@ -203,8 +204,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   initEvents() {
-    this.app.view.children.add(this.ghost, Layer.GhostTransition);
-
     this.app.mouse.on('mousemove', this.handleMouseMove);
 
     this.controller.states.on('startNewTransition', this.handleStartNewTransition);

@@ -59,10 +59,6 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
   );
 };
 
-const HistoryWithoutEditor: React.FC = () => {
-  return <p>Нельзя посмотреть историю до инициализации</p>;
-};
-
 const HistoryWithEditor: React.FC = () => {
   const editor = useEditorContext();
 
@@ -122,14 +118,16 @@ const HistoryWithEditor: React.FC = () => {
 
 export const History: React.FC = () => {
   const { model } = useEditorContext();
-  const isMounted = model.useData('isMounted');
+  const isInitialized = model.useData('isInitialized');
 
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         История изменений
       </h3>
-      <div className="px-4">{isMounted ? <HistoryWithEditor /> : <HistoryWithoutEditor />}</div>
+      <div className="px-4">
+        {isInitialized ? <HistoryWithEditor /> : <p>Нельзя посмотреть историю до инициализации</p>}
+      </div>
     </section>
   );
 };

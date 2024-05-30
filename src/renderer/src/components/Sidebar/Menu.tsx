@@ -3,6 +3,7 @@ import React, { useLayoutEffect } from 'react';
 import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useTabs } from '@renderer/store/useTabs';
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -22,6 +23,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
+
+  const openTab = useTabs((state) => state.openTab);
 
   const items = [
     {
@@ -53,6 +56,12 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Свойства',
       onClick: openPropertiesModalOpen,
       disabled: !isInitialized,
+    },
+    {
+      text: 'Открыть редактор',
+      onClick: () => {
+        openTab({ type: 'editor', name: 'editor' });
+      },
     },
     // {
     //   text: 'Примеры',

@@ -7,6 +7,8 @@ import { existsSync } from 'fs';
 import path from 'path';
 
 import { findFreePort } from './freePortFinder';
+
+import { defaultSettings } from '../settings';
 export type ModuleName = 'lapki-flasher';
 
 export class ModuleStatus {
@@ -76,6 +78,7 @@ export class ModuleManager {
           case 'lapki-flasher': {
             const port = await findFreePort();
             await settings.set('flasher.localPort', port);
+            defaultSettings.flasher.localPort = Number(port);
             /*
             параметры локального загрузчика:
               -address string

@@ -17,6 +17,7 @@ import {
   Point,
   CreateInitialStateParams,
   CreateFinalStateParams,
+  CreateChoiceStateParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {
@@ -366,6 +367,73 @@ export class EditorModel {
     state.parentId = parentId;
 
     this.triggerDataUpdate('elements.finalStates');
+
+    return true;
+  }
+
+  createChoiceState(args: CreateChoiceStateParams) {
+    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
+
+    const centerPosition = () => {
+      const size = 50;
+      return {
+        x: position.x - size / 2,
+        y: position.y - size / 2,
+      };
+    };
+
+    this.data.elements.choiceStates[id] = {
+      ...other,
+      position: placeInCenter ? centerPosition() : position,
+    };
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return id;
+  }
+
+  deleteChoiceState(id: string) {
+    const state = this.data.elements.choiceStates[id];
+    if (!state) return false;
+
+    delete this.data.elements.choiceStates[id];
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
+  changeChoiceStatePosition(id: string, position: Point) {
+    const state = this.data.elements.choiceStates[id];
+    if (!state) return false;
+
+    state.position = position;
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
+  linkChoiceState(stateId: string, parentId: string) {
+    const state = this.data.elements.choiceStates[stateId];
+    const parent = this.data.elements.states[parentId];
+
+    if (!state || !parent) return false;
+
+    state.parentId = parentId;
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
+  changeChoiceStateSelection(id: string, selection: boolean) {
+    const state = this.data.elements.choiceStates[id];
+    if (!state) return false;
+
+    state.selection = selection;
+
+    this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }

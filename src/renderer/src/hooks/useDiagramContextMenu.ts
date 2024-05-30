@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
-import { EventSelection, FinalState, Note, State, Transition } from '@renderer/lib/drawable';
+import {
+  ChoiceState,
+  EventSelection,
+  FinalState,
+  Note,
+  State,
+  Transition,
+} from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -61,9 +68,19 @@ export const useDiagramContextMenu = () => {
         },
         {
           label: 'Вставить конечное состояние',
-          type: 'pasteState',
+          type: 'pasteFinalState',
           action: () => {
             editor.controller.states.createFinalState({
+              position: canvasPos,
+              placeInCenter: true,
+            });
+          },
+        },
+        {
+          label: 'Вставить состояние выбора',
+          type: 'pasteChoiceState',
+          action: () => {
+            editor.controller.states.createChoiceState({
               position: canvasPos,
               placeInCenter: true,
             });
@@ -183,13 +200,25 @@ export const useDiagramContextMenu = () => {
         },
       ]);
     };
+    const handleChoiceStateContextMenu = (data: { state: ChoiceState; position: Point }) => {
+      const { state, position } = data;
+
+      handleEvent(position, [
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor.controller.states.deleteChoiceState(state.id);
+          },
+        },
+      ]);
+    };
     const handleEventContextMenu = (data: {
       state: State;
       position: Point;
       event: EventSelection;
     }) => {
       const { state, position, event } = data;
-
       handleEvent(position, [
         {
           label: 'Удалить',
@@ -316,6 +345,7 @@ export const useDiagramContextMenu = () => {
     // контекстное меню для состояний
     editor.controller.states.on('stateContextMenu', handleStateContextMenu);
     editor.controller.states.on('finalStateContextMenu', handleFinalStateContextMenu);
+    editor.controller.states.on('choiceStateContextMenu', handleChoiceStateContextMenu);
     // контекстное меню для события
     editor.controller.states.on('eventContextMenu', handleEventContextMenu);
     // контекстное меню для связи
@@ -327,6 +357,7 @@ export const useDiagramContextMenu = () => {
       editor.view.off('contextMenu', handleViewContextMenu);
       editor.controller.states.off('stateContextMenu', handleStateContextMenu);
       editor.controller.states.off('finalStateContextMenu', handleFinalStateContextMenu);
+      editor.controller.states.off('choiceStateContextMenu', handleChoiceStateContextMenu);
       editor.controller.states.off('eventContextMenu', handleEventContextMenu);
       editor.controller.transitions.off('transitionContextMenu', handleTransitionContextMenu);
       editor.controller.notes.off('contextMenu', handleNoteContextMenu);

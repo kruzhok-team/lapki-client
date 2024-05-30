@@ -5,6 +5,9 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
+/**
+ * Инкапсуляция логики триггера формы {@link CreateModal}
+ */
 export const useTrigger = (isEditingState: boolean) => {
   const editor = useEditorContext();
   const model = editor.model;

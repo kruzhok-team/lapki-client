@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 
 import { Modal, ColorInput } from '@renderer/components/UI';
 import { usePrevious } from '@renderer/hooks';
@@ -54,6 +54,9 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   const isEditingState = state !== undefined;
 
   const previousIsOpen = usePrevious(isOpen);
+  // TODO(bryzZz) Костыль для того чтобы эффект, в котором подставляются первичные данные формы, работал только один раз на открытие
+  // это уйдет после разделения на две модалки
+  const onceOpenFlag = useRef(false);
 
   const [formState, setFormState] = useState<'submitted' | 'default'>('default');
 
@@ -160,12 +163,17 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     setColor(DEFAULT_TRANSITION_COLOR);
 
     setFormState('default');
+
+    onceOpenFlag.current = false;
   };
 
   // Обработка начальных данных во время открытия модалки
   useLayoutEffect(() => {
     // Если закрыли модалку, то ничего не делаем
-    if (!isOpen && previousIsOpen) return;
+    // TODO(bryzZz) Любимые костылечки, опять же, это уйдет после разделения на две модалки
+    if (previousIsOpen === undefined || (!isOpen && previousIsOpen) || onceOpenFlag.current) return;
+
+    onceOpenFlag.current = true;
 
     if (isEditingState) {
       if (!state || state.data.events.length === 0) return;

@@ -6,9 +6,7 @@ import theme from '@renderer/theme';
 const style = theme.colors.diagram.state;
 
 /**
- * Нода машины состояний.
- * Класс выполняет отрисовку, обработку событий (за счёт {@link Shape}),
- * управление собственным выделением и отображение «хваталок».
+ * Представление псевдосостояния выбора
  */
 export class ChoiceState extends Shape {
   isSelected = false;

@@ -1,6 +1,13 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { State, Note, Transition, InitialState, FinalState } from '@renderer/lib/drawable';
+import {
+  State,
+  Note,
+  Transition,
+  InitialState,
+  FinalState,
+  ChoiceState,
+} from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
 /**
@@ -16,6 +23,7 @@ export class Initializer {
     this.initStates();
     this.initInitialStates();
     this.initFinalStates();
+    this.initChoiceStates();
     this.initTransitions();
     this.initNotes();
     this.initPlatform();
@@ -110,6 +118,22 @@ export class Initializer {
       if (!data.parentId) continue;
 
       this.linkFinalStateView(data.parentId, id);
+    }
+  }
+
+  private initChoiceStates() {
+    const items = this.app.model.data.elements.choiceStates;
+
+    for (const id in items) {
+      this.createChoiceStateView(id);
+    }
+
+    for (const id in items) {
+      const data = items[id];
+
+      if (!data.parentId) continue;
+
+      this.linkChoiceStateView(data.parentId, id);
     }
   }
 
@@ -221,5 +245,23 @@ export class Initializer {
     this.app.view.children.remove(child, Layer.FinalStates);
     child.parent = parent;
     parent.children.add(child, Layer.FinalStates);
+  }
+
+  private createChoiceStateView(id: string) {
+    const state = new ChoiceState(this.app, id);
+    this.states.data.choiceStates.set(state.id, state);
+    this.states.watch(state);
+    this.app.view.children.add(state, Layer.ChoiceStates);
+  }
+
+  private linkChoiceStateView(parentId: string, childId: string) {
+    const parent = this.states.data.states.get(parentId);
+    const child = this.states.data.choiceStates.get(childId);
+
+    if (!parent || !child) return;
+
+    this.app.view.children.remove(child, Layer.ChoiceStates);
+    child.parent = parent;
+    parent.children.add(child, Layer.ChoiceStates);
   }
 }

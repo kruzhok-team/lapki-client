@@ -6,6 +6,7 @@ import {
   Transition as TransitionData,
   InitialState as InitialStateData,
   FinalState as FinalStateData,
+  ChoiceState as ChoiceStateData,
 } from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
@@ -59,6 +60,14 @@ export type CreateFinalStateParams = FinalStateData & {
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
+export type CreateChoiceStateParams = ChoiceStateData & {
+  id?: string;
+  placeInCenter?: boolean;
+
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
+  linkByPoint?: boolean;
+};
+
 export type CreateTransitionParams = TransitionData & { id?: string };
 export type ChangeTransitionParams = TransitionData & { id: string };
 

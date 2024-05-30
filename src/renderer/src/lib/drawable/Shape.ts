@@ -85,6 +85,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         ...this.children.getLayer(Layer.States),
         ...this.children.getLayer(Layer.InitialStates),
         ...this.children.getLayer(Layer.FinalStates),
+        ...this.children.getLayer(Layer.ChoiceStates),
         ...this.children.getLayer(Layer.Transitions),
       ] as Shape[];
 
@@ -125,6 +126,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       ...this.children.getLayer(Layer.States),
       ...this.children.getLayer(Layer.InitialStates),
       ...this.children.getLayer(Layer.FinalStates),
+      ...this.children.getLayer(Layer.ChoiceStates),
       ...this.children.getLayer(Layer.Transitions),
     ] as Shape[];
 

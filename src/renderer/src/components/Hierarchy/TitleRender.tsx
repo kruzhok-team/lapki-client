@@ -1,22 +1,32 @@
 import { ReactComponent as InitialStateIcon } from '@renderer/assets/icons/arrow_down_right.svg';
+import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
 import { ReactComponent as FinalStateIcon } from '@renderer/assets/icons/final_state.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition-alt.svg';
 
+import { HierarchyItemData } from './Hierarchy';
+
 import { WithHint } from '../UI';
 
-interface TitleRenderProps {
-  title: string;
+interface TitleRenderProps extends HierarchyItemData {
   search: string;
-  type: 'state' | 'initialState' | 'finalState' | 'transition';
 }
 
-const icons = {
+const icons: Record<
+  HierarchyItemData['type'],
+  React.FunctionComponent<
+    React.SVGProps<SVGSVGElement> & {
+      title?: string | undefined;
+    }
+  >
+> = {
   state: StateIcon,
   initialState: InitialStateIcon,
   transition: TransitionIcon,
   finalState: FinalStateIcon,
+  choiceState: ChoiceStateIcon,
 };
+
 /* Отрисовка заголовка ноды в иерархии состояний, можно подсвечивать подстроку (для отображения поиска) */
 export const TitleRender: React.FC<TitleRenderProps> = (props) => {
   const { type, title, search } = props;

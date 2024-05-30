@@ -1,7 +1,13 @@
 import { Elements, State, Component, ArgList, Transition, Event } from '@renderer/types/diagram';
-import { ArgumentProto, ComponentProto, MethodProto, Platform } from '@renderer/types/platform';
+import {
+  ArgumentProto,
+  ComponentProto,
+  MethodProto,
+  Platform,
+  SignalProto,
+} from '@renderer/types/platform';
 
-import { getProtoComponent, getProtoMethod } from './GraphmlParser';
+import { getProtoComponent, getProtoMethod, getProtoSignal } from './GraphmlParser';
 
 const defaultComponents = {
   System: { onEnter: 'entry', onExit: 'exit' },
@@ -30,9 +36,11 @@ function checkComponent(component: string, components: { [id: string]: Component
 }
 
 function checkMethod(method: string, component: ComponentProto) {
-  if (component.methods[method] === undefined) {
-    throw new Error(`Неизвестный метод ${method}`);
-  }
+  return component.methods[method] !== undefined;
+}
+
+function checkSignal(signal: string, component: ComponentProto) {
+  return component.signals[signal] !== undefined;
 }
 
 function validateEvent(
@@ -54,16 +62,31 @@ function validateEvent(
     if (protoComponent === undefined) {
       throw new Error('Internal error: component didnt be validated');
     }
-    checkMethod(method, protoComponent);
-    const protoMethod: MethodProto | undefined = getProtoMethod(method, protoComponent);
-    if (protoMethod === undefined) {
-      throw new Error('Internal error: method didnt be validated');
+    if (checkMethod(method, protoComponent)) {
+      const protoMethod: MethodProto | undefined = getProtoMethod(method, protoComponent);
+      if (!protoMethod) {
+        throw new Error('Internal error: method is not validated');
+      }
+      validateArgs(method, protoMethod, args);
+      return;
     }
-    validateArgs(method, protoMethod, args);
+    if (checkSignal(method, protoComponent)) {
+      const protoSignal = getProtoSignal(method, protoComponent);
+      if (!protoSignal) {
+        throw new Error('Internal error: signal is not validated');
+      }
+      validateArgs(method, protoSignal, args);
+      return;
+    }
+    throw new Error(`Неизвестный метод ${method}`);
   }
 }
 
-function validateArgs(methodName: string, method: MethodProto, args: ArgList | undefined) {
+function validateArgs(
+  methodName: string,
+  method: MethodProto | SignalProto,
+  args: ArgList | undefined
+) {
   const methodArgs: ArgumentProto[] | undefined = method.parameters;
   if (methodArgs === undefined) {
     if (args !== undefined && Object.keys(args).length != 0) {

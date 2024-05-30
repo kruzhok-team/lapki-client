@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Scale } from '@renderer/components';
 import { useSettings, useModal } from '@renderer/hooks';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { ChoiceState, EventSelection, State, Transition } from '@renderer/lib/drawable';
+import { ChoiceState, EventSelection, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
@@ -25,7 +25,7 @@ export const DiagramEditor: React.FC = () => {
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransitionData, setNewTransitionData] = useState<{
     source: State | ChoiceState;
-    target: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
   }>();
 
   const [isCreateModalOpen, openCreateModal, closeCreateModal] = useModal(false);

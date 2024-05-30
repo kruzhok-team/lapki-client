@@ -1,6 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import {
   ChoiceState,
   FinalState,
@@ -15,7 +14,7 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
-  createTransition: { source: State | ChoiceState; target: State | ChoiceState };
+  createTransition: { source: State | ChoiceState; target: State | ChoiceState | FinalState };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
@@ -263,11 +262,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnFinalState = (state: FinalState) => {
     if (!this.ghost.source) return;
 
-    this.createTransition({
-      color: DEFAULT_TRANSITION_COLOR,
-      source: this.ghost.source.id,
-      target: state.id,
-    });
+    this.emit('createTransition', { source: this.ghost.source, target: state });
 
     this.ghost.clear();
     this.view.isDirty = true;

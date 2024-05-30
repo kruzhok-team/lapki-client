@@ -164,16 +164,15 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex',
+        'absolute right-0 top-0 flex h-full',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
     >
       <Resizable
         enable={{ left: true }}
-        size={{ width: width, height: '100vh' }}
+        size={{ width: width, height: '100%' }}
         minWidth={minWidth}
         maxWidth={maxWidth}
-        maxHeight={topOffset ? 'calc(100vh - 44.19px)' : '100vh'}
         onResize={handleResize}
         className="border-l border-border-primary bg-bg-secondary"
       >

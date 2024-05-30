@@ -24,9 +24,11 @@ export class CanvasEditor {
 
   private rendererUnsubscribe: (() => void) | null | false = null;
 
+  //! Порядок создания важен, так как контроллер при инициализации использует представление
   model = new EditorModel();
   view = new EditorView(this);
   controller = new EditorController(this);
+
   settings: CanvasEditorSettings = {
     animations: true,
     grid: true,

@@ -26,15 +26,12 @@ interface TransitionsControllerEvents {
  * Отрисовывает {@link GhostTransition|«призрачный» переход}.
  */
 export class TransitionsController extends EventEmitter<TransitionsControllerEvents> {
-  ghost!: GhostTransition;
+  ghost: GhostTransition | null = null;
 
   items: Map<string, Transition> = new Map();
 
   constructor(private app: CanvasEditor) {
     super();
-
-    this.ghost = new GhostTransition(this.app);
-    this.app.view.children.add(this.ghost, Layer.GhostTransition);
   }
 
   private get view() {
@@ -218,7 +215,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   handleStartNewTransition = (state: State | ChoiceState) => {
-    this.ghost.setSource(state);
+    this.ghost?.setSource(state);
   };
 
   handleConditionClick = (transition: Transition) => {
@@ -240,42 +237,42 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.ghost.source) return;
+    if (!this.ghost?.source) return;
 
-    this.ghost.setTarget({ x: e.x, y: e.y });
+    this.ghost?.setTarget({ x: e.x, y: e.y });
 
     this.view.isDirty = true;
   };
 
   handleMouseUpOnState = (state: State | ChoiceState) => {
-    if (!this.ghost.source) return;
+    if (!this.ghost?.source) return;
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
-    if (state !== this.ghost.source) {
-      this.emit('createTransition', { source: this.ghost.source, target: state });
+    if (state !== this.ghost?.source) {
+      this.emit('createTransition', { source: this.ghost?.source, target: state });
     }
-    this.ghost.clear();
+    this.ghost?.clear();
 
     this.view.isDirty = true;
   };
 
   handleMouseUpOnFinalState = (state: FinalState) => {
-    if (!this.ghost.source) return;
+    if (!this.ghost?.source) return;
 
     this.createTransition({
       color: DEFAULT_TRANSITION_COLOR,
-      source: this.ghost.source.id,
+      source: this.ghost?.source.id,
       target: state.id,
     });
 
-    this.ghost.clear();
+    this.ghost?.clear();
     this.view.isDirty = true;
   };
 
   handleMouseUp = () => {
-    if (!this.ghost.source) return;
+    if (!this.ghost?.source) return;
 
-    this.ghost.clear();
+    this.ghost?.clear();
     this.view.isDirty = true;
   };
 

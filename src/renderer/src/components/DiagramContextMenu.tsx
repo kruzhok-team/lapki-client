@@ -83,19 +83,21 @@ export const DiagramContextMenu: React.FC = () => {
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует
   const [openMenu, setOpenMenu] = useState('');
 
-  useLayoutEffect(() => {
-    setOpenMenu('');
-  }, [isOpen]);
-
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
-    elements: {
-      reference: getVirtualElement(position) as Element,
-    },
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
 
   useClickOutside(refs.floating.current, onClose, !isOpen);
+
+  // TODO(bryzZz) Два эффекта просто на синхронизацию разных состояний, нужно переделать на один источник истины
+  useLayoutEffect(() => {
+    refs.setPositionReference(getVirtualElement(position));
+  }, [position, refs]);
+
+  useLayoutEffect(() => {
+    setOpenMenu('');
+  }, [isOpen]);
 
   return (
     <div

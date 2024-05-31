@@ -10,6 +10,9 @@ interface UseConditionParams {
   formState: 'submitted' | 'default';
 }
 
+/**
+ * Инкапсуляция логики условия формы {@link CreateModal}
+ */
 export const useCondition = ({ isEditingState, formState }: UseConditionParams) => {
   const editor = useEditorContext();
   const model = editor.model;

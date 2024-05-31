@@ -544,12 +544,20 @@ export class EditorModel {
   }
 
   changeTransition(args: ChangeTransitionParams) {
-    const { id, ...other } = args;
+    const { id, label, ...other } = args;
 
     const transition = this.data.elements.transitions[id] as TransitionData;
     if (!transition) return false;
 
-    this.data.elements.transitions[id] = other;
+    //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
+    // Поэтому данные label нужно не просто перезаписать а соеденять с предыдущими
+    const getNewLabel = () => {
+      if (!label) return undefined;
+
+      return { ...(transition.label ?? {}), ...label };
+    };
+
+    this.data.elements.transitions[id] = { ...other, label: getNewLabel() };
 
     this.triggerDataUpdate('elements.transitions');
 

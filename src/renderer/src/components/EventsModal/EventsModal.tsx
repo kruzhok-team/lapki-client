@@ -41,14 +41,16 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const componentOptions: SelectOption[] = useMemo(() => {
+    if (!controller.platform) return [];
+
     const getComponentOption = (id: string) => {
-      const proto = controller.platform.getComponent(id);
+      const proto = controller.platform!.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -62,7 +64,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   }, [componentsData, isEditingEvent, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent) return [];
+    if (!selectedComponent || !controller.platform) return [];
     const getAll =
       controller.platform[isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
     const getImg = controller.platform[isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
@@ -85,7 +87,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
-    if (!componentName || !method) return;
+    if (!componentName || !method || !controller.platform) return;
 
     let parameters: ArgList = {};
 
@@ -155,6 +157,8 @@ export const EventsModal: React.FC<EventsModalProps> = ({
     }
 
     const init = (event: Event, path: 'signals' | 'methods') => {
+      if (!controller.platform) return;
+
       const { component, method, args = {} } = event;
       const componentProto = controller.platform.getComponent(component);
       const argumentProto = componentProto?.[path][method]?.parameters ?? [];

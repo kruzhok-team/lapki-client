@@ -16,6 +16,7 @@ interface TabProps {
   type: TabType['type'];
   name: string;
   showName: boolean;
+  canClose?: boolean;
   onDragStart: () => void;
   onDrop: () => void;
   onMouseDown: () => void;
@@ -30,6 +31,7 @@ export const Tab: React.FC<TabProps> = (props) => {
     type,
     name,
     showName,
+    canClose = true,
     onDragStart,
     onDrop,
     onMouseDown,
@@ -91,18 +93,20 @@ export const Tab: React.FC<TabProps> = (props) => {
         </span>
       )}
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose();
-        }}
-        className={twMerge(
-          'hover:bg-bg-btn rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100',
-          isActive && 'opacity-100'
-        )}
-      >
-        <CloseIcon className="h-3 w-3" />
-      </button>
+      {canClose && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className={twMerge(
+            'hover:bg-bg-btn rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100',
+            isActive && 'opacity-100'
+          )}
+        >
+          <CloseIcon className="h-3 w-3" />
+        </button>
+      )}
     </div>
   );
 };

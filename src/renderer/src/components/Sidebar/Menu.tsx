@@ -73,6 +73,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         openTab({ type: 'editor', name: 'editor' });
       },
       disabled: !isInitialized || isMounted,
+      // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
       className: 'border-t border-border-primary',
     },
     // {

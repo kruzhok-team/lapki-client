@@ -7,6 +7,7 @@ import {
   InitialState,
   FinalState,
   ChoiceState,
+  GhostTransition,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
@@ -143,6 +144,10 @@ export class Initializer {
     for (const id in items) {
       this.createTransitionView(id);
     }
+
+    // Инициализация призрачного перехода
+    this.transitions.ghost = new GhostTransition(this.app);
+    this.app.view.children.add(this.transitions.ghost, Layer.GhostTransition);
   }
 
   private initNotes() {

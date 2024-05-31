@@ -1,8 +1,13 @@
 import debounce from 'lodash.debounce';
 
+import { EventEmitter } from '@renderer/lib/common';
 import { getColor } from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
+
+interface CanvasEvents {
+  resize: undefined;
+}
 
 /**
  * Класс-прослойка для взаимодействия с JS Canvas API.
@@ -11,16 +16,15 @@ import { CanvasEditor } from '../CanvasEditor';
  * Также данный класс предоставляет метод draw, с помощью которого можно рисовать
  * на самом холсте.
  */
-export class Canvas {
+export class Canvas extends EventEmitter<CanvasEvents> {
   element = document.createElement('canvas');
   context = this.element.getContext('2d') as CanvasRenderingContext2D;
 
   resizeObserver!: ResizeObserver;
 
-  // Не знаю хорошее ли это решение так регистрировать события, если какие-то ещё появятся то нужно на EventEmitter переделать
-  onResize: (() => void) | undefined;
-
   constructor(public app: CanvasEditor) {
+    super();
+
     window.addEventListener('resize', this.resize);
 
     this.resizeObserver = new ResizeObserver(this.resize);
@@ -53,7 +57,7 @@ export class Canvas {
 
     this.clear();
 
-    this.onResize?.();
+    this.emit('resize', undefined);
   }, 10);
 
   draw(callback: (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void) {
@@ -71,6 +75,7 @@ export class Canvas {
   cleanUp() {
     window.removeEventListener('resize', this.resize);
     this.resizeObserver.unobserve(this.app.root);
+    this.reset();
     this.element.remove();
   }
 }

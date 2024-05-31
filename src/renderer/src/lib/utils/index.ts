@@ -80,13 +80,6 @@ interface GetLineParams {
   rectPadding: number;
 }
 
-/**
- * 1. Выбрать стороны которые будут соеденяться
- * 2. Выбрать точку начала линнии
- * 3. Выбрать точку конца линии
- * 4. ы
- */
-
 export const getLine = (params: GetLineParams) => {
   const { rect1, rect2, rectPadding } = params;
 

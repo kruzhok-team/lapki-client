@@ -16,7 +16,7 @@ interface TabProps {
   type: TabType['type'];
   name: string;
   showName: boolean;
-  canClose: boolean;
+  canClose?: boolean;
   onDragStart: () => void;
   onDrop: () => void;
   onMouseDown: () => void;
@@ -31,7 +31,7 @@ export const Tab: React.FC<TabProps> = (props) => {
     type,
     name,
     showName,
-    canClose,
+    canClose = true,
     onDragStart,
     onDrop,
     onMouseDown,

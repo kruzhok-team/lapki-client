@@ -5,6 +5,9 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
+/**
+ * Инкапсуляция логики триггера формы {@link CreateModal}
+ */
 export const useTrigger = (isEditingState: boolean) => {
   const editor = useEditorContext();
   const model = editor.model;
@@ -16,14 +19,16 @@ export const useTrigger = (isEditingState: boolean) => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
   const componentOptions: SelectOption[] = useMemo(() => {
+    if (!controller.platform) return [];
+
     const getComponentOption = (id: string) => {
-      const proto = controller.platform.getComponent(id);
+      const proto = controller.platform!.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -37,7 +42,7 @@ export const useTrigger = (isEditingState: boolean) => {
   }, [componentsData, isEditingState, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent) return [];
+    if (!selectedComponent || !controller.platform) return [];
     const getAll = controller.platform['getAvailableEvents'];
     const getImg = controller.platform['getEventIconUrl'];
 

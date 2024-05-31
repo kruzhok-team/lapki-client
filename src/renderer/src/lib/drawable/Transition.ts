@@ -76,6 +76,10 @@ export class Transition extends Shape {
   private drawLabel(ctx: CanvasRenderingContext2D) {
     if (!this.data.label) return;
 
+    const platform = this.app.controller.platform;
+
+    if (!platform) return;
+
     const { x, y, width, height } = this.drawBounds;
     const eventMargin = picto.eventMargin;
     const p = 15 / this.app.model.data.scale;
@@ -85,7 +89,6 @@ export class Transition extends Shape {
     const fontSize = stateStyle.titleFontSize / this.app.model.data.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
 
-    const platform = this.app.controller.platform;
     const eventRowLength = Math.max(
       3,
       Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1

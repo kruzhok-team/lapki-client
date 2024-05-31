@@ -70,7 +70,10 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
         <ZoomIn width={20} height={20} />
       </button>
 
-      <button className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active" onClick={toggle}>
+      <button
+        className="px-2 text-primary outline-none hover:bg-bg-hover active:bg-bg-active"
+        onClick={toggle}
+      >
         <Question height={20} width={20} />
       </button>
     </div>

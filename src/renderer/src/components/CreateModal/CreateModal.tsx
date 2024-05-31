@@ -252,7 +252,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
   return (
     <Modal
-      title={isEditingState ? `Редактор состояния: ${state?.data.name}` : 'Редактор соединения'}
+      title={isEditingState ? `Редактор состояния: ${state?.data?.name}` : 'Редактор соединения'}
       onSubmit={handleSubmit}
       isOpen={isOpen}
       onRequestClose={onClose}

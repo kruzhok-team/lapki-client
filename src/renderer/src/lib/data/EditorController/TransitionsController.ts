@@ -2,10 +2,11 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import {
-  FinalState,
-  GhostTransition,
   InitialState,
   Note,
+  ChoiceState,
+  FinalState,
+  GhostTransition,
   State,
   Transition,
 } from '@renderer/lib/drawable';
@@ -16,7 +17,7 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
-  createTransition: { source: State | Note; target: State };
+  createTransition: { source: State | ChoiceState | Note; target: State | ChoiceState };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
@@ -226,7 +227,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (node: State | Note) => {
+  handleStartNewTransition = (node: State | ChoiceState | Note) => {
     this.ghost.setSource(node);
   };
 
@@ -257,7 +258,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
-  handleMouseUpOnState = (state: State) => {
+  handleMouseUpOnState = (state: State | ChoiceState) => {
     if (!this.ghost.source) return;
 
     if (this.ghost.source instanceof Note) {
@@ -333,6 +334,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     });
 
     this.ghost.clear();
+
     this.view.isDirty = true;
   };
 
@@ -351,6 +353,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUp = () => {
     if (!this.ghost.source) return;
+
     this.ghost.clear();
     this.view.isDirty = true;
   };

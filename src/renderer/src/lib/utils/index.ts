@@ -35,21 +35,6 @@ export const rotatePoint = (point: Point, origin: Point, angle: number) => {
   return point;
 };
 
-// const getDistanceBetweenPoints = (p1: Point, p2: Point) => {
-//   return (p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2;
-// };
-
-// const getRectangleCenter = (rect: Rectangle): Point => {
-//   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
-// };
-
-// const getDistanceBetweenRectangles = (rect1: Rectangle, rect2: Rectangle) => {
-//   const c1 = getRectangleCenter(rect1);
-//   const c2 = getRectangleCenter(rect2);
-
-//   return getDistanceBetweenPoints(c1, c2);
-// };
-
 const getSectors = (
   rect1Left: number,
   rect1Right: number,
@@ -85,18 +70,37 @@ const getArrowAngle = (start: Point, end: Point) => {
   return start.x >= end.x ? 0 : 180;
 };
 
-export const getLine = (rect1: Rectangle, rect2: Rectangle, rectPadding: number) => {
+interface GetLineParams {
+  rect1: Rectangle;
+  rect2: Rectangle;
+  rect1OnlyFourPoint?: boolean;
+  rect2OnlyFourPoint?: boolean;
+  rect1Padding?: number;
+  rect2Padding?: number;
+  rectPadding: number;
+}
+
+/**
+ * 1. Выбрать стороны которые будут соеденяться
+ * 2. Выбрать точку начала линнии
+ * 3. Выбрать точку конца линии
+ * 4. ы
+ */
+
+export const getLine = (params: GetLineParams) => {
+  const { rect1, rect2, rectPadding } = params;
+
+  const rect1Left = rect1.x;
+  const rect1Right = rect1.x + rect1.width;
+  const rect1Top = rect1.y;
+  const rect1Bottom = rect1.y + rect1.height;
+
   const rect2Left = rect2.x;
   const rect2Right = rect2.x + rect2.width;
   const rect2Top = rect2.y;
   const rect2Bottom = rect2.y + rect2.height;
   const rect2XCenter = rect2.x + rect2.width / 2;
   const rect2YCenter = rect2.y + rect2.height / 2;
-
-  const rect1Left = rect1.x;
-  const rect1Right = rect1.x + rect1.width;
-  const rect1Top = rect1.y;
-  const rect1Bottom = rect1.y + rect1.height;
 
   const { sectorV, sectorH } = getSectors(
     rect1Left,
@@ -207,18 +211,6 @@ export const getLine = (rect1: Rectangle, rect2: Rectangle, rectPadding: number)
   result.ee = getArrowAngle(result.end, result.mid);
 
   return result;
-};
-
-export const getTransitionLines = (
-  state1: Rectangle,
-  state2: Rectangle,
-  condition: Rectangle,
-  rectPadding = 0
-) => {
-  const sourceLine = getLine(state1, condition, rectPadding);
-  const targetLine = getLine(state2, condition, rectPadding);
-
-  return { sourceLine, targetLine };
 };
 
 export const clamp = (value: number, min: number, max: number) => {

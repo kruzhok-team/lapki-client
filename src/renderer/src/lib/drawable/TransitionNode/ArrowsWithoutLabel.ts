@@ -20,11 +20,11 @@ export class ArrowsWithoutLabel implements Drawable {
     const targetBounds = this.parent.target.drawBounds;
     const sourceBounds = this.parent.source.drawBounds;
 
-    const line = getLine(
-      { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-      10
-    );
+    const line = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rectPadding: 10,
+    });
 
     const data = this.parent.data;
 

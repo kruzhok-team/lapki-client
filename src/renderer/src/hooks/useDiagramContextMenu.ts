@@ -64,9 +64,19 @@ export const useDiagramContextMenu = () => {
         },
         {
           label: 'Вставить конечное состояние',
-          type: 'pasteState',
+          type: 'pasteFinalState',
           action: () => {
             editor.controller.states.createFinalState({
+              position: canvasPos,
+              placeInCenter: true,
+            });
+          },
+        },
+        {
+          label: 'Вставить состояние выбора',
+          type: 'pasteChoiceState',
+          action: () => {
+            editor.controller.states.createChoiceState({
               position: canvasPos,
               placeInCenter: true,
             });
@@ -181,6 +191,18 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteFinalState(state.id);
+          },
+        },
+      ]);
+    });
+
+    editor.controller.states.on('choiceStateContextMenu', ({ state, position }) => {
+      handleEvent(position, [
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor.controller.states.deleteChoiceState(state.id);
           },
         },
       ]);

@@ -3,15 +3,25 @@ import throttle from 'lodash.throttle';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DEFAULT_TRANSITION_COLOR, INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
-import { State, EventSelection, InitialState, FinalState } from '@renderer/lib/drawable';
+import {
+  State,
+  EventSelection,
+  InitialState,
+  FinalState,
+  ChoiceState,
+} from '@renderer/lib/drawable';
 import { MyMouseEvent, Layer, DeleteInitialStateParams } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   UnlinkStateParams,
   LinkStateParams,
+  getStatesControllerDefaultData,
+  StatesControllerDataStateType,
+  StateVariant,
 } from '@renderer/lib/types/EditorController';
 import {
   ChangeStateEventsParams,
+  CreateChoiceStateParams,
   CreateFinalStateParams,
   CreateStateParams,
 } from '@renderer/lib/types/EditorModel';
@@ -25,24 +35,16 @@ type DragInfo = {
   childId: string;
 } | null;
 
-type Data = {
-  states: Map<string, State>;
-  initialStates: Map<string, InitialState>;
-  finalStates: Map<string, FinalState>;
-};
-
-type StateType = keyof Data;
-type StateVariant = Data[StateType] extends Map<unknown, infer T> ? T : never;
-
 interface StatesControllerEvents {
-  mouseUpOnState: State;
+  mouseUpOnState: State | ChoiceState;
   mouseUpOnInitialState: InitialState;
   mouseUpOnFinalState: FinalState;
-  startNewTransitionState: State;
+  startNewTransitionState: State | ChoiceState;
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
   finalStateContextMenu: { state: FinalState; position: Point };
+  choiceStateContextMenu: { state: ChoiceState; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -63,11 +65,7 @@ interface StatesControllerEvents {
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
 
-  data: Data = {
-    states: new Map(),
-    initialStates: new Map(),
-    finalStates: new Map(),
-  };
+  data = getStatesControllerDefaultData();
 
   constructor(private app: CanvasEditor) {
     super();
@@ -90,7 +88,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
    */
   get(id: string) {
     for (const key in this.data) {
-      const item = this.data[key as StateType].get(id);
+      const item = this.data[key as StatesControllerDataStateType].get(id);
       if (item) {
         return item;
       }
@@ -102,11 +100,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.data.states.clear();
     this.data.initialStates.clear();
     this.data.finalStates.clear();
+    this.data.choiceStates.clear();
   }
   forEach(callback: (state: StateVariant) => void) {
     this.data.states.forEach(callback);
     this.data.initialStates.forEach(callback);
     this.data.finalStates.forEach(callback);
+    this.data.choiceStates.forEach(callback);
   }
 
   getStates() {
@@ -131,7 +131,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   private getSiblings(
     stateId: string | undefined,
     parentId: string | undefined,
-    stateType: StateType = 'states'
+    stateType: StatesControllerDataStateType = 'states'
   ) {
     return [...this.data[stateType].values()].filter(
       (s) => s.data.parentId === parentId && s.id !== stateId
@@ -708,6 +708,103 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
+  createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
+    const { parentId, position, linkByPoint = true } = params;
+
+    const id = this.app.model.createChoiceState(params);
+
+    const state = new ChoiceState(this.app, id);
+
+    this.data.choiceStates.set(id, state);
+
+    this.view.children.add(state, Layer.ChoiceStates);
+
+    if (parentId) {
+      this.linkChoiceState(id, parentId);
+    } else if (linkByPoint) {
+      const parent = this.getPossibleParentState(position);
+      if (parent) {
+        const newPosition = {
+          x: state.data.position.x - parent.compoundPosition.x,
+          y: state.data.position.y - parent.compoundPosition.y - parent.data.dimensions.height,
+        };
+        this.linkChoiceState(id, parent.id);
+        this.app.model.changeChoiceStatePosition(id, newPosition);
+      }
+    }
+
+    this.watch(state);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createChoiceState',
+        args: { ...params, ...state.data, newStateId: id },
+        numberOfConnectedActions: 0,
+      });
+    }
+
+    this.view.isDirty = true;
+  }
+
+  deleteChoiceState(id: string, canUndo = true) {
+    const state = this.data.choiceStates.get(id);
+    if (!state) return;
+
+    const parentId = state.data.parentId;
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    this.controller.transitions.forEachByStateId(id, (transition) => {
+      this.controller.transitions.deleteTransition(transition.id, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteChoiceState',
+        args: { id, stateData: { ...structuredClone(state.data), parentId } },
+        numberOfConnectedActions,
+      });
+    }
+
+    (state.parent || this.view).children.remove(state, Layer.ChoiceStates); // Отсоединяемся вью от родителя
+    this.unwatch(state); // Убираем обрабочик событий с вью
+    this.data.choiceStates.delete(id); // Удаляем само вью
+    this.app.model.deleteChoiceState(id); // Удаляем модель
+
+    this.view.isDirty = true;
+  }
+
+  changeChoiceStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+    const state = this.data.choiceStates.get(id);
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeChoiceStatePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.app.model.changeChoiceStatePosition(id, endPosition);
+
+    this.view.isDirty = true;
+  }
+
+  private linkChoiceState(stateId: string, parentId: string) {
+    const state = this.data.choiceStates.get(stateId);
+    const parent = this.data.states.get(parentId);
+    if (!state || !parent) return;
+
+    this.app.model.linkChoiceState(stateId, parentId);
+
+    state.parent = parent;
+    this.view.children.remove(state, Layer.ChoiceStates);
+    parent.children.add(state, Layer.ChoiceStates);
+
+    this.view.isDirty = true;
+  }
+
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -808,11 +905,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  handleStartNewTransition = (state: State) => {
+  handleStartNewTransition = (state: State | ChoiceState) => {
     this.emit('startNewTransitionState', state);
   };
 
-  handleMouseUpOnState = (state: State) => {
+  handleMouseUpOnState = (state: State | ChoiceState) => {
     this.emit('mouseUpOnState', state);
   };
 
@@ -957,6 +1054,24 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   };
 
+  handleChoiceStateMouseDown = (state: ChoiceState) => {
+    this.controller.selectChoiceState(state.id);
+  };
+
+  handleChoiceStateDragEnd(
+    state: ChoiceState,
+    e: { dragStartPosition: Point; dragEndPosition: Point }
+  ) {
+    this.changeChoiceStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+  }
+
+  handleChoiceStateContextMenu = (state: ChoiceState, e: { event: MyMouseEvent }) => {
+    this.emit('choiceStateContextMenu', {
+      state,
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
+    });
+  };
+
   watch(state: StateVariant) {
     if (state instanceof State) {
       return this.watchState(state);
@@ -964,6 +1079,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     if (state instanceof FinalState) {
       return this.watchFinalState(state);
+    }
+
+    if (state instanceof ChoiceState) {
+      return this.watchChoiceState(state);
     }
 
     this.watchInitialState(state);
@@ -976,6 +1095,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     if (state instanceof FinalState) {
       return this.unwatchFinalState(state);
+    }
+
+    if (state instanceof ChoiceState) {
+      return this.unwatchChoiceState(state);
     }
 
     this.unwatchInitialState(state);
@@ -1022,5 +1145,21 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnFinalState.bind(this, state));
     state.off('contextmenu', this.handleFinalStateContextMenu.bind(this, state));
+  }
+  private watchChoiceState(state: ChoiceState) {
+    state.on('dragend', this.handleChoiceStateDragEnd.bind(this, state));
+    state.on('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
+    state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
+    state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state));
+
+    state.edgeHandlers.onStartNewTransitionState = this.handleStartNewTransition.bind(this, state);
+  }
+  private unwatchChoiceState(state: ChoiceState) {
+    state.off('dragend', this.handleChoiceStateDragEnd.bind(this, state));
+    state.off('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
+    state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
+    state.off('contextmenu', this.handleChoiceStateContextMenu.bind(this, state));
+
+    state.edgeHandlers.unbindEvents();
   }
 }

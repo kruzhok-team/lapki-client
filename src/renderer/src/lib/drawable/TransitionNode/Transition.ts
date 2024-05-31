@@ -3,7 +3,7 @@ import { ArrowsWithLabel, ArrowsWithoutLabel, Label, Shape } from '@renderer/lib
 import { transitionStyle } from '@renderer/lib/styles';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { Point } from '@renderer/lib/types/graphics';
-import { getLine, getTransitionLines } from '@renderer/lib/utils';
+import { getLine } from '@renderer/lib/utils';
 
 /**
  * Переход между состояниями.
@@ -85,11 +85,11 @@ export class Transition extends Shape {
     const targetBounds = this.target.drawBounds;
     const sourceBounds = this.source.drawBounds;
 
-    const transitionLine = getLine(
-      { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-      10
-    );
+    const transitionLine = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rectPadding: 10,
+    });
 
     return (
       transitionLine ?? {
@@ -162,21 +162,25 @@ export class Transition extends Shape {
     const sourceBounds = this.source.drawBounds;
 
     if (this.data.label) {
-      const { sourceLine, targetLine } = getTransitionLines(
-        { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-        { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-        this.drawBounds,
-        10
-      );
+      const sourceLine = getLine({
+        rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+        rect2: this.drawBounds,
+        rectPadding: 10,
+      });
+      const targetLine = getLine({
+        rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+        rect2: this.drawBounds,
+        rectPadding: 10,
+      });
       return (
         this.checkPointOnLine({ x, y }, sourceLine) || this.checkPointOnLine({ x, y }, targetLine)
       );
     } else {
-      const line = getLine(
-        { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-        { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-        10
-      );
+      const line = getLine({
+        rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+        rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+        rectPadding: 10,
+      });
       return this.checkPointOnLine({ x, y }, line);
     }
   }

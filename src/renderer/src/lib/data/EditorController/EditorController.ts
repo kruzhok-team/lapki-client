@@ -1,6 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { History } from '@renderer/lib/data/History';
-import { State } from '@renderer/lib/drawable';
 import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
 import { AddComponentParams } from '@renderer/lib/types/EditorModel';
 import {
@@ -216,6 +215,12 @@ export class EditorController {
       this.states.deleteState(state.id);
     });
 
+    this.states.data.choiceStates.forEach((state) => {
+      if (!state.isSelected) return;
+
+      this.states.deleteChoiceState(state.id);
+    });
+
     this.transitions.forEach((transition) => {
       if (!transition.isSelected) return;
 
@@ -283,12 +288,23 @@ export class EditorController {
   };
 
   selectState(id: string) {
-    const state = this.states.get(id);
-    if (!state || !(state instanceof State)) return;
+    const state = this.states.data.states.get(id);
+    if (!state) return;
 
     this.removeSelection();
 
     this.app.model.changeStateSelection(id, true);
+
+    state.setIsSelected(true);
+  }
+
+  selectChoiceState(id: string) {
+    const state = this.states.data.choiceStates.get(id);
+    if (!state) return;
+
+    this.removeSelection();
+
+    this.app.model.changeChoiceStateSelection(id, true);
 
     state.setIsSelected(true);
   }
@@ -325,6 +341,12 @@ export class EditorController {
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
   removeSelection() {
+    this.states.data.choiceStates.forEach((state) => {
+      state.setIsSelected(false);
+
+      this.app.model.changeChoiceStateSelection(state.id, false);
+    });
+
     this.states.forEachState((state) => {
       state.setIsSelected(false);
       this.app.model.changeStateSelection(state.id, false);

@@ -31,3 +31,7 @@ export const useSettings = <T extends SettingsKey>(key: T) => {
 
   return [value, setSetting, resetSetting] as const;
 };
+
+export const fullResetSetting = () => {
+  return window.electron.ipcRenderer.invoke('settings:fullReset');
+};

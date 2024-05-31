@@ -7,7 +7,7 @@ import {
   drawCircle,
   drawCurvedLine,
   drawTriangle,
-  getTransitionLines,
+  getLine,
 } from '@renderer/lib/utils';
 
 /**
@@ -20,12 +20,16 @@ export class ArrowsWithLabel implements Drawable {
     const sourceBounds = this.parent.source.drawBounds;
     const targetBounds = this.parent.target.drawBounds;
 
-    const { sourceLine, targetLine } = getTransitionLines(
-      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-      { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      this.parent.drawBounds,
-      10
-    );
+    const sourceLine = getLine({
+      rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect2: this.parent.drawBounds,
+      rectPadding: 10,
+    });
+    const targetLine = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: this.parent.drawBounds,
+      rectPadding: 10,
+    });
 
     const data = this.parent.data;
 

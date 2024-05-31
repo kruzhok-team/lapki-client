@@ -8,7 +8,7 @@ import { State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
-interface EventsBlockModalProps {
+interface EventsBlockProps {
   state: State | undefined;
   transition: Transition | undefined;
   selectedComponent: string | null;
@@ -19,7 +19,7 @@ interface EventsBlockModalProps {
   isOpen: boolean;
 }
 
-export const EventsBlockModal: React.FC<EventsBlockModalProps> = ({
+export const EventsBlock: React.FC<EventsBlockProps> = ({
   state,
   transition,
   selectedComponent,

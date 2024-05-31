@@ -161,6 +161,14 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
     });
   };
 
+  // добавление вкладки с serial monitor
+  const handleAddSerialMonitorTab = () => {
+    openTab({
+      type: 'serialMonitor',
+      name: 'Serial monitor',
+    });
+  };
+
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,
@@ -361,6 +369,13 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
           disabled={flashResult === undefined}
         >
           Результат прошивки
+        </button>
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddSerialMonitorTab}
+          //disabled={flashResult === undefined}
+        >
+          Serial monitor
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           {flasherLog}

@@ -113,11 +113,11 @@ export const EventsBlock: React.FC<EventsBlockProps> = ({
                   'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
                 )}
               >
-                {controller.platform.getFullComponentIcon(data.component)}
+                {controller.platform?.getFullComponentIcon(data.component)}
                 <div className="h-full w-[2px] bg-border-primary"></div>
                 <img
                   style={{ height: '32px', width: '32px' }}
-                  src={controller.platform.getActionIconUrl(data.component, data.method, true)}
+                  src={controller.platform?.getActionIconUrl(data.component, data.method, true)}
                 />
               </div>
               <div className="flex items-center">

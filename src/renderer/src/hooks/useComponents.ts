@@ -23,7 +23,7 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const controller = editor?.controller;
+    const controller = editor.controller;
     const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
@@ -32,7 +32,10 @@ export const useComponents = () => {
   };
 
   const onRequestEditComponent = (idx: string) => {
-    const controller = editor?.controller;
+    const controller = editor.controller;
+
+    if (!controller.platform) return;
+
     const component = components[idx];
     if (typeof component === 'undefined') return;
     const proto = controller?.platform.data.components[component.type];
@@ -48,7 +51,10 @@ export const useComponents = () => {
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const controller = editor?.controller;
+    const controller = editor.controller;
+
+    if (!controller.platform) return;
+
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме

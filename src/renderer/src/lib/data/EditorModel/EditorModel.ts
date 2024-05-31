@@ -42,7 +42,7 @@ export class EditorModel {
   files = new FilesManager(this);
   serializer = new Serializer(this);
 
-  resetEditor?: () => void;
+  constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
   init(basename: string | null, name: string, elements: Elements) {
     this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
@@ -57,10 +57,12 @@ export class EditorModel {
     this.data.isInitialized = true;
     this.data.isMounted = prevMounted;
 
+    this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
+
     this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
     if (this.data.isMounted) {
-      this.resetEditor?.();
+      this.resetEditor();
     }
   }
 

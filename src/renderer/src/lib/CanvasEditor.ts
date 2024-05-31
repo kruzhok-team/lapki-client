@@ -25,7 +25,15 @@ export class CanvasEditor {
   private rendererUnsubscribe: (() => void) | null | false = null;
 
   //! Порядок создания важен, так как контроллер при инициализации использует представление
-  model = new EditorModel();
+  model = new EditorModel(
+    () => {
+      this.controller.initPlatform();
+    },
+    () => {
+      this.controller.loadData();
+      this.controller.history.clear();
+    }
+  );
   view = new EditorView(this);
   controller = new EditorController(this);
 
@@ -33,13 +41,6 @@ export class CanvasEditor {
     animations: true,
     grid: true,
   };
-
-  constructor() {
-    this.model.resetEditor = () => {
-      this.controller.loadData();
-      this.controller.history.clear();
-    };
-  }
 
   // геттеры для удобства, чтобы после монтирования редактора можно было бы ими нормально пользоваться а до монтирования ошибки
   get root() {

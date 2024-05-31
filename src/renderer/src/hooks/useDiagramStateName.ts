@@ -25,7 +25,7 @@ export const useDiagramStateName = () => {
   useEffect(() => {
     if (!editor) return;
 
-    editor.controller.states.on('changeStateName', (state) => {
+    const handler = (state: State) => {
       const globalOffset = editor.view.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {
@@ -37,7 +37,13 @@ export const useDiagramStateName = () => {
       setState(state);
       setSizes(state.computedTitleSizes);
       setIsOpen(true);
-    });
+    };
+
+    editor.controller.states.on('changeStateName', handler);
+
+    return () => {
+      editor.controller.states.off('changeStateName', handler);
+    };
   }, [editor]);
 
   return { isOpen, onClose, state, position, sizes, onRename };

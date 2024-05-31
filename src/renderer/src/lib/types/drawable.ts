@@ -9,6 +9,7 @@ export interface GetCapturedNodeParams {
 
 export enum Layer {
   States,
+  ChoiceStates,
   InitialStates,
   FinalStates,
   Transitions,

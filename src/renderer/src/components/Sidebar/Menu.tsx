@@ -1,8 +1,18 @@
 import React, { useLayoutEffect } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
 import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useTabs } from '@renderer/store/useTabs';
+
+interface MenuItem {
+  text: string;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+}
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -19,11 +29,14 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
   const isStale = model.useData('isStale');
   const isInitialized = model.useData('isInitialized');
+  const isMounted = model.useData('isMounted');
 
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 
-  const items = [
+  const openTab = useTabs((state) => state.openTab);
+
+  const items: MenuItem[] = [
     {
       text: 'Создать...',
       onClick: props.onRequestNewFile,
@@ -53,6 +66,15 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Свойства',
       onClick: openPropertiesModalOpen,
       disabled: !isInitialized,
+    },
+    {
+      text: 'Открыть редактор',
+      onClick: () => {
+        openTab({ type: 'editor', name: 'editor' });
+      },
+      disabled: !isInitialized || isMounted,
+      // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
+      className: 'border-t border-border-primary',
     },
     // {
     //   text: 'Примеры',
@@ -85,10 +107,13 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false }) => (
+      {items.map(({ text, onClick, disabled = false, className }) => (
         <button
           key={text}
-          className="px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled"
+          className={twMerge(
+            'px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+            className
+          )}
           onClick={onClick}
           disabled={disabled}
         >

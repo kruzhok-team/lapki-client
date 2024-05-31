@@ -24,7 +24,7 @@ import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
-  type: 'state' | 'initialState' | 'finalState' | 'transition';
+  type: 'state' | 'initialState' | 'finalState' | 'choiceState' | 'transition';
 }
 
 export const Hierarchy: React.FC = () => {
@@ -37,6 +37,7 @@ export const Hierarchy: React.FC = () => {
   const states = model.useData('elements.states');
   const initialStates = model.useData('elements.initialStates');
   const finalStates = model.useData('elements.finalStates');
+  const choiceStates = model.useData('elements.choiceStates');
   const transitions = model.useData('elements.transitions');
 
   const [search, setSearch] = useState('');
@@ -89,10 +90,22 @@ export const Hierarchy: React.FC = () => {
       };
     }
 
+    for (const stateId in choiceStates) {
+      data[stateId] = {
+        index: stateId,
+        isFolder: false,
+        data: { title: 'Состояние выбора', type: 'choiceState' },
+        children: [],
+        canRename: false,
+        canMove: false,
+      };
+    }
+
     for (const [stateId, state] of [
       ...Object.entries(states),
       ...Object.entries(initialStates),
       ...Object.entries(finalStates),
+      ...Object.entries(choiceStates),
     ]) {
       if (!state.parentId) {
         data.root.children?.push(stateId);
@@ -104,15 +117,13 @@ export const Hierarchy: React.FC = () => {
 
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const target = states[transition.target] ?? finalStates[transition.target];
-
-      if (!target) continue;
+      const targetName = data[transition.target]?.data?.title;
 
       data[transitionId] = {
         index: transitionId,
         isFolder: false,
         data: {
-          title: target?.name || 'Конечное состояние',
+          title: targetName,
           type: 'transition',
         },
         canRename: false,
@@ -123,7 +134,7 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [finalStates, initialStates, states, transitions]);
+  }, [choiceStates, finalStates, initialStates, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);

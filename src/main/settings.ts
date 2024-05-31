@@ -1,7 +1,7 @@
 import { ipcMain, WebContents } from 'electron';
 import settings from 'electron-settings';
 
-const defaultSettings = {
+export const defaultSettings = {
   doc: {
     host: 'https://lapki-doc.polyus-nt.ru/',
   },
@@ -40,6 +40,11 @@ export const initSettings = (webContents: WebContents) => {
   });
   ipcMain.handle('settings:reset', async (_event, key: string) => {
     await settingsChange(webContents, key, defaultSettings[key]);
+  });
+  ipcMain.handle('settings:fullReset', async (_event) => {
+    for (const key in defaultSettings) {
+      await settingsChange(webContents, key, defaultSettings[key]);
+    }
   });
 };
 

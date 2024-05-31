@@ -5,15 +5,15 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-interface useCreateModalConditionParams {
+interface UseConditionParams {
   isEditingState: boolean;
   formState: 'submitted' | 'default';
 }
 
-export const useCreateModalCondition = ({
-  isEditingState,
-  formState,
-}: useCreateModalConditionParams) => {
+/**
+ * Инкапсуляция логики условия формы {@link CreateModal}
+ */
+export const useCondition = ({ isEditingState, formState }: UseConditionParams) => {
   const editor = useEditorContext();
   const model = editor.model;
   const componentsData = model.useData('elements.components');
@@ -32,7 +32,7 @@ export const useCreateModalCondition = ({
   const [argsParam1, setArgsParam1] = useState<string | number | null>(null);
   const [argsParam2, setArgsParam2] = useState<string | number | null>(null);
 
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
   const [isParamOneInput1, setIsParamOneInput1] = useState(true);
   const [isParamOneInput2, setIsParamOneInput2] = useState(true);
   const handleChangeConditionShow = (value: boolean) => setShow(value);

@@ -1,6 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { State } from '@renderer/lib/drawable';
+import { ChoiceState, State } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -16,7 +16,7 @@ import {
  * Используется для визуализации создаваемого перехода.
  */
 export class GhostTransition {
-  source!: State | null;
+  source!: State | ChoiceState | null;
   target!: Point | null;
 
   constructor(private app: CanvasEditor) {}
@@ -26,15 +26,15 @@ export class GhostTransition {
 
     const sourceBounds = this.source.drawBounds;
 
-    const line = getLine(
-      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-      {
+    const line = getLine({
+      rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect2: {
         ...this.target,
         width: 1,
         height: 1,
       },
-      10
-    );
+      rectPadding: 10,
+    });
 
     ctx.lineWidth = transitionStyle.width;
     ctx.fillStyle = DEFAULT_TRANSITION_COLOR;
@@ -48,7 +48,7 @@ export class GhostTransition {
     drawTriangle(ctx, line.end, 10 / this.app.model.data.scale, degrees_to_radians(line.ee));
   }
 
-  setSource(state: State) {
+  setSource(state: State | ChoiceState) {
     this.source = state;
   }
 

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { Buffer } from 'buffer';
 
+import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
 import {
   CompilerSettings,
   CompilerResult,
@@ -250,35 +251,15 @@ export class Compiler {
       console.log(mainPlatform, subPlatform);
       switch (mainPlatform) {
         case 'ArduinoUno': {
-          ws.send('arduino');
+          ws.send('cgml');
           this.mode = 'compile';
-          const compilerSettings: CompilerSettings = {
-            compiler: 'arduino-cli',
-            filename: this.filename,
-            flags: ['-b', 'arduino:avr:uno'],
-          };
-          const obj = {
-            ...(data as Elements),
-            transitions: Object.values((data as Elements).transitions),
-            compilerSettings: compilerSettings,
-          };
-          ws.send(JSON.stringify(obj));
+          ws.send(exportCGML(data as Elements));
           break;
         }
         case 'ArduinoMicro': {
-          ws.send('arduino');
+          ws.send('cgml');
           this.mode = 'compile';
-          const compilerSettings: CompilerSettings = {
-            compiler: 'arduino-cli',
-            filename: this.filename,
-            flags: ['-b', 'arduino:avr:micro'],
-          };
-          const obj = {
-            ...(data as Elements),
-            transitions: Object.values((data as Elements).transitions),
-            compilerSettings: compilerSettings,
-          };
-          ws.send(JSON.stringify(obj));
+          ws.send(exportCGML(data as Elements));
           break;
         }
         case 'BearlogaDefendImport':

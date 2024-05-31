@@ -13,6 +13,7 @@ import {
   CGMLNote,
 } from '@kruzhok-team/cyberiadaml-js';
 
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import {
   ArgList,
   EventData,
@@ -29,6 +30,7 @@ import {
   FinalState,
   Note,
 } from '@renderer/types/diagram';
+import { Platform } from '@renderer/types/platform';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
@@ -40,6 +42,7 @@ function exportMeta(meta: Meta): CGMLMeta {
     values: {
       ...meta,
       standardVersion: '1.0',
+      platformVersion: '1.0',
     },
   };
 }
@@ -63,10 +66,21 @@ function serializeEvent(trigger: Event): string {
   }
 }
 
-function serializeActions(actions: Action[]): string {
+function serializeActions(
+  actions: Action[],
+  components: { [id: string]: Component },
+  platform: Platform
+): string {
   let serialized = '';
+  const isArduino = platform.name?.startsWith('Arduino');
+  const delimeter = isArduino ? ';' : '';
   for (const action of actions) {
-    serialized += `${action.component}.${action.method}(${serializeArgs(action.args)})\n`;
+    const component = components[action.component];
+    const platformComponent = platform.components[component.type];
+    const actionDelimeter = platformComponent.singletone && isArduino ? '::' : '.';
+    serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
+      action.args
+    )})${delimeter}\n`;
   }
   return serialized.trim();
 }
@@ -74,7 +88,9 @@ function serializeActions(actions: Action[]): string {
 export function serializeTransitionEvents(
   doActions: Action[] | undefined,
   trigger: Event | undefined,
-  condition: null | undefined | Condition
+  condition: null | undefined | Condition,
+  platform: Platform,
+  components: { [id: string]: Component }
 ): CGMLTransitionAction[] {
   return [
     {
@@ -82,32 +98,40 @@ export function serializeTransitionEvents(
         event: trigger ? serializeEvent(trigger) : undefined,
         condition: condition ? serializeCondition(condition) : undefined,
       },
-      action: doActions ? serializeActions(doActions) : undefined,
+      action: doActions ? serializeActions(doActions, components, platform) : undefined,
     },
   ];
 }
 
-export function serializeStateEvents(events: EventData[]): CGMLAction[] {
+export function serializeStateEvents(
+  events: EventData[],
+  platform: Platform,
+  components: { [id: string]: Component }
+): CGMLAction[] {
   const serializedActions: CGMLAction[] = [];
   for (const event of events) {
     serializedActions.push({
       trigger: {
         event: serializeEvent(event.trigger),
       },
-      action: serializeActions(event.do),
+      action: serializeActions(event.do, components, platform),
     });
   }
   return serializedActions;
 }
 
-function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
+function serializeStates(
+  states: { [id: string]: State },
+  platform: Platform,
+  components: { [id: string]: Component }
+): { [id: string]: CGMLState } {
   const cgmlStates: { [id: string]: CGMLState } = {};
   for (const id in states) {
     const state: State = states[id];
     cgmlStates[id] = {
       name: state.name,
       unsupportedDataNodes: [],
-      actions: serializeStateEvents(state.events),
+      actions: serializeStateEvents(state.events, platform, components),
       parent: state.parentId,
       color: state.color,
       bounds: {
@@ -178,7 +202,9 @@ function serializeVertex(
 }
 
 function serializeTransitions(
-  transitions: Record<string, Transition>
+  transitions: Record<string, Transition>,
+  platform: Platform,
+  components: { [id: string]: Component }
 ): Record<string, CGMLTransition> {
   const cgmlTransitions: Record<string, CGMLTransition> = {};
   for (const id in transitions) {
@@ -200,7 +226,9 @@ function serializeTransitions(
     cgmlTransition.actions = serializeTransitionEvents(
       transition.label.do,
       transition.label.trigger,
-      transition.label.condition
+      transition.label.condition,
+      platform,
+      components
     );
     cgmlTransitions[id] = cgmlTransition;
   }
@@ -287,16 +315,27 @@ function serializeComponents(components: { [id: string]: Component }): {
   return cgmlComponents;
 }
 
+let delimeter = '';
+
 export function exportCGML(elements: Elements): string {
+  delimeter = '';
+  const platform = getPlatform(elements.platform);
+  if (!platform) {
+    throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
+  }
   const cgmlElements: CGMLElements = emptyCGMLElements();
   cgmlElements.meta = exportMeta(elements.meta);
-  cgmlElements.format = 'Cyberiada-GraphML';
+  cgmlElements.format = 'Cyberiada-GraphML-1.0';
   cgmlElements.platform = elements.platform;
   if (elements.platform.startsWith('Arduino')) {
     cgmlElements.components = serializeComponents(elements.components);
   }
-  cgmlElements.states = serializeStates(elements.states);
-  cgmlElements.transitions = serializeTransitions(elements.transitions);
+  cgmlElements.states = serializeStates(elements.states, platform, elements.components);
+  cgmlElements.transitions = serializeTransitions(
+    elements.transitions,
+    platform,
+    elements.components
+  );
   cgmlElements.notes = serializeNotes(elements.notes);
   cgmlElements.initialStates = serializeVertex(elements.initialStates, 'initial');
   cgmlElements.finals = serializeVertex(elements.finalStates, 'final');

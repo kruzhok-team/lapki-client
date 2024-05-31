@@ -113,9 +113,13 @@ function initArgList(args: string[]): ArgList {
 }
 
 function parseAction(unproccessedAction: string): Action | undefined {
-  const [componentName, action] = unproccessedAction.trim().split('.');
+  let [componentName, action] = unproccessedAction.trim().split('.');
   if (action === undefined) {
     return;
+  }
+  // Если в конце действия стоит делимитер, удаляем его
+  if (!action.endsWith(')')) {
+    action = action.slice(0, -1);
   }
   // На случай, если действий у события нет
   const bracketPos = action.indexOf('(');

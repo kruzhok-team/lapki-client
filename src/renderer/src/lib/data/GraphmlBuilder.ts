@@ -315,10 +315,7 @@ function serializeComponents(components: { [id: string]: Component }): {
   return cgmlComponents;
 }
 
-let delimeter = '';
-
 export function exportCGML(elements: Elements): string {
-  delimeter = '';
   const platform = getPlatform(elements.platform);
   if (!platform) {
     throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');

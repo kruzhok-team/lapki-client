@@ -8,7 +8,6 @@ import { Buffer } from 'buffer';
 
 import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
 import {
-  CompilerSettings,
   CompilerResult,
   Binary,
   SourceFile,

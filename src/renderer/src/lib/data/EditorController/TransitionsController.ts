@@ -1,5 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
+import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import {
   InitialState,
   Note,
@@ -258,9 +259,13 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUpOnState = (state: State | ChoiceState) => {
     if (!this.ghost?.source) return;
-    // if (this.ghost.source instanceof Note) {
-    //   this.emit('createTransition', { source: this.ghost?.source, target: state });
-    // }
+    if (this.ghost.source instanceof Note) {
+      this.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: this.ghost?.source.id,
+        target: state.id,
+      });
+    }
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
     else if (state !== this.ghost?.source) {
@@ -274,10 +279,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnTransition = (transition: Transition) => {
     if (!this.ghost?.source) return;
 
-    if (this.ghost.source instanceof Note) {
-      if (transition.data.label) {
-        this.emit('createTransition', { source: this.ghost.source, target: transition });
-      }
+    if (this.ghost.source instanceof Note && transition.data.label) {
+      this.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: this.ghost?.source.id,
+        target: transition.id,
+      });
     }
 
     this.ghost.clear();
@@ -290,9 +297,13 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (
       this.ghost.source instanceof Note &&
       //Запрещаем создавать связь комментарию для самого себя
-      this.ghost.source !== this.controller.notes.get(note.id)
+      this.ghost.source !== note
     ) {
-      this.emit('createTransition', { source: this.ghost.source, target: note });
+      this.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: this.ghost?.source.id,
+        target: note.id,
+      });
     }
 
     this.ghost.clear();
@@ -302,7 +313,15 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnInitialState = (state: InitialState) => {
     if (!this.ghost?.source) return;
 
-    this.emit('createTransition', { source: this.ghost.source, target: state });
+    if (this.ghost.source instanceof Note) {
+      this.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: this.ghost?.source.id,
+        target: state.id,
+      });
+    } else {
+      this.emit('createTransition', { source: this.ghost.source, target: state });
+    }
 
     this.ghost?.clear();
     this.view.isDirty = true;
@@ -311,7 +330,15 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnFinalState = (state: FinalState) => {
     if (!this.ghost?.source) return;
 
-    this.emit('createTransition', { source: this.ghost.source, target: state });
+    if (this.ghost.source instanceof Note) {
+      this.createTransition({
+        color: DEFAULT_TRANSITION_COLOR,
+        source: this.ghost?.source.id,
+        target: state.id,
+      });
+    } else {
+      this.emit('createTransition', { source: this.ghost.source, target: state });
+    }
 
     this.ghost?.clear();
     this.view.isDirty = true;

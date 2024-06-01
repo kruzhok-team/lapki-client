@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
-import { State } from '@renderer/lib/drawable';
+import {
+  ChoiceState,
+  EventSelection,
+  FinalState,
+  Note,
+  State,
+  Transition,
+} from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -26,16 +33,13 @@ export const useDiagramContextMenu = () => {
   const onClose = () => setIsOpen(false);
 
   useEffect(() => {
-    if (!editor) return;
-
     const handleEvent = (pos: Point, items: DiagramContextMenuItem[]) => {
       setIsOpen(true);
       setPosition(pos);
       setItems(items);
     };
 
-    // контекстное меню для пустого поля
-    editor.view.on('contextMenu', (position) => {
+    const handleViewContextMenu = (position: Point) => {
       const mouseOffset = editor.view.app.mouse.getOffset();
       const canvasPos = editor.view.relativeMousePos({
         x: position.x - mouseOffset.x,
@@ -115,10 +119,10 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
+    };
+    const handleStateContextMenu = (data: { state: State; position: Point }) => {
+      const { state, position } = data;
 
-    // контекстное меню для состояния
-    editor.controller.states.on('stateContextMenu', ({ state, position }) => {
       handleEvent(position, [
         {
           label: 'Копировать',
@@ -182,9 +186,10 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
+    };
+    const handleFinalStateContextMenu = (data: { state: FinalState; position: Point }) => {
+      const { state, position } = data;
 
-    editor.controller.states.on('finalStateContextMenu', ({ state, position }) => {
       handleEvent(position, [
         {
           label: 'Удалить',
@@ -194,9 +199,10 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
+    };
+    const handleChoiceStateContextMenu = (data: { state: ChoiceState; position: Point }) => {
+      const { state, position } = data;
 
-    editor.controller.states.on('choiceStateContextMenu', ({ state, position }) => {
       handleEvent(position, [
         {
           label: 'Удалить',
@@ -206,10 +212,13 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
-
-    // контекстное меню для события
-    editor.controller.states.on('eventContextMenu', ({ state, position, event }) => {
+    };
+    const handleEventContextMenu = (data: {
+      state: State;
+      position: Point;
+      event: EventSelection;
+    }) => {
+      const { state, position, event } = data;
       handleEvent(position, [
         {
           label: 'Удалить',
@@ -219,10 +228,10 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
+    };
+    const handleTransitionContextMenu = (data: { transition: Transition; position: Point }) => {
+      const { transition, position } = data;
 
-    // контекстное меню для связи
-    editor.controller.transitions.on('transitionContextMenu', ({ transition, position }) => {
       const source = (state: State) => {
         return {
           label: state.eventBox.parent.data.name,
@@ -313,9 +322,10 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
+    };
+    const handleNoteContextMenu = (data: { note: Note; position: Point }) => {
+      const { note, position } = data;
 
-    editor.controller.notes.on('contextMenu', ({ note, position }) => {
       handleEvent(position, [
         {
           label: 'Редактировать',
@@ -332,7 +342,30 @@ export const useDiagramContextMenu = () => {
           },
         },
       ]);
-    });
+    };
+
+    // контекстное меню для пустого поля
+    editor.view.on('contextMenu', handleViewContextMenu);
+    // контекстное меню для состояний
+    editor.controller.states.on('stateContextMenu', handleStateContextMenu);
+    editor.controller.states.on('finalStateContextMenu', handleFinalStateContextMenu);
+    editor.controller.states.on('choiceStateContextMenu', handleChoiceStateContextMenu);
+    // контекстное меню для события
+    editor.controller.states.on('eventContextMenu', handleEventContextMenu);
+    // контекстное меню для связи
+    editor.controller.transitions.on('transitionContextMenu', handleTransitionContextMenu);
+    editor.controller.notes.on('contextMenu', handleNoteContextMenu);
+
+    //! Не забывать удалять слушатели
+    return () => {
+      editor.view.off('contextMenu', handleViewContextMenu);
+      editor.controller.states.off('stateContextMenu', handleStateContextMenu);
+      editor.controller.states.off('finalStateContextMenu', handleFinalStateContextMenu);
+      editor.controller.states.off('choiceStateContextMenu', handleChoiceStateContextMenu);
+      editor.controller.states.off('eventContextMenu', handleEventContextMenu);
+      editor.controller.transitions.off('transitionContextMenu', handleTransitionContextMenu);
+      editor.controller.notes.off('contextMenu', handleNoteContextMenu);
+    };
   }, [editor, openTab]);
 
   return { isOpen, onClose, items, position };

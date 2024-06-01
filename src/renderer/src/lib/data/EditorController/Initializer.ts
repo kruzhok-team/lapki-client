@@ -1,5 +1,4 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
 import {
   State,
   Note,
@@ -7,6 +6,7 @@ import {
   InitialState,
   FinalState,
   ChoiceState,
+  GhostTransition,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
@@ -26,7 +26,6 @@ export class Initializer {
     this.initChoiceStates();
     this.initTransitions();
     this.initNotes();
-    this.initPlatform();
     this.initComponents();
 
     this.app.view.viewCentering();
@@ -143,6 +142,10 @@ export class Initializer {
     for (const id in items) {
       this.createTransitionView(id);
     }
+
+    // Инициализация призрачного перехода
+    this.transitions.ghost = new GhostTransition(this.app);
+    this.app.view.children.add(this.transitions.ghost, Layer.GhostTransition);
   }
 
   private initNotes() {
@@ -154,6 +157,8 @@ export class Initializer {
   }
 
   private initComponents() {
+    if (!this.platform) return;
+
     const items = this.app.model.data.elements.components;
 
     for (const name in items) {
@@ -164,18 +169,6 @@ export class Initializer {
         color: component.parameters['labelColor'],
       });
     }
-  }
-
-  private initPlatform() {
-    const platformName = this.app.model.data.elements.platform;
-
-    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformName);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
-    }
-
-    this.app.controller.platform = platform;
   }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта

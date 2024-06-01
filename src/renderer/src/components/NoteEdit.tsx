@@ -38,7 +38,7 @@ export const NoteEdit: React.FC = () => {
   }, [handleClose]);
 
   useEffect(() => {
-    editor.controller.notes.on('change', (note) => {
+    const handler = (note: Note) => {
       const el = ref.current;
       if (!el) return;
 
@@ -66,7 +66,13 @@ export const NoteEdit: React.FC = () => {
       el.textContent = note.data.text;
       setTimeout(() => placeCaretAtEnd(el), 0); // А ты думал легко сфокусировать и установить картеку в конец?
       open();
-    });
+    };
+
+    editor.controller.notes.on('change', handler);
+
+    return () => {
+      editor.controller.notes.off('change', handler);
+    };
   }, [editor, open]);
 
   return (

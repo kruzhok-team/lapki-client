@@ -49,7 +49,6 @@ export const Tabs: React.FC = () => {
             type={type}
             name={name}
             showName={type !== 'editor'}
-            canClose={type !== 'editor'}
             onDragStart={() => handleDrag(name)}
             onDrop={() => handleDrop(name)}
             onMouseDown={() => setActiveTab(name)}

@@ -10,6 +10,9 @@ interface UseConditionParams {
   formState: 'submitted' | 'default';
 }
 
+/**
+ * Инкапсуляция логики условия формы {@link CreateModal}
+ */
 export const useCondition = ({ isEditingState, formState }: UseConditionParams) => {
   const editor = useEditorContext();
   const model = editor.model;
@@ -37,14 +40,16 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
   const handleParamOneInput2 = (value: boolean) => setIsParamOneInput2(value);
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
+    if (!controller.platform) return [];
+
     const getComponentOption = (id: string) => {
-      const proto = controller.platform.getComponent(id);
+      const proto = controller.platform!.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -58,14 +63,16 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
   }, [componentsData, isEditingState, controller]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
+    if (!controller.platform) return [];
+
     const getComponentOption = (id: string) => {
-      const proto = controller.platform.getComponent(id);
+      const proto = controller.platform!.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -79,7 +86,7 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
   }, [componentsData, isEditingState, controller]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam1) return [];
+    if (!selectedComponentParam1 || !controller.platform) return [];
     const getAll = controller.platform['getAvailableVariables'];
     const getImg = controller.platform['getVariableIconUrl'];
 
@@ -102,7 +109,7 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
   }, [controller, selectedComponentParam1]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam2) return [];
+    if (!selectedComponentParam2 || !controller.platform) return [];
     const getAll = controller.platform['getAvailableVariables'];
     const getImg = controller.platform['getVariableIconUrl'];
 

@@ -14,6 +14,10 @@ export class Label implements Drawable {
     const label = this.parent.data.label;
     if (!label) return;
 
+    const platform = this.app.controller.platform;
+
+    if (!platform) return;
+
     const { x, y, width, height } = this.parent.drawBounds;
     const eventMargin = picto.eventMargin;
     const p = 15 / this.app.model.data.scale;
@@ -23,7 +27,6 @@ export class Label implements Drawable {
     const fontSize = stateStyle.titleFontSize / this.app.model.data.scale;
     const opacity = this.parent.data.selection ? 1.0 : 0.7;
 
-    const platform = this.app.controller.platform;
     const eventRowLength = Math.max(
       3,
       Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1

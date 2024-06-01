@@ -3,7 +3,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Scale } from '@renderer/components';
 import { useSettings, useModal } from '@renderer/hooks';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { EventSelection, Note, State, Transition, ChoiceState } from '@renderer/lib/drawable';
+import {
+  EventSelection,
+  Note,
+  State,
+  Transition,
+  ChoiceState,
+  FinalState,
+} from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
@@ -25,7 +33,7 @@ export const DiagramEditor: React.FC = () => {
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransitionData, setNewTransitionData] = useState<{
     source: State | ChoiceState | Note;
-    target: State | ChoiceState;
+    target: State | Transition | ChoiceState | FinalState;
   }>();
 
   const [isCreateModalOpen, openCreateModal, closeCreateModal] = useModal(false);
@@ -51,50 +59,66 @@ export const DiagramEditor: React.FC = () => {
       setNewTransitionData(undefined);
     };
 
-    editor.view.on('dblclick', (position) => {
+    const handleDblclick = (position: Point) => {
       editor.controller.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
         color: DEFAULT_STATE_COLOR,
       });
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования ноды
-    editor.controller.states.on('changeState', (state) => {
+    const handleChangeState = (state: State) => {
       ClearUseState();
       setState(state);
       openCreateModal();
-    });
+    };
 
-    editor.controller.states.on('changeEvent', (data) => {
+    const handleChangeEvent = (data: {
+      state: State;
+      eventSelection: EventSelection;
+      event: Event;
+      isEditingEvent: boolean;
+    }) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       ClearUseState();
       setEventsModalParentData({ state, eventSelection });
       setEventsModalData({ event, isEditingEvent });
       openEventsModal();
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.controller.transitions.on('changeTransition', (target) => {
+    const handleChangeTransition = (transition: Transition) => {
       ClearUseState();
-      setEvents(target.data.label?.do ?? []);
-      setTransition(target);
+      setEvents(transition.data.label?.do ?? []);
+      setTransition(transition);
       openCreateModal();
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования новой связи
-    editor.controller.transitions.on('createTransition', (data) => {
+    const handleCreateTransition = (data: {
+      source: State | ChoiceState | Note;
+      target: State | Transition | ChoiceState | FinalState;
+    }) => {
       ClearUseState();
       setNewTransitionData(data);
       openCreateModal();
-    });
+    };
 
+    editor.view.on('dblclick', handleDblclick);
+    editor.controller.states.on('changeState', handleChangeState);
+    editor.controller.states.on('changeEvent', handleChangeEvent);
+    editor.controller.transitions.on('changeTransition', handleChangeTransition);
+    editor.controller.transitions.on('createTransition', handleCreateTransition);
+
+    //! Не забывать удалять слушатели
     return () => {
-      // снятие слежки произойдёт по смене редактора новым
-      // model.unwatchEditor();
-      editor?.cleanUp();
+      editor.view.off('dblclick', handleDblclick);
+      editor.controller.states.off('changeState', handleChangeState);
+      editor.controller.states.off('changeEvent', handleChangeEvent);
+      editor.controller.transitions.off('changeTransition', handleChangeTransition);
+      editor.controller.transitions.off('createTransition', handleCreateTransition);
+
+      editor.unmount();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.
     // Скорее всего, контейнер меняться уже не будет, поэтому

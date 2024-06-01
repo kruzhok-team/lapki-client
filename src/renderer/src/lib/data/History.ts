@@ -417,7 +417,9 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeChoiceStatePosition: (args) => ({
     name: 'Перемещение состояния выбора',
-    description: `Было: "${args.startPosition}"\nСтало: ${args.endPosition}`,
+    description: `Было: "${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
 
   createTransition: (args) => ({ name: 'Создание перехода', description: `Id: ${args.id}` }),

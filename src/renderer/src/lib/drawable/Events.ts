@@ -126,6 +126,9 @@ export class Events {
 
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
+    const platform = this.app.controller.platform;
+    if (!platform) return;
+
     const { x, y, width } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / this.app.model.data.scale;
 
@@ -139,8 +142,6 @@ export class Events {
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
-
-    const platform = this.app.controller.platform;
 
     let eventRow = 0;
     ctx.beginPath();

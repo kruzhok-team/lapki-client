@@ -14,12 +14,14 @@ import {
   CreateNoteParams,
   CreateStateParams,
   CreateFinalStateParams,
+  CreateChoiceStateParams,
 } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import { roundPoint } from '@renderer/lib/utils';
 import {
   State as StateData,
   FinalState as FinalStateData,
+  ChoiceState as ChoiceStateData,
   Transition as TransitionData,
   Note as NoteData,
   Action as EventAction,
@@ -46,6 +48,10 @@ export type PossibleActions = {
   createFinalState: CreateFinalStateParams & { newStateId: string };
   deleteFinalState: { id: string; stateData: FinalStateData };
   changeFinalStatePosition: { id: string; startPosition: Point; endPosition: Point };
+
+  createChoiceState: CreateChoiceStateParams & { newStateId: string };
+  deleteChoiceState: { id: string; stateData: ChoiceStateData };
+  changeChoiceStatePosition: { id: string; startPosition: Point; endPosition: Point };
 
   createTransition: { id: string; params: CreateTransitionParams };
   deleteTransition: { transition: Transition; prevData: TransitionData };
@@ -198,6 +204,44 @@ export const actionFunctions: ActionFunctions = {
   changeFinalStatePosition: (sM, { id, startPosition, endPosition }) => ({
     redo: sM.states.changeFinalStatePosition.bind(sM.states, id, startPosition, endPosition, false),
     undo: sM.states.changeFinalStatePosition.bind(sM.states, id, endPosition, startPosition, false),
+  }),
+
+  createChoiceState: (sM, args) => ({
+    redo: sM.states.createChoiceState.bind(
+      sM.states,
+      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      false
+    ),
+    undo: sM.states.deleteChoiceState.bind(sM.states, args.newStateId, false),
+  }),
+  deleteChoiceState: (sM, { id, stateData }) => ({
+    redo: sM.states.deleteChoiceState.bind(sM.states, id, false),
+    undo: sM.states.createChoiceState.bind(
+      sM.states,
+      {
+        id,
+        position: stateData.position,
+        parentId: stateData.parentId,
+        linkByPoint: false,
+      },
+      false
+    ),
+  }),
+  changeChoiceStatePosition: (sM, { id, startPosition, endPosition }) => ({
+    redo: sM.states.changeChoiceStatePosition.bind(
+      sM.states,
+      id,
+      startPosition,
+      endPosition,
+      false
+    ),
+    undo: sM.states.changeChoiceStatePosition.bind(
+      sM.states,
+      id,
+      endPosition,
+      startPosition,
+      false
+    ),
   }),
 
   createTransition: (sM, { id, params }) => ({
@@ -358,6 +402,21 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeFinalStatePosition: (args) => ({
     name: 'Перемещение конечного состояния',
+    description: `Было: "${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
+  }),
+
+  createChoiceState: () => ({
+    name: 'Создание состояния выбора',
+    description: ``,
+  }),
+  deleteChoiceState: () => ({
+    name: 'Удаление состояния выбора',
+    description: ``,
+  }),
+  changeChoiceStatePosition: (args) => ({
+    name: 'Перемещение состояния выбора',
     description: `Было: "${JSON.stringify(
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,

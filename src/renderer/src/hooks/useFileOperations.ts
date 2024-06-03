@@ -62,8 +62,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const handleOpenFromTemplate = (type: string, name: string) => {
-    model.files.createFromTemplate(type, name, openImportError);
+  const handleOpenFromTemplate = async (type: string, name: string) => {
+    await model.files.createFromTemplate(type, name, openImportError);
 
     clearTabs();
     openTab({ type: 'editor', name: 'editor' });

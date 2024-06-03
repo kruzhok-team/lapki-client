@@ -31,6 +31,49 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     super();
   }
 
+  initEvents() {
+    //* Это на будущее
+    // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
+    // this.app.canvas.element.addEventListener('drop', this.handleDrop);
+
+    this.app.keyboard.on('spacedown', this.handleSpaceDown);
+    this.app.keyboard.on('spaceup', this.handleSpaceUp);
+    this.app.keyboard.on('delete', this.app.controller.deleteSelected);
+    this.app.keyboard.on('ctrlz', this.app.controller.history.undo);
+    this.app.keyboard.on('ctrly', this.app.controller.history.redo);
+    this.app.keyboard.on('ctrlc', this.app.controller.copySelected);
+    this.app.keyboard.on('ctrlv', this.app.controller.pasteSelected);
+    this.app.keyboard.on('ctrls', this.app.model.files.save);
+    this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
+
+    this.app.mouse.on('mousedown', this.handleMouseDown);
+    this.app.mouse.on('mouseup', this.handleMouseUp);
+    this.app.mouse.on('mousemove', this.handleMouseMove);
+    this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
+    this.app.mouse.on('wheel', this.handleMouseWheel);
+    this.app.mouse.on('rightclick', this.handleRightMouseClick);
+  }
+
+  //! Не забывать удалять слушатели
+  removeEvents() {
+    this.app.keyboard.off('spacedown', this.handleSpaceDown);
+    this.app.keyboard.off('spaceup', this.handleSpaceUp);
+    this.app.keyboard.off('delete', this.app.controller.deleteSelected);
+    this.app.keyboard.off('ctrlz', this.app.controller.history.undo);
+    this.app.keyboard.off('ctrly', this.app.controller.history.redo);
+    this.app.keyboard.off('ctrlc', this.app.controller.copySelected);
+    this.app.keyboard.off('ctrlv', this.app.controller.pasteSelected);
+    this.app.keyboard.off('ctrls', this.app.model.files.save);
+    this.app.keyboard.off('ctrlshifta', this.app.model.files.saveAs);
+
+    this.app.mouse.off('mousedown', this.handleMouseDown);
+    this.app.mouse.off('mouseup', this.handleMouseUp);
+    this.app.mouse.off('mousemove', this.handleMouseMove);
+    this.app.mouse.off('dblclick', this.handleMouseDoubleClick);
+    this.app.mouse.off('wheel', this.handleMouseWheel);
+    this.app.mouse.off('rightclick', this.handleRightMouseClick);
+  }
+
   get isPan() {
     return this.app.keyboard.spacePressed;
   }
@@ -81,29 +124,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     ctx.stroke();
 
     ctx.closePath();
-  }
-
-  initEvents() {
-    // ! Это на будущее
-    // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
-    // this.app.canvas.element.addEventListener('drop', this.handleDrop);
-
-    this.app.keyboard.on('spacedown', this.handleSpaceDown);
-    this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('delete', this.app.controller.deleteSelected);
-    this.app.keyboard.on('ctrlz', this.app.controller.history.undo);
-    this.app.keyboard.on('ctrly', this.app.controller.history.redo);
-    this.app.keyboard.on('ctrlc', this.app.controller.copySelected);
-    this.app.keyboard.on('ctrlv', this.app.controller.pasteSelected);
-    this.app.keyboard.on('ctrls', this.app.model.files.save);
-    this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
-
-    this.app.mouse.on('mousedown', this.handleMouseDown);
-    this.app.mouse.on('mouseup', this.handleMouseUp);
-    this.app.mouse.on('mousemove', this.handleMouseMove);
-    this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
-    this.app.mouse.on('wheel', this.handleMouseWheel);
-    this.app.mouse.on('rightclick', this.handleRightMouseClick);
   }
 
   getCapturedNode(args: GetCapturedNodeParams) {
@@ -222,7 +242,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     if (node) {
       node.handleMouseDoubleClick(e);
     } else {
-      this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
+      this.emit('dblclick', this.windowToWorldCoords({ x: e.x, y: e.y }));
     }
   };
 
@@ -263,12 +283,23 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.canvas.element.style.cursor = 'default';
   };
 
-  relativeMousePos(e: Point): Point {
+  // Window координаты - это координаты мыши на html canvas элементе
+  // World координаты - это координаты которые учитывают масштаб и смещение
+  windowToWorldCoords(point: Point): Point {
     const scale = this.app.model.data.scale;
     const offset = this.app.model.data.offset;
     return {
-      x: e.x * scale - offset.x,
-      y: e.y * scale - offset.y,
+      x: point.x * scale - offset.x,
+      y: point.y * scale - offset.y,
+    };
+  }
+
+  worldToWindowCoords(point: Point): Point {
+    const scale = this.app.model.data.scale;
+    const offset = this.app.model.data.offset;
+    return {
+      x: (point.x + offset.x) / scale,
+      y: (point.y + offset.y) / scale,
     };
   }
 

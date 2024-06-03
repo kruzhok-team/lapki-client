@@ -21,21 +21,26 @@ export class CanvasEditor {
   private _mouse: Mouse | null = null;
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
-  private _view: EditorView | null = null;
-  private _controller: EditorController | null = null;
 
-  model = new EditorModel();
+  private rendererUnsubscribe: (() => void) | null | false = null;
+
+  //! Порядок создания важен, так как контроллер при инициализации использует представление
+  model = new EditorModel(
+    () => {
+      this.controller.initPlatform();
+    },
+    () => {
+      this.controller.loadData();
+      this.controller.history.clear();
+    }
+  );
+  view = new EditorView(this);
+  controller = new EditorController(this);
+
   settings: CanvasEditorSettings = {
     animations: true,
     grid: true,
   };
-
-  constructor() {
-    this.model.resetEditor = () => {
-      this.controller.loadData();
-      this.controller.history.clear();
-    };
-  }
 
   // геттеры для удобства, чтобы после монтирования редактора можно было бы ими нормально пользоваться а до монтирования ошибки
   get root() {
@@ -68,18 +73,6 @@ export class CanvasEditor {
     }
     return this._render;
   }
-  get view() {
-    if (!this._view) {
-      throw new Error('Cannot access view before initialization');
-    }
-    return this._view;
-  }
-  get controller() {
-    if (!this._controller) {
-      throw new Error('Cannot access controller before initialization');
-    }
-    return this._controller;
-  }
 
   mount(root: HTMLDivElement) {
     this._root = root;
@@ -91,19 +84,16 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    this._controller = new EditorController(this);
-    this._view = new EditorView(this);
-
-    this.canvas.onResize = () => {
+    this.canvas.on('resize', () => {
       this.mouse.setOffset();
       this.view.isDirty = true;
-    };
+    });
 
     preloadPicto(() => {
       this.view.isDirty = true;
     });
 
-    this.render.subscribe(() => {
+    this.rendererUnsubscribe = this.render.subscribe(() => {
       if (this.settings.animations) {
         TWEEN.update();
       }
@@ -133,9 +123,24 @@ export class CanvasEditor {
     }
   }
 
-  cleanUp() {
+  unmount() {
+    this.view.removeEvents();
+
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
     this.mouse.clearUp();
+
+    if (typeof this.rendererUnsubscribe === 'function') {
+      this.rendererUnsubscribe();
+    }
+
+    this._root = null;
+    this._canvas = null;
+    this._mouse = null;
+    this._keyboard = null;
+    this._render = null;
+
+    this.model.data.isMounted = false;
+    this.model.triggerDataUpdate('isMounted');
   }
 }

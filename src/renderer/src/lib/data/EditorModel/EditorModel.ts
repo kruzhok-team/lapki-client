@@ -17,6 +17,7 @@ import {
   Point,
   CreateInitialStateParams,
   CreateFinalStateParams,
+  CreateChoiceStateParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {
@@ -41,7 +42,7 @@ export class EditorModel {
   files = new FilesManager(this);
   serializer = new Serializer(this);
 
-  resetEditor?: () => void;
+  constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
   init(basename: string | null, name: string, elements: Elements) {
     this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
@@ -56,10 +57,12 @@ export class EditorModel {
     this.data.isInitialized = true;
     this.data.isMounted = prevMounted;
 
+    this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
+
     this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
     if (this.data.isMounted) {
-      this.resetEditor?.();
+      this.resetEditor();
     }
   }
 
@@ -370,6 +373,73 @@ export class EditorModel {
     return true;
   }
 
+  createChoiceState(args: CreateChoiceStateParams) {
+    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
+
+    const centerPosition = () => {
+      const size = 50;
+      return {
+        x: position.x - size / 2,
+        y: position.y - size / 2,
+      };
+    };
+
+    this.data.elements.choiceStates[id] = {
+      ...other,
+      position: placeInCenter ? centerPosition() : position,
+    };
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return id;
+  }
+
+  deleteChoiceState(id: string) {
+    const state = this.data.elements.choiceStates[id];
+    if (!state) return false;
+
+    delete this.data.elements.choiceStates[id];
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
+  changeChoiceStatePosition(id: string, position: Point) {
+    const state = this.data.elements.choiceStates[id];
+    if (!state) return false;
+
+    state.position = position;
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
+  linkChoiceState(stateId: string, parentId: string) {
+    const state = this.data.elements.choiceStates[stateId];
+    const parent = this.data.elements.states[parentId];
+
+    if (!state || !parent) return false;
+
+    state.parentId = parentId;
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
+  changeChoiceStateSelection(id: string, selection: boolean) {
+    const state = this.data.elements.choiceStates[id];
+    if (!state) return false;
+
+    state.selection = selection;
+
+    this.triggerDataUpdate('elements.choiceStates');
+
+    return true;
+  }
+
   createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
@@ -476,12 +546,20 @@ export class EditorModel {
   }
 
   changeTransition(args: ChangeTransitionParams) {
-    const { id, ...other } = args;
+    const { id, label, ...other } = args;
 
     const transition = this.data.elements.transitions[id] as TransitionData;
     if (!transition) return false;
 
-    this.data.elements.transitions[id] = other;
+    //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
+    // Поэтому данные label нужно не просто перезаписать а соеденять с предыдущими
+    const getNewLabel = () => {
+      if (!label) return undefined;
+
+      return { ...(transition.label ?? {}), ...label };
+    };
+
+    this.data.elements.transitions[id] = { ...other, label: getNewLabel() };
 
     this.triggerDataUpdate('elements.transitions');
 

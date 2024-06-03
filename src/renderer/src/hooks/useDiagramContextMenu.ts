@@ -41,7 +41,7 @@ export const useDiagramContextMenu = () => {
 
     const handleViewContextMenu = (position: Point) => {
       const mouseOffset = editor.view.app.mouse.getOffset();
-      const canvasPos = editor.view.relativeMousePos({
+      const canvasPos = editor.view.windowToWorldCoords({
         x: position.x - mouseOffset.x,
         y: position.y - mouseOffset.y,
       });
@@ -156,7 +156,7 @@ export const useDiagramContextMenu = () => {
               action: () => {
                 editor.controller.states.createState({
                   name: 'Состояние',
-                  position: editor.view.relativeMousePos(position),
+                  position: editor.view.windowToWorldCoords(position),
                   parentId: state.id,
                   color: DEFAULT_STATE_COLOR,
                 });

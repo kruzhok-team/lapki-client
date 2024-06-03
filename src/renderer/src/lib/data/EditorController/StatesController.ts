@@ -155,7 +155,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       this.linkState({ parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
     } else if (linkByPoint) {
-      const possibleParent = this.getPossibleParentState(position, [state.id]);
+      // TODO(bryzZz) Тут перемешаны разные виды координат, в Shape отлов клика идет по координатам окна, нужно переделать на мировые
+      const possibleParent = this.getPossibleParentState(this.view.worldToWindowCoords(position), [
+        state.id,
+      ]);
       if (possibleParent) {
         this.linkState(
           { parentId: possibleParent.id, childId: state.id, addOnceOff: true },

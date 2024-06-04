@@ -3,14 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Scale } from '@renderer/components';
 import { useSettings, useModal } from '@renderer/hooks';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import {
-  EventSelection,
-  Note,
-  State,
-  Transition,
-  ChoiceState,
-  FinalState,
-} from '@renderer/lib/drawable';
+import { EventSelection, State, Transition, ChoiceState, FinalState } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';

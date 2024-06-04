@@ -32,8 +32,8 @@ export const DiagramEditor: React.FC = () => {
   const [events, setEvents] = useState<Action[]>([]);
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransitionData, setNewTransitionData] = useState<{
-    source: State | ChoiceState | Note;
-    target: State | Transition | ChoiceState | FinalState;
+    source: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
   }>();
 
   const [isCreateModalOpen, openCreateModal, closeCreateModal] = useModal(false);
@@ -96,8 +96,8 @@ export const DiagramEditor: React.FC = () => {
     };
 
     const handleCreateTransition = (data: {
-      source: State | ChoiceState | Note;
-      target: State | Transition | ChoiceState | FinalState;
+      source: State | ChoiceState;
+      target: State | ChoiceState | FinalState;
     }) => {
       ClearUseState();
       setNewTransitionData(data);
@@ -162,9 +162,9 @@ export const DiagramEditor: React.FC = () => {
   };
 
   // TODO(bryzZz) Нужно делить на две модалки
-  // Тут возникло много as any
-  // это потому что для состояния и перехода типы разные но модалка одна
-  // и приходится приводить к какому-то обшему типу
+  // Тут возникло много "as any"
+  // это потому что для состояния и перехода типы разные, но модалка одна
+  // и приходится приводить к какому-то общему типу
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
       editor.controller.states.changeStateEvents({

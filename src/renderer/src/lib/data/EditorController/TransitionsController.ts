@@ -18,8 +18,8 @@ import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
   createTransition: {
-    source: State | ChoiceState | Note;
-    target: State | Transition | ChoiceState | FinalState;
+    source: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
   };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
@@ -319,8 +319,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
         source: this.ghost?.source.id,
         target: state.id,
       });
-    } else {
-      this.emit('createTransition', { source: this.ghost.source, target: state });
     }
 
     this.ghost?.clear();

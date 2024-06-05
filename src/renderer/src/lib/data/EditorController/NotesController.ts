@@ -101,7 +101,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    this.controller.transitions.forEachByTargetId(id, (transition) => {
+    this.controller.transitions.forEachByStateId(id, (transition) => {
       this.controller.transitions.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });

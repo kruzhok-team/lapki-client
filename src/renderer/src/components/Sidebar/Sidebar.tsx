@@ -20,6 +20,7 @@ import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
 
+import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
 import {
   FlasherSelectModal,
@@ -49,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-
+  const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
@@ -99,7 +100,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader compilerData={compilerData} handleHostChange={handleHostChange} />,
+      <Loader
+        compilerData={compilerData}
+        handleHostChange={handleHostChange}
+        openAvrdudeGuideModal={openAvrdudeGuideModal}
+      />,
       <History />,
       <Setting openCompilerSettings={openCompilerSettings} handleHostChange={handleHostChange} />,
     ],
@@ -152,6 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClose={closeFlasherModal}
       />
       <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
+      <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </div>
   );
 };

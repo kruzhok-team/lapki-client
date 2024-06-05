@@ -21,9 +21,14 @@ import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
   handleHostChange: () => void;
+  openAvrdudeGuideModal: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange }) => {
+export const Loader: React.FC<FlasherProps> = ({
+  compilerData,
+  handleHostChange,
+  openAvrdudeGuideModal,
+}) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.avrdude;
@@ -260,7 +265,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
     if (flasherIsLocal && !hasAvrdude) {
       return (
         <div>
-          <button type="button" className="btn-primary mb-2 w-full">
+          <button type="button" className="btn-primary mb-2 w-full" onClick={openAvrdudeGuideModal}>
             Программа avrdude не найдена!
           </button>
         </div>

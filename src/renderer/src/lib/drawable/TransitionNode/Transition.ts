@@ -22,9 +22,6 @@ export class Transition extends Shape {
     this.arrow = this.data.label
       ? new ArrowsWithLabel(this, this.app)
       : new ArrowsWithoutLabel(this, this.app);
-
-    // this.children.add(this.label, Layer.Transitions);
-    // this.children.add(this.arrow, Layer.Transitions);
   }
 
   get data() {

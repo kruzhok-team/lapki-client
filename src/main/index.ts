@@ -6,9 +6,8 @@ import { join } from 'path';
 
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
-import { findFreePort } from './modules/freePortFinder';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initSettings } from './settings';
+import { initSettings, settingsChangeSend } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
@@ -16,7 +15,7 @@ import icon from '../../resources/icon.png?asset';
 /**
  * Создание главного окна редактора.
  */
-function createWindow(): void {
+function createWindow(): BrowserWindow {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     show: false,
@@ -68,9 +67,7 @@ function createWindow(): void {
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
     ModuleManager.stopModule('lapki-flasher');
-    if (process.platform !== 'darwin') {
-      app.exit(0);
-    }
+    app.exit(0);
   });
 
   // Вместо создания новых окон мы передаём ссылку в систему.
@@ -95,15 +92,26 @@ function createWindow(): void {
   }
 
   initSettings(mainWindow.webContents);
+
+  return mainWindow;
 }
+
+const startFlasher = async () => {
+  ModuleManager.startLocalModule('lapki-flasher');
+};
+startFlasher();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
+  const mainWindow = createWindow();
   initFileHandlersIPC();
 
-  ipcMain.handle('Module:reboot', (_event, module: ModuleName) => {
+  ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
     ModuleManager.stopModule(module);
-    ModuleManager.startLocalModule(module);
+    await ModuleManager.startLocalModule(module);
+    if (module === 'lapki-flasher') {
+      settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
+    }
   });
 
   ipcMain.handle('Module:getStatus', (_event, module: ModuleName) => {
@@ -126,16 +134,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  const startFlasher = async () => {
-    const port = await findFreePort();
-    await settings.set('flasher.localPort', port);
-
-    ModuleManager.startLocalModule('lapki-flasher');
-  };
-  startFlasher();
-
-  createWindow();
-
   app.on('activate', function () {
     // Восстановление окна для macOS.
     // После закрытия окон приложение не завершается и висит в доке.
@@ -144,12 +142,8 @@ app.whenReady().then(() => {
 });
 
 // Завершаем приложение, когда окна закрыты.
-// Кроме macOS, там выход явный, через Cmd+Q.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
   ModuleManager.stopModule('lapki-flasher');
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-  //
+  app.quit();
 });

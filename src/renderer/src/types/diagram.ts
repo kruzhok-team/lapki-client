@@ -1,4 +1,4 @@
-import { Point, Rectangle } from './graphics';
+import { Dimensions, Point } from '@renderer/lib/types';
 
 // FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string };
@@ -29,19 +29,28 @@ export type EventData = {
   // TODO: condition?: Condition;
 };
 
-export type State = {
-  parent?: string;
+interface BaseState {
+  parentId?: string;
+  position: Point;
+}
+
+export interface State extends BaseState {
   name: string;
-  bounds: Rectangle;
   events: EventData[];
+  dimensions: Dimensions;
+  color: string;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
-};
+}
 
-export type InitialState = {
-  target: string;
-  position: Point;
-};
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface InitialState extends BaseState {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FinalState extends BaseState {}
+
+export interface ChoiceState extends BaseState {
+  selection?: boolean;
+}
 
 export type Variable = {
   component: string;
@@ -54,21 +63,21 @@ export type Condition = {
   value: Condition[] | Variable | number | string;
 };
 
-export type Transition = {
-  //id: string;
+export interface Transition {
   source: string;
   target: string;
   color: string;
-  position: Point;
-  trigger: Event;
-  condition?: Condition | null;
-  do?: Action[];
-  //TODO: В дальнейшем планируется убрать
+  label?: {
+    position: Point;
+    trigger?: Event;
+    condition?: Condition | null;
+    do?: Action[];
+    //TODO: В дальнейшем планируется убрать
+  };
   selection?: boolean;
-};
+}
 
 export type Component = {
-  transitionId: string;
   type: string;
   parameters: { [key: string]: string };
 };
@@ -81,11 +90,12 @@ export type Note = {
 // Это описание типа схемы которая хранится в json файле
 export type Elements = {
   states: { [id: string]: State };
-  transitions: Record<string, Transition>;
+  initialStates: { [id: string]: InitialState };
+  finalStates: { [id: string]: FinalState };
+  choiceStates: { [id: string]: ChoiceState };
+  transitions: { [id: string]: Transition };
   components: { [id: string]: Component };
-  notes: Record<string, Note>;
-
-  initialState: InitialState | null;
+  notes: { [id: string]: Note };
 
   platform: string;
   parameters?: { [key: string]: string };
@@ -96,10 +106,12 @@ export type Elements = {
 export function emptyElements(): Elements {
   return {
     states: {},
+    initialStates: {},
+    finalStates: {},
+    choiceStates: {},
     transitions: {},
     components: {},
     notes: {},
-    initialState: null,
 
     platform: '',
     parameters: {},

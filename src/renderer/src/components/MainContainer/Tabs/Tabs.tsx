@@ -7,6 +7,8 @@ import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
 
+import { NotInitialized } from '../NotInitialized';
+
 export const Tabs: React.FC = () => {
   const [items, activeTab, setActiveTab, swapTabs, closeTab] = useTabs((state) => [
     state.items,
@@ -28,6 +30,10 @@ export const Tabs: React.FC = () => {
     swapTabs(dragId, tabName);
   };
 
+  if (items.length === 0) {
+    return <NotInitialized />;
+  }
+
   return (
     <>
       <section
@@ -43,7 +49,6 @@ export const Tabs: React.FC = () => {
             type={type}
             name={name}
             showName={type !== 'editor'}
-            canClose={type !== 'editor'}
             onDragStart={() => handleDrag(name)}
             onDrop={() => handleDrop(name)}
             onMouseDown={() => setActiveTab(name)}

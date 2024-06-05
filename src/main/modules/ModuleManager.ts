@@ -1,10 +1,15 @@
 import settings from 'electron-settings';
+import fixPath from 'fix-path';
 import { lookpath } from 'lookpath';
+// импорт старой версии (3.0 вместо 4.0), так как новая версия требует ESM
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
 
+import { findFreePort } from './freePortFinder';
+
+import { defaultSettings } from '../settings';
 export type ModuleName = 'lapki-flasher';
 
 export class ModuleStatus {
@@ -47,6 +52,13 @@ export class ModuleManager {
       let modulePath: string = '';
       let osPath = '';
       switch (platform) {
+        case 'darwin': {
+          // позволяет унаследовать $PATH, то есть системный путь
+          // это нужно для того, чтобы загрузчик смог получить доступ к avrdude, если путь к нему прописан в $PATH
+          fixPath();
+          // break не нужен, так как дальнейшие действия одинаковы для Linux и macOS
+        }
+        // eslint-disable-next-line no-fallthrough
         case 'linux': {
           osPath = `${basePath}/modules/${platform}`;
           modulePath = `${osPath}/${module}`;
@@ -64,7 +76,9 @@ export class ModuleManager {
       if (modulePath) {
         switch (module) {
           case 'lapki-flasher': {
-            const port = await settings.get('flasher.localPort');
+            const port = await findFreePort();
+            await settings.set('flasher.localPort', port);
+            defaultSettings.flasher.localPort = Number(port);
             /*
             параметры локального загрузчика:
               -address string
@@ -99,6 +113,7 @@ export class ModuleManager {
             let avrdudePath = '';
             let configPath = '';
             switch (platform) {
+              case 'darwin':
               case 'linux':
                 avrdudePath = `${osPath}/avrdude`;
                 configPath = `${osPath}/avrdude.conf`;

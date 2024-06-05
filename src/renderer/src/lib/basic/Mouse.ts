@@ -1,7 +1,6 @@
-import { Point } from '@renderer/types/graphics';
-import { Button, MouseEvents } from '@renderer/types/mouse';
-
-import { BubbleEventEmitter } from '../common/BubbleEventEmitter';
+import { BubbleEventEmitter } from '@renderer/lib/common';
+import { Point } from '@renderer/lib/types/graphics';
+import { Button, MouseEvents } from '@renderer/lib/types/mouse';
 
 /**
  * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.
@@ -41,6 +40,8 @@ export class Mouse extends BubbleEventEmitter<MouseEvents> {
     this.element.removeEventListener('mouseup', this.mouseupHandler);
     this.element.removeEventListener('mousemove', this.mousemoveHandler);
     this.element.removeEventListener('wheel', this.mouseWheelHandler);
+
+    this.reset();
   }
 
   setOffset() {

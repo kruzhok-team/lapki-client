@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { ErrorModalData } from '@renderer/components';
 
@@ -6,10 +6,10 @@ export const useErrorModal = () => {
   const [data, setData] = useState<ErrorModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const openMsgModal = (data: ErrorModalData) => {
+  const openMsgModal = useCallback((data: ErrorModalData) => {
     setData(data);
     setIsOpen(true);
-  };
+  }, []);
 
   const onClose = () => setIsOpen(false);
 
@@ -41,26 +41,29 @@ export const useErrorModal = () => {
     });
   };
 
-  const openPlatformError = (errs: { [k: string]: string }) => {
-    openMsgModal({
-      caption: 'Внимание',
-      text: (
-        <div>
-          <p> Есть проблемы с загруженными платформами. </p>
-          <br />
-          <ul>
-            {Object.entries(errs).map(([platform, err]) => {
-              return (
-                <li key={platform}>
-                  <b>{platform}</b>: {err}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ),
-    });
-  };
+  const openPlatformError = useCallback(
+    (errs: { [k: string]: string }) => {
+      openMsgModal({
+        caption: 'Внимание',
+        text: (
+          <div>
+            <p> Есть проблемы с загруженными платформами. </p>
+            <br />
+            <ul>
+              {Object.entries(errs).map(([platform, err]) => {
+                return (
+                  <li key={platform}>
+                    <b>{platform}</b>: {err}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ),
+      });
+    },
+    [openMsgModal]
+  );
 
   const openImportError = (error: string) => {
     openMsgModal({

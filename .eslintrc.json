@@ -20,6 +20,7 @@
     }
   },
   "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "react-hooks/rules-of-hooks": "warn",
     "@typescript-eslint/no-this-alias": "warn",
     "no-prototype-builtins": "off",

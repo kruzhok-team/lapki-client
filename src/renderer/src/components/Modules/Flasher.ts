@@ -9,6 +9,7 @@ import {
   FlashUpdatePort,
   FlasherMessage,
   UpdateDelete,
+  FlashResult,
 } from '@renderer/types/FlasherTypes';
 
 export const FLASHER_CONNECTING = 'Идет подключение...';
@@ -27,15 +28,15 @@ export class Flasher {
   private static initialTimeout: number = 5000;
   // на сколько мс увеличивается время перед новой попыткой подключения
   private static incTimeout: number = this.initialTimeout;
-  /*  
-    максимальное количество автоматических попыток переподключения
+  /**  
+    максимальное количество автоматических попыток переподключения,
     значение меньше нуля означает, что ограничения на попытки отсутствует
   */
   static maxReconnectAttempts: number = 3;
   // количество совершённых попыток переподключения, сбрасывается при удачном подключении или при смене хоста
   private static curReconnectAttemps: number = 0;
-  /* 
-  максимальное количество мс, через которое клиент будет пытаться переподключиться
+  /**  
+  максимальное количество мс, через которое клиент будет пытаться переподключиться,
   не должно быть негативным числом (поэтому не стоит делать эту переменную зависимой от maxReconnectAttempts)
   */
   static maxTimeout: number = this.incTimeout * 10;
@@ -54,13 +55,17 @@ export class Flasher {
   private static reconnection: boolean = false;
   // true = соединение было отменено пользователем и переподключаться не нунжо.
   private static connectionCanceled: boolean = false;
+  private static currentFlashingDevice: Device | undefined = undefined;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
-  static setFlasherConnectionStatus: Dispatch<SetStateAction<string>>;
+  static setFlasherConnectionStatus: (newConnectionStatus: string) => void;
   static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
-  static setFlashing: Dispatch<SetStateAction<boolean>>;
+  static setFlashing: (flashing: boolean) => void;
   // сообщение об ошибке, undefined означает, что ошибки нет
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
+  // сообщение о результате последней попытки прошить устройство
+  // если информации о последней прошивки нет, то равняется undefined
+  static setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>;
 
   //Когда прочитывает блоб - отправляет его
   static initReader(reader): void {
@@ -86,11 +91,12 @@ export class Flasher {
 
   static bindReact(
     setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>,
-    setFlasherConnectionStatus: Dispatch<SetStateAction<string>>,
+    setFlasherConnectionStatus: (newConnectionStatus: string) => void,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
-    setFlashing: Dispatch<SetStateAction<boolean>>,
-    setErrorMessage: Dispatch<SetStateAction<string | undefined>>
+    setFlashing: (flashing: boolean) => void,
+    setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
+    setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>
   ): void {
     this.setFlasherConnectionStatus = setFlasherConnectionStatus;
     this.setFlasherDevices = setFlasherDevices;
@@ -98,6 +104,7 @@ export class Flasher {
     this.setFlasherFile = setFlasherFile;
     this.setFlashing = setFlashing;
     this.setErrorMessage = setErrorMessage;
+    this.setFlashResult = setFlashResult;
   }
   /*
     Добавляет устройство в список устройств
@@ -150,11 +157,11 @@ export class Flasher {
   static checkConnection(): boolean {
     return this.connection !== undefined;
   }
-  // переподключение к последнему адресом к которому Flasher пытался подключиться
+  /** переподключение к последнему адресом к которому Flasher пытался подключиться*/
   static reconnect() {
     this.connect(this.host, this.port);
   }
-  /*
+  /** 
    подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
   */
   static async connect(host: string, port: number): Promise<Websocket | undefined> {
@@ -202,6 +209,8 @@ export class Flasher {
 
       this.connecting = false;
       this.setFlasherDevices(new Map());
+      // Обработка сообщений согласно протоколу:
+      // https://github.com/kruzhok-team/lapki-flasher/tree/main?tab=readme-ov-file#%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D0%BA%D0%BE%D0%BB-%D0%B4%D0%BB%D1%8F-%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D1%8F-%D1%81-%D0%BA%D0%BB%D0%B8%D0%B5%D0%BD%D1%82%D0%BE%D0%BC
       ws.onmessage = (msg: Websocket.MessageEvent) => {
         const response = JSON.parse(msg.data as string) as FlasherMessage;
         switch (response.type) {
@@ -211,8 +220,9 @@ export class Flasher {
             break;
           }
           case 'flash-not-supported': {
-            this.setFlasherLog(
-              `Устройство ${response.payload} не поддерживается для прошивки в данной версии IDE`
+            this.flashingEnd(
+              `Устройство ${response.payload} не поддерживается для прошивки в данной версии IDE.`,
+              undefined
             );
             break;
           }
@@ -220,7 +230,7 @@ export class Flasher {
             if (this.addDevice(response.payload as Device)) {
               this.setFlasherLog('Добавлено устройство!');
             } else {
-              this.setFlasherLog('Состояние об устройстве синхронизировано');
+              this.setFlasherLog('Состояние об устройстве синхронизировано.');
             }
             break;
           }
@@ -233,64 +243,65 @@ export class Flasher {
             break;
           }
           case 'unmarshal-error': {
-            this.setFlasherLog('Не удалось распарсить json-сообщение от клиента');
+            this.setFlasherLog(
+              'Не удалось прочесть запрос от клиента (возможно, конфликт версий).'
+            );
             break;
           }
           case 'flash-done': {
-            this.flashingEnd();
-            this.setFlasherLog(`Загрузка завершена!\n${response.payload}`);
+            this.flashingEnd('Загрузка завершена.', `${response.payload}.`);
             break;
           }
           case 'flash-blocked': {
-            this.setFlasherLog('Устройство заблокировано другим пользователем для прошивки');
+            this.setFlasherLog('Устройство заблокировано другим пользователем для прошивки.');
             break;
           }
           case 'flash-large-file': {
-            this.flashingEnd();
-            this.setFlasherLog(
-              'Указанный размер файла превышает максимально допустимый размер файла, установленный сервером.'
+            this.flashingEnd(
+              'Указанный размер файла превышает максимально допустимый размер файла, установленный сервером.',
+              undefined
             );
             break;
           }
           case 'flash-avrdude-error': {
-            this.flashingEnd();
-            this.setFlasherLog(`${response.payload}`);
+            this.flashingEnd('Возникла ошибка во время прошивки.', `${response.payload}.`);
             break;
           }
           case 'flash-disconnected': {
-            this.flashingEnd();
-            this.setFlasherLog(
-              'Не удалось выполнить операцию прошивки, так как устройство больше не подключено'
+            this.flashingEnd(
+              'Не удалось выполнить операцию прошивки, так как устройство больше не подключено.',
+              undefined
             );
             break;
           }
           case 'flash-wrong-id': {
-            this.flashingEnd();
-            this.setFlasherLog(
-              'Не удалось выполнить операцию прошивки, так как так устройство не подключено'
+            this.flashingEnd(
+              'Не удалось выполнить операцию прошивки, так как так устройство не подключено.',
+              undefined
             );
             break;
           }
           case 'flash-not-finished': {
-            this.setFlasherLog('Предыдущая операция прошивки ещё не завершена');
+            this.setFlasherLog('Предыдущая операция прошивки ещё не завершена.');
             break;
           }
+          // эта ошибка скорее для разработчиков, чем для пользователя, она означает, что-то пошло не так на клиенте (либо на сервере)
           case 'flash-not-started': {
-            this.setFlasherLog('Получены бинарные данных, хотя запроса на прошивку не было');
+            this.setFlasherLog('Получен файл, хотя процесс прошивки не запускался.');
             break;
           }
           case 'event-not-supported': {
-            this.setFlasherLog('Загрузчик получил неизвестный тип сообщения');
+            this.setFlasherLog('Загрузчик получил неизвестный тип сообщения.');
             break;
           }
           case 'get-list-cooldown': {
             this.setFlasherLog(
-              'Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён'
+              'Запрос на обновление списка устройств отклонён, потому что он недавно был обновлён.'
             );
             break;
           }
           case 'empty-list': {
-            this.setFlasherLog('Устройства не найдены');
+            this.setFlasherLog('Устройства не найдены.');
           }
         }
       };
@@ -299,10 +310,10 @@ export class Flasher {
     ws.onclose = async (event) => {
       if (!event.wasClean) {
         if (this.connecting) {
-          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}`);
+          this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}.`);
         } else {
           this.setErrorMessage(
-            `Соедиение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере`
+            `Соединение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере.`
           );
         }
       }
@@ -324,9 +335,23 @@ export class Flasher {
     this.connection = undefined;
   }
 
-  static flashingEnd() {
+  /**
+   * Обработка завершения процесса прошивки
+   *
+   * Следует вызывать сразу после завершения прошивки
+   *
+   * Обновляет лог (@var setFlasherLog)
+   *
+   * Обновляет результат прошивки (@var setFlashResult)
+   * @param {string} result - описание результата прошивки для пользователя, используется для обновление лога и результата прошивки
+   * @param {string | undefined} avrdudeMsg - сообщение от avrdude, undefined - если отсутствует
+   * */
+  static flashingEnd(result: string, avrdudeMsg: string | undefined) {
     this.setFlashing(false);
     this.setFlasherFile(undefined);
+    this.setFlasherLog(result);
+    this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
+    this.currentFlashingDevice = undefined;
   }
 
   static refresh(): void {
@@ -376,20 +401,20 @@ export class Flasher {
     }
   }
 
-  static flashCompiler(binaries: Array<Binary>, deviceID: string): void {
+  static flashCompiler(binaries: Array<Binary>, device: Device): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
         Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
         return;
       }
     });
-    this.flash(deviceID);
+    this.flash(device);
   }
 
-  static flash(deviceID: string) {
+  static flash(device: Device) {
     this.refresh();
     const payload = {
-      deviceID: deviceID,
+      deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
     } as FlashStart;
     const request = {
@@ -398,6 +423,7 @@ export class Flasher {
     } as FlasherMessage;
     this.connection?.send(JSON.stringify(request));
     this.setFlasherLog('Идет загрузка...');
+    this.currentFlashingDevice = device;
   }
 
   // получение адреса в виде строки

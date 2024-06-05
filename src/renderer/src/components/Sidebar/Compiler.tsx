@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useSettings } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -17,25 +18,26 @@ export interface CompilerProps {
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
+  openCompilerSettings: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   openData,
+  openCompilerSettings,
   compilerData,
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
 }) => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
-
   const [importData, setImportData] = useState<string | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = manager.useData('name');
-  const isInitialized = manager.useData('isInitialized');
+  const name = model.useData('name');
+  const isInitialized = model.useData('isInitialized');
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
@@ -44,18 +46,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    manager.files.saveIntoFolder(preparedData);
+    model.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    manager.files.compile();
+    model.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await manager.files.saveIntoFolder(compilerData!.source!);
+    await model.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -93,7 +95,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      manager.files.parseImportData(importData, openData!);
+      model.files.parseImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);
@@ -142,6 +144,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const processing =
     compilerStatus == 'Идет компиляция...' || compilerStatus == 'Идет подключение...';
   const canCompile = compilerStatus == 'Подключен' && isInitialized;
+  const disabled = processing || (!processing && !canCompile && compilerStatus !== 'Не подключен');
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -149,13 +152,19 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       </h3>
 
       <div className="flex flex-col px-4">
-        <button
-          disabled={processing || (!processing && !canCompile && compilerStatus != 'Не подключен')}
-          className="btn-primary mb-4 flex justify-center"
-          onClick={canCompile ? handleCompile : handleReconnect}
-        >
-          {compilerStatus != 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
-        </button>
+        <div className="mb-2 flex rounded">
+          <button
+            disabled={disabled}
+            className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
+            onClick={canCompile ? handleCompile : handleReconnect}
+          >
+            {compilerStatus !== 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
+          </button>
+
+          <button className="btn-primary px-2" onClick={openCompilerSettings}>
+            <Setting width="1.5rem" height="1.5rem" />
+          </button>
+        </div>
 
         <p>
           Статус:{' '}

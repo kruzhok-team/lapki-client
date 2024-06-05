@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 
 import { useDropzone } from 'react-dropzone';
+import { Toaster } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import {
@@ -21,18 +22,15 @@ import {
   preloadPlatforms,
   preparePreloadImages,
 } from '@renderer/lib/data/PlatformLoader';
-import { preloadPicto } from '@renderer/lib/drawable/Picto';
+import { preloadPicto } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { NotInitialized } from './NotInitialized';
 import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
 
-  const isInitialized = manager.useData('isInitialized');
-  const isMounted = manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
@@ -58,7 +56,7 @@ export const MainContainer: React.FC = () => {
     noKeyboard: true,
     noClick: true,
     accept: {
-      '.graphml': [],
+      'application/xml': ['.graphml'],
     },
     multiple: false,
     onDrop,
@@ -75,7 +73,7 @@ export const MainContainer: React.FC = () => {
         openPlatformError(errs);
       }
     });
-  }, []);
+  }, [openPlatformError]);
 
   return (
     <div className="h-screen select-none">
@@ -92,7 +90,7 @@ export const MainContainer: React.FC = () => {
         >
           <input {...getInputProps()} />
 
-          {isInitialized ? <Tabs /> : <NotInitialized />}
+          <Tabs />
 
           <Documentation topOffset={!!isMounted} />
         </div>
@@ -109,6 +107,16 @@ export const MainContainer: React.FC = () => {
         onCreateFromTemplate={handleOpenFromTemplate}
       />
       <UpdateModal />
+
+      <Toaster
+        offset="3rem"
+        toastOptions={{
+          classNames: {
+            error: 'bg-error text-text-primary border-none text-[0.875rem]',
+            success: 'bg-success',
+          },
+        }}
+      />
     </div>
   );
 };

@@ -16,7 +16,7 @@ import { ComponentsList } from './ComponentsList';
 
 export const Explorer: React.FC = () => {
   const editor = useEditorContext();
-  const isMounted = editor.manager.useData('isMounted');
+  const isInitialized = editor.model.useData('isInitialized');
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
@@ -63,7 +63,7 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Компоненты</h3>
           </button>
 
-          {isMounted ? <ComponentsList /> : 'Недоступно до открытия схемы'}
+          {isInitialized ? <ComponentsList /> : 'Недоступно до открытия схемы'}
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">
@@ -89,7 +89,7 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Иерархия состояний</h3>
           </button>
 
-          {isMounted ? <Hierarchy /> : 'Недоступно до открытия схемы'}
+          {isInitialized ? <Hierarchy /> : 'Недоступно до открытия схемы'}
         </Panel>
       </PanelGroup>
     </section>

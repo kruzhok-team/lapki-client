@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Scale } from '@renderer/components';
-import { useModal } from '@renderer/hooks/useModal';
-import { EventSelection } from '@renderer/lib/drawable/Events';
-import { State } from '@renderer/lib/drawable/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
+import { useSettings, useModal } from '@renderer/hooks';
+import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
+import { EventSelection, State, Transition, ChoiceState, FinalState } from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
 
 import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
@@ -17,13 +16,18 @@ import { StateNameModal } from './StateNameModal';
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const isMounted = editor.manager.useData('isMounted');
+  const isMounted = editor.model.useData('isMounted');
+
+  const [canvasSettings] = useSettings('canvas');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State | null>(null);
   const [events, setEvents] = useState<Action[]>([]);
   const [transition, setTransition] = useState<Transition | null>(null);
-  const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
+  const [newTransitionData, setNewTransitionData] = useState<{
+    source: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
+  }>();
 
   const [isCreateModalOpen, openCreateModal, closeCreateModal] = useModal(false);
 
@@ -45,58 +49,81 @@ export const DiagramEditor: React.FC = () => {
       setState(null);
       setEvents([]);
       setTransition(null);
-      setNewTransition(undefined);
+      setNewTransitionData(undefined);
     };
 
-    editor.container.on('dblclick', (position) => {
-      editor?.container.machineController.createState({
+    const handleDblclick = (position: Point) => {
+      editor.controller.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
+        color: DEFAULT_STATE_COLOR,
       });
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования ноды
-    editor.container.statesController.on('changeState', (state) => {
+    const handleChangeState = (state: State) => {
       ClearUseState();
       setState(state);
       openCreateModal();
-    });
+    };
 
-    editor.container.statesController.on('changeEvent', (data) => {
+    const handleChangeEvent = (data: {
+      state: State;
+      eventSelection: EventSelection;
+      event: Event;
+      isEditingEvent: boolean;
+    }) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       ClearUseState();
       setEventsModalParentData({ state, eventSelection });
       setEventsModalData({ event, isEditingEvent });
       openEventsModal();
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.container.transitionsController.on('changeTransition', (target) => {
+    const handleChangeTransition = (transition: Transition) => {
       ClearUseState();
-      setEvents(target.data.do ?? []);
-      setTransition(target);
+      setEvents(transition.data.label?.do ?? []);
+      setTransition(transition);
       openCreateModal();
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования новой связи
-    editor.container.transitionsController.on('createTransition', ({ source, target }) => {
+    const handleCreateTransition = (data: {
+      source: State | ChoiceState;
+      target: State | ChoiceState | FinalState;
+    }) => {
       ClearUseState();
-      setNewTransition({ source, target });
+      setNewTransitionData(data);
       openCreateModal();
-    });
+    };
 
+    editor.view.on('dblclick', handleDblclick);
+    editor.controller.states.on('changeState', handleChangeState);
+    editor.controller.states.on('changeEvent', handleChangeEvent);
+    editor.controller.transitions.on('changeTransition', handleChangeTransition);
+    editor.controller.transitions.on('createTransition', handleCreateTransition);
+
+    //! Не забывать удалять слушатели
     return () => {
-      // снятие слежки произойдёт по смене редактора новым
-      // manager.unwatchEditor();
-      editor?.cleanUp();
+      editor.view.off('dblclick', handleDblclick);
+      editor.controller.states.off('changeState', handleChangeState);
+      editor.controller.states.off('changeEvent', handleChangeEvent);
+      editor.controller.transitions.off('changeTransition', handleChangeTransition);
+      editor.controller.transitions.off('createTransition', handleCreateTransition);
+
+      editor.unmount();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
   }, [editor, openCreateModal, openEventsModal]);
+
+  useEffect(() => {
+    if (!canvasSettings) return;
+
+    editor.setSettings(canvasSettings);
+  }, [canvasSettings, editor]);
 
   const handleEventsModalSubmit = (data: Event) => {
     // Если есть какие-то данные то мы редактируем событие а не добавляем
@@ -118,7 +145,7 @@ export const DiagramEditor: React.FC = () => {
     }
 
     if (!isCreateModalOpen && eventsModalParentData) {
-      editor?.container.machineController.changeEvent(
+      editor?.controller.states.changeEvent(
         eventsModalParentData.state.id,
         eventsModalParentData.eventSelection,
         data
@@ -127,34 +154,41 @@ export const DiagramEditor: React.FC = () => {
     closeEventsModal();
   };
 
+  // TODO(bryzZz) Нужно делить на две модалки
+  // Тут возникло много as any
+  // это потому что для состояния и перехода типы разные но модалка одна
+  // и приходится приводить к какому-то обшему типу
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
-      editor?.container.machineController.changeStateEvents({
+      editor.controller.states.changeStateEvents({
         id: data.id,
-        triggerComponent: data.trigger.component,
-        triggerMethod: data.trigger.method,
+        triggerComponent: (data.trigger as any).component,
+        triggerMethod: (data.trigger as any).method,
         actions: events,
+        color: data.color ?? DEFAULT_STATE_COLOR,
       });
     } else if (transition && data.key === 3) {
-      editor?.container.machineController.changeTransition({
+      editor.controller.transitions.changeTransition({
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
-        color: data.color ?? defaultTransColor,
-        component: data.trigger.component,
-        method: data.trigger.method,
-        doAction: events,
-        condition: data.condition,
+        color: data.color ?? DEFAULT_TRANSITION_COLOR,
+        label: {
+          trigger: data.trigger,
+          do: events,
+          condition: data.condition,
+        } as any,
       });
-    } else if (newTransition) {
-      editor?.container.machineController.createTransition({
-        source: newTransition.source.id,
-        target: newTransition.target.id,
-        color: data.color ?? defaultTransColor,
-        component: data.trigger.component,
-        method: data.trigger.method,
-        doAction: events,
-        condition: data.condition,
+    } else if (newTransitionData) {
+      editor.controller.transitions.createTransition({
+        source: newTransitionData.source.id,
+        target: newTransitionData.target.id,
+        color: data.color ?? DEFAULT_TRANSITION_COLOR,
+        label: {
+          trigger: data.trigger,
+          condition: data.condition,
+          do: events,
+        } as any,
       });
     }
     closeCreateModal();
@@ -166,6 +200,19 @@ export const DiagramEditor: React.FC = () => {
 
     openEventsModal();
   };
+
+  // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
+  const showTrigger = useMemo(() => {
+    if (newTransitionData) {
+      return !(newTransitionData.source instanceof ChoiceState);
+    }
+
+    if (transition) {
+      return !(transition.source instanceof ChoiceState);
+    }
+
+    return true;
+  }, [newTransitionData, transition]);
 
   return (
     <>
@@ -186,9 +233,10 @@ export const DiagramEditor: React.FC = () => {
           />
 
           <CreateModal
-            state={state ? state : undefined}
-            transition={transition ? transition : undefined}
+            state={state ?? undefined}
+            transition={transition ?? undefined}
             events={events}
+            showTrigger={showTrigger}
             setEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}
             onSubmit={handleCreateModalSubmit}

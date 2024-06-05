@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react';
 
-import { State } from '@renderer/lib/drawable/State';
+import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
+import {
+  ChoiceState,
+  EventSelection,
+  FinalState,
+  Note,
+  State,
+  Transition,
+} from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types/graphics';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
-import { Point } from '@renderer/types/graphics';
 
 export type DiagramContextMenuItem = {
   label: string;
@@ -25,32 +33,54 @@ export const useDiagramContextMenu = () => {
   const onClose = () => setIsOpen(false);
 
   useEffect(() => {
-    if (!editor) return;
-
     const handleEvent = (pos: Point, items: DiagramContextMenuItem[]) => {
       setIsOpen(true);
       setPosition(pos);
       setItems(items);
     };
 
-    // контекстное меню для пустого поля
-    editor.container.on('contextMenu', (pos) => {
-      const canvasPos = editor.container.relativeMousePos(pos);
+    const handleViewContextMenu = (position: Point) => {
+      const mouseOffset = editor.view.app.mouse.getOffset();
+      const canvasPos = editor.view.windowToWorldCoords({
+        x: position.x - mouseOffset.x,
+        y: position.y - mouseOffset.y,
+      });
 
-      handleEvent(pos, [
+      handleEvent(position, [
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.container.machineController.pasteSelected();
+            editor?.controller.pasteSelected();
           },
         },
         {
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor?.container.machineController.createState({
+            editor.controller.states.createState({
               name: 'Состояние',
+              position: canvasPos,
+              placeInCenter: true,
+              color: DEFAULT_STATE_COLOR,
+            });
+          },
+        },
+        {
+          label: 'Вставить конечное состояние',
+          type: 'pasteFinalState',
+          action: () => {
+            editor.controller.states.createFinalState({
+              position: canvasPos,
+              placeInCenter: true,
+            });
+          },
+        },
+        {
+          label: 'Вставить состояние выбора',
+          type: 'pasteChoiceState',
+          action: () => {
+            editor.controller.states.createChoiceState({
               position: canvasPos,
               placeInCenter: true,
             });
@@ -60,13 +90,13 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить заметку',
           type: 'note',
           action: () => {
-            const note = editor?.container.machineController.createNote({
+            const note = editor.controller.notes.createNote({
               position: canvasPos,
               placeInCenter: true,
               text: '',
             });
 
-            editor.container.notesController.emit('change', note);
+            editor.controller.notes.emit('change', note);
           },
         },
         {
@@ -75,8 +105,8 @@ export const useDiagramContextMenu = () => {
           action: () => {
             openTab({
               type: 'code',
-              name: editor.manager.data.name ?? 'Безымянная',
-              code: editor.manager.serializer.getAll('JSON'),
+              name: editor.model.data.name ?? 'Безымянная',
+              code: editor.model.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -85,29 +115,27 @@ export const useDiagramContextMenu = () => {
           label: 'Центрировать камеру',
           type: 'centerCamera',
           action: () => {
-            editor?.container.viewCentering();
+            editor?.view.viewCentering();
           },
         },
       ]);
-    });
-
-    // контекстное меню для состояния
-    editor.container.statesController.on('stateContextMenu', ({ state, position }) => {
-      const canvasPos = editor.container.relativeMousePos(position);
+    };
+    const handleStateContextMenu = (data: { state: State; position: Point }) => {
+      const { state, position } = data;
 
       handleEvent(position, [
         {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.container.machineController.copySelected();
+            editor?.controller.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.container.machineController.pasteSelected();
+            editor?.controller.pasteSelected();
           },
         },
         {
@@ -119,17 +147,18 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                editor?.container.machineController.setInitialState(state.id);
+                editor.controller.states.setInitialState(state.id);
               },
             },
             {
               label: 'Вставить состояние',
               type: 'pasteState',
               action: () => {
-                editor?.container.machineController.createState({
+                editor.controller.states.createState({
                   name: 'Состояние',
-                  position: canvasPos,
+                  position: editor.view.windowToWorldCoords(position),
                   parentId: state.id,
+                  color: DEFAULT_STATE_COLOR,
                 });
               },
             },
@@ -144,7 +173,7 @@ export const useDiagramContextMenu = () => {
             openTab({
               type: 'state',
               name: state.data.name,
-              code: editor.manager.serializer.getState(state.id) ?? '',
+              code: editor.model.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -153,147 +182,187 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machineController.deleteState(state.id as string);
+            editor.controller.states.deleteState(state.id);
           },
         },
       ]);
-    });
+    };
+    const handleFinalStateContextMenu = (data: { state: FinalState; position: Point }) => {
+      const { state, position } = data;
 
-    // контекстное меню для события
-    editor.container.statesController.on('eventContextMenu', ({ state, position, event }) => {
       handleEvent(position, [
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machineController.deleteEvent(state.id, event);
+            editor.controller.states.deleteFinalState(state.id);
           },
         },
       ]);
-    });
+    };
+    const handleChoiceStateContextMenu = (data: { state: ChoiceState; position: Point }) => {
+      const { state, position } = data;
 
-    // контекстное меню для связи
-    editor.container.transitionsController.on(
-      'transitionContextMenu',
-      ({ transition, position }) => {
-        const source = (state: State) => {
-          return {
-            label: state.eventBox.parent.data.name,
-            type: 'source',
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {
-              editor?.container.machineController.changeTransition({
-                id: transition.id,
-                source: state.id,
-                target: transition.data.target,
-                color: transition.data.color,
-                component: transition.data.trigger.component,
-                method: transition.data.trigger.method,
-                doAction: transition.data.do!,
-                condition: transition.data.condition!,
-              });
-            },
-          };
+      handleEvent(position, [
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor.controller.states.deleteChoiceState(state.id);
+          },
+        },
+      ]);
+    };
+    const handleEventContextMenu = (data: {
+      state: State;
+      position: Point;
+      event: EventSelection;
+    }) => {
+      const { state, position, event } = data;
+      handleEvent(position, [
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor.controller.states.deleteEvent(state.id, event);
+          },
+        },
+      ]);
+    };
+    const handleTransitionContextMenu = (data: { transition: Transition; position: Point }) => {
+      const { transition, position } = data;
+
+      const source = (state: State) => {
+        return {
+          label: state.eventBox.parent.data.name,
+          type: 'source',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {
+            editor.controller.transitions.changeTransition({
+              ...transition.data,
+              id: transition.id,
+              source: state.id,
+            });
+          },
         };
+      };
 
-        const target = (state: State) => {
-          return {
-            label: state.eventBox.parent.data.name,
-            type: 'target',
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {
-              editor?.container.machineController.changeTransition({
-                id: transition.id,
-                source: transition.data.source,
-                target: state.id,
-                color: transition.data.color,
-                component: transition.data.trigger.component,
-                method: transition.data.trigger.method,
-                doAction: transition.data.do!,
-                condition: transition.data.condition!,
-              });
-            },
-          };
+      const target = (state: State) => {
+        return {
+          label: state.eventBox.parent.data.name,
+          type: 'target',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {
+            editor.controller.transitions.changeTransition({
+              ...transition.data,
+              id: transition.id,
+              target: state.id,
+            });
+          },
         };
+      };
 
-        const sourceArray = [
-          ...Array.from(editor.container.machineController.states).filter(
-            (value) => transition.data.source !== value[0]
-          ),
-        ];
+      const sourceArray = [
+        ...Array.from(editor.controller.states.getStates()).filter(
+          (value) => transition.data.source !== value[0]
+        ),
+      ];
 
-        const targetArray = [
-          ...Array.from(editor.container.machineController.states).filter(
-            (value) => transition.data.target !== value[0]
-          ),
-        ];
+      const targetArray = [
+        ...Array.from(editor.controller.states.getStates()).filter(
+          (value) => transition.data.target !== value[0]
+        ),
+      ];
 
-        handleEvent(position, [
-          {
-            label: 'Копировать',
-            type: 'copy',
-            action: () => {
-              editor?.container.machineController.copySelected();
-            },
+      handleEvent(position, [
+        {
+          label: 'Копировать',
+          type: 'copy',
+          action: () => {
+            editor?.controller.copySelected();
           },
-          {
-            label: 'Выбрать исход(source)',
-            type: 'source',
-            isFolder: true,
-            children: [...sourceArray.map(([_id, value]) => source(value))],
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {},
+        },
+        {
+          label: 'Выбрать исход(source)',
+          type: 'source',
+          isFolder: true,
+          children: [...sourceArray.map(([_id, value]) => source(value))],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
+        },
+        {
+          label: 'Выбрать цель(target)',
+          type: 'target',
+          isFolder: true,
+          children: [...targetArray.map(([_id, value]) => target(value))],
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          action: () => {},
+        },
+        {
+          label: 'Посмотреть код',
+          type: 'showCodeAll',
+          action: () => {
+            openTab({
+              type: 'transition',
+              name: transition.id,
+              code: editor.model.serializer.getTransition(transition.id) ?? '',
+              language: 'json',
+            });
           },
-          {
-            label: 'Выбрать цель(target)',
-            type: 'target',
-            isFolder: true,
-            children: [...targetArray.map(([_id, value]) => target(value))],
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            action: () => {},
+        },
+        {
+          label: 'Удалить',
+          type: 'delete',
+          action: () => {
+            editor.controller.transitions.deleteTransition(transition.id);
           },
-          {
-            label: 'Посмотреть код',
-            type: 'showCodeAll',
-            action: () => {
-              openTab({
-                type: 'transition',
-                name: transition.id,
-                code: editor.manager.serializer.getTransition(transition.id) ?? '',
-                language: 'json',
-              });
-            },
-          },
-          {
-            label: 'Удалить',
-            type: 'delete',
-            action: () => {
-              editor?.container.machineController.deleteTransition(transition.id);
-            },
-          },
-        ]);
-      }
-    );
+        },
+      ]);
+    };
+    const handleNoteContextMenu = (data: { note: Note; position: Point }) => {
+      const { note, position } = data;
 
-    editor.container.notesController.on('contextMenu', ({ note, position }) => {
       handleEvent(position, [
         {
           label: 'Редактировать',
           type: 'edit',
           action: () => {
-            editor.container.notesController.emit('change', note);
+            editor.controller.notes.emit('change', note);
           },
         },
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.container.machineController.deleteNote(note.id);
+            editor?.controller.notes.deleteNote(note.id);
           },
         },
       ]);
-    });
-  }, [editor]);
+    };
+
+    // контекстное меню для пустого поля
+    editor.view.on('contextMenu', handleViewContextMenu);
+    // контекстное меню для состояний
+    editor.controller.states.on('stateContextMenu', handleStateContextMenu);
+    editor.controller.states.on('finalStateContextMenu', handleFinalStateContextMenu);
+    editor.controller.states.on('choiceStateContextMenu', handleChoiceStateContextMenu);
+    // контекстное меню для события
+    editor.controller.states.on('eventContextMenu', handleEventContextMenu);
+    // контекстное меню для связи
+    editor.controller.transitions.on('transitionContextMenu', handleTransitionContextMenu);
+    editor.controller.notes.on('contextMenu', handleNoteContextMenu);
+
+    //! Не забывать удалять слушатели
+    return () => {
+      editor.view.off('contextMenu', handleViewContextMenu);
+      editor.controller.states.off('stateContextMenu', handleStateContextMenu);
+      editor.controller.states.off('finalStateContextMenu', handleFinalStateContextMenu);
+      editor.controller.states.off('choiceStateContextMenu', handleChoiceStateContextMenu);
+      editor.controller.states.off('eventContextMenu', handleEventContextMenu);
+      editor.controller.transitions.off('transitionContextMenu', handleTransitionContextMenu);
+      editor.controller.notes.off('contextMenu', handleNoteContextMenu);
+    };
+  }, [editor, openTab]);
 
   return { isOpen, onClose, items, position };
 };

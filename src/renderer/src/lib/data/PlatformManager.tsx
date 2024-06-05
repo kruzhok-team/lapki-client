@@ -1,7 +1,7 @@
+import { MarkedIconData, icons, picto } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
 
-import { MarkedIconData, icons, picto } from '../drawable/Picto';
 import { stateStyle } from '../styles';
 
 export type VisualCompoData = {
@@ -439,8 +439,6 @@ export class PlatformManager {
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
-
-    console.log(ac);
 
     picto.drawBorder(ctx, x, y, '#880000');
     const p = 5 / picto.scale;

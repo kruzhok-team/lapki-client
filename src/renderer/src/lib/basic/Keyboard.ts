@@ -1,4 +1,4 @@
-import { EventEmitter } from '../common/EventEmitter';
+import { EventEmitter } from '@renderer/lib/common';
 
 /**
  * Обработчик событий, связанных со взаимодействием мыши и {@link Canvas}.
@@ -36,6 +36,8 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
   cleanUp() {
     this.element.removeEventListener('keydown', this.handleKeyDown);
     this.element.removeEventListener('keyup', this.handleKeyUp);
+
+    this.reset();
   }
 
   handleKeyDown = (e: KeyboardEvent) => {

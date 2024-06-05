@@ -3,7 +3,7 @@ import React, { useId } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-down.svg';
-import { Action, actionDescriptions, Stack } from '@renderer/lib/data/UndoRedo';
+import { Action, actionDescriptions, Stack } from '@renderer/lib/data/History';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
 const groupByNumberOfConnectedActions = (stack: Stack) => {
@@ -47,7 +47,7 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
         )}
       >
         {actionDescriptions[type](data.args).name}
-        <Arrow height={20} width={20} />
+        <Arrow className="shrink-0" height={20} width={20} />
       </label>
 
       <div className="max-h-0 overflow-hidden rounded-b-sm bg-bg-hover transition-all peer-checked:max-h-[1000px]">
@@ -59,28 +59,18 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
   );
 };
 
-const HistoryWithoutEditor: React.FC = () => {
-  return <p>Нельзя посмотреть историю до инициализации</p>;
-};
-
 const HistoryWithEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const { undoStack, redoStack } = editor.container.machineController.undoRedo.use();
+  const { undoStack, redoStack } = editor.controller.history.use();
 
   return (
     <div>
       <div className="mb-4 flex gap-1">
-        <button
-          className="btn-secondary"
-          onClick={() => editor.container.machineController.undoRedo.undo()}
-        >
+        <button className="btn-secondary" onClick={() => editor.controller.history.undo()}>
           Назад
         </button>
-        <button
-          className="btn-secondary"
-          onClick={() => editor.container.machineController.undoRedo.redo()}
-        >
+        <button className="btn-secondary" onClick={() => editor.controller.history.redo()}>
           Вперёд
         </button>
       </div>
@@ -127,15 +117,17 @@ const HistoryWithEditor: React.FC = () => {
 };
 
 export const History: React.FC = () => {
-  const { manager } = useEditorContext();
-  const isMounted = manager.useData('isMounted');
+  const { model } = useEditorContext();
+  const isInitialized = model.useData('isInitialized');
 
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         История изменений
       </h3>
-      <div className="px-4">{isMounted ? <HistoryWithEditor /> : <HistoryWithoutEditor />}</div>
+      <div className="px-4">
+        {isInitialized ? <HistoryWithEditor /> : <p>Нельзя посмотреть историю до инициализации</p>}
+      </div>
     </section>
   );
 };

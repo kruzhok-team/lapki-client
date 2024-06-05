@@ -1,13 +1,10 @@
-import React, { useLayoutEffect, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 
-import { SingleValue } from 'react-select';
-
-import { Select, SelectOption, Modal, ColorInput } from '@renderer/components/UI';
-import { useCreateModalCondition } from '@renderer/hooks';
+import { Modal, ColorInput } from '@renderer/components/UI';
+import { usePrevious } from '@renderer/hooks';
+import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { State } from '@renderer/lib/drawable/State';
-import { Transition } from '@renderer/lib/drawable/Transition';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { State, Transition } from '@renderer/lib/drawable';
 import {
   Action,
   Condition as ConditionData,
@@ -15,15 +12,17 @@ import {
   Event as StateEvent,
   Variable as VariableData,
 } from '@renderer/types/diagram';
-import { defaultTransColor } from '@renderer/utils';
 
 import { Condition } from './Condition';
-import { EventsBlockModal } from './EventsBlockModal';
+import { EventsBlock } from './EventsBlock';
+import { useCondition } from './hooks/useCondition';
+import { useTrigger } from './hooks/useTrigger';
+import { Trigger } from './Trigger';
 
 export interface CreateModalResult {
   id: string;
   key: number;
-  trigger: StateEvent;
+  trigger: StateEvent | undefined;
   condition?: ConditionData;
   do: Action[];
   color?: string;
@@ -33,6 +32,7 @@ interface CreateModalProps {
   state: State | undefined;
   transition: Transition | undefined;
   events: Action[];
+  showTrigger: boolean;
   setEvents: React.Dispatch<React.SetStateAction<Action[]>>;
   onOpenEventsModal: (event?: Event) => void;
   isOpen: boolean;
@@ -44,86 +44,35 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   state,
   transition,
   events,
+  showTrigger,
   setEvents,
   onOpenEventsModal,
   isOpen,
   onSubmit,
   onClose,
 }) => {
-  const editor = useEditorContext();
-  const manager = editor.manager;
-
-  const componentsData = manager.useData('elements.components');
-  const machine = editor.container.machineController;
   const isEditingState = state !== undefined;
+
+  const previousIsOpen = usePrevious(isOpen);
+  // TODO(bryzZz) Костыль для того чтобы эффект, в котором подставляются первичные данные формы, работал только один раз на открытие
+  // это уйдет после разделения на две модалки
+  const onceOpenFlag = useRef(false);
 
   const [formState, setFormState] = useState<'submitted' | 'default'>('default');
 
-  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-
-  const componentOptions: SelectOption[] = useMemo(() => {
-    const getComponentOption = (id: string) => {
-      const proto = machine.platform.getComponent(id);
-
-      return {
-        value: id,
-        label: id,
-        hint: proto?.description,
-        icon: machine.platform.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
-      };
-    };
-
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
-
-    if (isEditingState) {
-      result.unshift(getComponentOption('System'));
-    }
-
-    return result;
-  }, [componentsData, isEditingState, machine]);
-
-  const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent) return [];
-    const getAll = machine.platform['getAvailableEvents'];
-    const getImg = machine.platform['getEventIconUrl'];
-
-    // Тут call потому что контекст теряется
-    return getAll.call(machine.platform, selectedComponent).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(machine.platform, selectedComponent, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-        ),
-      };
-    });
-  }, [machine, selectedComponent]);
-
-  const handleComponentChange = (value: SingleValue<SelectOption>) => {
-    setSelectedComponent(value?.value ?? '');
-    setSelectedMethod('');
-  };
-
-  const handleMethodChange = (value: SingleValue<SelectOption>) => {
-    setSelectedMethod(value?.value ?? '');
-  };
-
-  //Хранение цвета связи
-  const [color, setColor] = useState(defaultTransColor);
-
-  const condition = useCreateModalCondition({ isEditingState, formState });
+  // Данные формы
+  const trigger = useTrigger(isEditingState);
+  const condition = useCondition({ isEditingState, formState });
+  const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     setFormState('submitted');
 
-    if (!selectedComponent || !selectedMethod) return;
+    const { selectedComponent, selectedMethod } = trigger;
+
+    if (showTrigger && (!selectedComponent || !selectedMethod)) return;
 
     const {
       show,
@@ -145,10 +94,6 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       for (const key in errors) {
         if (errors[key]) return;
       }
-    }
-
-    if (methodOptions == null) {
-      return;
     }
 
     const resultCondition = !show
@@ -179,13 +124,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({
           ],
         };
 
+    const resultTrigger =
+      selectedComponent && selectedMethod
+        ? { component: selectedComponent, method: selectedMethod }
+        : undefined;
+
     const data: CreateModalResult = {
       id: isEditingState ? state.id : '',
       key: isEditingState ? 2 : 3,
-      trigger: {
-        component: selectedComponent,
-        method: selectedMethod,
-      },
+      trigger: resultTrigger,
       condition: resultCondition,
       do: events,
       color: color,
@@ -196,43 +143,54 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     }
   };
 
-  // Обработка начальных данных
-  useLayoutEffect(() => {
-    // Сброс всего если нет начальных данных, то есть когда создаём новое событие
-    setSelectedComponent('');
+  // Сброс формы после закрытия
+  const handleAfterClose = () => {
+    trigger.setSelectedComponent(null);
+    trigger.setSelectedMethod(null);
+
     condition.setSelectedComponentParam1('');
     condition.setSelectedComponentParam2('');
     condition.setArgsParam1('');
     condition.setConditionOperator('');
-    setSelectedMethod('');
     condition.setSelectedMethodParam1('');
     condition.setSelectedMethodParam2('');
     condition.setArgsParam2('');
-    setColor(transition?.data?.color ?? defaultTransColor);
     condition.handleChangeConditionShow(false);
     condition.handleParamOneInput1(true);
     condition.handleParamOneInput2(true);
-    setFormState('default');
     condition.setErrors({});
 
+    setColor(DEFAULT_TRANSITION_COLOR);
+
+    setFormState('default');
+
+    onceOpenFlag.current = false;
+  };
+
+  // Обработка начальных данных во время открытия модалки
+  useLayoutEffect(() => {
+    // Если закрыли модалку, то ничего не делаем
+    // TODO(bryzZz) Любимые костылечки, опять же, это уйдет после разделения на две модалки
+    if (previousIsOpen === undefined || (!isOpen && previousIsOpen) || onceOpenFlag.current) return;
+
+    onceOpenFlag.current = true;
+
     if (isEditingState) {
-      if (!state) return;
+      if (!state || state.data.events.length === 0) return;
 
-      if (state.data.events.length === 0) return;
+      const { data } = state;
 
-      const init = (state: State) => {
-        const { data } = state;
+      setColor(data.color ?? DEFAULT_STATE_COLOR);
+      trigger.setSelectedComponent(data.events[0].trigger.component);
+      trigger.setSelectedMethod(data.events[0].trigger.method);
 
-        setSelectedComponent(data.events[0].trigger.component);
-        setSelectedMethod(data.events[0].trigger.method);
-      };
-      return init(state);
+      return;
     }
 
     //Позволяет найти начальные значения условия(условий), если таковые имеются
     const tryGetCondition = () => {
       if (!transition) return;
-      const c = transition.data.condition;
+      const c = transition.data.label?.condition;
       if (!c) return undefined;
       condition.handleChangeConditionShow(true);
       const operator = c.type;
@@ -285,69 +243,48 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     };
 
     if (!transition) return;
-    const init = (transition: Transition) => {
-      const { data } = transition;
 
-      setSelectedComponent(data.trigger.component);
-      setSelectedMethod(data.trigger.method);
+    const { data } = transition;
 
-      tryGetCondition();
-    };
-    return init(transition);
-  }, [machine, isEditingState, state, transition]);
+    if (data.label?.trigger) {
+      trigger.setSelectedComponent(data.label.trigger.component);
+      trigger.setSelectedMethod(data.label.trigger.method);
+    }
+
+    setColor(data?.color ?? DEFAULT_TRANSITION_COLOR);
+
+    tryGetCondition();
+
+    return;
+  }, [isOpen, previousIsOpen, state, transition, isEditingState, trigger, condition]);
 
   return (
-    //--------------------------------------Показ модального окна------------------------------------------
     <Modal
-      title={
-        isEditingState
-          ? 'Редактор состояния: ' + JSON.stringify(state?.data.name)
-          : 'Редактор соединения'
-      }
+      title={isEditingState ? `Редактор состояния: ${state?.data?.name}` : 'Редактор соединения'}
       onSubmit={handleSubmit}
       isOpen={isOpen}
       onRequestClose={onClose}
+      onAfterClose={handleAfterClose}
     >
-      {/*---------------------------------Добавление основного события-------------------------------------*/}
-      <div className="flex items-center">
-        <p className="mr-2 font-bold">Когда:</p>
-        <div className="flex w-full gap-2">
-          <Select
-            containerClassName="w-full"
-            options={componentOptions}
-            onChange={handleComponentChange}
-            value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
-            isSearchable={false}
-          />
-          <Select
-            containerClassName="w-full"
-            options={methodOptions}
-            onChange={handleMethodChange}
-            value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
-            isSearchable={false}
-          />
-        </div>
-      </div>
+      {showTrigger && <Trigger {...trigger} />}
 
       {!isEditingState && <Condition {...condition} />}
 
-      <EventsBlockModal
+      <EventsBlock
         state={state}
         transition={transition}
-        selectedComponent={selectedComponent}
-        selectedMethod={selectedMethod}
+        selectedComponent={trigger.selectedComponent}
+        selectedMethod={trigger.selectedMethod}
         events={events}
         setEvents={setEvents}
         onOpenEventsModal={onOpenEventsModal}
         isOpen={isOpen}
       />
 
-      {!isEditingState && (
-        <label className="flex items-center gap-2">
-          <span className="font-bold">Цвет связи:</span>
-          <ColorInput value={color} onChange={setColor} />
-        </label>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="font-bold">Цвет:</span>
+        <ColorInput value={color} onChange={setColor} />
+      </div>
     </Modal>
   );
 };

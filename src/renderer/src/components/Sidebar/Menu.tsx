@@ -1,9 +1,18 @@
 import React, { useLayoutEffect } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
+import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useTabs } from '@renderer/store/useTabs';
 
-import { FilePropertiesModal } from '../FilePropertiesModal';
+interface MenuItem {
+  text: string;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+}
 
 export interface MenuProps {
   onRequestNewFile: () => void;
@@ -16,15 +25,18 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { manager } = useEditorContext();
+  const { model } = useEditorContext();
 
-  const isStale = manager.useData('isStale');
-  const isInitialized = manager.useData('isInitialized');
+  const isStale = model.useData('isStale');
+  const isInitialized = model.useData('isInitialized');
+  const isMounted = model.useData('isMounted');
 
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 
-  const items = [
+  const openTab = useTabs((state) => state.openTab);
+
+  const items: MenuItem[] = [
     {
       text: 'Создать...',
       onClick: props.onRequestNewFile,
@@ -55,6 +67,15 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: openPropertiesModalOpen,
       disabled: !isInitialized,
     },
+    {
+      text: 'Открыть редактор',
+      onClick: () => {
+        openTab({ type: 'editor', name: 'editor' });
+      },
+      disabled: !isInitialized || isMounted,
+      // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
+      className: 'border-t border-border-primary',
+    },
     // {
     //   text: 'Примеры',
     //   TODO: модальное окно с выбором примера
@@ -82,12 +103,17 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
   return (
     <section className="flex flex-col">
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">Меню</h3>
+      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
+        Документ
+      </h3>
 
-      {items.map(({ text, onClick, disabled = false }) => (
+      {items.map(({ text, onClick, disabled = false, className }) => (
         <button
           key={text}
-          className="px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled"
+          className={twMerge(
+            'px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+            className
+          )}
           onClick={onClick}
           disabled={disabled}
         >
@@ -95,7 +121,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         </button>
       ))}
 
-      <FilePropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
+      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
     </section>
   );
 };

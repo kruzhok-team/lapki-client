@@ -8,12 +8,12 @@ import { useModal } from './useModal';
 
 export const useComponents = () => {
   const editor = useEditorContext();
-  const manager = editor.manager;
+  const model = editor.model;
 
-  const components = manager.useData('elements.components');
+  const components = model.useData('elements.components');
 
   const [idx, setIdx] = useState('');
-  const [data, setData] = useState<ComponentData>({ transitionId: '', type: '', parameters: {} });
+  const [data, setData] = useState<ComponentData>({ type: '', parameters: {} });
   const [proto, setProto] = useState(systemComponent);
 
   const [vacantComponents, setVacantComponents] = useState([] as ComponentEntry[]);
@@ -23,8 +23,8 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const machine = editor?.container.machineController;
-    const vacantComponents = machine?.getVacantComponents() as ComponentEntry[];
+    const controller = editor.controller;
+    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
 
@@ -32,10 +32,13 @@ export const useComponents = () => {
   };
 
   const onRequestEditComponent = (idx: string) => {
-    const machine = editor?.container.machineController;
+    const controller = editor.controller;
+
+    if (!controller.platform) return;
+
     const component = components[idx];
     if (typeof component === 'undefined') return;
-    const proto = machine?.platform.data.components[component.type];
+    const proto = controller?.platform.data.components[component.type];
     if (typeof proto === 'undefined') {
       console.error('non-existing %s %s', idx, component.type);
       return;
@@ -48,11 +51,14 @@ export const useComponents = () => {
   };
 
   const onRequestDeleteComponent = (idx: string) => {
-    const machine = editor?.container.machineController;
+    const controller = editor.controller;
+
+    if (!controller.platform) return;
+
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    const proto = machine?.platform.data.components[component.type] ?? systemComponent;
+    const proto = controller?.platform.data.components[component.type] ?? systemComponent;
 
     setIdx(idx);
     setData(component);
@@ -62,13 +68,13 @@ export const useComponents = () => {
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor?.container.machineController.addComponent({ name: realName, type: idx });
+    editor?.controller.addComponent({ name: realName, type: idx });
 
     onRequestEditComponent(realName);
   };
 
   const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor?.container.machineController.editComponent({
+    editor?.controller.editComponent({
       name: idx,
       parameters: data.parameters,
       newName,
@@ -76,7 +82,7 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor?.container.machineController.removeComponent({ name: idx, purge: false });
+    editor?.controller.removeComponent({ name: idx, purge: false });
 
     editClose();
   };

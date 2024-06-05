@@ -1,57 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns">
   <data key="gFormat">Cyberiada-GraphML</data>
-  <key id="dName" for="node" attr.name="name" attr.type="string"></key>
-  <key id="dData" for="node" attr.name="data" attr.type="string"></key>
-  <key id="dData" for="edge" attr.name="data" attr.type="string"></key>
-  <key id="dInitial" for="node" attr.name="initial" attr.type="string"></key>
-  <key id="dGeometry" for="edge"></key>
-  <key id="dGeometry" for="node"></key>
+  <key attr.name="name" attr.type="string" for="node" id="dName"></key>
+  <key attr.name="data" attr.type="string" for="node" id="dData"></key>
+  <key attr.name="data" attr.type="string" for="edge" id="dData"></key>
+  <key attr.name="initial" attr.type="string" for="node" id="dInitial"></key>
+  <key for="edge" id="dGeometry"></key>
+  <key for="node" id="dGeometry"></key>
+  <key for="edge" id="dColor"></key>
+  <key for="node" id="dNote"></key>
+  <key for="node" id="dColor"></key>
   <graph id="G">
-    <node id="">
-      <data key="dName">BearlogaDefend</data>
-      <data key="dData">name/ Схема
-description/ Схема, сгенерированная с помощью Lapki IDE
-unit/ Autoborder</data>
-    </node>
-    <node id="init">
-      <data key="dInitial"></data>
-      <data key="dGeometry" x="-1518.138569999999" y="475.39755900000006" width="450" height="95"></data>
+    <node id="coreMeta">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_META</data>
+      <data key="dData">platform/ BearlogaDefend-Autoborder
+
+standardVersion/ 1.0
+
+name/ Автобортник
+
+author/ Матросов В.М.
+
+contact/ matrosov@mail.ru
+
+description/ Пример описания схемы, 
+который может быть многострочным, потому что так удобнее
+
+target/ Autoborder
+
+</data>
     </node>
     <node id="n0">
       <data key="dName">Бой</data>
-      <data key="dGeometry" x="-942.8049999999986" y="474.28725600000024" width="672.532166" height="145"></data>
       <data key="dData">entry/
 
 exit/
 
 </data>
+      <data key="dGeometry">
+        <rect x="-804.9949999999994" y="543.8872559999999" width="672.532166" height="145"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
       <graph id="n0">
         <node id="n0::n1">
           <data key="dName">Сближение</data>
-          <data key="dGeometry" x="47.4999999999999" y="9.26859999999996" width="468" height="145"></data>
           <data key="dData">entry/
 МодульДвижения.ДвигатьсяКЦели()
 
 exit/
 
 </data>
+          <data key="dGeometry">
+            <rect x="75.1599999999997" y="141.90593299999927" width="468" height="145"></rect>
+          </data>
+          <data key="dColor">#FFFFFF</data>
         </node>
         <node id="n0::n2">
           <data key="dName">Атака</data>
-          <data key="dGeometry" x="51.299999999999955" y="299.80593300000027" width="468" height="145"></data>
           <data key="dData">entry/
 ОружиеЦелевое.АтаковатьЦель()
 
-exit/
-
 </data>
+          <data key="dGeometry">
+            <rect x="68.99999999999994" y="454.5931890000012" width="468" height="95"></rect>
+          </data>
+          <data key="dColor">#FFFFFF</data>
         </node>
       </graph>
     </node>
     <node id="n3">
       <data key="dName">Скан</data>
-      <data key="dGeometry" x="-1591.5385700000004" y="631.1975589999998" width="468" height="145"></data>
       <data key="dData">entry/
 Сенсор.ПоискВрагаПоДистанции(мин)
 
@@ -59,37 +78,53 @@ exit/
 Сенсор.ОстановкаПоиска()
 
 </data>
+      <data key="dGeometry">
+        <rect x="-1582.03857" y="606.497559" width="468" height="145"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
     </node>
-    <edge id="initTrans" source="init" target="n3"></edge>
-    <edge id="edge1" source="n0" target="n3">
-      <data key="dGeometry" x="-1493.4000000000024" y="835.9999999999997"></data>
-      <data key="dColor">#c81afd</data>
-      <data key="dData">АнализаторЦели.ЦельУничтожена/
-</data>
-    </edge>
-    <edge id="edge2" source="n0" target="n3">
-      <data key="dGeometry" x="-1348.9999999999998" y="923.4000000000001"></data>
-      <data key="dColor">#438048</data>
+    <node id="init">
+      <data key="dVertex">initial</data>
+      <data key="dGeometry">
+        <rect x="-1700.9985699999997" y="564.177559" width="20" height="20"></rect>
+      </data>
+    </node>
+    <edge id="init-n3" source="init" target="n3"></edge>
+    <edge id="n0-n3" source="n0" target="n3">
       <data key="dData">АнализаторЦели.ЦельПотеряна/
+
 </data>
+      <data key="dColor">#3b1a08</data>
+      <data key="dLabelGeometry">
+        <point x="-968.7499999999993" y="401.26000000000005"></point>
+      </data>
     </edge>
-    <edge id="edge3" source="n3" target="n0::n1">
-      <data key="dGeometry" x="-1098.2000000000003" y="665"></data>
-      <data key="dColor">#df2db6</data>
+    <edge id="n3-n0::n1" source="n3" target="n0::n1">
       <data key="dData">Сенсор.ЦельПолучена/
+
 </data>
+      <data key="dColor">#531a77</data>
+      <data key="dLabelGeometry">
+        <point x="-1335.4000000000008" y="967.0300000000002"></point>
+      </data>
     </edge>
-    <edge id="edge4" source="n0::n1" target="n0::n2">
-      <data key="dGeometry" x="58.899999999999956" y="197.5999999999999"></data>
-      <data key="dColor">#f450c8</data>
+    <edge id="n0::n1-n0::n2" source="n0::n1" target="n0::n2">
       <data key="dData">ОружиеЦелевое.ЦельВошлаВЗонуАтаки/
+
 </data>
+      <data key="dColor">#3fe09a</data>
+      <data key="dLabelGeometry">
+        <point x="95.90000000000002" y="332.0000000000002"></point>
+      </data>
     </edge>
-    <edge edge="edge5" source="n0::n2" target="n0::n1">
-      <data key="dGeometry" x="364.79999999999995" y="199.4999999999999"></data>
-      <data key="dColor">#7517fe</data>
+    <edge id="n0::n2-n0::n1" source="n0::n2" target="n0::n1">
       <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/
+
 </data>
+      <data key="dColor">#554a3b</data>
+      <data key="dLabelGeometry">
+        <point x="370.7" y="341.80000000000007"></point>
+      </data>
     </edge>
   </graph>
 </graphml>

@@ -1,13 +1,14 @@
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { Shape } from '@renderer/lib/drawable';
+import { drawText, prepareText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
-
-import { Node } from './Node';
-
-import { Container } from '../basic/Container';
-import { drawText, prepareText } from '../utils/text';
 
 const placeholder = 'Придумайте заметку';
 
-export class Note extends Node {
+/**
+ * Класс который отрисовывает данные заметки
+ */
+export class Note extends Shape {
   private textData = {
     height: 100,
     textArray: [] as string[],
@@ -16,14 +17,14 @@ export class Note extends Node {
   private visible = true;
   isSelected = false;
 
-  constructor(container: Container, id: string, parent?: Node) {
-    super(container, id, parent);
+  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+    super(app, id, parent);
 
     this.prepareText();
   }
 
   get data() {
-    return this.container.app.manager.data.elements.notes[this.id];
+    return this.app.model.data.elements.notes[this.id];
   }
 
   get bounds() {
@@ -35,8 +36,21 @@ export class Note extends Node {
     this.data.position.y = value.y;
   }
 
+  get position() {
+    return this.data.position;
+  }
+  set position(value) {
+    this.data.position = value;
+  }
+  get dimensions() {
+    return { width: 200, height: 10 * 2 + this.textData.height };
+  }
+  set dimensions(_value) {
+    throw new Error('Note dimensions are immutable');
+  }
+
   get computedStyles() {
-    const scale = this.container.app.manager.data.scale;
+    const scale = this.app.model.data.scale;
 
     return {
       padding: 10 / scale,
@@ -52,7 +66,7 @@ export class Note extends Node {
 
   setVisible(value: boolean) {
     this.visible = value;
-    this.container.isDirty = true;
+    this.app.view.isDirty = true;
   }
 
   prepareText() {
@@ -66,7 +80,7 @@ export class Note extends Node {
     };
   }
 
-  draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D) {
     if (!this.visible) return;
 
     const { x, y, width, height } = this.drawBounds;

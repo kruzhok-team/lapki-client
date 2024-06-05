@@ -1,10 +1,15 @@
-import { Canvas } from './basic/Canvas';
-import { Container } from './basic/Container';
-import { Keyboard } from './basic/Keyboard';
-import { Mouse } from './basic/Mouse';
-import { Render } from './common/Render';
-import { EditorManager } from './data/EditorManager';
-import { preloadPicto } from './drawable/Picto';
+import * as TWEEN from '@tweenjs/tween.js';
+
+import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
+import { Render } from '@renderer/lib/common';
+import { EditorController } from '@renderer/lib/data/EditorController';
+import { EditorModel } from '@renderer/lib/data/EditorModel';
+import { preloadPicto } from '@renderer/lib/drawable';
+
+interface CanvasEditorSettings {
+  animations: boolean;
+  grid: boolean;
+}
 
 /**
  * Редактор машин состояний.
@@ -16,16 +21,26 @@ export class CanvasEditor {
   private _mouse: Mouse | null = null;
   private _keyboard: Keyboard | null = null;
   private _render: Render | null = null;
-  private _container: Container | null = null;
 
-  manager!: EditorManager;
+  private rendererUnsubscribe: (() => void) | null | false = null;
 
-  constructor() {
-    this.manager = new EditorManager();
-    this.manager.resetEditor = () => {
-      this.container.machineController.loadData();
-    };
-  }
+  //! Порядок создания важен, так как контроллер при инициализации использует представление
+  model = new EditorModel(
+    () => {
+      this.controller.initPlatform();
+    },
+    () => {
+      this.controller.loadData();
+      this.controller.history.clear();
+    }
+  );
+  view = new EditorView(this);
+  controller = new EditorController(this);
+
+  settings: CanvasEditorSettings = {
+    animations: true,
+    grid: true,
+  };
 
   // геттеры для удобства, чтобы после монтирования редактора можно было бы ими нормально пользоваться а до монтирования ошибки
   get root() {
@@ -58,12 +73,6 @@ export class CanvasEditor {
     }
     return this._render;
   }
-  get container() {
-    if (!this._container) {
-      throw new Error('Cannot access container before initialization');
-    }
-    return this._container;
-  }
 
   mount(root: HTMLDivElement) {
     this._root = root;
@@ -75,35 +84,63 @@ export class CanvasEditor {
     this.canvas.resize();
     this.mouse.setOffset();
 
-    this._container = new Container(this);
-    this.canvas.onResize = () => {
+    this.canvas.on('resize', () => {
       this.mouse.setOffset();
-      this.container.isDirty = true;
-    };
-
-    preloadPicto(() => {
-      this.container.isDirty = true;
+      this.view.isDirty = true;
     });
 
-    this.render.subscribe(() => {
-      if (!this.container.isDirty) return;
+    preloadPicto(() => {
+      this.view.isDirty = true;
+    });
+
+    this.rendererUnsubscribe = this.render.subscribe(() => {
+      if (this.settings.animations) {
+        TWEEN.update();
+      }
+
+      if (!this.view.isDirty) return;
       this.mouse.tick();
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
-        this.container.draw(ctx, canvas);
+        this.view.draw(ctx, canvas);
       });
-      this.container.isDirty = false;
+      this.view.isDirty = false;
     });
 
-    this.manager.data.isMounted = true;
-    this.manager.triggerDataUpdate('isMounted');
+    this.model.data.isMounted = true;
+    this.model.triggerDataUpdate('isMounted');
 
-    this.container.machineController.loadData();
+    this.controller.loadData();
+    this.view.initEvents();
+    this.controller.transitions.initEvents();
   }
 
-  cleanUp() {
+  setSettings(settings: CanvasEditorSettings) {
+    this.settings = settings;
+
+    if (this.model.data.isMounted) {
+      this.view.isDirty = true;
+    }
+  }
+
+  unmount() {
+    this.view.removeEvents();
+
     this.canvas.cleanUp();
     this.keyboard.cleanUp();
     this.mouse.clearUp();
+
+    if (typeof this.rendererUnsubscribe === 'function') {
+      this.rendererUnsubscribe();
+    }
+
+    this._root = null;
+    this._canvas = null;
+    this._mouse = null;
+    this._keyboard = null;
+    this._render = null;
+
+    this.model.data.isMounted = false;
+    this.model.triggerDataUpdate('isMounted');
   }
 }

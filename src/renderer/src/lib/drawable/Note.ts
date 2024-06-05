@@ -64,6 +64,8 @@ export class Note extends Shape {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
+
+    this.edgeHandlers.disabled = value;
   }
 
   setVisible(value: boolean) {

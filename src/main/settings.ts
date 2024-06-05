@@ -15,6 +15,12 @@ export const defaultSettings = {
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
     type: 'local' as 'local' | 'remote',
   },
+  serialmonitor: {
+    host: 'localhost',
+    port: 0,
+    localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
+    type: 'local' as 'local' | 'remote',
+  },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',
   canvas: {

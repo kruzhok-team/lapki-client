@@ -27,7 +27,7 @@ export const SerialMonitorSelectModal: React.FC<SerialMonitorSelectModalProps> =
   onSubmit,
   ...props
 }) => {
-  const [SerialMonitorSetting] = useSettings('flasher');
+  const [SerialMonitorSetting] = useSettings('serialmonitor');
 
   const {
     register,

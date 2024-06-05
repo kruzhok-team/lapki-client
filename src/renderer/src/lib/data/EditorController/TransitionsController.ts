@@ -142,6 +142,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     // Убираем из предыдущего родителя
     transition.source.parent?.children.remove(transition, Layer.Transitions);
     transition.target.parent?.children.remove(transition, Layer.Transitions);
+    this.view.children.remove(transition, Layer.Transitions);
 
     if (!transition.source.parent || !transition.target.parent) {
       this.view.children.add(transition, Layer.Transitions);

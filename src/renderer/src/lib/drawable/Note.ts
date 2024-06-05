@@ -68,9 +68,11 @@ export class Note extends Shape {
     this.edgeHandlers.disabled = value;
   }
 
+  /**
+   * Не рекомендуется делать это в обход контроллера
+   */
   setVisible(value: boolean) {
     this.visible = value;
-    this.app.view.isDirty = true;
   }
 
   prepareText() {

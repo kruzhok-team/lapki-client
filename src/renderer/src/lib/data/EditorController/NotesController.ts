@@ -98,18 +98,26 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     const note = this.items.get(id);
     if (!note) return;
 
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    this.controller.transitions.forEachByTargetId(id, (transition) => {
+      this.controller.transitions.deleteTransition(transition.id, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
     if (canUndo) {
       this.history.do({
         type: 'deleteNote',
         args: { id, prevData: structuredClone(note.data) },
+        numberOfConnectedActions,
       });
     }
-
-    this.app.model.deleteNote(id);
 
     this.view.children.remove(note, Layer.Notes);
     this.unwatch(note);
     this.items.delete(id);
+    this.app.model.deleteNote(id);
 
     this.view.isDirty = true;
   }

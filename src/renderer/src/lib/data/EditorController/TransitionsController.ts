@@ -198,19 +198,27 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(id);
     if (!transition) return;
 
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    this.forEachByTargetId(id, (transition) => {
+      this.deleteTransition(transition.id, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
     if (canUndo) {
       this.history.do({
         type: 'deleteTransition',
         args: { transition, prevData: structuredClone(transition.data) },
+        numberOfConnectedActions,
       });
     }
-
-    this.app.model.deleteTransition(id);
 
     const parent = transition.parent ?? this.view;
     parent.children.remove(transition, Layer.Transitions);
     this.unwatchTransition(transition);
     this.items.delete(id);
+    this.app.model.deleteTransition(id);
 
     this.view.isDirty = true;
   }

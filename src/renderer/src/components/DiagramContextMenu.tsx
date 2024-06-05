@@ -5,11 +5,13 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as InitialIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as CameraIcon } from '@renderer/assets/icons/center_focus_2.svg';
+import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
 import { ReactComponent as CodeAllIcon } from '@renderer/assets/icons/code_all_2.svg';
 import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event_add.svg';
+import { ReactComponent as FinalStateIcon } from '@renderer/assets/icons/final_state.svg';
 import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
@@ -28,6 +30,14 @@ const contextData = {
   },
   pasteState: {
     icon: <StateIcon />,
+    combination: undefined,
+  },
+  pasteFinalState: {
+    icon: <FinalStateIcon className="h-full w-full" />,
+    combination: undefined,
+  },
+  pasteChoiceState: {
+    icon: <ChoiceStateIcon className="h-full w-full" />,
     combination: undefined,
   },
   pasteEvent: {
@@ -93,7 +103,7 @@ export const DiagramContextMenu: React.FC = () => {
     <div
       ref={refs.setFloating}
       style={floatingStyles}
-      className={twMerge('z-50 w-64 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
+      className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
     >
       {items.map(({ label, type, isFolder, children, action }, i) => (
         <Fragment key={i}>

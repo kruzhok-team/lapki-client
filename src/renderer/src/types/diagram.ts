@@ -48,6 +48,10 @@ export interface InitialState extends BaseState {}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface FinalState extends BaseState {}
 
+export interface ChoiceState extends BaseState {
+  selection?: boolean;
+}
+
 export type Variable = {
   component: string;
   method: string;
@@ -88,6 +92,7 @@ export type Elements = {
   states: { [id: string]: State };
   initialStates: { [id: string]: InitialState };
   finalStates: { [id: string]: FinalState };
+  choiceStates: { [id: string]: ChoiceState };
   transitions: { [id: string]: Transition };
   components: { [id: string]: Component };
   notes: { [id: string]: Note };
@@ -103,6 +108,7 @@ export function emptyElements(): Elements {
     states: {},
     initialStates: {},
     finalStates: {},
+    choiceStates: {},
     transitions: {},
     components: {},
     notes: {},

@@ -6,7 +6,6 @@ import {
   drawCurvedLine,
   drawTriangle,
   getLine,
-  getTransitionLines,
 } from '@renderer/lib/utils';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -77,6 +76,10 @@ export class Transition extends Shape {
   private drawLabel(ctx: CanvasRenderingContext2D) {
     if (!this.data.label) return;
 
+    const platform = this.app.controller.platform;
+
+    if (!platform) return;
+
     const { x, y, width, height } = this.drawBounds;
     const eventMargin = picto.eventMargin;
     const p = 15 / this.app.model.data.scale;
@@ -86,7 +89,6 @@ export class Transition extends Shape {
     const fontSize = stateStyle.titleFontSize / this.app.model.data.scale;
     const opacity = this.isSelected ? 1.0 : 0.7;
 
-    const platform = this.app.controller.platform;
     const eventRowLength = Math.max(
       3,
       Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
@@ -107,22 +109,19 @@ export class Transition extends Shape {
     if (this.data.label.trigger) {
       const trigger = this.data.label.trigger;
       ctx.beginPath();
-      platform.drawEvent(ctx, trigger, x + p, y + p);
+      platform.drawEvent(ctx, trigger, px, py);
       ctx.closePath();
     }
 
     //Здесь начинается прорисовка действий и условий для связей
+    //TODO: Требуется допиливание прорисовки условий
     if (this.data.label.condition) {
-      //TODO: Требуется допиливание прорисовки условий
+      const offsetByTrigger =
+        this.data.label.trigger && (eventMargin * 2 + picto.eventWidth) / this.app.model.data.scale;
+      const aX = px + (offsetByTrigger ?? 0);
+
       ctx.beginPath();
-      if (this.data.label.condition) {
-        const ax = 1;
-        const ay = 0;
-        const aX =
-          px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.model.data.scale;
-        const aY = py + (ay * yDx) / this.app.model.data.scale;
-        platform.drawCondition(ctx, this.data.label.condition, aX, aY, opacity);
-      }
+      platform.drawCondition(ctx, this.data.label.condition, aX, py, opacity);
       ctx.closePath();
     }
 
@@ -160,12 +159,16 @@ export class Transition extends Shape {
     const sourceBounds = this.source.drawBounds;
     const targetBounds = this.target.drawBounds;
 
-    const { sourceLine, targetLine } = getTransitionLines(
-      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-      { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      this.drawBounds,
-      10
-    );
+    const sourceLine = getLine({
+      rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect2: this.drawBounds,
+      rectPadding: 10,
+    });
+    const targetLine = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: this.drawBounds,
+      rectPadding: 10,
+    });
 
     ctx.lineWidth = transitionStyle.width;
     ctx.strokeStyle = this.data.color;
@@ -190,11 +193,11 @@ export class Transition extends Shape {
     const targetBounds = this.target.drawBounds;
     const sourceBounds = this.source.drawBounds;
 
-    const line = getLine(
-      { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
-      10
-    );
+    const line = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rectPadding: 10,
+    });
 
     ctx.lineWidth = transitionStyle.width;
     ctx.strokeStyle = this.data.color;

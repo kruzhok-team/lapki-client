@@ -73,7 +73,7 @@ export const MainContainer: React.FC = () => {
         openPlatformError(errs);
       }
     });
-  }, []);
+  }, [openPlatformError]);
 
   return (
     <div className="h-screen select-none">

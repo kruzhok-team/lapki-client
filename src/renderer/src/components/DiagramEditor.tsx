@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { EventSelection, State, Transition } from '@renderer/lib/drawable';
+import { EventSelection, State, Transition, ChoiceState, FinalState } from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Action, Event } from '@renderer/types/diagram';
 
@@ -23,7 +24,10 @@ export const DiagramEditor: React.FC = () => {
   const [state, setState] = useState<State | null>(null);
   const [events, setEvents] = useState<Action[]>([]);
   const [transition, setTransition] = useState<Transition | null>(null);
-  const [newTransition, setNewTransition] = useState<{ source: State; target: State }>();
+  const [newTransitionData, setNewTransitionData] = useState<{
+    source: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
+  }>();
 
   const [isCreateModalOpen, openCreateModal, closeCreateModal] = useModal(false);
 
@@ -45,53 +49,69 @@ export const DiagramEditor: React.FC = () => {
       setState(null);
       setEvents([]);
       setTransition(null);
-      setNewTransition(undefined);
+      setNewTransitionData(undefined);
     };
 
-    editor.view.on('dblclick', (position) => {
+    const handleDblclick = (position: Point) => {
       editor.controller.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
         color: DEFAULT_STATE_COLOR,
       });
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования ноды
-    editor.controller.states.on('changeState', (state) => {
+    const handleChangeState = (state: State) => {
       ClearUseState();
       setState(state);
       openCreateModal();
-    });
+    };
 
-    editor.controller.states.on('changeEvent', (data) => {
+    const handleChangeEvent = (data: {
+      state: State;
+      eventSelection: EventSelection;
+      event: Event;
+      isEditingEvent: boolean;
+    }) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       ClearUseState();
       setEventsModalParentData({ state, eventSelection });
       setEventsModalData({ event, isEditingEvent });
       openEventsModal();
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования созданной связи
-    editor.controller.transitions.on('changeTransition', (target) => {
+    const handleChangeTransition = (transition: Transition) => {
       ClearUseState();
-      setEvents(target.data.label?.do ?? []);
-      setTransition(target);
+      setEvents(transition.data.label?.do ?? []);
+      setTransition(transition);
       openCreateModal();
-    });
+    };
 
-    //Здесь мы открываем модальное окно редактирования новой связи
-    editor.controller.transitions.on('createTransition', ({ source, target }) => {
+    const handleCreateTransition = (data: {
+      source: State | ChoiceState;
+      target: State | ChoiceState | FinalState;
+    }) => {
       ClearUseState();
-      setNewTransition({ source, target });
+      setNewTransitionData(data);
       openCreateModal();
-    });
+    };
 
+    editor.view.on('dblclick', handleDblclick);
+    editor.controller.states.on('changeState', handleChangeState);
+    editor.controller.states.on('changeEvent', handleChangeEvent);
+    editor.controller.transitions.on('changeTransition', handleChangeTransition);
+    editor.controller.transitions.on('createTransition', handleCreateTransition);
+
+    //! Не забывать удалять слушатели
     return () => {
-      // снятие слежки произойдёт по смене редактора новым
-      // model.unwatchEditor();
-      editor?.cleanUp();
+      editor.view.off('dblclick', handleDblclick);
+      editor.controller.states.off('changeState', handleChangeState);
+      editor.controller.states.off('changeEvent', handleChangeEvent);
+      editor.controller.transitions.off('changeTransition', handleChangeTransition);
+      editor.controller.transitions.off('createTransition', handleCreateTransition);
+
+      editor.unmount();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.
     // Скорее всего, контейнер меняться уже не будет, поэтому
@@ -134,12 +154,16 @@ export const DiagramEditor: React.FC = () => {
     closeEventsModal();
   };
 
+  // TODO(bryzZz) Нужно делить на две модалки
+  // Тут возникло много as any
+  // это потому что для состояния и перехода типы разные но модалка одна
+  // и приходится приводить к какому-то обшему типу
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
       editor.controller.states.changeStateEvents({
         id: data.id,
-        triggerComponent: data.trigger.component,
-        triggerMethod: data.trigger.method,
+        triggerComponent: (data.trigger as any).component,
+        triggerMethod: (data.trigger as any).method,
         actions: events,
         color: data.color ?? DEFAULT_STATE_COLOR,
       });
@@ -155,18 +179,15 @@ export const DiagramEditor: React.FC = () => {
           condition: data.condition,
         } as any,
       });
-    } else if (newTransition) {
+    } else if (newTransitionData) {
       editor.controller.transitions.createTransition({
-        source: newTransition.source.id,
-        target: newTransition.target.id,
+        source: newTransitionData.source.id,
+        target: newTransitionData.target.id,
         color: data.color ?? DEFAULT_TRANSITION_COLOR,
         label: {
+          trigger: data.trigger,
           condition: data.condition,
           do: events,
-          trigger: {
-            component: data.trigger.component,
-            method: data.trigger.method,
-          },
         } as any,
       });
     }
@@ -179,6 +200,19 @@ export const DiagramEditor: React.FC = () => {
 
     openEventsModal();
   };
+
+  // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
+  const showTrigger = useMemo(() => {
+    if (newTransitionData) {
+      return !(newTransitionData.source instanceof ChoiceState);
+    }
+
+    if (transition) {
+      return !(transition.source instanceof ChoiceState);
+    }
+
+    return true;
+  }, [newTransitionData, transition]);
 
   return (
     <>
@@ -197,9 +231,10 @@ export const DiagramEditor: React.FC = () => {
           />
 
           <CreateModal
-            state={state ? state : undefined}
-            transition={transition ? transition : undefined}
+            state={state ?? undefined}
+            transition={transition ?? undefined}
             events={events}
+            showTrigger={showTrigger}
             setEvents={setEvents}
             onOpenEventsModal={handleOpenEventsModal}
             onSubmit={handleCreateModalSubmit}

@@ -1,6 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { History } from '@renderer/lib/data/History';
-import { State } from '@renderer/lib/drawable';
+import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
 import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
 import { AddComponentParams } from '@renderer/lib/types/EditorModel';
 import {
@@ -41,7 +41,7 @@ export class EditorController {
   transitions!: TransitionsController;
   notes!: NotesController;
 
-  platform!: PlatformManager;
+  platform: PlatformManager | null = null;
 
   history = new History(this);
 
@@ -57,6 +57,18 @@ export class EditorController {
     return this.app.view;
   }
 
+  initPlatform() {
+    const platformName = this.app.model.data.elements.platform;
+
+    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
+    const platform = loadPlatform(platformName);
+    if (typeof platform === 'undefined') {
+      throw Error("couldn't init platform " + platformName);
+    }
+
+    this.app.controller.platform = platform;
+  }
+
   loadData() {
     this.initializer.init();
 
@@ -65,6 +77,8 @@ export class EditorController {
 
   addComponent(args: AddComponentParams, canUndo = true) {
     const { name, type } = args;
+
+    if (!this.platform) return;
 
     this.app.model.addComponent(args);
 
@@ -84,6 +98,8 @@ export class EditorController {
 
   editComponent(args: EditComponentParams, canUndo = true) {
     const { name, parameters, newName } = args;
+
+    if (!this.platform) return;
 
     const prevComponent = structuredClone(this.app.model.data.elements.components[name]);
 
@@ -113,6 +129,8 @@ export class EditorController {
   removeComponent(args: RemoveComponentParams, canUndo = true) {
     const { name, purge } = args;
 
+    if (!this.platform) return;
+
     const prevComponent = this.app.model.data.elements.components[name];
     this.app.model.removeComponent(name);
 
@@ -134,6 +152,8 @@ export class EditorController {
   }
 
   private renameComponent(name: string, newName: string) {
+    if (!this.platform) return;
+
     this.app.model.renameComponent(name, newName);
 
     const visualCompo = this.platform.nameToVisual.get(name);
@@ -216,6 +236,12 @@ export class EditorController {
       this.states.deleteState(state.id);
     });
 
+    this.states.data.choiceStates.forEach((state) => {
+      if (!state.isSelected) return;
+
+      this.states.deleteChoiceState(state.id);
+    });
+
     this.transitions.forEach((transition) => {
       if (!transition.isSelected) return;
 
@@ -283,12 +309,23 @@ export class EditorController {
   };
 
   selectState(id: string) {
-    const state = this.states.get(id);
-    if (!state || !(state instanceof State)) return;
+    const state = this.states.data.states.get(id);
+    if (!state) return;
 
     this.removeSelection();
 
     this.app.model.changeStateSelection(id, true);
+
+    state.setIsSelected(true);
+  }
+
+  selectChoiceState(id: string) {
+    const state = this.states.data.choiceStates.get(id);
+    if (!state) return;
+
+    this.removeSelection();
+
+    this.app.model.changeChoiceStateSelection(id, true);
 
     state.setIsSelected(true);
   }
@@ -323,6 +360,12 @@ export class EditorController {
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
   removeSelection() {
+    this.states.data.choiceStates.forEach((state) => {
+      state.setIsSelected(false);
+
+      this.app.model.changeChoiceStateSelection(state.id, false);
+    });
+
     this.states.forEachState((state) => {
       state.setIsSelected(false);
       this.app.model.changeStateSelection(state.id, false);
@@ -342,6 +385,8 @@ export class EditorController {
   }
 
   getVacantComponents(): ComponentEntry[] {
+    if (!this.platform) return [];
+
     const components = this.app.model.data.elements.components;
     const vacant: ComponentEntry[] = [];
     for (const idx in this.platform.data.components) {

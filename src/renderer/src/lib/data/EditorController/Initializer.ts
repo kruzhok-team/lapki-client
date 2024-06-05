@@ -1,6 +1,13 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { State, Note, Transition, InitialState, FinalState } from '@renderer/lib/drawable';
+import {
+  State,
+  Note,
+  Transition,
+  InitialState,
+  FinalState,
+  ChoiceState,
+  GhostTransition,
+} from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
 /**
@@ -16,9 +23,9 @@ export class Initializer {
     this.initStates();
     this.initInitialStates();
     this.initFinalStates();
+    this.initChoiceStates();
     this.initTransitions();
     this.initNotes();
-    this.initPlatform();
     this.initComponents();
 
     this.app.view.viewCentering();
@@ -113,12 +120,32 @@ export class Initializer {
     }
   }
 
+  private initChoiceStates() {
+    const items = this.app.model.data.elements.choiceStates;
+
+    for (const id in items) {
+      this.createChoiceStateView(id);
+    }
+
+    for (const id in items) {
+      const data = items[id];
+
+      if (!data.parentId) continue;
+
+      this.linkChoiceStateView(data.parentId, id);
+    }
+  }
+
   private initTransitions() {
     const items = this.app.model.data.elements.transitions;
 
     for (const id in items) {
       this.createTransitionView(id);
     }
+
+    // Инициализация призрачного перехода
+    this.transitions.ghost = new GhostTransition(this.app);
+    this.app.view.children.add(this.transitions.ghost, Layer.GhostTransition);
   }
 
   private initNotes() {
@@ -130,6 +157,8 @@ export class Initializer {
   }
 
   private initComponents() {
+    if (!this.platform) return;
+
     const items = this.app.model.data.elements.components;
 
     for (const name in items) {
@@ -140,18 +169,6 @@ export class Initializer {
         color: component.parameters['labelColor'],
       });
     }
-  }
-
-  private initPlatform() {
-    const platformName = this.app.model.data.elements.platform;
-
-    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformName);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
-    }
-
-    this.app.controller.platform = platform;
   }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
@@ -221,5 +238,23 @@ export class Initializer {
     this.app.view.children.remove(child, Layer.FinalStates);
     child.parent = parent;
     parent.children.add(child, Layer.FinalStates);
+  }
+
+  private createChoiceStateView(id: string) {
+    const state = new ChoiceState(this.app, id);
+    this.states.data.choiceStates.set(state.id, state);
+    this.states.watch(state);
+    this.app.view.children.add(state, Layer.ChoiceStates);
+  }
+
+  private linkChoiceStateView(parentId: string, childId: string) {
+    const parent = this.states.data.states.get(parentId);
+    const child = this.states.data.choiceStates.get(childId);
+
+    if (!parent || !child) return;
+
+    this.app.view.children.remove(child, Layer.ChoiceStates);
+    child.parent = parent;
+    parent.children.add(child, Layer.ChoiceStates);
   }
 }

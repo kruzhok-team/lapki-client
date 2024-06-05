@@ -36,6 +36,8 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
   cleanUp() {
     this.element.removeEventListener('keydown', this.handleKeyDown);
     this.element.removeEventListener('keyup', this.handleKeyUp);
+
+    this.reset();
   }
 
   handleKeyDown = (e: KeyboardEvent) => {

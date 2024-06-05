@@ -17,8 +17,7 @@ export class EdgeHandlers {
 
   disabled = true;
 
-  onStartNewTransitionState?: () => void;
-  onStartNewTransitionNote?: () => void;
+  onStartNewTransition?: () => void;
 
   constructor(app: CanvasEditor, shape: Shape) {
     this.app = app;
@@ -81,8 +80,7 @@ export class EdgeHandlers {
 
     e.stopPropagation();
 
-    this.onStartNewTransitionState?.();
-    this.onStartNewTransitionNote?.();
+    this.onStartNewTransition?.();
   };
 
   isMouseOver(e: MyMouseEvent) {

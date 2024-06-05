@@ -1117,7 +1117,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('drag', this.handleDrag.bind(this, state));
     state.on('longpress', this.handleLongPress.bind(this, state));
 
-    state.edgeHandlers.onStartNewTransitionState = this.handleStartNewTransition.bind(this, state);
+    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
   }
   private unwatchState(state: State) {
     state.off('dragend', this.handleDragEnd.bind(this, state));
@@ -1155,7 +1155,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state));
 
-    state.edgeHandlers.onStartNewTransitionState = this.handleStartNewTransition.bind(this, state);
+    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
   }
   private unwatchChoiceState(state: ChoiceState) {
     state.off('dragend', this.handleChoiceStateDragEnd.bind(this, state));

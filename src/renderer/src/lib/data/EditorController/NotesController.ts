@@ -150,7 +150,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.on('contextmenu', this.handleContextMenu.bind(this, note));
     note.on('dragend', this.handleDragEnd.bind(this, note));
 
-    note.edgeHandlers.onStartNewTransitionNote = this.handleStartNewTransition.bind(this, note);
+    note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
   }
 
   unwatch(note: Note) {

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 
+import { Resizable } from 're-resizable';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow.svg';
+import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
+import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
+import { useTabs } from '@renderer/store/useTabs';
 import { File } from '@renderer/types/documentation';
 
 import { Navigation } from './components/Navigation';
@@ -30,10 +33,54 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     url && `${url}/index.json?nocache=true`
   );
 
+  const [tab] = useTabs((state) => [state.activeTab]);
+
   const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
-  const [isOpen, toggle] = useDoc((state) => [state.isOpen, state.toggle]);
+  const [isOpen, onDocumentationToggle] = useDoc((state) => [
+    state.isOpen,
+    state.onDocumentationToggle,
+  ]);
+
+  const [width, setWidth] = useState(0);
+  const [minWidth, setMinWidth] = useState(5);
+  const [maxWidth, setMaxWidth] = useState('60vw');
+
+  const handleResize = (e, _direction, ref) => {
+    if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
+      onDocumentationToggle();
+    }
+
+    if (e.pageX >= 0.95 * window.innerWidth && isOpen) {
+      onDocumentationToggle();
+    }
+    //Получаем ширину блока документации
+    setWidth(parseInt(ref.style.width));
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setMaxWidth('5px');
+      setMinWidth(5);
+    } else {
+      setMaxWidth('60vw');
+      setMinWidth(420);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'F1') {
+        onDocumentationToggle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [onDocumentationToggle]);
 
   const onItemClick = (filePath: string) => {
     setActiveTab(1);
@@ -75,7 +122,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
           <button
             className={twMerge(
               'rounded border border-primary p-2',
-              activeTab === 0 && 'bg-primary'
+              activeTab === 0 && 'bg-primary text-text-secondary'
             )}
             onClick={() => setActiveTab(0)}
           >
@@ -84,14 +131,13 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
           <button
             className={twMerge(
               'rounded border border-primary p-2',
-              activeTab === 1 && 'bg-primary'
+              activeTab === 1 && 'bg-primary text-text-secondary'
             )}
             onClick={() => setActiveTab(1)}
           >
             Просмотр
           </button>
         </div>
-
         <div className="h-full overflow-y-hidden">
           <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
             {<Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />}
@@ -121,16 +167,30 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   return (
     <div
       className={twMerge(
-        'absolute right-0 top-0 flex h-full translate-x-[calc(100%-2rem)] bg-bg-secondary transition-transform',
-        isOpen && 'translate-x-0',
+        'absolute right-0 top-0 flex h-full',
         topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
       )}
     >
-      <button className="w-8 border-r border-border-primary" onClick={toggle}>
-        <Arrow className={twMerge('rotate-180 transition-transform', isOpen && 'rotate-0')} />
-      </button>
-
-      <div className="w-[400px]">{renderContent()}</div>
+      <Resizable
+        enable={{ left: true }}
+        size={{ width: width, height: '100%' }}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onResize={handleResize}
+        className="border-l border-border-primary bg-bg-secondary"
+      >
+        {!topOffset ? (
+          <button
+            className="absolute -left-14 bottom-0 m-2 text-primary"
+            onClick={onDocumentationToggle}
+          >
+            <Question height={40} width={40} />
+          </button>
+        ) : (
+          tab === 'editor' && <EditorSettings toggle={onDocumentationToggle} />
+        )}
+        <div className="h-full">{renderContent()}</div>
+      </Resizable>
     </div>
   );
 };

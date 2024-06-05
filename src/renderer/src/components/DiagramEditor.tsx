@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Scale } from '@renderer/components';
-import { useSettings, useModal } from '@renderer/hooks';
+import { useSettings } from '@renderer/hooks';
+import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State, Transition, ChoiceState, FinalState } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
@@ -216,9 +216,7 @@ export const DiagramEditor: React.FC = () => {
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        {isMounted && <Scale />}
-      </div>
+      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
 
       {isMounted && (
         <>

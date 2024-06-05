@@ -27,9 +27,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.avrdude;
-  const [currentDevice, setCurrentDevice] = useState<string | undefined>(undefined);
-  const [connectionStatus, setFlasherConnectionStatus] = useState<string>('Не подключен.');
-
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());

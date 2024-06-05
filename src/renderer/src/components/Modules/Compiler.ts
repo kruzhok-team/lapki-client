@@ -11,8 +11,33 @@ import {
   CompilerResult,
   Binary,
   SourceFile,
+  CompilerTransition,
+  CompilerInitialState,
 } from '@renderer/types/CompilerTypes';
-import { Elements } from '@renderer/types/diagram';
+import { Elements, InitialState, Transition } from '@renderer/types/diagram';
+
+function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
+  [key: string]: Transition;
+} {
+  const newTransitions: {
+    [key: string]: Transition;
+  } = {};
+  for (const transitionId in oldTransitions) {
+    const oldTransition = oldTransitions[transitionId];
+    newTransitions[transitionId] = {
+      source: oldTransition.source,
+      target: oldTransition.target,
+      color: oldTransition.color,
+      label: {
+        trigger: oldTransition.trigger,
+        position: oldTransition.position,
+        condition: oldTransition.condition,
+        do: oldTransition.do,
+      },
+    };
+  }
+  return newTransitions;
+}
 
 export class Compiler {
   static port = 8081;
@@ -165,6 +190,8 @@ export class Compiler {
       this.setCompilerStatus('Подключен');
       clearTimeout(this.timerOutID);
       let data;
+      let compilerInitial: CompilerInitialState | undefined = undefined;
+      let initial: InitialState | undefined = undefined;
       switch (this.mode) {
         case 'compile':
           data = JSON.parse(msg.data as string);
@@ -185,7 +212,15 @@ export class Compiler {
           break;
         case 'import':
           data = JSON.parse(msg.data as string);
-          console.log(data);
+          data['choiceStates'] = {};
+          data['initialState'] = {};
+          data['finalStates'] = {};
+          compilerInitial = data['initialState'] as CompilerInitialState;
+          compilerInitial.target;
+          initial = {
+            position: compilerInitial.position,
+          };
+          data['initialStates'] = data['initialState']['target'];
           // TODO: Сразу распарсить как Elements.
           this.setImportData(JSON.stringify(data.source[0].fileContent));
           break;
@@ -249,23 +284,10 @@ export class Compiler {
       const [mainPlatform, subPlatform] = platform.split('-');
       console.log(mainPlatform, subPlatform);
       switch (mainPlatform) {
-        case 'ArduinoUno': {
-          ws.send('cgml');
-          this.mode = 'compile';
-          ws.send(exportCGML(data as Elements));
-          break;
-        }
-        case 'ArduinoMicro': {
-          ws.send('cgml');
-          this.mode = 'compile';
-          ws.send(exportCGML(data as Elements));
-          break;
-        }
         case 'BearlogaDefendImport':
           ws.send('berlogaImport');
           ws.send(data as string);
           ws.send(subPlatform);
-          console.log('import!');
           this.mode = 'import';
           break;
         case 'BearlogaDefend':
@@ -276,12 +298,13 @@ export class Compiler {
           } else {
             ws.send('Robot');
           }
-          console.log('export!');
           this.mode = 'export';
           break;
         default:
-          console.log(`unknown platform ${platform}`);
-          return;
+          ws.send('cgml');
+          this.mode = 'compile';
+          ws.send(exportCGML(data as Elements));
+          break;
       }
 
       this.setCompilerStatus('Идет компиляция...');

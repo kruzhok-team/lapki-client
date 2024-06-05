@@ -97,6 +97,7 @@ export const Hierarchy: React.FC = () => {
       data[noteId] = {
         index: noteId,
         isFolder: false,
+        //TODO: надо добавить название заметки (title)
         data: { title: note.text ?? 'Комментарий', type: 'note' },
         children: [],
         canRename: false,

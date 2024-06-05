@@ -93,7 +93,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { source, target, color, id: prevId, label } = params;
-
+    //TODO: где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const sourceId = this.controller.states.get(source) || this.controller.notes.get(source);
     const targetId =
       this.controller.states.get(target) ||

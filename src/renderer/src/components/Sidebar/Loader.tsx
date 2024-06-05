@@ -260,7 +260,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
     if (flasherIsLocal && !hasAvrdude) {
       return (
         <div>
-          <button type="button" className="btn-primary">
+          <button type="button" className="btn-primary mb-2 w-full">
             Программа avrdude не найдена!
           </button>
         </div>

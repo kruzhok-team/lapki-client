@@ -242,7 +242,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     if (node) {
       node.handleMouseDoubleClick(e);
     } else {
-      this.emit('dblclick', this.relativeMousePos({ x: e.x, y: e.y }));
+      this.emit('dblclick', this.windowToWorldCoords({ x: e.x, y: e.y }));
     }
   };
 
@@ -283,12 +283,23 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.canvas.element.style.cursor = 'default';
   };
 
-  relativeMousePos(e: Point): Point {
+  // Window координаты - это координаты мыши на html canvas элементе
+  // World координаты - это координаты которые учитывают масштаб и смещение
+  windowToWorldCoords(point: Point): Point {
     const scale = this.app.model.data.scale;
     const offset = this.app.model.data.offset;
     return {
-      x: e.x * scale - offset.x,
-      y: e.y * scale - offset.y,
+      x: point.x * scale - offset.x,
+      y: point.y * scale - offset.y,
+    };
+  }
+
+  worldToWindowCoords(point: Point): Point {
+    const scale = this.app.model.data.scale;
+    const offset = this.app.model.data.offset;
+    return {
+      x: (point.x + offset.x) / scale,
+      y: (point.y + offset.y) / scale,
     };
   }
 

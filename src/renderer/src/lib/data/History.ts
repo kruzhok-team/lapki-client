@@ -507,10 +507,7 @@ export class History {
     this.redoStack.length = 0;
     this.undoStack.push(action);
 
-    // Проверка на лимит
-    if (this.undoStack.length > STACK_SIZE_LIMIT) {
-      this.undoStack.shift();
-    }
+    this.checkUndoStackLimit();
 
     this.updateSnapshot();
   }
@@ -550,10 +547,7 @@ export class History {
     // Если соединённые действия то первое должно попасть в конец undo стека
     this.undoStack.push(action);
 
-    // Проверка на лимит
-    if (this.undoStack.length > STACK_SIZE_LIMIT) {
-      this.undoStack.shift();
-    }
+    this.checkUndoStackLimit();
 
     this.updateSnapshot();
   };
@@ -571,6 +565,26 @@ export class History {
     this.redoStack.length = 0;
 
     this.updateSnapshot();
+  }
+
+  // Есди привышен лимит стека то удаляем первые СОЕДИНЕННЫЕ действия
+  private checkUndoStackLimit() {
+    if (this.undoStack.length <= STACK_SIZE_LIMIT) return;
+
+    // Нужно пройти по стеку вниз, чтобы найти именно первую группу элементов
+    let i = this.undoStack.length - 1;
+    let lastNumberOfConnectedActions = 1;
+    while (i >= 0) {
+      if (this.undoStack[i]?.numberOfConnectedActions === undefined) {
+        lastNumberOfConnectedActions = 1;
+        i -= 1;
+      } else {
+        lastNumberOfConnectedActions = this.undoStack[i].numberOfConnectedActions as number;
+        i -= lastNumberOfConnectedActions + 1;
+      }
+    }
+
+    this.undoStack = this.undoStack.slice(lastNumberOfConnectedActions + 1);
   }
 
   private updateSnapshot = () => {

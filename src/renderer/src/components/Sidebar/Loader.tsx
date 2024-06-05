@@ -260,14 +260,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
     if (flasherIsLocal && !hasAvrdude) {
       return (
         <div>
-          <div className="text-error">
-            {'Программа avrdude не найдена! Требуется её установить!'}
-          </div>
-          <div>
-            <button type="button" className="btn-primary">
-              Инструкция по установке avrdude
-            </button>
-          </div>
+          <button type="button" className="btn-primary">
+            Программа avrdude не найдена!
+          </button>
         </div>
       );
     }
@@ -380,9 +375,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
         >
           Результат прошивки
         </button>
+        {avrdudeCheck()}
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>
-          {avrdudeCheck()}
         </div>
       </div>
     </section>

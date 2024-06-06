@@ -1,15 +1,16 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { EditComponentParams, RemoveComponentParams } from '@renderer/lib/types/EditorController';
-import { AddComponentParams } from '@renderer/lib/types/EditorModel';
+import { Note, Transition } from '@renderer/lib/drawable';
 import {
-  Condition,
-  Variable,
-  State as StateData,
-  Transition as TransitionData,
-  Note as NoteData,
-} from '@renderer/types/diagram';
+  CopyData,
+  CopyType,
+  EditComponentParams,
+  RemoveComponentParams,
+} from '@renderer/lib/types/EditorController';
+import { AddComponentParams } from '@renderer/lib/types/EditorModel';
+import { Condition, Variable } from '@renderer/types/diagram';
 
 import { Initializer } from './Initializer';
 import { NotesController } from './NotesController';
@@ -44,6 +45,9 @@ export class EditorController {
   platform: PlatformManager | null = null;
 
   history = new History(this);
+
+  private copyData: CopyData | null = null; // То что сейчас скопировано
+  private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущьности она не перекрывала предыдущую
 
   constructor(private app: CanvasEditor) {
     this.initializer = new Initializer(app);
@@ -256,56 +260,91 @@ export class EditorController {
   };
 
   copySelected = () => {
-    this.states.forEachState((state) => {
-      if (!state.isSelected) return;
+    const nodeToCopy =
+      [...this.states.data.states.values()].find((state) => state.isSelected) ||
+      [...this.transitions.items.values()].find((transition) => transition.isSelected) ||
+      [...this.notes.items.values()].find((note) => note.isSelected);
 
-      const data = this.app.model.serializer.getState(state.id);
-      if (!data) return;
+    if (!nodeToCopy) return;
 
-      navigator.clipboard.writeText(data);
-    });
+    // Тип нужен чтобы отделить ноды при вствке
+    let copyType: CopyType = 'state';
+    if (nodeToCopy instanceof Transition) copyType = 'transition';
+    if (nodeToCopy instanceof Note) copyType = 'note';
 
-    this.transitions.forEach((transition) => {
-      if (!transition.isSelected) return;
+    // Если скопировалась новая нода то нужно сбросить смещение позиции вставки
+    if (nodeToCopy.id !== this.copyData?.data.id) {
+      this.pastePositionOffset = 0;
+    }
 
-      const data = this.app.model.serializer.getTransition(transition.id);
-      if (!data) return;
-
-      navigator.clipboard.writeText(data);
-    });
-
-    this.notes.forEach((note) => {
-      if (!note.isSelected) return;
-
-      const data = this.app.model.serializer.getNote(note.id);
-      if (!data) return;
-
-      navigator.clipboard.writeText(data);
-    });
+    this.copyData = {
+      type: copyType,
+      data: { ...(structuredClone(nodeToCopy.data) as any), id: nodeToCopy.id },
+    };
   };
 
-  pasteSelected = async () => {
-    const data = await navigator.clipboard.readText();
+  pasteSelected = () => {
+    if (!this.copyData) return;
 
-    const copyData = JSON.parse(data) as StateData | TransitionData | NoteData;
+    const { type, data } = this.copyData;
 
-    if ('name' in copyData) {
+    if (type === 'state') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
       return this.states.createState({
-        name: copyData.name,
-        position: copyData.position,
-        events: copyData.events,
-        parentId: copyData.parentId,
-        color: copyData.color,
+        ...data,
+        id: undefined, // id должно сгенерится новое, так как это новая сушность
+        linkByPoint: false,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
       });
     }
 
-    if ('text' in copyData) {
-      return this.notes.createNote(copyData);
+    if (type === 'note') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+      return this.notes.createNote({
+        ...data,
+        id: undefined,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
     }
 
-    return this.transitions.createTransition({
-      ...copyData,
-    });
+    if (type === 'transition') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+      const getLabel = () => {
+        if (!this.copyData) return;
+
+        if (!data.label) return undefined;
+
+        return {
+          ...data.label,
+          position: {
+            x: data.label.position.x + this.pastePositionOffset,
+            y: data.label.position.y + this.pastePositionOffset,
+          },
+        };
+      };
+
+      return this.transitions.createTransition({
+        ...data,
+        id: undefined,
+        label: getLabel(),
+      });
+    }
+
+    return null;
+  };
+
+  copyAndPaseSelected = () => {
+    this.copySelected();
+    this.pasteSelected();
   };
 
   selectState(id: string) {

@@ -9,6 +9,7 @@ interface ComponentFormFieldLabelProps extends ComponentProps<'input'> {
   label: string;
   hint?: string;
   error?: string;
+  as?: 'label' | 'div';
 }
 
 export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = ({
@@ -17,11 +18,14 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   error,
   className,
   children,
+  as = 'label',
   ...props
 }) => {
+  const Component = as;
+
   return (
     <div>
-      <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
+      <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
         <div className="flex min-w-28 items-center gap-1">
           <span>{label}</span>
           {hint && (
@@ -44,7 +48,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
             {...props}
           />
         )}
-      </label>
+      </Component>
       <p className="pl-[120px] text-sm text-error">{error}</p>
     </div>
   );

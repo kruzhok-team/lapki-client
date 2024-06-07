@@ -264,15 +264,13 @@ export const Loader: React.FC<FlasherProps> = ({
   const avrdudeCheck = () => {
     if (flasherIsLocal && !hasAvrdude) {
       return (
-        <div>
-          <button
-            type="button"
-            className="btn-primary mb-2 w-full border-bg-warning bg-bg-warning"
-            onClick={openAvrdudeGuideModal}
-          >
-            Программа avrdude не найдена!
-          </button>
-        </div>
+        <button
+          type="button"
+          className="btn-primary mb-2 w-full border-bg-warning bg-bg-warning"
+          onClick={openAvrdudeGuideModal}
+        >
+          Программа avrdude не найдена!
+        </button>
       );
     }
     return;

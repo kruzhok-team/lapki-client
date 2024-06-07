@@ -7,14 +7,17 @@ import { toast } from 'sonner';
 import { Buffer } from 'buffer';
 
 import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
+import { generateId, randomColor } from '@renderer/lib/utils';
 import {
   CompilerResult,
   Binary,
   SourceFile,
   CompilerTransition,
   CompilerInitialState,
+  CompilerElements,
+  CompilerState,
 } from '@renderer/types/CompilerTypes';
-import { Elements, InitialState, Transition } from '@renderer/types/diagram';
+import { Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;
@@ -39,6 +42,64 @@ function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransitio
   return newTransitions;
 }
 
+function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: string]: State } {
+  const states: { [id: string]: State } = {};
+  for (const oldStateId in oldStates) {
+    const oldState = oldStates[oldStateId];
+    states[oldStateId] = {
+      dimensions: {
+        width: oldState.bounds.width,
+        height: oldState.bounds.height,
+      },
+      position: {
+        x: oldState.bounds.x,
+        y: oldState.bounds.y,
+      },
+      name: oldState.name,
+      parentId: oldState.parent,
+      events: oldState.events,
+      color: randomColor(),
+    };
+  }
+  return states;
+}
+
+function actualizeInitialState(
+  oldInitial: CompilerInitialState
+): [{ [id: string]: InitialState }, { [id: string]: Transition }] {
+  const initialId = generateId();
+  const transitionId = generateId();
+  const transition: Transition = {
+    source: initialId,
+    target: oldInitial.target,
+    color: randomColor(),
+  };
+  const initial: InitialState = {
+    position: oldInitial.position,
+  };
+  console.log(initial);
+  return [{ [initialId]: initial }, { [transitionId]: transition }];
+}
+
+function actualizeElements(oldElements: CompilerElements): Elements {
+  const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
+  return {
+    platform: oldElements.platform,
+    parameters: oldElements.parameters,
+    components: oldElements.components,
+    states: actualizeStates(oldElements.states),
+    finalStates: {},
+    choiceStates: {},
+    notes: {},
+    transitions: {
+      ...actualizeTransitions(oldElements.transitions),
+      ...initialTransition,
+    },
+    initialStates: initials,
+    meta: {},
+  };
+}
+
 export class Compiler {
   static port = 8081;
   static host = 'localhost';
@@ -49,7 +110,7 @@ export class Compiler {
   // Статус подключения.
   static setCompilerStatus: Dispatch<SetStateAction<string>>;
   static setCompilerMode: Dispatch<SetStateAction<string>>;
-  static setImportData: Dispatch<SetStateAction<string | undefined>>;
+  static setImportData: Dispatch<SetStateAction<Elements | undefined>>;
   static mode: string;
 
   static timerOutID: NodeJS.Timeout;
@@ -81,7 +142,7 @@ export class Compiler {
   static bindReact(
     setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>,
     setCompilerStatus: Dispatch<SetStateAction<string>>,
-    setImportData: Dispatch<SetStateAction<string | undefined>>
+    setImportData: Dispatch<SetStateAction<Elements | undefined>>
   ): void {
     this.setCompilerData = setCompilerData;
     this.setCompilerStatus = setCompilerStatus;
@@ -190,8 +251,7 @@ export class Compiler {
       this.setCompilerStatus('Подключен');
       clearTimeout(this.timerOutID);
       let data;
-      let compilerInitial: CompilerInitialState | undefined = undefined;
-      let initial: InitialState | undefined = undefined;
+      let elements;
       switch (this.mode) {
         case 'compile':
           data = JSON.parse(msg.data as string);
@@ -211,18 +271,9 @@ export class Compiler {
           } as CompilerResult);
           break;
         case 'import':
-          data = JSON.parse(msg.data as string);
-          data['choiceStates'] = {};
-          data['initialState'] = {};
-          data['finalStates'] = {};
-          compilerInitial = data['initialState'] as CompilerInitialState;
-          compilerInitial.target;
-          initial = {
-            position: compilerInitial.position,
-          };
-          data['initialStates'] = data['initialState']['target'];
-          // TODO: Сразу распарсить как Elements.
-          this.setImportData(JSON.stringify(data.source[0].fileContent));
+          data = JSON.parse(msg.data as string) as CompilerElements;
+          elements = actualizeElements(data.source[0].fileContent);
+          this.setImportData(elements);
           break;
         case 'export':
           data = JSON.parse(msg.data as string) as SourceFile;

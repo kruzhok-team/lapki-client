@@ -29,6 +29,8 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
+import { randomColor } from '../utils';
+
 type EventWithCondition = {
   event?: EventData;
   condition?: Condition;
@@ -37,15 +39,6 @@ type EventWithCondition = {
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
   exit: { component: 'System', method: 'onExit' },
-};
-
-const randomColor = (): string => {
-  let result = '';
-  for (let i = 0; i < 6; ++i) {
-    const value = Math.floor(16 * Math.random());
-    result += value.toString(16);
-  }
-  return '#' + result;
 };
 
 const operatorAlias = {

@@ -3,11 +3,11 @@ import { Point } from '@renderer/lib/types';
 import { Action, ArgList, Condition, Event } from './diagram';
 
 export type CompilerElements = {
-  transitions: { [key: string]: CompilerTransition };
+  transitions: { [id: string]: CompilerTransition };
   initialState: CompilerInitialState;
-  components: { [key: string]: CompilerComponent };
+  components: { [id: string]: CompilerComponent };
   platform: string;
-  states: { [key: string]: CompilerState };
+  states: { [id: string]: CompilerState };
   parameters: { [key: string]: string };
 };
 

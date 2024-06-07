@@ -11,8 +11,10 @@ const colorNames = {
   'bg-secondary': '--bg-s',
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
+  'bg-warning': '--bg-w',
 
   'border-primary': '--b-p',
+  'border-warning': '--b-w',
 
   'text-primary': '--t-p',
   'text-secondary': '--t-s',

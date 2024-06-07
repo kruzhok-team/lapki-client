@@ -342,7 +342,7 @@ export class EditorController {
     return null;
   };
 
-  copyAndPaseSelected = () => {
+  duplicateSelected = () => {
     this.copySelected();
     this.pasteSelected();
   };

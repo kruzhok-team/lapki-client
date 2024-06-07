@@ -18,5 +18,12 @@
   "eslint.enable": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
+  },
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "args": ["-noexit", "chcp 65001"]
+    }
   }
 }

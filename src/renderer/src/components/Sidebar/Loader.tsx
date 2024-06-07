@@ -350,6 +350,7 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
+        {avrdudeCheck()}
         <div className="flex justify-between gap-2">
           <button
             className="btn-primary mb-2 w-full"
@@ -380,7 +381,6 @@ export const Loader: React.FC<FlasherProps> = ({
         >
           Результат прошивки
         </button>
-        {avrdudeCheck()}
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>
         </div>

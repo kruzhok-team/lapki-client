@@ -128,13 +128,12 @@ export class ModuleManager {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
               settings.setSync(AVRDUDE_SETTING, true);
             } else {
-              await lookpath('avrdude').then((path: string | undefined) => {
-                if (path) {
-                  settings.set(AVRDUDE_SETTING, true);
-                } else {
-                  settings.set(AVRDUDE_SETTING, false);
-                }
-              });
+              const path = await lookpath('avrdude');
+              if (path) {
+                settings.set(AVRDUDE_SETTING, true);
+              } else {
+                settings.set(AVRDUDE_SETTING, false);
+              }
             }
             if (existsSync(configPath)) {
               flasherArgs.push(`-configPath=${configPath}`);

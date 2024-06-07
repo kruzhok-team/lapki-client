@@ -364,7 +364,7 @@ export const Loader: React.FC<FlasherProps> = ({
           <button
             className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
             onClick={handleFileChoose}
-            disabled={isFlashing}
+            disabled={isFlashing || !hasAvrdude}
           >
             {flasherFile ? '✖' : '…'}
           </button>

@@ -10,11 +10,11 @@ interface AvrdudeGuideModalProps {
   onClose: () => void;
 }
 
-export const AvrdudeGuideModal: React.FC<AvrdudeGuideModalProps> = ({ onClose, ...props }) => {
-  // ссылка на инструкцию по установке avrdude
-  const guideRef =
-    'https://github.com/kruzhok-team/lapki-flasher/wiki/%D0%A3%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BA%D0%B0-AVRDUDE';
+// ссылка на инструкцию по установке avrdude
+const guideRef =
+  'https://github.com/kruzhok-team/lapki-flasher/wiki/%D0%A3%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BA%D0%B0-AVRDUDE';
 
+export const AvrdudeGuideModal: React.FC<AvrdudeGuideModalProps> = ({ onClose, ...props }) => {
   return (
     <Modal {...props} onRequestClose={onClose} title="Отсутствует avrdude">
       <div>

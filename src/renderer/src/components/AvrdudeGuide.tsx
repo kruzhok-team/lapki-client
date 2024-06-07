@@ -29,6 +29,8 @@ export const AvrdudeGuideModal: React.FC<AvrdudeGuideModalProps> = ({ onClose, .
           инструкцию
         </a>
         , чтобы узнать, как установить и добавить avrdude.
+        <br></br>
+        Не забудьте <b>перзагрузить</b> IDE после установки и настройки avrdude!
       </div>
     </Modal>
   );

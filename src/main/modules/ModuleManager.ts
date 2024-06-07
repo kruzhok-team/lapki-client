@@ -127,7 +127,6 @@ export class ModuleManager {
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
               settings.setSync(AVRDUDE_SETTING, true);
-              console.log('AVRDUDE TRUE');
             } else {
               await lookpath('avrdude').then((path: string | undefined) => {
                 if (path) {

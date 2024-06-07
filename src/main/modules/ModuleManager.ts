@@ -123,7 +123,7 @@ export class ModuleManager {
                 configPath = `${osPath}\\avrdude.conf`;
                 break;
             }
-            const AVRDUDE_SETTING = 'flasher.avrdude';
+            const AVRDUDE_SETTING = 'flasher.hasAvrdude';
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
               settings.setSync(AVRDUDE_SETTING, true);

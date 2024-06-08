@@ -1,57 +1,43 @@
-export const getTextHeight = (
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  font: string
-): number => {
-  const previousTextBaseline = ctx.textBaseline;
-  const previousFont = ctx.font;
+const canvas = document.createElement('canvas');
+canvas.width = 1000;
+canvas.height = 1000;
+const measureCtx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-  ctx.textBaseline = 'bottom';
-  ctx.font = font;
-  const { actualBoundingBoxAscent: height } = ctx.measureText(text);
-
-  ctx.textBaseline = previousTextBaseline;
-  ctx.font = previousFont;
-
-  return Math.ceil(height);
-};
-
-const textMap = new Map<string, Map<string, number>>();
-export const getTextWidth = (ctx: CanvasRenderingContext2D, text: string, font: string): number => {
-  if (textMap.has(font)) {
-    const cache = textMap.get(font)!;
-    const width = cache.get(text);
-    if (width !== undefined) {
-      return width;
-    }
+const measureTextCache = new Map<string, Map<string, { width: number; height: number }>>();
+export const measureText = (text: string, font: string) => {
+  if (measureTextCache.has(font)) {
+    const measurements = measureTextCache.get(font)?.get(text);
+    if (measurements) return measurements;
   }
 
-  textMap.set(font, new Map());
-  const cache = textMap.get(font)!;
+  measureTextCache.set(font, new Map());
+  const cache = measureTextCache.get(font)!;
 
-  const previousTextBaseline = ctx.textBaseline;
-  const previousFont = ctx.font;
+  const previousTextBaseline = measureCtx.textBaseline;
+  const previousFont = measureCtx.font;
 
-  ctx.textBaseline = 'bottom';
-  ctx.font = font;
+  measureCtx.textBaseline = 'bottom';
+  measureCtx.font = font;
+  const { actualBoundingBoxAscent: height, width } = measureCtx.measureText(text);
 
-  const width = ctx.measureText(text).width;
+  measureCtx.textBaseline = previousTextBaseline;
+  measureCtx.font = previousFont;
 
-  ctx.textBaseline = previousTextBaseline;
-  ctx.font = previousFont;
+  const measurements = { width, height: Math.ceil(height) };
 
-  cache.set(text, width);
-  return width;
+  cache.set(text, measurements);
+
+  return measurements;
 };
 
 // Вспомогательная функция для prepareText для разбивки слова на строки
-const splitWord = (ctx: CanvasRenderingContext2D, word: string, font: string, maxWidth: number) => {
+const splitWord = (word: string, font: string, maxWidth: number) => {
   const lines: string[][] = [];
   const newLine: string[] = [];
   let newLineWidth = 0;
 
   for (const char of word) {
-    const charWidth = getTextWidth(ctx, char, font);
+    const charWidth = measureText(char, font).width;
 
     if (Math.floor(newLineWidth + charWidth) <= maxWidth) {
       newLineWidth += charWidth;
@@ -73,20 +59,15 @@ const splitWord = (ctx: CanvasRenderingContext2D, word: string, font: string, ma
   };
 };
 
-export const prepareText = (
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  font: string,
-  maxWidth: number
-) => {
-  const textHeight = getTextHeight(ctx, 'M', font);
+export const prepareText = (text: string, font: string, maxWidth: number) => {
+  const textHeight = measureText('M', font).height;
   const textArray: string[] = [];
   const initialTextArray = text.split('\n');
 
-  const spaceWidth = getTextWidth(ctx, ' ', font);
+  const spaceWidth = measureText(' ', font).width;
 
   for (const line of initialTextArray) {
-    const textWidth = getTextWidth(ctx, line, font);
+    const textWidth = measureText(line, font).width;
 
     if (textWidth <= maxWidth) {
       textArray.push(line);
@@ -98,13 +79,13 @@ export const prepareText = (
     let newLineWidth = 0;
 
     for (const word of words) {
-      const wordWidth = getTextWidth(ctx, word, font);
+      const wordWidth = measureText(word, font).width;
 
       // Развилка когда слово больще целой строки, приходится это слово разбивать
       if (wordWidth >= maxWidth) {
         textArray.push(newLine.join(' '));
 
-        const splitted = splitWord(ctx, word, font, maxWidth);
+        const splitted = splitWord(word, font, maxWidth);
         textArray.push(...splitted.lines.map((line) => line.join(' ')));
         newLine = splitted.newLine;
         newLineWidth = splitted.newLineWidth;
@@ -156,10 +137,11 @@ export const drawText = (
     textBaseline = 'top',
   } = options;
 
-  const textHeight = getTextHeight(ctx, 'M', font);
+  const textHeight = measureText('M', font).height;
 
   const prevFont = ctx.font;
   const prevFillStyle = ctx.fillStyle;
+  const prevStrokeStyle = ctx.strokeStyle;
   const prevTextAlign = ctx.textAlign;
   const prevTextBaseline = ctx.textBaseline;
 
@@ -178,6 +160,7 @@ export const drawText = (
 
   ctx.font = prevFont;
   ctx.fillStyle = prevFillStyle;
+  ctx.strokeStyle = prevStrokeStyle;
   ctx.textAlign = prevTextAlign;
   ctx.textBaseline = prevTextBaseline;
 };

@@ -8,7 +8,7 @@ import { Rectangle } from '@renderer/lib/types/graphics';
 import theme from '@renderer/theme';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
-import { drawText, measureText } from '../utils/text';
+import { drawText, getTextWidth } from '../utils/text';
 
 export type MarkedIconData = {
   icon: string;
@@ -127,7 +127,8 @@ export class Picto {
     const pX = 1 / this.scale;
     const pY = 0.5 / this.scale;
     const font = `500 ${13 / this.scale}px/0 Fira Sans`;
-    const { width: textWidth, height: textHeight } = measureText(iconData.label, font);
+    const textWidth = getTextWidth(iconData.label, font);
+    const textHeight = 13 / this.scale;
     const labelWidth = textWidth + pX * 2;
     const labelHeight = textHeight + pY * 2;
 
@@ -147,9 +148,12 @@ export class Picto {
     drawText(ctx, iconData.label, {
       x: tX - textWidth / 2 - pX,
       y: tY - textHeight - pY,
-      font,
+      font: {
+        fontFamily: 'Fira Sans',
+        fontSize: 13 / this.scale,
+        lineHeight: 1,
+      },
       textAlign: 'center',
-      textBaseline: 'top',
       color: iconData.color ?? '#FFFFFF',
     });
     ctx.closePath();

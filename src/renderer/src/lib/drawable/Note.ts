@@ -73,7 +73,11 @@ export class Note extends Shape {
 
   prepareText() {
     this.textData = {
-      ...prepareText(this.data.text || placeholder, '16px/1 "Fira Sans"', 200 - 2 * 10),
+      ...prepareText(this.data.text || placeholder, 200 - 2 * 10, {
+        fontSize: 16,
+        lineHeight: 1,
+        fontFamily: 'Fira Sans',
+      }),
       hasText: Boolean(this.data.text),
     };
   }
@@ -84,7 +88,6 @@ export class Note extends Shape {
     const { x, y, width, height } = this.drawBounds;
     const textToDraw = this.textData.hasText ? this.textData.textArray : placeholder;
     const { padding, fontSize, color, borderRadius } = this.computedStyles;
-    const font = `${fontSize}px/1 'Fira Sans'`;
 
     ctx.fillStyle = 'black';
     ctx.globalAlpha = 0.3;
@@ -100,7 +103,11 @@ export class Note extends Shape {
       y: y + padding,
       textAlign: 'left',
       color,
-      font,
+      font: {
+        fontSize,
+        lineHeight: 1,
+        fontFamily: 'Fira Sans',
+      },
     });
 
     if (this.isSelected) {

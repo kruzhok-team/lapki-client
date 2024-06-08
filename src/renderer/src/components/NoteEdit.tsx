@@ -87,7 +87,7 @@ export const NoteEdit: React.FC = () => {
       tabIndex={-1}
       style={style}
       className={twMerge(
-        'fixed overflow-hidden whitespace-pre-wrap border-none bg-bg-secondary text-base leading-none outline outline-1 outline-text-primary',
+        'fixed overflow-hidden whitespace-pre-wrap border-none bg-bg-secondary text-base leading-[1.2] outline outline-1 outline-text-primary',
         !isOpen && 'hidden'
       )}
       placeholder="Придумайте заметку"

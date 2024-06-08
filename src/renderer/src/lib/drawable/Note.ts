@@ -79,7 +79,7 @@ export class Note extends Shape {
     this.textData = {
       ...prepareText(this.data.text || placeholder, 200 - 2 * 10, {
         fontSize: 16,
-        lineHeight: 1,
+        lineHeight: 1.2,
         fontFamily: 'Fira Sans',
       }),
       hasText: Boolean(this.data.text),
@@ -109,7 +109,11 @@ export class Note extends Shape {
       color,
       font: {
         fontSize,
+<<<<<<< HEAD
         lineHeight: 1,
+=======
+        lineHeight: 1.2,
+>>>>>>> 0faafe02 (add line height)
         fontFamily: 'Fira Sans',
       },
     });

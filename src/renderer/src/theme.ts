@@ -24,6 +24,8 @@ const colorNames = {
   'scrollbar-thumb': '--s-th',
 
   grid: '--g',
+  'default-note-bg': '--d-n-bg',
+  'default-note-color': '--d-n-c',
 };
 
 // Это метод для того чтобы достать цвет из джаваскрипта

@@ -152,7 +152,7 @@ export const drawText = (
   ctx.textBaseline = 'bottom';
 
   if (!Array.isArray(text)) {
-    ctx.fillText(text, x, y + textHeight);
+    ctx.fillText(text, x, y + textHeight + textHeight * 0.05);
   } else {
     for (let i = 0; i < text.length; i++) {
       const lineY = y + i * textHeight + textHeight - textHeight * 0.05;

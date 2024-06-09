@@ -79,6 +79,21 @@ export type PossibleActions = {
   createNote: { id: string; params: CreateNoteParams };
   changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { id: string; text: string; prevText: string };
+  changeNoteBackgroundColor: {
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteTextColor: {
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteFontSize: {
+    id: string;
+    fontSize: number | undefined;
+    prevFontSize: number | undefined;
+  };
   deleteNote: { id: string; prevData: NoteData };
 };
 export type PossibleActionTypes = keyof PossibleActions;
@@ -333,6 +348,18 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.notes.changeNoteText.bind(sM.notes, id, text, false),
     undo: sM.notes.changeNoteText.bind(sM.notes, id, prevText, false),
   }),
+  changeNoteBackgroundColor: (sM, { id, color, prevColor }) => ({
+    redo: sM.notes.changeNoteBackgroundColor.bind(sM.notes, id, color, false),
+    undo: sM.notes.changeNoteBackgroundColor.bind(sM.notes, id, prevColor, false),
+  }),
+  changeNoteTextColor: (sM, { id, color, prevColor }) => ({
+    redo: sM.notes.changeNoteTextColor.bind(sM.notes, id, color, false),
+    undo: sM.notes.changeNoteTextColor.bind(sM.notes, id, prevColor, false),
+  }),
+  changeNoteFontSize: (sM, { id, fontSize, prevFontSize }) => ({
+    redo: sM.notes.changeNoteFontSize.bind(sM.notes, id, fontSize, false),
+    undo: sM.notes.changeNoteFontSize.bind(sM.notes, id, prevFontSize, false),
+  }),
   changeNotePosition: (sM, { id, startPosition, endPosition }) => ({
     redo: sM.notes.changeNotePosition.bind(sM.notes, id, startPosition, endPosition, false),
     undo: sM.notes.changeNotePosition.bind(sM.notes, id, endPosition, startPosition, false),
@@ -479,6 +506,18 @@ export const actionDescriptions: ActionDescriptions = {
   changeNoteText: (args) => ({
     name: 'Изменение текста заметки',
     description: `ID: ${args.id}\nБыло: "${args.prevText}"\nСтало: "${args.text}"`,
+  }),
+  changeNoteBackgroundColor: (args) => ({
+    name: 'Изменение цвета заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteTextColor: (args) => ({
+    name: 'Изменение цвета текста заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteFontSize: (args) => ({
+    name: 'Изменение размера шрифта заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
   }),
   changeNotePosition: (args) => ({
     name: 'Перемещение заметки',

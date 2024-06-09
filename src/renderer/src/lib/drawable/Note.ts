@@ -54,9 +54,11 @@ export class Note extends Shape {
 
     return {
       padding: 10 / scale,
-      fontSize: 16 / scale,
+      fontSize: (this.data.fontSize ?? 16) / scale,
       borderRadius: 6 / scale,
-      color: this.textData.hasText ? getColor('text-primary') : getColor('border-primary'),
+      color: this.textData.hasText
+        ? this.data?.textColor ?? getColor('default-note-color')
+        : getColor('border-primary'),
     };
   }
 
@@ -72,13 +74,15 @@ export class Note extends Shape {
   }
 
   prepareText() {
+    const hasText = Boolean(this.data.text);
+
     this.textData = {
       ...prepareText(this.data.text || placeholder, 200 - 2 * 10, {
-        fontSize: 16,
-        lineHeight: 1.2,
+        fontSize: this.data.fontSize,
+        lineHeight: hasText ? 1.2 : 1,
         fontFamily: 'Fira Sans',
       }),
-      hasText: Boolean(this.data.text),
+      hasText,
     };
   }
 
@@ -89,14 +93,11 @@ export class Note extends Shape {
     const textToDraw = this.textData.hasText ? this.textData.textArray : placeholder;
     const { padding, fontSize, color, borderRadius } = this.computedStyles;
 
-    ctx.fillStyle = 'black';
-    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = this.data.backgroundColor ?? getColor('default-note-bg');
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height, borderRadius);
     ctx.fill();
-
-    ctx.globalAlpha = 1;
 
     drawText(ctx, textToDraw, {
       x: x + padding,
@@ -105,7 +106,7 @@ export class Note extends Shape {
       color,
       font: {
         fontSize,
-        lineHeight: 1.2,
+        lineHeight: this.textData.hasText ? 1.2 : 1,
         fontFamily: 'Fira Sans',
       },
     });

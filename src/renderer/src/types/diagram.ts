@@ -85,6 +85,9 @@ export type Component = {
 export type Note = {
   position: Point;
   text: string;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: number;
 };
 
 // Это описание типа схемы которая хранится в json файле

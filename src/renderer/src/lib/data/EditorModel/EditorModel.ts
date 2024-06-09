@@ -694,6 +694,36 @@ export class EditorModel {
     return true;
   }
 
+  changeNoteBackgroundColor(id: string, color: string | undefined) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].backgroundColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteTextColor(id: string, color: string | undefined) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].textColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteFontSize(id: string, fontSize: number | undefined) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].fontSize = fontSize;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
   changeNotePosition(id: string, position: Point) {
     const note = this.data.elements.notes[id];
     if (!note) return false;

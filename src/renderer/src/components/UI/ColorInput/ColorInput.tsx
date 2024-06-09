@@ -12,20 +12,35 @@ import {
   FloatingPortal,
 } from '@floating-ui/react';
 import { HexColorPicker } from 'react-colorful';
+import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ClearIcon } from '@renderer/assets/icons/clear.svg';
 import { useClickOutside } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 import { presetColors } from '@renderer/utils';
 
 import './style.css';
 
-interface ColorInputProps {
+interface BaseColorInputProps {
+  onClose?: () => void;
+}
+
+interface ClearableColorInputProps extends BaseColorInputProps {
+  clearable: true;
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+}
+
+interface NonClearableColorInputProps extends BaseColorInputProps {
+  clearable: false;
   value: string;
   onChange: (value: string) => void;
 }
 
+type ColorInputProps = ClearableColorInputProps | NonClearableColorInputProps;
+
 export const ColorInput: React.FC<ColorInputProps> = (props) => {
-  const { value, onChange } = props;
+  const { value, onChange, onClose, clearable } = props;
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -47,9 +62,14 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
 
   const { getReferenceProps, getFloatingProps } = useInteractions([click]);
 
+  const handleClose = () => {
+    context.onOpenChange(false);
+    onClose?.();
+  };
+
   useClickOutside(
     refs.floating.current,
-    () => context.onOpenChange(false),
+    handleClose,
     !isOpen,
     refs.reference.current as HTMLElement
   );
@@ -58,16 +78,22 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
     <>
       <button
         type="button"
-        className="h-7 w-7 cursor-pointer rounded"
+        className={twMerge(
+          'grid h-7 w-7 cursor-pointer place-content-center rounded',
+          !value && 'border border-border-primary'
+        )}
         style={{ backgroundColor: value }}
         ref={refs.setReference}
         {...getReferenceProps()}
-      />
+      >
+        {!value && <ClearIcon className="size-5" />}
+      </button>
 
       {isOpen && (
         <FloatingPortal>
           <div
-            className="z-[100] max-w-sm rounded border border-border-primary bg-bg-secondary p-1 shadow-xl"
+            id="color-picker"
+            className="z-[100] max-w-52 rounded border border-border-primary bg-bg-secondary p-1 shadow-xl"
             ref={refs.setFloating}
             style={floatingStyles}
             {...getFloatingProps()}
@@ -80,16 +106,25 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
               strokeWidth={0.5}
             />
             <HexColorPicker className="mb-2" color={value} onChange={onChange} />
-            <div className="flex items-center gap-2">
+            <div className="flex max-w-full flex-wrap items-center gap-2">
               {presetColors.map((presetColor) => (
                 <button
-                  className="h-7 w-7 cursor-pointer rounded"
+                  className="size-8 cursor-pointer rounded"
                   type="button"
                   key={presetColor}
                   style={{ background: presetColor }}
                   onClick={() => onChange(presetColor)}
                 />
               ))}
+              {clearable && (
+                <button
+                  className="grid size-8 cursor-pointer place-content-center rounded border border-border-primary text-text-inactive"
+                  type="button"
+                  onClick={() => onChange(undefined)}
+                >
+                  <ClearIcon className="size-5" />
+                </button>
+              )}
             </div>
           </div>
         </FloatingPortal>

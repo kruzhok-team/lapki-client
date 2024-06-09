@@ -73,6 +73,7 @@ export const NoteEdit: React.FC = () => {
         fontSize: fontSize + 'px',
         padding: padding + 'px',
         borderRadius: borderRadius + 'px',
+        backgroundColor: note.data?.backgroundColor,
       });
       el.textContent = note.data.text;
       setTimeout(() => placeCaretAtEnd(el), 0); // А ты думал легко сфокусировать и установить картеку в конец?

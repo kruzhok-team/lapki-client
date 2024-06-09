@@ -109,11 +109,7 @@ export class Note extends Shape {
       color,
       font: {
         fontSize,
-<<<<<<< HEAD
-        lineHeight: 1,
-=======
         lineHeight: 1.2,
->>>>>>> 0faafe02 (add line height)
         fontFamily: 'Fira Sans',
       },
     });

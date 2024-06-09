@@ -112,6 +112,15 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   }
 
+  setIsVisible(id: string, isVisible: boolean) {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    note.setVisible(isVisible);
+
+    this.app.view.isDirty = true;
+  }
+
   handleMouseDown = (note: Note) => {
     this.controller.selectNote(note.id);
   };

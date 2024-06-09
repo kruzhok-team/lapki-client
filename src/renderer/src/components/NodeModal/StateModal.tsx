@@ -77,7 +77,8 @@ export const StateModal: React.FC = () => {
 
   useEffect(() => {
     // Открытие окна и подстановка начальных данных формы на событие изменения состояния
-    editor.controller.states.on('changeState', (state) => {
+
+    const handler = (state: State) => {
       const { data } = state;
 
       const eventData = data.events[0];
@@ -106,7 +107,13 @@ export const StateModal: React.FC = () => {
 
       setState(state);
       open();
-    });
+    };
+
+    editor.controller.states.on('changeState', handler);
+
+    return () => {
+      editor.controller.states.off('changeState', handler);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

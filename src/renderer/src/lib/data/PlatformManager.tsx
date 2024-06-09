@@ -440,8 +440,6 @@ export class PlatformManager {
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
 
-    console.log(ac);
-
     picto.drawBorder(ctx, x, y, '#880000');
     const p = 5 / picto.scale;
     ctx.fillText(ac.type, x + p, y + p);

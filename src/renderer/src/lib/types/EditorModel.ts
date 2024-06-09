@@ -6,6 +6,7 @@ import {
   Transition as TransitionData,
   InitialState as InitialStateData,
   FinalState as FinalStateData,
+  ChoiceState as ChoiceStateData,
 } from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
@@ -62,6 +63,13 @@ export type CreateFinalStateParams = FinalStateData & {
 // Страшно, но тут происходит просто отсеивание полей selection и label.position из данных перехода
 export type ChangeTransitionParams = Omit<TransitionData, 'selection'> & { id: string };
 export type CreateTransitionParams = Omit<ChangeTransitionParams, 'id'> & { id?: string };
+export type CreateChoiceStateParams = ChoiceStateData & {
+  id?: string;
+  placeInCenter?: boolean;
+
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
+  linkByPoint?: boolean;
+};
 
 export interface CreateNoteParams {
   id?: string;

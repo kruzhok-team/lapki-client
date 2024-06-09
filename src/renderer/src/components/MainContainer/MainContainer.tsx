@@ -73,7 +73,7 @@ export const MainContainer: React.FC = () => {
         openPlatformError(errs);
       }
     });
-  }, []);
+  }, [openPlatformError]);
 
   return (
     <div className="h-screen select-none">
@@ -82,7 +82,7 @@ export const MainContainer: React.FC = () => {
 
         <div
           className={twMerge(
-            'relative w-full min-w-0 bg-bg-primary',
+            ' relative w-full min-w-80 bg-bg-primary',
             'after:pointer-events-none after:absolute after:inset-0 after:z-50 after:block after:bg-bg-hover after:opacity-0 after:transition-all after:content-[""]',
             isDragActive && 'opacity-30'
           )}

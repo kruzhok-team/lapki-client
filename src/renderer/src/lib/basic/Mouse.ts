@@ -40,6 +40,8 @@ export class Mouse extends BubbleEventEmitter<MouseEvents> {
     this.element.removeEventListener('mouseup', this.mouseupHandler);
     this.element.removeEventListener('mousemove', this.mousemoveHandler);
     this.element.removeEventListener('wheel', this.mouseWheelHandler);
+
+    this.reset();
   }
 
   setOffset() {

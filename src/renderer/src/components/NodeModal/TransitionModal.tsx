@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { State, Transition } from '@renderer/lib/drawable';
+import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Variable as VariableData } from '@renderer/types/diagram';
 
@@ -17,13 +17,29 @@ export const TransitionModal: React.FC = () => {
   const [isOpen, open, close] = useModal(false);
 
   const [transition, setTransition] = useState<Transition | null>(null);
-  const [newTransition, setNewTransition] = useState<{ source: State; target: State } | null>();
+  const [newTransition, setNewTransition] = useState<{
+    source: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
+  } | null>();
 
   // Данные формы
   const trigger = useTrigger(false);
   const condition = useCondition();
   const events = useEvents();
   const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
+
+  // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
+  const showTrigger = useMemo(() => {
+    if (newTransition) {
+      return !(newTransition.source instanceof ChoiceState);
+    }
+
+    if (transition) {
+      return !(transition.source instanceof ChoiceState);
+    }
+
+    return true;
+  }, [newTransition, transition]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +48,9 @@ export const TransitionModal: React.FC = () => {
     const triggerText = trigger.text.trim();
 
     if (
-      (tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
-      (tabValue === 1 && !triggerText)
+      showTrigger &&
+      ((tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+        (tabValue === 1 && !triggerText))
     ) {
       return;
     }
@@ -96,6 +113,8 @@ export const TransitionModal: React.FC = () => {
     };
 
     const getTrigger = () => {
+      if (!showTrigger) return undefined;
+
       if (tabValue === 0)
         return { component: selectedComponent as string, method: selectedMethod as string };
 
@@ -156,7 +175,16 @@ export const TransitionModal: React.FC = () => {
   };
 
   useEffect(() => {
-    editor.controller.transitions.on('changeTransition', (target) => {
+    const handleCreateTransition = (data: {
+      source: State | ChoiceState;
+      target: State | ChoiceState | FinalState;
+    }) => {
+      setNewTransition(data);
+      events.setEvents([]);
+      open();
+    };
+
+    const handleChangeTransition = (target: Transition) => {
       const { data: initialData } = target;
 
       if (initialData.label?.trigger) {
@@ -248,13 +276,15 @@ export const TransitionModal: React.FC = () => {
 
       setTransition(target);
       open();
-    });
+    };
 
-    editor.controller.transitions.on('createTransition', ({ source, target }) => {
-      setNewTransition({ source, target });
-      events.setEvents([]);
-      open();
-    });
+    editor.controller.transitions.on('createTransition', handleCreateTransition);
+    editor.controller.transitions.on('changeTransition', handleChangeTransition);
+
+    return () => {
+      editor.controller.transitions.off('createTransition', handleCreateTransition);
+      editor.controller.transitions.off('changeTransition', handleChangeTransition);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -268,7 +298,7 @@ export const TransitionModal: React.FC = () => {
         onAfterClose={handleAfterClose}
       >
         <div className="flex flex-col gap-4">
-          <Trigger {...trigger} />
+          {showTrigger && <Trigger {...trigger} />}
           <Condition {...condition} />
           <Events {...events} />
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />

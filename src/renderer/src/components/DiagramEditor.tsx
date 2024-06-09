@@ -5,14 +5,14 @@ import {
   EventsModal,
   EventsModalData,
   NoteEdit,
-  StateNameModal,
-  Scale,
+  StateNameEdit,
   StateModal,
 } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State } from '@renderer/lib/drawable';
+import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Event } from '@renderer/types/diagram';
 
@@ -38,27 +38,37 @@ export const DiagramEditor: React.FC = () => {
 
     editor.mount(containerRef.current);
 
-    editor.view.on('dblclick', (position) => {
+    const handleDblclick = (position: Point) => {
       editor.controller.states.createState({
         name: 'Состояние',
         position,
         placeInCenter: true,
         color: DEFAULT_STATE_COLOR,
       });
-    });
+    };
 
-    editor.controller.states.on('changeEvent', (data) => {
+    const handleChangeEvent = (data: {
+      state: State;
+      eventSelection: EventSelection;
+      event: Event;
+      isEditingEvent: boolean;
+    }) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
       setEventsModalParentData({ state, eventSelection });
       setEventsModalData({ event, isEditingEvent });
       openEventsModal();
-    });
+    };
+
+    editor.view.on('dblclick', handleDblclick);
+
+    editor.controller.states.on('changeEvent', handleChangeEvent);
 
     return () => {
-      // снятие слежки произойдёт по смене редактора новым
-      // model.unwatchEditor();
-      editor?.cleanUp();
+      editor.view.off('dblclick', handleDblclick);
+      editor.controller.states.off('changeEvent', handleChangeEvent);
+
+      editor.unmount();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.
     // Скорее всего, контейнер меняться уже не будет, поэтому
@@ -86,13 +96,11 @@ export const DiagramEditor: React.FC = () => {
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}>
-        {isMounted && <Scale />}
-      </div>
+      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
 
       {isMounted && (
         <>
-          <StateNameModal />
+          <StateNameEdit />
           <NoteEdit />
 
           <EventsModal

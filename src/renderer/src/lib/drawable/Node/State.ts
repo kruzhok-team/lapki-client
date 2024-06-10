@@ -133,7 +133,11 @@ export class State extends Shape {
       y: y + paddingY,
       textAlign: 'left',
       color: this.data.name !== '' ? style.titleColor : style.titleColorUndefined,
-      font: `${fontSize}px/1 'Fira Sans'`,
+      font: {
+        fontSize,
+        lineHeight: 1,
+        fontFamily: 'Fira Sans',
+      },
     });
 
     ctx.closePath();

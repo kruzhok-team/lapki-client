@@ -36,13 +36,13 @@ import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator
 
 import { ChoiceState } from '../drawable';
 
-function exportMeta(meta: Meta): CGMLMeta {
+function exportMeta(meta: Meta, platform: Platform): CGMLMeta {
   return {
     id: 'coreMeta',
     values: {
       ...meta,
-      standardVersion: '1.0',
-      platformVersion: '1.0',
+      standardVersion: platform.standardVersion,
+      platformVersion: platform.version,
     },
   };
 }
@@ -321,7 +321,7 @@ export function exportCGML(elements: Elements): string {
     throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
   }
   const cgmlElements: CGMLElements = emptyCGMLElements();
-  cgmlElements.meta = exportMeta(elements.meta);
+  cgmlElements.meta = exportMeta(elements.meta, platform);
   cgmlElements.format = 'Cyberiada-GraphML-1.0';
   cgmlElements.platform = elements.platform;
   if (elements.platform.startsWith('Arduino')) {

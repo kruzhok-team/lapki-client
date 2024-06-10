@@ -72,6 +72,7 @@ function serializeActions(
   platform: Platform
 ): string {
   let serialized = '';
+  // TODO: Стиль команд, внедрить новый формат платформ
   const isArduino = platform.name?.startsWith('Arduino');
   const delimeter = isArduino ? ';' : '';
   for (const action of actions) {

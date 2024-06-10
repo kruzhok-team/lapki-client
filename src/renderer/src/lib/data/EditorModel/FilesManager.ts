@@ -62,7 +62,7 @@ export class FilesManager {
         } else if (e instanceof Error) {
           errText = e.message;
         }
-        console.log(e);
+        console.error(e);
         return makeLeft({
           name: openData[1]!,
           content: 'Ошибка формата: ' + errText,

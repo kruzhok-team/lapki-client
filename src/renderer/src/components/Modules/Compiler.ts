@@ -77,7 +77,6 @@ function actualizeInitialState(
   const initial: InitialState = {
     position: oldInitial.position,
   };
-  console.log(initial);
   return [{ [initialId]: initial }, { [transitionId]: transition }];
 }
 
@@ -333,7 +332,6 @@ export class Compiler {
     const ws: Websocket | undefined = await this.connectRoute(route);
     if (ws !== undefined) {
       const [mainPlatform, subPlatform] = platform.split('-');
-      console.log(mainPlatform, subPlatform);
       switch (mainPlatform) {
         case 'BearlogaDefendImport':
           ws.send('berlogaImport');
@@ -363,7 +361,7 @@ export class Compiler {
         Compiler.setCompilerStatus('Что-то пошло не так...');
       }, this.timeOutTime);
     } else {
-      console.log('Внутренняя ошибка! Отсутствует подключение');
+      console.error('Внутренняя ошибка! Отсутствует подключение');
     }
   }
 }

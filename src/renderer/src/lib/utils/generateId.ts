@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 
-export const generateId = (existingIds: string[]) => {
+export const generateId = (existingIds: string[] = []) => {
   const nanoid = customAlphabet('abcdefghijklmnopqstuvwxyz', 20);
 
   let id = nanoid();

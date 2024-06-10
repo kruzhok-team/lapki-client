@@ -58,7 +58,6 @@ export class EditorModel {
     this.data.isMounted = prevMounted;
 
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-
     this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
     if (this.data.isMounted) {

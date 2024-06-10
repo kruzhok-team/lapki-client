@@ -241,7 +241,7 @@ export const useDiagramContextMenu = () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
-              source: state.id,
+              sourceId: state.id,
             });
           },
         };
@@ -256,7 +256,7 @@ export const useDiagramContextMenu = () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
-              target: state.id,
+              targetId: state.id,
             });
           },
         };
@@ -264,13 +264,13 @@ export const useDiagramContextMenu = () => {
 
       const sourceArray = [
         ...Array.from(editor.controller.states.getStates()).filter(
-          (value) => transition.data.source !== value[0]
+          (value) => transition.data.sourceId !== value[0]
         ),
       ];
 
       const targetArray = [
         ...Array.from(editor.controller.states.getStates()).filter(
-          (value) => transition.data.target !== value[0]
+          (value) => transition.data.targetId !== value[0]
         ),
       ];
 

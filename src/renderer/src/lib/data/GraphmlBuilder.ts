@@ -185,8 +185,8 @@ function serializeTransitions(
     const transition = transitions[id];
     const cgmlTransition: CGMLTransition = {
       id: id,
-      source: transition.source,
-      target: transition.target,
+      source: transition.sourceId,
+      target: transition.targetId,
       pivot: undefined,
       unsupportedDataNodes: [],
       color: transition.color,

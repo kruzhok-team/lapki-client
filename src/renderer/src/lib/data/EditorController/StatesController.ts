@@ -466,15 +466,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.controller.transitions.createTransition(
       {
         color: DEFAULT_TRANSITION_COLOR,
-        source: state.id,
-        target: target.id,
+        sourceId: state.id,
+        targetId: target.id,
       },
       canUndo
     );
   }
   private deleteInitialStateWithTransition(initialStateId: string, canUndo = true) {
     const transition = this.controller.transitions.getBySourceId(initialStateId);
-    const targetId = transition?.data.target;
+    const targetId = transition?.data.targetId;
     if (!transition || !targetId) return;
 
     this.controller.transitions.deleteTransition(transition.id, canUndo);
@@ -599,7 +599,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       {
         id: transitionFromInitialState.id,
         ...transitionFromInitialState.data,
-        target: stateId,
+        targetId: stateId,
       },
       canUndo
     );
@@ -918,7 +918,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.emit('mouseUpOnState', state);
   };
 
-  handleMouseUpOnInitialState = (state: FinalState) => {
+  //Необходимо, чтобы можно можно было создать связь от комментария к блоку обозначения начального состояния, иначе отпускание кнопки мыши не будет работать.
+  handleMouseUpOnInitialState = (state: InitialState) => {
     this.emit('mouseUpOnInitialState', state);
   };
 

@@ -694,7 +694,7 @@ export class EditorModel {
     return true;
   }
 
-  //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
+  //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
   changeNoteSelection(id: string, selection: boolean) {
     const note = this.data.elements.notes[id];
     if (!note) return false;

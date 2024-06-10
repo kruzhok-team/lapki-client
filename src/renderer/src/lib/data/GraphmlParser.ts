@@ -284,8 +284,8 @@ function getTransitions(
     const rawTransition = rawTransitions[id];
     if (rawTransition.actions.length == 0) {
       transitions[id] = {
-        source: rawTransition.source,
-        target: rawTransition.target,
+        sourceId: rawTransition.source,
+        targetId: rawTransition.target,
         color: rawTransition.color ?? randomColor(),
       };
       continue;
@@ -293,13 +293,11 @@ function getTransitions(
     // В данный момент поддерживается только один триггер на переход
     const eventData = actionsToEventData(rawTransition.actions)[0];
     transitions[id] = {
-      source: rawTransition.source,
-      target: rawTransition.target,
+      sourceId: rawTransition.source,
+      targetId: rawTransition.target,
       color: rawTransition.color ?? randomColor(),
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
-        // transitionLine: rawTransition.labelLine,
-        transitionLine: {} as any,
         trigger: eventData.event?.trigger,
         do: eventData.event?.do,
         condition: eventData.condition,

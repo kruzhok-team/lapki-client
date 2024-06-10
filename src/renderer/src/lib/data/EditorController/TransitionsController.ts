@@ -58,7 +58,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   forEachByStateId(stateId: string, callback: (transition: Transition) => void) {
     return this.items.forEach((transition) => {
-      if (transition.data.source === stateId || transition.data.target === stateId) {
+      if (transition.data.sourceId === stateId || transition.data.targetId === stateId) {
         callback(transition);
       }
     });
@@ -66,7 +66,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   forEachByTargetId(targetId: string, callback: (transition: Transition) => void) {
     return this.items.forEach((transition) => {
-      if (transition.data.target === targetId) {
+      if (transition.data.targetId === targetId) {
         callback(transition);
       }
     });
@@ -92,28 +92,28 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   createTransition(params: CreateTransitionParams, canUndo = true) {
-    const { source, target, color, id: prevId, label } = params;
-    //TODO: где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
-    const sourceId = this.controller.states.get(source) || this.controller.notes.get(source);
-    const targetId =
-      this.controller.states.get(target) ||
-      this.controller.notes.get(target) ||
-      this.controller.transitions.get(target);
+    const { sourceId, targetId, color, id: prevId, label } = params;
+    //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
+    const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
+    const target =
+      this.controller.states.get(targetId) ||
+      this.controller.notes.get(targetId) ||
+      this.controller.transitions.get(targetId);
 
-    if (!sourceId || !targetId) return;
+    if (!source || !target) return;
 
     if (label && !label.position) {
       label.position = {
-        x: (sourceId.position.x + targetId.position.x) / 2,
-        y: (sourceId.position.y + targetId.position.y) / 2,
+        x: (source.position.x + target.position.x) / 2,
+        y: (source.position.y + target.position.y) / 2,
       };
     }
 
     // Создание данных
     const id = this.app.model.createTransition({
       id: prevId,
-      source,
-      target,
+      sourceId,
+      targetId,
       color,
       label,
     });
@@ -271,8 +271,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (this.ghost.source instanceof Note) {
       this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
-        source: this.ghost?.source.id,
-        target: state.id,
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
       });
     }
     // Переход создаётся только на другое состояние
@@ -291,8 +291,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (this.ghost.source instanceof Note && transition.data.label) {
       this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
-        source: this.ghost?.source.id,
-        target: transition.id,
+        sourceId: this.ghost?.source.id,
+        targetId: transition.id,
       });
     }
 
@@ -310,8 +310,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     ) {
       this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
-        source: this.ghost?.source.id,
-        target: note.id,
+        sourceId: this.ghost?.source.id,
+        targetId: note.id,
       });
     }
 
@@ -325,8 +325,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (this.ghost.source instanceof Note) {
       this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
-        source: this.ghost?.source.id,
-        target: state.id,
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
       });
     }
 
@@ -340,8 +340,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (this.ghost.source instanceof Note) {
       this.createTransition({
         color: DEFAULT_TRANSITION_COLOR,
-        source: this.ghost?.source.id,
-        target: state.id,
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
       });
     } else {
       this.emit('createTransition', { source: this.ghost.source, target: state });

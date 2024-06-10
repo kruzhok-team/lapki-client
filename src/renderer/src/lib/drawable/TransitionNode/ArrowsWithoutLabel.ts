@@ -11,7 +11,8 @@ import {
 } from '@renderer/lib/utils';
 
 /**
- * Выполняет отрисовку стрелки между двумя(тремя) движущимися блоками:
+ * Выполняет отрисовку стрелки между двумя движущимися блоками:
+ * от комментария к блоку назначения.
  */
 export class ArrowsWithoutLabel implements Drawable {
   constructor(private parent: Transition, private app: CanvasEditor) {}

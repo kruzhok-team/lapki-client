@@ -97,7 +97,7 @@ export const Hierarchy: React.FC = () => {
       data[noteId] = {
         index: noteId,
         isFolder: false,
-        //TODO: надо добавить название заметки (title)
+        //TODO: (XidFanSan) надо добавить название заметки (title)
         data: { title: note.text ?? 'Комментарий', type: 'note' },
         children: [],
         canRename: false,
@@ -136,7 +136,7 @@ export const Hierarchy: React.FC = () => {
 
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const targetName = data[transition.target]?.data?.title;
+      const targetName = data[transition.targetId]?.data?.title;
 
       data[transitionId] = {
         index: transitionId,
@@ -148,8 +148,8 @@ export const Hierarchy: React.FC = () => {
         canRename: false,
         canMove: false,
       };
-      data[transition.source].children?.push(transitionId);
-      data[transition.source].isFolder = true;
+      data[transition.sourceId].children?.push(transitionId);
+      data[transition.sourceId].isFolder = true;
     }
 
     return data;

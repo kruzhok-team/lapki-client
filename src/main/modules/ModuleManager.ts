@@ -9,7 +9,7 @@ import path from 'path';
 import { findFreePort } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
-export type ModuleName = 'lapki-flasher';
+export type ModuleName = 'lapki-flasher' | 'lapki-serial-monitor';
 
 export class ModuleStatus {
   /* 
@@ -42,7 +42,7 @@ export class ModuleManager {
   static moduleStatus: Map<string, ModuleStatus> = new Map();
 
   static async startLocalModule(module: ModuleName) {
-    this.moduleStatus[module] = new ModuleStatus();
+    this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
       const basePath = path
@@ -51,6 +51,7 @@ export class ModuleManager {
       let chprocess;
       let modulePath: string = '';
       let osPath = '';
+
       switch (platform) {
         case 'darwin': {
           // позволяет унаследовать $PATH, то есть системный путь
@@ -73,6 +74,7 @@ export class ModuleManager {
           this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
+
       if (modulePath) {
         switch (module) {
           case 'lapki-flasher': {
@@ -132,23 +134,41 @@ export class ModuleManager {
             chprocess = spawn(modulePath, flasherArgs);
             break;
           }
+          case 'lapki-serial-monitor': {
+            const port = await findFreePort();
+            await settings.set('serialmonitor.localPort', port);
+            defaultSettings.serialmonitor.localPort = Number(port);
+            const serialMonitorArgs: string[] = [
+              '-updateList=1',
+              '-listCooldown=0',
+              `-address=localhost:${port}`,
+            ];
+
+            const configPath = '';
+
+            if (existsSync(configPath)) {
+              serialMonitorArgs.push(`-configPath=${configPath}`);
+            }
+            chprocess = spawn(modulePath, serialMonitorArgs);
+            break;
+          }
           default:
             chprocess = spawn(modulePath);
         }
         chprocess.on('error', function (err) {
           if (err.code == 'ENOENT') {
-            ModuleManager.moduleStatus[module] = new ModuleStatus(
-              2,
-              `Файл ${modulePath} не найден.`
+            ModuleManager.moduleStatus.set(
+              module,
+              new ModuleStatus(2, `Файл ${modulePath} не найден.`)
             );
           } else {
-            ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
+            ModuleManager.moduleStatus.set(module, new ModuleStatus(2, `${err}`));
           }
           console.error(`${module} spawn error: ` + err);
         });
       }
       if (chprocess !== undefined) {
-        ModuleManager.moduleStatus[module] = new ModuleStatus(1);
+        ModuleManager.moduleStatus.set(module, new ModuleStatus(1));
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {
           console.log(`${module}-stdout: ${data}`);
@@ -158,7 +178,7 @@ export class ModuleManager {
         });
 
         chprocess.on('exit', () => {
-          ModuleManager.moduleStatus[module] = new ModuleStatus(3);
+          ModuleManager.moduleStatus.set(module, new ModuleStatus(3));
           console.log(`${module}-exit!`);
         });
       }
@@ -175,6 +195,6 @@ export class ModuleManager {
   }
 
   static getLocalStatus(module: ModuleName): ModuleStatus {
-    return this.moduleStatus[module];
+    return this.moduleStatus.get(module)!;
   }
 }

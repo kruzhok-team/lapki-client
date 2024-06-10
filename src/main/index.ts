@@ -67,6 +67,7 @@ function createWindow(): BrowserWindow {
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
     ModuleManager.stopModule('lapki-flasher');
+    ModuleManager.stopModule('lapki-serial-monitor');
     app.exit(0);
   });
 
@@ -98,6 +99,7 @@ function createWindow(): BrowserWindow {
 
 const startFlasher = async () => {
   ModuleManager.startLocalModule('lapki-flasher');
+  ModuleManager.startLocalModule('lapki-serial-monitor');
 };
 startFlasher();
 
@@ -111,6 +113,13 @@ app.whenReady().then(() => {
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
+    }
+    if (module === 'lapki-serial-monitor') {
+      settingsChangeSend(
+        mainWindow.webContents,
+        'serialmonitor',
+        settings.getSync('serialmonitor')
+      );
     }
   });
 
@@ -145,5 +154,7 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
   ModuleManager.stopModule('lapki-flasher');
+  // явно останавливаем serial monitor, так как в некоторых случаях он остаётся висеть
+  ModuleManager.stopModule('lapki-serial-monitor');
   app.quit();
 });

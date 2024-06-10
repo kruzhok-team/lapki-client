@@ -5,8 +5,10 @@ import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/lib/types/graphics';
+import theme from '@renderer/theme';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
+import { drawText, getTextWidth } from '../utils/text';
 
 export type MarkedIconData = {
   icon: string;
@@ -106,29 +108,55 @@ export class Picto {
     const image = icons.get(iconName);
     if (!image) return;
 
+    // Отрисовка самой иконки
     ctx.beginPath();
     drawImageFit(ctx, image, {
       ...bounds,
       width: bounds.width / this.scale,
       height: bounds.height / this.scale,
     });
-    if (isMarked && iconData.label) {
-      const { x, y, width, height } = bounds;
-      const tX = x + width / this.scale;
-      const tY = y + (height - 1) / this.scale;
-      ctx.save();
-      ctx.font = `600 ${16 / this.scale}px/0 Fira Sans`;
-      ctx.fillStyle = iconData.color ?? 'white';
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = 0.5 / this.scale;
-      ctx.textAlign = 'end';
-      ctx.textBaseline = 'alphabetic';
+    ctx.closePath();
 
-      ctx.fillText(iconData.label, tX, tY);
-      ctx.strokeText(iconData.label, tX, tY);
+    if (!isMarked || !iconData.label) return;
 
-      ctx.restore();
-    }
+    const { x, y, width, height } = bounds;
+    // Координаты правого нижнего угла картинки
+    const tX = x + (width + 6) / this.scale;
+    const tY = y + (height + 3) / this.scale;
+    // Отступы внутри метки
+    const pX = 1 / this.scale;
+    const pY = 0.5 / this.scale;
+    const font = `500 ${13 / this.scale}px/0 Fira Mono`;
+    const textWidth = getTextWidth(iconData.label, font);
+    const textHeight = 13 / this.scale;
+    const labelWidth = textWidth + pX * 2;
+    const labelHeight = textHeight + pY * 2;
+
+    // Отрисовка заднего фона метки
+    // Рисуется в правом нижнем углу картинки, ширина и высота зависит от текста
+    ctx.beginPath();
+    const prevFillStyle = ctx.fillStyle;
+    ctx.fillStyle = theme.colors.diagram.state.bodyBg;
+    ctx.roundRect(tX - labelWidth, tY - labelHeight, labelWidth, labelHeight, 2 / this.scale);
+    ctx.fill();
+
+    ctx.fillStyle = prevFillStyle;
+    ctx.closePath();
+
+    // Отрисовка текста метки
+    ctx.beginPath();
+    drawText(ctx, iconData.label, {
+      x: tX - textWidth / 2 - pX,
+      y: tY - textHeight - pY,
+      font: {
+        fontFamily: 'Fira Mono',
+        fontSize: 13 / this.scale,
+        lineHeight: 1,
+        fontWeight: 500,
+      },
+      textAlign: 'center',
+      color: iconData.color ?? '#FFFFFF',
+    });
     ctx.closePath();
   }
 
@@ -147,8 +175,11 @@ export class Picto {
         <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
         {data.label && (
           <p
-            className="absolute bottom-0 right-0 text-right font-Fira text-base font-semibold leading-none [-webkit-text-stroke:_1px_white]"
-            style={{ color: data.color ?? 'white' }}
+            className="absolute bottom-[-3px] right-[-6px] rounded-[2px] px-[1px] py-[0.5px] text-center font-Fira-Mono text-[13px] font-medium leading-[14px]"
+            style={{
+              color: data.color ?? '#FFFFFF',
+              backgroundColor: theme.colors.diagram.state.bodyBg,
+            }}
           >
             {data.label}
           </p>

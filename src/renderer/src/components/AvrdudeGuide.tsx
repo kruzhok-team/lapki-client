@@ -18,19 +18,22 @@ export const AvrdudeGuideModal: React.FC<AvrdudeGuideModalProps> = ({ onClose, .
   return (
     <Modal {...props} onRequestClose={onClose} title="Отсутствует avrdude">
       <div>
-        Загрузчик не может найти путь к avrdude на вашем устройстве. Эта программа ему необходима
-        для того, чтобы он мог прошивать устройства. Прочитайте{' '}
+        Загрузчик не может найти программу Avrdude на вашем устройстве. Она необходима для того,
+        чтобы прошивать некоторые устройства (например, Arduino).
+        <br></br>
+        <br></br>
+        Обратитесь к{' '}
         <a
           className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
           href={guideRef}
           target="_blank"
           rel="noopener noreferrer"
         >
-          инструкцию
+          инструкции
         </a>
-        , чтобы узнать, как установить и добавить avrdude.
+        , чтобы узнать, как правильно установить и настроить Avrdude.
         <br></br>
-        Не забудьте <b>перзагрузить</b> IDE после установки и настройки avrdude!
+        <br></br>И не забудьте <b>перезапустить</b> IDE после установки и настройки Avrdude!
       </div>
     </Modal>
   );

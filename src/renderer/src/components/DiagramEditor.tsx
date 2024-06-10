@@ -11,7 +11,7 @@ import { Action, Event } from '@renderer/types/diagram';
 import { CreateModal, CreateModalResult } from './CreateModal/CreateModal';
 import { EventsModal, EventsModalData } from './EventsModal/EventsModal';
 import { NoteEdit } from './NoteEdit';
-import { StateNameModal } from './StateNameModal';
+import { StateNameEdit } from './StateNameEdit';
 
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
@@ -220,7 +220,7 @@ export const DiagramEditor: React.FC = () => {
 
       {isMounted && (
         <>
-          <StateNameModal />
+          <StateNameEdit />
           <NoteEdit />
 
           <EventsModal

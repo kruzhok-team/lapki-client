@@ -29,6 +29,8 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
+import { randomColor } from '../utils';
+
 type EventWithCondition = {
   event?: EventData;
   condition?: Condition;
@@ -37,15 +39,6 @@ type EventWithCondition = {
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
   exit: { component: 'System', method: 'onExit' },
-};
-
-const randomColor = (): string => {
-  let result = '';
-  for (let i = 0; i < 6; ++i) {
-    const value = Math.floor(16 * Math.random());
-    result += value.toString(16);
-  }
-  return '#' + result;
 };
 
 const operatorAlias = {
@@ -113,9 +106,13 @@ function initArgList(args: string[]): ArgList {
 }
 
 function parseAction(unproccessedAction: string): Action | undefined {
-  const [componentName, action] = unproccessedAction.trim().split('.');
+  let [componentName, action] = unproccessedAction.trim().split('.');
   if (action === undefined) {
     return;
+  }
+  // Если в конце действия стоит делимитер, удаляем его
+  if (!action.endsWith(')')) {
+    action = action.slice(0, -1);
   }
   // На случай, если действий у события нет
   const bracketPos = action.indexOf('(');

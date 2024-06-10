@@ -1,0 +1,41 @@
+/* .fira-mono-regular {
+  font-family: "Fira Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.fira-mono-medium {
+  font-family: "Fira Mono", monospace;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.fira-mono-bold {
+  font-family: "Fira Mono", monospace;
+  font-weight: 700;
+  font-style: normal;
+} */
+
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Fira Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/Fira_Mono/FiraMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Fira Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../fonts/Fira_Mono/FiraMono-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Fira Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/Fira_Mono/FiraMono-Bold.ttf') format('truetype');
+}

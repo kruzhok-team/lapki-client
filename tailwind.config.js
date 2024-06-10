@@ -10,6 +10,7 @@ export default {
     extend: {
       fontFamily: {
         Fira: ['Fira Sans', 'sans-serif'],
+        'Fira-Mono': ['Fira Mono', 'monospace'],
       },
       colors,
     },

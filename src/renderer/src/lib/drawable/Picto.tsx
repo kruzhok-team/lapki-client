@@ -137,7 +137,7 @@ export class Picto {
     ctx.beginPath();
     const prevFillStyle = ctx.fillStyle;
     ctx.fillStyle = theme.colors.diagram.state.bodyBg;
-    ctx.roundRect(tX - labelWidth, tY - labelHeight, labelWidth, labelHeight, 1 / this.scale);
+    ctx.roundRect(tX - labelWidth, tY - labelHeight, labelWidth, labelHeight, 2 / this.scale);
     ctx.fill();
 
     ctx.fillStyle = prevFillStyle;
@@ -175,7 +175,7 @@ export class Picto {
         <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
         {data.label && (
           <p
-            className="absolute bottom-[-3px] right-[-6px] rounded-[1px] px-[1px] py-[0.5px] text-center font-Fira-Mono text-[13px] font-medium leading-none"
+            className="absolute bottom-[-3px] right-[-6px] rounded-[2px] px-[1px] py-[0.5px] text-center font-Fira-Mono text-[13px] font-medium leading-[14px]"
             style={{
               color: data.color ?? '#FFFFFF',
               backgroundColor: theme.colors.diagram.state.bodyBg,

@@ -1,7 +1,7 @@
 import settings from 'electron-settings';
+// импорт старой версии (3.0 вместо 4.0), так как новая версия требует ESM
 import fixPath from 'fix-path';
 import { lookpath } from 'lookpath';
-// импорт старой версии (3.0 вместо 4.0), так как новая версия требует ESM
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';

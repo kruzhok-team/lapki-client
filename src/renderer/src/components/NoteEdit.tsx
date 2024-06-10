@@ -12,7 +12,8 @@ export const NoteEdit: React.FC = () => {
   const editor = useEditorContext();
 
   const [isOpen, open, close] = useModal(false);
-  const [note, setNote] = useState<Note | null>(null);
+  const [noteId, setNoteId] = useState<string | null>(null);
+  const [initialText, setInitialText] = useState<string | null>(null);
   const [style, setStyle] = useState({} as CSSProperties);
   const ref = useRef<HTMLSpanElement>(null);
 
@@ -20,17 +21,21 @@ export const NoteEdit: React.FC = () => {
     const el = ref.current;
     const value = (el?.textContent ?? '').trim();
 
-    if (!el || !note || note.data.text === value) return;
+    if (!el || noteId === null || initialText === value) return;
 
-    editor.controller.notes.changeNoteText(note.id, value);
-  }, [editor, note]);
+    editor.controller.notes.changeNoteText(noteId, value);
+
+    setNoteId(null);
+    setInitialText(null);
+  }, [editor.controller.notes, initialText, noteId]);
 
   const handleClose = useCallback(() => {
     handleSubmit();
-    note?.setVisible(true);
+
+    if (noteId) editor.controller.notes.setIsVisible(noteId, true);
 
     close();
-  }, [close, handleSubmit, note]);
+  }, [close, editor.controller.notes, handleSubmit, noteId]);
 
   useEffect(() => {
     window.addEventListener('wheel', handleClose);
@@ -51,9 +56,10 @@ export const NoteEdit: React.FC = () => {
       const { width } = note.drawBounds;
       const { padding, fontSize, borderRadius } = note.computedStyles;
 
-      note.setVisible(false);
+      editor.controller.notes.setIsVisible(note.id, false);
 
-      setNote(note);
+      setNoteId(note.id);
+      setInitialText(note.data.text);
       setStyle({
         left: position.x + 'px',
         top: position.y + 'px',

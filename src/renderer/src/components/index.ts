@@ -12,7 +12,7 @@ export * from './MainContainer';
 export * from './ComponentAddModal';
 export * from './ComponentEditModal';
 export * from './ComponentDeleteModal';
-export * from './Scale';
+export * from './EditorSettings';
 export * from './UpdateModal';
 export * from './DiagramContextMenu';
 export * from './PropertiesModal';

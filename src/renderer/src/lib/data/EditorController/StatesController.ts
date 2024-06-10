@@ -276,6 +276,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     child.parent = parent;
     parent.children.add(child, Layer.States);
 
+    // Перелинковка переходов
+    //! Нужно делать до создания перехода из начального состояния
+    this.controller.transitions.forEachByStateId(childId, (transition) => {
+      this.controller.transitions.linkTransition(transition.id);
+    });
+
     // Если не было начального состояния, им станет новое
     if (canBeInitial && this.getSiblings(child.id, child.data.parentId, 'states').length === 0) {
       this.changeStatePosition(
@@ -287,10 +293,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       this.createInitialStateWithTransition(child.id, canUndo);
       numberOfConnectedActions += 2;
     }
-
-    this.controller.transitions.forEachByStateId(childId, (transition) => {
-      this.controller.transitions.linkTransition(transition.id);
-    });
 
     if (canUndo) {
       this.history.do({

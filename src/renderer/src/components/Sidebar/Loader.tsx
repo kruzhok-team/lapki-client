@@ -266,7 +266,7 @@ export const Loader: React.FC<FlasherProps> = ({
     return (
       <button
         type="button"
-        className="btn-primary mb-2 w-full border-bg-warning bg-bg-warning"
+        className="btn-primary mb-2 w-full border-warning bg-warning"
         onClick={openAvrdudeGuideModal}
       >
         Программа avrdude не найдена!

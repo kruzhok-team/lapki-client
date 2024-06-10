@@ -262,18 +262,16 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
   const avrdudeCheck = () => {
-    if (flasherIsLocal && !hasAvrdude) {
-      return (
-        <button
-          type="button"
-          className="btn-primary mb-2 w-full border-bg-warning bg-bg-warning"
-          onClick={openAvrdudeGuideModal}
-        >
-          Программа avrdude не найдена!
-        </button>
-      );
-    }
-    return;
+    if (!(flasherIsLocal && !hasAvrdude)) return;
+    return (
+      <button
+        type="button"
+        className="btn-primary mb-2 w-full border-bg-warning bg-bg-warning"
+        onClick={openAvrdudeGuideModal}
+      >
+        Программа avrdude не найдена!
+      </button>
+    );
   };
   return (
     <section className="flex h-full flex-col text-center">

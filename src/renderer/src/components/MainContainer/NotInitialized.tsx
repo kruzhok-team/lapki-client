@@ -25,6 +25,13 @@ const combination = [
     },
   },
   {
+    name: 'Справка',
+    command: {
+      button1: 'F1',
+      button2: undefined,
+    },
+  },
+  {
     name: 'Во весь экран',
     command: {
       button1: 'F11',

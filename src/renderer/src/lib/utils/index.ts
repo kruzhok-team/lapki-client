@@ -396,8 +396,9 @@ export const isPointOnSegment = (
 
 // Метод для проверки попадания точки на линии
 export const isCheckPointOnLine = (pos, line): boolean => {
-  // FIXME: нужно ли масштабировать ширину линии?
-  const lineWidth = 20; // Ширина линии
+  // FIXME: (XidFanSan) нужно ли масштабировать ширину линии?
+  // lineWidth - это значение масштаба ширины линии
+  const lineWidth = 10;
 
   const { x, y } = pos;
   if (line.mid) {

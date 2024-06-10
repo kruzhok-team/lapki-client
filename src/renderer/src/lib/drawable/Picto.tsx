@@ -121,12 +121,12 @@ export class Picto {
 
     const { x, y, width, height } = bounds;
     // Координаты правого нижнего угла картинки
-    const tX = x + width / this.scale;
-    const tY = y + height / this.scale;
+    const tX = x + (width + 6) / this.scale;
+    const tY = y + (height + 3) / this.scale;
     // Отступы внутри метки
     const pX = 1 / this.scale;
     const pY = 0.5 / this.scale;
-    const font = `500 ${13 / this.scale}px/0 Fira Sans`;
+    const font = `500 ${13 / this.scale}px/0 Fira Mono`;
     const textWidth = getTextWidth(iconData.label, font);
     const textHeight = 13 / this.scale;
     const labelWidth = textWidth + pX * 2;
@@ -149,9 +149,10 @@ export class Picto {
       x: tX - textWidth / 2 - pX,
       y: tY - textHeight - pY,
       font: {
-        fontFamily: 'Fira Sans',
+        fontFamily: 'Fira Mono',
         fontSize: 13 / this.scale,
         lineHeight: 1,
+        fontWeight: 500,
       },
       textAlign: 'center',
       color: iconData.color ?? '#FFFFFF',
@@ -174,7 +175,7 @@ export class Picto {
         <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
         {data.label && (
           <p
-            className="absolute bottom-0 right-0 rounded-[1px] px-[1px] py-[0.5px] text-center font-Fira text-[13px] font-medium leading-none"
+            className="absolute bottom-[-3px] right-[-6px] rounded-[1px] px-[1px] py-[0.5px] text-center font-Fira-Mono text-[13px] font-medium leading-none"
             style={{
               color: data.color ?? '#FFFFFF',
               backgroundColor: theme.colors.diagram.state.bodyBg,

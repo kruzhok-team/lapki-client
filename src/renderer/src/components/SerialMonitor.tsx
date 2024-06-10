@@ -5,11 +5,12 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { Select, Switch, TextInput } from './UI';
 
-export const Monitor: React.FC = () => {
+export const SerialMonitorTab: React.FC = () => {
   const { autoScroll, setAutoScroll, inputValue, setInputValue, messages, setMessages } =
     useSerialMonitor();
 
   console.log(messages);
+
   useEffect(() => {
     SerialMonitor.bindReact(autoScroll, messages, setMessages, setInputValue);
     SerialMonitor.connect(); // Подключаем WebSocket при монтировании компонента
@@ -23,18 +24,15 @@ export const Monitor: React.FC = () => {
   };
 
   // Функция для прокрутки вниз при добавлении нового сообщения
-  const scrollToBottom = () => {
+  const scrollToBottom = (data) => {
     if (autoScroll) {
-      const messageContainer = document.getElementById('message-container');
-      if (messageContainer) {
-        messageContainer.scrollTop = messageContainer.scrollHeight;
-      }
+      data.scrollTop = data.scrollHeight;
     }
   };
 
   useEffect(() => {
-    scrollToBottom(); // Вызываем функцию прокрутки при изменении сообщений
-  }, [messages, autoScroll]); // Зависимости: сообщения и автоскролл
+    scrollToBottom; // Вызываем функцию прокрутки при изменении сообщений
+  }, [messages]); // Зависимости: сообщения и автоскролл
 
   return (
     <section className="flex h-full flex-col bg-bg-secondary">
@@ -49,14 +47,17 @@ export const Monitor: React.FC = () => {
           Отправить
         </button>
       </div>
-      <div className="mx-2 h-full bg-bg-primary">
+      <div className="mx-2 h-full overflow-y-auto break-words bg-bg-primary">
         {messages.map((msg, index) => (
           <div key={index}>{msg}</div>
         ))}
       </div>
       <div className="m-2 flex justify-between">
-        <div className="flex w-40 items-center justify-between">
-          <Switch checked={autoScroll} onChange={() => setAutoScroll(!autoScroll)} />
+        <div
+          className="flex w-40 items-center justify-between"
+          onScroll={(data) => scrollToBottom(data)}
+        >
+          <Switch checked={autoScroll} onCheckedChange={() => setAutoScroll(!autoScroll)} />
           Автопрокрутка
         </div>
         <div className="flex flex-row">

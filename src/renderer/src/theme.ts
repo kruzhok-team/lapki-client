@@ -3,6 +3,7 @@ const colorNames = {
   primary: '--p',
   error: '--e',
   success: '--s',
+  warning: '--w',
 
   primaryHover: '--p-h',
   primaryActive: '--p-a',
@@ -13,6 +14,7 @@ const colorNames = {
   'bg-active': '--bg-a',
 
   'border-primary': '--b-p',
+  'border-warning': '--b-w',
 
   'text-primary': '--t-p',
   'text-secondary': '--t-s',

@@ -207,6 +207,8 @@ const typeMap: any = {
       { json: 'hidden', js: 'hidden', typ: u(undefined, true) },
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
+      { json: 'standardVersion', js: 'standardVersion', typ: '' },
+      { json: 'version', js: 'version', typ: '' },
     ],
     false
   ),

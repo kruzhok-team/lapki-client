@@ -17,6 +17,7 @@ interface KeyboardEvents {
   ctrly: KeyboardEvent;
   ctrlc: KeyboardEvent;
   ctrlv: KeyboardEvent;
+  ctrld: KeyboardEvent;
   ctrls: KeyboardEvent;
   ctrlshifta: KeyboardEvent;
 }
@@ -92,6 +93,10 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
       }
       if (e.code === 'KeyV') {
         this.emit('ctrlv', e);
+        return;
+      }
+      if (e.code === 'KeyD') {
+        this.emit('ctrld', e);
         return;
       }
       if (e.code === 'KeyS') {

@@ -43,6 +43,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrly', this.app.controller.history.redo);
     this.app.keyboard.on('ctrlc', this.app.controller.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.pasteSelected);
+    this.app.keyboard.on('ctrld', this.app.controller.duplicateSelected);
     this.app.keyboard.on('ctrls', this.app.model.files.save);
     this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
 
@@ -63,6 +64,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.off('ctrly', this.app.controller.history.redo);
     this.app.keyboard.off('ctrlc', this.app.controller.copySelected);
     this.app.keyboard.off('ctrlv', this.app.controller.pasteSelected);
+    this.app.keyboard.off('ctrld', this.app.controller.duplicateSelected);
     this.app.keyboard.off('ctrls', this.app.model.files.save);
     this.app.keyboard.off('ctrlshifta', this.app.model.files.saveAs);
 

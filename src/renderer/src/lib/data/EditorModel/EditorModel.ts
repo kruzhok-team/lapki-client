@@ -18,6 +18,7 @@ import {
   CreateInitialStateParams,
   CreateFinalStateParams,
   CreateChoiceStateParams,
+  SwapComponentsParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {
@@ -603,9 +604,19 @@ export class EditorModel {
       console.error(['bad new component', name, type]);
       return false;
     }
+
+    const getOrder = () => {
+      const orders = Object.values(this.data.elements.components).map((c) => c.order);
+
+      if (orders.length === 0) return 0;
+
+      return Math.max(...orders) + 1;
+    };
+
     this.data.elements.components[name] = {
       type,
       parameters,
+      order: getOrder(),
     };
 
     this.triggerDataUpdate('elements.components');
@@ -642,6 +653,20 @@ export class EditorModel {
     if (!component) return false;
 
     delete this.data.elements.components[name];
+
+    this.triggerDataUpdate('elements.components');
+
+    return true;
+  }
+
+  swapComponents(args: SwapComponentsParams) {
+    const { name1, name2 } = args;
+
+    const component1 = this.data.elements.components[name1];
+    const component2 = this.data.elements.components[name2];
+    if (!component1 || !component2) return false;
+
+    [component1.order, component2.order] = [component2.order, component1.order];
 
     this.triggerDataUpdate('elements.components');
 

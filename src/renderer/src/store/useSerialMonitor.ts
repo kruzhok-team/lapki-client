@@ -4,9 +4,11 @@ interface SerialMonitorState {
   autoScroll: boolean;
   setAutoScroll: (autoScroll: boolean) => void;
   inputValue: string;
-  setInputValue: (newConnectionStatus: string) => void;
+  setInputValue: (newInputValue: string) => void;
   messages: string[];
-  setMessages: (newConnectionStatus: string[]) => void;
+  setMessages: (update: (prevMessages: string[]) => string[]) => void;
+  connectionStatus: string;
+  setConnectionStatus: (newConnectionStatus: string) => void;
 }
 
 export const useSerialMonitor = create<SerialMonitorState>((set) => ({
@@ -15,5 +17,7 @@ export const useSerialMonitor = create<SerialMonitorState>((set) => ({
   inputValue: '',
   setInputValue: (newInputValue) => set({ inputValue: newInputValue }),
   messages: [],
-  setMessages: (newMessages) => set({ messages: newMessages }),
+  setMessages: (update) => set((state) => ({ messages: update(state.messages) })),
+  connectionStatus: 'Не подключен.',
+  setConnectionStatus: (newConnectionStatus) => set({ connectionStatus: newConnectionStatus }),
 }));

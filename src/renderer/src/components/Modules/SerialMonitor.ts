@@ -1,14 +1,14 @@
 export class SerialMonitor {
   static autoScroll: boolean;
   static messages: string[];
-  static setMessages: (newConnectionStatus: string[]) => void;
+  static setMessages: (update: (prevMessages: string[]) => string[]) => void;
   static setInputValue: (newInputValue: string) => void;
-  static ws: WebSocket;
+  static ws: WebSocket | null = null;
 
   static bindReact(
     autoScroll: boolean,
     messages: string[],
-    setMessages: (newMessages: string[]) => void,
+    setMessages: (update: (prevMessages: string[]) => string[]) => void,
     setInputValue: (newInputValue: string) => void
   ): void {
     this.autoScroll = autoScroll;
@@ -17,28 +17,27 @@ export class SerialMonitor {
     this.setInputValue = setInputValue;
   }
 
-  /** 
-   подключение к заданному хосту и порту, если оба параметра не заданы, то идёт подключение к локальному хосту, если только один из параметров задан, то меняется только тот параметр, что был задан.
-  */
   static async connect() {
-    this.ws = new WebSocket('ws://localhost:8080/ws');
+    if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+      this.ws = new WebSocket('ws://localhost:8080/serialmonitor');
 
-    this.ws.onopen = () => {
-      console.log('WebSocket работает!');
-      this.ws.onmessage = (message) => {
-        this.setMessages([...this.messages, message.data]); // Обновляем сообщения
-        if (this.autoScroll) {
-          const messageContainer = document.getElementById('message-container');
-          if (messageContainer) {
-            messageContainer.scrollTop = messageContainer.scrollHeight;
-          }
-        }
+      this.ws.onopen = () => {
+        console.log('WebSocket работает!');
       };
-    };
 
-    this.ws.onclose = async () => {
-      this.ws.close();
-    };
+      this.ws.onmessage = (message) => {
+        // Используем функцию обратного вызова для обновления сообщений
+        this.setMessages((prevMessages) => [...prevMessages, message.data]);
+
+        //this.setMessages([...this.messages, message.data]); // Обновляем сообщения
+      };
+
+      this.ws.onclose = async () => {
+        console.log('WebSocket закрыт. Повторное подключение будет через несколько секунд...');
+        // Повторное подключение через некоторое время, например, через 5 секунд
+        setTimeout(() => this.connect(), 5000);
+      };
+    }
 
     return this.ws;
   }
@@ -48,6 +47,12 @@ export class SerialMonitor {
       this.ws.send(data);
     } else {
       console.error('WebSocket не открыт или не инициализирован.');
+    }
+  }
+
+  static closeWebSocket() {
+    if (this.ws) {
+      this.ws.close(); // Закрываем WebSocket, если он существует
     }
   }
 }

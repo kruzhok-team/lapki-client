@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { SerialMonitor } from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
@@ -9,33 +9,40 @@ export const SerialMonitorTab: React.FC = () => {
   const { autoScroll, setAutoScroll, inputValue, setInputValue, messages, setMessages } =
     useSerialMonitor();
 
+  const messageContainerRef = useRef<HTMLDivElement>(null);
   console.log(messages);
+
+  const scrollToBottom = () => {
+    if (autoScroll && messageContainerRef.current) {
+      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     SerialMonitor.bindReact(autoScroll, messages, setMessages, setInputValue);
-    SerialMonitor.connect(); // Подключаем WebSocket при монтировании компонента
-  }, [autoScroll, messages, setInputValue, setMessages]);
+    SerialMonitor.connect();
+
+    return () => {
+      // Отключаем обработчики событий и закрываем WebSocket при размонтировании компонента
+      SerialMonitor.closeWebSocket();
+    };
+  }, []);
+
+  // При изменении messages прокручиваем вниз, если включена автопрокрутка
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, autoScroll]);
 
   const handleSend = () => {
     if (inputValue.trim()) {
+      // Отправляем сообщение через SerialMonitor
       SerialMonitor.send(inputValue);
       setInputValue('');
     }
   };
 
-  // Функция для прокрутки вниз при добавлении нового сообщения
-  const scrollToBottom = (data) => {
-    if (autoScroll) {
-      data.scrollTop = data.scrollHeight;
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom; // Вызываем функцию прокрутки при изменении сообщений
-  }, [messages]); // Зависимости: сообщения и автоскролл
-
   return (
-    <section className="flex h-full flex-col bg-bg-secondary">
+    <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex">
         <TextInput
           className="mr-2 max-w-full"
@@ -47,16 +54,16 @@ export const SerialMonitorTab: React.FC = () => {
           Отправить
         </button>
       </div>
-      <div className="mx-2 h-full overflow-y-auto break-words bg-bg-primary">
+      <div
+        className="mx-2 h-full overflow-y-auto bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        ref={messageContainerRef}
+      >
         {messages.map((msg, index) => (
           <div key={index}>{msg}</div>
         ))}
       </div>
       <div className="m-2 flex justify-between">
-        <div
-          className="flex w-40 items-center justify-between"
-          onScroll={(data) => scrollToBottom(data)}
-        >
+        <div className="flex w-40 items-center justify-between">
           <Switch checked={autoScroll} onCheckedChange={() => setAutoScroll(!autoScroll)} />
           Автопрокрутка
         </div>
@@ -64,8 +71,30 @@ export const SerialMonitorTab: React.FC = () => {
           <div className="mr-2 w-48">
             <Select isSearchable={false} />
           </div>
+          <div className="mr-2 w-48">
+            <Select
+              isSearchable={false}
+              options={[
+                { label: 'COM1', value: 'COM1' },
+                { label: 'COM2', value: 'COM2' },
+                { label: 'COM3', value: 'COM3' },
+                { label: 'COM4', value: 'COM4' },
+                { label: 'COM5', value: 'COM5' },
+                { label: 'COM6', value: 'COM6' },
+              ]}
+            />
+          </div>
           <div className="w-48">
-            <Select isSearchable={false} />
+            <Select
+              isSearchable={false}
+              options={[
+                { label: '9600', value: '9600' },
+                { label: '19200', value: '19200' },
+                { label: '38400', value: '38400' },
+                { label: '57600', value: '57600' },
+                { label: '115200', value: '115200' },
+              ]}
+            />
           </div>
         </div>
       </div>

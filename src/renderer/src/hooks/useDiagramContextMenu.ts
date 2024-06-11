@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import {
   ChoiceState,
   EventSelection,
@@ -62,7 +61,6 @@ export const useDiagramContextMenu = () => {
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
-              color: DEFAULT_STATE_COLOR,
             });
           },
         },
@@ -158,7 +156,6 @@ export const useDiagramContextMenu = () => {
                   name: 'Состояние',
                   position: editor.view.windowToWorldCoords(position),
                   parentId: state.id,
-                  color: DEFAULT_STATE_COLOR,
                 });
               },
             },

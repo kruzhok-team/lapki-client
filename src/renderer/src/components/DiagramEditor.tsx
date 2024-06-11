@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State, Transition, ChoiceState, FinalState } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -57,7 +56,6 @@ export const DiagramEditor: React.FC = () => {
         name: 'Состояние',
         position,
         placeInCenter: true,
-        color: DEFAULT_STATE_COLOR,
       });
     };
 
@@ -165,14 +163,14 @@ export const DiagramEditor: React.FC = () => {
         triggerComponent: (data.trigger as any).component,
         triggerMethod: (data.trigger as any).method,
         actions: events,
-        color: data.color ?? DEFAULT_STATE_COLOR,
+        color: data.color,
       });
     } else if (transition && data.key === 3) {
       editor.controller.transitions.changeTransition({
         id: transition.id,
         source: transition.source.id,
         target: transition.target.id,
-        color: data.color ?? DEFAULT_TRANSITION_COLOR,
+        color: data.color,
         label: {
           trigger: data.trigger,
           do: events,
@@ -183,7 +181,7 @@ export const DiagramEditor: React.FC = () => {
       editor.controller.transitions.createTransition({
         source: newTransitionData.source.id,
         target: newTransitionData.target.id,
-        color: data.color ?? DEFAULT_TRANSITION_COLOR,
+        color: data.color,
         label: {
           trigger: data.trigger,
           condition: data.condition,

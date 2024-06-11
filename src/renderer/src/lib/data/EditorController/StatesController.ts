@@ -2,7 +2,7 @@ import throttle from 'lodash.throttle';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { DEFAULT_TRANSITION_COLOR, INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
+import { INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
 import {
   State,
   EventSelection,
@@ -464,7 +464,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.controller.transitions.createTransition(
       {
-        color: DEFAULT_TRANSITION_COLOR,
         source: state.id,
         target: target.id,
       },

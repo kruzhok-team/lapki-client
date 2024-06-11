@@ -7,6 +7,7 @@ import {
   drawTriangle,
   getLine,
 } from '@renderer/lib/utils';
+import { getColor } from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
 
@@ -171,8 +172,8 @@ export class Transition extends Shape {
     });
 
     ctx.lineWidth = transitionStyle.width;
-    ctx.strokeStyle = this.data.color;
-    ctx.fillStyle = this.data.color;
+    ctx.strokeStyle = this.data.color ?? getColor('default-transition-color');
+    ctx.fillStyle = this.data.color ?? getColor('default-transition-color');
 
     drawCurvedLine(ctx, sourceLine, 12 / this.app.model.data.scale);
     drawCurvedLine(ctx, targetLine, 12 / this.app.model.data.scale);
@@ -200,8 +201,8 @@ export class Transition extends Shape {
     });
 
     ctx.lineWidth = transitionStyle.width;
-    ctx.strokeStyle = this.data.color;
-    ctx.fillStyle = this.data.color;
+    ctx.strokeStyle = this.data.color ?? getColor('default-transition-color');
+    ctx.fillStyle = this.data.color ?? getColor('default-transition-color');
 
     drawCurvedLine(ctx, line, 12 / this.app.model.data.scale);
     drawCircle(ctx, {

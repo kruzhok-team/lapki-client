@@ -2,7 +2,6 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 
 import { Modal, ColorInput } from '@renderer/components/UI';
 import { usePrevious } from '@renderer/hooks';
-import { DEFAULT_STATE_COLOR, DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { State, Transition } from '@renderer/lib/drawable';
 import {
@@ -63,7 +62,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   // Данные формы
   const trigger = useTrigger(isEditingState);
   const condition = useCondition({ isEditingState, formState });
-  const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
+  const [color, setColor] = useState<string | undefined>();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,7 +159,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     condition.handleParamOneInput2(true);
     condition.setErrors({});
 
-    setColor(DEFAULT_TRANSITION_COLOR);
+    setColor(undefined);
 
     setFormState('default');
 
@@ -180,7 +179,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
       const { data } = state;
 
-      setColor(data.color ?? DEFAULT_STATE_COLOR);
+      setColor(data.color);
       trigger.setSelectedComponent(data.events[0].trigger.component);
       trigger.setSelectedMethod(data.events[0].trigger.method);
 
@@ -251,7 +250,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       trigger.setSelectedMethod(data.label.trigger.method);
     }
 
-    setColor(data?.color ?? DEFAULT_TRANSITION_COLOR);
+    setColor(data?.color);
 
     tryGetCondition();
 
@@ -283,7 +282,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
 
       <div className="flex items-center gap-2">
         <span className="font-bold">Цвет:</span>
-        <ColorInput value={color} onChange={setColor} />
+        <ColorInput clearable value={color} onChange={setColor} />
       </div>
     </Modal>
   );

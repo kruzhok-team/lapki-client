@@ -29,8 +29,6 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
-import { randomColor } from '../utils';
-
 type EventWithCondition = {
   event?: EventData;
   condition?: Condition;
@@ -282,7 +280,7 @@ function getTransitions(
       transitions[id] = {
         source: rawTransition.source,
         target: rawTransition.target,
-        color: rawTransition.color ?? randomColor(),
+        color: rawTransition.color,
       };
       continue;
     }
@@ -291,7 +289,7 @@ function getTransitions(
     transitions[id] = {
       source: rawTransition.source,
       target: rawTransition.target,
-      color: rawTransition.color ?? randomColor(),
+      color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
         trigger: eventData.event?.trigger,

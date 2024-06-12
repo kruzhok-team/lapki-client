@@ -1,7 +1,6 @@
 import { Point } from '@renderer/lib/types/graphics';
 import {
   emptyElements,
-  Action,
   EventData,
   State as StateData,
   Transition as TransitionData,

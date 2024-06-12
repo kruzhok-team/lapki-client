@@ -335,6 +335,16 @@ export class PlatformManager {
     });
   }
 
+  measureFullCondition(ac: Condition): number {
+    if (!operatorSet.has(ac.type)) return 0;
+
+    const leftW = this.measureCondition(ac.value[0]) + picto.eventMargin;
+    const icoW = picto.eventHeight + picto.eventMargin;
+    const rightW = this.measureCondition(ac.value[1]);
+
+    return leftW + icoW + rightW;
+  }
+
   measureCondition(ac: Condition): number {
     if (ac.type == 'component') {
       return picto.eventWidth;

@@ -26,7 +26,7 @@ export type Event = {
 export type EventData = {
   trigger: Event;
   do: Action[];
-  // TODO: condition?: Condition;
+  condition?: Condition;
 };
 
 interface BaseState {

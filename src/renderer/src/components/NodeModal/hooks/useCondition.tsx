@@ -1,19 +1,13 @@
-import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
+import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { Condition, Variable as VariableData } from '@renderer/types/diagram';
 
-interface UseConditionParams {
-  isEditingState: boolean;
-  formState: 'submitted' | 'default';
-}
-
-/**
- * Инкапсуляция логики условия формы {@link CreateModal}
- */
-export const useCondition = ({ isEditingState, formState }: UseConditionParams) => {
+export const useCondition = () => {
   const editor = useEditorContext();
   const model = editor.model;
   const componentsData = model.useData('elements.components');
@@ -35,13 +29,8 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
   const [show, setShow] = useState(false);
   const [isParamOneInput1, setIsParamOneInput1] = useState(true);
   const [isParamOneInput2, setIsParamOneInput2] = useState(true);
-  const handleChangeConditionShow = (value: boolean) => setShow(value);
-  const handleParamOneInput1 = (value: boolean) => setIsParamOneInput1(value);
-  const handleParamOneInput2 = (value: boolean) => setIsParamOneInput2(value);
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
-    if (!controller.platform) return [];
-
     const getComponentOption = (id: string) => {
       const proto = controller.platform!.getComponent(id);
 
@@ -55,16 +44,10 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingState) {
-      result.unshift(getComponentOption('System'));
-    }
-
     return result;
-  }, [componentsData, isEditingState, controller]);
+  }, [componentsData, controller]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
-    if (!controller.platform) return [];
-
     const getComponentOption = (id: string) => {
       const proto = controller.platform!.getComponent(id);
 
@@ -78,12 +61,8 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingState) {
-      result.unshift(getComponentOption('System'));
-    }
-
     return result;
-  }, [componentsData, isEditingState, controller]);
+  }, [componentsData, controller]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1 || !controller.platform) return [];
@@ -165,51 +144,134 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
     selectedMethodParam2,
   ]);
 
-  const handleComponentParam1Change = (value: SingleValue<SelectOption>) => {
+  const handleComponentParam1Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponentParam1(value?.value ?? '');
     setSelectedMethodParam1('');
-  };
-  const handleComponentParam2Change = (value: SingleValue<SelectOption>) => {
+  }, []);
+  const handleComponentParam2Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponentParam2(value?.value ?? '');
     setSelectedMethodParam2('');
-  };
+  }, []);
 
-  const handleMethodParam1Change = (value: SingleValue<SelectOption>) => {
+  const handleMethodParam1Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethodParam1(value?.value ?? '');
-  };
-  const handleMethodParam2Change = (value: SingleValue<SelectOption>) => {
+  }, []);
+  const handleMethodParam2Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethodParam2(value?.value ?? '');
-  };
+  }, []);
 
-  const handleConditionOperatorChange = (value: SingleValue<SelectOption>) => {
+  const handleConditionOperatorChange = useCallback((value: SingleValue<SelectOption>) => {
     setConditionOperator(value?.value ?? null);
-  };
+  }, []);
 
-  const handleArgsParam1Change = (value: string) => {
-    setArgsParam1(value);
-  };
-
-  const handleArgsParam2Change = (value: string) => {
-    setArgsParam2(value);
-  };
-
-  useLayoutEffect(() => {
-    if (formState === 'submitted') {
-      checkForErrors();
+  //Позволяет найти начальные значения условия(условий), если таковые имеются
+  const parseCondition = useCallback((c: Condition | undefined | null) => {
+    if (!c) {
+      clear();
+      return undefined;
     }
-  }, [checkForErrors, formState]);
+
+    setShow(true);
+
+    const operator = c.type;
+    if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
+      console.warn('👽 got condition from future (not comparsion)', c);
+      return undefined;
+    }
+    const param1 = c.value[0];
+    const param2 = c.value[1];
+    if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
+      console.warn('👽 got condition from future (non-value operands)', c);
+      return undefined;
+    }
+
+    if (
+      param1.type == 'value' &&
+      (typeof param1.value === 'string' || typeof param1.value === 'number')
+    ) {
+      setIsParamOneInput1(false);
+      setArgsParam1(param1.value);
+    } else if (param1.type == 'component') {
+      const compoName = (param1.value as VariableData).component;
+      const methodName = (param1.value as VariableData).method;
+      setIsParamOneInput1(true);
+      setSelectedComponentParam1(compoName);
+      setSelectedMethodParam1(methodName);
+      //eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
+    } else {
+      console.warn('👽 got condition from future (strange operand 1)', c);
+      return undefined;
+    }
+
+    if (
+      param2.type == 'value' &&
+      (typeof param2.value === 'string' || typeof param2.value === 'number')
+    ) {
+      setIsParamOneInput2(false);
+      setArgsParam2(param2.value);
+    } else if (param2.type == 'component') {
+      const compoName = (param2.value as VariableData).component;
+      const methodName = (param2.value as VariableData).method;
+      setIsParamOneInput2(true);
+      setSelectedComponentParam2(compoName);
+      setSelectedMethodParam2(methodName);
+    } else {
+      console.warn('👽 got condition from future (strange operand 2)', c);
+      return undefined;
+    }
+    return setConditionOperator(operator);
+  }, []);
+
+  const clear = useCallback(() => {
+    setSelectedComponentParam1('');
+    setSelectedComponentParam2('');
+    setArgsParam1('');
+    setConditionOperator('');
+    setSelectedMethodParam1('');
+    setSelectedMethodParam2('');
+    setArgsParam2('');
+    setShow(false);
+    setIsParamOneInput1(true);
+    setIsParamOneInput2(true);
+
+    setErrors({});
+  }, []);
 
   return {
     show,
+    handleChangeConditionShow: setShow,
+
     isParamOneInput1,
+    handleParamOneInput1: setIsParamOneInput1,
     isParamOneInput2,
+    handleParamOneInput2: setIsParamOneInput2,
+
+    componentOptionsParam1,
+    handleComponentParam1Change,
     selectedComponentParam1,
-    selectedComponentParam2,
+    methodOptionsParam1,
+    handleMethodParam1Change,
     selectedMethodParam1,
-    selectedMethodParam2,
-    argsParam1,
-    argsParam2,
+
     conditionOperator,
+    handleConditionOperatorChange,
+
+    componentOptionsParam2,
+    handleComponentParam2Change,
+    selectedComponentParam2,
+    methodOptionsParam2,
+    handleMethodParam2Change,
+    selectedMethodParam2,
+
+    argsParam1,
+    handleArgsParam1Change: setArgsParam1,
+    argsParam2,
+    handleArgsParam2Change: setArgsParam2,
+
+    errors,
+    setErrors,
+    checkForErrors,
+
     setSelectedComponentParam1,
     setSelectedComponentParam2,
     setArgsParam1,
@@ -217,22 +279,8 @@ export const useCondition = ({ isEditingState, formState }: UseConditionParams) 
     setSelectedMethodParam1,
     setSelectedMethodParam2,
     setArgsParam2,
-    handleChangeConditionShow,
-    handleParamOneInput1,
-    handleParamOneInput2,
-    componentOptionsParam1,
-    componentOptionsParam2,
-    methodOptionsParam1,
-    methodOptionsParam2,
-    handleComponentParam1Change,
-    handleComponentParam2Change,
-    handleMethodParam1Change,
-    handleMethodParam2Change,
-    errors,
-    setErrors,
-    checkForErrors,
-    handleArgsParam1Change,
-    handleArgsParam2Change,
-    handleConditionOperatorChange,
+
+    parseCondition,
+    clear,
   };
 };

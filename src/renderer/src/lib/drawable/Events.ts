@@ -19,8 +19,6 @@ export class Events {
 
   selection?: EventSelection;
 
-  buttonMap!: Map<Rectangle, [number, number]>;
-
   minEventRow = 3;
 
   minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
@@ -34,7 +32,6 @@ export class Events {
       height: this.minHeight,
     };
 
-    this.buttonMap = new Map();
     this.recalculate();
   }
 
@@ -47,6 +44,9 @@ export class Events {
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
+      if (ev.condition) {
+        eventRows += 1;
+      }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
       // TODO: пересчитывать карту кнопок
       // this.buttonMap.set(..., [i, -1]);
@@ -88,7 +88,7 @@ export class Events {
       for (let actionIdx = 0; actionIdx < event.do.length; actionIdx++) {
         // const element = events[eventIdx];
         const ax = 1 + (actionIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actionIdx / eventRowLength);
+        const ay = eventRow + Math.floor(actionIdx / eventRowLength) + (event.condition ? 1 : 0);
         const actRect = {
           x: baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale,
           y: baseY + (ay * yDx) / this.app.model.data.scale,
@@ -156,10 +156,21 @@ export class Events {
       }
       platform.drawEvent(ctx, events.trigger, eX, eY);
 
+      if (events.condition) {
+        ctx.beginPath();
+        platform.drawCondition(
+          ctx,
+          events.condition,
+          eX + (picto.eventWidth + 5) / picto.scale,
+          eY
+        );
+        ctx.closePath();
+      }
+
       events.do.forEach((act, actIdx) => {
         const ax = 1 + (actIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actIdx / eventRowLength);
-        const aX = baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
+        const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
+        const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
         const aY = baseY + (ay * yDx) / this.app.model.data.scale;
         if (typeof this.selection !== 'undefined') {
           if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
@@ -169,7 +180,8 @@ export class Events {
         platform.drawAction(ctx, act, aX, aY);
       });
 
-      eventRow += Math.max(1, Math.ceil(events.do.length / eventRowLength));
+      eventRow +=
+        Math.max(1, Math.ceil(events.do.length / eventRowLength)) + (events.condition ? 1 : 0);
     });
 
     ctx.closePath();

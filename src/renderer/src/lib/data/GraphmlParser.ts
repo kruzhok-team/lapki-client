@@ -25,6 +25,7 @@ import {
   ChoiceState,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
+import { isString } from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -112,11 +113,17 @@ function initArgList(args: string[]): ArgList {
   return argList;
 }
 
-function parseAction(unproccessedAction: string): Action | undefined {
-  const [componentName, action] = unproccessedAction.trim().split('.');
-  if (action === undefined) {
-    return;
+const pictoRegex: RegExp = /.+\..+\(.*\)/;
+
+function parseAction(unproccessedAction: string): Action | undefined | string {
+  if (unproccessedAction === '') {
+    return undefined;
   }
+  const regResult = pictoRegex.exec(unproccessedAction);
+  if (!regResult) {
+    return unproccessedAction;
+  }
+  const [componentName, action] = unproccessedAction.trim().split('.');
   // На случай, если действий у события нет
   const bracketPos = action.indexOf('(');
   const args = action
@@ -131,7 +138,7 @@ function parseAction(unproccessedAction: string): Action | undefined {
   };
 }
 
-function parseActions(unsplitedActions: string): Action[] | undefined {
+function parseActions(unsplitedActions: string): Action[] | string | undefined {
   if (unsplitedActions === '') {
     return;
   }
@@ -140,9 +147,10 @@ function parseActions(unsplitedActions: string): Action[] | undefined {
   const resultActions: Action[] = [];
   for (const unprocessedAction of actions) {
     const resultAction = parseAction(unprocessedAction);
-    if (resultAction !== undefined) {
-      resultActions.push(resultAction);
+    if (isString(resultAction)) {
+      return unsplitedActions;
     }
+    if (resultAction) resultActions.push(resultAction);
   }
   return resultActions;
 }
@@ -249,15 +257,13 @@ export function actionsToEventData(
       event: undefined,
       condition: undefined,
     };
-    const doActions: Action[] = [];
     if (action.action) {
       const parsedActions = parseActions(action.action);
       if (parsedActions) {
-        doActions.push(...parsedActions);
+        const event = createEvent(eventData);
+        event.do = parsedActions;
+        eventData.event = event;
       }
-      const event = createEvent(eventData);
-      event.do = doActions;
-      eventData.event = event;
     }
     if (action.trigger?.event) {
       const trigger = parseEvent(action.trigger.event);
@@ -359,6 +365,9 @@ function labelStateParameters(
     const labeledState = { ...state };
     for (const eventIdx in labeledState.events) {
       const event = labeledState.events[eventIdx];
+      if (isString(event.do)) {
+        continue;
+      }
       for (const actionIdx in event.do) {
         const action = event.do[actionIdx];
         if (action.args !== undefined) {
@@ -369,7 +378,8 @@ function labelStateParameters(
           );
           const method: MethodProto | undefined = getProtoMethod(action.method, component);
           if (component !== undefined && method !== undefined) {
-            labeledState.events[eventIdx].do[actionIdx].args = labelParameters(action.args, method);
+            event.do[actionIdx].args = labelParameters(action.args, method);
+            labeledState.events[eventIdx] = event;
           }
         }
       }
@@ -388,6 +398,9 @@ function labelTransitionParameters(
 
   for (const id in transitions) {
     const labeledTransition: Transition = transitions[id];
+    if (isString(labeledTransition.label?.do)) {
+      continue;
+    }
     if (labeledTransition.label?.do !== undefined) {
       for (const actionIdx in labeledTransition.label.do) {
         const action = labeledTransition.label.do[actionIdx];

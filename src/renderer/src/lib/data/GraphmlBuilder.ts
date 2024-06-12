@@ -114,6 +114,7 @@ export function serializeStateEvents(
     serializedActions.push({
       trigger: {
         event: serializeEvent(event.trigger),
+        condition: event.condition ? serializeCondition(event.condition) : undefined,
       },
       action: serializeActions(event.do, components, platform),
     });

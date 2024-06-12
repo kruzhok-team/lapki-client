@@ -85,10 +85,13 @@ export class Events {
       if (isPointInRectangle(triggerRect, p)) {
         return { eventIdx, actionIdx: null };
       }
+
+      eventRow += event.condition ? 1 : 0;
+
       for (let actionIdx = 0; actionIdx < event.do.length; actionIdx++) {
         // const element = events[eventIdx];
         const ax = 1 + (actionIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actionIdx / eventRowLength) + (event.condition ? 1 : 0);
+        const ay = eventRow + Math.floor(actionIdx / eventRowLength);
         const actRect = {
           x: baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale,
           y: baseY + (ay * yDx) / this.app.model.data.scale,

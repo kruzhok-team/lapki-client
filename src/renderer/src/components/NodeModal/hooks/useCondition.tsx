@@ -145,90 +145,32 @@ export const useCondition = () => {
   ]);
 
   const handleComponentParam1Change = useCallback((value: SingleValue<SelectOption>) => {
-    setSelectedComponentParam1(value?.value ?? '');
-    setSelectedMethodParam1('');
+    setSelectedComponentParam1(value?.value ?? null);
+    setSelectedMethodParam1(null);
   }, []);
   const handleComponentParam2Change = useCallback((value: SingleValue<SelectOption>) => {
-    setSelectedComponentParam2(value?.value ?? '');
-    setSelectedMethodParam2('');
+    setSelectedComponentParam2(value?.value ?? null);
+    setSelectedMethodParam2(null);
   }, []);
 
   const handleMethodParam1Change = useCallback((value: SingleValue<SelectOption>) => {
-    setSelectedMethodParam1(value?.value ?? '');
+    setSelectedMethodParam1(value?.value ?? null);
   }, []);
   const handleMethodParam2Change = useCallback((value: SingleValue<SelectOption>) => {
-    setSelectedMethodParam2(value?.value ?? '');
+    setSelectedMethodParam2(value?.value ?? null);
   }, []);
 
   const handleConditionOperatorChange = useCallback((value: SingleValue<SelectOption>) => {
     setConditionOperator(value?.value ?? null);
   }, []);
 
-  //Позволяет найти начальные значения условия(условий), если таковые имеются
-  const parseCondition = useCallback((c: Condition | undefined | null) => {
-    if (!c) {
-      clear();
-      return undefined;
-    }
-
-    setShow(true);
-
-    const operator = c.type;
-    if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
-      console.warn('👽 got condition from future (not comparsion)', c);
-      return undefined;
-    }
-    const param1 = c.value[0];
-    const param2 = c.value[1];
-    if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
-      console.warn('👽 got condition from future (non-value operands)', c);
-      return undefined;
-    }
-
-    if (
-      param1.type == 'value' &&
-      (typeof param1.value === 'string' || typeof param1.value === 'number')
-    ) {
-      setIsParamOneInput1(false);
-      setArgsParam1(param1.value);
-    } else if (param1.type == 'component') {
-      const compoName = (param1.value as VariableData).component;
-      const methodName = (param1.value as VariableData).method;
-      setIsParamOneInput1(true);
-      setSelectedComponentParam1(compoName);
-      setSelectedMethodParam1(methodName);
-      //eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
-    } else {
-      console.warn('👽 got condition from future (strange operand 1)', c);
-      return undefined;
-    }
-
-    if (
-      param2.type == 'value' &&
-      (typeof param2.value === 'string' || typeof param2.value === 'number')
-    ) {
-      setIsParamOneInput2(false);
-      setArgsParam2(param2.value);
-    } else if (param2.type == 'component') {
-      const compoName = (param2.value as VariableData).component;
-      const methodName = (param2.value as VariableData).method;
-      setIsParamOneInput2(true);
-      setSelectedComponentParam2(compoName);
-      setSelectedMethodParam2(methodName);
-    } else {
-      console.warn('👽 got condition from future (strange operand 2)', c);
-      return undefined;
-    }
-    return setConditionOperator(operator);
-  }, []);
-
   const clear = useCallback(() => {
-    setSelectedComponentParam1('');
-    setSelectedComponentParam2('');
+    setSelectedComponentParam1(null);
+    setSelectedComponentParam2(null);
     setArgsParam1('');
-    setConditionOperator('');
-    setSelectedMethodParam1('');
-    setSelectedMethodParam2('');
+    setConditionOperator(null);
+    setSelectedMethodParam1(null);
+    setSelectedMethodParam2(null);
     setArgsParam2('');
     setShow(false);
     setIsParamOneInput1(true);
@@ -236,6 +178,67 @@ export const useCondition = () => {
 
     setErrors({});
   }, []);
+
+  //Позволяет найти начальные значения условия(условий), если таковые имеются
+  const parseCondition = useCallback(
+    (c: Condition | undefined | null) => {
+      if (!c) {
+        clear();
+        return undefined;
+      }
+
+      setShow(true);
+
+      const operator = c.type;
+      if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
+        console.warn('👽 got condition from future (not comparsion)', c);
+        return undefined;
+      }
+      const param1 = c.value[0];
+      const param2 = c.value[1];
+      if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
+        console.warn('👽 got condition from future (non-value operands)', c);
+        return undefined;
+      }
+
+      if (
+        param1.type == 'value' &&
+        (typeof param1.value === 'string' || typeof param1.value === 'number')
+      ) {
+        setIsParamOneInput1(false);
+        setArgsParam1(param1.value);
+      } else if (param1.type == 'component') {
+        const compoName = (param1.value as VariableData).component;
+        const methodName = (param1.value as VariableData).method;
+        setIsParamOneInput1(true);
+        setSelectedComponentParam1(compoName);
+        setSelectedMethodParam1(methodName);
+        //eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
+      } else {
+        console.warn('👽 got condition from future (strange operand 1)', c);
+        return undefined;
+      }
+
+      if (
+        param2.type == 'value' &&
+        (typeof param2.value === 'string' || typeof param2.value === 'number')
+      ) {
+        setIsParamOneInput2(false);
+        setArgsParam2(param2.value);
+      } else if (param2.type == 'component') {
+        const compoName = (param2.value as VariableData).component;
+        const methodName = (param2.value as VariableData).method;
+        setIsParamOneInput2(true);
+        setSelectedComponentParam2(compoName);
+        setSelectedMethodParam2(methodName);
+      } else {
+        console.warn('👽 got condition from future (strange operand 2)', c);
+        return undefined;
+      }
+      return setConditionOperator(operator);
+    },
+    [clear]
+  );
 
   return {
     show,

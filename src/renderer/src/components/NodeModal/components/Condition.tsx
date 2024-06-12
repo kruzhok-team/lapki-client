@@ -133,7 +133,7 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
             placeholder="Выберите оператор"
             options={operand}
             onChange={handleConditionOperatorChange}
-            value={operand.find((opt) => opt.value === conditionOperator)}
+            value={operand.find((opt) => opt.value === conditionOperator) ?? null}
             error={errors.conditionOperator || ''}
           />
 

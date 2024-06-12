@@ -33,7 +33,7 @@ export const StateModal: React.FC = () => {
     const { selectedComponent, selectedMethod } = trigger;
 
     // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
-    if (!selectedComponent || !selectedMethod) {
+    if (!selectedComponent || !selectedMethod || events.events.length === 0) {
       return;
     }
 

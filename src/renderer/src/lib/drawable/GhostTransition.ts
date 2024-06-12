@@ -36,8 +36,13 @@ export class GhostTransition {
       rectPadding: 10,
     });
 
+    const prevLineWidth = ctx.lineWidth;
+    const prevFillStyle = ctx.fillStyle;
+    const prevStrokeStyle = ctx.strokeStyle;
+
     ctx.lineWidth = transitionStyle.width;
     ctx.fillStyle = getColor('default-transition-color');
+    ctx.strokeStyle = getColor('default-transition-color');
 
     drawCurvedLine(ctx, line, 12 / this.app.model.data.scale);
     drawCircle(ctx, {
@@ -46,6 +51,10 @@ export class GhostTransition {
       fillStyle: getColor('default-transition-color'),
     });
     drawTriangle(ctx, line.end, 10 / this.app.model.data.scale, degrees_to_radians(line.ee));
+
+    ctx.lineWidth = prevLineWidth;
+    ctx.fillStyle = prevFillStyle;
+    ctx.strokeStyle = prevStrokeStyle;
   }
 
   setSource(state: State | ChoiceState) {

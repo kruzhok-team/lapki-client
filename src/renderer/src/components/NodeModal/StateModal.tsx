@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
@@ -24,6 +24,12 @@ export const StateModal: React.FC = () => {
 
   const { setEvents } = events;
   const { parseCondition } = condition;
+
+  // На дефолтные события нельзя ставить условия
+  const showCondition = useMemo(
+    () => trigger.selectedComponent !== 'System',
+    [trigger.selectedComponent]
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +57,7 @@ export const StateModal: React.FC = () => {
     } = condition;
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (show) {
+    if (showCondition && show) {
       const errors = condition.checkForErrors();
 
       for (const key in errors) {
@@ -60,7 +66,7 @@ export const StateModal: React.FC = () => {
     }
 
     const getCondition = () => {
-      if (!show) return undefined;
+      if (!show || !showCondition) return undefined;
 
       // Тут много as string потому что проверка на null в checkForErrors
       return {
@@ -178,7 +184,7 @@ export const StateModal: React.FC = () => {
     >
       <div className="flex flex-col gap-3">
         <Trigger {...trigger} />
-        <Condition {...condition} />
+        {showCondition && <Condition {...condition} />}
         <Events {...events} />
         <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>

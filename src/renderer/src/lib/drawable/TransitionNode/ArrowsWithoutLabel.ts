@@ -9,6 +9,7 @@ import {
   drawTriangle,
   getLine,
 } from '@renderer/lib/utils';
+import { getColor } from '@renderer/theme';
 
 /**
  * Выполняет отрисовку стрелки между двумя движущимися блоками:
@@ -30,8 +31,8 @@ export class ArrowsWithoutLabel implements Drawable {
     const data = this.parent.data;
 
     ctx.lineWidth = transitionStyle.width;
-    ctx.strokeStyle = data.color;
-    ctx.fillStyle = data.color;
+    ctx.strokeStyle = this.parent.data.color ?? getColor('default-transition-color');
+    ctx.fillStyle = this.parent.data.color ?? getColor('default-transition-color');
 
     if (!this.parent.isSelected && this.parent.source instanceof Note) {
       ctx.globalAlpha = 0.3;

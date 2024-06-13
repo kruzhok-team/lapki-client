@@ -3,6 +3,7 @@ import {
   emptyElements,
   Action,
   EventData,
+  State as StateData,
   Transition as TransitionData,
   InitialState as InitialStateData,
   FinalState as FinalStateData,
@@ -39,19 +40,16 @@ export const emptyDataListeners = Object.fromEntries([
   ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
 ]) as any as EditorDataListeners;
 
-export interface CreateStateParams {
-  name: string;
-  position: Point;
-  color: string;
-  parentId?: string;
+export type CreateStateParams = Omit<StateData, 'dimensions' | 'events'> & {
   id?: string;
   events?: EventData[];
+
   placeInCenter?: boolean;
 
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
   canBeInitial?: boolean;
-}
+};
 
 export type CreateInitialStateParams = InitialStateData & { id?: string };
 export type CreateFinalStateParams = FinalStateData & {
@@ -84,7 +82,7 @@ export interface ChangeStateEventsParams {
   actions: Action[];
   triggerComponent: string;
   triggerMethod: string;
-  color: string;
+  color?: string;
 }
 
 export type AddComponentParams = Omit<ComponentData, 'order'> & {

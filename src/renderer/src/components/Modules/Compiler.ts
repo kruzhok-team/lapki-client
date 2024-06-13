@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Buffer } from 'buffer';
 
 import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
-import { generateId, randomColor } from '@renderer/lib/utils';
+import { generateId } from '@renderer/lib/utils';
 import {
   CompilerResult,
   Binary,
@@ -18,6 +18,7 @@ import {
   CompilerState,
 } from '@renderer/types/CompilerTypes';
 import { Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+import { randomColor } from '@renderer/utils';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;

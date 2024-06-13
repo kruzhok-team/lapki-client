@@ -15,9 +15,10 @@ import { HexColorPicker } from 'react-colorful';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ClearIcon } from '@renderer/assets/icons/clear.svg';
+import { ReactComponent as ColorPalette } from '@renderer/assets/icons/color_palette.svg';
 import { useClickOutside } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
-import { presetColors } from '@renderer/utils';
+import { presetColors, randomColor } from '@renderer/utils';
 
 import './style.css';
 
@@ -118,7 +119,7 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
               ))}
               {clearable && (
                 <button
-                  className="grid size-8 cursor-pointer place-content-center rounded border border-border-primary text-text-inactive"
+                  className="grid size-8 cursor-pointer place-content-center rounded border border-border-primary text-text-inactive hover:bg-bg-hover active:bg-bg-active"
                   type="button"
                   onClick={() => onChange(undefined)}
                 >
@@ -126,6 +127,13 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
                 </button>
               )}
             </div>
+            <button
+              className="btn mt-1 flex w-full items-center gap-2 border-border-primary pl-4 pr-6 hover:bg-bg-hover active:bg-bg-active"
+              type="button"
+              onClick={() => onChange(randomColor())}
+            >
+              <ColorPalette className="size-6" /> Случайный цвет
+            </button>
           </div>
         </FloatingPortal>
       )}

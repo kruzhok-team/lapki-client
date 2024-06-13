@@ -8,6 +8,8 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 interface NotesControllerEvents {
   change: Note;
+  mouseUpOnNote: Note;
+  startNewTransitionNote: Note;
   contextMenu: { note: Note; position: Point };
 }
 
@@ -96,18 +98,26 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     const note = this.items.get(id);
     if (!note) return;
 
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    this.controller.transitions.forEachByStateId(id, (transition) => {
+      this.controller.transitions.deleteTransition(transition.id, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
     if (canUndo) {
       this.history.do({
         type: 'deleteNote',
         args: { id, prevData: structuredClone(note.data) },
+        numberOfConnectedActions,
       });
     }
-
-    this.app.model.deleteNote(id);
 
     this.view.children.remove(note, Layer.Notes);
     this.unwatch(note);
     this.items.delete(id);
+    this.app.model.deleteNote(id);
 
     this.view.isDirty = true;
   }
@@ -121,6 +131,14 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.app.view.isDirty = true;
   }
 
+  handleStartNewTransition = (note: Note) => {
+    this.emit('startNewTransitionNote', note);
+  };
+
+  handleMouseUpOnNote = (note: Note) => {
+    this.emit('mouseUpOnNote', note);
+  };
+
   handleMouseDown = (note: Note) => {
     this.controller.selectNote(note.id);
   };
@@ -132,11 +150,9 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
     this.controller.selectNote(note.id);
 
-    const offset = this.app.mouse.getOffset();
-
     this.emit('contextMenu', {
       note,
-      position: { x: e.event.x + offset.x, y: e.event.y + offset.y },
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
 
@@ -147,14 +163,20 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   watch(note: Note) {
     note.on('mousedown', this.handleMouseDown.bind(this, note));
     note.on('dblclick', this.handleDoubleClick.bind(this, note));
+    note.on('mouseup', this.handleMouseUpOnNote.bind(this, note));
     note.on('contextmenu', this.handleContextMenu.bind(this, note));
     note.on('dragend', this.handleDragEnd.bind(this, note));
+
+    note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
   }
 
   unwatch(note: Note) {
     note.off('mousedown', this.handleMouseDown.bind(this, note));
     note.off('dblclick', this.handleDoubleClick.bind(this, note));
+    note.off('mouseup', this.handleMouseUpOnNote.bind(this, note));
     note.off('contextmenu', this.handleContextMenu.bind(this, note));
     note.off('dragend', this.handleDragEnd.bind(this, note));
+
+    note.edgeHandlers.unbindEvents();
   }
 }

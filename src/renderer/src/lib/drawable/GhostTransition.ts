@@ -1,6 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { ChoiceState, State } from '@renderer/lib/drawable';
+import { Note, State, ChoiceState } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -16,7 +16,7 @@ import {
  * Используется для визуализации создаваемого перехода.
  */
 export class GhostTransition {
-  source!: State | ChoiceState | null;
+  source!: State | ChoiceState | Note | null;
   target!: Point | null;
 
   constructor(private app: CanvasEditor) {}
@@ -37,6 +37,7 @@ export class GhostTransition {
     });
 
     ctx.lineWidth = transitionStyle.width;
+    ctx.strokeStyle = DEFAULT_TRANSITION_COLOR;
     ctx.fillStyle = DEFAULT_TRANSITION_COLOR;
 
     drawCurvedLine(ctx, line, 12 / this.app.model.data.scale);
@@ -48,7 +49,7 @@ export class GhostTransition {
     drawTriangle(ctx, line.end, 10 / this.app.model.data.scale, degrees_to_radians(line.ee));
   }
 
-  setSource(state: State | ChoiceState) {
+  setSource(state: State | ChoiceState | Note) {
     this.source = state;
   }
 

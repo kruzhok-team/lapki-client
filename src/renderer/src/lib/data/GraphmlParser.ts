@@ -479,7 +479,6 @@ export function importGraphml(
     );
 
     validateElements(elements, platform);
-    console.log(elements);
     return elements;
   } catch (error) {
     console.error(error);

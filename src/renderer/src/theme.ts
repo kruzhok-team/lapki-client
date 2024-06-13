@@ -26,17 +26,21 @@ const colorNames = {
   'scrollbar-thumb': '--s-th',
 
   grid: '--g',
-};
+  'default-transition-color': '--d-t-c',
+  'default-state-color': '--d-s-c',
+} as const;
+type ColorNames = typeof colorNames;
+type ColorName = keyof ColorNames;
 
 // Это метод для того чтобы достать цвет из джаваскрипта
-export const getColor = (colorName: keyof typeof colorNames) => {
+export const getColor = (colorName: ColorName) => {
   return getComputedStyle(document.documentElement).getPropertyValue(colorNames[colorName]);
 };
 
 const getVariables = () => {
   return Object.fromEntries(
     Object.entries(colorNames).map(([name, value]) => [name, `var(${value})`])
-  );
+  ) as { [Name in ColorName]: `var(${ColorNames[Name]})` };
 };
 
 export default {

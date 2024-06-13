@@ -18,7 +18,7 @@ interface NotesControllerEvents {
  * Обрабатывает события, связанные с ними.
  */
 export class NotesController extends EventEmitter<NotesControllerEvents> {
-  private items: Map<string, Note> = new Map();
+  items: Map<string, Note> = new Map();
 
   constructor(private app: CanvasEditor) {
     super();

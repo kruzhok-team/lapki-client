@@ -4,6 +4,9 @@ import { EventsModalData } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { Event } from '@renderer/types/diagram';
 
+/**
+ * Инкапсуляция логики действий формы
+ */
 export const useEvents = () => {
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();

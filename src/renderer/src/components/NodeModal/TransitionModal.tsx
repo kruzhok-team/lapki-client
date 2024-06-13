@@ -121,7 +121,7 @@ export const TransitionModal: React.FC = () => {
           trigger: getTrigger(),
           condition: getCondition(),
           do: getEvents(),
-        } as any,
+        } as any, // Из-за position
       });
 
       close();
@@ -137,7 +137,7 @@ export const TransitionModal: React.FC = () => {
           trigger: getTrigger(),
           condition: getCondition(),
           do: getEvents(),
-        } as any,
+        } as any, // Из-за position
       });
     }
 

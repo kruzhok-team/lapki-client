@@ -7,6 +7,9 @@ import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Condition, Variable as VariableData } from '@renderer/types/diagram';
 
+/**
+ * Инкапсуляция логики условия формы
+ */
 export const useCondition = () => {
   const editor = useEditorContext();
   const model = editor.model;

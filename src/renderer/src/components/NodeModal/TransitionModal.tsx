@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
@@ -24,7 +23,7 @@ export const TransitionModal: React.FC = () => {
   const trigger = useTrigger(false);
   const condition = useCondition();
   const events = useEvents();
-  const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
+  const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
   const showTrigger = useMemo(() => {
@@ -150,7 +149,7 @@ export const TransitionModal: React.FC = () => {
     trigger.clear();
     condition.clear();
     events.clear();
-    setColor(DEFAULT_TRANSITION_COLOR);
+    setColor(undefined);
 
     setTransition(null);
     setNewTransition(null);

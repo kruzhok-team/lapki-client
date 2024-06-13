@@ -2,7 +2,6 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
@@ -20,7 +19,7 @@ export const StateModal: React.FC = () => {
   const trigger = useTrigger(true);
   const condition = useCondition();
   const events = useEvents();
-  const [color, setColor] = useState(DEFAULT_STATE_COLOR);
+  const [color, setColor] = useState<string | undefined>();
 
   const { setEvents } = events;
   const { parseCondition } = condition;
@@ -122,7 +121,7 @@ export const StateModal: React.FC = () => {
     trigger.clear();
     condition.clear();
     events.clear();
-    setColor(DEFAULT_STATE_COLOR);
+    setColor(undefined);
 
     setState(null);
   };

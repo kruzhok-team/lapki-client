@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Buffer } from 'buffer';
 
 import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
-import { generateId, randomColor } from '@renderer/lib/utils';
+import { generateId } from '@renderer/lib/utils';
 import {
   CompilerResult,
   Binary,
@@ -58,7 +58,6 @@ function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: str
       name: oldState.name,
       parentId: oldState.parent,
       events: oldState.events,
-      color: randomColor(),
     };
   }
   return states;
@@ -72,7 +71,6 @@ function actualizeInitialState(
   const transition: Transition = {
     sourceId: initialId,
     targetId: oldInitial.target,
-    color: randomColor(),
   };
   const initial: InitialState = {
     position: oldInitial.position,

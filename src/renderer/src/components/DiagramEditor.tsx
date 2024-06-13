@@ -10,7 +10,6 @@ import {
 } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -43,7 +42,6 @@ export const DiagramEditor: React.FC = () => {
         name: 'Состояние',
         position,
         placeInCenter: true,
-        color: DEFAULT_STATE_COLOR,
       });
     };
 

@@ -29,8 +29,6 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
-import { randomColor } from '../utils';
-
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
   exit: { component: 'System', method: 'onExit' },
@@ -256,7 +254,7 @@ function getTransitions(
       transitions[id] = {
         sourceId: rawTransition.source,
         targetId: rawTransition.target,
-        color: rawTransition.color ?? randomColor(),
+        color: rawTransition.color,
       };
       continue;
     }
@@ -265,7 +263,7 @@ function getTransitions(
     transitions[id] = {
       sourceId: rawTransition.source,
       targetId: rawTransition.target,
-      color: rawTransition.color ?? randomColor(),
+      color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
         trigger: eventData.trigger,

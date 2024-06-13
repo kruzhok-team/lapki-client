@@ -1,6 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
 import {
   InitialState,
   Note,
@@ -270,7 +269,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (!this.ghost?.source) return;
     if (this.ghost.source instanceof Note) {
       this.createTransition({
-        color: DEFAULT_TRANSITION_COLOR,
         sourceId: this.ghost?.source.id,
         targetId: state.id,
       });
@@ -290,7 +288,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note && transition.data.label) {
       this.createTransition({
-        color: DEFAULT_TRANSITION_COLOR,
         sourceId: this.ghost?.source.id,
         targetId: transition.id,
       });
@@ -309,7 +306,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.ghost.source !== note
     ) {
       this.createTransition({
-        color: DEFAULT_TRANSITION_COLOR,
         sourceId: this.ghost?.source.id,
         targetId: note.id,
       });
@@ -324,7 +320,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note) {
       this.createTransition({
-        color: DEFAULT_TRANSITION_COLOR,
         sourceId: this.ghost?.source.id,
         targetId: state.id,
       });
@@ -339,7 +334,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note) {
       this.createTransition({
-        color: DEFAULT_TRANSITION_COLOR,
         sourceId: this.ghost?.source.id,
         targetId: state.id,
       });

@@ -12,7 +12,6 @@ export const SerialMonitorTab: React.FC = () => {
   const [baudRate, setBaudRate] = useState<SelectOption | null>({ label: '9600', value: '9600' });
 
   const messageContainerRef = useRef<HTMLDivElement>(null);
-  console.log(messages);
 
   const scrollToBottom = () => {
     if (autoScroll && messageContainerRef.current) {

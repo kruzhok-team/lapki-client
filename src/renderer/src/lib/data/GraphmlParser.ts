@@ -200,6 +200,7 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
     const eventDataWithCondition = actionsToEventData(rawState.actions);
+
     const events: EventData[] = [];
     for (const event of eventDataWithCondition) {
       if (event.event) {
@@ -280,8 +281,8 @@ function getTransitions(
     const rawTransition = rawTransitions[id];
     if (rawTransition.actions.length == 0) {
       transitions[id] = {
-        source: rawTransition.source,
-        target: rawTransition.target,
+        sourceId: rawTransition.source,
+        targetId: rawTransition.target,
         color: rawTransition.color ?? randomColor(),
       };
       continue;
@@ -289,8 +290,8 @@ function getTransitions(
     // В данный момент поддерживается только один триггер на переход
     const eventData = actionsToEventData(rawTransition.actions)[0];
     transitions[id] = {
-      source: rawTransition.source,
-      target: rawTransition.target,
+      sourceId: rawTransition.source,
+      targetId: rawTransition.target,
       color: rawTransition.color ?? randomColor(),
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
@@ -470,6 +471,7 @@ export function importGraphml(
       platform.components,
       elements.components
     );
+
     validateElements(elements, platform);
     return elements;
   } catch (error) {

@@ -13,7 +13,7 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
-import { State } from '@renderer/lib/drawable';
+import { FinalState, State } from '@renderer/lib/drawable';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { escapeRegExp } from '@renderer/utils';
@@ -24,7 +24,7 @@ import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
-  type: 'state' | 'initialState' | 'finalState' | 'choiceState' | 'transition';
+  type: 'state' | 'initialState' | 'finalState' | 'choiceState' | 'transition' | 'note';
 }
 
 export const Hierarchy: React.FC = () => {
@@ -39,6 +39,7 @@ export const Hierarchy: React.FC = () => {
   const finalStates = model.useData('elements.finalStates');
   const choiceStates = model.useData('elements.choiceStates');
   const transitions = model.useData('elements.transitions');
+  const notes = model.useData('elements.notes');
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -90,6 +91,20 @@ export const Hierarchy: React.FC = () => {
       };
     }
 
+    for (const noteId in notes) {
+      const note = notes[noteId];
+
+      data[noteId] = {
+        index: noteId,
+        isFolder: false,
+        //TODO: (XidFanSan) надо добавить название заметки (title)
+        data: { title: note.text ?? 'Комментарий', type: 'note' },
+        children: [],
+        canRename: false,
+        canMove: false,
+      };
+    }
+
     for (const stateId in choiceStates) {
       data[stateId] = {
         index: stateId,
@@ -115,9 +130,13 @@ export const Hierarchy: React.FC = () => {
       }
     }
 
+    for (const [noteId] of [...Object.entries(notes)]) {
+      data.root.children?.push(noteId);
+    }
+
     for (const transitionId in transitions) {
       const transition = transitions[transitionId];
-      const targetName = data[transition.target]?.data?.title;
+      const targetName = data[transition.targetId]?.data?.title;
 
       data[transitionId] = {
         index: transitionId,
@@ -129,12 +148,12 @@ export const Hierarchy: React.FC = () => {
         canRename: false,
         canMove: false,
       };
-      data[transition.source].children?.push(transitionId);
-      data[transition.source].isFolder = true;
+      data[transition.sourceId].children?.push(transitionId);
+      data[transition.sourceId].isFolder = true;
     }
 
     return data;
-  }, [choiceStates, finalStates, initialStates, states, transitions]);
+  }, [choiceStates, finalStates, initialStates, notes, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
@@ -170,6 +189,7 @@ export const Hierarchy: React.FC = () => {
 
   const onFocus = (item: TreeItem) => () => {
     controller.selectState(item.index.toString());
+    controller.selectNote(item.index.toString());
     controller.selectTransition(item.index.toString());
   };
 
@@ -207,9 +227,20 @@ export const Hierarchy: React.FC = () => {
     if (state && state instanceof State) {
       return controller.states.handleContextMenu(state, { event: mouse });
     }
+    if (state && state instanceof FinalState) {
+      return controller.states.handleFinalStateContextMenu(state, {
+        event: mouse,
+      });
+    }
     const transition = controller.transitions.get(item.index.toString());
     if (transition) {
       return controller.transitions.handleContextMenu(transition, {
+        event: mouse,
+      });
+    }
+    const note = controller.notes.get(item.index.toString());
+    if (note) {
+      return controller.notes.handleContextMenu(note, {
         event: mouse,
       });
     }
@@ -284,7 +315,13 @@ export const Hierarchy: React.FC = () => {
         return setSelectedItems([transitionId]);
       }
     }
-  }, [states, transitions]);
+
+    for (const [noteId, note] of Object.entries(notes)) {
+      if (note?.selection) {
+        return setSelectedItems([noteId]);
+      }
+    }
+  }, [notes, states, transitions]);
 
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>

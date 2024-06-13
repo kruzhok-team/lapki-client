@@ -551,7 +551,7 @@ export class EditorModel {
     if (!transition) return false;
 
     //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
-    // Поэтому данные label нужно не просто перезаписать а соеденять с предыдущими
+    // Поэтому данные label нужно не просто перезаписать, а соединять с предыдущими
     const getNewLabel = () => {
       if (!label) return undefined;
 
@@ -687,6 +687,18 @@ export class EditorModel {
     if (!this.data.elements.notes.hasOwnProperty(id)) return false;
 
     this.data.elements.notes[id].text = text;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
+  changeNoteSelection(id: string, selection: boolean) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    note.selection = selection;
 
     this.triggerDataUpdate('elements.notes');
 

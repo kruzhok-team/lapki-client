@@ -28,8 +28,8 @@ function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransitio
   for (const transitionId in oldTransitions) {
     const oldTransition = oldTransitions[transitionId];
     newTransitions[transitionId] = {
-      source: oldTransition.source,
-      target: oldTransition.target,
+      sourceId: oldTransition.source,
+      targetId: oldTransition.target,
       color: oldTransition.color,
       label: {
         trigger: oldTransition.trigger,
@@ -70,8 +70,8 @@ function actualizeInitialState(
   const initialId = generateId();
   const transitionId = generateId();
   const transition: Transition = {
-    source: initialId,
-    target: oldInitial.target,
+    sourceId: initialId,
+    targetId: oldInitial.target,
     color: randomColor(),
   };
   const initial: InitialState = {

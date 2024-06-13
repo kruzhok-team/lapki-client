@@ -153,9 +153,9 @@ export const DiagramEditor: React.FC = () => {
   };
 
   // TODO(bryzZz) Нужно делить на две модалки
-  // Тут возникло много as any
-  // это потому что для состояния и перехода типы разные но модалка одна
-  // и приходится приводить к какому-то обшему типу
+  // Тут возникло много "as any"
+  // это потому что для состояния и перехода типы разные, но модалка одна
+  // и приходится приводить к какому-то общему типу
   const handleCreateModalSubmit = (data: CreateModalResult) => {
     if (data.key === 2) {
       editor.controller.states.changeStateEvents({
@@ -168,8 +168,8 @@ export const DiagramEditor: React.FC = () => {
     } else if (transition && data.key === 3) {
       editor.controller.transitions.changeTransition({
         id: transition.id,
-        source: transition.source.id,
-        target: transition.target.id,
+        sourceId: transition.source.id,
+        targetId: transition.target.id,
         color: data.color,
         label: {
           trigger: data.trigger,
@@ -179,8 +179,8 @@ export const DiagramEditor: React.FC = () => {
       });
     } else if (newTransitionData) {
       editor.controller.transitions.createTransition({
-        source: newTransitionData.source.id,
-        target: newTransitionData.target.id,
+        sourceId: newTransitionData.source.id,
+        targetId: newTransitionData.target.id,
         color: data.color,
         label: {
           trigger: data.trigger,

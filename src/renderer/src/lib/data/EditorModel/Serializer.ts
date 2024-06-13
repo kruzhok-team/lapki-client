@@ -39,6 +39,7 @@ export class Serializer {
     const note = this.data.elements.notes[id];
     if (!note) return null;
 
+    delete note.selection;
     return JSON.stringify(note, undefined, 2);
   }
 }

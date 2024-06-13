@@ -1,5 +1,7 @@
 import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/lib/types/graphics';
 
+import { Transition } from '../drawable';
+
 export * from './generateId';
 export * from './roundPoint';
 
@@ -372,4 +374,76 @@ export const indexOfMin = (arr: number[]) => {
   });
 
   return minIndex;
+};
+
+// Метод для проверки попадания точки на отрезок с учетом ширины линии
+export const isPointOnSegment = (
+  start: Point,
+  end: Point,
+  x: number,
+  y: number,
+  lineWidth: number
+): boolean => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSquared = dx * dx + dy * dy;
+
+  // Проекция точки на линию
+  let t = ((x - start.x) * dx + (y - start.y) * dy) / lengthSquared;
+  t = Math.max(0, Math.min(1, t)); // Ограничить t от 0 до 1
+
+  // Находим ближайшую точку на линии
+  const closestX = start.x + t * dx;
+  const closestY = start.y + t * dy;
+
+  // Рассчитываем расстояние от точки до ближайшей точки на линии
+  const distance = Math.sqrt((x - closestX) * (x - closestX) + (y - closestY) * (y - closestY));
+
+  // Проверяем, находится ли расстояние в пределах ширины линии
+  return distance <= lineWidth / 2;
+};
+
+// Метод для проверки попадания точки на линии
+export const isCheckPointOnLine = (pos, line): boolean => {
+  // FIXME: (XidFanSan) нужно ли масштабировать ширину линии?
+  // lineWidth - это значение масштаба ширины линии
+  const lineWidth = 10;
+
+  const { x, y } = pos;
+  if (line.mid) {
+    // Проверка попадания на первую часть линии
+    if (isPointOnSegment(line.start, line.mid, x, y, lineWidth)) return true;
+    // Проверка попадания на вторую часть линии
+    if (isPointOnSegment(line.mid, line.end, x, y, lineWidth)) return true;
+  } else {
+    // Проверка попадания на прямую линию
+    if (isPointOnSegment(line.start, line.end, x, y, lineWidth)) return true;
+  }
+  return false;
+};
+
+export const isPointOnLine = (x: number, y: number, transition: Transition) => {
+  const targetBounds = transition.target.drawBounds;
+  const sourceBounds = transition.source.drawBounds;
+
+  if (transition.data.label) {
+    const sourceLine = getLine({
+      rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect2: transition.drawBounds,
+      rectPadding: 10,
+    });
+    const targetLine = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: transition.drawBounds,
+      rectPadding: 10,
+    });
+    return isCheckPointOnLine({ x, y }, sourceLine) || isCheckPointOnLine({ x, y }, targetLine);
+  } else {
+    const line = getLine({
+      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rectPadding: 10,
+    });
+    return isCheckPointOnLine({ x, y }, line);
+  }
 };

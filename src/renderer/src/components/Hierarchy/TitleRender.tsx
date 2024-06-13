@@ -1,6 +1,7 @@
 import { ReactComponent as InitialStateIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
 import { ReactComponent as FinalStateIcon } from '@renderer/assets/icons/final_state.svg';
+import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as TransitionIcon } from '@renderer/assets/icons/transition-alt.svg';
 
@@ -24,6 +25,7 @@ const icons: Record<
   initialState: InitialStateIcon,
   transition: TransitionIcon,
   finalState: FinalStateIcon,
+  note: NoteIcon,
   choiceState: ChoiceStateIcon,
 };
 

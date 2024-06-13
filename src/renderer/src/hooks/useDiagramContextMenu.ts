@@ -238,7 +238,7 @@ export const useDiagramContextMenu = () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
-              source: state.id,
+              sourceId: state.id,
             });
           },
         };
@@ -253,7 +253,7 @@ export const useDiagramContextMenu = () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
-              target: state.id,
+              targetId: state.id,
             });
           },
         };
@@ -261,52 +261,56 @@ export const useDiagramContextMenu = () => {
 
       const sourceArray = [
         ...Array.from(editor.controller.states.getStates()).filter(
-          (value) => transition.data.source !== value[0]
+          (value) => transition.data.sourceId !== value[0]
         ),
       ];
 
       const targetArray = [
         ...Array.from(editor.controller.states.getStates()).filter(
-          (value) => transition.data.target !== value[0]
+          (value) => transition.data.targetId !== value[0]
         ),
       ];
 
       handleEvent(position, [
-        {
-          label: 'Копировать',
-          type: 'copy',
-          action: () => {
-            editor?.controller.copySelected();
-          },
-        },
-        {
-          label: 'Выбрать исход(source)',
-          type: 'source',
-          isFolder: true,
-          children: [...sourceArray.map(([_id, value]) => source(value))],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
-        },
-        {
-          label: 'Выбрать цель(target)',
-          type: 'target',
-          isFolder: true,
-          children: [...targetArray.map(([_id, value]) => target(value))],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
-        },
-        {
-          label: 'Посмотреть код',
-          type: 'showCodeAll',
-          action: () => {
-            openTab({
-              type: 'transition',
-              name: transition.id,
-              code: editor.model.serializer.getTransition(transition.id) ?? '',
-              language: 'json',
-            });
-          },
-        },
+        ...(transition.data.label
+          ? [
+              {
+                label: 'Копировать',
+                type: 'copy',
+                action: () => {
+                  editor?.controller.copySelected();
+                },
+              },
+              {
+                label: 'Выбрать исход(source)',
+                type: 'source',
+                isFolder: true,
+                children: [...sourceArray.map(([_id, value]) => source(value))],
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                action: () => {},
+              },
+              {
+                label: 'Выбрать цель(target)',
+                type: 'target',
+                isFolder: true,
+                children: [...targetArray.map(([_id, value]) => target(value))],
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                action: () => {},
+              },
+              {
+                label: 'Посмотреть код',
+                type: 'showCodeAll',
+                action: () => {
+                  openTab({
+                    type: 'transition',
+                    name: transition.id,
+                    code: editor.model.serializer.getTransition(transition.id) ?? '',
+                    language: 'json',
+                  });
+                },
+              },
+            ]
+          : []),
         {
           label: 'Удалить',
           type: 'delete',

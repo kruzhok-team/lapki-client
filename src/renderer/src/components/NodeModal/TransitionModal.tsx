@@ -115,8 +115,8 @@ export const TransitionModal: React.FC = () => {
     if (transition) {
       editor.controller.transitions.changeTransition({
         id: transition.id,
-        source: transition.data.source,
-        target: transition.data.target,
+        sourceId: transition.source.id,
+        targetId: transition.target.id,
         color,
         label: {
           trigger: getTrigger(),
@@ -131,8 +131,8 @@ export const TransitionModal: React.FC = () => {
     // Если создаем новое
     if (newTransition) {
       editor.controller.transitions.createTransition({
-        source: newTransition.source.id,
-        target: newTransition.target.id,
+        sourceId: newTransition.source.id,
+        targetId: newTransition.target.id,
         color,
         label: {
           trigger: getTrigger(),

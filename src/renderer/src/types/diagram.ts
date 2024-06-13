@@ -64,8 +64,8 @@ export type Condition = {
 };
 
 export interface Transition {
-  source: string;
-  target: string;
+  sourceId: string;
+  targetId: string;
   color: string;
   label?: {
     position: Point;
@@ -85,6 +85,8 @@ export type Component = {
 export type Note = {
   position: Point;
   text: string;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 // Это описание типа схемы которая хранится в json файле

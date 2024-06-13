@@ -206,10 +206,13 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       clearTimeout(this.mouseDownTimerId);
     }
 
-    this.position = {
-      x: this.position.x + e.dx * this.app.model.data.scale,
-      y: this.position.y + e.dy * this.app.model.data.scale,
-    };
+    //Здесь идет проверка, если же координаты нажатия находятся на стрелке, то мы не сдвигаем блок перехода, иначе сдвигаем
+    if (this.isUnderMouse({ x: e.x, y: e.y })) {
+      this.position = {
+        x: this.position.x + e.dx * this.app.model.data.scale,
+        y: this.position.y + e.dy * this.app.model.data.scale,
+      };
+    }
 
     if (this.parent) {
       this.position = {
@@ -304,7 +307,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   }
 
   /**
-   * Как глубоко нодв в дереве children
+   * Как глубоко нода в дереве children
    */
   getDepth() {
     let depth = 0;

@@ -2,13 +2,12 @@ import { Dispatch } from 'react';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
-import { emptyElements } from '@renderer/types/diagram';
+import { Elements, emptyElements } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { TemplatesList } from '@renderer/types/templates';
 
 import { EditorModel } from './EditorModel';
 
-import ElementsJSONCodec from '../../codecs/ElementsJSONCodec';
 import { importGraphml } from '../GraphmlParser';
 import { isPlatformAvailable } from '../PlatformLoader';
 
@@ -40,22 +39,21 @@ export class FilesManager {
     Compiler.compile(this.data.elements.platform, this.data.elements);
   }
 
-  parseImportData(importData, openData: [boolean, string | null, string | null, string]) {
+  // Теперь называется так, потому что данные не парсятся
+  initImportData(importData: Elements, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
-        const data = ElementsJSONCodec.toElements(importData);
-        if (!isPlatformAvailable(data.platform)) {
+        if (!isPlatformAvailable(importData.platform)) {
           return makeLeft({
             name: openData[1]!,
-            content: `Незнакомая платформа "${data.platform}".`,
+            content: `Незнакомая платформа "${importData.platform}".`,
           });
         }
         this.editorManager.init(
           openData[1]!.replace('.graphml', '.json'),
           openData[2]!.replace('.graphml', '.json'),
-          data
+          importData
         );
-
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -64,6 +62,7 @@ export class FilesManager {
         } else if (e instanceof Error) {
           errText = e.message;
         }
+        console.error(e);
         return makeLeft({
           name: openData[1]!,
           content: 'Ошибка формата: ' + errText,
@@ -78,11 +77,11 @@ export class FilesManager {
     return makeLeft(null);
   }
 
-  async import(setImportData: Dispatch<[boolean, string | null, string | null, string]>) {
+  async import(setOpenData: Dispatch<[boolean, string | null, string | null, string]>) {
     const openData = await window.api.fileHandlers.openFile('Cyberiada');
     if (openData[0]) {
       Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
-      setImportData(openData);
+      setOpenData(openData);
     }
   }
 

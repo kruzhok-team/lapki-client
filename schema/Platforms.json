@@ -143,9 +143,17 @@
             "$ref": "#/definitions/ParameterProto"
           },
           "type": "object"
+        },
+        "standardVersion": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
         }
       },
       "required": [
+        "version",
+        "standardVersion",
         "components"
       ],
       "type": "object"

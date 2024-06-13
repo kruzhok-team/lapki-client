@@ -9,6 +9,7 @@ import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
@@ -20,6 +21,7 @@ import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
 
+import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
 import {
   FlasherSelectModal,
@@ -49,7 +51,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-
+  const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
+  const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
@@ -60,6 +63,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleImport = async () => {
     await model.files.import(setOpenData);
+    clearTabs();
+    openTab({ type: 'editor', name: 'editor' });
   };
 
   const closeFlasherModal = () => {
@@ -99,7 +104,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader compilerData={compilerData} handleHostChange={handleHostChange} />,
+      <Loader
+        compilerData={compilerData}
+        handleHostChange={handleHostChange}
+        openAvrdudeGuideModal={openAvrdudeGuideModal}
+      />,
       <History />,
       <Setting openCompilerSettings={openCompilerSettings} handleHostChange={handleHostChange} />,
     ],
@@ -152,6 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClose={closeFlasherModal}
       />
       <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
+      <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </div>
   );
 };

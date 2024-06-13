@@ -1,6 +1,7 @@
 import settings from 'electron-settings';
 // импорт старой версии (3.0 вместо 4.0), так как новая версия требует ESM
 import fixPath from 'fix-path';
+import { lookpath } from 'lookpath';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
@@ -40,7 +41,6 @@ export class ModuleStatus {
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
-
   static async startLocalModule(module: ModuleName) {
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
@@ -125,8 +125,13 @@ export class ModuleManager {
                 configPath = `${osPath}\\avrdude.conf`;
                 break;
             }
+            const AVRDUDE_SETTING = 'flasher.hasAvrdude';
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
+              settings.setSync(AVRDUDE_SETTING, true);
+            } else {
+              const path = await lookpath('avrdude');
+              settings.set(AVRDUDE_SETTING, Boolean(path));
             }
             if (existsSync(configPath)) {
               flasherArgs.push(`-configPath=${configPath}`);

@@ -18,7 +18,6 @@ import {
   CompilerState,
 } from '@renderer/types/CompilerTypes';
 import { Elements, InitialState, State, Transition } from '@renderer/types/diagram';
-import { randomColor } from '@renderer/utils';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;
@@ -59,7 +58,6 @@ function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: str
       name: oldState.name,
       parentId: oldState.parent,
       events: oldState.events,
-      color: randomColor(),
     };
   }
   return states;
@@ -73,7 +71,6 @@ function actualizeInitialState(
   const transition: Transition = {
     sourceId: initialId,
     targetId: oldInitial.target,
-    color: randomColor(),
   };
   const initial: InitialState = {
     position: oldInitial.position,

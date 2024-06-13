@@ -73,8 +73,8 @@ export const useComponents = () => {
     onRequestEditComponent(realName);
   };
 
-  const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor?.controller.editComponent({
+  const onEdit = (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => {
+    editor.controller.editComponent({
       name: idx,
       parameters: data.parameters,
       newName,
@@ -82,7 +82,7 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor?.controller.removeComponent({ name: idx, purge: false });
+    editor.controller.removeComponent({ name: idx, purge: false });
 
     editClose();
   };

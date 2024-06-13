@@ -311,6 +311,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       id: id,
       type: component.type,
       parameters: component.parameters,
+      order: component.order,
     };
   }
   return cgmlComponents;
@@ -321,6 +322,7 @@ export function exportCGML(elements: Elements): string {
   if (!platform) {
     throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
   }
+  console.log(structuredClone(elements));
   const cgmlElements: CGMLElements = emptyCGMLElements();
   cgmlElements.meta = exportMeta(elements.meta, platform);
   cgmlElements.format = 'Cyberiada-GraphML-1.0';
@@ -339,5 +341,6 @@ export function exportCGML(elements: Elements): string {
   cgmlElements.finals = serializeVertex(elements.finalStates, 'final');
   cgmlElements.choices = serializeVertex(elements.choiceStates, 'choice');
   cgmlElements.keys = getKeys();
+  console.log(structuredClone(cgmlElements));
   return exportGraphml(cgmlElements);
 }

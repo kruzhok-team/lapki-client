@@ -308,7 +308,14 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   const components: { [id: string]: Component } = {};
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
-    components[rawComponent.id] = { type: rawComponent.type, parameters: rawComponent.parameters };
+    if (rawComponent.order === undefined) {
+      throw new Error('Ошибка парсинга схемы! Отсутствует порядок компонентов!');
+    }
+    components[rawComponent.id] = {
+      type: rawComponent.type,
+      parameters: rawComponent.parameters,
+      order: rawComponent.order,
+    };
   }
   return components;
 }
@@ -416,6 +423,7 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
     components[id] = {
       type: id,
       parameters: {},
+      order: 0,
     };
   }
   return components;
@@ -471,6 +479,7 @@ export function importGraphml(
     );
 
     validateElements(elements, platform);
+    console.log(elements);
     return elements;
   } catch (error) {
     console.error(error);

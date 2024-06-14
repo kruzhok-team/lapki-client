@@ -6,8 +6,6 @@ import {
   Note as NoteData,
 } from '@renderer/types/diagram';
 
-import { Point } from './graphics';
-
 export interface EditComponentParams {
   name: string;
   parameters: Component['parameters'];
@@ -41,14 +39,6 @@ export interface DeleteInitialStateParams {
   id: string;
   targetId: string;
 }
-
-export type CreateTransitionParams = Omit<TransitionData, 'selection' | 'label'> & {
-  label?: Omit<Required<TransitionData>['label'], 'position'> & { position?: Point };
-} & { id?: string };
-
-export type ChangeTransitionParams = Omit<TransitionData, 'selection' | 'label'> & {
-  label?: Omit<Required<TransitionData>['label'], 'position'> & { position?: Point };
-} & { id: string };
 
 export const getStatesControllerDefaultData = () => {
   return {

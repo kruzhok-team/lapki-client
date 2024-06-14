@@ -61,6 +61,7 @@ export const DiagramEditor: React.FC = () => {
     editor.view.on('dblclick', handleDblclick);
     editor.controller.states.on('changeEvent', handleChangeEvent);
 
+    //! Не забывать удалять слушатели
     return () => {
       editor.view.off('dblclick', handleDblclick);
       editor.controller.states.off('changeEvent', handleChangeEvent);

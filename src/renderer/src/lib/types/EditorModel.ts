@@ -57,9 +57,6 @@ export type CreateFinalStateParams = FinalStateData & {
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
-// Страшно, но тут происходит просто отсеивание полей selection и label.position из данных перехода
-export type ChangeTransitionParams = Omit<TransitionData, 'selection'> & { id: string };
-export type CreateTransitionParams = Omit<ChangeTransitionParams, 'id'> & { id?: string };
 export type CreateChoiceStateParams = ChoiceStateData & {
   id?: string;
   placeInCenter?: boolean;
@@ -67,6 +64,9 @@ export type CreateChoiceStateParams = ChoiceStateData & {
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
+
+export type CreateTransitionParams = TransitionData & { id?: string };
+export type ChangeTransitionParams = TransitionData & { id: string };
 
 export interface CreateNoteParams {
   id?: string;

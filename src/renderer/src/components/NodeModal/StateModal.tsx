@@ -61,7 +61,7 @@ export const StateModal: React.FC = () => {
     } = condition;
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (show) {
+    if (showCondition && show) {
       const errors = condition.checkForErrors();
 
       for (const key in errors) {
@@ -70,7 +70,7 @@ export const StateModal: React.FC = () => {
     }
 
     const getCondition = () => {
-      if (!show) return undefined;
+      if (!show || !showCondition) return undefined;
 
       if (condition.tabValue === 0) {
         // Тут много as string потому что проверка на null в checkForErrors

@@ -188,7 +188,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id } = args;
+    const { id, eventData } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
@@ -196,8 +196,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (canUndo) {
       const prevEvent = state.data.events.find(
         (value) =>
-          args.triggerComponent === value.trigger.component &&
-          args.triggerMethod === value.trigger.method &&
+          eventData.trigger.component === value.trigger.component &&
+          eventData.trigger.method === value.trigger.method &&
           undefined === value.trigger.args // FIXME: сравнение по args может не работать
       );
 

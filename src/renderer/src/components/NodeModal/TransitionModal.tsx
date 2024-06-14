@@ -2,11 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_TRANSITION_COLOR } from '@renderer/lib/constants';
-import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { Variable as VariableData } from '@renderer/types/diagram';
 
 import { Events, Condition, ColorField, Trigger } from './components';
 import { useTrigger, useCondition, useEvents } from './hooks';
@@ -26,7 +23,7 @@ export const TransitionModal: React.FC = () => {
   const trigger = useTrigger(false);
   const condition = useCondition();
   const events = useEvents();
-  const [color, setColor] = useState(DEFAULT_TRANSITION_COLOR);
+  const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
   const showTrigger = useMemo(() => {
@@ -133,8 +130,8 @@ export const TransitionModal: React.FC = () => {
     if (transition) {
       editor.controller.transitions.changeTransition({
         id: transition.id,
-        source: transition.data.source,
-        target: transition.data.target,
+        sourceId: transition.source.id,
+        targetId: transition.target.id,
         color,
         label: {
           trigger: getTrigger(),
@@ -149,8 +146,8 @@ export const TransitionModal: React.FC = () => {
     // Если создаем новое
     if (newTransition) {
       editor.controller.transitions.createTransition({
-        source: newTransition.source.id,
-        target: newTransition.target.id,
+        sourceId: newTransition.source.id,
+        targetId: newTransition.target.id,
         color,
         label: {
           trigger: getTrigger(),
@@ -168,7 +165,7 @@ export const TransitionModal: React.FC = () => {
     trigger.clear();
     condition.clear();
     events.clear();
-    setColor(DEFAULT_TRANSITION_COLOR);
+    setColor(undefined);
 
     setTransition(null);
     setNewTransition(null);
@@ -198,69 +195,7 @@ export const TransitionModal: React.FC = () => {
         }
       }
 
-      //Позволяет найти начальные значения условия(условий), если таковые имеются
-      const parseCondition = () => {
-        const c = initialData.label?.condition;
-        if (!c) return undefined;
-        condition.handleChangeConditionShow(true);
-
-        if (typeof c === 'string') {
-          condition.onTabChange(1);
-          return condition.onChangeText(c);
-        }
-
-        condition.onTabChange(0);
-
-        const operator = c.type;
-        if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
-          console.warn('👽 got condition from future (not comparsion)', c);
-          return undefined;
-        }
-        const param1 = c.value[0];
-        const param2 = c.value[1];
-        if (Array.isArray(param1.value) || Array.isArray(param2.value)) {
-          console.warn('👽 got condition from future (non-value operands)', c);
-          return undefined;
-        }
-
-        if (
-          param1.type == 'value' &&
-          (typeof param1.value === 'string' || typeof param1.value === 'number')
-        ) {
-          condition.handleParamOneInput1(false);
-          condition.setArgsParam1(param1.value);
-        } else if (param1.type == 'component') {
-          const compoName = (param1.value as VariableData).component;
-          const methodName = (param1.value as VariableData).method;
-          condition.handleParamOneInput1(true);
-          condition.setSelectedComponentParam1(compoName);
-          condition.setSelectedMethodParam1(methodName);
-          //eventVar1 = [compoEntry(compoName), conditionEntry(methodName, compoName)];
-        } else {
-          console.warn('👽 got condition from future (strange operand 1)', c);
-          return undefined;
-        }
-
-        if (
-          param2.type == 'value' &&
-          (typeof param2.value === 'string' || typeof param2.value === 'number')
-        ) {
-          condition.handleParamOneInput2(false);
-          condition.setArgsParam2(param2.value);
-        } else if (param2.type == 'component') {
-          const compoName = (param2.value as VariableData).component;
-          const methodName = (param2.value as VariableData).method;
-          condition.handleParamOneInput2(true);
-          condition.setSelectedComponentParam2(compoName);
-          condition.setSelectedMethodParam2(methodName);
-        } else {
-          console.warn('👽 got condition from future (strange operand 2)', c);
-          return undefined;
-        }
-        return condition.setConditionOperator(operator);
-      };
-
-      parseCondition();
+      condition.parseCondition(initialData.label?.condition ?? undefined);
 
       if (initialData.label?.do) {
         if (typeof initialData.label.do !== 'string') {

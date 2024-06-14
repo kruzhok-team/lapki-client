@@ -1,12 +1,10 @@
-interface Font {
-  fontFamily?: string;
-  lineHeight?: number;
-  fontSize?: number;
-  fontWeight?: 'normal' | 'medium' | 'bold';
-}
-
+const canvas = document.createElement('canvas');
+canvas.width = 1000;
+canvas.height = 1000;
+const measureCtx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const textMap = new Map<string, Map<string, number>>();
-export const getTextWidth = (ctx: CanvasRenderingContext2D, text: string, font: string): number => {
+
+export const getTextWidth = (text: string, font: string): number => {
   if (textMap.has(font)) {
     const cache = textMap.get(font)!;
     const width = cache.get(text);
@@ -18,34 +16,29 @@ export const getTextWidth = (ctx: CanvasRenderingContext2D, text: string, font: 
   textMap.set(font, new Map());
   const cache = textMap.get(font)!;
 
-  const previousTextBaseline = ctx.textBaseline;
-  const previousFont = ctx.font;
+  const previousTextBaseline = measureCtx.textBaseline;
+  const previousFont = measureCtx.font;
 
-  ctx.textBaseline = 'bottom';
-  ctx.font = font;
+  measureCtx.textBaseline = 'bottom';
+  measureCtx.font = font;
 
-  const width = ctx.measureText(text).width;
+  const width = measureCtx.measureText(text).width;
 
-  ctx.textBaseline = previousTextBaseline;
-  ctx.font = previousFont;
+  measureCtx.textBaseline = previousTextBaseline;
+  measureCtx.font = previousFont;
 
   cache.set(text, width);
   return width;
 };
 
-export const getTextHeight = (font: Pick<Font, 'fontSize' | 'lineHeight'>) => {
-  const { fontSize = 16, lineHeight = 1.2 } = font;
-  return fontSize * lineHeight;
-};
-
 // Вспомогательная функция для prepareText для разбивки слова на строки
-const splitWord = (ctx: CanvasRenderingContext2D, word: string, font: string, maxWidth: number) => {
+const splitWord = (word: string, font: string, maxWidth: number) => {
   const lines: string[][] = [];
   const newLine: string[] = [];
   let newLineWidth = 0;
 
   for (const char of word) {
-    const charWidth = getTextWidth(ctx, char, font);
+    const charWidth = getTextWidth(char, font);
 
     if (Math.floor(newLineWidth + charWidth) <= maxWidth) {
       newLineWidth += charWidth;
@@ -67,30 +60,33 @@ const splitWord = (ctx: CanvasRenderingContext2D, word: string, font: string, ma
   };
 };
 
-interface PrepareTextParams extends Font {
-  text: string;
-  maxWidth: number;
+interface Font {
+  fontSize?: number;
+  lineHeight?: number;
+  fontFamily?: string;
+  fontWeight?: number;
 }
 
-export const prepareText = ({ text, maxWidth, ...font }: PrepareTextParams) => {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+interface DrawTextOptions {
+  x: number;
+  y: number;
+  font?: Font;
+  textAlign?: CanvasTextAlign;
+  color?: string;
+}
+
+export const prepareText = (text: string, maxWidth: number, font?: Font) => {
+  const { fontSize = 16, lineHeight = 1.2, fontFamily = 'sans-serif' } = font || {};
+
+  const textHeight = lineHeight * fontSize;
   const textArray: string[] = [];
   const initialTextArray = text.split('\n');
+  const fontString = `${fontSize}px/${lineHeight} '${fontFamily}'`;
 
-  const {
-    fontFamily = 'sans-serif',
-    fontSize = 16,
-    lineHeight = 1.2,
-    fontWeight = 'normal',
-  } = font;
-  const ctxFont = `${fontWeight} ${fontSize}px/${lineHeight} '${fontFamily}'`;
-
-  const textHeight = getTextHeight({ fontSize, lineHeight });
-  const spaceWidth = getTextWidth(ctx, ' ', ctxFont);
+  const spaceWidth = getTextWidth(' ', fontString);
 
   for (const line of initialTextArray) {
-    const textWidth = getTextWidth(ctx, line, ctxFont);
+    const textWidth = getTextWidth(line, fontString);
 
     if (textWidth <= maxWidth) {
       textArray.push(line);
@@ -102,13 +98,13 @@ export const prepareText = ({ text, maxWidth, ...font }: PrepareTextParams) => {
     let newLineWidth = 0;
 
     for (const word of words) {
-      const wordWidth = getTextWidth(ctx, word, ctxFont);
+      const wordWidth = getTextWidth(word, fontString);
 
       // Развилка когда слово больще целой строки, приходится это слово разбивать
       if (wordWidth >= maxWidth) {
         textArray.push(newLine.join(' '));
 
-        const splitted = splitWord(ctx, word, ctxFont, maxWidth);
+        const splitted = splitWord(word, fontString, maxWidth);
         textArray.push(...splitted.lines.map((line) => line.join(' ')));
         newLine = splitted.newLine;
         newLineWidth = splitted.newLineWidth;
@@ -136,33 +132,20 @@ export const prepareText = ({ text, maxWidth, ...font }: PrepareTextParams) => {
   return { height: textArray.length * textHeight, textArray };
 };
 
-interface DrawTextOptions extends Font {
-  x: number;
-  y: number;
-  textBaseline?: CanvasTextBaseline;
-  textAlign?: CanvasTextAlign;
-  color?: string;
-}
-
-// TODO Весь текст через эту функцию
 export const drawText = (
   ctx: CanvasRenderingContext2D,
   text: string | string[],
   options: DrawTextOptions
 ) => {
+  const { x, y, color = '#FFF', font = {}, textAlign = 'left' } = options;
   const {
-    x,
-    y,
-    color = '#FFF',
-    fontFamily = 'sans-serif',
     fontSize = 16,
     lineHeight = 1.2,
-    fontWeight = 'normal',
-    textAlign = 'left',
-    textBaseline = 'top',
-  } = options;
+    fontFamily = 'sans-serif',
+    fontWeight = 400,
+  } = font || {};
 
-  const textHeight = getTextHeight({ fontSize, lineHeight });
+  const textHeight = lineHeight * fontSize;
 
   const prevFont = ctx.font;
   const prevFillStyle = ctx.fillStyle;
@@ -172,13 +155,15 @@ export const drawText = (
   ctx.font = `${fontWeight} ${fontSize}px/${lineHeight} '${fontFamily}'`;
   ctx.fillStyle = color;
   ctx.textAlign = textAlign;
-  ctx.textBaseline = textBaseline;
+  ctx.textBaseline = 'bottom';
 
   if (!Array.isArray(text)) {
-    ctx.fillText(text, x, y + (textHeight - fontSize) / 2);
+    ctx.fillText(text, x, y + textHeight + textHeight * 0.05);
   } else {
     for (let i = 0; i < text.length; i++) {
-      ctx.fillText(text[i], x, y + i * textHeight + (textHeight - fontSize) / 2);
+      const lineY = y + i * textHeight + textHeight - textHeight * 0.05;
+
+      ctx.fillText(text[i], x, lineY);
     }
   }
 

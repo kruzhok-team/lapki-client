@@ -13,6 +13,7 @@ import {
   CGMLNote,
 } from '@kruzhok-team/cyberiadaml-js';
 
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import {
   ArgList,
   EventData,
@@ -29,18 +30,20 @@ import {
   FinalState,
   Note,
 } from '@renderer/types/diagram';
+import { Platform } from '@renderer/types/platform';
 import { isString } from '@renderer/utils';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
 import { ChoiceState } from '../drawable';
 
-function exportMeta(meta: Meta): CGMLMeta {
+function exportMeta(meta: Meta, platform: Platform): CGMLMeta {
   return {
     id: 'coreMeta',
     values: {
       ...meta,
-      standardVersion: '1.0',
+      standardVersion: platform.standardVersion,
+      platformVersion: platform.version,
     },
   };
 }
@@ -64,10 +67,22 @@ function serializeEvent(trigger: Event): string {
   }
 }
 
-function serializeActions(actions: Action[]): string {
+function serializeActions(
+  actions: Action[],
+  components: { [id: string]: Component },
+  platform: Platform
+): string {
   let serialized = '';
+  // TODO: Стиль команд, внедрить новый формат платформ
+  const isArduino = platform.name?.startsWith('Arduino');
+  const delimeter = isArduino ? ';' : '';
   for (const action of actions) {
-    serialized += `${action.component}.${action.method}(${serializeArgs(action.args)})\n`;
+    const component = components[action.component];
+    const platformComponent = platform.components[component.type];
+    const actionDelimeter = platformComponent.singletone && isArduino ? '::' : '.';
+    serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
+      action.args
+    )})${delimeter}\n`;
   }
   return serialized.trim();
 }
@@ -79,11 +94,15 @@ function getTrigger(trigger: Event | string | undefined): string | undefined {
   return isString(trigger) ? trigger : serializeEvent(trigger);
 }
 
-function getActions(actions: Action[] | string | undefined): string | undefined {
+function getActions(
+  actions: Action[] | string | undefined,
+  components: { [id: string]: Component },
+  platform: Platform
+): string | undefined {
   if (!actions) {
     return undefined;
   }
-  return isString(actions) ? actions : serializeActions(actions);
+  return isString(actions) ? actions : serializeActions(actions, components, platform);
 }
 
 function getCondition(condition: null | undefined | string | Condition): string | undefined {
@@ -96,7 +115,9 @@ function getCondition(condition: null | undefined | string | Condition): string 
 export function serializeTransitionEvents(
   doActions: Action[] | string | undefined,
   trigger: Event | string | undefined,
-  condition: null | undefined | string | Condition
+  condition: null | undefined | string | Condition,
+  components: { [id: string]: Component },
+  platform: Platform
 ): CGMLTransitionAction[] {
   return [
     {
@@ -104,32 +125,41 @@ export function serializeTransitionEvents(
         event: getTrigger(trigger),
         condition: getCondition(condition),
       },
-      action: getActions(doActions),
+      action: getActions(doActions, components, platform),
     },
   ];
 }
 
-export function serializeStateEvents(events: EventData[]): CGMLAction[] {
+export function serializeStateEvents(
+  events: EventData[],
+  platform: Platform,
+  components: { [id: string]: Component }
+): CGMLAction[] {
   const serializedActions: CGMLAction[] = [];
   for (const event of events) {
     serializedActions.push({
       trigger: {
         event: getTrigger(event.trigger) ?? '',
+        condition: getCondition(event.condition),
       },
-      action: getActions(event.do),
+      action: getActions(event.do, components, platform),
     });
   }
   return serializedActions;
 }
 
-function serializeStates(states: { [id: string]: State }): { [id: string]: CGMLState } {
+function serializeStates(
+  states: { [id: string]: State },
+  platform: Platform,
+  components: { [id: string]: Component }
+): { [id: string]: CGMLState } {
   const cgmlStates: { [id: string]: CGMLState } = {};
   for (const id in states) {
     const state: State = states[id];
     cgmlStates[id] = {
       name: state.name,
       unsupportedDataNodes: [],
-      actions: serializeStateEvents(state.events),
+      actions: serializeStateEvents(state.events, platform, components),
       parent: state.parentId,
       color: state.color,
       bounds: {
@@ -199,20 +229,23 @@ function serializeVertex(
   return rawVertexes;
 }
 
-export function serializeTransitionActions(trigger: Event, actions: Action[]) {
-  return (serializeEvent(trigger) + '/\n' + serializeActions(actions)).trim();
+export function serializeTransitionActions(trigger: Event | string, actions: Action[] | string) {
+  return 'asd';
+  // return (serializeEvent(trigger) + '/\n' + serializeActions(actions)).trim();
 }
 
 function serializeTransitions(
-  transitions: Record<string, Transition>
+  transitions: Record<string, Transition>,
+  platform: Platform,
+  components: { [id: string]: Component }
 ): Record<string, CGMLTransition> {
   const cgmlTransitions: Record<string, CGMLTransition> = {};
   for (const id in transitions) {
     const transition = transitions[id];
     const cgmlTransition: CGMLTransition = {
       id: id,
-      source: transition.source,
-      target: transition.target,
+      source: transition.sourceId,
+      target: transition.targetId,
       pivot: undefined,
       unsupportedDataNodes: [],
       color: transition.color,
@@ -226,7 +259,9 @@ function serializeTransitions(
     cgmlTransition.actions = serializeTransitionEvents(
       transition.label.do,
       transition.label.trigger,
-      transition.label.condition
+      transition.label.condition,
+      components,
+      platform
     );
     cgmlTransitions[id] = cgmlTransition;
   }
@@ -314,15 +349,23 @@ function serializeComponents(components: { [id: string]: Component }): {
 }
 
 export function exportCGML(elements: Elements): string {
+  const platform = getPlatform(elements.platform);
+  if (!platform) {
+    throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
+  }
   const cgmlElements: CGMLElements = emptyCGMLElements();
-  cgmlElements.meta = exportMeta(elements.meta);
-  cgmlElements.format = 'Cyberiada-GraphML';
+  cgmlElements.meta = exportMeta(elements.meta, platform);
+  cgmlElements.format = 'Cyberiada-GraphML-1.0';
   cgmlElements.platform = elements.platform;
   if (elements.platform.startsWith('Arduino')) {
     cgmlElements.components = serializeComponents(elements.components);
   }
-  cgmlElements.states = serializeStates(elements.states);
-  cgmlElements.transitions = serializeTransitions(elements.transitions);
+  cgmlElements.states = serializeStates(elements.states, platform, elements.components);
+  cgmlElements.transitions = serializeTransitions(
+    elements.transitions,
+    platform,
+    elements.components
+  );
   cgmlElements.notes = serializeNotes(elements.notes);
   cgmlElements.initialStates = serializeVertex(elements.initialStates, 'initial');
   cgmlElements.finals = serializeVertex(elements.finalStates, 'final');

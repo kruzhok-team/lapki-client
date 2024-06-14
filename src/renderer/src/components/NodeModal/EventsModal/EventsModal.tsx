@@ -129,7 +129,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
 
     // Если есть ошибка то не отправляем форму
     for (const key in errors) {

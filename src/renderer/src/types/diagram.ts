@@ -26,7 +26,7 @@ export type Event = {
 export type EventData = {
   trigger: Event | string;
   do: Action[] | string;
-  // TODO: condition?: Condition;
+  condition?: Condition | string;
 };
 
 interface BaseState {
@@ -38,7 +38,7 @@ export interface State extends BaseState {
   name: string;
   events: EventData[];
   dimensions: Dimensions;
-  color: string;
+  color?: string;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 }
@@ -64,9 +64,9 @@ export type Condition = {
 };
 
 export interface Transition {
-  source: string;
-  target: string;
-  color: string;
+  sourceId: string;
+  targetId: string;
+  color?: string;
   label?: {
     position: Point;
     trigger?: Event | string;
@@ -85,6 +85,8 @@ export type Component = {
 export type Note = {
   position: Point;
   text: string;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
 };
 
 // Это описание типа схемы которая хранится в json файле

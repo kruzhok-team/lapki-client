@@ -1,13 +1,12 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { Events, ColorField, Trigger } from './components';
-import { useTrigger, useEvents } from './hooks';
+import { Events, ColorField, Trigger, Condition } from './components';
+import { useTrigger, useEvents, useCondition } from './hooks';
 
 export const StateModal: React.FC = () => {
   const editor = useEditorContext();
@@ -18,10 +17,18 @@ export const StateModal: React.FC = () => {
 
   // Данные формы
   const trigger = useTrigger(true);
+  const condition = useCondition();
   const events = useEvents();
-  const [color, setColor] = useState(DEFAULT_STATE_COLOR);
+  const [color, setColor] = useState<string | undefined>();
 
   const { setEvents, onTabChange: onEventsTabChange, onChangeText: onEventsChangeText } = events;
+  const { parseCondition } = condition;
+
+  // На дефолтные события нельзя ставить условия
+  const showCondition = useMemo(
+    () => trigger.selectedComponent !== 'System',
+    [trigger.selectedComponent]
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +42,67 @@ export const StateModal: React.FC = () => {
     if (
       (tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
       (tabValue === 1 && !triggerText)
+      // || events.events.length === 0
     ) {
       return;
     }
+
+    const {
+      show,
+      isParamOneInput1,
+      selectedComponentParam1,
+      selectedMethodParam1,
+      isParamOneInput2,
+      selectedComponentParam2,
+      selectedMethodParam2,
+      argsParam1,
+      argsParam2,
+      conditionOperator,
+    } = condition;
+
+    //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
+    if (show) {
+      const errors = condition.checkForErrors();
+
+      for (const key in errors) {
+        if (errors[key]) return;
+      }
+    }
+
+    const getCondition = () => {
+      if (!show) return undefined;
+
+      if (condition.tabValue === 0) {
+        // Тут много as string потому что проверка на null в checkForErrors
+        return {
+          type: conditionOperator as string,
+          value: [
+            {
+              type: isParamOneInput1 ? 'component' : 'value',
+              value: isParamOneInput1
+                ? {
+                    component: selectedComponentParam1 as string,
+                    method: selectedMethodParam1 as string,
+                    args: {},
+                  }
+                : (argsParam1 as string),
+            },
+            {
+              type: isParamOneInput2 ? 'component' : 'value',
+              value: isParamOneInput2
+                ? {
+                    component: selectedComponentParam2 as string,
+                    method: selectedMethodParam2 as string,
+                    args: {},
+                  }
+                : (argsParam2 as string),
+            },
+          ],
+        };
+      }
+
+      return condition.text.trim() || undefined;
+    };
 
     const getTrigger = () => {
       if (tabValue === 0)
@@ -59,6 +124,7 @@ export const StateModal: React.FC = () => {
       eventData: {
         trigger: getTrigger(),
         do: getEvents(),
+        condition: getCondition(),
       },
       color,
     });
@@ -70,7 +136,7 @@ export const StateModal: React.FC = () => {
   const handleAfterClose = () => {
     trigger.clear();
     events.clear();
-    setColor(DEFAULT_STATE_COLOR);
+    setColor(undefined);
 
     setState(null);
   };
@@ -103,6 +169,8 @@ export const StateModal: React.FC = () => {
         }
       }
 
+      parseCondition(eventData?.condition);
+
       setColor(data.color);
 
       setState(state);
@@ -117,7 +185,7 @@ export const StateModal: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Синхронизвация trigger и event
+  // Синхронизвация trigger и condition с event
   useLayoutEffect(() => {
     if (!state) return;
 
@@ -145,9 +213,12 @@ export const StateModal: React.FC = () => {
       setEvents(stateEvents.do);
       onEventsTabChange(0);
     }
+
+    parseCondition(stateEvents?.condition);
   }, [
     onEventsChangeText,
     onEventsTabChange,
+    parseCondition,
     setEvents,
     state,
     trigger.selectedComponent,
@@ -166,6 +237,7 @@ export const StateModal: React.FC = () => {
     >
       <div className="flex flex-col gap-3">
         <Trigger {...trigger} />
+        {showCondition && <Condition {...condition} />}
         <Events {...events} />
         <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>

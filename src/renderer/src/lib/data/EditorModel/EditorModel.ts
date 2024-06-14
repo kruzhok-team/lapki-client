@@ -58,7 +58,6 @@ export class EditorModel {
     this.data.isMounted = prevMounted;
 
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-
     this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
     if (this.data.isMounted) {
@@ -172,20 +171,24 @@ export class EditorModel {
   }
 
   changeStateEvents(args: ChangeStateEventsParams) {
-    const { id, eventData, color } = args;
+    const {
+      id,
+      eventData: { do: actions, trigger, condition },
+      color,
+    } = args;
 
     const state = this.data.elements.states[id];
     if (!state) return false;
 
     const eventIndex = state.events.findIndex((value) => {
-      if (typeof eventData.trigger === 'string' && typeof value.trigger === 'string') {
-        return value.trigger === eventData.trigger;
+      if (typeof trigger === 'string' && typeof value.trigger === 'string') {
+        return value.trigger === trigger;
       }
 
-      if (typeof eventData.trigger !== 'string' && typeof value.trigger !== 'string') {
+      if (typeof trigger !== 'string' && typeof value.trigger !== 'string') {
         return (
-          eventData.trigger.component === value.trigger.component &&
-          eventData.trigger.method === value.trigger.method &&
+          trigger.component === value.trigger.component &&
+          trigger.method === value.trigger.method &&
           undefined === value.trigger.args
         ); // FIXME: сравнение по args может не работать
       }
@@ -196,10 +199,11 @@ export class EditorModel {
     const event = state.events[eventIndex];
 
     if (event === undefined) {
-      state.events = [...state.events, eventData];
+      state.events = [...state.events, args.eventData];
     } else {
-      if (eventData.do.length) {
-        event.do = eventData.do;
+      if (actions.length) {
+        event.condition = condition;
+        event.do = actions;
       } else {
         state.events.splice(eventIndex, 1);
       }
@@ -552,7 +556,7 @@ export class EditorModel {
     if (!transition) return false;
 
     //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
-    // Поэтому данные label нужно не просто перезаписать а соеденять с предыдущими
+    // Поэтому данные label нужно не просто перезаписать, а соединять с предыдущими
     const getNewLabel = () => {
       if (!label) return undefined;
 
@@ -688,6 +692,18 @@ export class EditorModel {
     if (!this.data.elements.notes.hasOwnProperty(id)) return false;
 
     this.data.elements.notes[id].text = text;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
+  changeNoteSelection(id: string, selection: boolean) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    note.selection = selection;
 
     this.triggerDataUpdate('elements.notes');
 

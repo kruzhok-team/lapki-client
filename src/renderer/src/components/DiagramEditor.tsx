@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
 import {
-  TransitionModal,
-  EventsModal,
-  EventsModalData,
   NoteEdit,
   StateNameEdit,
+  EventsModal,
+  EventsModalData,
   StateModal,
+  TransitionModal,
 } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -43,7 +42,6 @@ export const DiagramEditor: React.FC = () => {
         name: 'Состояние',
         position,
         placeInCenter: true,
-        color: DEFAULT_STATE_COLOR,
       });
     };
 
@@ -61,7 +59,6 @@ export const DiagramEditor: React.FC = () => {
     };
 
     editor.view.on('dblclick', handleDblclick);
-
     editor.controller.states.on('changeEvent', handleChangeEvent);
 
     return () => {
@@ -85,7 +82,7 @@ export const DiagramEditor: React.FC = () => {
   const handleEventsModalSubmit = (data: Event) => {
     if (!eventsModalParentData) return;
 
-    editor?.controller.states.changeEvent(
+    editor.controller.states.changeEvent(
       eventsModalParentData.state.id,
       eventsModalParentData.eventSelection,
       data
@@ -103,15 +100,15 @@ export const DiagramEditor: React.FC = () => {
           <StateNameEdit />
           <NoteEdit />
 
+          <StateModal />
+          <TransitionModal />
+
           <EventsModal
             initialData={eventsModalData}
             onSubmit={handleEventsModalSubmit}
             isOpen={isEventsModalOpen}
             onClose={closeEventsModal}
           />
-
-          <StateModal />
-          <TransitionModal />
         </>
       )}
     </>

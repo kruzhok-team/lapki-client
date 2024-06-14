@@ -4,7 +4,7 @@ import { Dimensions, Point } from '@renderer/lib/types/graphics';
 // import { serializeEvents } from '../data/GraphmlBuilder';
 
 import { isPointInRectangle } from '@renderer/lib/utils';
-import { drawText, getTextHeight, getTextWidth, prepareText } from '@renderer/lib/utils/text';
+import { drawText, getTextWidth, prepareText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
@@ -65,7 +65,8 @@ export class Events {
       // this.sizes.height = height + pY * 2;
 
       const textEvents: any[] = [];
-      const textHeight = getTextHeight({ fontSize: 16, lineHeight: 1.2 });
+      // const textHeight = getTextHeight({ fontSize: 16, lineHeight: 1.2 });
+      const textHeight = 16 * 1.2;
       const py = 6;
       const height = textHeight + py * 2;
 
@@ -88,6 +89,9 @@ export class Events {
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
+      if (ev.condition) {
+        eventRows += 1;
+      }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
     });
     this.dimensions.height = Math.max(this.minHeight, 50 * eventRows);
@@ -124,6 +128,9 @@ export class Events {
       if (isPointInRectangle(triggerRect, p)) {
         return { eventIdx, actionIdx: null };
       }
+
+      eventRow += event.condition ? 1 : 0;
+
       for (let actionIdx = 0; actionIdx < event.do.length; actionIdx++) {
         // const element = events[eventIdx];
         const ax = 1 + (actionIdx % eventRowLength);
@@ -198,10 +205,21 @@ export class Events {
       }
       platform.drawEvent(ctx, events.trigger, eX, eY);
 
+      if (events.condition) {
+        ctx.beginPath();
+        platform.drawCondition(
+          ctx,
+          events.condition,
+          eX + (picto.eventWidth + 5) / picto.scale,
+          eY
+        );
+        ctx.closePath();
+      }
+
       events.do.forEach((act, actIdx) => {
         const ax = 1 + (actIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actIdx / eventRowLength);
-        const aX = baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale;
+        const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
+        const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
         const aY = baseY + (ay * yDx) / this.app.model.data.scale;
         if (typeof this.selection !== 'undefined') {
           if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
@@ -211,7 +229,8 @@ export class Events {
         platform.drawAction(ctx, act, aX, aY);
       });
 
-      eventRow += Math.max(1, Math.ceil(events.do.length / eventRowLength));
+      eventRow +=
+        Math.max(1, Math.ceil(events.do.length / eventRowLength)) + (events.condition ? 1 : 0);
     });
 
     ctx.closePath();
@@ -221,8 +240,8 @@ export class Events {
     const scale = this.app.model.data.scale;
 
     const fontSize = 16 / scale;
-    const textHeight = getTextHeight({ fontSize });
-    const dotTextWidth = getTextWidth(ctx, '.', `normal ${fontSize}px/1.2 'Fira Sans'`);
+    const textHeight = fontSize;
+    const dotTextWidth = getTextWidth('.', `normal ${fontSize}px/1.2 'Fira Sans'`);
 
     const boxPaddingY = 6 / scale;
     const gapX = 6 / scale;

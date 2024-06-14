@@ -1,6 +1,8 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
+  InitialState,
+  Note,
   ChoiceState,
   FinalState,
   GhostTransition,
@@ -17,7 +19,10 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
-  createTransition: { source: State | ChoiceState; target: State | ChoiceState | FinalState };
+  createTransition: {
+    source: State | ChoiceState;
+    target: State | ChoiceState | FinalState;
+  };
   changeTransition: Transition;
   transitionContextMenu: { transition: Transition; position: Point };
 }
@@ -55,7 +60,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   forEachByStateId(stateId: string, callback: (transition: Transition) => void) {
     return this.items.forEach((transition) => {
-      if (transition.data.source === stateId || transition.data.target === stateId) {
+      if (transition.data.sourceId === stateId || transition.data.targetId === stateId) {
         callback(transition);
       }
     });
@@ -63,7 +68,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   forEachByTargetId(targetId: string, callback: (transition: Transition) => void) {
     return this.items.forEach((transition) => {
-      if (transition.data.target === targetId) {
+      if (transition.data.targetId === targetId) {
         callback(transition);
       }
     });
@@ -89,22 +94,33 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   createTransition(params: CreateTransitionParams, canUndo = true) {
-    const { source, target, label } = params;
+    const { sourceId, targetId, color, id: prevId, label } = params;
+    //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
+    const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
+    const target =
+      this.controller.states.get(targetId) ||
+      this.controller.notes.get(targetId) ||
+      this.controller.transitions.get(targetId);
 
-    const sourceState = this.controller.states.get(source);
-    const targetState = this.controller.states.get(target);
-
-    if (!sourceState || !targetState) return;
+    if (!source || !target) return;
 
     if (label && !label.position) {
       label.position = {
-        x: (sourceState.position.x + targetState.position.x) / 2,
-        y: (sourceState.position.y + targetState.position.y) / 2,
+        x: (source.position.x + target.position.x) / 2,
+        y: (source.position.y + target.position.y) / 2,
       };
     }
 
-    const id = this.app.model.createTransition(params as any); // Создание данных
-    const transition = new Transition(this.app, id); // Создание представления
+    // Создание данных
+    const id = this.app.model.createTransition({
+      id: prevId,
+      sourceId,
+      targetId,
+      color,
+      label,
+    } as any);
+    // Создание модельки
+    const transition = new Transition(this.app, id);
 
     this.items.set(id, transition);
     this.linkTransition(id);
@@ -184,19 +200,27 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(id);
     if (!transition) return;
 
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    this.forEachByTargetId(id, (transition) => {
+      this.deleteTransition(transition.id, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
     if (canUndo) {
       this.history.do({
         type: 'deleteTransition',
         args: { transition, prevData: structuredClone(transition.data) },
+        numberOfConnectedActions,
       });
     }
-
-    this.app.model.deleteTransition(id);
 
     const parent = transition.parent ?? this.view;
     parent.children.remove(transition, Layer.Transitions);
     this.unwatchTransition(transition);
     this.items.delete(id);
+    this.app.model.deleteTransition(id);
 
     this.view.isDirty = true;
   }
@@ -204,13 +228,17 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   initEvents() {
     this.app.mouse.on('mousemove', this.handleMouseMove);
 
-    this.controller.states.on('startNewTransition', this.handleStartNewTransition);
+    this.controller.notes.on('startNewTransitionNote', this.handleStartNewTransition);
+    this.controller.notes.on('mouseUpOnNote', this.handleMouseUpOnNote);
+
+    this.controller.states.on('startNewTransitionState', this.handleStartNewTransition);
     this.controller.states.on('mouseUpOnState', this.handleMouseUpOnState);
+    this.controller.states.on('mouseUpOnInitialState', this.handleMouseUpOnInitialState);
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (state: State | ChoiceState) => {
-    this.ghost?.setSource(state);
+  handleStartNewTransition = (node: State | ChoiceState | Note) => {
+    this.ghost?.setSource(node);
   };
 
   handleConditionClick = (transition: Transition) => {
@@ -218,6 +246,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
+    if (!transition.data.label) return;
     this.emit('changeTransition', transition);
   };
 
@@ -241,9 +270,15 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUpOnState = (state: State | ChoiceState) => {
     if (!this.ghost?.source) return;
+    if (this.ghost.source instanceof Note) {
+      this.createTransition({
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
+      });
+    }
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
-    if (state !== this.ghost?.source) {
+    else if (state !== this.ghost?.source) {
       this.emit('createTransition', { source: this.ghost?.source, target: state });
     }
     this.ghost?.clear();
@@ -251,10 +286,63 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
+  handleMouseUpOnTransition = (transition: Transition) => {
+    if (!this.ghost?.source) return;
+
+    if (this.ghost.source instanceof Note && transition.data.label) {
+      this.createTransition({
+        sourceId: this.ghost?.source.id,
+        targetId: transition.id,
+      });
+    }
+
+    this.ghost.clear();
+    this.view.isDirty = true;
+  };
+
+  handleMouseUpOnNote = (note: Note) => {
+    if (!this.ghost?.source) return;
+
+    if (
+      this.ghost.source instanceof Note &&
+      //Запрещаем создавать связь комментарию для самого себя
+      this.ghost.source !== note
+    ) {
+      this.createTransition({
+        sourceId: this.ghost?.source.id,
+        targetId: note.id,
+      });
+    }
+
+    this.ghost.clear();
+    this.view.isDirty = true;
+  };
+
+  handleMouseUpOnInitialState = (state: InitialState) => {
+    if (!this.ghost?.source) return;
+
+    if (this.ghost.source instanceof Note) {
+      this.createTransition({
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
+      });
+    }
+
+    this.ghost?.clear();
+    this.view.isDirty = true;
+  };
+
   handleMouseUpOnFinalState = (state: FinalState) => {
     if (!this.ghost?.source) return;
 
-    this.emit('createTransition', { source: this.ghost.source, target: state });
+    if (this.ghost.source instanceof Note) {
+      this.createTransition({
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
+      });
+    } else {
+      this.emit('createTransition', { source: this.ghost.source, target: state });
+    }
 
     this.ghost?.clear();
     this.view.isDirty = true;
@@ -277,6 +365,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   watchTransition(transition: Transition) {
     transition.on('click', this.handleConditionClick.bind(this, transition));
     transition.on('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    transition.on('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
     transition.on('contextmenu', this.handleContextMenu.bind(this, transition));
     transition.on('dragend', this.handleDragEnd.bind(this, transition));
   }
@@ -284,6 +373,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   unwatchTransition(transition: Transition) {
     transition.off('click', this.handleConditionClick.bind(this, transition));
     transition.off('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    transition.off('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
     transition.off('contextmenu', this.handleContextMenu.bind(this, transition));
     transition.off('dragend', this.handleDragEnd.bind(this, transition));
   }

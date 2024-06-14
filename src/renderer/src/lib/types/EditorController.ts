@@ -1,6 +1,12 @@
 import { State, InitialState, FinalState, ChoiceState } from '@renderer/lib/drawable';
-import { Point } from '@renderer/lib/types/graphics';
-import { Component, Transition as TransitionData } from '@renderer/types/diagram';
+import {
+  Component,
+  State as StateData,
+  Transition as TransitionData,
+  Note as NoteData,
+} from '@renderer/types/diagram';
+
+import { Point } from './graphics';
 
 export interface EditComponentParams {
   name: string;
@@ -63,3 +69,9 @@ export type StateVariant = StatesControllerData[StatesControllerDataStateType] e
   ? T
   : never;
 export type StateType = StatesControllerDataStateType extends `${infer T}s` ? T : never;
+
+export type CopyData =
+  | { type: 'state'; data: StateData & { id: string } }
+  | { type: 'transition'; data: TransitionData & { id: string } }
+  | { type: 'note'; data: NoteData & { id: string } };
+export type CopyType = CopyData['type'];

@@ -6,13 +6,96 @@ import { toast } from 'sonner';
 
 import { Buffer } from 'buffer';
 
+import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
+import { generateId } from '@renderer/lib/utils';
 import {
-  CompilerSettings,
   CompilerResult,
   Binary,
   SourceFile,
+  CompilerTransition,
+  CompilerInitialState,
+  CompilerElements,
+  CompilerState,
 } from '@renderer/types/CompilerTypes';
-import { Elements } from '@renderer/types/diagram';
+import { Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+
+function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
+  [key: string]: Transition;
+} {
+  const newTransitions: {
+    [key: string]: Transition;
+  } = {};
+  for (const transitionId in oldTransitions) {
+    const oldTransition = oldTransitions[transitionId];
+    newTransitions[transitionId] = {
+      sourceId: oldTransition.source,
+      targetId: oldTransition.target,
+      color: oldTransition.color,
+      label: {
+        trigger: oldTransition.trigger,
+        position: oldTransition.position,
+        condition: oldTransition.condition,
+        do: oldTransition.do,
+      },
+    };
+  }
+  return newTransitions;
+}
+
+function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: string]: State } {
+  const states: { [id: string]: State } = {};
+  for (const oldStateId in oldStates) {
+    const oldState = oldStates[oldStateId];
+    states[oldStateId] = {
+      dimensions: {
+        width: oldState.bounds.width,
+        height: oldState.bounds.height,
+      },
+      position: {
+        x: oldState.bounds.x,
+        y: oldState.bounds.y,
+      },
+      name: oldState.name,
+      parentId: oldState.parent,
+      events: oldState.events,
+    };
+  }
+  return states;
+}
+
+function actualizeInitialState(
+  oldInitial: CompilerInitialState
+): [{ [id: string]: InitialState }, { [id: string]: Transition }] {
+  const initialId = generateId();
+  const transitionId = generateId();
+  const transition: Transition = {
+    sourceId: initialId,
+    targetId: oldInitial.target,
+  };
+  const initial: InitialState = {
+    position: oldInitial.position,
+  };
+  return [{ [initialId]: initial }, { [transitionId]: transition }];
+}
+
+function actualizeElements(oldElements: CompilerElements): Elements {
+  const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
+  return {
+    platform: oldElements.platform,
+    parameters: oldElements.parameters,
+    components: oldElements.components,
+    states: actualizeStates(oldElements.states),
+    finalStates: {},
+    choiceStates: {},
+    notes: {},
+    transitions: {
+      ...actualizeTransitions(oldElements.transitions),
+      ...initialTransition,
+    },
+    initialStates: initials,
+    meta: {},
+  };
+}
 
 export class Compiler {
   static port = 8081;
@@ -24,7 +107,7 @@ export class Compiler {
   // Статус подключения.
   static setCompilerStatus: Dispatch<SetStateAction<string>>;
   static setCompilerMode: Dispatch<SetStateAction<string>>;
-  static setImportData: Dispatch<SetStateAction<string | undefined>>;
+  static setImportData: Dispatch<SetStateAction<Elements | undefined>>;
   static mode: string;
 
   static timerOutID: NodeJS.Timeout;
@@ -56,7 +139,7 @@ export class Compiler {
   static bindReact(
     setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>,
     setCompilerStatus: Dispatch<SetStateAction<string>>,
-    setImportData: Dispatch<SetStateAction<string | undefined>>
+    setImportData: Dispatch<SetStateAction<Elements | undefined>>
   ): void {
     this.setCompilerData = setCompilerData;
     this.setCompilerStatus = setCompilerStatus;
@@ -165,6 +248,7 @@ export class Compiler {
       this.setCompilerStatus('Подключен');
       clearTimeout(this.timerOutID);
       let data;
+      let elements;
       switch (this.mode) {
         case 'compile':
           data = JSON.parse(msg.data as string);
@@ -184,10 +268,9 @@ export class Compiler {
           } as CompilerResult);
           break;
         case 'import':
-          data = JSON.parse(msg.data as string);
-          console.log(data);
-          // TODO: Сразу распарсить как Elements.
-          this.setImportData(JSON.stringify(data.source[0].fileContent));
+          data = JSON.parse(msg.data as string) as CompilerElements;
+          elements = actualizeElements(data.source[0].fileContent);
+          this.setImportData(elements);
           break;
         case 'export':
           data = JSON.parse(msg.data as string) as SourceFile;
@@ -247,45 +330,11 @@ export class Compiler {
     const ws: Websocket | undefined = await this.connectRoute(route);
     if (ws !== undefined) {
       const [mainPlatform, subPlatform] = platform.split('-');
-      console.log(mainPlatform, subPlatform);
       switch (mainPlatform) {
-        case 'ArduinoUno': {
-          ws.send('arduino');
-          this.mode = 'compile';
-          const compilerSettings: CompilerSettings = {
-            compiler: 'arduino-cli',
-            filename: this.filename,
-            flags: ['-b', 'arduino:avr:uno'],
-          };
-          const obj = {
-            ...(data as Elements),
-            transitions: Object.values((data as Elements).transitions),
-            compilerSettings: compilerSettings,
-          };
-          ws.send(JSON.stringify(obj));
-          break;
-        }
-        case 'ArduinoMicro': {
-          ws.send('arduino');
-          this.mode = 'compile';
-          const compilerSettings: CompilerSettings = {
-            compiler: 'arduino-cli',
-            filename: this.filename,
-            flags: ['-b', 'arduino:avr:micro'],
-          };
-          const obj = {
-            ...(data as Elements),
-            transitions: Object.values((data as Elements).transitions),
-            compilerSettings: compilerSettings,
-          };
-          ws.send(JSON.stringify(obj));
-          break;
-        }
         case 'BearlogaDefendImport':
           ws.send('berlogaImport');
           ws.send(data as string);
           ws.send(subPlatform);
-          console.log('import!');
           this.mode = 'import';
           break;
         case 'BearlogaDefend':
@@ -296,12 +345,13 @@ export class Compiler {
           } else {
             ws.send('Robot');
           }
-          console.log('export!');
           this.mode = 'export';
           break;
         default:
-          console.log(`unknown platform ${platform}`);
-          return;
+          ws.send('cgml');
+          this.mode = 'compile';
+          ws.send(exportCGML(data as Elements));
+          break;
       }
 
       this.setCompilerStatus('Идет компиляция...');
@@ -309,7 +359,7 @@ export class Compiler {
         Compiler.setCompilerStatus('Что-то пошло не так...');
       }, this.timeOutTime);
     } else {
-      console.log('Внутренняя ошибка! Отсутствует подключение');
+      console.error('Внутренняя ошибка! Отсутствует подключение');
     }
   }
 }

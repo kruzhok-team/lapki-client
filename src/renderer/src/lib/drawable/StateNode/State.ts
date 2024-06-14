@@ -128,9 +128,11 @@ export class State extends Shape {
       y: y + paddingY,
       textAlign: 'left',
       color: this.data.name !== '' ? style.titleColor : style.titleColorUndefined,
-      fontSize,
-      lineHeight: 1,
-      fontFamily: 'Fira Sans',
+      font: {
+        fontSize,
+        lineHeight: 1,
+        fontFamily: 'Fira Sans',
+      },
     });
 
     ctx.closePath();
@@ -141,7 +143,7 @@ export class State extends Shape {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = this.data.color;
+    ctx.strokeStyle = this.data.color ?? getColor('default-state-color');
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);

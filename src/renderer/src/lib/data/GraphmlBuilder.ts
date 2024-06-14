@@ -29,6 +29,7 @@ import {
   FinalState,
   Note,
 } from '@renderer/types/diagram';
+import { isString } from '@renderer/utils';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
@@ -71,18 +72,39 @@ function serializeActions(actions: Action[]): string {
   return serialized.trim();
 }
 
+function getTrigger(trigger: Event | string | undefined): string | undefined {
+  if (!trigger) {
+    return undefined;
+  }
+  return isString(trigger) ? trigger : serializeEvent(trigger);
+}
+
+function getActions(actions: Action[] | string | undefined): string | undefined {
+  if (!actions) {
+    return undefined;
+  }
+  return isString(actions) ? actions : serializeActions(actions);
+}
+
+function getCondition(condition: null | undefined | string | Condition): string | undefined {
+  if (!condition) {
+    return undefined;
+  }
+  return isString(condition) ? condition : serializeCondition(condition);
+}
+
 export function serializeTransitionEvents(
-  doActions: Action[] | undefined,
-  trigger: Event | undefined,
-  condition: null | undefined | Condition
+  doActions: Action[] | string | undefined,
+  trigger: Event | string | undefined,
+  condition: null | undefined | string | Condition
 ): CGMLTransitionAction[] {
   return [
     {
       trigger: {
-        event: trigger ? serializeEvent(trigger) : undefined,
-        condition: condition ? serializeCondition(condition) : undefined,
+        event: getTrigger(trigger),
+        condition: getCondition(condition),
       },
-      action: doActions ? serializeActions(doActions) : undefined,
+      action: getActions(doActions),
     },
   ];
 }
@@ -92,9 +114,9 @@ export function serializeStateEvents(events: EventData[]): CGMLAction[] {
   for (const event of events) {
     serializedActions.push({
       trigger: {
-        event: serializeEvent(event.trigger),
+        event: getTrigger(event.trigger) ?? '',
       },
-      action: serializeActions(event.do),
+      action: getActions(event.do),
     });
   }
   return serializedActions;

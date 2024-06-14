@@ -311,6 +311,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       id: id,
       type: component.type,
       parameters: component.parameters,
+      order: component.order,
     };
   }
   return cgmlComponents;

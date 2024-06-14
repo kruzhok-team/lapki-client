@@ -172,33 +172,28 @@ export class EditorModel {
   }
 
   changeStateEvents(args: ChangeStateEventsParams) {
-    const { id, triggerComponent, triggerMethod, actions, color } = args;
+    const {
+      id,
+      eventData: { do: actions, trigger, condition },
+      color,
+    } = args;
 
     const state = this.data.elements.states[id];
     if (!state) return false;
 
     const eventIndex = state.events.findIndex(
       (value) =>
-        triggerComponent === value.trigger.component &&
-        triggerMethod === value.trigger.method &&
+        trigger.component === value.trigger.component &&
+        trigger.method === value.trigger.method &&
         undefined === value.trigger.args // FIXME: сравнение по args может не работать
     );
     const event = state.events[eventIndex];
 
     if (event === undefined) {
-      state.events = [
-        ...state.events,
-        {
-          do: actions,
-          trigger: {
-            component: triggerComponent,
-            method: triggerMethod,
-            // args: {},
-          },
-        },
-      ];
+      state.events = [...state.events, args.eventData];
     } else {
       if (actions.length) {
+        event.condition = condition;
         event.do = [...actions];
       } else {
         state.events.splice(eventIndex, 1);

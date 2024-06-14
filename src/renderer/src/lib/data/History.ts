@@ -371,9 +371,9 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeStateEvents: ({ args, prevActions }) => ({
     name: 'Изменение состояния',
-    description: `Id состояния: ${args.id}\nТриггер: ${args.triggerComponent}\nМетод: ${
-      args.triggerMethod
-    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.actions)}`,
+    description: `Id состояния: ${args.id}\nТриггер: ${args.eventData.trigger.component}\nМетод: ${
+      args.eventData.trigger.method
+    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.eventData.do)}`,
   }),
   linkState: (args) => ({
     name: 'Присоединение состояния',

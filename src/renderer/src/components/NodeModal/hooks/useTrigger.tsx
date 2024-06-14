@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
@@ -8,7 +8,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
-export const useTrigger = (isEditingState: boolean) => {
+export const useTrigger = (addSystemComponents: boolean) => {
   const editor = useEditorContext();
   const model = editor.model;
 
@@ -19,8 +19,6 @@ export const useTrigger = (isEditingState: boolean) => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    if (!controller.platform) return [];
-
     const getComponentOption = (id: string) => {
       const proto = controller.platform!.getComponent(id);
 
@@ -34,12 +32,12 @@ export const useTrigger = (isEditingState: boolean) => {
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
-    if (isEditingState) {
+    if (addSystemComponents) {
       result.unshift(getComponentOption('System'));
     }
 
     return result;
-  }, [componentsData, isEditingState, controller]);
+  }, [componentsData, addSystemComponents, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform) return [];
@@ -62,23 +60,31 @@ export const useTrigger = (isEditingState: boolean) => {
     });
   }, [controller, selectedComponent]);
 
-  const handleComponentChange = (value: SingleValue<SelectOption>) => {
-    setSelectedComponent(value?.value ?? '');
-    setSelectedMethod('');
-  };
+  const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
+    setSelectedComponent(value?.value ?? null);
+    setSelectedMethod(null);
+  }, []);
 
-  const handleMethodChange = (value: SingleValue<SelectOption>) => {
-    setSelectedMethod(value?.value ?? '');
-  };
+  const handleMethodChange = useCallback((value: SingleValue<SelectOption>) => {
+    setSelectedMethod(value?.value ?? null);
+  }, []);
+
+  const clear = useCallback(() => {
+    setSelectedComponent(null);
+    setSelectedMethod(null);
+  }, []);
 
   return {
     componentOptions,
     methodOptions,
+
     selectedComponent,
     selectedMethod,
     onComponentChange: handleComponentChange,
     onMethodChange: handleMethodChange,
     setSelectedComponent,
     setSelectedMethod,
+
+    clear,
   };
 };

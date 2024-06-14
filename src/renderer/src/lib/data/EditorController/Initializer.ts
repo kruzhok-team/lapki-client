@@ -26,7 +26,6 @@ export class Initializer {
     this.initChoiceStates();
     this.initTransitions();
     this.initNotes();
-    this.initComponents();
 
     this.app.view.viewCentering();
   }
@@ -156,7 +155,7 @@ export class Initializer {
     }
   }
 
-  private initComponents() {
+  initComponents() {
     if (!this.platform) return;
 
     const items = this.app.model.data.elements.components;

@@ -189,7 +189,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   handleMouseDown = (e: MyMouseEvent) => {
     this.isMouseDown = true;
     this.dragStartPosition = { ...this.position };
-    //Переписываем в флаг, учитывая начальную точку передвижения
+    //Переписываем флаг, учитывая начальную точку передвижения
     this.canDrag = this.isUnderMouse({ x: e.x, y: e.y });
 
     clearTimeout(this.mouseDownTimerId);
@@ -210,7 +210,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       clearTimeout(this.mouseDownTimerId);
     }
 
-    //Здесь идет проверка, если же координаты нажатия находятся на стрелке, то мы не сдвигаем блок перехода, иначе сдвигаем
     this.position = {
       x: this.position.x + e.dx * this.app.model.data.scale,
       y: this.position.y + e.dy * this.app.model.data.scale,
@@ -235,6 +234,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       this.isMouseDown = false;
       this.dragEnd();
       this.emit('click', { event: e });
+      this.canDrag = false; // Сбрасываем флаг после того, как переместили переход
     }
   };
 

@@ -10,6 +10,7 @@ export const SerialMonitorTab: React.FC = () => {
     useSerialMonitor();
   const [port, setPort] = useState<SelectOption | null>({ label: 'COM1', value: 'COM1' });
   const [baudRate, setBaudRate] = useState<SelectOption | null>({ label: '9600', value: '9600' });
+  const [bytes, setBytes] = useState<SelectOption | null>({ label: '1024', value: '1024' });
 
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -35,10 +36,18 @@ export const SerialMonitorTab: React.FC = () => {
   }, [messages, autoScroll]);
 
   useEffect(() => {
-    if (SerialMonitor.ws && SerialMonitor.ws.readyState === WebSocket.OPEN && port && baudRate) {
-      SerialMonitor.ws.send(JSON.stringify({ port: port.value, baudRate: baudRate.value }));
+    if (
+      SerialMonitor.ws &&
+      SerialMonitor.ws.readyState === WebSocket.OPEN &&
+      port &&
+      baudRate &&
+      bytes
+    ) {
+      SerialMonitor.ws.send(
+        JSON.stringify({ port: port.value, baudRate: baudRate.value, bytes: bytes.value })
+      );
     }
-  }, [port, baudRate]);
+  }, [port, baudRate, bytes]);
 
   const handleSend = () => {
     if (inputValue.trim()) {
@@ -71,9 +80,6 @@ export const SerialMonitorTab: React.FC = () => {
           Автопрокрутка
         </div>
         <div className="flex flex-row items-center">
-          <div className="mr-2 w-48">
-            <Select isSearchable={false} />
-          </div>
           <div className="mr-2 w-48">
             <Select
               isSearchable={false}
@@ -111,6 +117,24 @@ export const SerialMonitorTab: React.FC = () => {
                 { label: '38400', value: '38400' },
                 { label: '57600', value: '57600' },
                 { label: '115200', value: '115200' },
+              ]}
+            />
+          </div>
+          <div className="mr-2 w-48">
+            <Select
+              isSearchable={false}
+              value={bytes}
+              onChange={(option) => {
+                if (option) {
+                  setBytes(option as SelectOption);
+                }
+              }}
+              options={[
+                { label: '64', value: '64' },
+                { label: '128', value: '128' },
+                { label: '256', value: '256' },
+                { label: '512', value: '512' },
+                { label: '1024', value: '1024' },
               ]}
             />
           </div>

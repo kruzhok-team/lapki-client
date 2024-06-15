@@ -69,7 +69,7 @@ export class Transition extends Shape {
 
     if (this.app.textMode) {
       return {
-        width: 200,
+        width: 250,
         height: Math.max(70, this.label.textData.height),
       };
     }

@@ -1,7 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { serializeTransitionActions } from '@renderer/lib/data/GraphmlBuilder';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { Transition, picto } from '@renderer/lib/drawable';
-import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import { Drawable } from '@renderer/lib/types';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
@@ -25,17 +25,16 @@ export class Label implements Drawable {
   prepareText() {
     if (!this.parent.data.label?.trigger) return;
 
-    // const getText = () => {};
-
     const text = serializeTransitionActions(
-      this.parent.data.label.trigger,
-      this.parent.data.label.do ?? []
+      this.parent.data.label,
+      getPlatform(this.app.model.data.elements.platform)!,
+      this.app.model.data.elements.components
     );
 
     this.textData = prepareText(text, 200 - 2 * 15, {
-      fontFamily: 'Fira Sans',
+      fontFamily: 'Fira Mono',
       fontSize: 16,
-      lineHeight: 1.4,
+      lineHeight: 1.2,
     });
   }
 
@@ -160,8 +159,8 @@ export class Label implements Drawable {
       color: getColor('text-primary'),
       font: {
         fontSize,
-        fontFamily: 'monospace',
-        lineHeight: 1.4,
+        fontFamily: 'Fira Mono',
+        lineHeight: 1.2,
       },
     });
 

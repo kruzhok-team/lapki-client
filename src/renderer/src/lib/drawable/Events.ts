@@ -1,13 +1,12 @@
 import { State, picto } from '@renderer/lib/drawable';
 import { Dimensions, Point } from '@renderer/lib/types/graphics';
-
-// import { serializeEvents } from '../data/GraphmlBuilder';
-
 import { isPointInRectangle } from '@renderer/lib/utils';
-import { drawText, getTextWidth, prepareText } from '@renderer/lib/utils/text';
-import theme, { getColor } from '@renderer/theme';
+import { drawText, prepareText } from '@renderer/lib/utils/text';
+import { getColor } from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
+import { serializeStateActions } from '../data/GraphmlBuilder';
+import { getPlatform } from '../data/PlatformLoader';
 
 export type EventSelection = {
   eventIdx: number;
@@ -22,8 +21,8 @@ export type EventSelection = {
 export class Events {
   dimensions!: Dimensions;
 
-  // private textArray = [] as string[];
-  private textEvents = [] as string[];
+  private textArray = [] as string[];
+  // private textEvents = [] as string[];
 
   selection?: EventSelection;
 
@@ -47,40 +46,20 @@ export class Events {
 
   update() {
     if (this.app.textMode) {
-      // const { width } = this.parent.drawBounds;
-      // const pX = 15 / this.container.app.manager.data.scale;
-      // const pY = 10 / this.container.app.manager.data.scale;
+      const text = serializeStateActions(
+        this.parent.data.events,
+        getPlatform(this.app.model.data.elements.platform)!,
+        this.app.model.data.elements.components
+      );
 
-      // const text = serializeEvents(this.parent.data.events);
+      const textData = prepareText(text, this.parent.dimensions.width - 2 * 15, {
+        fontFamily: 'Fira Mono',
+        fontSize: 16,
+        lineHeight: 1.2,
+      });
 
-      // const { textArray, height } = prepareText({
-      //   text,
-      //   fontSize: 16,
-      //   fontFamily: 'monospace',
-      //   lineHeight: 1.4,
-      //   maxWidth: width - 2 * pX,
-      // });
-
-      // this.textArray = textArray;
-      // this.sizes.height = height + pY * 2;
-
-      const textEvents: any[] = [];
-      // const textHeight = getTextHeight({ fontSize: 16, lineHeight: 1.2 });
-      const textHeight = 16 * 1.2;
-      const py = 6;
-      const height = textHeight + py * 2;
-
-      for (let i = 0; i < this.parent.data.events.length; i++) {
-        const event = this.parent.data.events[i];
-
-        textEvents.push({
-          trigger: {
-            component: { x: 0, y: 0 },
-            method: { x: 0, y: 0 },
-            height,
-          },
-        });
-      }
+      this.dimensions.height = textData.height;
+      this.textArray = textData.textArray;
 
       return;
     }
@@ -203,9 +182,12 @@ export class Events {
           picto.drawCursor(ctx, eX, eY);
         }
       }
-      platform.drawEvent(ctx, events.trigger, eX, eY);
 
-      if (events.condition) {
+      if (typeof events.trigger !== 'string') {
+        platform.drawEvent(ctx, events.trigger, eX, eY);
+      }
+
+      if (events.condition && typeof events.condition !== 'string') {
         ctx.beginPath();
         platform.drawCondition(
           ctx,
@@ -216,96 +198,23 @@ export class Events {
         ctx.closePath();
       }
 
-      events.do.forEach((act, actIdx) => {
-        const ax = 1 + (actIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
-        const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
-        const aY = baseY + (ay * yDx) / this.app.model.data.scale;
-        if (typeof this.selection !== 'undefined') {
-          if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-            picto.drawCursor(ctx, aX, aY);
+      if (typeof events.do !== 'string') {
+        events.do.forEach((act, actIdx) => {
+          const ax = 1 + (actIdx % eventRowLength);
+          const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
+          const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
+          const aY = baseY + (ay * yDx) / this.app.model.data.scale;
+          if (typeof this.selection !== 'undefined') {
+            if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
+              picto.drawCursor(ctx, aX, aY);
+            }
           }
-        }
-        platform.drawAction(ctx, act, aX, aY);
-      });
+          platform.drawAction(ctx, act, aX, aY);
+        });
+      }
 
       eventRow +=
         Math.max(1, Math.ceil(events.do.length / eventRowLength)) + (events.condition ? 1 : 0);
-    });
-
-    ctx.closePath();
-  }
-
-  private drawTriggers(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    const scale = this.app.model.data.scale;
-
-    const fontSize = 16 / scale;
-    const textHeight = fontSize;
-    const dotTextWidth = getTextWidth('.', `normal ${fontSize}px/1.2 'Fira Sans'`);
-
-    const boxPaddingY = 6 / scale;
-    const gapX = 6 / scale;
-    const gapY = 10 / scale;
-    const textPaddingBottom = 2 / scale;
-    const boxHeight = boxPaddingY * 2 + textHeight;
-    const boxWidth = 100 / scale;
-
-    const baseFontOptions = {
-      color: getColor('text-primary'),
-      fontSize,
-      fontFamily: 'Fira Sans',
-      textAlign: 'center',
-    } as const;
-
-    ctx.fillStyle = theme.colors.diagram.state.titleBg;
-
-    ctx.beginPath();
-
-    this.parent.data.events.forEach((_, i) => {
-      const boxY = y + i * boxHeight + gapY * i;
-
-      ctx.roundRect(x, boxY, boxWidth, boxHeight, 2 / scale);
-      ctx.roundRect(
-        x + boxWidth + boxPaddingY * 2 + dotTextWidth,
-        boxY,
-        boxWidth,
-        boxHeight,
-        2 / scale
-      );
-    });
-
-    ctx.fill();
-
-    this.parent.data.events.forEach((event, i) => {
-      const boxY = y + i * boxHeight + gapY * i;
-
-      drawText(ctx, event.trigger.component, {
-        x: x + boxWidth / 2,
-        y: boxY + boxPaddingY,
-        ...baseFontOptions,
-      });
-
-      drawText(ctx, '.', {
-        x: x + boxWidth + gapX,
-        y: boxY + boxHeight - textPaddingBottom,
-        ...baseFontOptions,
-        textAlign: 'left',
-        textBaseline: 'bottom',
-      });
-
-      drawText(ctx, event.trigger.method, {
-        x: x + boxWidth + gapX * 2 + dotTextWidth + boxWidth / 2,
-        y: boxY + boxPaddingY,
-        ...baseFontOptions,
-      });
-
-      drawText(ctx, '/', {
-        x: x + boxWidth * 2 + gapX * 3 + dotTextWidth,
-        y: boxY + boxHeight - textPaddingBottom,
-        ...baseFontOptions,
-        textAlign: 'left',
-        textBaseline: 'bottom',
-      });
     });
 
     ctx.closePath();
@@ -317,17 +226,18 @@ export class Events {
     const titleHeight = this.parent.titleHeight / scale;
     const px = 15 / scale;
     const py = 10 / scale;
+    const fontSize = 16 / scale;
 
-    this.drawTriggers(ctx, x + px, y + titleHeight + py);
-
-    // drawText(ctx, this.textArray, {
-    //   x: x + px,
-    //   y: y + titleHeight + py,
-    //   textAlign: 'left',
-    //   color: getColor('text-primary'),
-    //   fontSize,
-    //   fontFamily: 'monospace',
-    //   lineHeight: 1.4,
-    // });
+    drawText(ctx, this.textArray, {
+      x: x + px,
+      y: y + titleHeight + py,
+      textAlign: 'left',
+      color: getColor('text-primary'),
+      font: {
+        fontSize,
+        fontFamily: 'Fira Mono',
+        lineHeight: 1.2,
+      },
+    });
   }
 }

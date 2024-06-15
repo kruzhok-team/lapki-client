@@ -174,6 +174,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     this.app.model.changeTransition(args);
 
+    transition.label.prepareText();
+
     this.view.isDirty = true;
   }
 

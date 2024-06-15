@@ -197,13 +197,21 @@ export const useCondition = () => {
 
   //Позволяет найти начальные значения условия(условий), если таковые имеются
   const parseCondition = useCallback(
-    (c: Condition | undefined | null) => {
+    (c: Condition | string | undefined | null) => {
       if (!c) {
         clear();
         return undefined;
       }
 
       setShow(true);
+
+      if (typeof c === 'string') {
+        setTabValue(1);
+        setText(c);
+        return undefined;
+      }
+
+      setTabValue(0);
 
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {

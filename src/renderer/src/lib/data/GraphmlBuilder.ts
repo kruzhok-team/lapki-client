@@ -11,6 +11,7 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
   CGMLNote,
+  serializeActions as serializeActionsCGML,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
@@ -112,7 +113,7 @@ function getCondition(condition: null | undefined | string | Condition): string 
   return isString(condition) ? condition : serializeCondition(condition);
 }
 
-export function serializeTransitionEvents(
+function serializeTransitionEvents(
   doActions: Action[] | string | undefined,
   trigger: Event | string | undefined,
   condition: null | undefined | string | Condition,
@@ -130,7 +131,7 @@ export function serializeTransitionEvents(
   ];
 }
 
-export function serializeStateEvents(
+function serializeStateEvents(
   events: EventData[],
   platform: Platform,
   components: { [id: string]: Component }
@@ -227,11 +228,6 @@ function serializeVertex(
     }
   }
   return rawVertexes;
-}
-
-export function serializeTransitionActions(trigger: Event | string, actions: Action[] | string) {
-  return 'asd';
-  // return (serializeEvent(trigger) + '/\n' + serializeActions(actions)).trim();
 }
 
 function serializeTransitions(
@@ -372,4 +368,28 @@ export function exportCGML(elements: Elements): string {
   cgmlElements.choices = serializeVertex(elements.choiceStates, 'choice');
   cgmlElements.keys = getKeys();
   return exportGraphml(cgmlElements);
+}
+
+export function serializeTransitionActions(
+  label: Exclude<Transition['label'], undefined>,
+  platform: Platform,
+  components: { [id: string]: Component }
+) {
+  const cgmlData = serializeTransitionEvents(
+    label.do,
+    label.trigger,
+    label.condition,
+    components,
+    platform
+  );
+  return serializeActionsCGML(cgmlData);
+}
+
+export function serializeStateActions(
+  events: State['events'],
+  platform: Platform,
+  components: { [id: string]: Component }
+) {
+  const cgmlData = serializeStateEvents(events, platform, components);
+  return serializeActionsCGML(cgmlData);
 }

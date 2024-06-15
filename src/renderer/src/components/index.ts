@@ -14,7 +14,6 @@ export * from './EditorSettings';
 export * from './UpdateModal';
 export * from './DiagramContextMenu';
 export * from './NoteEdit';
-export * from './ShapeTextEdit';
 export * from './StateNameEdit';
 export * from './PropertiesModal';
 export * from './NodeModal';

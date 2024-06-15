@@ -17,3 +17,4 @@ export * from './NoteEdit';
 export * from './StateNameEdit';
 export * from './PropertiesModal';
 export * from './NodeModal';
+export * from './TextModeModal';

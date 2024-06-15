@@ -2,7 +2,7 @@ import React, { useLayoutEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { PropertiesModal } from '@renderer/components';
+import { PropertiesModal, TextModeModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -26,15 +26,15 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { controller, model } = useEditorContext();
+  const { model } = useEditorContext();
 
   const isStale = model.useData('isStale');
   const isInitialized = model.useData('isInitialized');
   const isMounted = model.useData('isMounted');
   const visual = model.useData('elements.visual');
 
-  const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
-    useModal(false);
+  const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
+  const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
 
   const openTab = useTabs((state) => state.openTab);
 
@@ -66,7 +66,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Свойства',
-      onClick: openPropertiesModalOpen,
+      onClick: openPropertiesModal,
       disabled: !isInitialized,
     },
     {
@@ -80,7 +80,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Перейти в текстовый режим',
-      onClick: () => controller.setTextMode(),
+      onClick: () => openTextModeModal(),
       hidden: !visual || !isInitialized,
     },
     // {
@@ -129,7 +129,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         </button>
       ))}
 
-      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
+      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModal} />
+      <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
     </section>
   );
 };

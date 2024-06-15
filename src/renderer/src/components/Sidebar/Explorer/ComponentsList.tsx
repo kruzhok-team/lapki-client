@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
@@ -18,7 +18,7 @@ export const ComponentsList: React.FC = () => {
     addProps,
     editProps,
     deleteProps,
-    osSwapComponents,
+    onSwapComponents,
     onRequestAddComponent,
     onRequestEditComponent,
     onRequestDeleteComponent,
@@ -30,8 +30,14 @@ export const ComponentsList: React.FC = () => {
   const onDropComponent = (name: string) => {
     if (!dragName) return;
 
-    osSwapComponents(dragName, name);
+    onSwapComponents(dragName, name);
   };
+
+  const sortedComponents = useMemo(() => {
+    return Object.entries(components)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map((c) => c[0]);
+  }, [components]);
 
   return (
     <>
@@ -46,22 +52,19 @@ export const ComponentsList: React.FC = () => {
       </button>
 
       <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-        {Object.entries(components)
-          .sort((a, b) => a[1].order - b[1].order)
-          .map((c) => c[0])
-          .map((name) => (
-            <Component
-              key={name}
-              name={name}
-              isSelected={name === selectedComponent}
-              isDragging={name === dragName}
-              onSelect={() => setSelectedComponent(name)}
-              onEdit={() => onRequestEditComponent(name)}
-              onDelete={() => onRequestDeleteComponent(name)}
-              onDragStart={() => setDragName(name)}
-              onDrop={() => onDropComponent(name)}
-            />
-          ))}
+        {sortedComponents.map((name) => (
+          <Component
+            key={name}
+            name={name}
+            isSelected={name === selectedComponent}
+            isDragging={name === dragName}
+            onSelect={() => setSelectedComponent(name)}
+            onEdit={() => onRequestEditComponent(name)}
+            onDelete={() => onRequestDeleteComponent(name)}
+            onDragStart={() => setDragName(name)}
+            onDrop={() => onDropComponent(name)}
+          />
+        ))}
       </div>
 
       <ComponentAddModal {...addProps} />

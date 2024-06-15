@@ -488,7 +488,7 @@ export const actionDescriptions: ActionDescriptions = {
     };
   },
   swapComponents: ({ name1, name2 }) => ({
-    name: 'Пермещение компонентов',
+    name: 'Перетасовка компонентов в списке',
     description: `Имя1: ${name1}\nИмя2: ${name2}`,
   }),
 

@@ -87,7 +87,7 @@ export const useComponents = () => {
     editClose();
   };
 
-  const osSwapComponents = (name1: string, name2: string) => {
+  const onSwapComponents = (name1: string, name2: string) => {
     editor.controller.swapComponents({ name1, name2 });
   };
 
@@ -116,7 +116,7 @@ export const useComponents = () => {
       onEdit,
       onSubmit: onDelete,
     },
-    osSwapComponents,
+    onSwapComponents,
     onRequestAddComponent,
     onRequestDeleteComponent,
     onRequestEditComponent,

@@ -48,6 +48,7 @@ export type CreateStateParams = Omit<StateData, 'dimensions' | 'events'> & {
   linkByPoint?: boolean;
   canBeInitial?: boolean;
 };
+export type ChangeStateParams = Pick<StateData, 'events' | 'color'> & { id: string };
 
 export type CreateInitialStateParams = InitialStateData & { id?: string };
 export type CreateFinalStateParams = FinalStateData & {
@@ -73,12 +74,6 @@ export interface CreateNoteParams {
   position: Point;
   text: string;
   placeInCenter?: boolean;
-}
-
-export interface ChangeStateEventsParams {
-  id: string;
-  eventData: StateData['events'][number];
-  color?: string;
 }
 
 export interface AddComponentParams {

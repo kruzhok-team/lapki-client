@@ -16,6 +16,7 @@ export const StateModal: React.FC = () => {
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
+  const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
   const trigger = useTrigger(true);
   const condition = useCondition();
   const events = useEvents();
@@ -36,14 +37,20 @@ export const StateModal: React.FC = () => {
 
     if (!state) return;
 
-    const { selectedComponent, selectedMethod, tabValue } = trigger;
+    const { selectedComponent, selectedMethod } = trigger;
     const triggerText = trigger.text.trim();
 
     // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
     if (
-      (tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
-      (tabValue === 1 && !triggerText)
-      // || events.events.length === 0
+      (trigger.tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+      (trigger.tabValue === 1 && !triggerText)
+    ) {
+      return;
+    }
+
+    if (
+      (events.tabValue === 0 && events.events.length === 0) ||
+      (events.tabValue === 1 && !events.text.trim())
     ) {
       return;
     }
@@ -106,27 +113,39 @@ export const StateModal: React.FC = () => {
     };
 
     const getTrigger = () => {
-      if (tabValue === 0)
+      if (trigger.tabValue === 0)
         return { component: selectedComponent as string, method: selectedMethod as string };
 
       return triggerText;
     };
 
-    const getEvents = () => {
-      if (events.tabValue === 0) {
-        return events.events;
-      }
-
-      return events.text.trim();
+    const getActions = () => {
+      return events.tabValue === 0 ? events.events : events.text.trim();
     };
 
-    editor.controller.states.changeStateEvents({
-      id: state.id,
-      eventData: {
+    const getEvents = () => {
+      const currentEvent = {
         trigger: getTrigger(),
-        do: getEvents(),
         condition: getCondition(),
-      },
+        do: getActions(),
+      };
+
+      if (currentEventIndex !== undefined) {
+        return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
+      }
+
+      return [...state.data.events, currentEvent];
+    };
+
+    editor.controller.states.changeState({
+      id: state.id,
+      events: getEvents(),
+      // eventIndex: currentEventIndex,
+      // eventData: {
+      //   trigger: getTrigger(),
+      //   do: getEvents(),
+      //   condition: getCondition(),
+      // },
       color,
     });
 
@@ -150,9 +169,8 @@ export const StateModal: React.FC = () => {
 
       const eventData = data.events[0];
 
+      // Остальная форма подставляется в эффекте синхронизации с trigger
       parseTrigger(eventData?.trigger);
-      parseEvents(eventData?.do);
-      parseCondition(eventData?.condition);
 
       setColor(data.color);
 
@@ -172,7 +190,7 @@ export const StateModal: React.FC = () => {
   useLayoutEffect(() => {
     if (!state) return;
 
-    const stateEvents = state.data.events.find((value) => {
+    const eventIndex = state.data.events.findIndex((value) => {
       if (trigger.tabValue === 1) {
         return value.trigger === trigger.text;
       }
@@ -187,8 +205,17 @@ export const StateModal: React.FC = () => {
       return false;
     });
 
-    parseEvents(stateEvents?.do);
-    parseCondition(stateEvents?.condition);
+    if (eventIndex === -1) {
+      setCurrentEventIndex(undefined);
+      parseCondition(undefined);
+      parseEvents(undefined);
+    } else {
+      const event = state.data.events[eventIndex];
+
+      setCurrentEventIndex(eventIndex);
+      parseCondition(event.condition);
+      parseEvents(event.do);
+    }
   }, [
     parseCondition,
     parseEvents,

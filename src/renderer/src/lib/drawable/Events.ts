@@ -53,7 +53,7 @@ export class Events {
       );
 
       const textData = prepareText(text, this.parent.dimensions.width - 2 * 15, {
-        fontFamily: 'Fira Mono',
+        fontFamily: 'Fira Sans',
         fontSize: 16,
         lineHeight: 1.2,
       });
@@ -73,7 +73,7 @@ export class Events {
       }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
     });
-    this.dimensions.height = Math.max(this.minHeight, 50 * eventRows);
+    this.dimensions.height = picto.eventHeight * eventRows + (eventRows - 1) * 10 + 10 * 2;
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
@@ -235,7 +235,7 @@ export class Events {
       color: getColor('text-primary'),
       font: {
         fontSize,
-        fontFamily: 'Fira Mono',
+        fontFamily: 'Fira Sans',
         lineHeight: 1.2,
       },
     });

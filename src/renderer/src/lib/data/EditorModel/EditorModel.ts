@@ -11,7 +11,7 @@ import {
   EditorDataReturn,
   CreateTransitionParams,
   ChangeTransitionParams,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   AddComponentParams,
   CreateNoteParams,
   Point,
@@ -163,45 +163,28 @@ export class EditorModel {
     return id;
   }
 
-  changeStateEvents(args: ChangeStateEventsParams) {
-    const {
-      id,
-      eventData: { do: actions, trigger, condition },
-      color,
-    } = args;
+  changeState(args: ChangeStateParams) {
+    const { id, events, color } = args;
 
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    const eventIndex = state.events.findIndex((value) => {
-      if (typeof trigger === 'string' && typeof value.trigger === 'string') {
-        return value.trigger === trigger;
-      }
+    // console.log(args);
 
-      if (typeof trigger !== 'string' && typeof value.trigger !== 'string') {
-        return (
-          trigger.component === value.trigger.component &&
-          trigger.method === value.trigger.method &&
-          undefined === value.trigger.args
-        ); // FIXME: сравнение по args может не работать
-      }
+    // // Удаление события
+    // if (eventIndex !== undefined && !eventData) {
+    //   state.events.splice(eventIndex, 1);
+    //   // Редактирование события
+    // } else if (eventIndex !== undefined && eventData) {
+    //   state.events[eventIndex] = eventData;
+    //   // Добавление события
+    // } else if (eventIndex === undefined && eventData) {
+    //   state.events = [...state.events, eventData];
+    // } else {
+    //   throw new Error('Невозможное действие над событиями состояния');
+    // }
 
-      return false;
-    });
-
-    const event = state.events[eventIndex];
-
-    if (event === undefined) {
-      state.events = [...state.events, args.eventData];
-    } else {
-      if (actions.length) {
-        event.condition = condition;
-        event.do = actions;
-      } else {
-        state.events.splice(eventIndex, 1);
-      }
-    }
-
+    state.events = events;
     state.color = color;
 
     this.triggerDataUpdate('elements.states');

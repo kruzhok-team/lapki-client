@@ -20,7 +20,7 @@ import {
   StateVariant,
 } from '@renderer/lib/types/EditorController';
 import {
-  ChangeStateEventsParams,
+  ChangeStateParams,
   CreateChoiceStateParams,
   CreateFinalStateParams,
   CreateStateParams,
@@ -193,39 +193,23 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   };
 
-  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id, eventData } = args;
+  changeState(args: ChangeStateParams, canUndo = true) {
+    const { id } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
 
     if (canUndo) {
-      const prevEvent = state.data.events.find((value) => {
-        if (typeof eventData.trigger === 'string' && typeof value.trigger === 'string') {
-          return value.trigger === eventData.trigger;
-        }
-
-        if (typeof eventData.trigger !== 'string' && typeof value.trigger !== 'string') {
-          return (
-            eventData.trigger.component === value.trigger.component &&
-            eventData.trigger.method === value.trigger.method &&
-            undefined === value.trigger.args
-          ); // FIXME: сравнение по args может не работать
-        }
-
-        return false;
-      });
-
-      const prevActions = structuredClone(prevEvent?.do ?? []);
+      const prevEvents = state.data.events;
+      const prevColor = state.data.color;
 
       this.history.do({
-        type: 'changeStateEvents',
-        args: { args, prevActions },
+        type: 'changeState',
+        args: { args, prevEvents, prevColor },
       });
     }
 
-    this.app.model.changeStateEvents(args);
-
+    this.app.model.changeState(args);
     state.updateEventBox();
 
     this.view.isDirty = true;

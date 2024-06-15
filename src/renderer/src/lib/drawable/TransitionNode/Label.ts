@@ -33,8 +33,8 @@ export class Label implements Drawable {
       this.app.model.data.elements.components
     );
 
-    this.textData = prepareText(text, 200 - 2 * 15, {
-      fontFamily: 'Fira Mono',
+    this.textData = prepareText(text, 250 - 2 * 15, {
+      fontFamily: 'Fira Sans',
       fontSize: 16,
       lineHeight: 1.2,
     });
@@ -132,7 +132,7 @@ export class Label implements Drawable {
       color: getColor('text-primary'),
       font: {
         fontSize,
-        fontFamily: 'Fira Mono',
+        fontFamily: 'Fira Sans',
         lineHeight: 1.2,
       },
     });

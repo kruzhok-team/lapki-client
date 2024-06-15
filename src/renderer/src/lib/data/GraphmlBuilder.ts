@@ -382,7 +382,7 @@ export function serializeTransitionActions(
     components,
     platform
   );
-  return serializeActionsCGML(cgmlData);
+  return serializeActionsCGML(cgmlData).trim();
 }
 
 export function serializeStateActions(
@@ -391,5 +391,5 @@ export function serializeStateActions(
   components: { [id: string]: Component }
 ) {
   const cgmlData = serializeStateEvents(events, platform, components);
-  return serializeActionsCGML(cgmlData);
+  return serializeActionsCGML(cgmlData).trim();
 }

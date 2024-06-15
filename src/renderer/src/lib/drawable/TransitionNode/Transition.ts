@@ -108,9 +108,7 @@ export class Transition extends Shape {
   getIntersection(args: GetCapturedNodeParams): Shape | null {
     const { position } = args;
 
-    const pointOnLine = isPointOnLine(position.x, position.y, this);
-
-    if (pointOnLine) {
+    if (isPointOnLine(position.x, position.y, this)) {
       return this;
     }
 

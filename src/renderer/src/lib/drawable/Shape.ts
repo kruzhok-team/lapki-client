@@ -41,6 +41,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   private dragStartPosition: Point | null = null;
   private isMouseDown = false;
   private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
+  //флаг для перемещения перехода лишь при нажатии на прямоугольный блок, нежели на стрелку
+  private canDrag = false;
 
   constructor(protected app: CanvasEditor, public id: string, public parent?: Shape) {
     super();
@@ -187,6 +189,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   handleMouseDown = (e: MyMouseEvent) => {
     this.isMouseDown = true;
     this.dragStartPosition = { ...this.position };
+    //Переписываем флаг, учитывая начальную точку передвижения
+    this.canDrag = this.isUnderMouse({ x: e.x, y: e.y });
 
     clearTimeout(this.mouseDownTimerId);
 
@@ -200,19 +204,16 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.isMouseDown) return;
+    if (!this.isMouseDown || !this.canDrag) return;
 
     if (Math.abs(e.dx) > 1 && Math.abs(e.dy) > 1) {
       clearTimeout(this.mouseDownTimerId);
     }
 
-    //Здесь идет проверка, если же координаты нажатия находятся на стрелке, то мы не сдвигаем блок перехода, иначе сдвигаем
-    if (this.isUnderMouse({ x: e.x, y: e.y })) {
-      this.position = {
-        x: this.position.x + e.dx * this.app.model.data.scale,
-        y: this.position.y + e.dy * this.app.model.data.scale,
-      };
-    }
+    this.position = {
+      x: this.position.x + e.dx * this.app.model.data.scale,
+      y: this.position.y + e.dy * this.app.model.data.scale,
+    };
 
     if (this.parent) {
       this.position = {
@@ -233,6 +234,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       this.isMouseDown = false;
       this.dragEnd();
       this.emit('click', { event: e });
+      this.canDrag = false; // Сбрасываем флаг после того, как переместили переход
     }
   };
 

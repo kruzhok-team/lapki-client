@@ -435,13 +435,20 @@ export class EditorModel {
     return true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
+    (state.events[eventIdx].do as Action[]).splice(
+      actionIdx ?? state.events[eventIdx].do.length - 1,
+      0,
+      value
+    );
 
     this.triggerDataUpdate('elements.states');
 
@@ -478,13 +485,16 @@ export class EditorModel {
     return true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do[actionIdx as number] = newValue;
+    (state.events[eventIdx].do as Action[])[actionIdx as number] = newValue;
 
     this.triggerDataUpdate('elements.states');
 
@@ -502,13 +512,16 @@ export class EditorModel {
     return true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   deleteEventAction(stateId: string, event: EventSelection) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx as number, 1);
+    (state.events[eventIdx].do as Action[]).splice(actionIdx as number, 1);
 
     this.triggerDataUpdate('elements.states');
 

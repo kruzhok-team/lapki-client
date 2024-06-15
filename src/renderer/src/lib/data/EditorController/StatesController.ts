@@ -830,7 +830,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  // Редактирование события в состояниях
+  /**
+   * Редактирование события в состояниях
+   * * Не работает на текстовые данные
+   */
   changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -845,7 +848,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEventAction',
-          args: { stateId, event, newValue, prevValue },
+          args: { stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -856,7 +859,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEvent',
-          args: { stateId, event, newValue, prevValue },
+          args: { stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     }
@@ -866,8 +869,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  // Удаление события в состояниях
-  //TODO показывать предупреждение при удалении события в состоянии(модалка)
+  /**
+   * Удаление события в состояниях
+   * * Не работает на текстовые данные
+   */
+  // TODO показывать предупреждение при удалении события в состоянии(модалка)
   deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -887,7 +893,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { stateId, event, prevValue },
+          args: { stateId, event, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -975,7 +981,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         : eventData.do[eventSelection.actionIdx];
     const isEditingEvent = eventSelection.actionIdx === null;
 
-    this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
+    this.emit('changeEvent', { state, eventSelection, event: event as Event, isEditingEvent });
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {

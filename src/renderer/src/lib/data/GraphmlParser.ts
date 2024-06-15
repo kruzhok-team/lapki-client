@@ -458,6 +458,7 @@ export function importGraphml(
       platform.components,
       elements.components
     );
+    // TODO Брать из схемы
     elements.visual = platform.visual;
 
     validateElements(elements, platform);

@@ -182,10 +182,6 @@ export class FilesManager {
     const data = importGraphml(templateData, openImportError);
     if (!data) return;
 
-    const platform = getPlatform(data.platform);
-    if (!platform) return;
-
-    data.visual = platform.visual;
     this.editorManager.init(null, 'Без названия', data);
     this.editorManager.makeStale();
   }

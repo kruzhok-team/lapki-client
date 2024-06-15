@@ -20,15 +20,7 @@ import {
   CreateChoiceStateParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
-import {
-  Event,
-  Action,
-  Transition as TransitionData,
-  Component,
-  Elements,
-  EventData,
-  Meta,
-} from '@renderer/types/diagram';
+import { Event, Action, Component, Elements, EventData, Meta } from '@renderer/types/diagram';
 
 import { FilesManager } from './FilesManager';
 import { Serializer } from './Serializer';
@@ -58,6 +50,7 @@ export class EditorModel {
     this.data.isMounted = prevMounted;
 
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
+
     this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
     if (this.data.isMounted) {

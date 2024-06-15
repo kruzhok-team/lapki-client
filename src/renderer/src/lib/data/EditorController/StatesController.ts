@@ -967,7 +967,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       return this.emit('changeStateName', state);
     }
 
-    if (this.app.textMode) {
+    if (!this.app.model.data.elements.visual) {
       return this.emit('changeState', state);
     }
 

@@ -1,7 +1,7 @@
 import * as TWEEN from '@tweenjs/tween.js';
 
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
-import { EventEmitter, Render } from '@renderer/lib/common';
+import { Render } from '@renderer/lib/common';
 import { EditorController } from '@renderer/lib/data/EditorController';
 import { EditorModel } from '@renderer/lib/data/EditorModel';
 import { preloadPicto } from '@renderer/lib/drawable';
@@ -11,14 +11,10 @@ interface CanvasEditorSettings {
   grid: boolean;
 }
 
-interface CanvasEditorEvents {
-  changeTextMode: { textMode: boolean };
-}
-
 /**
  * Редактор машин состояний.
  */
-export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
+export class CanvasEditor {
   private _root: HTMLElement | null = null;
 
   private _canvas: Canvas | null = null;
@@ -45,12 +41,6 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
     animations: true,
     grid: true,
   };
-
-  textMode = true;
-
-  constructor() {
-    super();
-  }
 
   // геттеры для удобства, чтобы после монтирования редактора можно было бы ими нормально пользоваться а до монтирования ошибки
   get root() {
@@ -152,13 +142,5 @@ export class CanvasEditor extends EventEmitter<CanvasEditorEvents> {
 
     this.model.data.isMounted = false;
     this.model.triggerDataUpdate('isMounted');
-  }
-
-  setTextMode(value: boolean) {
-    this.textMode = value;
-
-    this.emit('changeTextMode', { textMode: value });
-
-    this.view.isDirty = true;
   }
 }

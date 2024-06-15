@@ -21,8 +21,9 @@ export const StateModal: React.FC = () => {
   const events = useEvents();
   const [color, setColor] = useState<string | undefined>();
 
-  const { setEvents, onTabChange: onEventsTabChange, onChangeText: onEventsChangeText } = events;
-  const { parseCondition } = condition;
+  const { parse: parseTrigger } = trigger;
+  const { parse: parseCondition } = condition;
+  const { parse: parseEvents } = events;
 
   // На дефолтные события нельзя ставить условия
   const showCondition = useMemo(
@@ -148,27 +149,9 @@ export const StateModal: React.FC = () => {
       const { data } = state;
 
       const eventData = data.events[0];
-      if (eventData) {
-        // Подстановка триггера, с переключение вкладок если он текстовый или выбранный
-        if (typeof eventData.trigger !== 'string') {
-          trigger.setSelectedComponent(eventData.trigger.component);
-          trigger.setSelectedMethod(eventData.trigger.method);
-          trigger.onTabChange(0);
-        } else {
-          trigger.onChangeText(eventData.trigger);
-          trigger.onTabChange(1);
-        }
 
-        // Подставнока действией, тоже с переключение вкладок в зависимости от типа
-        if (typeof eventData.do !== 'string') {
-          events.setEvents(eventData.do);
-          events.onTabChange(0);
-        } else {
-          events.onChangeText(eventData.do);
-          events.onTabChange(1);
-        }
-      }
-
+      parseTrigger(eventData?.trigger);
+      parseEvents(eventData?.do);
       parseCondition(eventData?.condition);
 
       setColor(data.color);
@@ -204,22 +187,11 @@ export const StateModal: React.FC = () => {
       return false;
     });
 
-    if (!stateEvents) return setEvents([]);
-
-    if (typeof stateEvents.do === 'string') {
-      onEventsChangeText(stateEvents.do);
-      onEventsTabChange(1);
-    } else {
-      setEvents(stateEvents.do);
-      onEventsTabChange(0);
-    }
-
+    parseEvents(stateEvents?.do);
     parseCondition(stateEvents?.condition);
   }, [
-    onEventsChangeText,
-    onEventsTabChange,
     parseCondition,
-    setEvents,
+    parseEvents,
     state,
     trigger.selectedComponent,
     trigger.selectedMethod,

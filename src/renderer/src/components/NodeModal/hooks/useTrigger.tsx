@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { Event } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
@@ -80,6 +81,24 @@ export const useTrigger = (addSystemComponents: boolean) => {
     setTabValue(0);
   }, []);
 
+  const parse = useCallback(
+    (triggerToParse: Event | string | undefined) => {
+      clear();
+
+      if (!triggerToParse) return;
+
+      if (typeof triggerToParse !== 'string') {
+        setSelectedComponent(triggerToParse.component);
+        setSelectedMethod(triggerToParse.method);
+        return setTabValue(0);
+      }
+
+      setText(triggerToParse);
+      setTabValue(1);
+    },
+    [clear]
+  );
+
   return {
     componentOptions,
     methodOptions,
@@ -97,6 +116,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
     setSelectedComponent,
     setSelectedMethod,
 
+    parse,
     clear,
   };
 };

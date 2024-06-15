@@ -177,35 +177,16 @@ export const TransitionModal: React.FC = () => {
       target: State | ChoiceState | FinalState;
     }) => {
       setNewTransition(data);
-      events.setEvents([]);
+      events.parse([]);
       open();
     };
 
     const handleChangeTransition = (target: Transition) => {
       const { data: initialData } = target;
 
-      if (initialData.label?.trigger) {
-        if (typeof initialData.label.trigger !== 'string') {
-          trigger.setSelectedComponent(initialData.label.trigger.component);
-          trigger.setSelectedMethod(initialData.label.trigger.method);
-          trigger.onTabChange(0);
-        } else {
-          trigger.onChangeText(initialData.label.trigger);
-          trigger.onTabChange(1);
-        }
-      }
-
-      condition.parseCondition(initialData.label?.condition);
-
-      if (initialData.label?.do) {
-        if (typeof initialData.label.do !== 'string') {
-          events.setEvents(initialData.label.do);
-          events.onTabChange(0);
-        } else {
-          events.onChangeText(initialData.label.do);
-          events.onTabChange(1);
-        }
-      }
+      trigger.parse(initialData.label?.trigger);
+      condition.parse(initialData.label?.condition);
+      events.parse(initialData.label?.do);
 
       setColor(initialData.color);
 

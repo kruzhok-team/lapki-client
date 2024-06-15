@@ -45,7 +45,7 @@ export class Events {
   }
 
   update() {
-    if (this.app.textMode) {
+    if (!this.app.model.data.elements.visual) {
       const text = serializeStateActions(
         this.parent.data.events,
         getPlatform(this.app.model.data.elements.platform)!,
@@ -145,7 +145,7 @@ export class Events {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (this.app.textMode) {
+    if (!this.app.model.data.elements.visual) {
       return this.drawTextEvents(ctx);
     }
 

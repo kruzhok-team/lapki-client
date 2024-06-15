@@ -100,6 +100,7 @@ export type Elements = {
   notes: { [id: string]: Note };
 
   platform: string;
+  visual: boolean;
   parameters?: { [key: string]: string };
   compilerSettings?: CompilerSettings | null;
   meta: Meta;
@@ -116,6 +117,7 @@ export function emptyElements(): Elements {
     notes: {},
 
     platform: '',
+    visual: true,
     parameters: {},
     compilerSettings: null,
     meta: {},

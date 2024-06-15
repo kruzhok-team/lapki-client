@@ -5,6 +5,7 @@ import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
 import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { useCondition } from '../hooks';
 
@@ -80,6 +81,9 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
     errors,
   } = props;
 
+  const editor = useEditorContext();
+  const visual = editor.model.useData('elements.visual');
+
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
   const handleTabChange = (tab: number) => {
@@ -122,12 +126,14 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
           <span>{show ? 'Убрать условие' : 'Добавить условие'}</span>
         </label>
 
-        <Tabs
-          className={twMerge('ml-auto', !show && 'hidden')}
-          tabs={['Выбор', 'Код']}
-          value={tabValue}
-          onChange={handleTabChange}
-        />
+        {!visual && (
+          <Tabs
+            className={twMerge('ml-auto', !show && 'hidden')}
+            tabs={['Выбор', 'Код']}
+            value={tabValue}
+            onChange={handleTabChange}
+          />
+        )}
       </div>
 
       <div className={twMerge('mt-2 pl-4', !show && 'hidden')}>
@@ -229,21 +235,23 @@ export const Condition: React.FC<ConditionProps> = memo((props) => {
           </div>
         </TabPanel>
 
-        <TabPanel value={1} tabValue={tabValue}>
-          <CodeMirror
-            ref={editorRef}
-            value={text}
-            onChange={handleChangeText}
-            placeholder={'Напишите код'}
-            className="editor"
-            basicSetup={{
-              lineNumbers: false,
-              foldGutter: false,
-            }}
-            width="100%"
-            extensions={[EditorState.changeFilter.of(handleLengthLimit)]}
-          />
-        </TabPanel>
+        {!visual && (
+          <TabPanel value={1} tabValue={tabValue}>
+            <CodeMirror
+              ref={editorRef}
+              value={text}
+              onChange={handleChangeText}
+              placeholder={'Напишите код'}
+              className="editor"
+              basicSetup={{
+                lineNumbers: false,
+                foldGutter: false,
+              }}
+              width="100%"
+              extensions={[EditorState.changeFilter.of(handleLengthLimit)]}
+            />
+          </TabPanel>
+        )}
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export class Label implements Drawable {
   };
 
   constructor(private parent: Transition, protected app: CanvasEditor) {
-    if (this.app.textMode) {
+    if (!this.app.model.data.elements.visual) {
       this.prepareText();
     }
   }
@@ -46,7 +46,7 @@ export class Label implements Drawable {
 
     this.drawBody(ctx);
 
-    if (this.app.textMode) {
+    if (!this.app.model.data.elements.visual) {
       this.drawTextVariant(ctx);
     } else {
       this.drawImageVariant(ctx);

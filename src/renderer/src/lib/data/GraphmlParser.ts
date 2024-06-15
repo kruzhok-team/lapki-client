@@ -425,6 +425,7 @@ export function importGraphml(
       components: {},
       platform: rawElements.platform,
       meta: {},
+      visual: true,
     };
     if (!isPlatformAvailable(rawElements.platform)) {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
@@ -457,6 +458,7 @@ export function importGraphml(
       platform.components,
       elements.components
     );
+    elements.visual = platform.visual;
 
     validateElements(elements, platform);
     return elements;

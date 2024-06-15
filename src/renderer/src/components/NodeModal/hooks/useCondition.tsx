@@ -196,12 +196,11 @@ export const useCondition = () => {
   }, []);
 
   //Позволяет найти начальные значения условия(условий), если таковые имеются
-  const parseCondition = useCallback(
+  const parse = useCallback(
     (c: Condition | string | undefined | null) => {
-      if (!c) {
-        clear();
-        return undefined;
-      }
+      clear();
+
+      if (!c) return;
 
       setShow(true);
 
@@ -313,7 +312,7 @@ export const useCondition = () => {
     setSelectedMethodParam2,
     setArgsParam2,
 
-    parseCondition,
+    parse,
     clear,
   };
 };

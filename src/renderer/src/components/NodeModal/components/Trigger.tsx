@@ -4,6 +4,7 @@ import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/r
 import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { useTrigger } from '../hooks';
 
@@ -27,6 +28,9 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
     text,
     onChangeText,
   } = props;
+
+  const editor = useEditorContext();
+  const visual = editor.model.useData('elements.visual');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
@@ -63,35 +67,37 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
       <div className="mb-2 flex items-end gap-2">
         <p className="text-lg font-bold">Когда</p>
 
-        <Tabs
-          className="ml-auto"
-          tabs={['Выбор', 'Код']}
-          value={tabValue}
-          onChange={handleTabChange}
-        />
+        {!visual && (
+          <Tabs
+            className="ml-auto"
+            tabs={['Выбор', 'Код']}
+            value={tabValue}
+            onChange={handleTabChange}
+          />
+        )}
       </div>
 
       <div className="pl-4">
-        <div className="w-full">
-          <TabPanel value={0} tabValue={tabValue}>
-            <div className="flex w-full gap-2">
-              <Select
-                containerClassName="w-full"
-                options={componentOptions}
-                onChange={onComponentChange}
-                value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
-                isSearchable={false}
-              />
-              <Select
-                containerClassName="w-full"
-                options={methodOptions}
-                onChange={onMethodChange}
-                value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
-                isSearchable={false}
-              />
-            </div>
-          </TabPanel>
+        <TabPanel value={0} tabValue={tabValue}>
+          <div className="flex w-full gap-2">
+            <Select
+              containerClassName="w-full"
+              options={componentOptions}
+              onChange={onComponentChange}
+              value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
+              isSearchable={false}
+            />
+            <Select
+              containerClassName="w-full"
+              options={methodOptions}
+              onChange={onMethodChange}
+              value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
+              isSearchable={false}
+            />
+          </div>
+        </TabPanel>
 
+        {!visual && (
           <TabPanel value={1} tabValue={tabValue}>
             <CodeMirror
               ref={editorRef}
@@ -107,7 +113,7 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
               extensions={[EditorState.changeFilter.of(handleLengthLimit)]}
             />
           </TabPanel>
-        </div>
+        )}
       </div>
     </div>
   );

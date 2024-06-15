@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { EventsModalData } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
@@ -61,6 +61,20 @@ export const useEvents = () => {
     setTabValue(0);
   };
 
+  const parse = useCallback((eventsToParse: Event[] | string | undefined) => {
+    clear();
+
+    if (!eventsToParse) return;
+
+    if (typeof eventsToParse !== 'string') {
+      setTabValue(0);
+      return setEvents(eventsToParse);
+    }
+
+    setTabValue(1);
+    setText(eventsToParse);
+  }, []);
+
   return {
     events,
     setEvents,
@@ -83,6 +97,7 @@ export const useEvents = () => {
       initialData: eventsModalData,
     },
 
+    parse,
     clear,
   };
 };

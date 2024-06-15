@@ -9,7 +9,7 @@ import { TemplatesList } from '@renderer/types/templates';
 import { EditorModel } from './EditorModel';
 
 import { importGraphml } from '../GraphmlParser';
-import { isPlatformAvailable } from '../PlatformLoader';
+import { getPlatform, isPlatformAvailable } from '../PlatformLoader';
 
 type FileError = {
   name: string;
@@ -24,15 +24,16 @@ export class FilesManager {
   }
 
   newFile(platformIdx: string) {
-    if (!isPlatformAvailable(platformIdx)) {
+    const platform = getPlatform(platformIdx);
+
+    if (!platform) {
       throw Error('unknown platform ' + platformIdx);
     }
 
     const elements = emptyElements();
-    (elements.transitions as any) = [];
-    (elements.notes as any) = [];
     elements.platform = platformIdx;
-    this.editorManager.init(null, 'Без названия', elements as any);
+    elements.visual = platform.visual;
+    this.editorManager.init(null, 'Без названия', elements);
   }
 
   compile() {
@@ -179,9 +180,12 @@ export class FilesManager {
     );
 
     const data = importGraphml(templateData, openImportError);
-    if (data == undefined) {
-      return;
-    }
+    if (!data) return;
+
+    const platform = getPlatform(data.platform);
+    if (!platform) return;
+
+    data.visual = platform.visual;
     this.editorManager.init(null, 'Без названия', data);
     this.editorManager.makeStale();
   }

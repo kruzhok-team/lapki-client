@@ -18,16 +18,18 @@ export class Label implements Drawable {
 
   constructor(private parent: Transition, protected app: CanvasEditor) {
     if (!this.app.model.data.elements.visual) {
-      this.prepareText();
+      this.update();
     }
   }
 
-  prepareText() {
-    if (!this.parent.data.label?.trigger) return;
+  update() {
+    const platform = getPlatform(this.app.model.data.elements.platform);
+
+    if (!this.parent.data.label || this.app.model.data.elements.visual || !platform) return;
 
     const text = serializeTransitionActions(
       this.parent.data.label,
-      getPlatform(this.app.model.data.elements.platform)!,
+      platform,
       this.app.model.data.elements.components
     );
 
@@ -39,10 +41,7 @@ export class Label implements Drawable {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const label = this.parent.data.label;
-    const platform = this.app.controller.platform;
-
-    if (!label || !platform) return;
+    if (!this.parent.data.label) return;
 
     this.drawBody(ctx);
 
@@ -51,32 +50,6 @@ export class Label implements Drawable {
     } else {
       this.drawImageVariant(ctx);
     }
-
-    // const { x, y, width, height } = this.parent.drawBounds;
-    // const eventMargin = picto.eventMargin;
-    // const p = 15 / this.app.model.data.scale;
-    // const px = x + p;
-    // const py = y + p;
-    // const yDx = picto.eventHeight + 10;
-    // const fontSize = stateStyle.titleFontSize / this.app.model.data.scale;
-    // const opacity = this.parent.data.selection ? 1.0 : 0.7;
-
-    // const eventRowLength = Math.max(
-    //   3,
-    //   Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
-    // );
-
-    // ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    // ctx.fillStyle = stateStyle.eventColor;
-    // ctx.textBaseline = stateStyle.eventBaseLine;
-    // ctx.fillStyle = 'rgb(23, 23, 23)';
-
-    // ctx.beginPath();
-    // ctx.roundRect(x, y, width, height, 8 / this.app.model.data.scale);
-    // ctx.fill();
-    // ctx.closePath();
-
-    // ctx.fillStyle = transitionStyle.bgColor;
   }
 
   private drawBody(ctx: CanvasRenderingContext2D) {

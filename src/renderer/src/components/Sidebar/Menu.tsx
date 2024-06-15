@@ -11,6 +11,7 @@ interface MenuItem {
   text: string;
   onClick: () => void;
   disabled?: boolean;
+  hidden?: boolean;
   className?: string;
 }
 
@@ -25,11 +26,12 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { model } = useEditorContext();
+  const { controller, model } = useEditorContext();
 
   const isStale = model.useData('isStale');
   const isInitialized = model.useData('isInitialized');
   const isMounted = model.useData('isMounted');
+  const visual = model.useData('elements.visual');
 
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
@@ -76,6 +78,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
       className: 'border-t border-border-primary',
     },
+    {
+      text: 'Перейти в текстовый режим',
+      onClick: () => controller.setTextMode(),
+      hidden: !visual || !isInitialized,
+    },
     // {
     //   text: 'Примеры',
     //   TODO: модальное окно с выбором примера
@@ -107,7 +114,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, className }) => (
+      {items.map(({ text, onClick, disabled = false, hidden = false, className }) => (
         <button
           key={text}
           className={twMerge(
@@ -116,6 +123,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           )}
           onClick={onClick}
           disabled={disabled}
+          hidden={hidden}
         >
           {text}
         </button>

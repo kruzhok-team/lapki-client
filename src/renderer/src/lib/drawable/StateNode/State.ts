@@ -45,8 +45,8 @@ export class State extends Shape {
     this.eventBox.update();
 
     this.dimensions = {
-      height: Math.max(this.dimensions.height, this.titleHeight + this.eventBox.dimensions.height),
-      width: Math.max(this.dimensions.width, this.eventBox.dimensions.width),
+      ...this.dimensions,
+      height: Math.max(this.dimensions.height, this.eventBox.dimensions.height),
     };
   }
 

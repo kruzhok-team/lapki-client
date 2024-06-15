@@ -732,4 +732,12 @@ export class EditorModel {
 
     return true;
   }
+
+  setTextMode() {
+    this.data.elements.visual = false;
+
+    this.triggerDataUpdate('elements.visual');
+
+    return true;
+  }
 }

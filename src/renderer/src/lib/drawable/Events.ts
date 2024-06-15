@@ -58,7 +58,7 @@ export class Events {
         lineHeight: 1.2,
       });
 
-      this.dimensions.height = textData.height;
+      this.dimensions.height = textData.height + 10 * 2;
       this.textArray = textData.textArray;
 
       return;

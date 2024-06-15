@@ -138,6 +138,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     );
   }
 
+  updateAll() {
+    this.forEachState((state) => {
+      state.updateEventBox();
+    });
+  }
+
   createState = (args: CreateStateParams, canUndo = true) => {
     const { parentId, position, linkByPoint = true, canBeInitial = true } = args;
 

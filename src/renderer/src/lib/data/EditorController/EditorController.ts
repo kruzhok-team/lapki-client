@@ -448,4 +448,13 @@ export class EditorController {
     }
     return vacant;
   }
+
+  setTextMode() {
+    this.app.model.setTextMode();
+
+    this.states.updateAll();
+    this.transitions.updateAll();
+
+    this.view.isDirty = true;
+  }
 }

@@ -5,6 +5,7 @@
       "description": "",
       "version": "1.0",
       "standardVersion": "1.0",
+      "visual": false,
       "components": {
         "Button": {
           "description": "Компонент для взаимодействия с физической кнопкой.",

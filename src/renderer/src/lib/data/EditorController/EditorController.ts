@@ -71,6 +71,10 @@ export class EditorController {
     }
 
     this.app.controller.platform = platform;
+
+    //! Инициализировать компоненты нужно сразу после загрузки платформы
+    // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
+    this.initializer.initComponents();
   }
 
   loadData() {

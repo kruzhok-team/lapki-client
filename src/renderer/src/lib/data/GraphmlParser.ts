@@ -29,13 +29,6 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
-import { randomColor } from '../utils';
-
-type EventWithCondition = {
-  event?: EventData;
-  condition?: Condition;
-};
-
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
   exit: { component: 'System', method: 'onExit' },
@@ -199,14 +192,7 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
   const states: { [id: string]: State } = {};
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
-    const eventDataWithCondition = actionsToEventData(rawState.actions);
-
-    const events: EventData[] = [];
-    for (const event of eventDataWithCondition) {
-      if (event.event) {
-        events.push(event.event);
-      }
-    }
+    const events: EventData[] = actionsToEventData(rawState.actions);
     states[rawStateId] = {
       // ПОМЕНЯТЬ ЦВЕТ
       color: rawState.color ?? '#FFFFFF',
@@ -226,26 +212,15 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
   return states;
 }
 
-function actionsToEventData(
-  rawActions: Array<CGMLAction | CGMLTransitionAction>
-): EventWithCondition[] {
-  const eventDataArr: EventWithCondition[] = [];
-  const createEvent = (eventData: EventWithCondition): EventData => {
-    if (eventData.event) {
-      return eventData.event;
-    }
-    return {
+function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>): EventData[] {
+  const eventDataArr: EventData[] = [];
+  for (const action of rawActions) {
+    const eventData: EventData = {
       trigger: {
         component: '',
         method: '',
       },
       do: [],
-    };
-  };
-  for (const action of rawActions) {
-    const eventData: EventWithCondition = {
-      event: undefined,
-      condition: undefined,
     };
     const doActions: Action[] = [];
     if (action.action) {
@@ -253,16 +228,12 @@ function actionsToEventData(
       if (parsedActions) {
         doActions.push(...parsedActions);
       }
-      const event = createEvent(eventData);
-      event.do = doActions;
-      eventData.event = event;
+      eventData.do = doActions;
     }
     if (action.trigger?.event) {
       const trigger = parseEvent(action.trigger.event);
       if (trigger) {
-        const event = createEvent(eventData);
-        event.trigger = trigger;
-        eventData.event = event;
+        eventData.trigger = trigger;
       }
     }
     if (action.trigger?.condition) {
@@ -283,7 +254,7 @@ function getTransitions(
       transitions[id] = {
         sourceId: rawTransition.source,
         targetId: rawTransition.target,
-        color: rawTransition.color ?? randomColor(),
+        color: rawTransition.color,
       };
       continue;
     }
@@ -292,11 +263,11 @@ function getTransitions(
     transitions[id] = {
       sourceId: rawTransition.source,
       targetId: rawTransition.target,
-      color: rawTransition.color ?? randomColor(),
+      color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
-        trigger: eventData.event?.trigger,
-        do: eventData.event?.do,
+        trigger: eventData.trigger,
+        do: eventData.do,
         condition: eventData.condition,
       },
     };

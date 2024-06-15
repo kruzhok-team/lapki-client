@@ -7,6 +7,7 @@ import {
   InitialState as InitialStateData,
   FinalState as FinalStateData,
   ChoiceState as ChoiceStateData,
+  Component as ComponentData,
 } from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
@@ -81,8 +82,11 @@ export interface ChangeStateEventsParams {
   color?: string;
 }
 
-export interface AddComponentParams {
+export type AddComponentParams = Omit<ComponentData, 'order'> & {
   name: string;
-  type: string;
-  parameters?: { [key: string]: string };
+};
+
+export interface SwapComponentsParams {
+  name1: string;
+  name2: string;
 }

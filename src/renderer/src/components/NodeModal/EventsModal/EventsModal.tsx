@@ -54,7 +54,9 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const result = Object.entries(componentsData)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([idx]) => getComponentOption(idx));
 
     if (isEditingEvent) {
       result.unshift(getComponentOption('System'));

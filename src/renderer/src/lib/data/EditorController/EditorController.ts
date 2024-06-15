@@ -9,7 +9,7 @@ import {
   EditComponentParams,
   RemoveComponentParams,
 } from '@renderer/lib/types/EditorController';
-import { AddComponentParams } from '@renderer/lib/types/EditorModel';
+import { AddComponentParams, SwapComponentsParams } from '@renderer/lib/types/EditorModel';
 import { Condition, Variable } from '@renderer/types/diagram';
 
 import { Initializer } from './Initializer';
@@ -94,14 +94,14 @@ export class EditorController {
       component: type,
     });
 
-    this.view.isDirty = true;
-
     if (canUndo) {
       this.history.do({
         type: 'addComponent',
         args: { args },
       });
     }
+
+    this.view.isDirty = true;
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
@@ -157,6 +157,19 @@ export class EditorController {
         args: { args, prevComponent },
       });
     }
+  }
+
+  swapComponents(args: SwapComponentsParams, canUndo = true) {
+    this.app.model.swapComponents(args);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'swapComponents',
+        args,
+      });
+    }
+
+    this.view.isDirty = true;
   }
 
   private renameComponent(name: string, newName: string) {

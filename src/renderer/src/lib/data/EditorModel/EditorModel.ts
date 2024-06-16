@@ -170,21 +170,6 @@ export class EditorModel {
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    // console.log(args);
-
-    // // Удаление события
-    // if (eventIndex !== undefined && !eventData) {
-    //   state.events.splice(eventIndex, 1);
-    //   // Редактирование события
-    // } else if (eventIndex !== undefined && eventData) {
-    //   state.events[eventIndex] = eventData;
-    //   // Добавление события
-    // } else if (eventIndex === undefined && eventData) {
-    //   state.events = [...state.events, eventData];
-    // } else {
-    //   throw new Error('Невозможное действие над событиями состояния');
-    // }
-
     state.events = events;
     state.color = color;
 

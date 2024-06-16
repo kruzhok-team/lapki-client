@@ -5,9 +5,12 @@ import { useModal } from '@renderer/hooks/useModal';
 import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { Events, ColorField, Trigger, Condition } from './components';
-import { useTrigger, useEvents, useCondition } from './hooks';
+import { Actions, ColorField, Trigger, Condition } from './components';
+import { useTrigger, useActions, useCondition } from './hooks';
 
+/**
+ * Модальное окно редактирования состояния
+ */
 export const StateModal: React.FC = () => {
   const editor = useEditorContext();
 
@@ -19,12 +22,12 @@ export const StateModal: React.FC = () => {
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
   const trigger = useTrigger(true);
   const condition = useCondition();
-  const events = useEvents();
+  const actions = useActions();
   const [color, setColor] = useState<string | undefined>();
 
   const { parse: parseTrigger } = trigger;
   const { parse: parseCondition } = condition;
-  const { parse: parseEvents } = events;
+  const { parse: parseEvents } = actions;
 
   // На дефолтные события нельзя ставить условия
   const showCondition = useMemo(
@@ -49,8 +52,8 @@ export const StateModal: React.FC = () => {
     }
 
     if (
-      (events.tabValue === 0 && events.events.length === 0) ||
-      (events.tabValue === 1 && !events.text.trim())
+      (actions.tabValue === 0 && actions.actions.length === 0) ||
+      (actions.tabValue === 1 && !actions.text.trim())
     ) {
       return;
     }
@@ -120,7 +123,7 @@ export const StateModal: React.FC = () => {
     };
 
     const getActions = () => {
-      return events.tabValue === 0 ? events.events : events.text.trim();
+      return actions.tabValue === 0 ? actions.actions : actions.text.trim();
     };
 
     const getEvents = () => {
@@ -140,12 +143,6 @@ export const StateModal: React.FC = () => {
     editor.controller.states.changeState({
       id: state.id,
       events: getEvents(),
-      // eventIndex: currentEventIndex,
-      // eventData: {
-      //   trigger: getTrigger(),
-      //   do: getEvents(),
-      //   condition: getCondition(),
-      // },
       color,
     });
 
@@ -155,15 +152,14 @@ export const StateModal: React.FC = () => {
   // Сброс формы после закрытия
   const handleAfterClose = () => {
     trigger.clear();
-    events.clear();
+    actions.clear();
     setColor(undefined);
 
     setState(null);
   };
 
+  // Открытие окна и подстановка начальных данных формы на событие изменения состояния
   useEffect(() => {
-    // Открытие окна и подстановка начальных данных формы на событие изменения состояния
-
     const handler = (state: State) => {
       const { data } = state;
 
@@ -237,7 +233,7 @@ export const StateModal: React.FC = () => {
       <div className="flex flex-col gap-3">
         <Trigger {...trigger} />
         {showCondition && <Condition {...condition} />}
-        <Events {...events} />
+        <Actions {...actions} />
         <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>
     </Modal>

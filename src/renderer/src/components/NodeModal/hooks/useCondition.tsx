@@ -11,10 +11,9 @@ import { Condition, Variable as VariableData } from '@renderer/types/diagram';
  * Инкапсуляция логики условия формы
  */
 export const useCondition = () => {
-  const editor = useEditorContext();
-  const model = editor.model;
+  const { controller, model } = useEditorContext();
   const componentsData = model.useData('elements.components');
-  const controller = editor.controller;
+  const visual = model.useData('elements.visual');
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -45,14 +44,14 @@ export const useCondition = () => {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: visual && controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
     return result;
-  }, [componentsData, controller]);
+  }, [componentsData, controller.platform, visual]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -62,14 +61,14 @@ export const useCondition = () => {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: visual && controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
     return result;
-  }, [componentsData, controller]);
+  }, [componentsData, controller.platform, visual]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1 || !controller.platform) return [];
@@ -84,7 +83,7 @@ export const useCondition = () => {
           value: name,
           label: name,
           hint: description,
-          icon: (
+          icon: visual && (
             <img
               src={getImg.call(controller.platform, selectedComponentParam1, name, true)}
               className="mr-1 h-7 w-7 object-contain"
@@ -92,7 +91,7 @@ export const useCondition = () => {
           ),
         };
       });
-  }, [controller, selectedComponentParam1]);
+  }, [controller.platform, selectedComponentParam1, visual]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam2 || !controller.platform) return [];
@@ -107,7 +106,7 @@ export const useCondition = () => {
           value: name,
           label: name,
           hint: description,
-          icon: (
+          icon: visual && (
             <img
               src={getImg.call(controller.platform, selectedComponentParam2, name, true)}
               className="mr-1 h-7 w-7 object-contain"
@@ -115,7 +114,7 @@ export const useCondition = () => {
           ),
         };
       });
-  }, [controller, selectedComponentParam2]);
+  }, [controller.platform, selectedComponentParam2, visual]);
 
   const checkForErrors = useCallback(() => {
     const newErrors: Record<string, string> = {};

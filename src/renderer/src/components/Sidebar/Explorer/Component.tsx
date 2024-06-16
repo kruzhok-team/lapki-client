@@ -19,11 +19,12 @@ interface ComponentProps {
 export const Component: React.FC<ComponentProps> = (props) => {
   const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
 
-  const editor = useEditorContext();
+  const { controller, model } = useEditorContext();
+  const visual = model.useData('elements.visual');
 
   const [dragOver, setDragOver] = useState(false);
 
-  const proto = editor.controller.platform?.getComponent(name);
+  const proto = controller.platform?.getComponent(name);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key !== 'Delete') return;
@@ -73,7 +74,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {editor.controller.platform?.getFullComponentIcon(name)}
+          {visual && controller.platform?.getFullComponentIcon(name)}
           <p className="ml-2 line-clamp-1">{name}</p>
         </button>
       )}

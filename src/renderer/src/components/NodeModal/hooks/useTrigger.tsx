@@ -10,11 +10,10 @@ import { Event } from '@renderer/types/diagram';
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
 export const useTrigger = (addSystemComponents: boolean) => {
-  const editor = useEditorContext();
-  const model = editor.model;
+  const { controller, model } = useEditorContext();
 
   const componentsData = model.useData('elements.components');
-  const controller = editor.controller;
+  const visual = model.useData('elements.visual');
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -31,7 +30,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: visual && controller.platform?.getFullComponentIcon(id, 'mr-1 size-7'),
       };
     };
 
@@ -44,7 +43,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
     }
 
     return result;
-  }, [componentsData, addSystemComponents, controller]);
+  }, [componentsData, addSystemComponents, controller.platform, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform) return [];
@@ -57,15 +56,15 @@ export const useTrigger = (addSystemComponents: boolean) => {
         value: name,
         label: name,
         hint: description,
-        icon: (
+        icon: visual && (
           <img
             src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
+            className="mr-1 size-7 object-contain"
           />
         ),
       };
     });
-  }, [controller, selectedComponent]);
+  }, [controller.platform, selectedComponent, visual]);
 
   const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? null);

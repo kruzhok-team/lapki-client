@@ -2,37 +2,37 @@ import React, { useMemo, useRef, useState } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
-import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { EventsModal } from '@renderer/components';
+import { ActionsModal } from '@renderer/components';
 import { TabPanel, Tabs } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { useEvents } from '../hooks';
+import { Action } from './Action';
 
-type EventsProps = ReturnType<typeof useEvents>;
+import { useActions } from '../hooks';
 
-export const Events: React.FC<EventsProps> = (props) => {
+type ActionsProps = ReturnType<typeof useActions>;
+
+export const Actions: React.FC<ActionsProps> = (props) => {
   const {
     tabValue,
     onTabChange,
-    events,
-    onAddEvent,
-    onChangeEvent,
-    onDeleteEvent,
-    onReorderEvent,
+    actions,
+    onAddAction,
+    onChangeAction,
+    onDeleteAction,
+    onReorderAction,
     modal,
     text,
     onChangeText,
   } = props;
 
   const editor = useEditorContext();
-  const controller = editor.controller;
   const visual = editor.model.useData('elements.visual');
 
-  const [selectedEventIndex, setSelectedEventIndex] = useState<number | null>(null);
+  const [selectedActionIndex, setSelectedActionIndex] = useState<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
@@ -70,13 +70,13 @@ export const Events: React.FC<EventsProps> = (props) => {
   const handleDrop = (index: number) => {
     if (dragIndex === null) return;
 
-    onReorderEvent(dragIndex, index);
+    onReorderAction(dragIndex, index);
   };
 
   const handleClickDelete = () => {
-    if (selectedEventIndex === null) return;
+    if (selectedActionIndex === null) return;
 
-    onDeleteEvent(selectedEventIndex);
+    onDeleteAction(selectedActionIndex);
   };
 
   return (
@@ -98,46 +98,23 @@ export const Events: React.FC<EventsProps> = (props) => {
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex gap-2">
             <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-              {events.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
+              {actions.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
 
-              {events.map((data, i) => (
-                <div
+              {actions.map((data, i) => (
+                <Action
                   key={i}
-                  className={twMerge(
-                    'flex hover:bg-bg-hover',
-                    selectedEventIndex === i && 'bg-bg-active'
-                  )}
-                  onClick={() => setSelectedEventIndex(i)}
-                  draggable
-                  onDragOver={(event) => event.preventDefault()}
+                  isSelected={selectedActionIndex === i}
+                  onSelect={() => setSelectedActionIndex(i)}
+                  onChange={() => onChangeAction(data)}
                   onDragStart={() => handleDrag(i)}
                   onDrop={() => handleDrop(i)}
-                  onDoubleClick={() => onChangeEvent(data)}
-                >
-                  <div
-                    className={twMerge(
-                      'm-2 flex min-h-[3rem] w-36 items-center justify-around rounded-md bg-bg-primary px-1'
-                    )}
-                  >
-                    {controller.platform?.getFullComponentIcon(data.component)}
-                    <div className="h-full w-[2px] bg-border-primary"></div>
-                    <img
-                      style={{ height: '32px', width: '32px' }}
-                      src={controller.platform?.getActionIconUrl(data.component, data.method, true)}
-                    />
-                  </div>
-                  <div className="flex items-center">
-                    <div>{data.component}.</div>
-                    <div>{data.method}</div>
-                  </div>
-
-                  {data.args !== undefined || <div>{data.args}</div>}
-                </div>
+                  data={data}
+                />
               ))}
             </div>
 
             <div className="flex flex-col gap-2">
-              <button type="button" className="btn-secondary p-1" onClick={onAddEvent}>
+              <button type="button" className="btn-secondary p-1" onClick={onAddAction}>
                 <AddIcon />
               </button>
               <button type="button" className="btn-secondary p-1" onClick={handleClickDelete}>
@@ -166,7 +143,7 @@ export const Events: React.FC<EventsProps> = (props) => {
         )}
       </div>
 
-      <EventsModal {...modal} />
+      <ActionsModal {...modal} />
     </div>
   );
 };

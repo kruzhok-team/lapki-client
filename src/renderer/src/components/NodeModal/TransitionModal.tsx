@@ -5,9 +5,12 @@ import { useModal } from '@renderer/hooks/useModal';
 import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { Events, Condition, ColorField, Trigger } from './components';
-import { useTrigger, useCondition, useEvents } from './hooks';
+import { Actions, Condition, ColorField, Trigger } from './components';
+import { useTrigger, useCondition, useActions } from './hooks';
 
+/**
+ * Модальное окно редактирования перехода
+ */
 export const TransitionModal: React.FC = () => {
   const editor = useEditorContext();
 
@@ -22,7 +25,7 @@ export const TransitionModal: React.FC = () => {
   // Данные формы
   const trigger = useTrigger(false);
   const condition = useCondition();
-  const events = useEvents();
+  const actions = useActions();
   const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
@@ -118,12 +121,12 @@ export const TransitionModal: React.FC = () => {
       return triggerText;
     };
 
-    const getEvents = () => {
-      if (events.tabValue === 0) {
-        return events.events;
+    const getActions = () => {
+      if (actions.tabValue === 0) {
+        return actions.actions;
       }
 
-      return events.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
+      return actions.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
     };
 
     // Если редактируем состояние
@@ -136,7 +139,7 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: getEvents(),
+          do: getActions(),
         } as any, // Из-за position,
       });
 
@@ -152,7 +155,7 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: getEvents(),
+          do: getActions(),
         } as any, // Из-за position,
       });
     }
@@ -164,20 +167,21 @@ export const TransitionModal: React.FC = () => {
   const handleAfterClose = () => {
     trigger.clear();
     condition.clear();
-    events.clear();
+    actions.clear();
     setColor(undefined);
 
     setTransition(null);
     setNewTransition(null);
   };
 
+  // Подстановка начальных значений
   useEffect(() => {
     const handleCreateTransition = (data: {
       source: State | ChoiceState;
       target: State | ChoiceState | FinalState;
     }) => {
       setNewTransition(data);
-      events.parse([]);
+      actions.parse([]);
       open();
     };
 
@@ -186,7 +190,7 @@ export const TransitionModal: React.FC = () => {
 
       trigger.parse(initialData.label?.trigger);
       condition.parse(initialData.label?.condition);
-      events.parse(initialData.label?.do);
+      actions.parse(initialData.label?.do);
 
       setColor(initialData.color);
 
@@ -216,7 +220,7 @@ export const TransitionModal: React.FC = () => {
         <div className="flex flex-col gap-4">
           {showTrigger && <Trigger {...trigger} />}
           <Condition {...condition} />
-          <Events {...events} />
+          <Actions {...actions} />
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

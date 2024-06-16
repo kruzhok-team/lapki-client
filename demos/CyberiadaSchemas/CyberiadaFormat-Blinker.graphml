@@ -110,7 +110,6 @@ timer1.start(1000)
     </edge>
     <edge id="edge3" source="diod1" target="diod2">
         <data key="dData">timer1.timeout/</data>
-        <data key="dColor">#F29727</data>
         <data key="dLabelGeometry">
             <point x="389" y="193"/>
         </data> 

@@ -35,7 +35,9 @@ export const useTrigger = (addSystemComponents: boolean) => {
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const result = Object.entries(componentsData)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([idx]) => getComponentOption(idx));
 
     if (addSystemComponents) {
       result.unshift(getComponentOption('System'));

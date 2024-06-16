@@ -15,6 +15,7 @@ import {
   CreateStateParams,
   CreateFinalStateParams,
   CreateChoiceStateParams,
+  SwapComponentsParams,
 } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
 import { roundPoint } from '@renderer/lib/utils';
@@ -79,6 +80,7 @@ export type PossibleActions = {
   addComponent: { args: AddComponentParams };
   removeComponent: { args: RemoveComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
+  swapComponents: SwapComponentsParams;
 
   createNote: { id: string; params: CreateNoteParams };
   changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
@@ -329,6 +331,17 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
+  swapComponents: (sM, { name1, name2 }) => ({
+    redo: sM.swapComponents.bind(sM, { name1, name2 }, false),
+    undo: sM.swapComponents.bind(
+      sM,
+      {
+        name1: name2,
+        name2: name1,
+      },
+      false
+    ),
+  }),
 
   createNote: (sM, { id, params }) => ({
     redo: sM.notes.createNote.bind(sM.notes, { id, ...params }, false),
@@ -480,6 +493,10 @@ export const actionDescriptions: ActionDescriptions = {
       description: `Было: ${JSON.stringify(prev)}\nСтало: ${JSON.stringify(newComp)}`,
     };
   },
+  swapComponents: ({ name1, name2 }) => ({
+    name: 'Перетасовка компонентов в списке',
+    description: `Имя1: ${name1}\nИмя2: ${name2}`,
+  }),
 
   createNote: (args) => ({ name: 'Создание заметки', description: `Id: ${args.id}` }),
   changeNoteText: (args) => ({

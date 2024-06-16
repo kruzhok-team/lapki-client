@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-
-import { twMerge } from 'tailwind-merge';
+import React, { useMemo, useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
-import { ScrollableList } from '@renderer/components/ScrollableList';
-import { WithHint } from '@renderer/components/UI';
 import { useComponents } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
+
+import { Component } from './Component';
 
 export const ComponentsList: React.FC = () => {
   const editor = useEditorContext();
@@ -20,67 +18,26 @@ export const ComponentsList: React.FC = () => {
     addProps,
     editProps,
     deleteProps,
+    onSwapComponents,
     onRequestAddComponent,
     onRequestEditComponent,
     onRequestDeleteComponent,
   } = useComponents();
 
+  const [dragName, setDragName] = useState<string | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
 
-  const onClick = (key: string) => {
-    setSelectedComponent(key);
+  const onDropComponent = (name: string) => {
+    if (!dragName) return;
+
+    onSwapComponents(dragName, name);
   };
 
-  const onAuxClick = (key: string) => {
-    setSelectedComponent(key);
-    onRequestDeleteComponent(key);
-  };
-
-  const onCompDblClick = (key: string) => {
-    setSelectedComponent(key);
-    onRequestEditComponent(key);
-  };
-
-  // TODO: контекстное меню? клонировать, переименовать, удалить
-  const onCompRightClick = (key: string) => {
-    setSelectedComponent(key);
-    onRequestEditComponent(key);
-  };
-
-  const onCompKeyDown = (e: React.KeyboardEvent, name: string) => {
-    if (e.key !== 'Delete') return;
-
-    onRequestDeleteComponent(name);
-  };
-
-  const renderComponent = (name: string) => {
-    if (!editor.controller.platform) return;
-
-    const proto = editor.controller.platform.getComponent(name);
-
-    return (
-      <WithHint key={name} hint={proto?.description ?? ''} placement="right">
-        {(props) => (
-          <button
-            type="button"
-            className={twMerge(
-              'flex w-full items-center p-1',
-              name == selectedComponent && 'bg-bg-active'
-            )}
-            onClick={() => onClick(name)}
-            onAuxClick={() => onAuxClick(name)}
-            onDoubleClick={() => onCompDblClick(name)}
-            onContextMenu={() => onCompRightClick(name)}
-            onKeyDown={(e) => onCompKeyDown(e, name)}
-            {...props}
-          >
-            {editor.controller.platform?.getFullComponentIcon(name)}
-            <p className="ml-2 line-clamp-1">{name}</p>
-          </button>
-        )}
-      </WithHint>
-    );
-  };
+  const sortedComponents = useMemo(() => {
+    return Object.entries(components)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map((c) => c[0]);
+  }, [components]);
 
   return (
     <>
@@ -94,13 +51,21 @@ export const ComponentsList: React.FC = () => {
         Добавить...
       </button>
 
-      <ScrollableList
-        containerProps={{ onClick: (e) => e.stopPropagation() }}
-        listItems={Object.keys(components)}
-        heightOfItem={10}
-        maxItemsToRender={50}
-        renderItem={renderComponent}
-      />
+      <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        {sortedComponents.map((name) => (
+          <Component
+            key={name}
+            name={name}
+            isSelected={name === selectedComponent}
+            isDragging={name === dragName}
+            onSelect={() => setSelectedComponent(name)}
+            onEdit={() => onRequestEditComponent(name)}
+            onDelete={() => onRequestDeleteComponent(name)}
+            onDragStart={() => setDragName(name)}
+            onDrop={() => onDropComponent(name)}
+          />
+        ))}
+      </div>
 
       <ComponentAddModal {...addProps} />
       <ComponentEditModal {...editProps} />

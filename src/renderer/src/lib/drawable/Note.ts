@@ -82,7 +82,7 @@ export class Note extends Shape {
 
     this.textData = {
       ...prepareText(this.data.text || placeholder, 200 - 2 * 10, {
-        fontSize: this.data.fontSize,
+        fontSize: this.data.fontSize ?? 16,
         lineHeight: hasText ? 1.2 : 1,
         fontFamily: 'Fira Sans',
       }),

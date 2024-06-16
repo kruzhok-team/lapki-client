@@ -16,8 +16,9 @@ import {
   CompilerInitialState,
   CompilerElements,
   CompilerState,
+  CompilerComponent,
 } from '@renderer/types/CompilerTypes';
-import { Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;
@@ -78,12 +79,31 @@ function actualizeInitialState(
   return [{ [initialId]: initial }, { [transitionId]: transition }];
 }
 
+function actualizeComponents(oldComponents: { [id: string]: CompilerComponent }): {
+  [id: string]: Component;
+} {
+  const components: {
+    [id: string]: Component;
+  } = {};
+  let orderComponent = 0;
+  for (const oldComponentId in oldComponents) {
+    const oldComponent = oldComponents[oldComponentId];
+    components[oldComponentId] = {
+      ...oldComponent,
+      order: orderComponent,
+    };
+    orderComponent += 1;
+  }
+
+  return components;
+}
+
 function actualizeElements(oldElements: CompilerElements): Elements {
   const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
   return {
     platform: oldElements.platform,
     parameters: oldElements.parameters,
-    components: oldElements.components,
+    components: actualizeComponents(oldElements.components),
     states: actualizeStates(oldElements.states),
     finalStates: {},
     choiceStates: {},

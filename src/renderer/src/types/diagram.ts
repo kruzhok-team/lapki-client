@@ -80,6 +80,7 @@ export interface Transition {
 export type Component = {
   type: string;
   parameters: { [key: string]: string };
+  order: number;
 };
 
 export type Note = {
@@ -96,7 +97,7 @@ export type Elements = {
   finalStates: { [id: string]: FinalState };
   choiceStates: { [id: string]: ChoiceState };
   transitions: { [id: string]: Transition };
-  components: { [id: string]: Component };
+  components: { [name: string]: Component };
   notes: { [id: string]: Note };
 
   platform: string;

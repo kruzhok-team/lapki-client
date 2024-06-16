@@ -3,6 +3,7 @@ const colorNames = {
   primary: '--p',
   error: '--e',
   success: '--s',
+  warning: '--w',
 
   primaryHover: '--p-h',
   primaryActive: '--p-a',
@@ -13,6 +14,7 @@ const colorNames = {
   'bg-active': '--bg-a',
 
   'border-primary': '--b-p',
+  'border-warning': '--b-w',
 
   'text-primary': '--t-p',
   'text-secondary': '--t-s',
@@ -26,17 +28,21 @@ const colorNames = {
   grid: '--g',
   'default-note-bg': '--d-n-bg',
   'default-note-color': '--d-n-c',
-};
+  'default-transition-color': '--d-t-c',
+  'default-state-color': '--d-s-c',
+} as const;
+type ColorNames = typeof colorNames;
+type ColorName = keyof ColorNames;
 
 // Это метод для того чтобы достать цвет из джаваскрипта
-export const getColor = (colorName: keyof typeof colorNames) => {
+export const getColor = (colorName: ColorName) => {
   return getComputedStyle(document.documentElement).getPropertyValue(colorNames[colorName]);
 };
 
 const getVariables = () => {
   return Object.fromEntries(
     Object.entries(colorNames).map(([name, value]) => [name, `var(${value})`])
-  );
+  ) as { [Name in ColorName]: `var(${ColorNames[Name]})` };
 };
 
 export default {

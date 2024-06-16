@@ -21,12 +21,17 @@ import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
   handleHostChange: () => void;
+  openAvrdudeGuideModal: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange }) => {
+export const Loader: React.FC<FlasherProps> = ({
+  compilerData,
+  handleHostChange,
+  openAvrdudeGuideModal,
+}) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
-
+  const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -72,10 +77,8 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
 
   const handleFileChoose = () => {
     if (flasherFile) {
-      console.log('cancel file choose');
       setFlasherFile(undefined);
     } else {
-      console.log('file chooser');
       Flasher.setFile();
     }
   };
@@ -209,9 +212,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
       Flasher.reconnect();
     }
   };
-
+  // условия отключения кнопки для загрузки прошивки
   const flashButtonDisabled = () => {
     if (isFlashing || connectionStatus !== FLASHER_CONNECTED) {
+      return true;
+    }
+    if (flasherIsLocal && !hasAvrdude) {
       return true;
     }
     if (!currentDeviceID) {
@@ -254,7 +260,19 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
     }
     return false;
   };
-
+  // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
+  const avrdudeCheck = () => {
+    if (!(flasherIsLocal && !hasAvrdude)) return;
+    return (
+      <button
+        type="button"
+        className="btn-primary mb-2 w-full border-warning bg-warning"
+        onClick={openAvrdudeGuideModal}
+      >
+        Программа avrdude не найдена!
+      </button>
+    );
+  };
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -332,6 +350,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
             </div>
           ))}
         </div>
+        {avrdudeCheck()}
         <div className="flex justify-between gap-2">
           <button
             className="btn-primary mb-2 w-full"
@@ -343,7 +362,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
           <button
             className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
             onClick={handleFileChoose}
-            disabled={isFlashing}
+            disabled={isFlashing || !hasAvrdude}
           >
             {flasherFile ? '✖' : '…'}
           </button>
@@ -363,7 +382,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, handleHostChange 
           Результат прошивки
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
-          {flasherLog}
+          <div>{flasherLog}</div>
         </div>
       </div>
     </section>

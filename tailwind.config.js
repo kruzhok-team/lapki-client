@@ -10,6 +10,7 @@ export default {
     extend: {
       fontFamily: {
         Fira: ['Fira Sans', 'sans-serif'],
+        'Fira-Mono': ['Fira Mono', 'monospace'],
       },
       colors,
     },
@@ -24,6 +25,7 @@ export default {
           '--p-a': '#2A62F4',
           '--e': 'red',
           '--s': 'lime',
+          '--w': '#E4A11B',
 
           '--bg-p': '#262626',
           '--bg-s': '#121111',
@@ -31,6 +33,7 @@ export default {
           '--bg-a': '#545454',
 
           '--b-p': '#666666',
+          '--b-w': '#E4A11B',
 
           '--t-p': '#f2f2f2',
           '--t-s': '#fff',
@@ -46,6 +49,8 @@ export default {
           '--g': 'rgba(255,255,255,0.03)',
           '--d-n-bg': 'rgba(0,0,0,0.3)',
           '--d-n-c': '#FFFFFF',
+          '--d-t-c': '#F2F2F2',
+          '--d-s-c': '#F2F2F2',
         },
         ':root[data-theme="light"]': {
           '--p': '#0C4BEE',
@@ -53,6 +58,7 @@ export default {
           '--p-a': '#2A62F4',
           '--e': 'red',
           '--s': 'lime',
+          '--w': '#E4A11B',
 
           '--bg-p': '#e7e7e7',
           '--bg-s': '#f2f2f2',
@@ -60,6 +66,7 @@ export default {
           '--bg-a': '#c2c2c2',
 
           '--b-p': '#c2c2c2',
+          '--b-w': '#E4A11B',
 
           '--t-p': '#000',
           '--t-s': '#fff',
@@ -75,6 +82,8 @@ export default {
           '--g': 'rgba(0,0,0,0.08)',
           '--d-n-bg': 'rgba(255,255,255,0.5)',
           '--d-n-c': '#000000',
+          '--d-t-c': '#404040',
+          '--d-s-c': '#F2F2F2',
         },
       };
 

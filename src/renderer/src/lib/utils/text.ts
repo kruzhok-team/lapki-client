@@ -64,6 +64,7 @@ interface Font {
   fontSize?: number;
   lineHeight?: number;
   fontFamily?: string;
+  fontWeight?: number;
 }
 
 interface DrawTextOptions {
@@ -137,7 +138,12 @@ export const drawText = (
   options: DrawTextOptions
 ) => {
   const { x, y, color = '#FFF', font = {}, textAlign = 'left' } = options;
-  const { fontSize = 16, lineHeight = 1.2, fontFamily = 'sans-serif' } = font || {};
+  const {
+    fontSize = 16,
+    lineHeight = 1.2,
+    fontFamily = 'sans-serif',
+    fontWeight = 400,
+  } = font || {};
 
   const textHeight = lineHeight * fontSize;
 
@@ -146,7 +152,7 @@ export const drawText = (
   const prevTextAlign = ctx.textAlign;
   const prevTextBaseline = ctx.textBaseline;
 
-  ctx.font = `${fontSize}px/${lineHeight} '${fontFamily}'`;
+  ctx.font = `${fontWeight} ${fontSize}px/${lineHeight} '${fontFamily}'`;
   ctx.fillStyle = color;
   ctx.textAlign = textAlign;
   ctx.textBaseline = 'bottom';

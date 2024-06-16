@@ -1,5 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { Shape } from '@renderer/lib/drawable';
+import { EdgeHandlers, Shape } from '@renderer/lib/drawable';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
 
@@ -16,11 +16,13 @@ export class Note extends Shape {
   };
   private visible = true;
   isSelected = false;
+  edgeHandlers!: EdgeHandlers;
 
   constructor(app: CanvasEditor, id: string, parent?: Shape) {
     super(app, id, parent);
 
     this.prepareText();
+    this.edgeHandlers = new EdgeHandlers(this.app, this);
   }
 
   get data() {
@@ -64,6 +66,8 @@ export class Note extends Shape {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
+
+    this.edgeHandlers.disabled = value;
   }
 
   /**
@@ -113,6 +117,7 @@ export class Note extends Shape {
 
     if (this.isSelected) {
       this.drawSelection(ctx);
+      this.edgeHandlers.draw(ctx);
     }
 
     ctx.closePath();

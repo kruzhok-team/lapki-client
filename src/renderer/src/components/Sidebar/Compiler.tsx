@@ -9,6 +9,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { Elements } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
 export interface CompilerProps {
@@ -32,7 +33,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const { model } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
-  const [importData, setImportData] = useState<string | undefined>(undefined);
+  const [importData, setImportData] = useState<Elements | undefined>(undefined);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -95,7 +96,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      model.files.parseImportData(importData, openData!);
+      model.files.initImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);

@@ -54,7 +54,9 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const result = Object.entries(componentsData)
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([idx]) => getComponentOption(idx));
 
     if (isEditingEvent) {
       result.unshift(getComponentOption('System'));
@@ -129,6 +131,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
 
     // Если есть ошибка то не отправляем форму
     for (const key in errors) {

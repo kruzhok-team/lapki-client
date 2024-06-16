@@ -47,6 +47,8 @@ export type ComponentProto = {
 export type Platform = {
   name?: string;
   description?: string;
+  version: string;
+  standardVersion: string;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

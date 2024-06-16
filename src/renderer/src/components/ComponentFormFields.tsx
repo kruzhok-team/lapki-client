@@ -87,7 +87,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             onChange={(e) => handleInputChange('label', e.target.value)}
           />
 
-          <ComponentFormFieldLabel label="Цвет метки:" name="labelColor">
+          <ComponentFormFieldLabel label="Цвет метки:" name="labelColor" as="div">
             <ColorInput
               clearable={false}
               value={parameters['labelColor'] ?? '#FFFFFF'}

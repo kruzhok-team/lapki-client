@@ -10,6 +10,7 @@ export default {
     extend: {
       fontFamily: {
         Fira: ['Fira Sans', 'sans-serif'],
+        'Fira-Mono': ['Fira Mono', 'monospace'],
       },
       colors,
     },
@@ -24,6 +25,7 @@ export default {
           '--p-a': '#2A62F4',
           '--e': 'red',
           '--s': 'lime',
+          '--w': '#E4A11B',
 
           '--bg-p': '#262626',
           '--bg-s': '#121111',
@@ -31,6 +33,7 @@ export default {
           '--bg-a': '#545454',
 
           '--b-p': '#666666',
+          '--b-w': '#E4A11B',
 
           '--t-p': '#f2f2f2',
           '--t-s': '#fff',
@@ -51,6 +54,7 @@ export default {
           '--p-a': '#2A62F4',
           '--e': 'red',
           '--s': 'lime',
+          '--w': '#E4A11B',
 
           '--bg-p': '#e7e7e7',
           '--bg-s': '#f2f2f2',
@@ -58,6 +62,7 @@ export default {
           '--bg-a': '#c2c2c2',
 
           '--b-p': '#c2c2c2',
+          '--b-w': '#E4A11B',
 
           '--t-p': '#000',
           '--t-s': '#fff',

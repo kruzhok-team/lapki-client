@@ -166,7 +166,6 @@ export class PlatformManager {
   getComponentIcon(name: string, isName?: boolean) {
     const query = isName ? this.resolveComponentType(name) : name;
     const icon = this.componentToIcon.get(query);
-    // console.log(['getComponentIcon', name, isName, icon]);
     if (icon && icons.has(icon)) {
       return icon;
     } else {
@@ -333,6 +332,16 @@ export class PlatformManager {
       opacity,
       parameter,
     });
+  }
+
+  measureFullCondition(ac: Condition): number {
+    if (!operatorSet.has(ac.type)) return 0;
+
+    const leftW = this.measureCondition(ac.value[0]) + picto.eventMargin;
+    const icoW = picto.eventHeight + picto.eventMargin;
+    const rightW = this.measureCondition(ac.value[1]);
+
+    return leftW + icoW + rightW;
   }
 
   measureCondition(ac: Condition): number {

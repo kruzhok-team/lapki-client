@@ -2,7 +2,7 @@ import throttle from 'lodash.throttle';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { DEFAULT_TRANSITION_COLOR, INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
+import { INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
 import {
   State,
   EventSelection,
@@ -37,8 +37,9 @@ type DragInfo = {
 
 interface StatesControllerEvents {
   mouseUpOnState: State | ChoiceState;
+  mouseUpOnInitialState: InitialState;
   mouseUpOnFinalState: FinalState;
-  startNewTransition: State | ChoiceState;
+  startNewTransitionState: State | ChoiceState;
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
@@ -187,7 +188,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id } = args;
+    const { id, eventData } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
@@ -195,8 +196,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (canUndo) {
       const prevEvent = state.data.events.find(
         (value) =>
-          args.triggerComponent === value.trigger.component &&
-          args.triggerMethod === value.trigger.method &&
+          eventData.trigger.component === value.trigger.component &&
+          eventData.trigger.method === value.trigger.method &&
           undefined === value.trigger.args // FIXME: сравнение по args может не работать
       );
 
@@ -464,16 +465,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.controller.transitions.createTransition(
       {
-        color: DEFAULT_TRANSITION_COLOR,
-        source: state.id,
-        target: target.id,
+        sourceId: state.id,
+        targetId: target.id,
       },
       canUndo
     );
   }
   private deleteInitialStateWithTransition(initialStateId: string, canUndo = true) {
     const transition = this.controller.transitions.getBySourceId(initialStateId);
-    const targetId = transition?.data.target;
+    const targetId = transition?.data.targetId;
     if (!transition || !targetId) return;
 
     this.controller.transitions.deleteTransition(transition.id, canUndo);
@@ -598,7 +598,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       {
         id: transitionFromInitialState.id,
         ...transitionFromInitialState.data,
-        target: stateId,
+        targetId: stateId,
       },
       canUndo
     );
@@ -675,7 +675,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     (state.parent || this.view).children.remove(state, Layer.FinalStates); // Отсоединяемся вью от родителя
-    this.unwatch(state); // Убираем обрабочик событий с вью
+    this.unwatch(state); // Убираем обработчик событий с вью
     this.data.finalStates.delete(id); // Удаляем само вью
     this.app.model.deleteFinalState(id); // Удаляем модель
 
@@ -910,11 +910,16 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   handleStartNewTransition = (state: State | ChoiceState) => {
-    this.emit('startNewTransition', state);
+    this.emit('startNewTransitionState', state);
   };
 
   handleMouseUpOnState = (state: State | ChoiceState) => {
     this.emit('mouseUpOnState', state);
+  };
+
+  //Необходимо, чтобы можно можно было создать связь от комментария к блоку обозначения начального состояния, иначе отпускание кнопки мыши не будет работать.
+  handleMouseUpOnInitialState = (state: InitialState) => {
+    this.emit('mouseUpOnInitialState', state);
   };
 
   handleMouseUpOnFinalState = (state: FinalState) => {
@@ -1130,9 +1135,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
   private watchInitialState(state: InitialState) {
     state.on('dragend', this.handleInitialStateDragEnd.bind(this, state));
+    state.on('mouseup', this.handleMouseUpOnInitialState.bind(this, state));
   }
   private unwatchInitialState(state: InitialState) {
     state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
+    state.off('mouseup', this.handleMouseUpOnInitialState.bind(this, state));
   }
   private watchFinalState(state: FinalState) {
     state.on('dragend', this.handleFinalStateDragEnd.bind(this, state));

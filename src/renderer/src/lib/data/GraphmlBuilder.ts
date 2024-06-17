@@ -114,6 +114,7 @@ export function serializeStateEvents(
     serializedActions.push({
       trigger: {
         event: serializeEvent(event.trigger),
+        condition: event.condition ? serializeCondition(event.condition) : undefined,
       },
       action: serializeActions(event.do, components, platform),
     });
@@ -212,8 +213,8 @@ function serializeTransitions(
     const transition = transitions[id];
     const cgmlTransition: CGMLTransition = {
       id: id,
-      source: transition.source,
-      target: transition.target,
+      source: transition.sourceId,
+      target: transition.targetId,
       pivot: undefined,
       unsupportedDataNodes: [],
       color: transition.color,
@@ -311,6 +312,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       id: id,
       type: component.type,
       parameters: component.parameters,
+      order: component.order,
     };
   }
   return cgmlComponents;

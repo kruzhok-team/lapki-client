@@ -1,6 +1,4 @@
 export * from './CodeEditor';
-export * from './CreateModal/CreateModal';
-export * from './EventsModal/EventsModal';
 export * from './DiagramEditor';
 export * from './Documentation/Documentation';
 export * from './SaveRemindModal';
@@ -16,3 +14,6 @@ export * from './EditorSettings';
 export * from './UpdateModal';
 export * from './DiagramContextMenu';
 export * from './PropertiesModal';
+export * from './NodeModal';
+export * from './NoteEdit';
+export * from './StateNameEdit';

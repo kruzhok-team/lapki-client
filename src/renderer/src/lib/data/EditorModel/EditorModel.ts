@@ -18,6 +18,7 @@ import {
   CreateInitialStateParams,
   CreateFinalStateParams,
   CreateChoiceStateParams,
+  SwapComponentsParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {
@@ -171,33 +172,28 @@ export class EditorModel {
   }
 
   changeStateEvents(args: ChangeStateEventsParams) {
-    const { id, triggerComponent, triggerMethod, actions, color } = args;
+    const {
+      id,
+      eventData: { do: actions, trigger, condition },
+      color,
+    } = args;
 
     const state = this.data.elements.states[id];
     if (!state) return false;
 
     const eventIndex = state.events.findIndex(
       (value) =>
-        triggerComponent === value.trigger.component &&
-        triggerMethod === value.trigger.method &&
+        trigger.component === value.trigger.component &&
+        trigger.method === value.trigger.method &&
         undefined === value.trigger.args // FIXME: сравнение по args может не работать
     );
     const event = state.events[eventIndex];
 
     if (event === undefined) {
-      state.events = [
-        ...state.events,
-        {
-          do: actions,
-          trigger: {
-            component: triggerComponent,
-            method: triggerMethod,
-            // args: {},
-          },
-        },
-      ];
+      state.events = [...state.events, args.eventData];
     } else {
       if (actions.length) {
+        event.condition = condition;
         event.do = [...actions];
       } else {
         state.events.splice(eventIndex, 1);
@@ -551,7 +547,7 @@ export class EditorModel {
     if (!transition) return false;
 
     //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
-    // Поэтому данные label нужно не просто перезаписать а соеденять с предыдущими
+    // Поэтому данные label нужно не просто перезаписать, а соединять с предыдущими
     const getNewLabel = () => {
       if (!label) return undefined;
 
@@ -603,9 +599,19 @@ export class EditorModel {
       console.error(['bad new component', name, type]);
       return false;
     }
+
+    const getOrder = () => {
+      const orders = Object.values(this.data.elements.components).map((c) => c.order);
+
+      if (orders.length === 0) return 0;
+
+      return Math.max(...orders) + 1;
+    };
+
     this.data.elements.components[name] = {
       type,
       parameters,
+      order: getOrder(),
     };
 
     this.triggerDataUpdate('elements.components');
@@ -642,6 +648,20 @@ export class EditorModel {
     if (!component) return false;
 
     delete this.data.elements.components[name];
+
+    this.triggerDataUpdate('elements.components');
+
+    return true;
+  }
+
+  swapComponents(args: SwapComponentsParams) {
+    const { name1, name2 } = args;
+
+    const component1 = this.data.elements.components[name1];
+    const component2 = this.data.elements.components[name2];
+    if (!component1 || !component2) return false;
+
+    [component1.order, component2.order] = [component2.order, component1.order];
 
     this.triggerDataUpdate('elements.components');
 
@@ -687,6 +707,18 @@ export class EditorModel {
     if (!this.data.elements.notes.hasOwnProperty(id)) return false;
 
     this.data.elements.notes[id].text = text;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
+  changeNoteSelection(id: string, selection: boolean) {
+    const note = this.data.elements.notes[id];
+    if (!note) return false;
+
+    note.selection = selection;
 
     this.triggerDataUpdate('elements.notes');
 

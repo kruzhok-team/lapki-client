@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Buffer } from 'buffer';
 
 import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
-import { generateId, randomColor } from '@renderer/lib/utils';
+import { generateId } from '@renderer/lib/utils';
 import {
   CompilerResult,
   Binary,
@@ -16,8 +16,9 @@ import {
   CompilerInitialState,
   CompilerElements,
   CompilerState,
+  CompilerComponent,
 } from '@renderer/types/CompilerTypes';
-import { Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;
@@ -28,8 +29,8 @@ function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransitio
   for (const transitionId in oldTransitions) {
     const oldTransition = oldTransitions[transitionId];
     newTransitions[transitionId] = {
-      source: oldTransition.source,
-      target: oldTransition.target,
+      sourceId: oldTransition.source,
+      targetId: oldTransition.target,
       color: oldTransition.color,
       label: {
         trigger: oldTransition.trigger,
@@ -58,7 +59,6 @@ function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: str
       name: oldState.name,
       parentId: oldState.parent,
       events: oldState.events,
-      color: randomColor(),
     };
   }
   return states;
@@ -70,9 +70,8 @@ function actualizeInitialState(
   const initialId = generateId();
   const transitionId = generateId();
   const transition: Transition = {
-    source: initialId,
-    target: oldInitial.target,
-    color: randomColor(),
+    sourceId: initialId,
+    targetId: oldInitial.target,
   };
   const initial: InitialState = {
     position: oldInitial.position,
@@ -80,12 +79,31 @@ function actualizeInitialState(
   return [{ [initialId]: initial }, { [transitionId]: transition }];
 }
 
+function actualizeComponents(oldComponents: { [id: string]: CompilerComponent }): {
+  [id: string]: Component;
+} {
+  const components: {
+    [id: string]: Component;
+  } = {};
+  let orderComponent = 0;
+  for (const oldComponentId in oldComponents) {
+    const oldComponent = oldComponents[oldComponentId];
+    components[oldComponentId] = {
+      ...oldComponent,
+      order: orderComponent,
+    };
+    orderComponent += 1;
+  }
+
+  return components;
+}
+
 function actualizeElements(oldElements: CompilerElements): Elements {
   const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
   return {
     platform: oldElements.platform,
     parameters: oldElements.parameters,
-    components: oldElements.components,
+    components: actualizeComponents(oldElements.components),
     states: actualizeStates(oldElements.states),
     finalStates: {},
     choiceStates: {},

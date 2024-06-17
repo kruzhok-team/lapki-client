@@ -14,7 +14,7 @@ interface ComponentEditModalProps {
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (idx: string, data: ComponentData, newName?: string) => void;
+  onEdit: (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => void;
   onDelete: (idx: string) => void;
 }
 

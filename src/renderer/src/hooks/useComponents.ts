@@ -13,7 +13,7 @@ export const useComponents = () => {
   const components = model.useData('elements.components');
 
   const [idx, setIdx] = useState('');
-  const [data, setData] = useState<ComponentData>({ type: '', parameters: {} });
+  const [data, setData] = useState<ComponentData>({ type: '', parameters: {}, order: 0 });
   const [proto, setProto] = useState(systemComponent);
 
   const [vacantComponents, setVacantComponents] = useState([] as ComponentEntry[]);
@@ -68,13 +68,13 @@ export const useComponents = () => {
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor?.controller.addComponent({ name: realName, type: idx });
+    editor.controller.addComponent({ name: realName, type: idx, parameters: {} });
 
     onRequestEditComponent(realName);
   };
 
-  const onEdit = (idx: string, data: ComponentData, newName?: string) => {
-    editor?.controller.editComponent({
+  const onEdit = (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => {
+    editor.controller.editComponent({
       name: idx,
       parameters: data.parameters,
       newName,
@@ -82,9 +82,13 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor?.controller.removeComponent({ name: idx, purge: false });
+    editor.controller.removeComponent({ name: idx, purge: false });
 
     editClose();
+  };
+
+  const onSwapComponents = (name1: string, name2: string) => {
+    editor.controller.swapComponents({ name1, name2 });
   };
 
   return {
@@ -112,6 +116,7 @@ export const useComponents = () => {
       onEdit,
       onSubmit: onDelete,
     },
+    onSwapComponents,
     onRequestAddComponent,
     onRequestDeleteComponent,
     onRequestEditComponent,

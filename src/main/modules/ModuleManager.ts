@@ -143,17 +143,8 @@ export class ModuleManager {
             const port = await findFreePort();
             await settings.set('serialmonitor.localPort', port);
             defaultSettings.serialmonitor.localPort = Number(port);
-            const serialMonitorArgs: string[] = [
-              '-updateList=1',
-              '-listCooldown=0',
-              `-address=localhost:${port}`,
-            ];
+            const serialMonitorArgs: string[] = [`-address=localhost:${port}`];
 
-            const configPath = '';
-
-            if (existsSync(configPath)) {
-              serialMonitorArgs.push(`-configPath=${configPath}`);
-            }
             chprocess = spawn(modulePath, serialMonitorArgs);
             break;
           }

@@ -101,6 +101,7 @@ function actualizeComponents(oldComponents: { [id: string]: CompilerComponent })
 function actualizeElements(oldElements: CompilerElements): Elements {
   const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
   return {
+    visual: true,
     platform: oldElements.platform,
     parameters: oldElements.parameters,
     components: actualizeComponents(oldElements.components),

@@ -8,6 +8,7 @@ import {
   CGMLAction,
   CGMLTransitionAction,
   CGMLVertex,
+  CGMLMeta,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -417,6 +418,21 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   return components;
 }
 
+function getVisualFlag(rawMeta: CGMLMeta, platformVisual: boolean): boolean {
+  const visual: boolean | undefined = rawMeta.values['lapkiVisual']
+    ? rawMeta.values['lapkiVisual'] === 'true'
+    : undefined;
+  if (visual === undefined) {
+    return platformVisual;
+  }
+  if (visual && !platformVisual) {
+    throw new Error(
+      'В схеме флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
+    );
+  }
+  return visual;
+}
+
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
@@ -433,7 +449,7 @@ export function importGraphml(
       components: {},
       platform: rawElements.platform,
       meta: {},
-      visual: true,
+      visual: false,
     };
     if (!isPlatformAvailable(rawElements.platform)) {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
@@ -466,8 +482,7 @@ export function importGraphml(
       platform.components,
       elements.components
     );
-    // TODO Брать из схемы
-    elements.visual = platform.visual;
+    elements.visual = getVisualFlag(rawElements.meta, platform.visual);
 
     validateElements(elements, platform);
     return elements;

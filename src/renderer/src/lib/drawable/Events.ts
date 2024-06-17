@@ -2,7 +2,7 @@ import { State, picto } from '@renderer/lib/drawable';
 import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { isPointInRectangle } from '@renderer/lib/utils';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
-import { getColor } from '@renderer/theme';
+import theme from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { serializeStateActions } from '../data/GraphmlBuilder';
@@ -232,7 +232,7 @@ export class Events {
       x: x + px,
       y: y + titleHeight + py,
       textAlign: 'left',
-      color: getColor('text-primary'),
+      color: theme.colors.diagram.state.titleColor,
       font: {
         fontSize,
         fontFamily: 'Fira Sans',

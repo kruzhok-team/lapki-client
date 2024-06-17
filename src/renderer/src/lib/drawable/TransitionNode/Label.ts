@@ -4,7 +4,7 @@ import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { Transition, picto } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
-import { getColor } from '@renderer/theme';
+import theme from '@renderer/theme';
 
 /**
  * Условие перехода между состояниями.
@@ -129,7 +129,7 @@ export class Label implements Drawable {
       x: x + p,
       y: y + p,
       textAlign: 'left',
-      color: getColor('text-primary'),
+      color: theme.colors.diagram.transition.color,
       font: {
         fontSize,
         fontFamily: 'Fira Sans',

@@ -29,8 +29,6 @@ description/ Пример описания схемы,
 
 target/ Autoborder
 
-lapkiVisual/ false
-
 </data>
     </node>
     <node id="n0">

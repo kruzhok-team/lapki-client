@@ -1,20 +1,27 @@
 export class SerialMonitor {
   static autoScroll: boolean;
+  static setInputValue: (newInputValue: string) => void;
   static messages: string[];
   static setMessages: (update: (prevMessages: string[]) => string[]) => void;
-  static setInputValue: (newInputValue: string) => void;
+  static devices: string[];
+  static setDevices: (prevPorts: string[]) => void;
+
   static ws: WebSocket | null = null;
 
   static bindReact(
     autoScroll: boolean,
+    setInputValue: (newInputValue: string) => void,
     messages: string[],
     setMessages: (update: (prevMessages: string[]) => string[]) => void,
-    setInputValue: (newInputValue: string) => void
+    devices: string[],
+    setDevices: (prevPorts: string[]) => void
   ): void {
     this.autoScroll = autoScroll;
+    this.setInputValue = setInputValue;
     this.messages = messages;
     this.setMessages = setMessages;
-    this.setInputValue = setInputValue;
+    this.devices = devices;
+    this.setDevices = setDevices;
   }
 
   static async connect() {
@@ -26,10 +33,18 @@ export class SerialMonitor {
       };
 
       this.ws.onmessage = (message) => {
-        // Используем функцию обратного вызова для обновления сообщений
-        this.setMessages((prevMessages) => [...prevMessages, message.data]);
-
-        //this.setMessages([...this.messages, message.data]); // Обновляем сообщения
+        try {
+          const data = JSON.parse(message.data); // Парсим JSON
+          if (Array.isArray(data)) {
+            // Если данные - это массив, это список портов
+            this.setDevices(data); // Устанавливаем массив строк в devices
+            console.log(data);
+          }
+        } catch (error) {
+          // Если не удалось распарсить JSON, это не список портов
+          // Используем данные как сообщение
+          this.setMessages((prevMessages) => [...prevMessages, message.data]);
+        }
       };
 
       this.ws.onclose = async () => {

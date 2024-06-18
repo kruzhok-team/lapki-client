@@ -26,6 +26,8 @@ const colorNames = {
   'scrollbar-thumb': '--s-th',
 
   grid: '--g',
+  'default-note-bg': '--d-n-bg',
+  'default-note-color': '--d-n-c',
   'default-transition-color': '--d-t-c',
   'default-state-color': '--d-s-c',
 } as const;

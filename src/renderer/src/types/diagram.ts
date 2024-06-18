@@ -86,6 +86,9 @@ export type Component = {
 export type Note = {
   position: Point;
   text: string;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: number;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 };

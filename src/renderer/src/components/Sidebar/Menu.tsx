@@ -55,7 +55,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Сохранить как...',
       onClick: props.onRequestSaveAsFile,
-      disabled: !isStale || !isInitialized,
+      disabled: !isInitialized,
     },
     {
       text: 'Импорт...',

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { SerialMonitor } from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
@@ -6,11 +6,24 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { Select, SelectOption, Switch, TextInput } from './UI';
 
 export const SerialMonitorTab: React.FC = () => {
-  const { autoScroll, setAutoScroll, inputValue, setInputValue, messages, setMessages } =
-    useSerialMonitor();
-  const [port, setPort] = useState<SelectOption | null>({ label: 'COM1', value: 'COM1' });
+  const {
+    autoScroll,
+    setAutoScroll,
+    inputValue,
+    setInputValue,
+    messages,
+    setMessages,
+    devices,
+    setDevices,
+  } = useSerialMonitor();
+  //Выбранный порт на данный момент
+  const [port, setPort] = useState<SelectOption | null>(null);
+  //Список рабочих портов
+  const optionsPort: SelectOption[] = devices.map((device) => ({
+    value: device,
+    label: device,
+  }));
   const [baudRate, setBaudRate] = useState<SelectOption | null>({ label: '9600', value: '9600' });
-  //const [bytes, setBytes] = useState<SelectOption | null>({ label: '1024', value: '1024' });
 
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -20,8 +33,8 @@ export const SerialMonitorTab: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    SerialMonitor.bindReact(autoScroll, messages, setMessages, setInputValue);
+  useLayoutEffect(() => {
+    SerialMonitor.bindReact(autoScroll, setInputValue, messages, setMessages, devices, setDevices);
     SerialMonitor.connect();
 
     return () => {
@@ -30,12 +43,19 @@ export const SerialMonitorTab: React.FC = () => {
     };
   }, []);
 
+  useLayoutEffect(() => {
+    // После обновления очищаем значение port
+    if (port && !devices.includes(port.value)) {
+      setPort(null);
+    }
+  }, [devices, port]);
+
   // При изменении messages прокручиваем вниз, если включена автопрокрутка
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToBottom();
   }, [messages, autoScroll]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (SerialMonitor.ws && SerialMonitor.ws.readyState === WebSocket.OPEN && port && baudRate) {
       SerialMonitor.ws.send(JSON.stringify({ port: port.value, baudRate: baudRate.value }));
     }
@@ -46,6 +66,12 @@ export const SerialMonitorTab: React.FC = () => {
       // Отправляем сообщение через SerialMonitor
       SerialMonitor.send(JSON.stringify({ command: inputValue }));
       setInputValue('');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSend();
     }
   };
 
@@ -61,6 +87,7 @@ export const SerialMonitorTab: React.FC = () => {
           placeholder="Напишите значение"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
         <button className="btn-primary" onClick={handleSend}>
           Отправить
@@ -81,17 +108,7 @@ export const SerialMonitorTab: React.FC = () => {
                   setPort(option as SelectOption);
                 }
               }}
-              options={[
-                { label: 'COM1', value: 'COM1' },
-                { label: 'COM2', value: 'COM2' },
-                { label: 'COM3', value: 'COM3' },
-                { label: 'COM4', value: 'COM4' },
-                { label: 'COM5', value: 'COM5' },
-                { label: 'COM6', value: 'COM6' },
-                { label: 'COM7', value: 'COM7' },
-                { label: 'COM8', value: 'COM8' },
-                { label: 'COM9', value: 'COM9' },
-              ]}
+              options={optionsPort}
             />
           </div>
           <div className="mr-2 w-48">

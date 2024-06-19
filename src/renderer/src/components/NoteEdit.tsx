@@ -32,7 +32,11 @@ export const NoteEdit: React.FC = () => {
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Отмена редактирования
     if (e.key === 'Escape') {
-      setInitialText(null);
+      const el = ref.current;
+      if (el) {
+        el.textContent = initialText;
+        setInitialText(initialText);
+      }
       return close();
     }
   };

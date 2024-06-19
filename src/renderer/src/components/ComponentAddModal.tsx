@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge';
 import UnknownIcon from '@renderer/assets/icons/unknown.svg';
 import { ScrollableList } from '@renderer/components/ScrollableList';
 import { Modal } from '@renderer/components/UI';
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -17,7 +16,6 @@ interface ComponentAddModalProps {
   isOpen: boolean;
   onClose: () => void;
 
-  editor: CanvasEditor;
   vacantComponents: ComponentEntry[];
   onSubmit: (idx: string, name: string | undefined) => void;
 }
@@ -25,19 +23,18 @@ interface ComponentAddModalProps {
 export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   onClose,
   onSubmit,
-  editor,
   vacantComponents,
   ...props
 }) => {
-  const { model } = useEditorContext();
-
+  const editor = useEditorContext();
+  const { model } = editor;
   const components = model.useData('elements.components');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
-    editor.mouse.element.focus();
+    editor.focus();
   };
 
   const handleSubmit = (e: React.FormEvent) => {

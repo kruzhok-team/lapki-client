@@ -51,7 +51,7 @@ export const useDiagramContextMenu = () => {
           type: 'paste',
           action: () => {
             editor?.controller.pasteSelected();
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -63,7 +63,7 @@ export const useDiagramContextMenu = () => {
               position: canvasPos,
               placeInCenter: true,
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -74,7 +74,7 @@ export const useDiagramContextMenu = () => {
               position: canvasPos,
               placeInCenter: true,
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -85,7 +85,7 @@ export const useDiagramContextMenu = () => {
               position: canvasPos,
               placeInCenter: true,
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -99,7 +99,7 @@ export const useDiagramContextMenu = () => {
             });
 
             editor.controller.notes.emit('change', note);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -112,7 +112,7 @@ export const useDiagramContextMenu = () => {
               code: editor.model.serializer.getAll('JSON'),
               language: 'json',
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -120,7 +120,7 @@ export const useDiagramContextMenu = () => {
           type: 'centerCamera',
           action: () => {
             editor?.view.viewCentering();
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);
@@ -134,7 +134,7 @@ export const useDiagramContextMenu = () => {
           type: 'copy',
           action: () => {
             editor?.controller.copySelected();
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -142,7 +142,7 @@ export const useDiagramContextMenu = () => {
           type: 'paste',
           action: () => {
             editor?.controller.pasteSelected();
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -155,7 +155,7 @@ export const useDiagramContextMenu = () => {
               type: 'initialState',
               action: () => {
                 editor.controller.states.setInitialState(state.id);
-                editor.mouse.element.focus();
+                editor.focus();
               },
             },
             {
@@ -167,12 +167,12 @@ export const useDiagramContextMenu = () => {
                   position: editor.view.windowToWorldCoords(position),
                   parentId: state.id,
                 });
-                editor.mouse.element.focus();
+                editor.focus();
               },
             },
           ],
           action: () => {
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -185,7 +185,7 @@ export const useDiagramContextMenu = () => {
               code: editor.model.serializer.getState(state.id) ?? '',
               language: 'json',
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -193,7 +193,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteState(state.id);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);
@@ -207,7 +207,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteFinalState(state.id);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);
@@ -221,7 +221,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteChoiceState(state.id);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);
@@ -238,7 +238,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteEvent(state.id, event);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);
@@ -256,7 +256,7 @@ export const useDiagramContextMenu = () => {
               id: transition.id,
               sourceId: state.id,
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         };
       };
@@ -271,7 +271,7 @@ export const useDiagramContextMenu = () => {
               id: transition.id,
               targetId: state.id,
             });
-            editor.mouse.element.focus();
+            editor.focus();
           },
         };
       };
@@ -296,7 +296,7 @@ export const useDiagramContextMenu = () => {
                 type: 'copy',
                 action: () => {
                   editor?.controller.copySelected();
-                  editor.mouse.element.focus();
+                  editor.focus();
                 },
               },
               {
@@ -305,7 +305,7 @@ export const useDiagramContextMenu = () => {
                 isFolder: true,
                 children: [...sourceArray.map(([_id, value]) => source(value))],
                 action: () => {
-                  editor.mouse.element.focus();
+                  editor.focus();
                 },
               },
               {
@@ -314,7 +314,7 @@ export const useDiagramContextMenu = () => {
                 isFolder: true,
                 children: [...targetArray.map(([_id, value]) => target(value))],
                 action: () => {
-                  editor.mouse.element.focus();
+                  editor.focus();
                 },
               },
               {
@@ -327,7 +327,7 @@ export const useDiagramContextMenu = () => {
                     code: editor.model.serializer.getTransition(transition.id) ?? '',
                     language: 'json',
                   });
-                  editor.mouse.element.focus();
+                  editor.focus();
                 },
               },
             ]
@@ -337,7 +337,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.transitions.deleteTransition(transition.id);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);
@@ -351,7 +351,7 @@ export const useDiagramContextMenu = () => {
           type: 'edit',
           action: () => {
             editor.controller.notes.emit('change', note);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
         {
@@ -359,7 +359,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor?.controller.notes.deleteNote(note.id);
-            editor.mouse.element.focus();
+            editor.focus();
           },
         },
       ]);

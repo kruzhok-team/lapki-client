@@ -143,4 +143,11 @@ export class CanvasEditor {
     this.model.data.isMounted = false;
     this.model.triggerDataUpdate('isMounted');
   }
+
+  focus() {
+    if (!this._canvas) {
+      throw new Error('Cannot focus before initialization');
+    }
+    this._canvas.element.focus();
+  }
 }

@@ -74,8 +74,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {/* {visual && controller.platform?.getFullComponentIcon(name)} */}
-          {controller.platform?.getFullComponentIcon(name)}
+          {visual && controller.platform?.getFullComponentIcon(name)}
           <p className="ml-2 line-clamp-1">{name}</p>
         </button>
       )}

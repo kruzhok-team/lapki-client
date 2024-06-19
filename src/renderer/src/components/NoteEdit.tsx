@@ -21,40 +21,35 @@ export const NoteEdit: React.FC = () => {
     const el = ref.current;
     const value = (el?.textContent ?? '').trim();
 
-    if (!el || noteId === null || initialText === value) return;
+    if (noteId !== null && initialText !== value)
+      editor.controller.notes.changeNoteText(noteId, value);
 
-    editor.controller.notes.changeNoteText(noteId, value);
+    if (noteId) editor.controller.notes.setIsVisible(noteId, true);
 
     setNoteId(null);
     setInitialText(null);
-  }, [editor.controller.notes, initialText, noteId]);
+    close();
+  }, [close, editor.controller.notes, initialText, noteId]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Отмена редактирования
     if (e.key === 'Escape') {
-      const el = ref.current;
-      if (el) {
-        el.textContent = initialText;
-        setInitialText(initialText);
-      }
+      if (noteId) editor.controller.notes.setIsVisible(noteId, true);
+
+      setNoteId(null);
+      setInitialText(null);
       return close();
     }
   };
 
-  const handleClose = useCallback(() => {
-    handleSubmit();
-
-    if (noteId) editor.controller.notes.setIsVisible(noteId, true);
-
-    close();
-  }, [close, editor.controller.notes, handleSubmit, noteId]);
+  useEffect(() => {
+    window.addEventListener('wheel', handleSubmit);
+    return () => window.removeEventListener('wheel', handleSubmit);
+  }, [handleSubmit]);
 
   useEffect(() => {
-    window.addEventListener('wheel', handleClose);
-    return () => window.removeEventListener('wheel', handleClose);
-  }, [handleClose]);
+    if (!editor) return;
 
-  useEffect(() => {
     const handler = (note: Note) => {
       const el = ref.current;
       if (!el) return;
@@ -104,7 +99,7 @@ export const NoteEdit: React.FC = () => {
       )}
       placeholder="Придумайте заметку"
       onKeyUp={handleKeyUp}
-      onBlur={handleClose}
+      onBlur={handleSubmit}
     />
   );
 };

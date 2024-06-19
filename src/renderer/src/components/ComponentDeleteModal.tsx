@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
@@ -8,6 +9,7 @@ interface ComponentDeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
 
+  editor: CanvasEditor;
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
@@ -15,6 +17,7 @@ interface ComponentDeleteModalProps {
 }
 
 export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
+  editor,
   idx,
   data,
   proto,
@@ -22,6 +25,11 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   onSubmit,
   ...props
 }) => {
+  // Сброс к начальному состоянию после закрытия
+  const handleAfterClose = () => {
+    editor.mouse.element.focus();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -36,6 +44,7 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   return (
     <Modal
       {...props}
+      onAfterClose={handleAfterClose}
       onRequestClose={onClose}
       title="Удаление компонента"
       submitLabel="Удалить"

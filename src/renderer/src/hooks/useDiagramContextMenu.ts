@@ -51,6 +51,7 @@ export const useDiagramContextMenu = () => {
           type: 'paste',
           action: () => {
             editor?.controller.pasteSelected();
+            editor.mouse.element.focus();
           },
         },
         {
@@ -62,6 +63,7 @@ export const useDiagramContextMenu = () => {
               position: canvasPos,
               placeInCenter: true,
             });
+            editor.mouse.element.focus();
           },
         },
         {
@@ -72,6 +74,7 @@ export const useDiagramContextMenu = () => {
               position: canvasPos,
               placeInCenter: true,
             });
+            editor.mouse.element.focus();
           },
         },
         {
@@ -82,6 +85,7 @@ export const useDiagramContextMenu = () => {
               position: canvasPos,
               placeInCenter: true,
             });
+            editor.mouse.element.focus();
           },
         },
         {
@@ -95,6 +99,7 @@ export const useDiagramContextMenu = () => {
             });
 
             editor.controller.notes.emit('change', note);
+            editor.mouse.element.focus();
           },
         },
         {
@@ -107,6 +112,7 @@ export const useDiagramContextMenu = () => {
               code: editor.model.serializer.getAll('JSON'),
               language: 'json',
             });
+            editor.mouse.element.focus();
           },
         },
         {
@@ -114,6 +120,7 @@ export const useDiagramContextMenu = () => {
           type: 'centerCamera',
           action: () => {
             editor?.view.viewCentering();
+            editor.mouse.element.focus();
           },
         },
       ]);
@@ -127,6 +134,7 @@ export const useDiagramContextMenu = () => {
           type: 'copy',
           action: () => {
             editor?.controller.copySelected();
+            editor.mouse.element.focus();
           },
         },
         {
@@ -134,6 +142,7 @@ export const useDiagramContextMenu = () => {
           type: 'paste',
           action: () => {
             editor?.controller.pasteSelected();
+            editor.mouse.element.focus();
           },
         },
         {
@@ -146,6 +155,7 @@ export const useDiagramContextMenu = () => {
               type: 'initialState',
               action: () => {
                 editor.controller.states.setInitialState(state.id);
+                editor.mouse.element.focus();
               },
             },
             {
@@ -157,11 +167,13 @@ export const useDiagramContextMenu = () => {
                   position: editor.view.windowToWorldCoords(position),
                   parentId: state.id,
                 });
+                editor.mouse.element.focus();
               },
             },
           ],
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          action: () => {},
+          action: () => {
+            editor.mouse.element.focus();
+          },
         },
         {
           label: 'Посмотреть код',
@@ -173,6 +185,7 @@ export const useDiagramContextMenu = () => {
               code: editor.model.serializer.getState(state.id) ?? '',
               language: 'json',
             });
+            editor.mouse.element.focus();
           },
         },
         {
@@ -180,6 +193,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteState(state.id);
+            editor.mouse.element.focus();
           },
         },
       ]);
@@ -193,6 +207,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteFinalState(state.id);
+            editor.mouse.element.focus();
           },
         },
       ]);
@@ -206,6 +221,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteChoiceState(state.id);
+            editor.mouse.element.focus();
           },
         },
       ]);
@@ -222,6 +238,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.states.deleteEvent(state.id, event);
+            editor.mouse.element.focus();
           },
         },
       ]);
@@ -233,13 +250,13 @@ export const useDiagramContextMenu = () => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'source',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
               sourceId: state.id,
             });
+            editor.mouse.element.focus();
           },
         };
       };
@@ -248,13 +265,13 @@ export const useDiagramContextMenu = () => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'target',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
               id: transition.id,
               targetId: state.id,
             });
+            editor.mouse.element.focus();
           },
         };
       };
@@ -279,6 +296,7 @@ export const useDiagramContextMenu = () => {
                 type: 'copy',
                 action: () => {
                   editor?.controller.copySelected();
+                  editor.mouse.element.focus();
                 },
               },
               {
@@ -286,16 +304,18 @@ export const useDiagramContextMenu = () => {
                 type: 'source',
                 isFolder: true,
                 children: [...sourceArray.map(([_id, value]) => source(value))],
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                action: () => {},
+                action: () => {
+                  editor.mouse.element.focus();
+                },
               },
               {
                 label: 'Выбрать цель(target)',
                 type: 'target',
                 isFolder: true,
                 children: [...targetArray.map(([_id, value]) => target(value))],
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                action: () => {},
+                action: () => {
+                  editor.mouse.element.focus();
+                },
               },
               {
                 label: 'Посмотреть код',
@@ -307,6 +327,7 @@ export const useDiagramContextMenu = () => {
                     code: editor.model.serializer.getTransition(transition.id) ?? '',
                     language: 'json',
                   });
+                  editor.mouse.element.focus();
                 },
               },
             ]
@@ -316,6 +337,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor.controller.transitions.deleteTransition(transition.id);
+            editor.mouse.element.focus();
           },
         },
       ]);
@@ -329,6 +351,7 @@ export const useDiagramContextMenu = () => {
           type: 'edit',
           action: () => {
             editor.controller.notes.emit('change', note);
+            editor.mouse.element.focus();
           },
         },
         {
@@ -336,6 +359,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor?.controller.notes.deleteNote(note.id);
+            editor.mouse.element.focus();
           },
         },
       ]);

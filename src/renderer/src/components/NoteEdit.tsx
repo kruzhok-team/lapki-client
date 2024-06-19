@@ -29,6 +29,14 @@ export const NoteEdit: React.FC = () => {
     setInitialText(null);
   }, [editor.controller.notes, initialText, noteId]);
 
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Отмена редактирования
+    if (e.key === 'Escape') {
+      setInitialText(null);
+      return close();
+    }
+  };
+
   const handleClose = useCallback(() => {
     handleSubmit();
 
@@ -91,6 +99,7 @@ export const NoteEdit: React.FC = () => {
         !isOpen && 'hidden'
       )}
       placeholder="Придумайте заметку"
+      onKeyUp={handleKeyUp}
       onBlur={handleClose}
     />
   );

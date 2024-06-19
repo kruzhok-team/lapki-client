@@ -145,9 +145,7 @@ export class CanvasEditor {
   }
 
   focus() {
-    if (!this._canvas) {
-      throw new Error('Cannot focus before initialization');
-    }
+    if (!this._canvas) return;
     this._canvas.element.focus();
   }
 }

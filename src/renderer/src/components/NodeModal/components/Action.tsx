@@ -14,6 +14,9 @@ interface ActionProps {
   data: ActionData;
 }
 
+/**
+ * Отображает одно действие в блоке действий
+ */
 export const Action: React.FC<ActionProps> = (props) => {
   const { isSelected, onSelect, onChange, onDragStart, onDrop, data } = props;
 

@@ -15,6 +15,9 @@ import { useActions } from '../hooks';
 
 type ActionsProps = ReturnType<typeof useActions>;
 
+/**
+ * Блок действия в модалках редактирования нод
+ */
 export const Actions: React.FC<ActionsProps> = (props) => {
   const {
     tabValue,

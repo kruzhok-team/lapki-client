@@ -57,6 +57,7 @@ export class Label implements Drawable {
 
     const { x, y, width, height } = this.parent.drawBounds;
 
+    // TODO(bryzZz) Это должно переехать в тему
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();

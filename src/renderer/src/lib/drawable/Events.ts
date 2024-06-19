@@ -52,6 +52,7 @@ export class Events {
         this.app.model.data.elements.components
       );
 
+      //TODO(bryzZz) изменение параметров текста (общее для редактора)
       const textData = prepareText(text, this.parent.dimensions.width - 2 * 15, {
         fontFamily: 'Fira Sans',
         fontSize: 16,

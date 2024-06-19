@@ -49,7 +49,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         value: id,
         label: id,
         hint: proto?.description,
-        icon: visual && controller.platform!.getFullComponentIcon(id, 'mr-1size-7'),
+        icon: visual && controller.platform!.getFullComponentIcon(id, 'mr-1 size-7'),
       };
     };
 

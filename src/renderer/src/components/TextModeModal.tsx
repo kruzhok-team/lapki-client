@@ -8,7 +8,7 @@ interface TextModeModalProps {
   onClose: () => void;
 }
 /**
-  Окно, ожидающее подтвержение пользователя о том, что он хочет перейти в текстовый режим
+  Окно, ожидающее подтверждение пользователя о том, что он хочет перейти в текстовый режим
 */
 export const TextModeModal: React.FC<TextModeModalProps> = ({ onClose, ...props }) => {
   const { controller } = useEditorContext();
@@ -30,7 +30,7 @@ export const TextModeModal: React.FC<TextModeModalProps> = ({ onClose, ...props 
       onSubmit={handleSubmit}
     >
       Вы уверены, что хотите перейти в текстовый режим? Это действие <b>нельзя будет отменить</b>.
-      После нажатия на кнопку "Перейти" данную схему нельзя будет сделать визуальеой.
+      После нажатия на кнопку "Перейти" данную схему нельзя будет сделать визуальной.
     </Modal>
   );
 };

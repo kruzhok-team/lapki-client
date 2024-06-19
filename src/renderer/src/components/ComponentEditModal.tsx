@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
@@ -11,6 +12,7 @@ interface ComponentEditModalProps {
   isOpen: boolean;
   onClose: () => void;
 
+  editor: CanvasEditor;
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
@@ -20,6 +22,7 @@ interface ComponentEditModalProps {
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   isOpen,
+  editor,
   idx,
   data,
   proto,
@@ -39,6 +42,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const handleAfterClose = () => {
     setName(idx);
     setParameters({ ...data.parameters });
+    editor.mouse.element.focus();
   };
 
   const handleSubmit = (e: React.FormEvent) => {

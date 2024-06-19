@@ -95,12 +95,14 @@ export const useComponents = () => {
     addProps: {
       isOpen: isAddOpen,
       onClose: closeAdd,
+      editor,
       vacantComponents,
       onSubmit: onAdd,
     },
     editProps: {
       isOpen: isEditOpen,
       onClose: editClose,
+      editor,
       idx,
       data,
       proto,
@@ -110,6 +112,7 @@ export const useComponents = () => {
     deleteProps: {
       isOpen: isDeleteOpen,
       onClose: deleteClose,
+      editor,
       idx,
       data,
       proto,

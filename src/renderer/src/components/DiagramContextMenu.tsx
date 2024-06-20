@@ -102,6 +102,11 @@ export const DiagramContextMenu: React.FC = () => {
     setOpenMenu('');
   }, [isOpen]);
 
+  const handleFocusClose = () => {
+    editor.focus();
+    onClose();
+  };
+
   return (
     <div
       ref={refs.setFloating}
@@ -117,7 +122,7 @@ export const DiagramContextMenu: React.FC = () => {
             )}
             onClick={() => {
               action();
-              isFolder || editor.focus(), onClose();
+              isFolder || handleFocusClose();
             }}
             onMouseOver={() => {
               openMenu !== type && setOpenMenu(type);
@@ -153,8 +158,7 @@ export const DiagramContextMenu: React.FC = () => {
                     )}
                     onClick={() => {
                       action();
-                      editor.focus();
-                      onClose();
+                      handleFocusClose();
                     }}
                   >
                     <div className="flex">

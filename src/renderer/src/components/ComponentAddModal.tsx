@@ -32,7 +32,6 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 
-  // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
     editor.focus();
   };

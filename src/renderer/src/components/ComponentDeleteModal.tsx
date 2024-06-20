@@ -25,7 +25,6 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
 }) => {
   const editor = useEditorContext();
 
-  // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
     editor.focus();
   };

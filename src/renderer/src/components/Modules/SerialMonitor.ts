@@ -29,26 +29,25 @@ export class SerialMonitor {
       this.ws = new WebSocket('ws://localhost:8080/serialmonitor');
 
       this.ws.onopen = () => {
-        console.log('WebSocket работает!');
+        this.message('Сервер подключён!');
       };
 
       this.ws.onmessage = (message) => {
         try {
           const data = JSON.parse(message.data); // Парсим JSON
+          // Если данные - это массив, это список портов
           if (Array.isArray(data)) {
-            // Если данные - это массив, это список портов
             this.setDevices(data); // Устанавливаем массив строк в devices
-            console.log(data);
           }
         } catch (error) {
           // Если не удалось распарсить JSON, это не список портов
           // Используем данные как сообщение
-          this.setMessages((prevMessages) => [...prevMessages, message.data]);
+          this.message(message.data);
         }
       };
 
       this.ws.onclose = async () => {
-        console.log('WebSocket закрыт. Повторное подключение будет через несколько секунд...');
+        this.message('Сервер отключён. Подключение будет через 5 секунд...');
         // Повторное подключение через некоторое время, например, через 5 секунд
         setTimeout(() => this.connect(), 5000);
       };
@@ -61,7 +60,7 @@ export class SerialMonitor {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(data);
     } else {
-      console.error('WebSocket не открыт или не инициализирован.');
+      this.message('Сервер отключен или не инициализирован.');
     }
   }
 
@@ -69,5 +68,10 @@ export class SerialMonitor {
     if (this.ws) {
       this.ws.close(); // Закрываем WebSocket, если он существует
     }
+  }
+
+  //Функция для формирования сообщения
+  static message(message) {
+    this.setMessages((prevMessages) => [...prevMessages, message]);
   }
 }

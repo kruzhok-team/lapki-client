@@ -389,12 +389,8 @@ export const Loader: React.FC<FlasherProps> = ({
         >
           Результат прошивки
         </button>
-        <button
-          className="btn-primary mb-2 w-full"
-          onClick={handleAddSerialMonitorTab}
-          //disabled={flashResult === undefined}
-        >
-          Serial monitor
+        <button className="btn-primary mb-2 w-full" onClick={handleAddSerialMonitorTab}>
+          Монитор порта
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>

@@ -110,6 +110,7 @@ export const SerialMonitorTab: React.FC = () => {
             <Select
               isSearchable={false}
               value={port}
+              placeholder="Выберите порт..."
               onChange={(option) => {
                 if (option) {
                   setPort(option as SelectOption);
@@ -122,6 +123,7 @@ export const SerialMonitorTab: React.FC = () => {
             <Select
               isSearchable={false}
               value={baudRate}
+              placeholder="Выберите скорость передачи..."
               onChange={(option) => {
                 if (option) {
                   setBaudRate(option as SelectOption);

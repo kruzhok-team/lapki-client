@@ -48,8 +48,6 @@ export const NoteEdit: React.FC = () => {
   }, [handleSubmit]);
 
   useEffect(() => {
-    if (!editor) return;
-
     const handler = (note: Note) => {
       const el = ref.current;
       if (!el) return;

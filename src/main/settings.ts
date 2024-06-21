@@ -3,7 +3,7 @@ import settings from 'electron-settings';
 
 export const defaultSettings = {
   doc: {
-    host: 'https://lapki-doc.polyus-nt.ru/',
+    host: 'lapki-doc.polyus-nt.ru',
   },
   compiler: {
     host: 'lapki.polyus-nt.ru',

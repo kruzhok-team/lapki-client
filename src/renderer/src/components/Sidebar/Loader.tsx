@@ -20,13 +20,13 @@ import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
-  handleHostChange: () => void;
+  openLoaderSettings: () => void;
   openAvrdudeGuideModal: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
   compilerData,
-  handleHostChange,
+  openLoaderSettings,
   openAvrdudeGuideModal,
 }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
@@ -311,7 +311,7 @@ export const Loader: React.FC<FlasherProps> = ({
           </button>
           <button
             className="btn-primary px-2"
-            onClick={handleHostChange}
+            onClick={openLoaderSettings}
             disabled={connectionStatus == FLASHER_CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />

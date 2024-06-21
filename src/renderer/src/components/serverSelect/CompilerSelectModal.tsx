@@ -7,12 +7,12 @@ import { useSettings } from '@renderer/hooks';
 
 type FormValues = Main['settings']['compiler'];
 
-interface ServerSelectModalProps {
+interface CompilerSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const ServerSelectModal: React.FC<ServerSelectModalProps> = ({ onClose, ...props }) => {
+export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClose, ...props }) => {
   const [compilerSetting, setCompilerSetting, resetCompilerSetting] = useSettings('compiler');
 
   const { handleSubmit: hookHandleSubmit, reset, register } = useForm<FormValues>();

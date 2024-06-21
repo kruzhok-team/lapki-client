@@ -97,11 +97,11 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-const startFlasher = async () => {
-  ModuleManager.startLocalModule('lapki-flasher');
-  ModuleManager.startLocalModule('lapki-serial-monitor');
-};
-startFlasher();
+async function startModules() {
+  await ModuleManager.startLocalModule('lapki-flasher');
+  await ModuleManager.startLocalModule('lapki-serial-monitor');
+}
+startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {

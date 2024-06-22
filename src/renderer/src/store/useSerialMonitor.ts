@@ -7,10 +7,8 @@ interface SerialMonitorState {
   setInputValue: (newInputValue: string) => void;
   messages: string[];
   setMessages: (update: (prevMessages: string[]) => string[]) => void;
-  connectionStatus: string;
-  setConnectionStatus: (newConnectionStatus: string) => void;
-  devices: string[];
-  setDevices: (prevPorts: string[]) => void;
+  ports: string[];
+  setPorts: (prevPorts: string[]) => void;
 }
 
 export const useSerialMonitor = create<SerialMonitorState>((set) => ({
@@ -20,8 +18,6 @@ export const useSerialMonitor = create<SerialMonitorState>((set) => ({
   setInputValue: (newInputValue) => set({ inputValue: newInputValue }),
   messages: [],
   setMessages: (update) => set((value) => ({ messages: update(value.messages) })),
-  connectionStatus: 'Не подключен.',
-  setConnectionStatus: (newConnectionStatus) => set({ connectionStatus: newConnectionStatus }),
-  devices: [],
-  setDevices: (value) => set({ devices: value }),
+  ports: [],
+  setPorts: (value) => set({ ports: value }),
 }));

@@ -99,7 +99,8 @@ function createWindow(): BrowserWindow {
 
 async function startModules() {
   await ModuleManager.startLocalModule('lapki-flasher');
-  await ModuleManager.startLocalModule('lapki-serial-monitor');
+  //Это необходимо, чтобы он спустя время начал запускать Serial monitor, пока список занятых портов не обновится
+  setTimeout(async () => await ModuleManager.startLocalModule('lapki-serial-monitor'), 1000);
 }
 startModules();
 

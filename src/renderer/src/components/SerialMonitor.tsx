@@ -6,20 +6,12 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { Select, SelectOption, Switch, TextInput } from './UI';
 
 export const SerialMonitorTab: React.FC = () => {
-  const {
-    autoScroll,
-    setAutoScroll,
-    inputValue,
-    setInputValue,
-    messages,
-    setMessages,
-    devices,
-    setDevices,
-  } = useSerialMonitor();
+  const { autoScroll, setAutoScroll, inputValue, setInputValue, messages, setMessages, ports } =
+    useSerialMonitor();
   //Выбранный порт на данный момент
   const [port, setPort] = useState<SelectOption | null>(null);
   //Список рабочих портов
-  const optionsPort: SelectOption[] = devices.map((device) => ({
+  const optionsPort: SelectOption[] = ports.map((device) => ({
     value: device,
     label: device,
   }));
@@ -41,21 +33,11 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   useLayoutEffect(() => {
-    SerialMonitor.bindReact(autoScroll, setInputValue, messages, setMessages, devices, setDevices);
-    SerialMonitor.connect();
-
-    return () => {
-      // Отключаем обработчики событий и закрываем WebSocket при размонтировании компонента
-      SerialMonitor.closeWebSocket();
-    };
-  }, []);
-
-  useLayoutEffect(() => {
     // После обновления очищаем значение port
-    if (port && !devices.includes(port.value)) {
+    if (port && !ports.includes(port.value)) {
       setPort(null);
     }
-  }, [devices, port]);
+  }, [ports, port]);
 
   // При изменении messages прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {

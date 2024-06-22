@@ -17,6 +17,7 @@ import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { getVirtualElement } from '@renderer/utils';
 
 const contextData = {
@@ -79,6 +80,8 @@ const contextData = {
 };
 
 export const DiagramContextMenu: React.FC = () => {
+  const editor = useEditorContext();
+
   const { position, items, isOpen, onClose } = useDiagramContextMenu();
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует
   const [openMenu, setOpenMenu] = useState('');
@@ -99,6 +102,11 @@ export const DiagramContextMenu: React.FC = () => {
     setOpenMenu('');
   }, [isOpen]);
 
+  const handleFocusClose = () => {
+    editor.focus();
+    onClose();
+  };
+
   return (
     <div
       ref={refs.setFloating}
@@ -114,7 +122,7 @@ export const DiagramContextMenu: React.FC = () => {
             )}
             onClick={() => {
               action();
-              isFolder || onClose();
+              isFolder || handleFocusClose();
             }}
             onMouseOver={() => {
               openMenu !== type && setOpenMenu(type);
@@ -150,7 +158,7 @@ export const DiagramContextMenu: React.FC = () => {
                     )}
                     onClick={() => {
                       action();
-                      onClose();
+                      handleFocusClose();
                     }}
                   >
                     <div className="flex">

@@ -21,26 +21,31 @@ export const NoteEdit: React.FC = () => {
     const el = ref.current;
     const value = (el?.textContent ?? '').trim();
 
-    if (!el || noteId === null || initialText === value) return;
-
-    editor.controller.notes.changeNoteText(noteId, value);
-
-    setNoteId(null);
-    setInitialText(null);
-  }, [editor.controller.notes, initialText, noteId]);
-
-  const handleClose = useCallback(() => {
-    handleSubmit();
+    if (noteId !== null && initialText !== value)
+      editor.controller.notes.changeNoteText(noteId, value);
 
     if (noteId) editor.controller.notes.setIsVisible(noteId, true);
 
+    setNoteId(null);
+    setInitialText(null);
     close();
-  }, [close, editor.controller.notes, handleSubmit, noteId]);
+  }, [close, editor.controller.notes, initialText, noteId]);
+
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Отмена редактирования
+    if (e.key === 'Escape') {
+      if (noteId) editor.controller.notes.setIsVisible(noteId, true);
+
+      setNoteId(null);
+      setInitialText(null);
+      return close();
+    }
+  };
 
   useEffect(() => {
-    window.addEventListener('wheel', handleClose);
-    return () => window.removeEventListener('wheel', handleClose);
-  }, [handleClose]);
+    window.addEventListener('wheel', handleSubmit);
+    return () => window.removeEventListener('wheel', handleSubmit);
+  }, [handleSubmit]);
 
   useEffect(() => {
     const handler = (note: Note) => {
@@ -91,7 +96,8 @@ export const NoteEdit: React.FC = () => {
         !isOpen && 'hidden'
       )}
       placeholder="Придумайте заметку"
-      onBlur={handleClose}
+      onKeyUp={handleKeyUp}
+      onBlur={handleSubmit}
     />
   );
 };

@@ -51,8 +51,6 @@ export const StateNameEdit: React.FC = () => {
   }, [handleSubmit]);
 
   useEffect(() => {
-    if (!editor) return;
-
     const handler = (state: State) => {
       const el = ref.current;
       if (!el) return;

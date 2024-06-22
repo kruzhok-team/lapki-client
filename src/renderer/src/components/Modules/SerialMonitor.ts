@@ -26,8 +26,8 @@ export class SerialMonitor {
   static setInputValue: (newInputValue: string) => void;
   static messages: string[];
   static setMessages: (update: (prevMessages: string[]) => string[]) => void;
-  static devices: string[];
-  static setDevices: (prevPorts: string[]) => void;
+  static ports: string[];
+  static setPorts: (prevPorts: string[]) => void;
 
   static ws: Websocket;
   static bindReact(
@@ -35,15 +35,15 @@ export class SerialMonitor {
     setInputValue: (newInputValue: string) => void,
     messages: string[],
     setMessages: (update: (prevMessages: string[]) => string[]) => void,
-    devices: string[],
-    setDevices: (prevPorts: string[]) => void
+    ports: string[],
+    setPorts: (prevPorts: string[]) => void
   ): void {
     this.autoScroll = autoScroll;
     this.setInputValue = setInputValue;
     this.messages = messages;
     this.setMessages = setMessages;
-    this.devices = devices;
-    this.setDevices = setDevices;
+    this.ports = ports;
+    this.setPorts = setPorts;
   }
 
   static async connect(host: string, port: number): Promise<Websocket | undefined> {
@@ -85,19 +85,15 @@ export class SerialMonitor {
         const data = JSON.parse(message.data as string); // Парсим JSON
         // Если данные - это массив, это список портов
         if (Array.isArray(data)) {
-          this.setDevices(data); // Устанавливаем массив строк в devices
+          this.setPorts(data); // Устанавливаем массив строк в ports
+        } else {
+          this.setPorts([]); // Если data не массив, устанавливаем пустой массив
         }
       } catch (error) {
         // Если не удалось распарсить JSON, это не список портов
         // Используем данные как сообщение
         this.message(message.data);
       }
-    };
-
-    this.ws.onclose = async () => {
-      this.message('Сервер отключён. Подключение будет через 5 секунд...');
-      // Повторное подключение через некоторое время, например, через 5 секунд
-      setTimeout(() => this.connect(host, port), 5000);
     };
 
     this.ws.onclose = async (event) => {

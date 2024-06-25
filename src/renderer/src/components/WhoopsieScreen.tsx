@@ -39,25 +39,26 @@ export class WhoopsieScreen extends Component<WhoopsieScreenProps, WhoopsieScree
 
   render() {
     if (this.state.hasError) {
-      // TODO: сделать более понятный экран для пользователей
-      const buttonStyle = 'text-2xl text-white rounded-md bg-slate-600 p-1 w-[200px]';
       return (
         <div className="loading-overlay">
           <div className="flex select-none flex-col items-center text-white">
             <CatError />
-            <p className="text-3xl italic ">Хьюстон, срочно проверьте лоток</p>
-            <p className="text-sm italic">
+            <p className="text-3xl">Хьюстон, срочно проверьте лоток</p>
+            <p className="text-base">
               Lapki IDE сделала что-то не то, подробности в{' '}
-              <a className="font-bold" onClick={() => this.openDevTools()}>
+              <a
+                className="rounded border bg-gray-600 px-1 hover:bg-gray-700"
+                onClick={() => this.openDevTools()}
+              >
                 консоли
               </a>
             </p>
             <br />
-            <button onClick={() => this.unwhoopsie()} className={buttonStyle}>
+            <button onClick={() => this.unwhoopsie()} className="btn-primary w-48 text-xl">
               Игнорировать
             </button>
-            <p className="pb-1 text-xs italic">(не рекомендуется)</p>
-            <button onClick={() => location.reload()} className={buttonStyle}>
+            <p className="pb-2 text-sm">(не рекомендуется)</p>
+            <button onClick={() => location.reload()} className="btn-primary w-48 text-xl">
               Перезапуск
             </button>
           </div>

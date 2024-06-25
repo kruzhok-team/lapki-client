@@ -59,7 +59,7 @@ export class WhoopsieScreen extends Component<WhoopsieScreenProps, WhoopsieScree
             </button>
             <p className="pb-2 text-sm">(не рекомендуется)</p>
             <button onClick={() => location.reload()} className="btn-primary w-48 text-xl">
-              Перезапуск
+              Перезапустить
             </button>
           </div>
         </div>

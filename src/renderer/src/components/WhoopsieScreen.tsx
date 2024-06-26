@@ -43,11 +43,11 @@ export class WhoopsieScreen extends Component<WhoopsieScreenProps, WhoopsieScree
         <div className="loading-overlay">
           <div className="flex select-none flex-col items-center text-white">
             <CatError />
-            <p className="text-3xl">Хьюстон, срочно проверьте лоток</p>
-            <p className="text-base">
+            <p className="text-3xl italic">Хьюстон, срочно проверьте лоток</p>
+            <p className="text-base italic">
               Lapki IDE сделала что-то не то, подробности в{' '}
               <a
-                className="rounded border bg-gray-600 px-1 hover:bg-gray-700"
+                className="rounded border bg-gray-600 px-1 hover:cursor-pointer hover:bg-gray-700"
                 onClick={() => this.openDevTools()}
               >
                 консоли

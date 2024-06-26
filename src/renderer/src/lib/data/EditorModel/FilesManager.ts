@@ -1,5 +1,7 @@
 import { Dispatch } from 'react';
 
+import html2canvas from 'html2canvas';
+
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Elements, emptyElements } from '@renderer/types/diagram';
@@ -161,6 +163,35 @@ export class FilesManager {
       });
     }
     return makeLeft(null);
+  };
+
+  async saveAsScreenShot(element: HTMLElement): Promise<Either<FileError | null, null>> {
+    if (!this.data.isInitialized) return makeLeft(null);
+    const screenshotDataUrl = await this.createScreenshot(element);
+
+    const saveData = await window.api.fileHandlers.saveAsScreenShot(
+      this.data.basename as string,
+      screenshotDataUrl
+    );
+
+    if (saveData[0]) {
+      this.editorManager.triggerSave(saveData[1], saveData[2]);
+      return makeRight(null);
+    } else {
+      return makeLeft({
+        name: saveData[1]!,
+        content: saveData[2]!,
+      });
+    }
+  }
+
+  private createScreenshot = async (element: HTMLElement | null): Promise<string> => {
+    if (element) {
+      const canvas = await html2canvas(element);
+      return canvas.toDataURL('image/png');
+    } else {
+      throw new Error('Элемент отсутствует!');
+    }
   };
 
   async saveIntoFolder(data: Array<SourceFile | Binary>) {

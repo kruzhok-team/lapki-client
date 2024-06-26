@@ -14,6 +14,7 @@ import {
   HandleSaveIntoFolderReturn,
   HandleFileSaveReturn,
   HandleFileSaveAsReturn,
+  HandleScreenShotSaveAsReturn,
   HandleBinFileOpenReturn,
 } from './handlersTypes';
 
@@ -197,6 +198,67 @@ export async function handleFileSaveAs(filename: string, data: string): HandleFi
               if (err) {
                 resolve([false, file.filePath!, err.message]);
                 // throw err;
+              } else {
+                resolve([true, file.filePath!, basename(file.filePath!)]);
+                console.log('Сохранено!');
+              }
+            });
+          } else {
+            resolve([false, null, null]);
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        resolve([false, null, err.message]);
+      });
+  });
+}
+
+/**
+ * Асинхронный диалог сохранения скриншота.
+ */
+export async function handleScreenShotSaveAs(
+  filename: string,
+  dataUrl: string
+): HandleScreenShotSaveAsReturn {
+  return new Promise((resolve) => {
+    dialog
+      .showSaveDialog({
+        title: 'Выберите путь к файлу для сохранения',
+        defaultPath: filename ? filename : __dirname,
+        buttonLabel: 'Сохранить',
+        filters: [
+          { name: 'png', extensions: ['png'] },
+          { name: 'jpeg', extensions: ['jpeg'] },
+          { name: 'svg', extensions: ['svg'] },
+          // Для всех типов файлов
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      })
+      .then(async (file) => {
+        if (file.canceled) {
+          resolve([false, null, null]);
+        } else {
+          // По умолчанию сохраняем в PNG
+          let extension = 'png';
+          if (file.filePath) {
+            // Получаем расширение файла из пути
+            const extensionMatch = file.filePath.match(/\.([^.]+)$/);
+            if (extensionMatch) {
+              extension = extensionMatch[1].toLowerCase();
+            }
+            if (!['png', 'jpeg', 'svg'].includes(extension)) {
+              console.error('Неподдерживаемое расширение файла:', extension);
+              resolve([false, null, 'Неподдерживаемое расширение файла']);
+              return;
+            }
+
+            const base64Data = dataUrl.replace(new RegExp(`^data:image/${extension};base64,`), '');
+            fs.writeFile(file.filePath, base64Data, 'base64', (err) => {
+              if (err) {
+                console.error('Ошибка сохранения скриншота:', err);
+                resolve([false, file.filePath!, err.message]);
               } else {
                 resolve([true, file.filePath!, basename(file.filePath!)]);
                 console.log('Сохранено!');

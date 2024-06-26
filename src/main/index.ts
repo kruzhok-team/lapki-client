@@ -65,7 +65,7 @@ function createWindow(): BrowserWindow {
   });
 
   //Получаем ответ из рендера и закрываем приложение
-  ipcMain.on('closed', (_) => {
+  ipcMain.on('closed', () => {
     ModuleManager.stopModule('lapki-flasher');
     app.exit(0);
   });
@@ -77,7 +77,7 @@ function createWindow(): BrowserWindow {
     return { action: 'deny' };
   });
 
-  ipcMain.handle('devtools', (_event) => {
+  ipcMain.handle('devtools', () => {
     mainWindow.webContents.openDevTools();
   });
 

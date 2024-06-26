@@ -360,7 +360,12 @@
               "description": "Установить значение на аналоговый пин."
             }
           },
-          "parameters": {},
+          "parameters": {           
+            "pin": {
+              "type": "uint8_t",
+              "description": "Пин, на который будет подаваться сигнал."
+            }
+          },
           "variables": {
             "value": {
               "img": "common/value.svg",

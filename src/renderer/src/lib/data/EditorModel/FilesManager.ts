@@ -165,7 +165,7 @@ export class FilesManager {
     return makeLeft(null);
   };
 
-  async saveAsScreenShot(element: HTMLElement): Promise<Either<FileError | null, null>> {
+  saveAsScreenShot = async (element: HTMLElement): Promise<Either<FileError | null, null>> => {
     if (!this.data.isInitialized) return makeLeft(null);
     const screenshotDataUrl = await this.createScreenshot(element);
 
@@ -183,7 +183,7 @@ export class FilesManager {
         content: saveData[2]!,
       });
     }
-  }
+  };
 
   private createScreenshot = async (element: HTMLElement | null): Promise<string> => {
     if (element) {

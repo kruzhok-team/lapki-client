@@ -230,9 +230,8 @@ export async function handleScreenShotSaveAs(
         buttonLabel: 'Сохранить',
         filters: [
           { name: 'png', extensions: ['png'] },
-          { name: 'jpeg', extensions: ['jpeg'] },
-          { name: 'svg', extensions: ['svg'] },
-          // Для всех типов файлов
+          // { name: 'jpeg', extensions: ['jpeg'] },
+          // { name: 'svg', extensions: ['svg'] },
           { name: 'All Files', extensions: ['*'] },
         ],
       })
@@ -248,7 +247,8 @@ export async function handleScreenShotSaveAs(
             if (extensionMatch) {
               extension = extensionMatch[1].toLowerCase();
             }
-            if (!['png', 'jpeg', 'svg'].includes(extension)) {
+            //['png', 'jpeg', 'svg']
+            if (!['png'].includes(extension)) {
               console.error('Неподдерживаемое расширение файла:', extension);
               resolve([false, null, 'Неподдерживаемое расширение файла']);
               return;
@@ -262,6 +262,7 @@ export async function handleScreenShotSaveAs(
               } else {
                 resolve([true, file.filePath!, basename(file.filePath!)]);
                 console.log('Сохранено!');
+                console.log(file.filePath);
               }
             });
           } else {

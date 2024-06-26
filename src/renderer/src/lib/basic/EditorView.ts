@@ -46,8 +46,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrld', this.app.controller.duplicateSelected);
     this.app.keyboard.on('ctrls', this.app.model.files.save);
     this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
-    this.app.keyboard.on('ctrlp', () =>
-      this.app.model.files.saveAsScreenShot(this.app.canvas.element)
+    this.app.keyboard.on(
+      'ctrlp',
+      this.app.model.files.saveAsScreenShot.bind(this, this.app.canvas.element)
     );
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -70,8 +71,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.off('ctrld', this.app.controller.duplicateSelected);
     this.app.keyboard.off('ctrls', this.app.model.files.save);
     this.app.keyboard.off('ctrlshifta', this.app.model.files.saveAs);
-    this.app.keyboard.off('ctrlp', () =>
-      this.app.model.files.saveAsScreenShot(this.app.canvas.element)
+    this.app.keyboard.off(
+      'ctrlp',
+      this.app.model.files.saveAsScreenShot.bind(this, this.app.canvas.element)
     );
 
     this.app.mouse.off('mousedown', this.handleMouseDown);

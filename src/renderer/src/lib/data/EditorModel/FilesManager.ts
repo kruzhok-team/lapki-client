@@ -165,24 +165,14 @@ export class FilesManager {
     return makeLeft(null);
   };
 
-  saveAsScreenShot = async (element: HTMLElement): Promise<Either<FileError | null, null>> => {
+  saveAsScreenShot = async (element: HTMLElement) => {
     if (!this.data.isInitialized) return makeLeft(null);
     const screenshotDataUrl = await this.createScreenshot(element);
 
-    const saveData = await window.api.fileHandlers.saveAsScreenShot(
-      this.data.basename as string,
-      screenshotDataUrl
-    );
+    //Берём имя файла и убираем его расширение в наименовании и меняем на расширение сохраняемого изображения
+    const nameFile = this.data.basename?.replace('.graphml', '.png') as string;
 
-    if (saveData[0]) {
-      this.editorManager.triggerSave(saveData[1], saveData[2]);
-      return makeRight(null);
-    } else {
-      return makeLeft({
-        name: saveData[1]!,
-        content: saveData[2]!,
-      });
-    }
+    return await window.api.fileHandlers.saveAsScreenShot(nameFile, screenshotDataUrl);
   };
 
   private createScreenshot = async (element: HTMLElement | null): Promise<string> => {

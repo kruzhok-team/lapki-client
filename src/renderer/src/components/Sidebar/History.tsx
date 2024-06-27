@@ -76,7 +76,7 @@ const HistoryWithEditor: React.FC = () => {
       </div>
 
       <div>
-        <h3 className="mb-3 font-semibold">Внесённые изменения</h3>
+        <h3 className="mb-3 font-semibold">Сделано</h3>
         <div className="h-[400px] space-y-1 overflow-y-auto pr-3 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb scrollbar-track-rounded-full scrollbar-thumb-rounded-full">
           {groupByNumberOfConnectedActions(undoStack).map((item, i) => {
             if (Array.isArray(item)) {
@@ -95,7 +95,7 @@ const HistoryWithEditor: React.FC = () => {
       </div>
 
       <div>
-        <h3 className="mb-3 font-semibold">Отменённые изменения</h3>
+        <h3 className="mb-3 font-semibold">Отменено</h3>
         <div className="h-[400px] space-y-1 overflow-y-auto pr-3 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb scrollbar-track-rounded-full scrollbar-thumb-rounded-full">
           {groupByNumberOfConnectedActions(redoStack).map((item, i) => {
             if (Array.isArray(item)) {

@@ -334,7 +334,16 @@
               "description": "Пин, с которого будут считываться данные."
             }
           },
-          "methods": {},
+          "methods": {
+            "low": {
+              "img": "arduino/switch-off.svg",
+              "description": "Подать LOW на пин."
+            },
+            "high": {
+              "img": "arduino/switch-on.svg",
+              "description": "Подать HIGH на пин."
+            }
+          },
           "variables": {
             "value": {
               "img": "common/value.svg",
@@ -361,7 +370,12 @@
               "description": "Установить значение на аналоговый пин."
             }
           },
-          "parameters": {},
+          "parameters": {           
+            "pin": {
+              "type": "uint8_t",
+              "description": "Пин, на который будет подаваться сигнал."
+            }
+          },
           "variables": {
             "value": {
               "img": "common/value.svg",

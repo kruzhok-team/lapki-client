@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as InitialIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as CameraIcon } from '@renderer/assets/icons/center_focus_2.svg';
 import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
+import { ReactComponent as CloneIcon } from '@renderer/assets/icons/clone.svg';
 import { ReactComponent as CodeAllIcon } from '@renderer/assets/icons/code_all_2.svg';
 import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
@@ -28,6 +29,10 @@ const contextData = {
   paste: {
     icon: <PasteIcon />,
     combination: 'Ctrl+V',
+  },
+  clone: {
+    icon: <CloneIcon />,
+    combination: 'Ctrl+D',
   },
   pasteState: {
     icon: <StateIcon />,

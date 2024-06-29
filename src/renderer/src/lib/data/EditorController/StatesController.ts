@@ -1071,6 +1071,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   handleChoiceStateContextMenu = (state: ChoiceState, e: { event: MyMouseEvent }) => {
+    this.controller.selectChoiceState(state.id);
     this.emit('choiceStateContextMenu', {
       state,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },

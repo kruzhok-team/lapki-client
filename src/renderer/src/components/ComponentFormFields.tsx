@@ -50,6 +50,26 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     setParameters({ ...parameters });
   };
 
+  const handleNameChange = (name: string) => {
+    if (name == '') {
+      setErrors((p) => ({ ...p, ['name']: `Неправильное имя` }));
+      return;
+    }
+    const firstSymbolRegex = '[A-Z]|[a-z]|_';
+    if (!name[0].match(firstSymbolRegex)) {
+      setErrors((p) => ({ ...p, ['name']: `Неправильное имя` }));
+      return;
+    }
+    const remainingSymbolsRegex = firstSymbolRegex + '|[0-9]';
+    for (const i of name) {
+      if (!i.match(remainingSymbolsRegex)) {
+        setErrors((p) => ({ ...p, ['name']: `Неправильное имя` }));
+        return;
+      }
+    }
+    setName(name);
+  };
+
   const protoParametersArray = Object.entries(protoParameters);
 
   // Первоначальное создание объекта ошибок
@@ -74,7 +94,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             label="Название:"
             maxLength={20}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             autoFocus
           />
 

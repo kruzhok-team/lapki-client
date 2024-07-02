@@ -251,6 +251,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.controller.removeSelection();
     transition.setIsSelected(true);
 
+    if (transition.source instanceof InitialState) return;
+
     this.emit('transitionContextMenu', {
       transition,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },

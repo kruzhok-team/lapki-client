@@ -39,6 +39,7 @@ export class WhoopsieScreen extends Component<WhoopsieScreenProps, WhoopsieScree
 
   render() {
     if (this.state.hasError) {
+      // TODO: сделать более понятный экран для пользователей
       return (
         <div className="loading-overlay">
           <div className="flex select-none flex-col items-center text-white">

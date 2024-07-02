@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import {
   NoteEdit,
   StateNameEdit,
-  EventsModal,
-  EventsModalData,
+  ActionsModal,
+  ActionsModalData,
   StateModal,
   TransitionModal,
 } from '@renderer/components';
@@ -24,10 +24,10 @@ export const DiagramEditor: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
-  const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
+  const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
+  const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
   // Дополнительные данные о родителе события
-  const [eventsModalParentData, setEventsModalParentData] = useState<{
+  const [actionsModalParentData, setActionsModalParentData] = useState<{
     state: State;
     eventSelection: EventSelection;
   }>();
@@ -53,9 +53,9 @@ export const DiagramEditor: React.FC = () => {
     }) => {
       const { state, eventSelection, event, isEditingEvent } = data;
 
-      setEventsModalParentData({ state, eventSelection });
-      setEventsModalData({ event, isEditingEvent });
-      openEventsModal();
+      setActionsModalParentData({ state, eventSelection });
+      setActionsModalData({ action: event, isEditingEvent });
+      openActionsModal();
     };
 
     editor.view.on('dblclick', handleDblclick);
@@ -72,7 +72,7 @@ export const DiagramEditor: React.FC = () => {
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [editor, openEventsModal]);
+  }, [editor, openActionsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;
@@ -80,16 +80,16 @@ export const DiagramEditor: React.FC = () => {
     editor.setSettings(canvasSettings);
   }, [canvasSettings, editor]);
 
-  const handleEventsModalSubmit = (data: Event) => {
-    if (!eventsModalParentData) return;
+  const handleActionsModalSubmit = (data: Event) => {
+    if (!actionsModalParentData) return;
 
     editor.controller.states.changeEvent(
-      eventsModalParentData.state.id,
-      eventsModalParentData.eventSelection,
+      actionsModalParentData.state.id,
+      actionsModalParentData.eventSelection,
       data
     );
 
-    closeEventsModal();
+    closeActionsModal();
   };
 
   return (
@@ -104,11 +104,11 @@ export const DiagramEditor: React.FC = () => {
           <StateModal />
           <TransitionModal />
 
-          <EventsModal
-            initialData={eventsModalData}
-            onSubmit={handleEventsModalSubmit}
-            isOpen={isEventsModalOpen}
-            onClose={closeEventsModal}
+          <ActionsModal
+            initialData={actionsModalData}
+            onSubmit={handleActionsModalSubmit}
+            isOpen={isActionsModalOpen}
+            onClose={closeActionsModal}
           />
         </>
       )}

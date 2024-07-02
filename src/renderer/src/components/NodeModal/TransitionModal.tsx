@@ -5,9 +5,12 @@ import { useModal } from '@renderer/hooks/useModal';
 import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { Events, Condition, ColorField, Trigger } from './components';
-import { useTrigger, useCondition, useEvents } from './hooks';
+import { Actions, Condition, ColorField, Trigger } from './components';
+import { useTrigger, useCondition, useActions } from './hooks';
 
+/**
+ * Модальное окно редактирования перехода
+ */
 export const TransitionModal: React.FC = () => {
   const editor = useEditorContext();
 
@@ -22,7 +25,7 @@ export const TransitionModal: React.FC = () => {
   // Данные формы
   const trigger = useTrigger(false);
   const condition = useCondition();
-  const events = useEvents();
+  const actions = useActions();
   const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
@@ -41,9 +44,14 @@ export const TransitionModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { selectedComponent, selectedMethod } = trigger;
+    const { selectedComponent, selectedMethod, tabValue } = trigger;
+    const triggerText = trigger.text.trim();
 
-    if (showTrigger && (!selectedComponent || !selectedMethod)) {
+    if (
+      showTrigger &&
+      ((tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+        (tabValue === 1 && !triggerText))
+    ) {
       return;
     }
 
@@ -72,42 +80,53 @@ export const TransitionModal: React.FC = () => {
     const getCondition = () => {
       if (!show) return undefined;
 
-      // Тут много as string потому что проверка на null в checkForErrors
-      return {
-        type: conditionOperator as string,
-        value: [
-          {
-            type: isParamOneInput1 ? 'component' : 'value',
-            value: isParamOneInput1
-              ? {
-                  component: selectedComponentParam1 as string,
-                  method: selectedMethodParam1 as string,
-                  args: {},
-                }
-              : (argsParam1 as string),
-          },
-          {
-            type: isParamOneInput2 ? 'component' : 'value',
-            value: isParamOneInput2
-              ? {
-                  component: selectedComponentParam2 as string,
-                  method: selectedMethodParam2 as string,
-                  args: {},
-                }
-              : (argsParam2 as string),
-          },
-        ],
-      };
+      if (condition.tabValue === 0) {
+        // Тут много as string потому что проверка на null в checkForErrors
+        return {
+          type: conditionOperator as string,
+          value: [
+            {
+              type: isParamOneInput1 ? 'component' : 'value',
+              value: isParamOneInput1
+                ? {
+                    component: selectedComponentParam1 as string,
+                    method: selectedMethodParam1 as string,
+                    args: {},
+                  }
+                : (argsParam1 as string),
+            },
+            {
+              type: isParamOneInput2 ? 'component' : 'value',
+              value: isParamOneInput2
+                ? {
+                    component: selectedComponentParam2 as string,
+                    method: selectedMethodParam2 as string,
+                    args: {},
+                  }
+                : (argsParam2 as string),
+            },
+          ],
+        };
+      }
+
+      return condition.text.trim() || undefined;
     };
 
     const getTrigger = () => {
       if (!showTrigger) return undefined;
 
-      return { component: selectedComponent as string, method: selectedMethod as string };
+      if (tabValue === 0)
+        return { component: selectedComponent as string, method: selectedMethod as string };
+
+      return triggerText;
     };
 
-    const getEvents = () => {
-      return events.events;
+    const getActions = () => {
+      if (actions.tabValue === 0) {
+        return actions.actions;
+      }
+
+      return actions.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
     };
 
     // Если редактируем состояние
@@ -120,8 +139,8 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: getEvents(),
-        } as any, // Из-за position
+          do: getActions(),
+        } as any, // Из-за position,
       });
 
       close();
@@ -136,8 +155,8 @@ export const TransitionModal: React.FC = () => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: getEvents(),
-        } as any, // Из-за position
+          do: getActions(),
+        } as any, // Из-за position,
       });
     }
 
@@ -148,36 +167,30 @@ export const TransitionModal: React.FC = () => {
   const handleAfterClose = () => {
     trigger.clear();
     condition.clear();
-    events.clear();
+    actions.clear();
     setColor(undefined);
 
     setTransition(null);
     setNewTransition(null);
   };
 
+  // Подстановка начальных значений
   useEffect(() => {
     const handleCreateTransition = (data: {
       source: State | ChoiceState;
       target: State | ChoiceState | FinalState;
     }) => {
       setNewTransition(data);
-      events.setEvents([]);
+      actions.parse([]);
       open();
     };
 
     const handleChangeTransition = (target: Transition) => {
       const { data: initialData } = target;
 
-      if (initialData.label?.trigger) {
-        trigger.setSelectedComponent(initialData.label.trigger.component);
-        trigger.setSelectedMethod(initialData.label.trigger.method);
-      }
-
-      condition.parseCondition(initialData.label?.condition);
-
-      if (initialData.label?.do) {
-        events.setEvents(initialData.label.do);
-      }
+      trigger.parse(initialData.label?.trigger);
+      condition.parse(initialData.label?.condition);
+      actions.parse(initialData.label?.do);
 
       setColor(initialData.color);
 
@@ -207,7 +220,7 @@ export const TransitionModal: React.FC = () => {
         <div className="flex flex-col gap-4">
           {showTrigger && <Trigger {...trigger} />}
           <Condition {...condition} />
-          <Events {...events} />
+          <Actions {...actions} />
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

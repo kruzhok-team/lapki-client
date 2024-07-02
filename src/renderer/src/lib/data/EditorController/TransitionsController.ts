@@ -90,6 +90,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     return [...this.items.values()].find(({ source }) => source.id === sourceId);
   }
 
+  updateAll() {
+    this.forEach((transition) => {
+      transition.label.update();
+    });
+  }
+
   createTransition(params: CreateTransitionParams, canUndo = true) {
     const { sourceId, targetId, color, id: prevId, label } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
@@ -173,6 +179,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     }
 
     this.app.model.changeTransition(args);
+
+    transition.label.update();
 
     this.view.isDirty = true;
   }

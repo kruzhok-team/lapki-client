@@ -1,3 +1,3 @@
 export * from './useTrigger';
 export * from './useCondition';
-export * from './useEvents';
+export * from './useActions';

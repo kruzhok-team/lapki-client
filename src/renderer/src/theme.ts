@@ -56,6 +56,9 @@ export default {
         eventColor: '#FFF',
         selectedBorderColor: '#FFF',
       },
+      transition: {
+        color: '#FFF',
+      },
     },
   },
   getColor,

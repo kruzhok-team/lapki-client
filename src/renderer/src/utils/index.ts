@@ -1,6 +1,10 @@
 import { Point } from '@renderer/lib/types/graphics';
 import { ArgType } from '@renderer/types/platform';
 
+export function isString(value: any): value is string {
+  return typeof value === 'string';
+}
+
 export const getVirtualElement = (position: Point) => {
   return {
     getBoundingClientRect() {

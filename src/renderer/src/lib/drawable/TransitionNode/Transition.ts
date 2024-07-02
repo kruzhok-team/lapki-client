@@ -67,6 +67,13 @@ export class Transition extends Shape {
       return { width: 0, height: 0 };
     }
 
+    if (!this.app.model.data.elements.visual) {
+      return {
+        width: 250,
+        height: Math.max(70, this.label.textData.height + 15 * 2),
+      };
+    }
+
     return { width: 130, height: 70 };
   }
 

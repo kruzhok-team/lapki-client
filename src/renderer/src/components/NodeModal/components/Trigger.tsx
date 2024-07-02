@@ -1,8 +1,14 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 
-import { Select } from '@renderer/components/UI';
+import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import throttle from 'lodash.throttle';
+
+import { Select, TabPanel, Tabs } from '@renderer/components/UI';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { useTrigger } from '../hooks';
+
+import '../style.css';
 
 type TriggerProps = ReturnType<typeof useTrigger>;
 
@@ -11,20 +17,68 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
     componentOptions,
     methodOptions,
 
+    tabValue,
+    onTabChange,
+
     selectedComponent,
     selectedMethod,
     onComponentChange,
     onMethodChange,
+
+    text,
+    onChangeText,
   } = props;
+
+  const editor = useEditorContext();
+  const visual = editor.model.useData('elements.visual');
+
+  const editorRef = useRef<ReactCodeMirrorRef | null>(null);
+
+  const handleTabChange = (tab: number) => {
+    onTabChange(tab);
+
+    // Фокусировка и установка каретки
+    if (tab === 1) {
+      setTimeout(() => {
+        const view = editorRef?.current?.view;
+        if (!view) return;
+
+        view.focus();
+        view.dispatch({
+          selection: {
+            anchor: view.state.doc.length,
+            head: view.state.doc.length,
+          },
+        });
+      }, 0);
+    }
+  };
+
+  const handleLengthLimit = (tr: Transaction) => {
+    return tr.newDoc.lines <= 10;
+
+    // return tr.startState.doc.length + tr.newDoc.length < 200;
+  };
+
+  const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
 
   return (
     <div>
       <div className="mb-2 flex items-end gap-2">
         <p className="text-lg font-bold">Когда</p>
+
+        {!visual && (
+          <Tabs
+            className="ml-auto"
+            tabs={['Выбор', 'Код']}
+            value={tabValue}
+            onChange={handleTabChange}
+          />
+        )}
       </div>
 
       <div className="pl-4">
-        <div className="w-full">
+        <TabPanel value={0} tabValue={tabValue}>
           <div className="flex w-full gap-2">
             <Select
               containerClassName="w-full"
@@ -41,7 +95,25 @@ export const Trigger: React.FC<TriggerProps> = memo((props) => {
               isSearchable={false}
             />
           </div>
-        </div>
+        </TabPanel>
+
+        {!visual && (
+          <TabPanel value={1} tabValue={tabValue}>
+            <CodeMirror
+              ref={editorRef}
+              className="editor"
+              value={text}
+              onChange={handleChangeText}
+              placeholder={'Напишите код'}
+              basicSetup={{
+                lineNumbers: false,
+                foldGutter: false,
+              }}
+              width="100%"
+              extensions={[EditorState.changeFilter.of(handleLengthLimit)]}
+            />
+          </TabPanel>
+        )}
       </div>
     </div>
   );

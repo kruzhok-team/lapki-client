@@ -3,7 +3,7 @@ import settings from 'electron-settings';
 
 export const defaultSettings = {
   doc: {
-    host: 'https://lapki-doc.polyus-nt.ru/',
+    host: 'lapki-doc.polyus-nt.ru',
   },
   compiler: {
     host: 'lapki.polyus-nt.ru',
@@ -15,6 +15,12 @@ export const defaultSettings = {
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
     type: 'local' as 'local' | 'remote',
     hasAvrdude: false,
+  },
+  serialmonitor: {
+    host: 'localhost',
+    port: 0,
+    localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
+    type: 'local' as 'local' | 'remote',
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',

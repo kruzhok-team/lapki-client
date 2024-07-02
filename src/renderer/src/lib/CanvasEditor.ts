@@ -143,4 +143,9 @@ export class CanvasEditor {
     this.model.data.isMounted = false;
     this.model.triggerDataUpdate('isMounted');
   }
+
+  focus() {
+    if (!this._canvas) return;
+    this._canvas.element.focus();
+  }
 }

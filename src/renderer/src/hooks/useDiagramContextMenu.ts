@@ -233,7 +233,6 @@ export const useDiagramContextMenu = () => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'source',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
@@ -248,7 +247,6 @@ export const useDiagramContextMenu = () => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'target',
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,

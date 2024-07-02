@@ -27,7 +27,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const { model } = useEditorContext();
+  const editor = useEditorContext();
+  const { model } = editor;
   const components = model.useData('elements.components');
 
   const [name, setName] = useState('');
@@ -39,6 +40,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const handleAfterClose = () => {
     setName(idx);
     setParameters({ ...data.parameters });
+    editor.focus();
   };
 
   const handleSubmit = (e: React.FormEvent) => {

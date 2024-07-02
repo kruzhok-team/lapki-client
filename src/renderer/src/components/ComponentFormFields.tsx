@@ -51,23 +51,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   };
 
   const handleNameChange = (name: string) => {
-    if (name == '') {
-      setErrors((p) => ({ ...p, ['name']: `Неправильное имя` }));
-      return;
-    }
-    const firstSymbolRegex = '[A-Z]|[a-z]|_';
-    if (!name[0].match(firstSymbolRegex)) {
-      setErrors((p) => ({ ...p, ['name']: `Неправильное имя` }));
-      return;
-    }
-    const remainingSymbolsRegex = firstSymbolRegex + '|[0-9]';
-    for (const i of name) {
-      if (!i.match(remainingSymbolsRegex)) {
-        setErrors((p) => ({ ...p, ['name']: `Неправильное имя` }));
-        return;
-      }
-    }
-    setName(name);
+    setName(name.replaceAll(' ', '_'));
   };
 
   const protoParametersArray = Object.entries(protoParameters);

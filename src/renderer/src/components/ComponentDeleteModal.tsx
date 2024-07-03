@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
@@ -22,6 +23,12 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   onSubmit,
   ...props
 }) => {
+  const editor = useEditorContext();
+
+  const handleAfterClose = () => {
+    editor.focus();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -36,6 +43,7 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   return (
     <Modal
       {...props}
+      onAfterClose={handleAfterClose}
       onRequestClose={onClose}
       title="Удаление компонента"
       submitLabel="Удалить"

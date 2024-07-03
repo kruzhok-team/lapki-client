@@ -26,11 +26,15 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   vacantComponents,
   ...props
 }) => {
-  const { model } = useEditorContext();
-
+  const editor = useEditorContext();
+  const { model } = editor;
   const components = model.useData('elements.components');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
+
+  const handleAfterClose = () => {
+    editor.focus();
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +74,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   return (
     <Modal
       {...props}
+      onAfterClose={handleAfterClose}
       onRequestClose={onRequestClose}
       title="Выберите компонент"
       submitLabel="Добавить"

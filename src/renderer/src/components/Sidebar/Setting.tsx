@@ -7,7 +7,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
-import { FLASHER_CONNECTING } from '../Modules/Flasher';
+import { ClientStatus } from '../Modules/ClientWS';
 import { ResetSettingsModal } from '../ResetSettingsModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
 
@@ -79,7 +79,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHo
         <button
           className="btn-primary"
           onClick={handleHostChange}
-          disabled={connectionStatus === FLASHER_CONNECTING || isFlashing}
+          disabled={connectionStatus === ClientStatus.CONNECTING || isFlashing}
         >
           Загрузчик…
         </button>

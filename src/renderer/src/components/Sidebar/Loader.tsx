@@ -5,18 +5,14 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
-import {
-  FLASHER_CONNECTED,
-  FLASHER_CONNECTING,
-  FLASHER_CONNECTION_ERROR,
-  FLASHER_NO_CONNECTION,
-  Flasher,
-} from '@renderer/components/Modules/Flasher';
+import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
+
+import { ClientStatus } from '../Modules/ClientWS';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
@@ -99,7 +95,7 @@ export const Loader: React.FC<FlasherProps> = ({
             // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
             case 1:
               switch (connectionStatus) {
-                case FLASHER_CONNECTION_ERROR:
+                case ClientStatus.CONNECTION_ERROR:
                   errorMsg = (
                     <p>
                       {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
@@ -135,7 +131,7 @@ export const Loader: React.FC<FlasherProps> = ({
           }
         });
     } else {
-      if (connectionStatus == FLASHER_CONNECTION_ERROR) {
+      if (connectionStatus == ClientStatus.CONNECTION_ERROR) {
         errorMsg = (
           <p>
             {`Ошибка соединения.`}
@@ -191,10 +187,10 @@ export const Loader: React.FC<FlasherProps> = ({
   }, [flasherSetting, setFlasherSetting]);
 
   const display = () => {
-    if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
+    if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {
       return 'Отменить';
     }
-    if (connectionStatus == FLASHER_CONNECTED) {
+    if (connectionStatus == ClientStatus.CONNECTED) {
       return 'Обновить';
     } else {
       if (flasherIsLocal) {
@@ -214,7 +210,7 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   // условия отключения кнопки для загрузки прошивки
   const flashButtonDisabled = () => {
-    if (isFlashing || connectionStatus !== FLASHER_CONNECTED) {
+    if (isFlashing || connectionStatus !== ClientStatus.CONNECTED) {
       return true;
     }
     if (flasherIsLocal && !hasAvrdude) {
@@ -285,10 +281,10 @@ export const Loader: React.FC<FlasherProps> = ({
             className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
             onClick={() => {
               switch (connectionStatus) {
-                case FLASHER_CONNECTED:
+                case ClientStatus.CONNECTED:
                   handleGetList();
                   break;
-                case FLASHER_CONNECTING:
+                case ClientStatus.CONNECTING:
                   Flasher.cancelConnection();
                   break;
                 default:
@@ -296,7 +292,7 @@ export const Loader: React.FC<FlasherProps> = ({
                   break;
               }
             }}
-            disabled={connectionStatus == FLASHER_CONNECTING && flasherIsLocal}
+            disabled={connectionStatus == ClientStatus.CONNECTING && flasherIsLocal}
           >
             <Update width="1.5rem" height="1.5rem" />
             {display()}
@@ -304,7 +300,7 @@ export const Loader: React.FC<FlasherProps> = ({
           <button
             className="btn-primary px-2"
             onClick={handleHostChange}
-            disabled={connectionStatus == FLASHER_CONNECTING || isFlashing}
+            disabled={connectionStatus == ClientStatus.CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
           </button>
@@ -318,8 +314,8 @@ export const Loader: React.FC<FlasherProps> = ({
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
-                connectionStatus == FLASHER_NO_CONNECTION ||
-                connectionStatus == FLASHER_CONNECTION_ERROR
+                connectionStatus == ClientStatus.NO_CONNECTION ||
+                connectionStatus == ClientStatus.CONNECTION_ERROR
                   ? 'inline-block'
                   : 'none',
             }}

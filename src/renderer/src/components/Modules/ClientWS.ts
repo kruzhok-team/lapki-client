@@ -6,6 +6,8 @@ class ReconnectTimer {
   private initialTimeout: number = 5000;
   // на сколько мс увеличивается время перед новой попыткой подключения
   private incTimeout: number = this.initialTimeout;
+  // значение timeout (в мс) при заморозке таймера
+  private freezeTimeout: number = 1000;
   /**  
     максимальное количество автоматических попыток переподключения,
     значение меньше нуля означает, что ограничения на попытки отсутствует
@@ -22,27 +24,32 @@ class ReconnectTimer {
   private freezeReconnection: boolean = false;
   // true = пытаться переподключиться автоматически
   private autoReconnect: boolean = false;
+  // true = установлен timerID
+  private timeoutSetted: boolean = false;
   // true = соединение было отменено пользователем и переподключаться не нунжо.
-  private connectionCanceled: boolean = false;
+  // private connectionCanceled: boolean = false;
 
   constructor(
     initialTimeout: number = 5000,
     incTimeout: number = 5000,
     maxReconnectAttempts: number = 3,
     maxTimeout: number = 50000,
+    freezeTimeout: number = 1000,
     autoReconnect: boolean = true
   ) {
     this.initialTimeout = initialTimeout;
     this.curTimeout = initialTimeout;
     this.maxTimeout = maxTimeout;
     this.incTimeout = incTimeout;
+    this.freezeTimeout = freezeTimeout;
+    this.timeoutSetted = false;
 
     this.maxReconnectAttempts = maxReconnectAttempts;
     this.curReconnectAttemps = 0;
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
-    this.connectionCanceled = false;
+    // this.connectionCanceled = false;
   }
 
   setTimerID(timerID: NodeJS.Timeout | undefined) {
@@ -53,16 +60,11 @@ class ReconnectTimer {
     this.autoReconnect = reconnection;
   }
 
-  cancelConnection() {
-    this.connectionCanceled = true;
-    this.curReconnectAttemps = 0;
-    this.clearTimer();
-  }
-
   private clearTimer() {
     if (this.timerID) {
       clearTimeout(this.timerID);
       this.timerID = undefined;
+      this.timeoutSetted = false;
     }
   }
 
@@ -70,57 +72,61 @@ class ReconnectTimer {
     this.clearTimer();
 
     this.curTimeout = this.initialTimeout;
+
     this.curReconnectAttemps = 0;
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
-    this.connectionCanceled = false;
+    //this.connectionCanceled = false;
   }
 
   freeze(freeze: boolean) {
     this.freezeReconnection = freeze;
   }
 
-  autoReconnectSet(autoReconnect: boolean) {
+  setAutoReconnect(autoReconnect: boolean) {
     this.autoReconnect = autoReconnect;
   }
 
-  IsAutoReconnect(): boolean {
+  isAutoReconnect(): boolean {
     return this.autoReconnect;
   }
 
   incReconnectAttempt() {
-    this.curReconnectAttemps = Math.max(this.curReconnectAttemps + 1, this.maxReconnectAttempts);
+    this.curReconnectAttemps = Math.min(this.curReconnectAttemps + 1, this.maxReconnectAttempts);
   }
 
   // переподключение по таймеру
-  tryToReconnect(reconnectFunction: () => void) {
+  tryToReconnect(reconnectFunction: () => void, nextTimeout: number = this.curTimeout) {
     if (
-      this.connectionCanceled ||
+      !this.autoReconnect ||
+      this.timeoutSetted || // проверка на то, что на данный момент отсутствует другой таймер
       (this.maxReconnectAttempts >= 0 && this.curReconnectAttemps >= this.maxReconnectAttempts)
     ) {
       return;
     }
+    this.timeoutSetted = true;
     this.timerID = setTimeout(() => {
-      console.log(`inTimer: ${this.curTimeout}`);
+      console.log(
+        `inTimer: ${this.curTimeout}, attempt ${this.curReconnectAttemps + 1}/${
+          this.maxReconnectAttempts
+        }`
+      );
       if (!this.freezeReconnection) {
         this.curTimeout = Math.min(this.curTimeout + this.incTimeout, this.maxTimeout);
-        this.curReconnectAttemps++;
+        this.incReconnectAttempt();
+        this.timeoutSetted = false;
         reconnectFunction();
       } else {
         console.log('the timer is frozen');
-        if (this.curTimeout == 0) {
-          this.curTimeout = Math.min(this.incTimeout, this.maxTimeout);
-          this.tryToReconnect(reconnectFunction);
-        } else {
-          this.tryToReconnect(reconnectFunction);
-        }
+        this.timeoutSetted = false;
+        this.tryToReconnect(reconnectFunction, this.freezeTimeout);
       }
-    }, this.curTimeout);
+    }, nextTimeout);
   }
 }
 
-class ClientStatus {
+export class ClientStatus {
   static CONNECTING: string = 'Идет подключение...';
   static CONNECTED: string = 'Подключен';
   static NO_CONNECTION: string = 'Не подключен';
@@ -138,7 +144,7 @@ export abstract class ClientWS {
 
   static setConnectionStatus: (newConnectionStatus: string) => void;
 
-  static bindReact(setConnectionStatus: (newConnectionStatus: string) => void): void {
+  static bindReactSuper(setConnectionStatus: (newConnectionStatus: string) => void): void {
     this.setConnectionStatus = setConnectionStatus;
   }
 
@@ -150,7 +156,6 @@ export abstract class ClientWS {
    * переподключение к последнему адресом к которому клиент пытался подключиться
    */
   static reconnect() {
-    this.reconnectTimer.incReconnectAttempt();
     this.connect(this.host, this.port);
   }
 
@@ -162,7 +167,7 @@ export abstract class ClientWS {
     if (this.connection && this.connection.CONNECTING) return;
     // проверяем, что адрес является новым
     if (this.host != host || this.port != port) {
-      this.reconnectTimer.reset();
+      this.reconnectTimer = new ReconnectTimer();
       // проверяем, что не идёт переподключения к текущему соединению
     } else if (this.connection && this.connection.OPEN) {
       return;
@@ -186,13 +191,11 @@ export abstract class ClientWS {
     }
 
     ws.onopen = () => {
-      this.reconnectTimer.reset();
-      console.log(`Client: connected to ${this.host}:${this.port}!`);
-      this.setConnectionStatus(ClientStatus.CONNECTED);
+      this.onOpenHandler();
+    };
 
-      ws.onmessage = (msg: Websocket.MessageEvent) => {
-        this.messageHandler(msg);
-      };
+    ws.onmessage = (msg: Websocket.MessageEvent) => {
+      this.messageHandler(msg);
     };
 
     ws.onclose = async (event) => {
@@ -212,12 +215,14 @@ export abstract class ClientWS {
     return;
   }
 
-  static closeHandler(host: string, port: number, event: Websocket.Event) {
+  static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     if (host == this.host && port == this.port) {
       this.setConnectionStatus(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
-      if (this.reconnectTimer.IsAutoReconnect()) {
-        this.reconnectTimer.tryToReconnect(this.reconnect);
+      if (this.reconnectTimer.isAutoReconnect()) {
+        this.reconnectTimer.tryToReconnect(() => {
+          this.reconnect();
+        });
       }
     }
   }
@@ -226,5 +231,16 @@ export abstract class ClientWS {
     console.log('Websocket error', error);
     this.setConnectionStatus(ClientStatus.CONNECTION_ERROR);
     this.connection = undefined;
+  }
+
+  static onOpenHandler() {
+    this.reconnectTimer.reset();
+    //console.log(`Client: connected to ${this.host}:${this.port}!`);
+    this.setConnectionStatus(ClientStatus.CONNECTED);
+  }
+
+  static cancelConnection() {
+    this.reconnectTimer.reset(false);
+    this.connection?.close();
   }
 }

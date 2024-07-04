@@ -83,9 +83,7 @@ export const Loader: React.FC<FlasherProps> = ({
     }
   };
 
-  const avrdudeBlock = () => {
-    return flasherIsLocal && !hasAvrdude;
-  };
+  const avrdudeBlock = () => flasherIsLocal && !hasAvrdude;
 
   const handleErrorMessageDisplay = async () => {
     // выводимое для пользователя сообщение

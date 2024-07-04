@@ -29,6 +29,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   const editor = useEditorContext();
   const { model } = editor;
   const components = model.useData('elements.components');
+  const visual = model.useData('elements.visual');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 
@@ -95,10 +96,12 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
               )}
               onClick={() => onCompClick(entry)}
             >
-              <img
-                className="h-8 w-8 object-contain"
-                src={icons.get(entry.img ?? 'unknown')?.src ?? UnknownIcon}
-              />
+              {visual && (
+                <img
+                  className="h-8 w-8 object-contain"
+                  src={icons.get(entry.img ?? 'unknown')?.src ?? UnknownIcon}
+                />
+              )}
               <p className="line-clamp-1">{entry.name}</p>
             </div>
           )}

@@ -148,10 +148,6 @@ export abstract class ClientWS {
     this.setConnectionStatus = setConnectionStatus;
   }
 
-  static checkConnection(): boolean {
-    return this.connection !== undefined;
-  }
-
   /**
    * переподключение к последнему адресом к которому клиент пытался подключиться
    */
@@ -164,13 +160,13 @@ export abstract class ClientWS {
    */
   static async connect(host: string, port: number): Promise<Websocket | undefined> {
     // чтобы предовратить повторное соединение
-    if (this.connection && this.connection.CONNECTING) return;
+    if (this.connection && this.connection.CONNECTING) return this.connection;
     // проверяем, что адрес является новым
     if (this.host != host || this.port != port) {
       this.reconnectTimer = new ReconnectTimer();
       // проверяем, что не идёт переподключения к текущему соединению
     } else if (this.connection && this.connection.OPEN) {
-      return;
+      return this.connection;
     }
     this.setConnectionStatus(ClientStatus.CONNECTING);
     /*
@@ -212,10 +208,12 @@ export abstract class ClientWS {
 
   // обработка входящих через вебсоект сообщений
   static messageHandler(msg: Websocket.MessageEvent) {
+    console.log(msg);
     return;
   }
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
+    console.log('Close connection', event);
     if (host == this.host && port == this.port) {
       this.setConnectionStatus(ClientStatus.NO_CONNECTION);
       this.connection = undefined;

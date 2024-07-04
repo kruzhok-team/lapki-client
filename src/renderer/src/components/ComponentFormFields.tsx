@@ -50,7 +50,14 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     setParameters({ ...parameters });
   };
 
-  const handleNameChange = (name: string) => {
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const name = event.target.value;
+    const caret = event.target.selectionStart;
+    const element = event.target;
+    window.requestAnimationFrame(() => {
+      element.selectionStart = caret;
+      element.selectionEnd = caret;
+    });
     setName(name.replaceAll(' ', '_'));
   };
 
@@ -78,7 +85,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             label="Название:"
             maxLength={20}
             value={name}
-            onChange={(e) => handleNameChange(e.target.value)}
+            onChange={(e) => handleNameChange(e)}
             autoFocus
           />
 

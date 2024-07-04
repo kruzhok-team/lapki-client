@@ -1,5 +1,5 @@
 :root {
-  --loading-opacity: 60%;
+  --loading-opacity: 90%;
 }
 
 .loading-overlay {
@@ -73,7 +73,7 @@
 
 @keyframes loadingFadeBg {
   from {
-    opacity: 0;
+    opacity: 50%;
   }
   to {
     opacity: var(--loading-opacity);

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
-import { formatArgType, validators } from '@renderer/utils';
+import { formatArgType, validators, reservedWordsC } from '@renderer/utils';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { ColorInput, Select } from './UI';
@@ -49,16 +49,43 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     parameters[name] = value;
     setParameters({ ...parameters });
   };
-
+  const nameError = 'name';
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const name = event.target.value;
+    setErrors((p) => ({ ...p, [nameError]: '' }));
+    let name = event.target.value;
     const caret = event.target.selectionStart;
     const element = event.target;
     window.requestAnimationFrame(() => {
       element.selectionStart = caret;
       element.selectionEnd = caret;
     });
-    setName(name.replaceAll(' ', '_'));
+    name = name.replaceAll(' ', '_');
+    setName(name);
+    if (name == '') {
+      setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
+      return;
+    }
+    const firstSymbolRegex = '[A-Z]|[a-z]|_';
+    if (!name[0].match(firstSymbolRegex)) {
+      setErrors((p) => ({
+        ...p,
+        [nameError]: `'${name[0]}' является недопустимым первым символом`,
+      }));
+      return;
+    }
+    const remainingSymbolsRegex = firstSymbolRegex + '|[0-9]';
+    for (const i of name) {
+      if (!i.match(remainingSymbolsRegex)) {
+        setErrors((p) => ({ ...p, [nameError]: `'${i}' является недопустимым символом` }));
+        return;
+      }
+    }
+    for (const i of reservedWordsC) {
+      if (i == name) {
+        setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
+        return;
+      }
+    }
   };
 
   const protoParametersArray = Object.entries(protoParameters);
@@ -86,6 +113,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             maxLength={20}
             value={name}
             onChange={(e) => handleNameChange(e)}
+            error={errors[nameError]}
             autoFocus
           />
 

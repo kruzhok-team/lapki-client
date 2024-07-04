@@ -95,3 +95,40 @@ export const randomColor = (): string => {
   }
   return '#' + result;
 };
+
+// список зарезервированных слов из языка C
+export const reservedWordsC = [
+  'auto',
+  'else',
+  'long',
+  'switch',
+  'break',
+  'enum',
+  'register',
+  'typedef',
+  'case',
+  'extern',
+  'return',
+  'union',
+  'char',
+  'float',
+  'short',
+  'unsigned',
+  'const',
+  'for',
+  'signed',
+  'void',
+  'continue',
+  'goto',
+  'sizeof',
+  'volatile',
+  'default',
+  'if',
+  'static',
+  'while',
+  'do',
+  'int',
+  'struct',
+  '_Packed',
+  'double',
+];

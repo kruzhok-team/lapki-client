@@ -60,7 +60,7 @@ class ReconnectTimer {
     this.autoReconnect = reconnection;
   }
 
-  private clearTimer() {
+  clearTimer() {
     if (this.timerID) {
       clearTimeout(this.timerID);
       this.timerID = undefined;
@@ -152,6 +152,9 @@ export abstract class ClientWS {
    * переподключение к последнему адресом к которому клиент пытался подключиться
    */
   static reconnect() {
+    // если мы переподключаемся, то можно сбросить текущий таймер переподключения
+    // это позволяется избежать ситуации, когда автоматическое переподключение происходит однвременно с ручным (по нажатию на кнопку)
+    this.reconnectTimer.clearTimer();
     this.connect(this.host, this.port);
   }
 

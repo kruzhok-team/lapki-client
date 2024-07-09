@@ -96,7 +96,7 @@ export const randomColor = (): string => {
   return '#' + result;
 };
 
-// список зарезервированных слов из языка C
+// список зарезервированных (ключевых) слов из языка C
 export const reservedWordsC = [
   'auto',
   'else',

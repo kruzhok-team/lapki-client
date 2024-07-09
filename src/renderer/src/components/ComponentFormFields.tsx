@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 
+import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 import { formatArgType, validators, reservedWordsC } from '@renderer/utils';
@@ -30,6 +32,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   errors,
   setErrors,
 }) => {
+  const editor = useEditorContext();
+  const controller = editor.controller;
   const handleInputChange = (name: string, value: string) => {
     const type = protoParameters[name]?.type;
 
@@ -93,6 +97,14 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     for (const key in validators) {
       if (key == name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
+        return;
+      }
+    }
+    // проверка на то, что название не совпадает с названием класса компонентов
+    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
+    for (const component of vacantComponents) {
+      if (component.name == name) {
+        setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));
         return;
       }
     }

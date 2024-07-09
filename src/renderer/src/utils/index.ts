@@ -132,3 +132,44 @@ export const reservedWordsC = [
   '_Packed',
   'double',
 ];
+
+// список слов, используемых фреймворком компилятором
+export const frameworkWords = [
+  // Классы фреймворка:
+  'QEvt',
+  'QState',
+  'QSignal',
+  'QStateHandler',
+  'QHsm',
+  // Функции фреймфорка:
+  'QMsm_simple_dispatch',
+  'QMsm_dispatch',
+  'do_transition',
+  'QHsm_top',
+  'QMsm_init',
+  'QHsm_ctor',
+  // Макросы:
+  'Q_MAX_DEPTH',
+  'QEP_EMPTY_SIG_',
+  'Q_ENTRY_SIG',
+  'Q_EXIT_SIG',
+  'Q_INIT_SIG',
+  'Q_VERTEX_SIG',
+  'Q_USER_SIG',
+  'Q_RET_SUPER',
+  'Q_RET_UNHANDLED',
+  'Q_RET_HANDLED',
+  'Q_RET_IGNORED',
+  'Q_RET_TRAN',
+  'Q_MSM_UPCAST',
+  'Q_STATE_CAST',
+  'Q_UNHANDLED',
+  'Q_HANDLED',
+  'Q_TRAN',
+  'Q_SUPER',
+  'QMSM_INIT',
+  'QMSM_DISPATCH',
+  'SIMPLE_DISPATCH',
+  'SIGNAL_DISPATCH',
+  'PASS_EVENT_TO',
+];

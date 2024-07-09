@@ -81,14 +81,14 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
       return;
     }
     const remainingSymbolsRegex = firstSymbolRegex + '|[0-9]';
-    for (const i of name) {
-      if (!i.match(remainingSymbolsRegex)) {
-        setErrors((p) => ({ ...p, [nameError]: `'${i}' является недопустимым символом` }));
+    for (const symbol of name) {
+      if (!symbol.match(remainingSymbolsRegex)) {
+        setErrors((p) => ({ ...p, [nameError]: `'${symbol}' является недопустимым символом` }));
         return;
       }
     }
-    for (const i of reservedWordsC) {
-      if (i == name) {
+    for (const word of reservedWordsC) {
+      if (word == name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
         return;
       }

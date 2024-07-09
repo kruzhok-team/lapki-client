@@ -4,7 +4,7 @@ import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
-import { formatArgType, validators, reservedWordsC } from '@renderer/utils';
+import { formatArgType, validators, reservedWordsC, frameworkWords } from '@renderer/utils';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { ColorInput, Select } from './UI';
@@ -90,6 +90,15 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     for (const word of reservedWordsC) {
       if (word == name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
+        return;
+      }
+    }
+    for (const word of frameworkWords) {
+      if (word == name) {
+        setErrors((p) => ({
+          ...p,
+          [nameError]: `Название является недопустимым. Выберите другое`,
+        }));
         return;
       }
     }

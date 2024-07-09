@@ -51,7 +51,9 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   };
   const nameError = 'name';
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // очищаем предыдущий статус ошибки
     setErrors((p) => ({ ...p, [nameError]: '' }));
+    // динамическая замена пробелов
     let name = event.target.value;
     const caret = event.target.selectionStart;
     const element = event.target;
@@ -61,6 +63,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     });
     name = name.replaceAll(' ', '_');
     setName(name);
+
     if (name == '') {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
       return;
@@ -83,6 +86,13 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     for (const i of reservedWordsC) {
       if (i == name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
+        return;
+      }
+    }
+    // проверка на то, что название не является типом данных
+    for (const key in validators) {
+      if (key == name) {
+        setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
         return;
       }
     }

@@ -3,8 +3,12 @@ import { useCallback, useState } from 'react';
 import { ActionsModalData } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { Action } from '@renderer/types/diagram';
+import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
+import { useEditorContext } from '@renderer/store/EditorContext';
 
 export const useActions = () => {
+  const { controller, model } = useEditorContext();
+  const componentsData = model.useData('elements.components');
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
   const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
 
@@ -70,6 +74,8 @@ export const useActions = () => {
 
     if (typeof actionsToParse !== 'string') {
       setTabValue(0);
+      if (controller.platform)
+        setText(serializeActions(actionsToParse, componentsData, controller.platform.data)); // для перехода в текст
       return setActions(actionsToParse);
     }
 

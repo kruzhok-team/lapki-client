@@ -6,6 +6,7 @@ import { SelectOption } from '@renderer/components/UI';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Condition, Variable as VariableData } from '@renderer/types/diagram';
+import { serializeCondition } from '@renderer/lib/data/GraphmlBuilder';
 
 /**
  * Инкапсуляция логики условия формы
@@ -210,6 +211,7 @@ export const useCondition = () => {
       }
 
       setTabValue(0);
+      setText(serializeCondition(c)); // для перехода в текст
 
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {

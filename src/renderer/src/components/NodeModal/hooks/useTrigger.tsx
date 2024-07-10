@@ -5,6 +5,7 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Event } from '@renderer/types/diagram';
+import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
@@ -91,6 +92,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
       if (typeof triggerToParse !== 'string') {
         setSelectedComponent(triggerToParse.component);
         setSelectedMethod(triggerToParse.method);
+        setText(serializeEvent(triggerToParse)); // для перехода в текст
         return setTabValue(0);
       }
 

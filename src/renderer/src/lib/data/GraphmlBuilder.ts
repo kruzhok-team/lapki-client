@@ -56,7 +56,12 @@ function serializeArgs(args: ArgList | undefined) {
   return Object.values(args).join(', ');
 }
 
-function serializeEvent(trigger: Event): string {
+/**
+ * Формирует текстовую форму пиктографического триггера события.
+ * @param trigger Данные триггера
+ * @returns Строка с сериализованным триггером
+ */
+export function serializeEvent(trigger: Event): string {
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
@@ -68,7 +73,14 @@ function serializeEvent(trigger: Event): string {
   }
 }
 
-function serializeActions(
+/**
+ * Формирует строковую форму пиктографического поведения (набора действий)
+ * @param actions Список пиктографических действий
+ * @param components Описание компонентов
+ * @param platform Текущая платформа
+ * @returns Строка с сериализованной формой
+ */
+export function serializeActions(
   actions: Action[],
   components: { [id: string]: Component },
   platform: Platform
@@ -199,7 +211,12 @@ function getOperand(operand: string | number | Variable | Condition[]): string |
   return operand;
 }
 
-function serializeCondition(condition: Condition): string {
+/**
+ * Формирует текстовую форму пиктографического условия события.
+ * @param condition Данные условия
+ * @returns Строка с сериализованным условием
+ */
+export function serializeCondition(condition: Condition): string {
   if (!isConditionArray(condition.value)) {
     throw new Error('Internal error: condition.value is not Condition[];');
   }

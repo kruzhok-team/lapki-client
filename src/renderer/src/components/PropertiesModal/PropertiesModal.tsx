@@ -33,18 +33,18 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
     );
     metaForm.clearErrors();
 
-    if (!model.data?.basename) return;
-
-    const stat = await window.api.fileHandlers.getMetadata(model.data.basename);
-
-    setProperties([
-      ['Название', model.data.name ?? ''],
-      ['Платформа', getPlatform(model.data.elements.platform)?.name ?? ''],
-      ['Путь к файлу', model.data.basename ?? ''],
-      ['Дата и время последнего изменения файла', dateFormat(stat['mtime'])],
-      ['Дата и время создания файла', dateFormat(stat['birthtime'])],
-      ['Размер файла', stat['size'] + ' байтов'],
-    ]);
+    const propertiesValues: [string, string][] = [
+      ['Название', model.data.name ?? 'отсутствует'],
+      ['Платформа', getPlatform(model.data.elements.platform)?.name ?? 'отсутствует'],
+    ];
+    if (model.data?.basename) {
+      const stat = await window.api.fileHandlers.getMetadata(model.data.basename);
+      propertiesValues.push(['Путь к файлу', model.data.basename]);
+      propertiesValues.push(['Дата и время последнего изменения файла', dateFormat(stat['mtime'])]);
+      propertiesValues.push(['Дата и время создания файла', dateFormat(stat['birthtime'])]);
+      propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
+    }
+    setProperties(propertiesValues);
   };
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {

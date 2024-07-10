@@ -19,7 +19,7 @@ interface ComponentProps {
 export const Component: React.FC<ComponentProps> = (props) => {
   const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
 
-  const { controller, model } = useEditorContext();
+  const { controller } = useEditorContext();
 
   const [dragOver, setDragOver] = useState(false);
 

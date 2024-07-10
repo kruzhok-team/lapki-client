@@ -20,7 +20,7 @@ interface ActionProps {
 export const Action: React.FC<ActionProps> = (props) => {
   const { isSelected, onSelect, onChange, onDragStart, onDrop, data } = props;
 
-  const { controller, model } = useEditorContext();
+  const { controller } = useEditorContext();
 
   return (
     <div

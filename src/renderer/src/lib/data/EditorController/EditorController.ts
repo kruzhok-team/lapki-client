@@ -476,7 +476,7 @@ export class EditorController {
       vacant.push({
         idx,
         name: compo.name ?? idx,
-        img: compo.img ?? 'unknown',
+        img: compo.img || 'stubComponent',
         description: compo.description ?? '',
         singletone: compo.singletone ?? false,
       });

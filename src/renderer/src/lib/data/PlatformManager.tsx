@@ -166,6 +166,9 @@ export class PlatformManager {
   getComponentIcon(name: string, isName?: boolean) {
     const query = isName ? this.resolveComponentType(name) : name;
     const icon = this.componentToIcon.get(query);
+    if (icon === undefined) {
+      return "stubComponent";
+    }
     if (icon && icons.has(icon)) {
       return icon;
     } else {
@@ -191,6 +194,9 @@ export class PlatformManager {
 
   getEventIcon(component: string, method: string) {
     const icon = this.eventToIcon.get(`${component}/${method}`);
+    if (icon === undefined) {
+      return "stubEvent";
+    }
     if (icon && icons.has(icon)) {
       return icon;
     } else {
@@ -207,6 +213,9 @@ export class PlatformManager {
 
   getActionIcon(component: string, method: string) {
     const icon = this.actionToIcon.get(`${component}/${method}`);
+    if (icon === undefined) {
+      return "stubAction";
+    }
     if (icon && icons.has(icon)) {
       return icon;
     } else {

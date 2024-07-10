@@ -35,6 +35,9 @@ const basePicto = {
   pen: Pen,
   system: resolveImg('common/system.svg'),
   variable: resolveImg('common/variable.svg'),
+  stubComponent: resolveImg('common/stubComponent.svg'),
+  stubEvent: resolveImg('common/stubEvent.svg'),
+  stubAction: resolveImg('common/stubAction.svg'),
 
   'op/notEquals': resolveImg('bearloga/compare_not_equal.svg'),
   'op/equals': resolveImg('bearloga/compare_equal.svg'),

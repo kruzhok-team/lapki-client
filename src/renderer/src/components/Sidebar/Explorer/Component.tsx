@@ -20,7 +20,6 @@ export const Component: React.FC<ComponentProps> = (props) => {
   const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
 
   const { controller, model } = useEditorContext();
-  const visual = model.useData('elements.visual');
 
   const [dragOver, setDragOver] = useState(false);
 
@@ -74,7 +73,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {visual && controller.platform?.getFullComponentIcon(name)}
+          {controller.platform?.getFullComponentIcon(name)}
           <p className="ml-2 line-clamp-1">{name}</p>
         </button>
       )}

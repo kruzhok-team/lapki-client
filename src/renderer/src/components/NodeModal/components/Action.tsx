@@ -21,7 +21,6 @@ export const Action: React.FC<ActionProps> = (props) => {
   const { isSelected, onSelect, onChange, onDragStart, onDrop, data } = props;
 
   const { controller, model } = useEditorContext();
-  const visual = model.useData('elements.visual');
 
   return (
     <div
@@ -33,20 +32,18 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDrop={onDrop}
       onDoubleClick={onChange}
     >
-      {visual && (
-        <div className="flex items-center gap-[2px] overflow-hidden rounded-md bg-border-primary">
-          <div className="bg-bg-primary px-4 py-2">
-            {controller.platform?.getFullComponentIcon(data.component)}
-          </div>
-
-          <div className="bg-bg-primary px-4 py-2">
-            <img
-              className="size-8 object-contain"
-              src={controller.platform?.getActionIconUrl(data.component, data.method, true)}
-            />
-          </div>
+      <div className="flex items-center gap-[2px] overflow-hidden rounded-md bg-border-primary">
+        <div className="bg-bg-primary px-4 py-2">
+          {controller.platform?.getFullComponentIcon(data.component)}
         </div>
-      )}
+
+        <div className="bg-bg-primary px-4 py-2">
+          <img
+            className="size-8 object-contain"
+            src={controller.platform?.getActionIconUrl(data.component, data.method, true)}
+          />
+        </div>
+      </div>
 
       <div className="flex items-center">
         <div>{data.component}.</div>

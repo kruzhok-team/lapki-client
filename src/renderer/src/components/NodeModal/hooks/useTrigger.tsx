@@ -30,7 +30,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: visual && controller.platform?.getFullComponentIcon(id, 'mr-1 size-7'),
+        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 size-7'),
       };
     };
 
@@ -56,7 +56,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
         value: name,
         label: name,
         hint: description,
-        icon: visual && (
+        icon: (
           <img
             src={getImg.call(controller.platform, selectedComponent, name, true)}
             className="mr-1 size-7 object-contain"

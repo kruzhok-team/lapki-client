@@ -44,7 +44,7 @@ export const useCondition = () => {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: visual && controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -61,7 +61,7 @@ export const useCondition = () => {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: visual && controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -83,7 +83,7 @@ export const useCondition = () => {
           value: name,
           label: name,
           hint: description,
-          icon: visual && (
+          icon: (
             <img
               src={getImg.call(controller.platform, selectedComponentParam1, name, true)}
               className="mr-1 h-7 w-7 object-contain"
@@ -106,7 +106,7 @@ export const useCondition = () => {
           value: name,
           label: name,
           hint: description,
-          icon: visual && (
+          icon: (
             <img
               src={getImg.call(controller.platform, selectedComponentParam2, name, true)}
               className="mr-1 h-7 w-7 object-contain"

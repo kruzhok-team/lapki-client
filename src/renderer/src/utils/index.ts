@@ -133,7 +133,7 @@ export const reservedWordsC = [
   'double',
 ];
 
-// список слов, используемых фреймворком компилятором
+// список слов, используемых фреймворком QHSM в компиляторе
 export const frameworkWords = [
   // Классы фреймворка:
   'QEvt',

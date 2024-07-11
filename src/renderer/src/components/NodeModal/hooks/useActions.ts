@@ -9,6 +9,8 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 export const useActions = () => {
   const { controller, model } = useEditorContext();
   const componentsData = model.useData('elements.components');
+  const visual = model.useData('elements.visual');
+
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
   const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
 
@@ -67,21 +69,24 @@ export const useActions = () => {
     setTabValue(0);
   };
 
-  const parse = useCallback((actionsToParse: Action[] | string | undefined) => {
-    clear();
+  const parse = useCallback(
+    (actionsToParse: Action[] | string | undefined) => {
+      clear();
 
-    if (!actionsToParse) return;
+      if (!actionsToParse) return;
 
-    if (typeof actionsToParse !== 'string') {
-      setTabValue(0);
-      if (controller.platform)
-        setText(serializeActions(actionsToParse, componentsData, controller.platform.data)); // для перехода в текст
-      return setActions(actionsToParse);
-    }
+      if (typeof actionsToParse !== 'string') {
+        setTabValue(0);
+        if (!visual && controller.platform)
+          setText(serializeActions(actionsToParse, componentsData, controller.platform.data)); // для перехода в текст
+        return setActions(actionsToParse);
+      }
 
-    setTabValue(1);
-    setText(actionsToParse);
-  }, []);
+      setTabValue(1);
+      setText(actionsToParse);
+    },
+    [visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
+  );
 
   return {
     actions,

@@ -13,6 +13,7 @@ import { useTrigger, useActions, useCondition } from './hooks';
  */
 export const StateModal: React.FC = () => {
   const editor = useEditorContext();
+  const visual = editor.model.useData('elements.visual');
 
   const [isOpen, open, close] = useModal(false);
 
@@ -180,7 +181,7 @@ export const StateModal: React.FC = () => {
       editor.controller.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
   // Синхронизвация trigger и condition с event
   useLayoutEffect(() => {

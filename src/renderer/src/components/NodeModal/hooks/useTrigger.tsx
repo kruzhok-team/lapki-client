@@ -92,14 +92,14 @@ export const useTrigger = (addSystemComponents: boolean) => {
       if (typeof triggerToParse !== 'string') {
         setSelectedComponent(triggerToParse.component);
         setSelectedMethod(triggerToParse.method);
-        setText(serializeEvent(triggerToParse)); // для перехода в текст
+        if (!visual) setText(serializeEvent(triggerToParse)); // для перехода в текст
         return setTabValue(0);
       }
 
       setText(triggerToParse);
       setTabValue(1);
     },
-    [clear]
+    [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
   );
 
   return {

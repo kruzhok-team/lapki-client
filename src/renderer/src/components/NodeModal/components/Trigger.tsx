@@ -12,7 +12,12 @@ import '../style.css';
 
 type TriggerProps = ReturnType<typeof useTrigger>;
 
-export const Trigger: React.FC<TriggerProps> = memo((props) => {
+/**
+ * Виджет редактирования триггера (сигнала) события.
+ *
+ * Обёрнут в {@link memo}, чтобы оптимизировать перерисовку.
+ */
+export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
   const {
     componentOptions,
     methodOptions,

@@ -13,6 +13,7 @@ import { useTrigger, useCondition, useActions } from './hooks';
  */
 export const TransitionModal: React.FC = () => {
   const editor = useEditorContext();
+  const visual = editor.model.useData('elements.visual');
 
   const [isOpen, open, close] = useModal(false);
 
@@ -206,7 +207,7 @@ export const TransitionModal: React.FC = () => {
       editor.controller.transitions.off('changeTransition', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
   return (
     <>

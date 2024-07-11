@@ -211,7 +211,7 @@ export const useCondition = () => {
       }
 
       setTabValue(0);
-      setText(serializeCondition(c)); // для перехода в текст
+      if (!visual) setText(serializeCondition(c)); // для перехода в текст
 
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
@@ -261,7 +261,7 @@ export const useCondition = () => {
       }
       return setConditionOperator(operator);
     },
-    [clear]
+    [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
   );
 
   return {

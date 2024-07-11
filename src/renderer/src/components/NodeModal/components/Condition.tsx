@@ -40,7 +40,12 @@ const operand = [
 
 type ConditionProps = ReturnType<typeof useCondition>;
 
-export const Condition: React.FC<ConditionProps> = memo((props) => {
+/**
+ * Виджет редактирования условия события.
+ *
+ * Обёрнут в {@link memo}, чтобы оптимизировать перерисовку.
+ */
+export const Condition: React.FC<ConditionProps> = memo(function Condition(props) {
   const {
     show,
     handleChangeConditionShow,

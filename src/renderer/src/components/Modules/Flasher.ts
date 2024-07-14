@@ -53,7 +53,7 @@ export class Flasher {
   private static freezeReconnection: boolean = false;
   // true = пытаться переподключиться автоматически
   private static reconnection: boolean = false;
-  // true = соединение было отменено пользователем и переподключаться не нунжо.
+  // true = соединение было отменено пользователем и переподключаться не нужно.
   private static connectionCanceled: boolean = false;
   private static currentFlashingDevice: Device | undefined = undefined;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
@@ -157,7 +157,7 @@ export class Flasher {
   static checkConnection(): boolean {
     return this.connection !== undefined;
   }
-  /** переподключение к последнему адресом к которому Flasher пытался подключиться*/
+  /** переподключение к последнему адресу к которому Flasher пытался подключиться*/
   static reconnect() {
     this.connect(this.host, this.port);
   }

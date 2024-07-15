@@ -32,6 +32,7 @@ export type CompilerAction = {
 
 export type CompilerComponent = {
   type: string;
+  position: Point;
   parameters: { [key: string]: string };
 };
 export type CompilerResult = {

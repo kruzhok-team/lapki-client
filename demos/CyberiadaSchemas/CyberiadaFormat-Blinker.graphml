@@ -52,7 +52,7 @@ pin/ 12
     <node id="ctimer1">
         <data key="dNote">formal</data>
         <data key="dName"> CGML_COMPONENT </data>
-        <data key="dData">id/ timer1 
+        <data key="dData">id/ Timer1 
 
 type/ Timer
 
@@ -74,7 +74,7 @@ description/ Программный таймер.
         <data key="dName">Включен</data>
         <data key="dData">entry/
 LED1.on()
-timer1.start(1000)
+Timer1.start(1000)
 
         </data>
         <data key="dGeometry">
@@ -86,7 +86,7 @@ timer1.start(1000)
         <data key="dName">Выключен</data>
         <data key="dData">entry/
 LED1.off()
-timer1.start(1000)
+Timer1.start(1000)
 
         </data>
         <data key="dGeometry">
@@ -109,13 +109,13 @@ timer1.start(1000)
         <data key="dPivot"/>
     </edge>
     <edge id="edge3" source="diod1" target="diod2">
-        <data key="dData">timer1.timeout/</data>
+        <data key="dData">Timer1.timeout/</data>
         <data key="dLabelGeometry">
             <point x="389" y="193"/>
         </data> 
     </edge>
     <edge id="edge4" source="diod2" target="diod1">
-        <data key="dData">timer1.timeout/</data>
+        <data key="dData">Timer1.timeout/</data>
         <data key="dLabelGeometry">
             <point x="81.5" y="193.46"/>
         </data> 

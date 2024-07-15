@@ -44,8 +44,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrlc', this.app.controller.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.pasteSelected);
     this.app.keyboard.on('ctrld', this.app.controller.duplicateSelected);
-    this.app.keyboard.on('ctrls', this.app.model.files.save);
-    this.app.keyboard.on('ctrlshifta', this.app.model.files.saveAs);
+    this.app.keyboard.on('ctrls', this.app.controller.model.files.save);
+    this.app.keyboard.on('ctrlshifta', this.app.controller.model.files.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -65,8 +65,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.off('ctrlc', this.app.controller.copySelected);
     this.app.keyboard.off('ctrlv', this.app.controller.pasteSelected);
     this.app.keyboard.off('ctrld', this.app.controller.duplicateSelected);
-    this.app.keyboard.off('ctrls', this.app.model.files.save);
-    this.app.keyboard.off('ctrlshifta', this.app.model.files.saveAs);
+    this.app.keyboard.off('ctrls', this.app.controller.model.files.save);
+    this.app.keyboard.off('ctrlshifta', this.app.controller.model.files.saveAs);
 
     this.app.mouse.off('mousedown', this.handleMouseDown);
     this.app.mouse.off('mouseup', this.handleMouseUp);
@@ -101,8 +101,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
 
-    const scale = this.app.model.data.scale;
-    const offset = this.app.model.data.offset;
+    const scale = this.app.controller.model.data.scale;
+    const offset = this.app.controller.model.data.offset;
 
     let size = 30;
     const top = (offset.y % size) / scale;
@@ -153,7 +153,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   setScale(value: number) {
-    this.app.model.setScale(value);
+    this.app.controller.model.setScale(value);
     picto.scale = value;
 
     this.isDirty = true;
@@ -224,16 +224,16 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
     if (this.isPan) {
       // TODO Много раз такие операции повторяются, нужно переделать на функции
-      this.app.model.data.offset.x += e.dx * this.app.model.data.scale;
-      this.app.model.data.offset.y += e.dy * this.app.model.data.scale;
+      this.app.controller.model.data.offset.x += e.dx * this.app.controller.model.data.scale;
+      this.app.controller.model.data.offset.y += e.dy * this.app.controller.model.data.scale;
     } else if (this.mouseDownNode) {
       this.mouseDownNode.handleMouseMove(e);
     }
   }
 
   private handleRightMouseMove(e: MyMouseEvent) {
-    this.app.model.data.offset.x += e.dx * this.app.model.data.scale;
-    this.app.model.data.offset.y += e.dy * this.app.model.data.scale;
+    this.app.controller.model.data.offset.x += e.dx * this.app.controller.model.data.scale;
+    this.app.controller.model.data.offset.y += e.dy * this.app.controller.model.data.scale;
 
     this.app.canvas.element.style.cursor = 'grabbing';
   }
@@ -255,11 +255,11 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       this.handleChangeScale(e);
     } else {
       if (this.app.keyboard.shiftPressed) {
-        this.app.model.data.offset.y -= e.nativeEvent.deltaX * 0.1;
-        this.app.model.data.offset.x -= e.nativeEvent.deltaY * 0.1;
+        this.app.controller.model.data.offset.y -= e.nativeEvent.deltaX * 0.1;
+        this.app.controller.model.data.offset.x -= e.nativeEvent.deltaY * 0.1;
       } else {
-        this.app.model.data.offset.y -= e.nativeEvent.deltaY * 0.1;
-        this.app.model.data.offset.x -= e.nativeEvent.deltaX * 0.1;
+        this.app.controller.model.data.offset.y -= e.nativeEvent.deltaY * 0.1;
+        this.app.controller.model.data.offset.x -= e.nativeEvent.deltaX * 0.1;
       }
 
       this.isDirty = true;
@@ -267,12 +267,12 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   };
 
   private handleChangeScale(e: MyMouseEvent & { nativeEvent: WheelEvent }) {
-    const prevScale = this.app.model.data.scale;
+    const prevScale = this.app.controller.model.data.scale;
     const newScale = Number(
       clamp(prevScale + e.nativeEvent.deltaY * 0.001, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
-    this.app.model.data.offset.x -= e.x * prevScale - e.x * newScale;
-    this.app.model.data.offset.y -= e.y * prevScale - e.y * newScale;
+    this.app.controller.model.data.offset.x -= e.x * prevScale - e.x * newScale;
+    this.app.controller.model.data.offset.y -= e.y * prevScale - e.y * newScale;
 
     this.setScale(newScale);
   }
@@ -288,8 +288,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   // Window координаты - это координаты мыши на html canvas элементе
   // World координаты - это координаты которые учитывают масштаб и смещение
   windowToWorldCoords(point: Point): Point {
-    const scale = this.app.model.data.scale;
-    const offset = this.app.model.data.offset;
+    const scale = this.app.controller.model.data.scale;
+    const offset = this.app.controller.model.data.offset;
     return {
       x: point.x * scale - offset.x,
       y: point.y * scale - offset.y,
@@ -297,8 +297,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   worldToWindowCoords(point: Point): Point {
-    const scale = this.app.model.data.scale;
-    const offset = this.app.model.data.offset;
+    const scale = this.app.controller.model.data.scale;
+    const offset = this.app.controller.model.data.offset;
     return {
       x: (point.x + offset.x) / scale,
       y: (point.y + offset.y) / scale,
@@ -329,7 +329,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     minY += 40;
 
     this.setScale(1);
-    this.app.model.data.offset = { x: minX, y: minY };
+    this.app.controller.model.data.offset = { x: minX, y: minY };
 
     this.isDirty = true;
   }
@@ -338,21 +338,21 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     const x = this.app.canvas.width / 2;
     const y = this.app.canvas.height / 2;
 
-    const prevScale = this.app.model.data.scale;
+    const prevScale = this.app.controller.model.data.scale;
     const newScale = Number(
       clamp(replace ? delta : prevScale + delta, MIN_SCALE, MAX_SCALE).toFixed(2)
     );
 
     const to = {
-      x: this.app.model.data.offset.x - (x * prevScale - x * newScale),
-      y: this.app.model.data.offset.y - (y * prevScale - y * newScale),
+      x: this.app.controller.model.data.offset.x - (x * prevScale - x * newScale),
+      y: this.app.controller.model.data.offset.y - (y * prevScale - y * newScale),
       scale: newScale,
     };
 
     if (this.app.settings.animations) {
       const from = {
-        x: this.app.model.data.offset.x,
-        y: this.app.model.data.offset.y,
+        x: this.app.controller.model.data.offset.x,
+        y: this.app.controller.model.data.offset.y,
         scale: prevScale,
       };
 
@@ -360,8 +360,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
         .to(to, 200)
         .easing(TWEEN.Easing.Linear.None)
         .onUpdate(({ x, y, scale }) => {
-          this.app.model.data.offset = { x, y };
-          this.app.model.data.scale = scale;
+          this.app.controller.model.data.offset = { x, y };
+          this.app.controller.model.data.scale = scale;
           picto.scale = scale;
           this.isDirty = true;
         })
@@ -370,8 +370,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
         })
         .start();
     } else {
-      this.app.model.data.offset.x = to.x;
-      this.app.model.data.offset.y = to.y;
+      this.app.controller.model.data.offset.x = to.x;
+      this.app.controller.model.data.offset.y = to.y;
       this.setScale(to.scale);
     }
   }

@@ -44,13 +44,18 @@ export class GhostTransition {
     ctx.fillStyle = getColor('default-transition-color');
     ctx.strokeStyle = getColor('default-transition-color');
 
-    drawCurvedLine(ctx, line, 12 / this.app.model.data.scale);
+    drawCurvedLine(ctx, line, 12 / this.app.controller.model.data.scale);
     drawCircle(ctx, {
       position: line.start,
-      radius: transitionStyle.startSize / this.app.model.data.scale,
+      radius: transitionStyle.startSize / this.app.controller.model.data.scale,
       fillStyle: getColor('default-transition-color'),
     });
-    drawTriangle(ctx, line.end, 10 / this.app.model.data.scale, degrees_to_radians(line.ee));
+    drawTriangle(
+      ctx,
+      line.end,
+      10 / this.app.controller.model.data.scale,
+      degrees_to_radians(line.ee)
+    );
 
     ctx.lineWidth = prevLineWidth;
     ctx.fillStyle = prevFillStyle;

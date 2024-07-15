@@ -22,11 +22,11 @@ export class Note extends Shape {
     super(app, id, parent);
 
     this.prepareText();
-    this.edgeHandlers = new EdgeHandlers(this.app, this);
+    this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
   get data() {
-    return this.app.model.data.elements.notes[this.id];
+    return this.app.controller.model.data.elements.notes[this.id];
   }
 
   get bounds() {
@@ -52,7 +52,7 @@ export class Note extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.app.model.data.scale;
+    const scale = this.app.controller.model.data.scale;
 
     return {
       padding: 10 / scale,

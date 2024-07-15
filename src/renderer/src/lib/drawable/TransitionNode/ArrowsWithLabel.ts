@@ -42,18 +42,18 @@ export class ArrowsWithLabel implements Drawable {
     if (!this.parent.isSelected) {
       ctx.globalAlpha = 0.3;
     }
-    drawCurvedLine(ctx, sourceLine, 12 / this.app.model.data.scale);
-    drawCurvedLine(ctx, targetLine, 12 / this.app.model.data.scale);
+    drawCurvedLine(ctx, sourceLine, 12 / this.app.controller.model.data.scale);
+    drawCurvedLine(ctx, targetLine, 12 / this.app.controller.model.data.scale);
     ctx.globalAlpha = 1;
     drawCircle(ctx, {
       position: sourceLine.start,
-      radius: transitionStyle.startSize / this.app.model.data.scale,
+      radius: transitionStyle.startSize / this.app.controller.model.data.scale,
       fillStyle: data.color,
     });
     drawTriangle(
       ctx,
       targetLine.start,
-      10 / this.app.model.data.scale,
+      10 / this.app.controller.model.data.scale,
       degrees_to_radians(targetLine.se)
     );
   }

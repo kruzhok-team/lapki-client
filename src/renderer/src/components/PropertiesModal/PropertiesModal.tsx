@@ -19,8 +19,8 @@ interface PropertiesModalProps {
 }
 
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
-  const { model } = useEditorContext();
-  const meta = model.useData('elements.meta');
+  const { controller } = useEditorContext();
+  const meta = controller.model.useData('elements.meta');
 
   const [properties, setProperties] = useState<[string, string][]>([]);
 
@@ -33,14 +33,14 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
     );
     metaForm.clearErrors();
 
-    if (!model.data?.basename) return;
+    if (!controller.model.data?.basename) return;
 
-    const stat = await window.api.fileHandlers.getMetadata(model.data.basename);
+    const stat = await window.api.fileHandlers.getMetadata(controller.model.data.basename);
 
     setProperties([
-      ['Название', model.data.name ?? ''],
-      ['Платформа', getPlatform(model.data.elements.platform)?.name ?? ''],
-      ['Путь к файлу', model.data.basename ?? ''],
+      ['Название', controller.model.data.name ?? ''],
+      ['Платформа', getPlatform(controller.model.data.elements.platform)?.name ?? ''],
+      ['Путь к файлу', controller.model.data.basename ?? ''],
       ['Дата и время последнего изменения файла', dateFormat(stat['mtime'])],
       ['Дата и время создания файла', dateFormat(stat['birthtime'])],
       ['Размер файла', stat['size'] + ' байтов'],
@@ -48,7 +48,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   };
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
-    model.setMeta(
+    controller.model.setMeta(
       data.meta.reduce((acc, cur) => {
         acc[cur.name] = cur.value;
 

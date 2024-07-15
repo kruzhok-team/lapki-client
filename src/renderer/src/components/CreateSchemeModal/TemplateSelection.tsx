@@ -14,7 +14,7 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   selectedTemplate,
   setSelectedTemplate,
 }) => {
-  const { model } = useEditorContext();
+  const { controller } = useEditorContext();
 
   const [isLoading, setIsLoading] = useState(true);
   const [templates, setTemplates] = useState({} as TemplatesList);
@@ -24,14 +24,14 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
 
   useEffect(() => {
     const fn = async () => {
-      const data = await model.files.getAllTemplates();
+      const data = await controller.model.files.getAllTemplates();
 
       setTemplates(data);
       setIsLoading(false);
     };
 
     fn();
-  }, [model.files]);
+  }, [controller.model.files]);
 
   if (isLoading) {
     return <div>Loading...</div>;

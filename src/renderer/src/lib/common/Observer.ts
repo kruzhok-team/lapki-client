@@ -1,6 +1,7 @@
 /**
  * Шаблон «Наблюдатель» для реализации событийной логики
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export class Observer<Subscriber extends Function = () => {}> {
   subscribers: Subscriber[] = [];
 

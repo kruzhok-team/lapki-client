@@ -26,11 +26,11 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { model } = useEditorContext();
+  const { controller } = useEditorContext();
 
-  const isStale = model.useData('isStale');
-  const isInitialized = model.useData('isInitialized');
-  const isMounted = model.useData('isMounted');
+  const isStale = controller.model.useData('isStale');
+  const isInitialized = controller.model.useData('isInitialized');
+  const isMounted = controller.model.useData('isMounted');
 
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
@@ -76,6 +76,13 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       disabled: !isInitialized || isMounted,
       // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
       className: 'border-t border-border-primary',
+    },
+    {
+      text: 'Открыть экран',
+      onClick: () => {
+        openTab({ type: 'scheme', name: 'scheme' });
+      },
+      disabled: !isInitialized || !isMounted,
     },
     // {
     //   text: 'Примеры',

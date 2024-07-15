@@ -16,12 +16,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
   const editor = useEditorContext();
-  const model = editor.model;
-  // (Roundabout1) Константы были заменены на прямое обращение к полям model, потому что, иначе будет отсутствовать синхронизация, то есть
-  // эти константы будут выдавать неактуальные значения (точно известно, что isStale не актуален, насчёт name - неизвестно).
-  // Не понятно насколько надёжно это решение.
-  //const isStale = model.useData('isStale');
-  //const name = model.useData('name');
+  const model = editor.controller.model;
+  const isStale = model.useData('isStale');
+  const name = model.useData('name');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -62,6 +59,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (result && isRight(result)) {
       clearTabs();
       openTab({ type: 'editor', name: 'editor' });
+      openTab({ type: 'scheme', name: 'scheme' });
     }
   };
 

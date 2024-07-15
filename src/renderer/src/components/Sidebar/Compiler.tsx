@@ -32,7 +32,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   compilerStatus,
   setCompilerStatus,
 }) => {
-  const { model } = useEditorContext();
+  const { controller } = useEditorContext();
 
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
@@ -42,8 +42,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = model.useData('name');
-  const isInitialized = model.useData('isInitialized');
+  const name = controller.model.useData('name');
+  const isInitialized = controller.model.useData('isInitialized');
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
@@ -52,18 +52,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    model.files.saveIntoFolder(preparedData);
+    controller.model.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    model.files.compile();
+    controller.model.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await model.files.saveIntoFolder(compilerData!.source!);
+    await controller.model.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -101,7 +101,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      model.files.initImportData(importData, openData!);
+      controller.model.files.initImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);

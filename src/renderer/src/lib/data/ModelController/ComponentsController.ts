@@ -60,16 +60,21 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     return component;
   }
 
-  changeComponentPosition(name: string, startPosition: Point, endPosition: Point, canUndo = true) {
+  changeComponentPosition(
+    name: string,
+    _startPosition: Point,
+    endPosition: Point,
+    _canUndo = true
+  ) {
     const component = this.items.get(name);
     if (!component) return;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'changeComponentPosition',
-        args: { name, startPosition, endPosition },
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeComponentPosition',
+    //     args: { name, startPosition, endPosition },
+    //   });
+    // }
 
     this.app.controller.model.changeComponentPosition(name, endPosition);
 

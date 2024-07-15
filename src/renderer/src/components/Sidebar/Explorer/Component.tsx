@@ -10,14 +10,14 @@ interface ComponentProps {
   isSelected: boolean;
   isDragging: boolean;
   onSelect: () => void;
-  onEdit: () => void;
+  onChange: () => void;
   onDelete: () => void;
   onDragStart: () => void;
   onDrop: () => void;
 }
 
 export const Component: React.FC<ComponentProps> = (props) => {
-  const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
+  const { name, isSelected, isDragging, onSelect, onChange, onDelete, onDragStart, onDrop } = props;
 
   const editor = useEditorContext();
 
@@ -63,8 +63,8 @@ export const Component: React.FC<ComponentProps> = (props) => {
           )}
           onClick={onSelect}
           onAuxClick={onDelete}
-          onDoubleClick={onEdit}
-          onContextMenu={onEdit}
+          onDoubleClick={onChange}
+          onContextMenu={onChange}
           onKeyDown={handleKeyDown}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}

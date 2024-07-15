@@ -3,7 +3,7 @@ import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { Note, Transition } from '@renderer/lib/drawable';
+import { ChoiceState, Note, Transition } from '@renderer/lib/drawable';
 import {
   CopyData,
   CopyType,
@@ -320,23 +320,21 @@ export class ModelController {
 
   copySelected = () => {
     const nodeToCopy =
-      [...this.editor.controller.states.data.states.values()].find((state) => state.isSelected) ||
-      [...this.editor.controller.transitions.items.values()].find(
-        (transition) => transition.isSelected
-      ) ||
-      [...this.editor.controller.notes.items.values()].find((note) => note.isSelected) ||
-      [...this.scheme.controller.components.items.values()].find(
-        (component) => component.isSelected
-      );
+      [...this.states.data.states.values()].find((state) => state.isSelected) ||
+      [...this.states.data.choiceStates.values()].find((state) => state.isSelected) ||
+      [...this.transitions.items.values()].find((transition) => transition.isSelected) ||
+      [...this.notes.items.values()].find((note) => note.isSelected) ||
+      [...this.components.items.values()].find((component) => component.isSelected);
 
     if (!nodeToCopy) return;
 
-    // Тип нужен чтобы отделить ноды при вствке
+    // Тип нужен чтобы отделить ноды при вставке
     let copyType: CopyType = 'state';
+    if (nodeToCopy instanceof ChoiceState) copyType = 'choiceState';
     if (nodeToCopy instanceof Transition) copyType = 'transition';
     if (nodeToCopy instanceof Note) copyType = 'note';
 
-    // Если скопировалась новая нода то нужно сбросить смещение позиции вставки
+    // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
     if (nodeToCopy.id !== this.copyData?.data.id) {
       this.pastePositionOffset = 0;
     }
@@ -357,7 +355,21 @@ export class ModelController {
 
       return this.editor.controller.states.createState({
         ...data,
-        id: undefined, // id должно сгенерится новое, так как это новая сушность
+        id: undefined, // id должно сгенерится новое, так как это новая сущность
+        linkByPoint: false,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
+    }
+
+    if (type === 'choiceState') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+      return this.states.createChoiceState({
+        ...data,
+        id: undefined,
         linkByPoint: false,
         position: {
           x: data.position.x + this.pastePositionOffset,

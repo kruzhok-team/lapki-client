@@ -33,18 +33,18 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
     );
     metaForm.clearErrors();
 
-    if (!controller.model.data?.basename) return;
-
-    const stat = await window.api.fileHandlers.getMetadata(controller.model.data.basename);
-
-    setProperties([
-      ['Название', controller.model.data.name ?? ''],
-      ['Платформа', getPlatform(controller.model.data.elements.platform)?.name ?? ''],
-      ['Путь к файлу', controller.model.data.basename ?? ''],
-      ['Дата и время последнего изменения файла', dateFormat(stat['mtime'])],
-      ['Дата и время создания файла', dateFormat(stat['birthtime'])],
-      ['Размер файла', stat['size'] + ' байтов'],
-    ]);
+    const propertiesValues: [string, string][] = [
+      ['Название', controller.model.data.name ?? 'отсутствует'],
+      ['Платформа', getPlatform(controller.model.data.elements.platform)?.name ?? 'отсутствует'],
+    ];
+    if (controller.model.data?.basename) {
+      const stat = await window.api.fileHandlers.getMetadata(controller.model.data.basename);
+      propertiesValues.push(['Путь к файлу', controller.model.data.basename]);
+      propertiesValues.push(['Дата и время последнего изменения файла', dateFormat(stat['mtime'])]);
+      propertiesValues.push(['Дата и время создания файла', dateFormat(stat['birthtime'])]);
+      propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
+    }
+    setProperties(propertiesValues);
   };
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {

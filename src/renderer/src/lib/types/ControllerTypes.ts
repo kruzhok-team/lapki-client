@@ -2,6 +2,7 @@ import { State, InitialState, FinalState, ChoiceState } from '@renderer/lib/draw
 import {
   Component as ComponentData,
   State as StateData,
+  ChoiceState as ChoiseData,
   Transition as TransitionData,
   Note as NoteData,
 } from '@renderer/types/diagram';
@@ -79,6 +80,7 @@ export type ComponentType = ComponentsControllerDataComponentType extends `${inf
 
 export type CopyData =
   | { type: 'state'; data: StateData & { id: string } }
+  | { type: 'choiceState'; data: ChoiseData & { id: string } }
   | { type: 'transition'; data: TransitionData & { id: string } }
   | { type: 'note'; data: NoteData & { id: string } }
   | { type: 'component'; data: ComponentData & { id: string } };

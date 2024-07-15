@@ -171,6 +171,13 @@ export const useDiagramContextMenu = () => {
           },
         },
         {
+          label: 'Дублировать',
+          type: 'clone',
+          action: () => {
+            editor?.controller.duplicateSelected();
+          },
+        },
+        {
           label: 'Редактировать',
           type: 'edit',
           isFolder: true,
@@ -235,6 +242,27 @@ export const useDiagramContextMenu = () => {
       const { state, position } = data;
 
       handleEvent(position, [
+        {
+          label: 'Копировать',
+          type: 'copy',
+          action: () => {
+            editor?.controller.copySelected();
+          },
+        },
+        {
+          label: 'Вставить',
+          type: 'paste',
+          action: () => {
+            editor?.controller.pasteSelected();
+          },
+        },
+        {
+          label: 'Дублировать',
+          type: 'clone',
+          action: () => {
+            editor?.controller.duplicateSelected();
+          },
+        },
         {
           label: 'Удалить',
           type: 'delete',
@@ -314,6 +342,13 @@ export const useDiagramContextMenu = () => {
                 },
               },
               {
+                label: 'Дублировать',
+                type: 'clone',
+                action: () => {
+                  editor?.controller.duplicateSelected();
+                },
+              },
+              {
                 label: 'Выбрать исход(source)',
                 type: 'source',
                 isFolder: true,
@@ -356,6 +391,27 @@ export const useDiagramContextMenu = () => {
       const { note, position } = data;
 
       handleEvent(position, [
+        {
+          label: 'Копировать',
+          type: 'copy',
+          action: () => {
+            editor?.controller.copySelected();
+          },
+        },
+        {
+          label: 'Вставить',
+          type: 'paste',
+          action: () => {
+            editor?.controller.pasteSelected();
+          },
+        },
+        {
+          label: 'Дублировать',
+          type: 'clone',
+          action: () => {
+            editor?.controller.duplicateSelected();
+          },
+        },
         {
           label: 'Редактировать',
           type: 'edit',

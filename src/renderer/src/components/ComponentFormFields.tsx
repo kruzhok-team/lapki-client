@@ -50,6 +50,17 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     setParameters({ ...parameters });
   };
 
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const name = event.target.value;
+    const caret = event.target.selectionStart;
+    const element = event.target;
+    window.requestAnimationFrame(() => {
+      element.selectionStart = caret;
+      element.selectionEnd = caret;
+    });
+    setName(name.replaceAll(' ', '_'));
+  };
+
   const protoParametersArray = Object.entries(protoParameters);
 
   // Первоначальное создание объекта ошибок
@@ -74,7 +85,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             label="Название:"
             maxLength={20}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e)}
             autoFocus
           />
 

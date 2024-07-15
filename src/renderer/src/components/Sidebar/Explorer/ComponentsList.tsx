@@ -1,7 +1,11 @@
 import React, { useMemo, useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
+import {
+  ComponentDeleteModal,
+  ComponentCreateModal,
+  ComponentChangeModal,
+} from '@renderer/components';
 import { useComponents } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
@@ -9,18 +13,18 @@ import { Component } from './Component';
 
 export const ComponentsList: React.FC = () => {
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
 
   const isInitialized = model.useData('isInitialized');
   const components = model.useData('elements.components');
 
   const {
-    addProps,
-    editProps,
+    createProps,
+    changeProps,
     deleteProps,
     onSwapComponents,
-    onRequestAddComponent,
-    onRequestEditComponent,
+    onRequestCreateComponent,
+    onRequestChangeComponent,
     onRequestDeleteComponent,
   } = useComponents();
 
@@ -45,7 +49,7 @@ export const ComponentsList: React.FC = () => {
         type="button"
         className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
         disabled={!isInitialized}
-        onClick={onRequestAddComponent}
+        onClick={onRequestCreateComponent}
       >
         <AddIcon className="shrink-0" />
         Добавить...
@@ -59,7 +63,7 @@ export const ComponentsList: React.FC = () => {
             isSelected={name === selectedComponent}
             isDragging={name === dragName}
             onSelect={() => setSelectedComponent(name)}
-            onEdit={() => onRequestEditComponent(name)}
+            onChange={() => onRequestChangeComponent(name)}
             onDelete={() => onRequestDeleteComponent(name)}
             onDragStart={() => setDragName(name)}
             onDrop={() => onDropComponent(name)}
@@ -67,8 +71,8 @@ export const ComponentsList: React.FC = () => {
         ))}
       </div>
 
-      <ComponentAddModal {...addProps} />
-      <ComponentEditModal {...editProps} />
+      <ComponentCreateModal {...createProps} />
+      <ComponentChangeModal {...changeProps} />
       <ComponentDeleteModal {...deleteProps} />
     </>
   );

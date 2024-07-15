@@ -329,6 +329,7 @@ function serializeComponents(components: { [id: string]: Component }): {
     cgmlComponents[`c${id}`] = {
       id: id,
       type: component.type,
+      position: component.position,
       parameters: component.parameters,
       order: component.order,
       unsupportedDataNodes: [],

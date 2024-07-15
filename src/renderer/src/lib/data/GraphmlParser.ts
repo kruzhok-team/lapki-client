@@ -286,6 +286,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     }
     components[rawComponent.id] = {
       type: rawComponent.type,
+      position: rawComponent.position,
       parameters: rawComponent.parameters,
       order: rawComponent.order,
     };
@@ -395,6 +396,10 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   for (const id in platformComponents) {
     components[id] = {
       type: id,
+      position: {
+        x: 0,
+        y: 0,
+      },
       parameters: {},
       order: 0,
     };
@@ -407,6 +412,7 @@ export function importGraphml(
   openImportError: (error: string) => void
 ): Elements | undefined {
   try {
+    //Вот тут схема не отдает уже позицию компонентов.
     const rawElements: CGMLElements = parseCGML(expression);
     const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
     const elements: Elements = {

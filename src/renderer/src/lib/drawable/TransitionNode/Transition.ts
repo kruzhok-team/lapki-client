@@ -22,7 +22,7 @@ export class Transition extends Shape {
   }
 
   get data() {
-    return this.app.model.data.elements.transitions[this.id];
+    return this.app.controller.model.data.elements.transitions[this.id];
   }
 
   get source() {
@@ -89,7 +89,7 @@ export class Transition extends Shape {
 
     ctx.beginPath();
     ctx.strokeStyle = transitionStyle.bgColor;
-    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.controller.model.data.scale);
     ctx.stroke();
     ctx.closePath();
   }

@@ -1,5 +1,6 @@
 export * from './CodeEditor';
 export * from './DiagramEditor';
+export * from './SchemeEditor';
 export * from './Documentation/Documentation';
 export * from './SaveRemindModal';
 export * from './CreateSchemeModal';
@@ -7,8 +8,8 @@ export * from './serverSelect/FlasherSelectModal';
 export * from './ErrorModal';
 export * from './Sidebar';
 export * from './MainContainer';
-export * from './ComponentAddModal';
-export * from './ComponentEditModal';
+export * from './ComponentCreateModal';
+export * from './ComponentChangeModal';
 export * from './ComponentDeleteModal';
 export * from './EditorSettings';
 export * from './UpdateModal';

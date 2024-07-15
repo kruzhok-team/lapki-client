@@ -1,6 +1,6 @@
 import * as TWEEN from '@tweenjs/tween.js';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { EventEmitter } from '@renderer/lib/common';
 import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
 import { Children, picto, Shape } from '@renderer/lib/drawable';
@@ -15,19 +15,19 @@ import { getColor } from '@renderer/theme';
  * Контейнер с машиной состояний, в котором происходит отрисовка,
  * управление камерой, обработка событий и сериализация.
  */
-interface EditorViewEvents {
+interface SchemeViewEvents {
   dblclick: Point;
   contextMenu: Point;
 }
 
-export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
+export class SchemeView extends EventEmitter<SchemeViewEvents> implements Drawable {
   isDirty = true;
 
   children = new Children();
 
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
 
-  constructor(public app: CanvasEditor) {
+  constructor(public app: CanvasScheme) {
     super();
   }
 
@@ -190,7 +190,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     if (node) {
       node.handleMouseUp(e);
     } else {
-      this.app.controller.transitions.handleMouseUp();
       this.app.controller.removeSelection();
     }
   };
@@ -309,14 +308,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     const arrX: number[] = [];
     const arrY: number[] = [];
 
-    this.app.controller.states.forEach((state) => {
-      arrX.push(state.position.x);
-      arrY.push(state.position.y);
-    });
-
-    this.app.controller.transitions.forEach((transition) => {
-      arrX.push(transition.position.x);
-      arrY.push(transition.position.y);
+    this.app.controller.components.forEach((component) => {
+      arrX.push(component.position.x);
+      arrY.push(component.position.y);
     });
 
     let minX = Math.min(...arrX);

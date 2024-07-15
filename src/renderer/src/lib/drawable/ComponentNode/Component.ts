@@ -1,25 +1,18 @@
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { EdgeHandlers } from '@renderer/lib/drawable';
+import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import theme from '@renderer/theme';
-
-const style = theme.colors.diagram.state;
-
+import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 /**
- * Представление псевдосостояния выбора
+ * Представление компонента в схемотехническом экране
  */
-export class ChoiceState extends Shape {
+export class Component extends Shape {
   isSelected = false;
-  edgeHandlers!: EdgeHandlers;
 
-  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+  constructor(app: CanvasScheme, id: string, parent?: Shape) {
     super(app, id, parent);
-
-    this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
-
   get data() {
-    return this.app.controller.model.data.elements.choiceStates[this.id];
+    console.log(this.app.controller.model.data.elements.components[this.id]);
+    return this.app.controller.model.data.elements.components[this.id];
   }
 
   get position() {
@@ -30,10 +23,10 @@ export class ChoiceState extends Shape {
   }
 
   get dimensions() {
-    return { width: 100, height: 100 };
+    return { width: 150, height: 100 };
   }
   set dimensions(_value) {
-    throw new Error('FinalState does not have dimensions');
+    throw new Error('Components does not have dimensions');
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
@@ -41,29 +34,29 @@ export class ChoiceState extends Shape {
 
     if (this.isSelected) {
       this.drawSelection(ctx);
-      this.edgeHandlers.draw(ctx);
     }
   }
 
   // TODO(bryzZz) Закруглить углы
   private drawBody(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.drawBounds;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
+    const platform = this.app.controller.platform;
 
-    ctx.fillStyle = style.bodyBg;
+    if (!platform) return;
+
+    const { x, y, width, height } = this.drawBounds;
+    const fontSize = stateStyle.titleFontSize / this.app.controller.model.data.scale;
+
+    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
+    ctx.fillStyle = stateStyle.eventColor;
+    ctx.textBaseline = stateStyle.eventBaseLine;
+    ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();
-
-    ctx.moveTo(x + halfWidth, y);
-    ctx.lineTo(x + width, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y + height);
-    ctx.lineTo(x, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y);
-
+    ctx.roundRect(x, y, width, height, 8 / this.app.controller.model.data.scale);
     ctx.fill();
-
     ctx.closePath();
+
+    ctx.fillStyle = transitionStyle.bgColor;
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
@@ -89,7 +82,5 @@ export class ChoiceState extends Shape {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
-
-    this.edgeHandlers.disabled = value;
   }
 }

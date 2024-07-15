@@ -7,6 +7,8 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
+import { useEditorContext } from '@renderer/store/EditorContext';
+import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useDoc } from '@renderer/store/useDoc';
 import { useTabs } from '@renderer/store/useTabs';
 import { File } from '@renderer/types/documentation';
@@ -26,6 +28,9 @@ interface DocumentationProps {
 }
 
 export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false }) => {
+  const editor = useEditorContext();
+  const scheme = useSchemeContext();
+
   const [doc] = useSettings('doc');
   const url = doc?.host ?? '';
 
@@ -186,8 +191,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
           >
             <Question height={40} width={40} />
           </button>
+        ) : tab === 'editor' ? (
+          <EditorSettings toggle={onDocumentationToggle} canvas={editor} />
         ) : (
-          tab === 'editor' && <EditorSettings toggle={onDocumentationToggle} />
+          tab === 'scheme' && <EditorSettings toggle={onDocumentationToggle} canvas={scheme} />
         )}
         <div className="h-full">{renderContent()}</div>
       </Resizable>

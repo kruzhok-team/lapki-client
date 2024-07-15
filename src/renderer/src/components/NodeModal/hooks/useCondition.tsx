@@ -12,7 +12,7 @@ import { Condition, Variable as VariableData } from '@renderer/types/diagram';
  */
 export const useCondition = () => {
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
   const componentsData = model.useData('elements.components');
   const controller = editor.controller;
 

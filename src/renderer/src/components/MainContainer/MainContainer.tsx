@@ -30,7 +30,7 @@ import { Tabs } from './Tabs';
 export const MainContainer: React.FC = () => {
   const editor = useEditorContext();
 
-  const isMounted = editor.model.useData('isMounted');
+  const isMounted = editor.controller.model.useData('isMounted');
 
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 

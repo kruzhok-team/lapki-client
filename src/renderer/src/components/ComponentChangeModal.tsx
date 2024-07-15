@@ -7,29 +7,29 @@ import { ComponentProto } from '@renderer/types/platform';
 
 import { ComponentFormFields } from './ComponentFormFields';
 
-interface ComponentEditModalProps {
+interface ComponentChangeModalProps {
   isOpen: boolean;
   onClose: () => void;
 
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => void;
+  onChange: (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => void;
   onDelete: (idx: string) => void;
 }
 
-export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
+export const ComponentChangeModal: React.FC<ComponentChangeModalProps> = ({
   isOpen,
   idx,
   data,
   proto,
   onClose,
-  onEdit,
+  onChange,
   onDelete,
 }) => {
   const editor = useEditorContext();
-  const { model } = editor;
-  const components = model.useData('elements.components');
+  const { controller } = editor;
+  const components = controller.model.useData('elements.components');
 
   const [name, setName] = useState('');
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
@@ -51,10 +51,10 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       if (errors[key]) return;
     }
 
-    const submitData = { type: data.type, parameters };
+    const submitData = { type: data.type, position: data.position, parameters };
     const newName = name === idx ? undefined : name;
 
-    onEdit(idx, submitData, newName);
+    onChange(idx, submitData, newName);
     onClose();
   };
 

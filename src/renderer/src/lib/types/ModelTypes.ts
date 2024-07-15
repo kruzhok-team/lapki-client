@@ -82,8 +82,9 @@ export interface ChangeStateEventsParams {
   color?: string;
 }
 
-export type AddComponentParams = Omit<ComponentData, 'order'> & {
+export type CreateComponentParams = ComponentData & {
   name: string;
+  placeInCenter?: boolean;
 };
 
 export interface SwapComponentsParams {

@@ -42,6 +42,9 @@
         "description": {
           "type": "string"
         },
+        "position": {
+          "$ref": "#/definitions/Point"
+        },
         "img": {
           "type": "string"
         },
@@ -79,6 +82,7 @@
       "required": [
         "signals",
         "variables",
+        "position",
         "methods",
         "parameters"
       ],

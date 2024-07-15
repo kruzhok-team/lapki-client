@@ -122,12 +122,6 @@ export const useDiagramContextMenu = () => {
     };
 
     const handleViewScreenContextMenu = (position: Point) => {
-      const mouseOffset = scheme.view.app.mouse.getOffset();
-      const canvasPos = scheme.view.windowToWorldCoords({
-        x: position.x - mouseOffset.x,
-        y: position.y - mouseOffset.y,
-      });
-
       handleEvent(position, [
         {
           label: 'Вставить',
@@ -136,45 +130,6 @@ export const useDiagramContextMenu = () => {
             scheme?.controller.pasteSelected();
           },
         },
-        // {
-        //   label: 'Вставить машину состояний',
-        //   type: 'pasteState',
-        //   action: () => {
-        //     screen.controller.machines.createMachine({
-        //       id: 'Машина состояний',
-        //       position: canvasPos,
-        //       placeInCenter: true,
-        //     });
-        //   },
-        // },
-        // {
-        //   label: 'Вставить заметку',
-        //   type: 'note',
-        //   action: () => {
-        //     const note = screen.controller.notes.createNote({
-        //       position: canvasPos,
-        //       placeInCenter: true,
-        //       text: '',
-        //     });
-
-        //     screen.controller.notes.emit('change', note);
-        //   },
-        // },
-        // {
-        //   label: 'Вставить компонент',
-        //   type: 'note',
-        //   action: () => {
-        //     const component = screen.controller.components.createComponent({
-        //       name: 'Компонент',
-        //       type: '',
-        //       position: canvasPos,
-        //       parameters: {},
-        //       order: 0,
-        //     });
-
-        //     screen.controller.components.emit('change', component);
-        //   },
-        // },
         {
           label: 'Посмотреть код',
           type: 'showCodeAll',
@@ -417,26 +372,6 @@ export const useDiagramContextMenu = () => {
         },
       ]);
     };
-    // const handleComponentContextMenu = (data: { component: Component; position: Point }) => {
-    //   const { component, position } = data;
-
-    //   handleEvent(position, [
-    //     {
-    //       label: 'Редактировать',
-    //       type: 'edit',
-    //       action: () => {
-    //         screen.controller.components.emit('change', component);
-    //       },
-    //     },
-    //     {
-    //       label: 'Удалить',
-    //       type: 'delete',
-    //       action: () => {
-    //         screen?.controller.components.deleteComponent(component.id);
-    //       },
-    //     },
-    //   ]);
-    // };
 
     // контекстное меню для пустого поля редактора
     editor.view.on('contextMenu', handleViewEditorContextMenu);

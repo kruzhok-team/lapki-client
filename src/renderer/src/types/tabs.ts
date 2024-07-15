@@ -5,6 +5,11 @@ export interface EditorTab {
   name: 'editor';
 }
 
+export interface ScreenTab {
+  type: 'scheme';
+  name: 'scheme';
+}
+
 export interface CodeTab {
   type: 'code' | 'transition' | 'state';
   name: string;

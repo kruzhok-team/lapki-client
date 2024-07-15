@@ -12,7 +12,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 
-interface ComponentAddModalProps {
+interface ComponentCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
 
@@ -20,15 +20,15 @@ interface ComponentAddModalProps {
   onSubmit: (idx: string, name: string | undefined) => void;
 }
 
-export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
+export const ComponentCreateModal: React.FC<ComponentCreateModalProps> = ({
   onClose,
   onSubmit,
   vacantComponents,
   ...props
 }) => {
   const editor = useEditorContext();
-  const { model } = editor;
-  const components = model.useData('elements.components');
+  const { controller } = editor;
+  const components = controller.model.useData('elements.components');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 

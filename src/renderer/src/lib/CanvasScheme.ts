@@ -1,20 +1,20 @@
 import * as TWEEN from '@tweenjs/tween.js';
 
-import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
+import { Canvas, Keyboard, Mouse, SchemeView } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
 import { ModelController } from './data/ModelController';
 
-interface CanvasEditorSettings {
+interface CanvasScreenSettings {
   animations: boolean;
   grid: boolean;
 }
 
 /**
- * Редактор машин состояний.
+ * Схемотехнический экран.
  */
-export class CanvasEditor {
+export class CanvasScheme {
   private _root: HTMLElement | null = null;
 
   private _canvas: Canvas | null = null;
@@ -24,16 +24,14 @@ export class CanvasEditor {
 
   private rendererUnsubscribe: (() => void) | null | false = null;
 
-  view = new EditorView(this);
-
-  //Вот что я делаю, чтобы получить controller в обоих canvas
+  view = new SchemeView(this);
   controller!: ModelController;
 
   setController(controller) {
     this.controller = controller;
   }
 
-  settings: CanvasEditorSettings = {
+  settings: CanvasScreenSettings = {
     animations: true,
     grid: true,
   };
@@ -108,10 +106,9 @@ export class CanvasEditor {
 
     this.controller.loadData();
     this.view.initEvents();
-    this.controller.transitions.initEvents();
   }
 
-  setSettings(settings: CanvasEditorSettings) {
+  setSettings(settings: CanvasScreenSettings) {
     this.settings = settings;
 
     if (this.controller.model.data.isMounted) {

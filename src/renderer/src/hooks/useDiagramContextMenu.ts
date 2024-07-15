@@ -10,6 +10,7 @@ import {
 } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 export type DiagramContextMenuItem = {
@@ -22,6 +23,7 @@ export type DiagramContextMenuItem = {
 
 export const useDiagramContextMenu = () => {
   const editor = useEditorContext();
+  const scheme = useSchemeContext();
 
   const openTab = useTabs((state) => state.openTab);
 
@@ -38,7 +40,7 @@ export const useDiagramContextMenu = () => {
       setItems(items);
     };
 
-    const handleViewContextMenu = (position: Point) => {
+    const handleViewEditorContextMenu = (position: Point) => {
       const mouseOffset = editor.view.app.mouse.getOffset();
       const canvasPos = editor.view.windowToWorldCoords({
         x: position.x - mouseOffset.x,
@@ -103,8 +105,8 @@ export const useDiagramContextMenu = () => {
           action: () => {
             openTab({
               type: 'code',
-              name: editor.model.data.name ?? 'Безымянная',
-              code: editor.model.serializer.getAll('JSON'),
+              name: editor.controller.model.data.name ?? 'Безымянная',
+              code: editor.controller.model.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -118,6 +120,83 @@ export const useDiagramContextMenu = () => {
         },
       ]);
     };
+
+    const handleViewScreenContextMenu = (position: Point) => {
+      const mouseOffset = scheme.view.app.mouse.getOffset();
+      const canvasPos = scheme.view.windowToWorldCoords({
+        x: position.x - mouseOffset.x,
+        y: position.y - mouseOffset.y,
+      });
+
+      handleEvent(position, [
+        {
+          label: 'Вставить',
+          type: 'paste',
+          action: () => {
+            scheme?.controller.pasteSelected();
+          },
+        },
+        // {
+        //   label: 'Вставить машину состояний',
+        //   type: 'pasteState',
+        //   action: () => {
+        //     screen.controller.machines.createMachine({
+        //       id: 'Машина состояний',
+        //       position: canvasPos,
+        //       placeInCenter: true,
+        //     });
+        //   },
+        // },
+        // {
+        //   label: 'Вставить заметку',
+        //   type: 'note',
+        //   action: () => {
+        //     const note = screen.controller.notes.createNote({
+        //       position: canvasPos,
+        //       placeInCenter: true,
+        //       text: '',
+        //     });
+
+        //     screen.controller.notes.emit('change', note);
+        //   },
+        // },
+        // {
+        //   label: 'Вставить компонент',
+        //   type: 'note',
+        //   action: () => {
+        //     const component = screen.controller.components.createComponent({
+        //       name: 'Компонент',
+        //       type: '',
+        //       position: canvasPos,
+        //       parameters: {},
+        //       order: 0,
+        //     });
+
+        //     screen.controller.components.emit('change', component);
+        //   },
+        // },
+        {
+          label: 'Посмотреть код',
+          type: 'showCodeAll',
+          action: () => {
+            openTab({
+              type: 'code',
+              name: scheme.controller.model.data.name ?? 'Безымянная',
+              code: scheme.controller.model.serializer.getAll('JSON'),
+              language: 'json',
+            });
+          },
+        },
+        {
+          label: 'Центрировать камеру',
+          type: 'centerCamera',
+          action: () => {
+            scheme?.view.viewCentering();
+          },
+        },
+      ]);
+    };
+
     const handleStateContextMenu = (data: { state: State; position: Point }) => {
       const { state, position } = data;
 
@@ -177,7 +256,7 @@ export const useDiagramContextMenu = () => {
             openTab({
               type: 'state',
               name: state.data.name,
-              code: editor.model.serializer.getState(state.id) ?? '',
+              code: editor.controller.model.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -337,7 +416,7 @@ export const useDiagramContextMenu = () => {
                   openTab({
                     type: 'transition',
                     name: transition.id,
-                    code: editor.model.serializer.getTransition(transition.id) ?? '',
+                    code: editor.controller.model.serializer.getTransition(transition.id) ?? '',
                     language: 'json',
                   });
                 },
@@ -394,9 +473,29 @@ export const useDiagramContextMenu = () => {
         },
       ]);
     };
+    // const handleComponentContextMenu = (data: { component: Component; position: Point }) => {
+    //   const { component, position } = data;
 
-    // контекстное меню для пустого поля
-    editor.view.on('contextMenu', handleViewContextMenu);
+    //   handleEvent(position, [
+    //     {
+    //       label: 'Редактировать',
+    //       type: 'edit',
+    //       action: () => {
+    //         screen.controller.components.emit('change', component);
+    //       },
+    //     },
+    //     {
+    //       label: 'Удалить',
+    //       type: 'delete',
+    //       action: () => {
+    //         screen?.controller.components.deleteComponent(component.id);
+    //       },
+    //     },
+    //   ]);
+    // };
+
+    // контекстное меню для пустого поля редактора
+    editor.view.on('contextMenu', handleViewEditorContextMenu);
     // контекстное меню для состояний
     editor.controller.states.on('stateContextMenu', handleStateContextMenu);
     editor.controller.states.on('finalStateContextMenu', handleFinalStateContextMenu);
@@ -407,17 +506,24 @@ export const useDiagramContextMenu = () => {
     editor.controller.transitions.on('transitionContextMenu', handleTransitionContextMenu);
     editor.controller.notes.on('contextMenu', handleNoteContextMenu);
 
+    // контекстное меню для пустого поля схемотехнического экрана
+    scheme.view.on('contextMenu', handleViewScreenContextMenu);
+    // контекстное меню для компонентов
+    //screen.controller.components.on('contextMenu', handleComponentContextMenu);
     //! Не забывать удалять слушатели
     return () => {
-      editor.view.off('contextMenu', handleViewContextMenu);
+      editor.view.off('contextMenu', handleViewEditorContextMenu);
       editor.controller.states.off('stateContextMenu', handleStateContextMenu);
       editor.controller.states.off('finalStateContextMenu', handleFinalStateContextMenu);
       editor.controller.states.off('choiceStateContextMenu', handleChoiceStateContextMenu);
       editor.controller.states.off('eventContextMenu', handleEventContextMenu);
       editor.controller.transitions.off('transitionContextMenu', handleTransitionContextMenu);
       editor.controller.notes.off('contextMenu', handleNoteContextMenu);
+
+      scheme.view.off('contextMenu', handleViewScreenContextMenu);
+      //screen.controller.components.on('contextMenu', handleComponentContextMenu);
     };
-  }, [editor, openTab]);
+  }, [editor, scheme, openTab]);
 
   return { isOpen, onClose, items, position };
 };

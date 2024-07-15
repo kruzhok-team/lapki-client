@@ -5,30 +5,31 @@ import { ReactComponent as Question } from '@renderer/assets/icons/question.svg'
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 
 export interface EditorSettingsProps {
   toggle: () => void;
+  canvas: CanvasEditor | CanvasScheme;
 }
 
-export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
-  const editor = useEditorContext();
-  const model = editor.model;
+export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle, canvas }) => {
+  const model = canvas.controller.model;
 
   const scale = model.useData('scale');
-  const isMounted = editor.model.useData('isMounted');
+  const isMounted = canvas.controller.model.useData('isMounted');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
-    editor.view.changeScale(0.1);
+    canvas.view.changeScale(0.1);
   };
 
   const handleZoomIn = () => {
-    editor.view.changeScale(-0.1);
+    canvas.view.changeScale(-0.1);
   };
 
   const handleReset = () => {
-    editor.view.changeScale(1, true);
+    canvas.view.changeScale(1, true);
   };
 
   const handleCanvasGrid = () => {

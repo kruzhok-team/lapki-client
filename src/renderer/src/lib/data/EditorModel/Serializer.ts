@@ -42,4 +42,12 @@ export class Serializer {
     delete note.selection;
     return JSON.stringify(note, undefined, 2);
   }
+
+  getComponent(name: string) {
+    const component = this.data.elements.components[name];
+    if (!component) return null;
+
+    delete component.selection;
+    return JSON.stringify(component, undefined, 2);
+  }
 }

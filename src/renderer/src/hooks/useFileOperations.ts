@@ -16,7 +16,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
   const isStale = model.useData('isStale');
   const name = model.useData('name');
 
@@ -59,6 +59,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (result && isRight(result)) {
       clearTabs();
       openTab({ type: 'editor', name: 'editor' });
+      openTab({ type: 'scheme', name: 'scheme' });
     }
   };
 

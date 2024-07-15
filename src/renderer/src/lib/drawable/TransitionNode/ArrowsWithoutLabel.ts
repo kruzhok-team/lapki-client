@@ -37,13 +37,18 @@ export class ArrowsWithoutLabel implements Drawable {
     if (!this.parent.isSelected && this.parent.source instanceof Note) {
       ctx.globalAlpha = 0.3;
     }
-    drawCurvedLine(ctx, line, 12 / this.app.model.data.scale);
+    drawCurvedLine(ctx, line, 12 / this.app.controller.model.data.scale);
     ctx.globalAlpha = 1;
     drawCircle(ctx, {
       position: line.end,
-      radius: transitionStyle.startSize / this.app.model.data.scale,
+      radius: transitionStyle.startSize / this.app.controller.model.data.scale,
       fillStyle: data.color,
     });
-    drawTriangle(ctx, line.start, 10 / this.app.model.data.scale, degrees_to_radians(line.se));
+    drawTriangle(
+      ctx,
+      line.start,
+      10 / this.app.controller.model.data.scale,
+      degrees_to_radians(line.se)
+    );
   }
 }

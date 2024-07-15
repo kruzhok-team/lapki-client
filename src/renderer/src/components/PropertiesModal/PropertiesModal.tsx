@@ -48,7 +48,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   };
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
-    model.setMeta(
+    controller.model.setMeta(
       data.meta.reduce((acc, cur) => {
         acc[cur.name] = cur.value;
 

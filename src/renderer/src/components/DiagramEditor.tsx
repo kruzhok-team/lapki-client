@@ -18,7 +18,7 @@ import { Event } from '@renderer/types/diagram';
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
 
-  const isMounted = editor.model.useData('isMounted');
+  const isMounted = editor.controller.model.useData('isMounted');
 
   const [canvasSettings] = useSettings('canvas');
 
@@ -34,7 +34,6 @@ export const DiagramEditor: React.FC = () => {
 
   useEffect(() => {
     if (!containerRef.current) return;
-
     editor.mount(containerRef.current);
 
     const handleDblclick = (position: Point) => {

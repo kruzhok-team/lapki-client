@@ -83,6 +83,8 @@ export const Loader: React.FC<FlasherProps> = ({
     }
   };
 
+  const avrdudeBlock = flasherIsLocal && !hasAvrdude;
+
   const handleErrorMessageDisplay = async () => {
     // выводимое для пользователя сообщение
     let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
@@ -217,7 +219,7 @@ export const Loader: React.FC<FlasherProps> = ({
     if (isFlashing || connectionStatus !== FLASHER_CONNECTED) {
       return true;
     }
-    if (flasherIsLocal && !hasAvrdude) {
+    if (avrdudeBlock) {
       return true;
     }
     if (!currentDeviceID) {
@@ -262,7 +264,7 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
   const avrdudeCheck = () => {
-    if (!(flasherIsLocal && !hasAvrdude)) return;
+    if (!avrdudeBlock) return;
     return (
       <button
         type="button"
@@ -362,7 +364,7 @@ export const Loader: React.FC<FlasherProps> = ({
           <button
             className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
             onClick={handleFileChoose}
-            disabled={isFlashing || !hasAvrdude}
+            disabled={isFlashing || avrdudeBlock}
           >
             {flasherFile ? '✖' : '…'}
           </button>

@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 interface MenuItem {
@@ -27,11 +28,10 @@ export interface MenuProps {
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const { controller } = useEditorContext();
-
   const isStale = controller.model.useData('isStale');
   const isInitialized = controller.model.useData('isInitialized');
   const isMounted = controller.model.useData('isMounted');
-
+  const isSchemeMounted = controller.isSchemeMounted;
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 
@@ -82,7 +82,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: () => {
         openTab({ type: 'scheme', name: 'scheme' });
       },
-      disabled: !isInitialized || !isMounted,
+      disabled: !isInitialized || isSchemeMounted,
     },
     // {
     //   text: 'Примеры',

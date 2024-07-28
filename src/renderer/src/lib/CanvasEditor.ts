@@ -109,6 +109,7 @@ export class CanvasEditor {
     this.controller.loadData();
     this.view.initEvents();
     this.controller.transitions.initEvents();
+    console.log('Canvas Editor mounted');
   }
 
   setSettings(settings: CanvasEditorSettings) {
@@ -138,6 +139,7 @@ export class CanvasEditor {
 
     this.controller.model.data.isMounted = false;
     this.controller.model.triggerDataUpdate('isMounted');
+    console.log('Canvas Editor unmounted');
   }
 
   focus() {

@@ -1,23 +1,24 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { EventEmitter } from '@renderer/lib/common';
-import { Component } from '@renderer/lib/drawable';
+import { DrawableComponent } from '@renderer/lib/drawable';
 import { DeleteComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateComponentParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
+import { Component } from '@renderer/types/diagram';
 
 interface ComponentsControllerEvents {
-  change: Component;
-  mouseUpOnComponent: Component;
-  contextMenu: { component: Component; position: Point };
+  change: DrawableComponent;
+  mouseUpOnComponent: DrawableComponent;
+  contextMenu: { component: DrawableComponent; position: Point };
 }
 
 /**
- * Контроллер {@link Component|компонентов}.
+ * Контроллер {@link DrawableComponent|компонентов}.
  * Обрабатывает события, связанные с ними.
  */
 export class ComponentsController extends EventEmitter<ComponentsControllerEvents> {
-  items: Map<string, Component> = new Map();
+  items: Map<string, DrawableComponent> = new Map();
 
   constructor(private app: CanvasScheme) {
     super();
@@ -40,15 +41,20 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
+  clearComponents() {
+    this.items.clear();
+  }
+
   createComponent(args: CreateComponentParams, canUndo = true) {
-    const newComponentName = this.app.controller.model.createComponent(args);
-    const component = new Component(this.app, newComponentName);
+    // const newComponentName = this.app.controller.model.createComponent(args);
+    console.log('hereeeeeeeeeee');
+    const component = new DrawableComponent(this.app, args.name);
 
-    this.items.set(newComponentName, component);
+    this.items.set(args.name, component);
     this.watch(component);
-    this.view.children.add(component, Layer.Components);
+    this.app.view.children.add(component, Layer.Components);
 
-    this.view.isDirty = true;
+    this.app.view.isDirty = true;
 
     if (canUndo) {
       this.history.do({
@@ -109,19 +115,19 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.view.isDirty = true;
   }
 
-  handleMouseUpOnComponent = (component: Component) => {
+  handleMouseUpOnComponent = (component: DrawableComponent) => {
     this.emit('mouseUpOnComponent', component);
   };
 
-  handleMouseDown = (component: Component) => {
+  handleMouseDown = (component: DrawableComponent) => {
     this.controller.selectComponent(component.id);
   };
 
-  handleDoubleClick = (component: Component) => {
+  handleDoubleClick = (component: DrawableComponent) => {
     this.emit('change', component);
   };
 
-  handleContextMenu = (component: Component, e: { event: MyMouseEvent }) => {
+  handleContextMenu = (component: DrawableComponent, e: { event: MyMouseEvent }) => {
     this.controller.selectComponent(component.id);
 
     this.emit('contextMenu', {
@@ -131,13 +137,13 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   };
 
   handleDragEnd = (
-    component: Component,
+    component: DrawableComponent,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
     this.changeComponentPosition(component.id, e.dragStartPosition, e.dragEndPosition);
   };
 
-  watch(component: Component) {
+  watch(component: DrawableComponent) {
     component.on('mousedown', this.handleMouseDown.bind(this, component));
     component.on('dblclick', this.handleDoubleClick.bind(this, component));
     component.on('mouseup', this.handleMouseUpOnComponent.bind(this, component));
@@ -145,7 +151,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     component.on('dragend', this.handleDragEnd.bind(this, component));
   }
 
-  unwatch(component: Component) {
+  unwatch(component: DrawableComponent) {
     component.off('mousedown', this.handleMouseDown.bind(this, component));
     component.off('dblclick', this.handleDoubleClick.bind(this, component));
     component.off('mouseup', this.handleMouseUpOnComponent.bind(this, component));

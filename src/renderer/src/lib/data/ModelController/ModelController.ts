@@ -11,7 +11,7 @@ import {
   DeleteComponentParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { CreateComponentParams, SwapComponentsParams } from '@renderer/lib/types/ModelTypes';
-import { Condition, Variable } from '@renderer/types/diagram';
+import { Condition, Elements, Variable } from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
 import { NotesController } from './NotesController';
@@ -19,6 +19,7 @@ import { StatesController } from './StatesController';
 import { TransitionsController } from './TransitionsController';
 
 import { EditorModel } from '../EditorModel';
+import { FilesManager } from '../EditorModel/FilesManager';
 import { Initializer } from '../Initializer';
 import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
 
@@ -51,9 +52,10 @@ export class ModelController {
       this.history.clear();
     }
   );
+  isSchemeMounted = false;
   initializer!: Initializer;
   platform: PlatformManager | null = null;
-
+  files = new FilesManager(this);
   history = new History(this);
 
   states!: StatesController;
@@ -96,6 +98,18 @@ export class ModelController {
     this.initializer.initComponents();
   }
 
+  initData(basename: string | null, filename: string, elements: Elements) {
+    this.model.init(basename, filename, elements);
+    this.model.makeStale();
+    this.components.fromElementsComponents(elements.components);
+
+    // };
+    // for (const componentId in elements.components) {
+    // const component = elements.components[componentId];
+    // this.createComponent({ ...component, name: componentId }, false);
+    // }
+  }
+
   loadData() {
     this.initializer.init();
 
@@ -120,7 +134,7 @@ export class ModelController {
     if (!this.platform) return;
 
     this.model.createComponent(args);
-
+    this.components.createComponent(args, canUndo);
     this.platform.nameToVisual.set(name, {
       component: type,
     });

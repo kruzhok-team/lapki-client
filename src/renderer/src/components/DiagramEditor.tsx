@@ -17,7 +17,6 @@ import { Event } from '@renderer/types/diagram';
 
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
-
   const isMounted = editor.controller.model.useData('isMounted');
 
   const [canvasSettings] = useSettings('canvas');

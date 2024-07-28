@@ -4,7 +4,7 @@ import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 /**
  * Представление компонента в схемотехническом экране
  */
-export class Component extends Shape {
+export class DrawableComponent extends Shape {
   isSelected = false;
 
   constructor(app: CanvasScheme, id: string, parent?: Shape) {

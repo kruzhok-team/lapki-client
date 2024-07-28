@@ -31,7 +31,6 @@ import {
   Meta,
 } from '@renderer/types/diagram';
 
-import { FilesManager } from './FilesManager';
 import { Serializer } from './Serializer';
 
 /**
@@ -40,7 +39,6 @@ import { Serializer } from './Serializer';
 export class EditorModel {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
-  files = new FilesManager(this);
   serializer = new Serializer(this);
 
   constructor(private initPlatform: () => void, private resetEditor: () => void) {}

@@ -83,9 +83,9 @@ export class CanvasScheme {
       this.view.isDirty = true;
     });
 
-    preloadPicto(() => {
-      this.view.isDirty = true;
-    });
+    // preloadPicto(() => {
+    // this.view.isDirty = true;
+    // });
 
     this.rendererUnsubscribe = this.render.subscribe(() => {
       if (this.settings.animations) {
@@ -101,17 +101,19 @@ export class CanvasScheme {
       this.view.isDirty = false;
     });
 
-    this.controller.model.data.isMounted = true;
-    this.controller.model.triggerDataUpdate('isMounted');
+    // this.controller.model.data.isMounted = true;
+    // this.controller.model.triggerDataUpdate('isMounted');
 
-    this.controller.loadData();
-    this.view.initEvents();
+    // this.controller.loadData();
+    // this.view.initEvents();
+    this.controller.isSchemeMounted = true;
+    console.log('Mounted!');
   }
 
   setSettings(settings: CanvasScreenSettings) {
     this.settings = settings;
 
-    if (this.controller.model.data.isMounted) {
+    if (this.controller.isSchemeMounted) {
       this.view.isDirty = true;
     }
   }
@@ -133,8 +135,10 @@ export class CanvasScheme {
     this._keyboard = null;
     this._render = null;
 
-    this.controller.model.data.isMounted = false;
-    this.controller.model.triggerDataUpdate('isMounted');
+    // this.controller.model.data.isMounted = false;
+    // this.controller.model.triggerDataUpdate('isMounted');
+    console.log('unmounted!');
+    this.controller.isSchemeMounted = false;
   }
 
   focus() {

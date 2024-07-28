@@ -7,7 +7,7 @@ import {
   Note as NoteData,
 } from '@renderer/types/diagram';
 
-import { Component } from '../drawable/ComponentNode';
+import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface ChangeComponentParams {
   name: string;
@@ -65,7 +65,7 @@ export type StateType = StatesControllerDataStateType extends `${infer T}s` ? T 
 
 export const getComponentsControllerDefaultData = () => {
   return {
-    components: new Map<string, Component>(),
+    components: new Map<string, DrawableComponent>(),
   } as const;
 };
 

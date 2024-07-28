@@ -44,8 +44,8 @@ export class SchemeView extends EventEmitter<SchemeViewEvents> implements Drawab
     this.app.keyboard.on('ctrlc', this.app.controller.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.pasteSelected);
     this.app.keyboard.on('ctrld', this.app.controller.duplicateSelected);
-    this.app.keyboard.on('ctrls', this.app.controller.model.files.save);
-    this.app.keyboard.on('ctrlshifta', this.app.controller.model.files.saveAs);
+    this.app.keyboard.on('ctrls', this.app.controller.files.save);
+    this.app.keyboard.on('ctrlshifta', this.app.controller.files.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -65,8 +65,8 @@ export class SchemeView extends EventEmitter<SchemeViewEvents> implements Drawab
     this.app.keyboard.off('ctrlc', this.app.controller.copySelected);
     this.app.keyboard.off('ctrlv', this.app.controller.pasteSelected);
     this.app.keyboard.off('ctrld', this.app.controller.duplicateSelected);
-    this.app.keyboard.off('ctrls', this.app.controller.model.files.save);
-    this.app.keyboard.off('ctrlshifta', this.app.controller.model.files.saveAs);
+    this.app.keyboard.off('ctrls', this.app.controller.files.save);
+    this.app.keyboard.off('ctrlshifta', this.app.controller.files.saveAs);
 
     this.app.mouse.off('mousedown', this.handleMouseDown);
     this.app.mouse.off('mouseup', this.handleMouseUp);
@@ -84,10 +84,9 @@ export class SchemeView extends EventEmitter<SchemeViewEvents> implements Drawab
     if (this.app.settings.grid) {
       this.drawGrid(ctx, canvas);
     }
-
+    console.log(this.children);
     const drawChildren = (node: Drawable) => {
       if (!node.children) return;
-
       node.children.forEach((child) => {
         child.draw(ctx, canvas);
 

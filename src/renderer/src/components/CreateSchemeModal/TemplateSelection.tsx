@@ -24,14 +24,14 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
 
   useEffect(() => {
     const fn = async () => {
-      const data = await controller.model.files.getAllTemplates();
+      const data = await controller.files.getAllTemplates();
 
       setTemplates(data);
       setIsLoading(false);
     };
 
     fn();
-  }, [controller.model.files]);
+  }, [controller.files]);
 
   if (isLoading) {
     return <div>Loading...</div>;

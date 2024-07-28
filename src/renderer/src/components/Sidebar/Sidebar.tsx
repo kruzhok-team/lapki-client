@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isEditorDataStale = controller.model.useData('isStale');
 
   const handleImport = async () => {
-    await controller.model.files.import(setOpenData);
+    await controller.files.import(setOpenData);
     clearTabs();
     openTab({ type: 'editor', name: 'editor' });
   };
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <History />,
       <Setting openCompilerSettings={openCompilerSettings} handleHostChange={handleHostChange} />,
     ],
-    [compilerData, openData, compilerStatus]
+    [compilerData, openData, compilerStatus, controller.isSchemeMounted]
   );
 
   const tabLabels = useMemo(

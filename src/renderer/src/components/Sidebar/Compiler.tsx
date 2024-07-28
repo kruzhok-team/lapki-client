@@ -47,18 +47,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    controller.model.files.saveIntoFolder(preparedData);
+    controller.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    controller.model.files.compile();
+    controller.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await controller.model.files.saveIntoFolder(compilerData!.source!);
+    await controller.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -96,7 +96,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      controller.model.files.initImportData(importData, openData!);
+      controller.files.initImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);

@@ -7,7 +7,7 @@ import {
   FinalState,
   ChoiceState,
   GhostTransition,
-  Component,
+  DrawableComponent,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
@@ -193,7 +193,7 @@ export class Initializer {
   }
 
   private createComponentView(id: string) {
-    const component = new Component(this.appScheme, id);
+    const component = new DrawableComponent(this.appScheme, id);
     this.components.set(id, component);
     this.components.watch(component);
     this.appScheme.view.children.add(component, Layer.Components);

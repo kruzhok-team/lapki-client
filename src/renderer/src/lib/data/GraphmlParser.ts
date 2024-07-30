@@ -286,7 +286,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     }
     components[rawComponent.id] = {
       type: rawComponent.type,
-      position: rawComponent.position,
+      position: { x: 0, y: 0 },
       parameters: rawComponent.parameters,
       order: rawComponent.order,
     };

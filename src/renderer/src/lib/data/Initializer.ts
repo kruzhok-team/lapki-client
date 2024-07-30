@@ -193,7 +193,8 @@ export class Initializer {
   }
 
   private createComponentView(id: string) {
-    const component = new DrawableComponent(this.appScheme, id);
+    const icon = this.controller.platform?.getComponentIcon(id, true);
+    const component = new DrawableComponent(this.appScheme, id, icon);
     this.components.set(id, component);
     this.components.watch(component);
     this.appScheme.view.children.add(component, Layer.Components);

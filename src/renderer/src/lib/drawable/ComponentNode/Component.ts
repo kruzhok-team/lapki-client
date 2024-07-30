@@ -1,15 +1,30 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { stateStyle, transitionStyle } from '@renderer/lib/styles';
+import { getColor } from '@renderer/theme';
+
+import { picto } from '../Picto';
 /**
  * Представление компонента в схемотехническом экране
  */
 export class DrawableComponent extends Shape {
   isSelected = false;
-
-  constructor(app: CanvasScheme, id: string, parent?: Shape) {
+  icon: string | undefined;
+  constructor(app: CanvasScheme, id: string, icon: string | undefined, parent?: Shape) {
     super(app, id, parent);
+    this.icon = icon;
   }
+
+  get computedStyles() {
+    const scale = this.app.controller.model.data.scale;
+
+    return {
+      padding: 10 / scale,
+      fontSize: 16 / scale,
+      borderRadius: 6 / scale,
+      color: getColor('border-primary'),
+    };
+  }
+
   get data() {
     console.log(this.app.controller.model.data.elements.components[this.id]);
     return this.app.controller.model.data.elements.components[this.id];
@@ -37,47 +52,28 @@ export class DrawableComponent extends Shape {
     }
   }
 
-  // TODO(bryzZz) Закруглить углы
   private drawBody(ctx: CanvasRenderingContext2D) {
     const platform = this.app.controller.platform;
-
-    if (!platform) return;
+    if (!platform || !this.icon) return;
 
     const { x, y, width, height } = this.drawBounds;
-    const fontSize = stateStyle.titleFontSize / this.app.controller.model.data.scale;
-
-    ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
-    ctx.fillStyle = stateStyle.eventColor;
-    ctx.textBaseline = stateStyle.eventBaseLine;
-    ctx.fillStyle = 'rgb(23, 23, 23)';
-
-    ctx.beginPath();
-    ctx.roundRect(x, y, width, height, 8 / this.app.controller.model.data.scale);
-    ctx.fill();
-    ctx.closePath();
-
-    ctx.fillStyle = transitionStyle.bgColor;
+    picto.drawImage(ctx, this.icon, {
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+    });
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
+    const { borderRadius } = this.computedStyles;
 
-    ctx.lineWidth = 2 / this.app.controller.model.data.scale;
-    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FFF';
 
-    ctx.beginPath();
-
-    ctx.moveTo(x + halfWidth, y);
-    ctx.lineTo(x + width, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y + height);
-    ctx.lineTo(x, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y);
-
+    ctx.roundRect(x, y, width, height, borderRadius);
     ctx.stroke();
-
-    ctx.closePath();
   }
 
   setIsSelected(value: boolean) {

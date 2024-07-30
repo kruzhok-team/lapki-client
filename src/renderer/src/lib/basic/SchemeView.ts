@@ -84,7 +84,6 @@ export class SchemeView extends EventEmitter<SchemeViewEvents> implements Drawab
     if (this.app.settings.grid) {
       this.drawGrid(ctx, canvas);
     }
-    console.log(this.children);
     const drawChildren = (node: Drawable) => {
       if (!node.children) return;
       node.children.forEach((child) => {

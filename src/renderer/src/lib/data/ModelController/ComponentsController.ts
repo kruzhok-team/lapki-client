@@ -46,7 +46,6 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
   createComponent(args: CreateComponentParams, canUndo = true) {
     // const newComponentName = this.app.controller.model.createComponent(args);
-    console.log('hereeeeeeeeeee');
     const icon = this.controller.platform?.getComponentIcon(args.type);
     const component = new DrawableComponent(this.app, args.name, icon);
     this.items.set(args.name, component);

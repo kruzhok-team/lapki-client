@@ -101,9 +101,6 @@ export class ModelController {
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
     this.model.makeStale();
-    // this.components.fromElementsComponents(elements.components);
-
-    // };
     for (const componentId in elements.components) {
       const component = elements.components[componentId];
       this.createComponent({ ...component, name: componentId }, false, true);

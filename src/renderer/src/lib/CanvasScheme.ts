@@ -83,9 +83,9 @@ export class CanvasScheme {
       this.view.isDirty = true;
     });
 
-    // preloadPicto(() => {
-    // this.view.isDirty = true;
-    // });
+    preloadPicto(() => {
+      this.view.isDirty = true;
+    });
 
     this.rendererUnsubscribe = this.render.subscribe(() => {
       if (this.settings.animations) {
@@ -105,8 +105,8 @@ export class CanvasScheme {
     // this.controller.model.triggerDataUpdate('isMounted');
 
     // this.controller.loadData();
-    // this.view.initEvents();
-    this.controller.isSchemeMounted = true;
+    this.view.initEvents();
+    // this.controller.isSchemeMounted = true;
     console.log('Mounted!');
   }
 

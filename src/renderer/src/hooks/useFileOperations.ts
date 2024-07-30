@@ -68,7 +68,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
     // await schemeModel.files.createFromTemplate(type, name, openImportError);
     openTab({ type: 'editor', name: 'editor' });
-    // openTab({ type: 'scheme', name: 'scheme' });
+    openTab({ type: 'scheme', name: 'scheme' });
   };
 
   //Создание нового файла

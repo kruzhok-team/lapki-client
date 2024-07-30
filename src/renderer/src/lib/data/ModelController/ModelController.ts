@@ -101,13 +101,13 @@ export class ModelController {
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
     this.model.makeStale();
-    this.components.fromElementsComponents(elements.components);
+    // this.components.fromElementsComponents(elements.components);
 
     // };
-    // for (const componentId in elements.components) {
-    // const component = elements.components[componentId];
-    // this.createComponent({ ...component, name: componentId }, false);
-    // }
+    for (const componentId in elements.components) {
+      const component = elements.components[componentId];
+      this.createComponent({ ...component, name: componentId }, false, true);
+    }
   }
 
   loadData() {
@@ -128,13 +128,15 @@ export class ModelController {
     component.setIsSelected(true);
   }
 
-  createComponent(args: CreateComponentParams, canUndo = true) {
+  createComponent(args: CreateComponentParams, canUndo = true, init = false) {
     const { name, type } = args;
 
     if (!this.platform) return;
 
-    this.model.createComponent(args);
     this.components.createComponent(args, canUndo);
+    if (!init) {
+      this.model.createComponent(args);
+    }
     this.platform.nameToVisual.set(name, {
       component: type,
     });

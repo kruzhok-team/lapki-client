@@ -5,7 +5,6 @@ import { DeleteComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateComponentParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
-import { Component } from '@renderer/types/diagram';
 
 interface ComponentsControllerEvents {
   change: DrawableComponent;
@@ -49,7 +48,6 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     // const newComponentName = this.app.controller.model.createComponent(args);
     console.log('hereeeeeeeeeee');
     const component = new DrawableComponent(this.app, args.name);
-
     this.items.set(args.name, component);
     this.watch(component);
     this.app.view.children.add(component, Layer.Components);

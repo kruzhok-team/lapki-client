@@ -29,7 +29,7 @@ export class CanvasEditor {
   //Вот что я делаю, чтобы получить controller в обоих canvas
   controller!: ModelController;
 
-  setController(controller) {
+  setController(controller: ModelController) {
     this.controller = controller;
   }
 

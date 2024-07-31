@@ -32,7 +32,7 @@ export class FilesManager {
     (elements.notes as any) = [];
     elements.platform = platformIdx;
     this.modelController.model.init(null, 'Без названия', elements as any);
-    this.modelController.components.clearComponents();
+    // this.modelController.components.clearComponents();
   }
 
   compile() {

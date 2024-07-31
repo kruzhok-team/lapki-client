@@ -26,7 +26,6 @@ export class DrawableComponent extends Shape {
   }
 
   get data() {
-    console.log(this.app.controller.model.data.elements.components[this.id]);
     return this.app.controller.model.data.elements.components[this.id];
   }
 

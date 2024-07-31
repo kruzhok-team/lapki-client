@@ -107,7 +107,6 @@ export class CanvasScheme {
     // this.controller.loadData();
     this.view.initEvents();
     // this.controller.isSchemeMounted = true;
-    console.log('Mounted!');
   }
 
   setSettings(settings: CanvasScreenSettings) {
@@ -134,10 +133,6 @@ export class CanvasScheme {
     this._mouse = null;
     this._keyboard = null;
     this._render = null;
-
-    // this.controller.model.data.isMounted = false;
-    // this.controller.model.triggerDataUpdate('isMounted');
-    console.log('unmounted!');
     this.controller.isSchemeMounted = false;
   }
 

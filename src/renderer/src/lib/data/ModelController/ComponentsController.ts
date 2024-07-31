@@ -45,21 +45,16 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   createComponent(args: CreateComponentParams, canUndo = true) {
-    // const newComponentName = this.app.controller.model.createComponent(args);
     const icon = this.controller.platform?.getComponentIcon(args.type);
+    if (icon === 'unknown') {
+      return;
+    }
     const component = new DrawableComponent(this.app, args.name, icon);
     this.items.set(args.name, component);
     this.watch(component);
     this.app.view.children.add(component, Layer.Components);
 
     this.app.view.isDirty = true;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createComponent',
-        args: { args },
-      });
-    }
 
     return component;
   }

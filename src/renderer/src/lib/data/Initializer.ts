@@ -35,7 +35,7 @@ export class Initializer {
     this.initChoiceStates();
     this.initTransitions();
     this.initNotes();
-
+    this.initComponents();
     this.appEditor.view.viewCentering();
     this.appScheme.view.viewCentering();
   }

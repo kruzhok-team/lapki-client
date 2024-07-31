@@ -32,7 +32,7 @@ export class Children implements IChildren {
   }
 
   add(drawable: Drawable, layer: Layer) {
-    if (!this.layers[layer]) {
+    if (this.layers[layer] === undefined) {
       this.layers[layer] = [] as Drawable[];
     }
 

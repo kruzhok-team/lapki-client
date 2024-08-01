@@ -2,14 +2,14 @@ import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { getColor } from '@renderer/theme';
 
-import { picto } from '../Picto';
+import { MarkedIconData, picto } from '../Picto';
 /**
  * Представление компонента в схемотехническом экране
  */
 export class DrawableComponent extends Shape {
   isSelected = false;
-  icon: string | undefined;
-  constructor(app: CanvasScheme, id: string, icon: string | undefined, parent?: Shape) {
+  icon: MarkedIconData;
+  constructor(app: CanvasScheme, id: string, icon: MarkedIconData, parent?: Shape) {
     super(app, id, parent);
     this.icon = icon;
   }

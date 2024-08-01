@@ -1,7 +1,7 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { EventEmitter } from '@renderer/lib/common';
-import { DrawableComponent } from '@renderer/lib/drawable';
-import { DeleteComponentParams, Layer } from '@renderer/lib/types';
+import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
+import { ChangeComponentParams, DeleteComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateComponentParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
@@ -46,10 +46,15 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
   createComponent(args: CreateComponentParams) {
     const icon = this.controller.platform?.getComponentIcon(args.type);
-    if (icon === 'unknown') {
+    if (!icon) {
       return;
     }
-    const component = new DrawableComponent(this.app, args.name, icon);
+    const markedIcon: MarkedIconData = {
+      icon: icon,
+      label: args.parameters['label'],
+      color: args.parameters['labelColor'],
+    };
+    const component = new DrawableComponent(this.app, args.name, markedIcon);
     this.items.set(args.name, component);
     this.watch(component);
     this.app.view.children.add(component, Layer.Components);
@@ -57,6 +62,24 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.app.view.isDirty = true;
 
     return component;
+  }
+
+  changeComponent(args: ChangeComponentParams) {
+    const component = this.items.get(args.name);
+    if (!component) {
+      throw new Error(`Изменение не существующего компонента с идентификатором ${args.name}`);
+    }
+    const componentData = component.data;
+    componentData.parameters = args.parameters;
+    if (args.newName !== undefined) {
+      this.deleteComponent(args, false);
+      // (L140-beep) скорее всего придется потом возиться с переходами
+      // на схематехническом экране
+      this.createComponent({ ...componentData, name: args.newName });
+    } else {
+      component.icon.label = args.parameters['label'];
+      component.icon.color = args.parameters['labelColor'];
+    }
   }
 
   changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {

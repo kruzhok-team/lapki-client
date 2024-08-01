@@ -156,10 +156,12 @@ export class ModelController {
     if (!this.platform) return;
 
     const prevComponent = structuredClone(this.model.data.elements.components[name]);
-
+    const component = {
+      ...prevComponent,
+      parameters: parameters,
+    };
     this.model.changeComponent(name, parameters);
-
-    const component = this.model.data.elements.components[name];
+    this.components.changeComponent(args);
     this.platform.nameToVisual.set(name, {
       component: component.type,
       label: component.parameters['label'],

@@ -8,6 +8,7 @@ import { useModal } from './useModal';
 
 export const useComponents = () => {
   const editor = useEditorContext();
+  const controller = editor.controller;
   const model = editor.controller.model;
 
   const components = model.useData('elements.components');
@@ -91,11 +92,16 @@ export const useComponents = () => {
   };
 
   const onChange = (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => {
-    editor.controller.changeComponent({
+    controller.changeComponent({
       name: idx,
       parameters: data.parameters,
-      newName,
+      newName: newName,
     });
+    // editor.controller.changeComponent({
+    //   name: idx,
+    //   component: data,
+    //   newName,
+    // });
   };
 
   const onDelete = (idx: string) => {

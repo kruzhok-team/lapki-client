@@ -15,14 +15,11 @@ export const SerialMonitorTab: React.FC = () => {
     value: device,
     label: device,
   }));
-  const [baudRate, setBaudRate] = useState<SelectOption | null>({ label: '9600', value: '9600' });
-  const baudRateAll = [
-    { label: '9600', value: '9600' },
-    { label: '19200', value: '19200' },
-    { label: '38400', value: '38400' },
-    { label: '57600', value: '57600' },
-    { label: '115200', value: '115200' },
-  ];
+  const makeOption = (x) => {
+    return { label: x, value: x };
+  };
+  const [baudRate, setBaudRate] = useState<SelectOption | null>(makeOption('9600'));
+  const baudRateAll = ['9600', '19200', '38400', '57600', '115200'].map(makeOption);
 
   const messageContainerRef = useRef<HTMLDivElement>(null);
 

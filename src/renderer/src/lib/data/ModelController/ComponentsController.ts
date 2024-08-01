@@ -44,7 +44,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.items.clear();
   }
 
-  createComponent(args: CreateComponentParams, canUndo = true) {
+  createComponent(args: CreateComponentParams) {
     const icon = this.controller.platform?.getComponentIcon(args.type);
     if (icon === 'unknown') {
       return;

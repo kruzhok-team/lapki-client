@@ -8,6 +8,7 @@ import {
   ChoiceState,
   GhostTransition,
   DrawableComponent,
+  MarkedIconData,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
@@ -194,7 +195,16 @@ export class Initializer {
 
   private createComponentView(id: string) {
     const icon = this.controller.platform?.getComponentIcon(id, true);
-    const component = new DrawableComponent(this.appScheme, id, icon);
+    if (!icon) {
+      return;
+    }
+    const modelComponent = this.controller.model.data.elements.components[id];
+    const markedIcon: MarkedIconData = {
+      icon: icon,
+      label: modelComponent.parameters['label'],
+      color: modelComponent.parameters['labelColor'],
+    };
+    const component = new DrawableComponent(this.appScheme, id, markedIcon);
     this.components.set(id, component);
     this.components.watch(component);
     this.appScheme.view.children.add(component, Layer.Components);

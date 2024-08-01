@@ -58,6 +58,7 @@ export class DrawableComponent extends Shape {
     if (!platform || !this.icon) return;
 
     const { x, y, width, height } = this.drawBounds;
+    picto.drawRect(ctx, x, y, width, height, undefined, undefined, 50);
     picto.drawImage(
       ctx,
       this.icon,

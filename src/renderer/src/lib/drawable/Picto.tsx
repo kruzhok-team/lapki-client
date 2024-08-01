@@ -135,8 +135,8 @@ export class Picto {
       const font = `500 ${fontSize / this.scale}px/0 Fira Mono`;
       const textWidth = getTextWidth(iconData.label, font);
       const textHeight = fontSize / this.scale;
-      const labelWidth = textWidth + pX * 2;
-      const labelHeight = textHeight + pY * 2;
+      const labelWidth = textWidth + pX * 2 + 3;
+      const labelHeight = textHeight + pY * 2 + 3;
 
       // Отрисовка заднего фона метки
       // Рисуется в правом нижнем углу картинки, ширина и высота зависит от текста

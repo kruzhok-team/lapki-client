@@ -1,3 +1,5 @@
+import { Point } from 'electron';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
@@ -22,7 +24,6 @@ import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
 import { Initializer } from '../Initializer';
 import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
-import { Point } from 'electron';
 
 /**
  * Общий контроллер машин состояний.
@@ -130,7 +131,7 @@ export class ModelController {
 
     if (!this.platform) return;
 
-    this.components.createComponent(args, canUndo);
+    this.components.createComponent(args);
     if (!init) {
       this.model.createComponent(args);
     }

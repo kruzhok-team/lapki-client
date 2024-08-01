@@ -76,7 +76,7 @@ export type PossibleActions = {
   createComponent: { args: CreateComponentParams };
   deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
   changeComponent: { args: ChangeComponentParams; prevComponent: Component };
-  //changeComponentPosition: { name: string; startPosition: Point; endPosition: Point };
+  changeComponentPosition: { name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
 
   createNote: { id: string; params: CreateNoteParams };
@@ -327,11 +327,10 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  //Когда добавится позиция компонентам, здесь должна вызываться схожая функция для вычисления позиции
-  // changeComponentPosition: (sM, { name, startPosition, endPosition }) => ({
-  //   redo: sM.changeComponentPosition.bind(sM, name, startPosition, endPosition, false),
-  //   undo: sM.changeComponentPosition.bind(sM, name, endPosition, startPosition, false),
-  // }),
+  changeComponentPosition: (sM, { name, startPosition, endPosition }) => ({
+    redo: sM.changeComponentPosition.bind(sM, name, startPosition, endPosition, false),
+    undo: sM.changeComponentPosition.bind(sM, name, endPosition, startPosition, false),
+  }),
   swapComponents: (sM, { name1, name2 }) => ({
     redo: sM.swapComponents.bind(sM, { name1, name2 }, false),
     undo: sM.swapComponents.bind(
@@ -493,12 +492,12 @@ export const actionDescriptions: ActionDescriptions = {
       description: `Было: ${JSON.stringify(prev)}\nСтало: ${JSON.stringify(newComp)}`,
     };
   },
-  // changeComponentPosition: (args) => ({
-  //   name: 'Перемещение компонента',
-  //   description: `Имя: "${args.name}"\nБыло: ${JSON.stringify(
-  //     roundPoint(args.startPosition)
-  //   )}\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
-  // }),
+  changeComponentPosition: (args) => ({
+    name: 'Перемещение компонента',
+    description: `Имя: "${args.name}"\nБыло: ${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
+  }),
   swapComponents: ({ name1, name2 }) => ({
     name: 'Перетасовка компонентов в списке',
     description: `Имя1: ${name1}\nИмя2: ${name2}`,

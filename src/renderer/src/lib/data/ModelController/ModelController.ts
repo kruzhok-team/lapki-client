@@ -22,6 +22,7 @@ import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
 import { Initializer } from '../Initializer';
 import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
+import { Point } from 'electron';
 
 /**
  * Общий контроллер машин состояний.
@@ -175,6 +176,16 @@ export class ModelController {
       this.history.do({
         type: 'changeComponent',
         args: { args, prevComponent },
+      });
+    }
+  }
+
+  changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
+    this.components.changeComponentPosition(name, startPosition, endPosition, _canUndo);
+    if (_canUndo) {
+      this.history.do({
+        type: 'changeComponentPosition',
+        args: { name, startPosition, endPosition },
       });
     }
   }

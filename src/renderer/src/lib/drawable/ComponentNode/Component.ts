@@ -3,6 +3,8 @@ import { Shape } from '@renderer/lib/drawable/Shape';
 import { getColor } from '@renderer/theme';
 
 import { MarkedIconData, picto } from '../Picto';
+
+const fontSizeMark = 32;
 /**
  * Представление компонента в схемотехническом экране
  */
@@ -56,12 +58,17 @@ export class DrawableComponent extends Shape {
     if (!platform || !this.icon) return;
 
     const { x, y, width, height } = this.drawBounds;
-    picto.drawImage(ctx, this.icon, {
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    });
+    picto.drawImage(
+      ctx,
+      this.icon,
+      {
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+      },
+      fontSizeMark
+    );
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {

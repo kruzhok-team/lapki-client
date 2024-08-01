@@ -24,7 +24,6 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { useSchemeContext } from '@renderer/store/SchemeContext';
 
 import { Tabs } from './Tabs';
 

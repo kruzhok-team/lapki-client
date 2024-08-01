@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge';
 import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 interface MenuItem {

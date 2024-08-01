@@ -52,7 +52,6 @@ export class ModelController {
       this.history.clear();
     }
   );
-  isSchemeMounted = false;
   initializer!: Initializer;
   platform: PlatformManager | null = null;
   files = new FilesManager(this);

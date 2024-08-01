@@ -101,18 +101,13 @@ export class CanvasScheme {
       this.view.isDirty = false;
     });
 
-    // this.controller.model.data.isMounted = true;
-    // this.controller.model.triggerDataUpdate('isMounted');
-
-    // this.controller.loadData();
     this.view.initEvents();
-    // this.controller.isSchemeMounted = true;
   }
 
   setSettings(settings: CanvasScreenSettings) {
     this.settings = settings;
 
-    if (this.controller.isSchemeMounted) {
+    if (this.controller.model.data.isMounted) {
       this.view.isDirty = true;
     }
   }
@@ -133,7 +128,6 @@ export class CanvasScheme {
     this._mouse = null;
     this._keyboard = null;
     this._render = null;
-    this.controller.isSchemeMounted = false;
   }
 
   focus() {

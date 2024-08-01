@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, Dispatch } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
@@ -60,15 +59,14 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (result && isRight(result)) {
       clearTabs();
       openTab({ type: 'editor', name: 'editor' });
-      openTab({ type: 'scheme', name: 'scheme' });
+      // openTab({ type: 'scheme', name: 'scheme' });
     }
   };
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
-    // await schemeModel.files.createFromTemplate(type, name, openImportError);
     openTab({ type: 'editor', name: 'editor' });
-    openTab({ type: 'scheme', name: 'scheme' });
+    // openTab({ type: 'scheme', name: 'scheme' });
   };
 
   //Создание нового файла

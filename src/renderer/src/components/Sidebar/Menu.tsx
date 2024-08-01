@@ -30,7 +30,6 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const isStale = controller.model.useData('isStale');
   const isInitialized = controller.model.useData('isInitialized');
   const isMounted = controller.model.useData('isMounted');
-  const isSchemeMounted = controller.isSchemeMounted;
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 
@@ -81,7 +80,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: () => {
         openTab({ type: 'scheme', name: 'scheme' });
       },
-      disabled: !isInitialized || isSchemeMounted,
+      disabled: !isInitialized || isMounted,
     },
     // {
     //   text: 'Примеры',

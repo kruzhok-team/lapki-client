@@ -103,7 +103,6 @@ export class CanvasEditor {
       this.view.isDirty = false;
     });
 
-    this.controller.model.data.isMounted = true;
     this.controller.model.triggerDataUpdate('isMounted');
 
     this.controller.loadData();
@@ -136,7 +135,6 @@ export class CanvasEditor {
     this._keyboard = null;
     this._render = null;
 
-    this.controller.model.data.isMounted = false;
     this.controller.model.triggerDataUpdate('isMounted');
   }
 

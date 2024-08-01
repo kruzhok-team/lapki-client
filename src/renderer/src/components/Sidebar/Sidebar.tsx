@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <History />,
       <Setting openCompilerSettings={openCompilerSettings} handleHostChange={handleHostChange} />,
     ],
-    [compilerData, openData, compilerStatus, controller.isSchemeMounted]
+    [compilerData, openData, compilerStatus]
   );
 
   const tabLabels = useMemo(

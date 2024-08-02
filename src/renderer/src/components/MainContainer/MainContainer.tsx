@@ -42,7 +42,6 @@ export const MainContainer: React.FC = () => {
   });
 
   useAppTitle();
-
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       operations.onRequestOpenFile(acceptedFiles[0].path);

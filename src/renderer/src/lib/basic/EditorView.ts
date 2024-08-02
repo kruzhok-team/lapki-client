@@ -203,7 +203,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     if (node) {
       return node.handleMouseContextMenu(e);
     }
-
     this.emit('contextMenu', {
       x: e.x + offset.x,
       y: e.y + offset.y,

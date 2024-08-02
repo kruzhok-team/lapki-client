@@ -70,7 +70,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: () => {
         openTab({ type: 'editor', name: 'editor' });
       },
-      disabled: !isInitialized || isMounted,
+      disabled: !isInitialized,
       // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
       className: 'border-t border-border-primary',
     },
@@ -79,7 +79,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: () => {
         openTab({ type: 'scheme', name: 'scheme' });
       },
-      disabled: !isInitialized || isMounted,
+      disabled: !isInitialized,
     },
     // {
     //   text: 'Примеры',

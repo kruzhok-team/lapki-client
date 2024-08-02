@@ -37,7 +37,16 @@ export const Loader: React.FC<FlasherProps> = ({
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
-  const { autoScroll, setInputValue, messages, setMessages, ports, setPorts } = useSerialMonitor();
+  const {
+    autoScroll,
+    setInputValue,
+    messages,
+    setMessages,
+    ports,
+    setPorts,
+    device: serialMonitorDevice,
+    setDevice: setSerialMonitorDevice,
+  } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -56,6 +65,7 @@ export const Loader: React.FC<FlasherProps> = ({
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const openTab = useTabs((state) => state.openTab);
+  const closeTab = useTabs((state) => state.closeTab);
 
   const isActive = (id: string) => currentDeviceID === id;
 
@@ -163,6 +173,7 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с сообщением от avrdude
   const handleAddAvrdudeTab = () => {
+    closeTab('avrdude');
     openTab({
       type: 'code',
       name: 'avrdude',
@@ -173,6 +184,9 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с serial monitor
   const handleAddSerialMonitorTab = () => {
+    closeTab('Монитор порта');
+    const curDevice = devices.get(currentDeviceID ?? '');
+    setSerialMonitorDevice(curDevice);
     openTab({
       type: 'serialMonitor',
       name: 'Монитор порта',
@@ -415,7 +429,11 @@ export const Loader: React.FC<FlasherProps> = ({
         >
           Результат прошивки
         </button>
-        <button className="btn-primary mb-2 w-full" onClick={handleAddSerialMonitorTab}>
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddSerialMonitorTab}
+          disabled={currentDeviceID == undefined}
+        >
           Монитор порта
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">

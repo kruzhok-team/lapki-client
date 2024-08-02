@@ -2,12 +2,22 @@ import { useLayoutEffect, useRef, useState } from 'react';
 
 import { SerialMonitor } from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
+import { Device } from '@renderer/types/FlasherTypes';
 
 import { Select, SelectOption, Switch, TextInput } from './UI';
 
 export const SerialMonitorTab: React.FC = () => {
-  const { autoScroll, setAutoScroll, inputValue, setInputValue, messages, setMessages, ports } =
-    useSerialMonitor();
+  const {
+    autoScroll,
+    setAutoScroll,
+    inputValue,
+    setInputValue,
+    messages,
+    setMessages,
+    ports,
+    device,
+    setDevice,
+  } = useSerialMonitor();
   //Выбранный порт на данный момент
   const [port, setPort] = useState<SelectOption | null>(null);
   //Список рабочих портов
@@ -99,8 +109,16 @@ export const SerialMonitorTab: React.FC = () => {
     setMessages(() => []);
   };
 
+  const handleCurrentDeviceDisplay = () => {
+    if (device === undefined) {
+      return 'не подключено';
+    }
+    return `Текущее устройство: ${device?.name} (${device?.portName})`;
+  };
+
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
+      <div className="m-2 flex justify-between">{`Текущее устройство: ${device?.name} (${device?.portName})`}</div>
       <div className="m-2 flex">
         <TextInput
           className="mr-2 max-w-full"
@@ -119,19 +137,7 @@ export const SerialMonitorTab: React.FC = () => {
           Автопрокрутка
         </div>
         <div className="flex flex-row items-center">
-          <div className="mr-2 w-48">
-            <Select
-              isSearchable={false}
-              value={port}
-              placeholder="Выберите порт..."
-              onChange={(option) => {
-                if (option) {
-                  setPort(option as SelectOption);
-                }
-              }}
-              options={optionsPort}
-            />
-          </div>
+          <div className="mr-2 w-12">{'Бод:'}</div>
           <div className="mr-2 w-48">
             <Select
               isSearchable={false}

@@ -175,7 +175,7 @@ export const Loader: React.FC<FlasherProps> = ({
   const handleAddSerialMonitorTab = () => {
     openTab({
       type: 'serialMonitor',
-      name: 'Serial monitor',
+      name: 'Монитор порта',
     });
   };
 

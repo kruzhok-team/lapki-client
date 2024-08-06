@@ -14,7 +14,11 @@ import {
   SerialRead,
 } from '@renderer/types/FlasherTypes';
 
-import { SerialMonitor } from './SerialMonitor';
+import {
+  SerialMonitor,
+  SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_NO_CONNECTION,
+} from './SerialMonitor';
 
 export const FLASHER_CONNECTING = 'Идет подключение...';
 export const FLASHER_CONNECTED = 'Подключен';
@@ -314,8 +318,10 @@ export class Flasher {
               //const dev = this.devices.get(serialStatus.deviceID);
               //SerialMonitor.setDevice(dev);
               SerialMonitor.message('Открыт монитор порта!');
+              SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
             } else {
-              SerialMonitor.message(`Не удалось открыть монитор порта. Код: ${serialStatus.code}`);
+              SerialMonitor.message(`Монитор порта закрыт. Код: ${serialStatus.code}`);
+              SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
             }
             break;
           }
@@ -332,7 +338,7 @@ export class Flasher {
           }
           case 'serial-device-read': {
             const serialRead = response.payload as SerialRead;
-            SerialMonitor.message(`Получено сообщение от устойства: ${serialRead.msg}`);
+            SerialMonitor.message(`${SerialMonitor.getDeviceName()}: ${serialRead.msg}`);
           }
         }
       };

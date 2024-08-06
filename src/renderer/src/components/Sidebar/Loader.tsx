@@ -46,6 +46,8 @@ export const Loader: React.FC<FlasherProps> = ({
     setPorts,
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
+    connectionStatus: serialConnectionStatus,
+    setConnectionStatus: setSerialConnectionStatus,
   } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -184,12 +186,12 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с serial monitor
   const handleAddSerialMonitorTab = () => {
+    if (serialMonitorDevice != null) {
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
     closeTab('Монитор порта');
     const curDevice = devices.get(currentDeviceID ?? '');
     setSerialMonitorDevice(curDevice);
-    if (curDevice != undefined) {
-      SerialMonitor.openMonitor(curDevice, 9600);
-    }
     openTab({
       type: 'serialMonitor',
       name: 'Монитор порта',
@@ -213,7 +215,10 @@ export const Loader: React.FC<FlasherProps> = ({
       setMessages,
       ports,
       setPorts,
-      setSerialMonitorDevice
+      serialMonitorDevice,
+      setSerialMonitorDevice,
+      serialConnectionStatus,
+      setSerialConnectionStatus
     );
     Flasher.initReader(new FileReader());
   }, []);

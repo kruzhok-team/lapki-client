@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { SERIAL_MONITOR_NO_CONNECTION } from '@renderer/components/Modules/SerialMonitor';
 import { Device } from '@renderer/types/FlasherTypes';
 
 interface SerialMonitorState {
@@ -13,8 +14,8 @@ interface SerialMonitorState {
   setPorts: (prevPorts: string[]) => void;
   device: Device | undefined;
   setDevice: (currentDevice: Device | undefined) => void;
-  connected: boolean;
-  setConnected: (connected: boolean) => void;
+  connectionStatus: string;
+  setConnectionStatus: (connectionStatus: string) => void;
 }
 
 export const useSerialMonitor = create<SerialMonitorState>((set) => ({
@@ -28,6 +29,6 @@ export const useSerialMonitor = create<SerialMonitorState>((set) => ({
   setPorts: (value) => set({ ports: value }),
   device: undefined,
   setDevice: (newDevice) => set({ device: newDevice }),
-  connected: false,
-  setConnected: (newConnected) => set({ connected: newConnected }),
+  connectionStatus: SERIAL_MONITOR_NO_CONNECTION,
+  setConnectionStatus: (newConnectionStatus) => set({ connectionStatus: newConnectionStatus }),
 }));

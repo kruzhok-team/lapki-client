@@ -1,6 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { SerialMonitor } from '@renderer/components/Modules/SerialMonitor';
+import {
+  SERIAL_MONITOR_CONNECTED,
+  SerialMonitor,
+} from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { Select, SelectOption, Switch, TextInput } from './UI';
@@ -15,7 +18,7 @@ export const SerialMonitorTab: React.FC = () => {
     setMessages,
     ports,
     device,
-    setDevice,
+    connectionStatus,
   } = useSerialMonitor();
   //Выбранный порт на данный момент
   const [port, setPort] = useState<SelectOption | null>(null);
@@ -27,7 +30,7 @@ export const SerialMonitorTab: React.FC = () => {
   const makeOption = (x) => {
     return { label: x, value: x };
   };
-  const [baudRate, setBaudRate] = useState<SelectOption | null>(makeOption('9600'));
+  const [baudRate, setBaudRate] = useState<SelectOption>(makeOption('9600'));
   const baudRateAll = [
     '50',
     '75',
@@ -85,15 +88,15 @@ export const SerialMonitorTab: React.FC = () => {
   }, [messages, autoScroll]);
 
   useLayoutEffect(() => {
-    if (SerialMonitor.ws && SerialMonitor.ws.readyState === WebSocket.OPEN && port && baudRate) {
-      SerialMonitor.ws.send(JSON.stringify({ port: port.value, baudRate: baudRate.value }));
-    }
+    // if (SerialMonitor.ws && SerialMonitor.ws.readyState === WebSocket.OPEN && port && baudRate) {
+    //   SerialMonitor.ws.send(JSON.stringify({ port: port.value, baudRate: baudRate.value }));
+    // }
   }, [port, baudRate]);
 
   const handleSend = () => {
     if (inputValue.trim()) {
       // Отправляем сообщение через SerialMonitor
-      SerialMonitor.send(JSON.stringify({ command: inputValue }));
+      // SerialMonitor.send(JSON.stringify({ command: inputValue }));
       setInputValue('');
     }
   };
@@ -110,14 +113,32 @@ export const SerialMonitorTab: React.FC = () => {
 
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {
+      return 'не выбрано';
+    }
+    return `${device?.name} (${device?.portName})`;
+  };
+
+  const handleCurrentStatusDisplay = () => {
+    if (device === undefined) {
       return 'не подключено';
     }
-    return `Текущее устройство: ${device?.name} (${device?.portName})`;
+    return `подключено`;
+  };
+
+  const handleConnectionButton = () => {
+    if (device == undefined) {
+      return;
+    }
+    if (connectionStatus == SERIAL_MONITOR_CONNECTED) {
+      SerialMonitor.closeMonitor(device?.deviceID);
+    } else {
+      SerialMonitor.openMonitor(device, Number(baudRate.value));
+    }
   };
 
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <div className="m-2 flex justify-between">{`Текущее устройство: ${device?.name} (${device?.portName})`}</div>
+      <div className="m-2 flex justify-between">{`${handleCurrentDeviceDisplay()} - ${connectionStatus}`}</div>
       <div className="m-2 flex">
         <TextInput
           className="mr-2 max-w-full"
@@ -135,6 +156,9 @@ export const SerialMonitorTab: React.FC = () => {
           <Switch checked={autoScroll} onCheckedChange={() => setAutoScroll(!autoScroll)} />
           Автопрокрутка
         </div>
+        <button className="btn-primary" onClick={handleClear}>
+          Очистить
+        </button>
         <div className="flex flex-row items-center">
           <div className="mr-2 w-12">{'Бод:'}</div>
           <div className="mr-2 w-48">
@@ -151,8 +175,8 @@ export const SerialMonitorTab: React.FC = () => {
             />
           </div>
           <div>
-            <button className="btn-primary" onClick={handleClear}>
-              Очистить
+            <button className="btn-primary" onClick={handleConnectionButton}>
+              {connectionStatus == SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
             </button>
           </div>
         </div>

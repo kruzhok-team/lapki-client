@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef, useState } from 'react';
 
 import { SerialMonitor } from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
-import { Device } from '@renderer/types/FlasherTypes';
 
 import { Select, SelectOption, Switch, TextInput } from './UI';
 

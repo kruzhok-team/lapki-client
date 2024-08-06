@@ -10,7 +10,11 @@ import {
   FlasherMessage,
   UpdateDelete,
   FlashResult,
+  SerialStatus,
+  SerialRead,
 } from '@renderer/types/FlasherTypes';
+
+import { SerialMonitor } from './SerialMonitor';
 
 export const FLASHER_CONNECTING = 'Идет подключение...';
 export const FLASHER_CONNECTED = 'Подключен';
@@ -291,7 +295,7 @@ export class Flasher {
             break;
           }
           case 'event-not-supported': {
-            this.setFlasherLog('Загрузчик получил неизвестный тип сообщения.');
+            this.setFlasherLog(`Загрузчик получил неизвестный тип сообщения. ${response.payload}`);
             break;
           }
           case 'get-list-cooldown': {
@@ -302,6 +306,33 @@ export class Flasher {
           }
           case 'empty-list': {
             this.setFlasherLog('Устройства не найдены.');
+            break;
+          }
+          case 'serial-connection-status': {
+            const serialStatus = response.payload as SerialStatus;
+            if (serialStatus.code == 0) {
+              //const dev = this.devices.get(serialStatus.deviceID);
+              //SerialMonitor.setDevice(dev);
+              SerialMonitor.message('Открыт монитор порта!');
+            } else {
+              SerialMonitor.message(`Не удалось открыть монитор порта. Код: ${serialStatus.code}`);
+            }
+            break;
+          }
+          case 'serial-sent-status': {
+            const serialStatus = response.payload as SerialStatus;
+            if (serialStatus.code == 0) {
+              SerialMonitor.message('Сообщение доставлено на устройство.');
+            } else {
+              SerialMonitor.message(
+                `Сообщение не удалось доставить на устройство. Код: ${serialStatus.code}`
+              );
+            }
+            break;
+          }
+          case 'serial-device-read': {
+            const serialRead = response.payload as SerialRead;
+            SerialMonitor.message(`Получено сообщение от устойства: ${serialRead.msg}`);
           }
         }
       };

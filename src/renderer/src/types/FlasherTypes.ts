@@ -16,7 +16,15 @@ export type FlashUpdatePort = {
 
 export type FlasherMessage = {
   type: string;
-  payload: string | Device | FlashStart | UpdateDelete | undefined;
+  payload:
+    | string
+    | Device
+    | FlashStart
+    | UpdateDelete
+    | undefined
+    | SerialStatus
+    | SerialConnect
+    | SerialRead;
 };
 
 export type UpdateDelete = {
@@ -65,3 +73,19 @@ export class FlashResult {
 ${avrdudeMsg}`;
   }
 }
+
+export type SerialStatus = {
+  deviceID: string;
+  code: number;
+  comment: string;
+};
+
+export type SerialConnect = {
+  deviceID: string;
+  baud: number;
+};
+
+export type SerialRead = {
+  deviceID: string;
+  msg: string;
+};

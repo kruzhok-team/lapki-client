@@ -67,7 +67,6 @@ function createWindow(): BrowserWindow {
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
     ModuleManager.stopModule('lapki-flasher');
-    ModuleManager.stopModule('lapki-serial-monitor');
     app.exit(0);
   });
 
@@ -97,12 +96,10 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-async function startModules() {
-  await ModuleManager.startLocalModule('lapki-flasher');
-  //Это необходимо, чтобы он спустя время начал запускать Serial monitor, пока список занятых портов не обновится
-  setTimeout(async () => await ModuleManager.startLocalModule('lapki-serial-monitor'), 1000);
-}
-startModules();
+const startFlasher = async () => {
+  ModuleManager.startLocalModule('lapki-flasher');
+};
+startFlasher();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
@@ -114,13 +111,6 @@ app.whenReady().then(() => {
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
-    }
-    if (module === 'lapki-serial-monitor') {
-      settingsChangeSend(
-        mainWindow.webContents,
-        'serialmonitor',
-        settings.getSync('serialmonitor')
-      );
     }
   });
 
@@ -155,7 +145,5 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
   ModuleManager.stopModule('lapki-flasher');
-  // явно останавливаем serial monitor, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-serial-monitor');
   app.quit();
 });

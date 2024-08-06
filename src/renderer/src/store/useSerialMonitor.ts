@@ -13,6 +13,8 @@ interface SerialMonitorState {
   setPorts: (prevPorts: string[]) => void;
   device: Device | undefined;
   setDevice: (currentDevice: Device | undefined) => void;
+  connected: boolean;
+  setConnected: (connected: boolean) => void;
 }
 
 export const useSerialMonitor = create<SerialMonitorState>((set) => ({
@@ -26,4 +28,6 @@ export const useSerialMonitor = create<SerialMonitorState>((set) => ({
   setPorts: (value) => set({ ports: value }),
   device: undefined,
   setDevice: (newDevice) => set({ device: newDevice }),
+  connected: false,
+  setConnected: (newConnected) => set({ connected: newConnected }),
 }));

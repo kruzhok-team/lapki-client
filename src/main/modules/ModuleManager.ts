@@ -10,7 +10,7 @@ import path from 'path';
 import { findFreePort } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
-export type ModuleName = 'lapki-flasher' | 'lapki-serial-monitor';
+export type ModuleName = 'lapki-flasher';
 
 export class ModuleStatus {
   /* 
@@ -51,7 +51,6 @@ export class ModuleManager {
       let chprocess;
       let modulePath: string = '';
       let osPath = '';
-
       switch (platform) {
         case 'darwin': {
           // позволяет унаследовать $PATH, то есть системный путь
@@ -74,7 +73,6 @@ export class ModuleManager {
           this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
       }
-
       if (modulePath) {
         switch (module) {
           case 'lapki-flasher': {
@@ -137,15 +135,6 @@ export class ModuleManager {
               flasherArgs.push(`-configPath=${configPath}`);
             }
             chprocess = spawn(modulePath, flasherArgs);
-            break;
-          }
-          case 'lapki-serial-monitor': {
-            const port = await findFreePort();
-            await settings.set('serialmonitor.localPort', port);
-            defaultSettings.serialmonitor.localPort = Number(port);
-            const serialMonitorArgs: string[] = [`-address=localhost:${port}`];
-
-            chprocess = spawn(modulePath, serialMonitorArgs);
             break;
           }
           default:

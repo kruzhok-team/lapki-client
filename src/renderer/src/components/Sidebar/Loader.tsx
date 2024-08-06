@@ -187,6 +187,9 @@ export const Loader: React.FC<FlasherProps> = ({
     closeTab('Монитор порта');
     const curDevice = devices.get(currentDeviceID ?? '');
     setSerialMonitorDevice(curDevice);
+    if (curDevice != undefined) {
+      SerialMonitor.openMonitor(curDevice, 9600);
+    }
     openTab({
       type: 'serialMonitor',
       name: 'Монитор порта',
@@ -203,7 +206,15 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlasherError,
       setFlashResult
     );
-
+    SerialMonitor.bindReact(
+      autoScroll,
+      setInputValue,
+      messages,
+      setMessages,
+      ports,
+      setPorts,
+      setSerialMonitorDevice
+    );
     Flasher.initReader(new FileReader());
   }, []);
 
@@ -218,25 +229,6 @@ export const Loader: React.FC<FlasherProps> = ({
       Flasher.connect(host, port);
     }
   }, [flasherSetting, setFlasherSetting]);
-
-  useLayoutEffect(() => {
-    SerialMonitor.bindReact(autoScroll, setInputValue, messages, setMessages, ports, setPorts);
-
-    if (!serialMonitorSetting) return;
-    const { host, port, localPort, type } = serialMonitorSetting;
-    if (type === 'local' && port !== localPort) {
-      setSerialMonitorSetting({ ...serialMonitorSetting, port: localPort }).then(() => {
-        SerialMonitor.connect(host, localPort);
-      });
-    } else {
-      SerialMonitor.connect(host, port);
-    }
-
-    return () => {
-      // Отключаем обработчики событий и закрываем WebSocket при размонтировании компонента
-      SerialMonitor.closeWebSocket();
-    };
-  }, [serialMonitorSetting, setSerialMonitorSetting]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {

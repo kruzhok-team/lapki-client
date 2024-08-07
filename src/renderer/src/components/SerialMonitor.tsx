@@ -157,7 +157,6 @@ export const SerialMonitorTab: React.FC = () => {
             onChange={(option) => {
               if (option) {
                 setLineBreak(option as SelectOption);
-                //handleChangeBaudRate();
               }
             }}
             options={lineBreakAll}
@@ -189,10 +188,13 @@ export const SerialMonitorTab: React.FC = () => {
               onChange={(option) => {
                 if (option) {
                   setBaudRate(option as SelectOption);
-                  handleChangeBaudRate();
+                  if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
+                    SerialMonitor.changeBaud(device?.deviceID, Number(option.value));
+                  }
                 }
               }}
               options={baudRateAll}
+              isDisabled={connectionStatus == SERIAL_MONITOR_CONNECTING}
             />
           </div>
           <div>

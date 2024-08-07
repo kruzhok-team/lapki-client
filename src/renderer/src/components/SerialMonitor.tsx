@@ -94,9 +94,10 @@ export const SerialMonitorTab: React.FC = () => {
   }, [port, baudRate]);
 
   const handleSend = () => {
-    if (inputValue.trim()) {
+    if (inputValue.trim() && device != undefined) {
       // Отправляем сообщение через SerialMonitor
       // SerialMonitor.send(JSON.stringify({ command: inputValue }));
+      SerialMonitor.sendMessage(device?.deviceID, inputValue);
       setInputValue('');
     }
   };

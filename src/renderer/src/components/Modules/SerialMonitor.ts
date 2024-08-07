@@ -3,6 +3,7 @@ import {
   FlasherMessage,
   SerialConnect,
   SerialDisconnect,
+  SerialSend,
 } from '@renderer/types/FlasherTypes';
 
 import { Flasher } from './Flasher';
@@ -79,5 +80,17 @@ export class SerialMonitor {
 
   static getDeviceName(): string {
     return `${this.device?.name} (${this.device?.portName})`;
+  }
+
+  static sendMessage(deviceID: string, message: string) {
+    const payload = {
+      deviceID: deviceID,
+      msg: message,
+    } as SerialSend;
+    const request = {
+      type: 'serial-send',
+      payload: payload,
+    } as FlasherMessage;
+    Flasher.connection?.send(JSON.stringify(request));
   }
 }

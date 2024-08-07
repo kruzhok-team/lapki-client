@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 
 import Websocket from 'isomorphic-ws';
-import { comment } from 'postcss';
 
 import { Binary } from '@renderer/types/CompilerTypes';
 import {

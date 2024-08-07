@@ -1,6 +1,7 @@
 import {
   Device,
   FlasherMessage,
+  SerialChangeBaud,
   SerialConnect,
   SerialDisconnect,
   SerialSend,
@@ -80,5 +81,17 @@ export class SerialMonitor {
 
   static addLog(log: string) {
     this.setLog((prevMessages) => [...prevMessages, log]);
+  }
+
+  static changeBaud(deviceID: string, baud: number) {
+    const payload = {
+      deviceID: deviceID,
+      baud: baud,
+    } as SerialChangeBaud;
+    const request = {
+      type: 'serial-change-baud',
+      payload: payload,
+    } as FlasherMessage;
+    Flasher.connection?.send(JSON.stringify(request));
   }
 }

@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 
 import {
   SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_CONNECTING,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
@@ -92,15 +93,14 @@ export const SerialMonitorTab: React.FC = () => {
   }, [deviceMessages, log, autoScroll]);
 
   useLayoutEffect(() => {
-    // if (SerialMonitor.ws && SerialMonitor.ws.readyState === WebSocket.OPEN && port && baudRate) {
-    //   SerialMonitor.ws.send(JSON.stringify({ port: port.value, baudRate: baudRate.value }));
-    // }
-  }, [port, baudRate]);
+    if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
+      SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
+    }
+  }, [baudRate]);
 
   const handleSend = () => {
     if (inputValue.trim() && device != undefined) {
       // Отправляем сообщение через SerialMonitor
-      // SerialMonitor.send(JSON.stringify({ command: inputValue }));
       SerialMonitor.sendMessage(device?.deviceID, inputValue);
       setInputValue('');
     }
@@ -122,13 +122,6 @@ export const SerialMonitorTab: React.FC = () => {
       return 'не выбрано';
     }
     return `${device?.name} (${device?.portName})`;
-  };
-
-  const handleCurrentStatusDisplay = () => {
-    if (device === undefined) {
-      return 'не подключено';
-    }
-    return `подключено`;
   };
 
   const handleConnectionButton = () => {
@@ -181,7 +174,11 @@ export const SerialMonitorTab: React.FC = () => {
             />
           </div>
           <div>
-            <button className="btn-primary" onClick={handleConnectionButton}>
+            <button
+              className="btn-primary"
+              onClick={handleConnectionButton}
+              disabled={connectionStatus == SERIAL_MONITOR_CONNECTING}
+            >
               {connectionStatus == SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
             </button>
           </div>

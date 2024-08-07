@@ -26,7 +26,8 @@ export type FlasherMessage = {
     | SerialConnect
     | SerialRead
     | SerialDisconnect
-    | SerialSend;
+    | SerialSend
+    | SerialChangeBaud;
 };
 
 export type UpdateDelete = {
@@ -99,4 +100,9 @@ export type SerialDisconnect = {
 export type SerialSend = {
   deviceID: string;
   msg: string;
+};
+
+export type SerialChangeBaud = {
+  deviceID: string;
+  baud: number;
 };

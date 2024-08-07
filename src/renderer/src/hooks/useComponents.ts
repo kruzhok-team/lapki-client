@@ -93,6 +93,7 @@ export const useComponents = () => {
 
   const onChange = (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => {
     controller.changeComponent({
+      sm: 'G',
       name: idx,
       parameters: data.parameters,
       newName: newName,
@@ -105,7 +106,7 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor.controller.deleteComponent({ name: idx, purge: false });
+    editor.controller.deleteComponent({ sm: 'G', name: idx, purge: false });
 
     changeClose();
   };

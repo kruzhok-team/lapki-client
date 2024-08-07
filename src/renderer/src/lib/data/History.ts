@@ -4,6 +4,7 @@ import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
   ChangeComponentParams,
   DeleteComponentParams,
+  DeleteStateMachineParams,
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
@@ -32,6 +33,8 @@ import {
 } from '@renderer/types/diagram';
 
 import { ModelController } from './ModelController';
+
+import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
@@ -83,6 +86,9 @@ export type PossibleActions = {
   changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { id: string; text: string; prevText: string };
   deleteNote: { id: string; prevData: NoteData };
+
+  // TODO (L140-beep): Переделать удаление с DrawableStateMachine на StateMachine при реализации мультидока.
+  // deleteStateMachine: { args: DeleteStateMachineParams; prevStateMachine: DrawableStateMachine };
 };
 export type PossibleActionTypes = keyof PossibleActions;
 export type Action<T extends PossibleActionTypes> = {
@@ -307,9 +313,19 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.states.createEventAction.bind(sM.states, stateId, event, prevValue),
   }),
 
+  // TODO (L140-beep): удаление машин состояний
+  // deleteStateMachine: (sM, args) => ({
+  //   redo: () => {
+  //     return;
+  //   },
+  //   undo: () => {
+  //     return;
+  //   },
+  // }),
+
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
-    undo: sM.deleteComponent.bind(sM, { name: args.name, purge: false }, false),
+    undo: sM.deleteComponent.bind(sM, { name: args.name, sm: 'G', purge: false }, false),
   }),
   deleteComponent: (sM, { args, prevComponent }) => ({
     redo: sM.deleteComponent.bind(sM, args, false),
@@ -320,6 +336,7 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.changeComponent.bind(
       sM,
       {
+        sm: 'G',
         name: args.newName ?? args.name,
         parameters: prevComponent.parameters,
         newName: args.newName ? args.name : undefined,
@@ -518,6 +535,11 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Удаление заметки',
     description: `ID: ${args.id} Текст: ${args.prevData.text}`,
   }),
+
+  // deleteStateMachine: ({ args, prevStateMachine }) => ({
+  //   name: 'Удаление компонента',
+  //   description: `Имя: ${args.id}`,
+  // }),
 };
 
 export const STACK_SIZE_LIMIT = 100;

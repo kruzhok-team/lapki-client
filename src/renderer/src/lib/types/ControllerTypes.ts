@@ -10,6 +10,7 @@ import {
 import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface ChangeComponentParams {
+  sm: string;
   name: string;
   parameters: ComponentData['parameters'];
   newName?: string;
@@ -17,6 +18,11 @@ export interface ChangeComponentParams {
 
 export interface DeleteComponentParams {
   name: string;
+  sm: string;
+  purge?: boolean;
+}
+export interface DeleteStateMachineParams {
+  id: string;
   purge?: boolean;
 }
 

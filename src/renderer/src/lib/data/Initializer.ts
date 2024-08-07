@@ -9,12 +9,15 @@ import {
   GhostTransition,
   DrawableComponent,
   MarkedIconData,
+  picto,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
 import { ModelController } from './ModelController';
+import { StateMachineController } from './ModelController/StateMachineController';
 
 import { CanvasScheme } from '../CanvasScheme';
+import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 /**
  * Класс инкапсулирующий логику инициализации {@link EditorController|контроллера машины состояний}
@@ -36,7 +39,8 @@ export class Initializer {
     this.initChoiceStates();
     this.initTransitions();
     this.initNotes();
-    this.initComponents();
+    // this.initComponents('G');
+    this.initStateMachines();
     this.appEditor.view.viewCentering();
     this.appScheme.view.viewCentering();
   }
@@ -177,14 +181,26 @@ export class Initializer {
     }
   }
 
-  initComponents() {
+  private initStateMachines() {
+    const markedSmIcon: MarkedIconData = {
+      icon: picto.getBasePicto('stateMachine'),
+      label: 'G',
+    };
+    this.appScheme.view.children.add(
+      new DrawableStateMachine(this.appScheme, 'G', markedSmIcon),
+      Layer.Machines
+    );
+    this.initComponents('G');
+  }
+
+  initComponents(sm: string) {
     if (!this.platform) return;
 
     const items = this.controller.model.data.elements.components;
 
     for (const name in items) {
       const component = items[name];
-      this.createComponentView(name);
+      this.createComponentView(sm, name);
       this.platform.nameToVisual.set(name, {
         component: component.type,
         label: component.parameters['label'],
@@ -193,7 +209,7 @@ export class Initializer {
     }
   }
 
-  private createComponentView(id: string) {
+  private createComponentView(sm: string, id: string) {
     const icon = this.controller.platform?.getComponentIcon(id, true);
     if (!icon) {
       return;
@@ -205,9 +221,15 @@ export class Initializer {
       color: modelComponent.parameters['labelColor'],
     };
     const component = new DrawableComponent(this.appScheme, id, markedIcon);
+    const smDrawable = this.controller.stateMachines.getStateMachineById(sm);
+    if (!smDrawable) {
+      return;
+    }
     this.components.set(id, component);
     this.components.watch(component);
-    this.appScheme.view.children.add(component, Layer.Components);
+    if (smDrawable.children) {
+      smDrawable.children.add(component, Layer.Components);
+    }
   }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта

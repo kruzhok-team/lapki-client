@@ -5,7 +5,9 @@ import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { ChoiceState, Note, Transition } from '@renderer/lib/drawable';
+import { ChoiceState, MarkedIconData, Note, picto, Transition } from '@renderer/lib/drawable';
+import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
+import { Layer } from '@renderer/lib/types';
 import {
   CopyData,
   CopyType,
@@ -17,6 +19,7 @@ import { Condition, Elements, Variable } from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
 import { NotesController } from './NotesController';
+import { StateMachineController } from './StateMachineController';
 import { StatesController } from './StatesController';
 import { TransitionsController } from './TransitionsController';
 
@@ -63,6 +66,7 @@ export class ModelController {
   transitions!: TransitionsController;
   notes!: NotesController;
   components!: ComponentsController;
+  stateMachines!: StateMachineController;
 
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
@@ -75,6 +79,7 @@ export class ModelController {
     this.notes = new NotesController(editor);
 
     this.components = new ComponentsController(scheme);
+    this.stateMachines = new StateMachineController(scheme);
   }
 
   static getInstance(editor: CanvasEditor, scheme: CanvasScheme): ModelController {
@@ -96,7 +101,7 @@ export class ModelController {
     this.platform = platform;
     //! Инициализировать компоненты нужно сразу после загрузки платформы
     // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
-    this.initializer.initComponents();
+    this.initializer.initComponents('G');
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
@@ -106,6 +111,14 @@ export class ModelController {
       const component = elements.components[componentId];
       this.createComponent({ ...component, name: componentId }, false, true);
     }
+    // TODO (L140-beep): при добавлении мультидокумента надо будет переделать
+    const markedSmIcon: MarkedIconData = {
+      icon: picto.getBasePicto('stateMachine'),
+    };
+    this.scheme.view.children.add(
+      new DrawableStateMachine(this.scheme, 'G', markedSmIcon),
+      Layer.Components
+    );
   }
 
   loadData() {
@@ -503,6 +516,17 @@ export class ModelController {
 
     note.setIsSelected(true);
   }
+
+  // selectStateMachine(id: string) {
+  //   const sm = this.editor.controller.notes.get(id);
+  //   if (!note) return;
+
+  //   this.removeSelection();
+
+  //   this.model.changeNoteSelection(id, true);
+
+  //   note.setIsSelected(true);
+  // }
 
   /**
    * Снимает выделение со всех нод и переходов.

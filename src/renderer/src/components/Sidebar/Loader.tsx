@@ -19,7 +19,11 @@ import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
-import { SerialMonitor } from '../Modules/SerialMonitor';
+import {
+  SERIAL_MONITOR_NO_CONNECTION,
+  SERIAL_MONITOR_NO_SERVER_CONNECTION,
+  SerialMonitor,
+} from '../Modules/SerialMonitor';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
@@ -227,6 +231,15 @@ export const Loader: React.FC<FlasherProps> = ({
       Flasher.connect(host, port);
     }
   }, [flasherSetting, setFlasherSetting]);
+
+  useEffect(() => {
+    if (connectionStatus != FLASHER_CONNECTED) {
+      setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
+    }
+    if (connectionStatus == FLASHER_CONNECTED) {
+      setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+    }
+  }, [connectionStatus, setSerialConnectionStatus]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {

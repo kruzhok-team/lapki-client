@@ -421,7 +421,6 @@ export class Flasher {
     };
 
     ws.onclose = async (event) => {
-      SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
       if (!event.wasClean) {
         if (this.connecting) {
           this.setErrorMessage(`Не удалось подключиться к серверу ${this.host}:${this.port}.`);

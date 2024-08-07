@@ -3,6 +3,8 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import {
   SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
+  SERIAL_MONITOR_NO_CONNECTION,
+  SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
@@ -19,6 +21,7 @@ export const SerialMonitorTab: React.FC = () => {
     setDeviceMessages: setMessages,
     ports,
     device,
+    setConnectionStatus,
     connectionStatus,
     log,
     setLog,
@@ -96,7 +99,7 @@ export const SerialMonitorTab: React.FC = () => {
     if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
       SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
     }
-  }, [baudRate]);
+  }, [baudRate, connectionStatus, device]);
 
   const handleSend = () => {
     if (inputValue.trim() && device != undefined) {
@@ -146,7 +149,11 @@ export const SerialMonitorTab: React.FC = () => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button className="btn-primary" onClick={handleSend}>
+        <button
+          className="btn-primary"
+          onClick={handleSend}
+          disabled={connectionStatus != SERIAL_MONITOR_CONNECTED}
+        >
           Отправить
         </button>
       </div>
@@ -177,7 +184,10 @@ export const SerialMonitorTab: React.FC = () => {
             <button
               className="btn-primary"
               onClick={handleConnectionButton}
-              disabled={connectionStatus == SERIAL_MONITOR_CONNECTING}
+              disabled={
+                connectionStatus == SERIAL_MONITOR_NO_SERVER_CONNECTION ||
+                connectionStatus == SERIAL_MONITOR_CONNECTING
+              }
             >
               {connectionStatus == SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
             </button>

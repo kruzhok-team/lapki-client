@@ -113,7 +113,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleClear = () => {
-    setMessages(() => []);
+    setMessages('');
     setLog(() => []);
   };
 
@@ -188,18 +188,16 @@ export const SerialMonitorTab: React.FC = () => {
         </div>
       </div>
       <div
-        className="mx-2 h-full overflow-y-auto bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 h-full overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={deviceMessageContainerRef}
       >
-        {deviceMessages.map((msg, index) => (
-          <div key={index}>{msg}</div>
-        ))}
+        {deviceMessages}
       </div>
       <br></br>
       <hr></hr>
       <br></br>
       <div
-        className="mx-2 h-full overflow-y-auto bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 h-full overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}
       >
         {log.map((msg, index) => (

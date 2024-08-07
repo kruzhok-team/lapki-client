@@ -8,8 +8,9 @@ interface SerialMonitorState {
   setAutoScroll: (autoScroll: boolean) => void;
   inputValue: string;
   setInputValue: (newInputValue: string) => void;
-  deviceMessages: string[];
-  setDeviceMessages: (update: (prevMessages: string[]) => string[]) => void;
+  deviceMessages: string;
+  setDeviceMessages: (deviceMessages: string) => void;
+  addDeviceMessage: (deviceMessage: string) => void;
   ports: string[];
   setPorts: (prevPorts: string[]) => void;
   device: Device | undefined;
@@ -25,8 +26,10 @@ export const useSerialMonitor = create<SerialMonitorState>((set) => ({
   setAutoScroll: (newSerialMonitor) => set({ autoScroll: newSerialMonitor }),
   inputValue: '',
   setInputValue: (newInputValue) => set({ inputValue: newInputValue }),
-  deviceMessages: [],
-  setDeviceMessages: (update) => set((value) => ({ deviceMessages: update(value.deviceMessages) })),
+  deviceMessages: '',
+  setDeviceMessages: (newDeviceMessage) => set({ deviceMessages: newDeviceMessage }),
+  addDeviceMessage: (newMessage) =>
+    set((state) => ({ deviceMessages: state.deviceMessages + newMessage })),
   ports: [],
   setPorts: (value) => set({ ports: value }),
   device: undefined,

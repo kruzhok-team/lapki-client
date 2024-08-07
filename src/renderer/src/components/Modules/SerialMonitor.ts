@@ -14,7 +14,7 @@ export const SERIAL_MONITOR_NO_CONNECTION = 'Не подключен';
 
 export class SerialMonitor {
   static setInputValue: (newInputValue: string) => void;
-  static setDeviceMessages: (update: (prevMessages: string[]) => string[]) => void;
+  static addDeviceMessages: (newDeviceMessage: string) => void;
   static setPorts: (prevPorts: string[]) => void;
   static setDevice: (currentDevice: Device | undefined) => void;
   static setConnectionStatus: (connectionStatus: string) => void;
@@ -22,14 +22,14 @@ export class SerialMonitor {
 
   static bindReact(
     setInputValue: (newInputValue: string) => void,
-    setMessages: (update: (prevMessages: string[]) => string[]) => void,
+    addMessages: (newDeviceMessage: string) => void,
     setPorts: (prevPorts: string[]) => void,
     setDevice: (currentDevice: Device | undefined) => void,
     setConnectionStatus: (connectionStatus: string) => void,
     setLog: (update: (prevMessages: string[]) => string[]) => void
   ): void {
     this.setInputValue = setInputValue;
-    this.setDeviceMessages = setMessages;
+    this.addDeviceMessages = addMessages;
     this.setPorts = setPorts;
     this.setDevice = setDevice;
     this.setConnectionStatus = setConnectionStatus;
@@ -38,7 +38,7 @@ export class SerialMonitor {
 
   //Функция для формирования сообщения
   static addDeviceMessage(message) {
-    this.setDeviceMessages((prevMessages) => [...prevMessages, message]);
+    this.addDeviceMessages(message);
   }
 
   static openMonitor(device: Device, baudRate: number) {

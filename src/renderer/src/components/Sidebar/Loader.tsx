@@ -38,17 +38,13 @@ export const Loader: React.FC<FlasherProps> = ({
   const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const {
-    autoScroll,
     setInputValue,
-    deviceMessages,
-    setDeviceMessages: setMessages,
-    ports,
     setPorts,
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
-    connectionStatus: serialConnectionStatus,
     setConnectionStatus: setSerialConnectionStatus,
     setLog: setSerialLog,
+    addDeviceMessage,
   } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -211,7 +207,7 @@ export const Loader: React.FC<FlasherProps> = ({
     );
     SerialMonitor.bindReact(
       setInputValue,
-      setMessages,
+      addDeviceMessage,
       setPorts,
       setSerialMonitorDevice,
       setSerialConnectionStatus,

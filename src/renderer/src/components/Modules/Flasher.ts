@@ -314,7 +314,6 @@ export class Flasher {
           }
           case 'serial-connection-status': {
             const serialStatus = response.payload as SerialStatus;
-            console.log(serialStatus);
             switch (serialStatus.code) {
               case 0:
                 SerialMonitor.addLog('Открыт монитор порта!');

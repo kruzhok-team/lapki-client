@@ -400,6 +400,10 @@ export class Flasher {
                 );
                 SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
                 break;
+              case 15:
+                SerialMonitor.addLog(`Старая скорость передачи данных совпадает с новой.`);
+                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+                break;
             }
             break;
           }

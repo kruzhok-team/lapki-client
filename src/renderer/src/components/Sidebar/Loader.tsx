@@ -43,7 +43,6 @@ export const Loader: React.FC<FlasherProps> = ({
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const {
     setInputValue,
-    setPorts,
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     setConnectionStatus: setSerialConnectionStatus,
@@ -212,7 +211,6 @@ export const Loader: React.FC<FlasherProps> = ({
     SerialMonitor.bindReact(
       setInputValue,
       addDeviceMessage,
-      setPorts,
       setSerialMonitorDevice,
       setSerialConnectionStatus,
       setSerialLog

@@ -17,7 +17,6 @@ export const SERIAL_MONITOR_NO_SERVER_CONNECTION = 'Отсутствует по�
 export class SerialMonitor {
   static setInputValue: (newInputValue: string) => void;
   static addDeviceMessages: (newDeviceMessage: string) => void;
-  static setPorts: (prevPorts: string[]) => void;
   static setDevice: (currentDevice: Device | undefined) => void;
   static setConnectionStatus: (connectionStatus: string) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
@@ -25,14 +24,12 @@ export class SerialMonitor {
   static bindReact(
     setInputValue: (newInputValue: string) => void,
     addMessages: (newDeviceMessage: string) => void,
-    setPorts: (prevPorts: string[]) => void,
     setDevice: (currentDevice: Device | undefined) => void,
     setConnectionStatus: (connectionStatus: string) => void,
     setLog: (update: (prevMessages: string[]) => string[]) => void
   ): void {
     this.setInputValue = setInputValue;
     this.addDeviceMessages = addMessages;
-    this.setPorts = setPorts;
     this.setDevice = setDevice;
     this.setConnectionStatus = setConnectionStatus;
     this.setLog = setLog;

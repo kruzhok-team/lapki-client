@@ -3,7 +3,6 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import {
   SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
-  SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
@@ -19,20 +18,11 @@ export const SerialMonitorTab: React.FC = () => {
     setInputValue,
     deviceMessages,
     setDeviceMessages: setMessages,
-    ports,
     device,
-    setConnectionStatus,
     connectionStatus,
     log,
     setLog,
   } = useSerialMonitor();
-  //Выбранный порт на данный момент
-  const [port, setPort] = useState<SelectOption | null>(null);
-  //Список рабочих портов
-  const optionsPort: SelectOption[] = ports.map((device) => ({
-    value: device,
-    label: device,
-  }));
   const makeOption = (x) => {
     return { label: x, value: x };
   };
@@ -76,30 +66,19 @@ export const SerialMonitorTab: React.FC = () => {
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  // При изменении deviceMessages и log прокручиваем вниз, если включена автопрокрутка
+  useLayoutEffect(() => {
     if (autoScroll && deviceMessageContainerRef.current && logContainerRef.current) {
       deviceMessageContainerRef.current.scrollTop = deviceMessageContainerRef.current.scrollHeight;
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  };
-
-  useLayoutEffect(() => {
-    // После обновления очищаем значение port
-    if (port && !ports.includes(port.value)) {
-      setPort(null);
-    }
-  }, [ports, port]);
-
-  // При изменении messages прокручиваем вниз, если включена автопрокрутка
-  useLayoutEffect(() => {
-    scrollToBottom();
   }, [deviceMessages, log, autoScroll]);
 
-  useLayoutEffect(() => {
-    if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
-      SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
-    }
-  }, [baudRate, connectionStatus, device]);
+  // useLayoutEffect(() => {
+  //   if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
+  //     SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
+  //   }
+  // }, [baudRate, connectionStatus, device]);
 
   const handleSend = () => {
     if (inputValue.trim() && device != undefined) {
@@ -135,6 +114,12 @@ export const SerialMonitorTab: React.FC = () => {
       SerialMonitor.closeMonitor(device?.deviceID);
     } else {
       SerialMonitor.openMonitor(device, Number(baudRate.value));
+    }
+  };
+
+  const handleChangeBaudRate = () => {
+    if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
+      SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
     }
   };
 
@@ -175,6 +160,7 @@ export const SerialMonitorTab: React.FC = () => {
               onChange={(option) => {
                 if (option) {
                   setBaudRate(option as SelectOption);
+                  handleChangeBaudRate();
                 }
               }}
               options={baudRateAll}

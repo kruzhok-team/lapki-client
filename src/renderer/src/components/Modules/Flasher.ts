@@ -320,16 +320,16 @@ export class Flasher {
                 SerialMonitor.addLog('Открыт монитор порта!');
                 SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
                 break;
-              case 1:
+              case 1: {
+                const mainMessage = 'Монитор порта закрыт';
                 if (serialStatus.comment != '') {
-                  SerialMonitor.addLog(
-                    `Монитор порта закрыт. Текст ошибки: ${serialStatus.comment}`
-                  );
+                  SerialMonitor.addLog(`${mainMessage}. Текст ошибки: ${serialStatus.comment}`);
                 } else {
-                  SerialMonitor.addLog(`Монитор порта закрыт.`);
+                  SerialMonitor.addLog(`${mainMessage}.`);
                 }
                 SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
                 break;
+              }
               case 2:
                 SerialMonitor.addLog(`Монитор порта закрыт, так как устройство не подключено.`);
                 SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
@@ -409,10 +409,39 @@ export class Flasher {
           }
           case 'serial-sent-status': {
             const serialStatus = response.payload as SerialStatus;
-            if (serialStatus.code == 0) {
-              SerialMonitor.addLog('Сообщение доставлено на устройство.');
-            } else {
-              SerialMonitor.addLog(`Сообщение не удалось доставить на устройство.`);
+            switch (serialStatus.code) {
+              case 0:
+                SerialMonitor.addLog('Сообщение доставлено на устройство.');
+                break;
+              case 1: {
+                const mainMessage = 'Сообщение не удалось доставить на устройство';
+                if (serialStatus.comment != '') {
+                  SerialMonitor.addLog(`${mainMessage}. Текст ошибки: ${serialStatus.comment}`);
+                } else {
+                  SerialMonitor.addLog(`${mainMessage}.`);
+                }
+                break;
+              }
+              case 2:
+                SerialMonitor.addLog(
+                  `Сообщение не удалось доставить на устройство, так как оно не подключено.`
+                );
+                break;
+              case 3:
+                SerialMonitor.addLog(
+                  `Сообщение не удалось доставить на устройство, так как монитор порта закрыт.`
+                );
+                break;
+              case 4:
+                SerialMonitor.addLog(
+                  `Сообщение не удалось доставить на устройство, из-за ошибки обработки JSON. Текст ошибки: ${serialStatus.comment}`
+                );
+                break;
+              case 5:
+                SerialMonitor.addLog(
+                  `Сообщение не удалось доставить на устройство, так его монитор порта открыт другим клиентом.`
+                );
+                break;
             }
             break;
           }

@@ -299,7 +299,7 @@ export class Flasher {
             break;
           }
           case 'event-not-supported': {
-            this.setFlasherLog(`Загрузчик получил неизвестный тип сообщения. ${response.payload}`);
+            this.setFlasherLog(`Загрузчик получил неизвестный тип сообщения.`);
             break;
           }
           case 'get-list-cooldown': {

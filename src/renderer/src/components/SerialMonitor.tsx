@@ -62,6 +62,21 @@ export const SerialMonitorTab: React.FC = () => {
     '3500000',
     '4000000',
   ].map(makeOption);
+  const [lineBreak, setLineBreak] = useState<SelectOption>({
+    label: 'НС',
+    value: String.fromCharCode(10),
+    hint: 'Символ новой строки',
+  });
+  const lineBreakAll = [
+    { label: 'НС', value: String.fromCharCode(10), hint: 'Символ новой строки' },
+    { label: 'ВК', value: String.fromCharCode(13), hint: 'Символ возврата каретки' },
+    {
+      label: 'ВК И НС',
+      value: String.fromCharCode(10) + String.fromCharCode(13),
+      hint: 'Символы возврата каретки и новой строки',
+    },
+    { label: 'Без', value: '', hint: 'Без символов окончания строки' },
+  ];
 
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -83,7 +98,7 @@ export const SerialMonitorTab: React.FC = () => {
   const handleSend = () => {
     if (inputValue.trim() && device != undefined) {
       // Отправляем сообщение через SerialMonitor
-      SerialMonitor.sendMessage(device?.deviceID, inputValue);
+      SerialMonitor.sendMessage(device?.deviceID, inputValue + lineBreak.value);
       setInputValue('');
     }
   };
@@ -134,6 +149,20 @@ export const SerialMonitorTab: React.FC = () => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
+        <div className="mr-2 w-48">
+          <Select
+            isSearchable={false}
+            value={lineBreak}
+            placeholder="Выберите конец строки..."
+            onChange={(option) => {
+              if (option) {
+                setLineBreak(option as SelectOption);
+                //handleChangeBaudRate();
+              }
+            }}
+            options={lineBreakAll}
+          />
+        </div>
         <button
           className="btn-primary"
           onClick={handleSend}

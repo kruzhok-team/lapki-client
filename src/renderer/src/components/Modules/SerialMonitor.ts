@@ -13,44 +13,32 @@ export const SERIAL_MONITOR_CONNECTED = 'Подключен';
 export const SERIAL_MONITOR_NO_CONNECTION = 'Не подключен';
 
 export class SerialMonitor {
-  static autoScroll: boolean;
   static setInputValue: (newInputValue: string) => void;
-  static messages: string[];
-  static setMessages: (update: (prevMessages: string[]) => string[]) => void;
-  static ports: string[];
+  static setDeviceMessages: (update: (prevMessages: string[]) => string[]) => void;
   static setPorts: (prevPorts: string[]) => void;
-  static device: Device | undefined;
   static setDevice: (currentDevice: Device | undefined) => void;
-  static connectionStatus: string;
   static setConnectionStatus: (connectionStatus: string) => void;
+  static setLog: (update: (prevMessages: string[]) => string[]) => void;
 
   static bindReact(
-    autoScroll: boolean,
     setInputValue: (newInputValue: string) => void,
-    messages: string[],
     setMessages: (update: (prevMessages: string[]) => string[]) => void,
-    ports: string[],
     setPorts: (prevPorts: string[]) => void,
-    device: Device | undefined,
     setDevice: (currentDevice: Device | undefined) => void,
-    connectionStatus: string,
-    setConnectionStatus: (connectionStatus: string) => void
+    setConnectionStatus: (connectionStatus: string) => void,
+    setLog: (update: (prevMessages: string[]) => string[]) => void
   ): void {
-    this.autoScroll = autoScroll;
     this.setInputValue = setInputValue;
-    this.messages = messages;
-    this.setMessages = setMessages;
-    this.ports = ports;
+    this.setDeviceMessages = setMessages;
     this.setPorts = setPorts;
-    this.device = device;
     this.setDevice = setDevice;
-    this.connectionStatus = connectionStatus;
     this.setConnectionStatus = setConnectionStatus;
+    this.setLog = setLog;
   }
 
   //Функция для формирования сообщения
-  static message(message) {
-    this.setMessages((prevMessages) => [...prevMessages, message]);
+  static addDeviceMessage(message) {
+    this.setDeviceMessages((prevMessages) => [...prevMessages, message]);
   }
 
   static openMonitor(device: Device, baudRate: number) {
@@ -78,10 +66,6 @@ export class SerialMonitor {
     Flasher.connection?.send(JSON.stringify(request));
   }
 
-  static getDeviceName(): string {
-    return `${this.device?.name} (${this.device?.portName})`;
-  }
-
   static sendMessage(deviceID: string, message: string) {
     const payload = {
       deviceID: deviceID,
@@ -92,5 +76,9 @@ export class SerialMonitor {
       payload: payload,
     } as FlasherMessage;
     Flasher.connection?.send(JSON.stringify(request));
+  }
+
+  static addLog(log: string) {
+    this.setLog((prevMessages) => [...prevMessages, log]);
   }
 }

@@ -14,11 +14,13 @@ export const SerialMonitorTab: React.FC = () => {
     setAutoScroll,
     inputValue,
     setInputValue,
-    messages,
-    setMessages,
+    deviceMessages,
+    setDeviceMessages: setMessages,
     ports,
     device,
     connectionStatus,
+    log,
+    setLog,
   } = useSerialMonitor();
   //Выбранный порт на данный момент
   const [port, setPort] = useState<SelectOption | null>(null);
@@ -67,11 +69,13 @@ export const SerialMonitorTab: React.FC = () => {
     '4000000',
   ].map(makeOption);
 
-  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
+  const logContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    if (autoScroll && messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+    if (autoScroll && deviceMessageContainerRef.current && logContainerRef.current) {
+      deviceMessageContainerRef.current.scrollTop = deviceMessageContainerRef.current.scrollHeight;
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   };
 
@@ -85,7 +89,7 @@ export const SerialMonitorTab: React.FC = () => {
   // При изменении messages прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
     scrollToBottom();
-  }, [messages, autoScroll]);
+  }, [deviceMessages, log, autoScroll]);
 
   useLayoutEffect(() => {
     // if (SerialMonitor.ws && SerialMonitor.ws.readyState === WebSocket.OPEN && port && baudRate) {
@@ -110,6 +114,7 @@ export const SerialMonitorTab: React.FC = () => {
 
   const handleClear = () => {
     setMessages(() => []);
+    setLog(() => []);
   };
 
   const handleCurrentDeviceDisplay = () => {
@@ -184,9 +189,20 @@ export const SerialMonitorTab: React.FC = () => {
       </div>
       <div
         className="mx-2 h-full overflow-y-auto bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-        ref={messageContainerRef}
+        ref={deviceMessageContainerRef}
       >
-        {messages.map((msg, index) => (
+        {deviceMessages.map((msg, index) => (
+          <div key={index}>{msg}</div>
+        ))}
+      </div>
+      <br></br>
+      <hr></hr>
+      <br></br>
+      <div
+        className="mx-2 h-full overflow-y-auto bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        ref={logContainerRef}
+      >
+        {log.map((msg, index) => (
           <div key={index}>{msg}</div>
         ))}
       </div>

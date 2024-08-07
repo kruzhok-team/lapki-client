@@ -317,10 +317,10 @@ export class Flasher {
             if (serialStatus.code == 0) {
               //const dev = this.devices.get(serialStatus.deviceID);
               //SerialMonitor.setDevice(dev);
-              SerialMonitor.message('Открыт монитор порта!');
+              SerialMonitor.addLog('Открыт монитор порта!');
               SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
             } else {
-              SerialMonitor.message(`Монитор порта закрыт. Код: ${serialStatus.code}`);
+              SerialMonitor.addLog(`Монитор порта закрыт. Код: ${serialStatus.code}`);
               SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
             }
             break;
@@ -328,9 +328,9 @@ export class Flasher {
           case 'serial-sent-status': {
             const serialStatus = response.payload as SerialStatus;
             if (serialStatus.code == 0) {
-              SerialMonitor.message('Сообщение доставлено на устройство.');
+              SerialMonitor.addLog('Сообщение доставлено на устройство.');
             } else {
-              SerialMonitor.message(
+              SerialMonitor.addLog(
                 `Сообщение не удалось доставить на устройство. Код: ${serialStatus.code}`
               );
             }
@@ -338,7 +338,7 @@ export class Flasher {
           }
           case 'serial-device-read': {
             const serialRead = response.payload as SerialRead;
-            SerialMonitor.message(`${SerialMonitor.getDeviceName()}: ${serialRead.msg}`);
+            SerialMonitor.addDeviceMessage(serialRead.msg);
           }
         }
       };

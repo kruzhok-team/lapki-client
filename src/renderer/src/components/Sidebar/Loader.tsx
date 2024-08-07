@@ -40,14 +40,15 @@ export const Loader: React.FC<FlasherProps> = ({
   const {
     autoScroll,
     setInputValue,
-    messages,
-    setMessages,
+    deviceMessages,
+    setDeviceMessages: setMessages,
     ports,
     setPorts,
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     connectionStatus: serialConnectionStatus,
     setConnectionStatus: setSerialConnectionStatus,
+    setLog: setSerialLog,
   } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -209,16 +210,12 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlashResult
     );
     SerialMonitor.bindReact(
-      autoScroll,
       setInputValue,
-      messages,
       setMessages,
-      ports,
       setPorts,
-      serialMonitorDevice,
       setSerialMonitorDevice,
-      serialConnectionStatus,
-      setSerialConnectionStatus
+      setSerialConnectionStatus,
+      setSerialLog
     );
     Flasher.initReader(new FileReader());
   }, []);

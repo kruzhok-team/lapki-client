@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -14,25 +14,30 @@ import {
 } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
+import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
+import { SerialMonitor } from '../Modules/SerialMonitor';
+
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
-  handleHostChange: () => void;
+  openLoaderSettings: () => void;
   openAvrdudeGuideModal: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
   compilerData,
-  handleHostChange,
+  openLoaderSettings,
   openAvrdudeGuideModal,
 }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const [serialMonitorSetting, setSerialMonitorSetting] = useSettings('serialmonitor');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
+  const { autoScroll, setInputValue, messages, setMessages, ports, setPorts } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -166,6 +171,14 @@ export const Loader: React.FC<FlasherProps> = ({
     });
   };
 
+  // добавление вкладки с serial monitor
+  const handleAddSerialMonitorTab = () => {
+    openTab({
+      type: 'serialMonitor',
+      name: 'Serial monitor',
+    });
+  };
+
   useEffect(() => {
     Flasher.bindReact(
       setFlasherDevices,
@@ -191,6 +204,25 @@ export const Loader: React.FC<FlasherProps> = ({
       Flasher.connect(host, port);
     }
   }, [flasherSetting, setFlasherSetting]);
+
+  useLayoutEffect(() => {
+    SerialMonitor.bindReact(autoScroll, setInputValue, messages, setMessages, ports, setPorts);
+
+    if (!serialMonitorSetting) return;
+    const { host, port, localPort, type } = serialMonitorSetting;
+    if (type === 'local' && port !== localPort) {
+      setSerialMonitorSetting({ ...serialMonitorSetting, port: localPort }).then(() => {
+        SerialMonitor.connect(host, localPort);
+      });
+    } else {
+      SerialMonitor.connect(host, port);
+    }
+
+    return () => {
+      // Отключаем обработчики событий и закрываем WebSocket при размонтировании компонента
+      SerialMonitor.closeWebSocket();
+    };
+  }, [serialMonitorSetting, setSerialMonitorSetting]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
@@ -305,7 +337,7 @@ export const Loader: React.FC<FlasherProps> = ({
           </button>
           <button
             className="btn-primary px-2"
-            onClick={handleHostChange}
+            onClick={openLoaderSettings}
             disabled={connectionStatus == FLASHER_CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
@@ -382,6 +414,9 @@ export const Loader: React.FC<FlasherProps> = ({
           disabled={flashResult === undefined}
         >
           Результат прошивки
+        </button>
+        <button className="btn-primary mb-2 w-full" onClick={handleAddSerialMonitorTab}>
+          Монитор порта
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>

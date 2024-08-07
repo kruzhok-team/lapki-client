@@ -24,10 +24,15 @@ const themeOptions = [
 
 export interface SettingProps {
   openCompilerSettings: () => void;
-  handleHostChange: () => void;
+  openLoaderSettings: () => void;
+  openSerialMonitorSettings: () => void;
 }
 
-export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHostChange }) => {
+export const Setting: React.FC<SettingProps> = ({
+  openCompilerSettings,
+  openLoaderSettings,
+  openSerialMonitorSettings,
+}) => {
   const editor = useEditorContext();
   const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
@@ -78,10 +83,17 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHo
         </button>
         <button
           className="btn-primary"
-          onClick={handleHostChange}
+          onClick={openLoaderSettings}
           disabled={connectionStatus === FLASHER_CONNECTING || isFlashing}
         >
           Загрузчик…
+        </button>
+        <button
+          className="btn-primary"
+          onClick={openSerialMonitorSettings}
+          disabled={connectionStatus === FLASHER_CONNECTING || isFlashing}
+        >
+          Монитор порта…
         </button>
         <button className="btn-primary mb-4" onClick={openDocModal}>
           Документация…

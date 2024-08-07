@@ -28,7 +28,30 @@ export function resolveImg(p: string): string {
   return imgBaseDir + p;
 }
 
-const basePicto = {
+type BasePictoKey =
+  | 'EdgeHandle'
+  | 'InitialIcon'
+  | 'unknown'
+  | 'pen'
+  | 'system'
+  | 'variable'
+  | 'op/notEquals'
+  | 'op/equals'
+  | 'op/less'
+  | 'op/greater'
+  | 'op/greaterOrEqual'
+  | 'op/lessOrEqual'
+  | 'onEnter'
+  | 'onEnterAlt'
+  | 'onExit'
+  | 'onExitAlt'
+  | 'stateMachine';
+
+type BasePicto = {
+  [key in BasePictoKey]: string;
+};
+
+const basePicto: BasePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
@@ -50,6 +73,7 @@ const basePicto = {
   onExit: resolveImg('common/onExitAlt.svg'),
   onEnterAlt: resolveImg('common/onEnter.svg'),
   onExitAlt: resolveImg('common/onExit.svg'),
+  stateMachine: resolveImg('common/statemachine.svg'),
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {
@@ -225,6 +249,10 @@ export class Picto {
     ctx.fill();
     ctx.stroke();
     ctx.restore();
+  }
+
+  getBasePicto(iconId: BasePictoKey): string {
+    return basePicto[iconId];
   }
 
   drawBorder(

@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 
+import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
+import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
-import { formatArgType, validators } from '@renderer/utils';
+import { formatArgType, validators, reservedWordsC, frameworkWords } from '@renderer/utils';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { ColorInput, Select } from './UI';
@@ -30,6 +32,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   errors,
   setErrors,
 }) => {
+  const editor = useEditorContext();
+  const controller = editor.controller;
   const handleInputChange = (name: string, value: string) => {
     const type = protoParameters[name]?.type;
 
@@ -49,16 +53,70 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     parameters[name] = value;
     setParameters({ ...parameters });
   };
-
+  const nameError = 'name';
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const name = event.target.value;
+    // очищаем предыдущий статус ошибки
+    setErrors((p) => ({ ...p, [nameError]: '' }));
+    // динамическая замена пробелов
+    let name = event.target.value;
     const caret = event.target.selectionStart;
     const element = event.target;
     window.requestAnimationFrame(() => {
       element.selectionStart = caret;
       element.selectionEnd = caret;
     });
-    setName(name.replaceAll(' ', '_'));
+    name = name.replaceAll(' ', '_');
+    setName(name);
+
+    if (name == '') {
+      setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
+      return;
+    }
+    const firstSymbolRegex = '[A-Z]|[a-z]|_';
+    if (!name[0].match(firstSymbolRegex)) {
+      setErrors((p) => ({
+        ...p,
+        [nameError]: `'${name[0]}' является недопустимым первым символом`,
+      }));
+      return;
+    }
+    const remainingSymbolsRegex = firstSymbolRegex + '|[0-9]';
+    for (const symbol of name) {
+      if (!symbol.match(remainingSymbolsRegex)) {
+        setErrors((p) => ({ ...p, [nameError]: `'${symbol}' является недопустимым символом` }));
+        return;
+      }
+    }
+    for (const word of reservedWordsC) {
+      if (word == name) {
+        setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
+        return;
+      }
+    }
+    for (const word of frameworkWords) {
+      if (word == name) {
+        setErrors((p) => ({
+          ...p,
+          [nameError]: `Название является недопустимым. Выберите другое`,
+        }));
+        return;
+      }
+    }
+    // проверка на то, что название не является типом данных
+    for (const key in validators) {
+      if (key == name) {
+        setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
+        return;
+      }
+    }
+    // проверка на то, что название не совпадает с названием класса компонентов
+    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
+    for (const component of vacantComponents) {
+      if (component.name == name) {
+        setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));
+        return;
+      }
+    }
   };
 
   const protoParametersArray = Object.entries(protoParameters);
@@ -86,6 +144,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             maxLength={20}
             value={name}
             onChange={(e) => handleNameChange(e)}
+            error={errors[nameError]}
             autoFocus
           />
 

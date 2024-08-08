@@ -327,6 +327,14 @@
             "isChanged": {
               "img": "arduino/toggle.svg",
               "description": "Сигнал вызывается, когда меняется значение на пине."
+            },
+            "isLow": {
+              "img": "arduino/isLow.svg",
+              "description": "Сигнал вызывается, когда значение на пине меняется на LOW"
+            },
+            "isHigh": {
+              "img": "arduino/isHigh.svg",
+              "description": "Сигнал вызывается, когда значение на пине меняется на HIGH"
             }
           },
           "parameters": {
@@ -362,7 +370,12 @@
               "description": "Установить значение на аналоговый пин."
             }
           },
-          "parameters": {},
+          "parameters": {
+            "pin": {
+              "type": "uint8_t",
+              "description": "Пин, на который будет подаваться сигнал."
+            }
+          },
           "variables": {
             "value": {
               "img": "common/value.svg",

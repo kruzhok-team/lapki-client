@@ -5,7 +5,7 @@ import {
   CGMLKeyNode,
   CGMLComponent,
   exportGraphml,
-  emptyCGMLElements,
+  createEmptyElements,
   CGMLMeta,
   CGMLAction,
   CGMLTransitionAction,
@@ -367,23 +367,23 @@ export function exportCGML(elements: Elements): string {
   if (!platform) {
     throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
   }
-  const cgmlElements: CGMLElements = emptyCGMLElements();
+  const cgmlElements: CGMLElements = createEmptyElements();
   cgmlElements.meta = exportMeta(elements.meta, platform);
   cgmlElements.format = 'Cyberiada-GraphML-1.0';
   cgmlElements.platform = elements.platform;
-  if (elements.platform.startsWith('Arduino')) {
-    cgmlElements.components = serializeComponents(elements.components);
-  }
-  cgmlElements.states = serializeStates(elements.states, platform, elements.components);
-  cgmlElements.transitions = serializeTransitions(
-    elements.transitions,
-    platform,
-    elements.components
-  );
-  cgmlElements.notes = serializeNotes(elements.notes);
-  cgmlElements.initialStates = serializeVertex(elements.initialStates, 'initial');
-  cgmlElements.finals = serializeVertex(elements.finalStates, 'final');
-  cgmlElements.choices = serializeVertex(elements.choiceStates, 'choice');
+  cgmlElements.stateMachines['g'] = {
+    components: elements.platform.startsWith('Arduino')
+      ? serializeComponents(elements.components)
+      : {},
+    states: serializeStates(elements.states, platform, elements.components),
+    transitions: serializeTransitions(elements.transitions, platform, elements.components),
+    notes: serializeNotes(elements.notes),
+    initialStates: serializeVertex(elements.initialStates, 'initial'),
+    finals: serializeVertex(elements.finalStates, 'final'),
+    choices: serializeVertex(elements.choiceStates, 'choice'),
+    terminates: {},
+    unknownVertexes: {},
+  };
   cgmlElements.keys = getKeys();
   return exportGraphml(cgmlElements);
 }

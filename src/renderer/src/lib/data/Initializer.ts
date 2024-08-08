@@ -183,8 +183,8 @@ export class Initializer {
 
   private initStateMachines() {
     const markedSmIcon: MarkedIconData = {
-      icon: picto.getBasePicto('stateMachine'),
-      label: 'G',
+      icon: 'stateMachine',
+      label: 'Машина состояний',
     };
     this.appScheme.view.children.add(
       new DrawableStateMachine(this.appScheme, 'G', markedSmIcon),

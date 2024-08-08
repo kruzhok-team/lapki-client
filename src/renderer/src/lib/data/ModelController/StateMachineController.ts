@@ -52,14 +52,13 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
 
   createStateMachine(args: CreateStateMachineParams) {
     const markedSmIcon: MarkedIconData = {
-      icon: picto.getBasePicto('stateMachine'),
-      label: 'G',
+      icon: 'stateMachine',
+      label: 'Машина состояний',
     };
     const sm = new DrawableStateMachine(this.app, args.id, markedSmIcon);
     this.items.set(args.id, sm);
     this.app.view.children.add(sm, Layer.Machines);
     this.app.view.isDirty = true;
-
     return sm;
   }
 

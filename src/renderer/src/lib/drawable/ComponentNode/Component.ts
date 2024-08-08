@@ -1,5 +1,6 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { Shape } from '@renderer/lib/drawable/Shape';
+import { Point } from '@renderer/lib/types';
 import { getColor } from '@renderer/theme';
 
 import { MarkedIconData, picto } from '../Picto';
@@ -11,9 +12,14 @@ const fontSizeMark = 32;
 export class DrawableComponent extends Shape {
   isSelected = false;
   icon: MarkedIconData;
+  __position: Point;
   constructor(app: CanvasScheme, id: string, icon: MarkedIconData, parent?: Shape) {
     super(app, id, parent);
     this.icon = icon;
+    this.__position = {
+      x: 0,
+      y: 0,
+    };
   }
 
   get computedStyles() {
@@ -32,10 +38,13 @@ export class DrawableComponent extends Shape {
   }
 
   get position() {
-    return this.data.position;
+    return this.__position;
   }
   set position(value) {
-    this.data.position = value;
+    this.__position = value;
+    if (this.data) {
+      this.data.position = value;
+    }
   }
 
   get dimensions() {

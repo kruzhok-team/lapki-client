@@ -385,19 +385,19 @@ export class Flasher {
                 SerialMonitor.addLog(
                   `Нельзя сменить скорость передачи данных, так как монитор порта закрыт.`
                 );
-                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
                 break;
               case 13:
                 SerialMonitor.addLog(
                   `Нельзя сменить скорость передачи данных, так как монитор порта открыт другим клиентом.`
                 );
-                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
                 break;
               case 14:
                 SerialMonitor.addLog(
                   `Этот монитор порта нельзя закрыть, так как он открыт другим клиентом.`
                 );
-                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+                SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
                 break;
               case 15:
                 SerialMonitor.addLog(`Старая скорость передачи данных совпадает с новой.`);
@@ -447,6 +447,13 @@ export class Flasher {
           case 'serial-device-read': {
             const serialRead = response.payload as SerialRead;
             SerialMonitor.addDeviceMessage(serialRead.msg);
+            break;
+          }
+          case 'flash-open-serial-monitor': {
+            this.flashingEnd(
+              'Нельзя начать прошивку этого устройства, так как для него открыт монитора порта.',
+              undefined
+            );
           }
         }
       };

@@ -184,11 +184,11 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с serial monitor
   const handleAddSerialMonitorTab = () => {
-    if (serialMonitorDevice != null) {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    if (serialMonitorDevice != null && curDevice != serialMonitorDevice) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     closeTab('Монитор порта');
-    const curDevice = devices.get(currentDeviceID ?? '');
     setSerialMonitorDevice(curDevice);
     openTab({
       type: 'serialMonitor',

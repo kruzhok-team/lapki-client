@@ -107,18 +107,19 @@ export class ModelController {
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
     this.model.makeStale();
+    this.stateMachines.createStateMachine({
+      id: 'G',
+      components: [],
+      position: {
+        x: 0,
+        y: 0,
+      },
+    });
     for (const componentId in elements.components) {
       const component = elements.components[componentId];
       this.createComponent({ ...component, name: componentId }, false, true);
     }
     // TODO (L140-beep): при добавлении мультидокумента надо будет переделать
-    const markedSmIcon: MarkedIconData = {
-      icon: picto.getBasePicto('stateMachine'),
-    };
-    this.scheme.view.children.add(
-      new DrawableStateMachine(this.scheme, 'G', markedSmIcon),
-      Layer.Components
-    );
   }
 
   loadData() {

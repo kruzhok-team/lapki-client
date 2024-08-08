@@ -1,9 +1,13 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { getColor } from '@renderer/theme';
+import { Dimensions, Layer, Point } from '@renderer/lib/types';
+import { drawText } from '@renderer/lib/utils/text';
+import theme, { getColor } from '@renderer/theme';
 
-import { MarkedIconData, picto } from '../Picto';
+import { DrawableComponent } from '../ComponentNode';
+import { MarkedIconData } from '../Picto';
 
+const style = theme.colors.diagram.state;
 const fontSizeMark = 32;
 /**
  * Представление машины состояний на схемотехническом экране
@@ -11,9 +15,79 @@ const fontSizeMark = 32;
 export class DrawableStateMachine extends Shape {
   isSelected = false;
   icon: MarkedIconData;
+  __position: Point;
+  __dimensions: Dimensions;
   constructor(app: CanvasScheme, id: string, icon: MarkedIconData, parent?: Shape) {
     super(app, id, parent);
     this.icon = icon;
+    this.__position = {
+      x: 0,
+      y: 0,
+    };
+    this.__dimensions = {
+      width: 150,
+      height: 100,
+    };
+    this.children.add(
+      new DrawableComponent(app, id, { ...icon, label: undefined }, this),
+      Layer.Components
+    );
+  }
+
+  get titleHeight() {
+    const fontSize = 15;
+    const paddingY = 10;
+    return fontSize + paddingY * 2;
+  }
+
+  get computedTitleSizes() {
+    return {
+      height: this.titleHeight / this.app.controller.model.data.scale,
+      width: this.drawBounds.width,
+      fontSize: 15 / this.app.controller.model.data.scale,
+      paddingX: 15 / this.app.controller.model.data.scale,
+      paddingY: 10 / this.app.controller.model.data.scale,
+    };
+  }
+
+  private calculateTitlePos() {
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+    return {
+      x: x,
+      y: y,
+      // + Math.max(height, childrenHeight) - Math.min(height, childrenHeight),
+    };
+  }
+
+  //Прорисовка заголовка блока состояния
+  private drawTitle(ctx: CanvasRenderingContext2D) {
+    const { x, y } = this.calculateTitlePos();
+    const { height, width, fontSize, paddingX, paddingY } = this.computedTitleSizes;
+
+    ctx.beginPath();
+
+    ctx.fillStyle = style.titleBg;
+
+    ctx.roundRect(x, y, width, height, [
+      6 / this.app.controller.model.data.scale,
+      6 / this.app.controller.model.data.scale,
+      0,
+      0,
+    ]);
+    ctx.fill();
+    drawText(ctx, this.icon.label || 'Без названия', {
+      x: x + paddingX,
+      y: y + paddingY,
+      textAlign: 'left',
+      color: this.icon.label !== '' ? style.titleColor : style.titleColorUndefined,
+      font: {
+        fontSize,
+        lineHeight: 1,
+        fontFamily: 'Fira Sans',
+      },
+    });
+
+    ctx.closePath();
   }
 
   get computedStyles() {
@@ -27,25 +101,18 @@ export class DrawableStateMachine extends Shape {
     };
   }
 
-  // get data() {
-  //   return this.app.controller.model.data.elements.components[this.id];
-  // }
-
   get position() {
-    return {
-      x: 0,
-      y: 0,
-    };
+    return this.__position;
   }
   set position(value) {
-    this.position = value;
+    this.__position = value;
   }
 
   get dimensions() {
-    return { width: 150, height: 100 };
+    return this.__dimensions;
   }
   set dimensions(_value) {
-    throw new Error('Components does not have dimensions');
+    this.__dimensions = _value;
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
@@ -57,16 +124,17 @@ export class DrawableStateMachine extends Shape {
     if (!this.children.isEmpty) {
       this.drawChildrenBorder(ctx);
     }
+    this.drawTitle(ctx);
   }
 
   private drawChildrenBorder(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 5;
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+    ctx.roundRect(x + 1, y, width - 2, childrenHeight, [
       0,
       0,
       6 / this.app.controller.model.data.scale,
@@ -81,8 +149,7 @@ export class DrawableStateMachine extends Shape {
     const platform = this.app.controller.platform;
     if (!platform || !this.icon) return;
 
-    const { x, y, width, height } = this.drawBounds;
-    picto.drawRect(ctx, x, y, width, height, undefined, undefined, 50);
+    // const { x, y, width, height } = this.drawBounds;
     // picto.drawImage(
     //   ctx,
     //   this.icon,

@@ -54,10 +54,14 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     };
-    const component = new DrawableComponent(this.app, args.name, markedIcon);
+    const sm = this.controller.stateMachines.getStateMachineById('G');
+    const component = new DrawableComponent(this.app, args.name, markedIcon, sm);
     this.items.set(args.name, component);
     this.watch(component);
-    this.app.view.children.add(component, Layer.Components);
+    if (!sm) {
+      return;
+    }
+    sm.children.add(component, Layer.Components);
 
     this.app.view.isDirty = true;
 
@@ -85,6 +89,9 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
     const component = this.items.get(name);
     if (!component) return;
+    // if (component.parent && component.parent.drawBounds) {
+
+    // }
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',

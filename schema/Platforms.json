@@ -149,11 +149,15 @@
         },
         "version": {
           "type": "string"
+        },
+        "visual": {
+          "type": "boolean"
         }
       },
       "required": [
         "version",
         "standardVersion",
+        "visual",
         "components"
       ],
       "type": "object"

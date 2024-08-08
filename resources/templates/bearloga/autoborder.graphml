@@ -30,6 +30,8 @@ description/ Пример описания схемы,
 
 target/ Autoborder
 
+lapkiVisual/ true
+
 platformVersion/ 1.0
 
 </data>

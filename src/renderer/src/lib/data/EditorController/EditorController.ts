@@ -172,6 +172,9 @@ export class EditorController {
     this.view.isDirty = true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   private renameComponent(name: string, newName: string) {
     if (!this.platform) return;
 
@@ -188,12 +191,12 @@ export class EditorController {
     this.states.forEachState((state) => {
       for (const ev of state.eventBox.data) {
         // заменяем в триггере
-        if (ev.trigger.component == name) {
+        if (typeof ev.trigger !== 'string' && ev.trigger.component == name) {
           ev.trigger.component = newName;
         }
         for (const act of ev.do) {
           // заменяем в действии
-          if (act.component == name) {
+          if (typeof act !== 'string' && act.component == name) {
             act.component = newName;
           }
         }
@@ -203,19 +206,22 @@ export class EditorController {
     this.transitions.forEach((transition) => {
       if (!transition.data.label) return;
 
-      if (transition.data.label.trigger?.component === name) {
+      if (
+        typeof transition.data.label.trigger !== 'string' &&
+        transition.data.label.trigger?.component === name
+      ) {
         transition.data.label.trigger.component = newName;
       }
 
       if (transition.data.label.do) {
         for (const act of transition.data.label.do) {
-          if (act.component === name) {
+          if (typeof act !== 'string' && act.component === name) {
             act.component = newName;
           }
         }
       }
 
-      if (transition.data.label.condition) {
+      if (transition.data.label.condition && typeof transition.data.label.condition !== 'string') {
         this.renameCondition(transition.data.label.condition, name, newName);
       }
     });
@@ -470,11 +476,20 @@ export class EditorController {
       vacant.push({
         idx,
         name: compo.name ?? idx,
-        img: compo.img ?? 'unknown',
+        img: compo.img || 'stubComponent',
         description: compo.description ?? '',
         singletone: compo.singletone ?? false,
       });
     }
     return vacant;
+  }
+
+  setTextMode() {
+    this.app.model.setTextMode();
+
+    this.states.updateAll();
+    this.transitions.updateAll();
+
+    this.view.isDirty = true;
   }
 }

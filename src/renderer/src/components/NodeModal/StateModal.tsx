@@ -5,24 +5,30 @@ import { useModal } from '@renderer/hooks/useModal';
 import { State } from '@renderer/lib/drawable';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
-import { Events, ColorField, Trigger, Condition } from './components';
-import { useTrigger, useEvents, useCondition } from './hooks';
+import { Actions, ColorField, Trigger, Condition } from './components';
+import { useTrigger, useActions, useCondition } from './hooks';
 
+/**
+ * Модальное окно редактирования состояния
+ */
 export const StateModal: React.FC = () => {
   const editor = useEditorContext();
+  const visual = editor.model.useData('elements.visual');
 
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
+  const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
   const trigger = useTrigger(true);
   const condition = useCondition();
-  const events = useEvents();
+  const actions = useActions();
   const [color, setColor] = useState<string | undefined>();
 
-  const { setEvents } = events;
-  const { parseCondition } = condition;
+  const { parse: parseTrigger } = trigger;
+  const { parse: parseCondition } = condition;
+  const { parse: parseEvents } = actions;
 
   // На дефолтные события нельзя ставить условия
   const showCondition = useMemo(
@@ -36,9 +42,20 @@ export const StateModal: React.FC = () => {
     if (!state) return;
 
     const { selectedComponent, selectedMethod } = trigger;
+    const triggerText = trigger.text.trim();
 
     // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
-    if (!selectedComponent || !selectedMethod || events.events.length === 0) {
+    if (
+      (trigger.tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+      (trigger.tabValue === 1 && !triggerText)
+    ) {
+      return;
+    }
+
+    if (
+      (actions.tabValue === 0 && actions.actions.length === 0) ||
+      (actions.tabValue === 1 && !actions.text.trim())
+    ) {
       return;
     }
 
@@ -67,49 +84,66 @@ export const StateModal: React.FC = () => {
     const getCondition = () => {
       if (!show || !showCondition) return undefined;
 
-      // Тут много as string потому что проверка на null в checkForErrors
-      return {
-        type: conditionOperator as string,
-        value: [
-          {
-            type: isParamOneInput1 ? 'component' : 'value',
-            value: isParamOneInput1
-              ? {
-                  component: selectedComponentParam1 as string,
-                  method: selectedMethodParam1 as string,
-                  args: {},
-                }
-              : (argsParam1 as string),
-          },
-          {
-            type: isParamOneInput2 ? 'component' : 'value',
-            value: isParamOneInput2
-              ? {
-                  component: selectedComponentParam2 as string,
-                  method: selectedMethodParam2 as string,
-                  args: {},
-                }
-              : (argsParam2 as string),
-          },
-        ],
-      };
+      if (condition.tabValue === 0) {
+        // Тут много as string потому что проверка на null в checkForErrors
+        return {
+          type: conditionOperator as string,
+          value: [
+            {
+              type: isParamOneInput1 ? 'component' : 'value',
+              value: isParamOneInput1
+                ? {
+                    component: selectedComponentParam1 as string,
+                    method: selectedMethodParam1 as string,
+                    args: {},
+                  }
+                : (argsParam1 as string),
+            },
+            {
+              type: isParamOneInput2 ? 'component' : 'value',
+              value: isParamOneInput2
+                ? {
+                    component: selectedComponentParam2 as string,
+                    method: selectedMethodParam2 as string,
+                    args: {},
+                  }
+                : (argsParam2 as string),
+            },
+          ],
+        };
+      }
+
+      return condition.text.trim() || undefined;
     };
 
     const getTrigger = () => {
-      return { component: selectedComponent as string, method: selectedMethod as string };
+      if (trigger.tabValue === 0)
+        return { component: selectedComponent as string, method: selectedMethod as string };
+
+      return triggerText;
+    };
+
+    const getActions = () => {
+      return actions.tabValue === 0 ? actions.actions : actions.text.trim();
     };
 
     const getEvents = () => {
-      return events.events;
+      const currentEvent = {
+        trigger: getTrigger(),
+        condition: getCondition(),
+        do: getActions(),
+      };
+
+      if (currentEventIndex !== undefined) {
+        return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
+      }
+
+      return [...state.data.events, currentEvent];
     };
 
-    editor.controller.states.changeStateEvents({
+    editor.controller.states.changeState({
       id: state.id,
-      eventData: {
-        trigger: getTrigger(),
-        do: getEvents(),
-        condition: getCondition(),
-      },
+      events: getEvents(),
       color,
     });
 
@@ -119,30 +153,21 @@ export const StateModal: React.FC = () => {
   // Сброс формы после закрытия
   const handleAfterClose = () => {
     trigger.clear();
-    condition.clear();
-    events.clear();
+    actions.clear();
     setColor(undefined);
 
     setState(null);
   };
 
+  // Открытие окна и подстановка начальных данных формы на событие изменения состояния
   useEffect(() => {
-    // Открытие окна и подстановка начальных данных формы на событие изменения состояния
-
     const handler = (state: State) => {
       const { data } = state;
 
       const eventData = data.events[0];
-      if (eventData) {
-        // Подстановка триггера
-        trigger.setSelectedComponent(eventData.trigger.component);
-        trigger.setSelectedMethod(eventData.trigger.method);
 
-        // Подставнока действией
-        events.setEvents(eventData.do);
-      }
-
-      parseCondition(eventData?.condition);
+      // Остальная форма подставляется в эффекте синхронизации с trigger
+      parseTrigger(eventData?.trigger);
 
       setColor(data.color);
 
@@ -156,22 +181,47 @@ export const StateModal: React.FC = () => {
       editor.controller.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
   // Синхронизвация trigger и condition с event
   useLayoutEffect(() => {
     if (!state) return;
 
-    const stateEvents = state.data.events.find((value) => {
-      return (
-        trigger.selectedComponent === value.trigger.component &&
-        trigger.selectedMethod === value.trigger.method
-      );
+    const eventIndex = state.data.events.findIndex((value) => {
+      if (trigger.tabValue === 1) {
+        return value.trigger === trigger.text;
+      }
+
+      if (typeof value.trigger !== 'string') {
+        return (
+          trigger.selectedComponent === value.trigger.component &&
+          trigger.selectedMethod === value.trigger.method
+        );
+      }
+
+      return false;
     });
 
-    setEvents(stateEvents?.do ?? []);
-    parseCondition(stateEvents?.condition);
-  }, [parseCondition, setEvents, state, trigger.selectedComponent, trigger.selectedMethod]);
+    if (eventIndex === -1) {
+      setCurrentEventIndex(undefined);
+      parseCondition(undefined);
+      parseEvents(undefined);
+    } else {
+      const event = state.data.events[eventIndex];
+
+      setCurrentEventIndex(eventIndex);
+      parseCondition(event.condition);
+      parseEvents(event.do);
+    }
+  }, [
+    parseCondition,
+    parseEvents,
+    state,
+    trigger.selectedComponent,
+    trigger.selectedMethod,
+    trigger.tabValue,
+    trigger.text,
+  ]);
 
   return (
     <Modal
@@ -184,7 +234,7 @@ export const StateModal: React.FC = () => {
       <div className="flex flex-col gap-3">
         <Trigger {...trigger} />
         {showCondition && <Condition {...condition} />}
-        <Events {...events} />
+        <Actions {...actions} />
         <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>
     </Modal>

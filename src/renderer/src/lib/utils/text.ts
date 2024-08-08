@@ -11,20 +11,18 @@ export const getTextWidth = (text: string, font: string): number => {
     if (width !== undefined) {
       return width;
     }
+  } else {
+    textMap.set(font, new Map());
   }
 
-  textMap.set(font, new Map());
   const cache = textMap.get(font)!;
 
-  const previousTextBaseline = measureCtx.textBaseline;
   const previousFont = measureCtx.font;
 
-  measureCtx.textBaseline = 'bottom';
   measureCtx.font = font;
 
   const width = measureCtx.measureText(text).width;
 
-  measureCtx.textBaseline = previousTextBaseline;
   measureCtx.font = previousFont;
 
   cache.set(text, width);
@@ -102,7 +100,9 @@ export const prepareText = (text: string, maxWidth: number, font?: Font) => {
 
       // Развилка когда слово больще целой строки, приходится это слово разбивать
       if (wordWidth >= maxWidth) {
-        textArray.push(newLine.join(' '));
+        if (newLine.length > 0) {
+          textArray.push(newLine.join(' '));
+        }
 
         const splitted = splitWord(word, fontString, maxWidth);
         textArray.push(...splitted.lines.map((line) => line.join(' ')));

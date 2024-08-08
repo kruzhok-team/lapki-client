@@ -8,7 +8,7 @@ import {
 } from '@renderer/lib/types/EditorController';
 import {
   AddComponentParams,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   CreateTransitionParams,
   ChangeTransitionParams,
   CreateNoteParams,
@@ -37,7 +37,11 @@ export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
   deleteState: { id: string; stateData: StateData };
   changeStateName: { id: string; name: string; prevName: string };
-  changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
+  changeState: {
+    args: ChangeStateParams;
+    prevEvents: StateData['events'];
+    prevColor: StateData['color'];
+  };
   changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; params: UnlinkStateParams };
@@ -133,13 +137,14 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.states.changeStateName.bind(sM.states, id, name, false),
     undo: sM.states.changeStateName.bind(sM.states, id, prevName, false),
   }),
-  changeStateEvents: (sM, { args, prevActions }) => ({
-    redo: sM.states.changeStateEvents.bind(sM.states, args, false),
-    undo: sM.states.changeStateEvents.bind(
+  changeState: (sM, { args, prevEvents, prevColor }) => ({
+    redo: sM.states.changeState.bind(sM.states, args, false),
+    undo: sM.states.changeState.bind(
       sM.states,
       {
         ...args,
-        actions: prevActions,
+        events: prevEvents,
+        color: prevColor,
       },
       false
     ),
@@ -369,11 +374,12 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Изменение имени состояния',
     description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
   }),
-  changeStateEvents: ({ args, prevActions }) => ({
+  changeState: ({ args, prevEvents, prevColor }) => ({
     name: 'Изменение состояния',
-    description: `Id состояния: ${args.id}\nТриггер: ${args.eventData.trigger.component}\nМетод: ${
-      args.eventData.trigger.method
-    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.eventData.do)}`,
+    description: `Id состояния: ${args.id}\nБыло: ${JSON.stringify({
+      events: prevEvents,
+      color: prevColor,
+    })}\nСтало: ${JSON.stringify({ events: args.events, color: args.color })}`,
   }),
   linkState: (args) => ({
     name: 'Присоединение состояния',

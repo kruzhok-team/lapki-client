@@ -17,10 +17,13 @@ export const defaultSettings = {
     hasAvrdude: false,
   },
   serialmonitor: {
-    host: 'localhost',
-    port: 0,
-    localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
-    type: 'local' as 'local' | 'remote',
+    autoScroll: true,
+    baudRate: 9600,
+    breakLine: {
+      value: String.fromCharCode(10),
+      label: 'НС',
+      hint: 'Символ новой строки',
+    },
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',

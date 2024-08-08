@@ -6,16 +6,13 @@ import {
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
+import { useSettings } from '@renderer/hooks/useSettings';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { Select, SelectOption, Switch, TextInput } from './UI';
 
 export const SerialMonitorTab: React.FC = () => {
   const {
-    autoScroll,
-    setAutoScroll,
-    inputValue,
-    setInputValue,
     deviceMessages,
     setDeviceMessages: setMessages,
     device,
@@ -23,50 +20,22 @@ export const SerialMonitorTab: React.FC = () => {
     log,
     setLog,
   } = useSerialMonitor();
+  const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
+
   const makeOption = (x) => {
     return { label: x, value: x };
   };
-  const [baudRate, setBaudRate] = useState<SelectOption>(makeOption('9600'));
+  const [baudRate, setBaudRate] = useState<SelectOption>(makeOption(monitorSetting?.baudRate));
   const baudRateAll = [
-    '50',
-    '75',
-    '110',
-    '134',
-    '150',
-    '200',
-    '300',
-    '600',
-    '750',
-    '1200',
-    '1800',
-    '2400',
-    '4800',
-    '9600',
-    '19200',
-    '31250',
-    '38400',
-    '57600',
-    '74880',
-    '115200',
-    '230400',
-    '250000',
-    '460800',
-    '500000',
-    '921600',
-    '1000000',
-    '1152000',
-    '1500000',
-    '2000000',
-    '2500000',
-    '3000000',
-    '3500000',
-    '4000000',
+    50, 75, 110, 134, 150, 200, 300, 600, 750, 1200, 1800, 2400, 4800, 9600, 19200, 31250, 38400,
+    57600, 74880, 115200, 230400, 250000, 460800, 500000, 921600, 1000000, 1152000, 1500000,
+    2000000, 2500000, 3000000, 3500000, 4000000,
   ].map(makeOption);
-  const [lineBreak, setLineBreak] = useState<SelectOption>({
-    label: 'НС',
-    value: String.fromCharCode(10),
-    hint: 'Символ новой строки',
-  });
+
+  const [lineBreak, setLineBreak] = useState<SelectOption>(
+    monitorSetting?.breakLine as SelectOption
+  );
+  // при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
   const lineBreakAll = [
     { label: 'НС', value: String.fromCharCode(10), hint: 'Символ новой строки' },
     { label: 'ВК', value: String.fromCharCode(13), hint: 'Символ возврата каретки' },
@@ -78,6 +47,9 @@ export const SerialMonitorTab: React.FC = () => {
     { label: 'Без', value: '', hint: 'Без символов окончания строки' },
   ];
 
+  const [autoScroll, setAutoScroll] = useState<boolean>(monitorSetting?.autoScroll ?? true);
+  const [inputValue, setInputValue] = useState<string>('');
+
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +60,41 @@ export const SerialMonitorTab: React.FC = () => {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [deviceMessages, log, autoScroll]);
+
+  useLayoutEffect(() => {
+    if (!monitorSetting) return;
+    setAutoScroll(monitorSetting.autoScroll);
+    setBaudRate(makeOption(monitorSetting.baudRate));
+    setLineBreak(monitorSetting.breakLine as SelectOption);
+  }, [setMonitorSetting, monitorSetting]);
+
+  const settingLineBreak = (option: SelectOption) => {
+    if (!monitorSetting) return;
+    setMonitorSetting({
+      ...monitorSetting,
+      breakLine: {
+        hint: option.hint as string,
+        value: option.value as string,
+        label: option.label as string,
+      },
+    });
+  };
+
+  const settingAutoScroll = (newAutoScroll: boolean) => {
+    if (!monitorSetting) return;
+    setMonitorSetting({
+      ...monitorSetting,
+      autoScroll: newAutoScroll,
+    });
+  };
+
+  const settingBaudRate = (newBaudRate: number) => {
+    if (!monitorSetting) return;
+    setMonitorSetting({
+      ...monitorSetting,
+      baudRate: newBaudRate,
+    });
+  };
 
   const handleSend = () => {
     if (inputValue.trim() && device != undefined) {
@@ -144,7 +151,7 @@ export const SerialMonitorTab: React.FC = () => {
             placeholder="Выберите конец строки..."
             onChange={(option) => {
               if (option) {
-                setLineBreak(option as SelectOption);
+                settingLineBreak(option);
               }
             }}
             options={lineBreakAll}
@@ -160,7 +167,12 @@ export const SerialMonitorTab: React.FC = () => {
       </div>
       <div className="m-2 flex justify-between">
         <div className="flex w-40 items-center justify-between">
-          <Switch checked={autoScroll} onCheckedChange={() => setAutoScroll(!autoScroll)} />
+          <Switch
+            checked={autoScroll}
+            onCheckedChange={() => {
+              settingAutoScroll(!autoScroll);
+            }}
+          />
           Автопрокрутка
         </div>
         <button className="btn-primary" onClick={handleClear}>
@@ -175,7 +187,7 @@ export const SerialMonitorTab: React.FC = () => {
               placeholder="Выберите скорость передачи..."
               onChange={(option) => {
                 if (option) {
-                  setBaudRate(option as SelectOption);
+                  settingBaudRate(Number(option.value));
                   if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
                     SerialMonitor.changeBaud(device?.deviceID, Number(option.value));
                   }

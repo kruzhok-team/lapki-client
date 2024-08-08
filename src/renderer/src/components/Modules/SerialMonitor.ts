@@ -15,20 +15,17 @@ export const SERIAL_MONITOR_NO_CONNECTION = 'Не подключен';
 export const SERIAL_MONITOR_NO_SERVER_CONNECTION = 'Отсутствует подключение к серверу';
 
 export class SerialMonitor {
-  static setInputValue: (newInputValue: string) => void;
   static addDeviceMessages: (newDeviceMessage: string) => void;
   static setDevice: (currentDevice: Device | undefined) => void;
   static setConnectionStatus: (connectionStatus: string) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
 
   static bindReact(
-    setInputValue: (newInputValue: string) => void,
     addMessages: (newDeviceMessage: string) => void,
     setDevice: (currentDevice: Device | undefined) => void,
     setConnectionStatus: (connectionStatus: string) => void,
     setLog: (update: (prevMessages: string[]) => string[]) => void
   ): void {
-    this.setInputValue = setInputValue;
     this.addDeviceMessages = addMessages;
     this.setDevice = setDevice;
     this.setConnectionStatus = setConnectionStatus;

@@ -4,10 +4,6 @@ import { SERIAL_MONITOR_NO_CONNECTION } from '@renderer/components/Modules/Seria
 import { Device } from '@renderer/types/FlasherTypes';
 
 interface SerialMonitorState {
-  autoScroll: boolean;
-  setAutoScroll: (autoScroll: boolean) => void;
-  inputValue: string;
-  setInputValue: (newInputValue: string) => void;
   deviceMessages: string;
   setDeviceMessages: (deviceMessages: string) => void;
   addDeviceMessage: (deviceMessage: string) => void;
@@ -20,10 +16,6 @@ interface SerialMonitorState {
 }
 
 export const useSerialMonitor = create<SerialMonitorState>((set) => ({
-  autoScroll: true,
-  setAutoScroll: (newSerialMonitor) => set({ autoScroll: newSerialMonitor }),
-  inputValue: '',
-  setInputValue: (newInputValue) => set({ inputValue: newInputValue }),
   deviceMessages: '',
   setDeviceMessages: (newDeviceMessage) => set({ deviceMessages: newDeviceMessage }),
   addDeviceMessage: (newMessage) =>

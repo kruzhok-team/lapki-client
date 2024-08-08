@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns">
-  <data key="gFormat">Cyberiada-GraphML</data>
+  <data key="gFormat">Cyberiada-GraphML-1.0</data>
   <key attr.name="name" attr.type="string" for="node" id="dName"></key>
   <key attr.name="data" attr.type="string" for="node" id="dData"></key>
   <key attr.name="data" attr.type="string" for="edge" id="dData"></key>
@@ -10,7 +10,8 @@
   <key for="edge" id="dColor"></key>
   <key for="node" id="dNote"></key>
   <key for="node" id="dColor"></key>
-  <graph id="G">
+  <graph id="g">
+    <data key="dStateMachine"></data>
     <node id="coreMeta">
       <data key="dNote">formal</data>
       <data key="dName">CGML_META</data>
@@ -29,6 +30,8 @@ description/ Пример описания схемы,
 
 target/ Autoborder
 
+platformVersion/ 1.0
+
 </data>
     </node>
     <node id="n0">
@@ -39,7 +42,7 @@ exit/
 
 </data>
       <data key="dGeometry">
-        <rect x="-804.9949999999994" y="543.8872559999999" width="672.532166" height="145"></rect>
+        <rect x="-815.8449999999984" y="505.137256000001" width="672.532166" height="145"></rect>
       </data>
       <data key="dColor">#FFFFFF</data>
       <graph id="n0">
@@ -52,7 +55,7 @@ exit/
 
 </data>
           <data key="dGeometry">
-            <rect x="75.1599999999997" y="141.90593299999927" width="468" height="145"></rect>
+            <rect x="78.6599999999997" y="22.905932999999266" width="468" height="145"></rect>
           </data>
           <data key="dColor">#FFFFFF</data>
         </node>
@@ -63,7 +66,7 @@ exit/
 
 </data>
           <data key="dGeometry">
-            <rect x="68.99999999999994" y="454.5931890000012" width="468" height="95"></rect>
+            <rect x="74.24999999999994" y="304.0931890000012" width="468" height="95"></rect>
           </data>
           <data key="dColor">#FFFFFF</data>
         </node>
@@ -79,14 +82,14 @@ exit/
 
 </data>
       <data key="dGeometry">
-        <rect x="-1582.03857" y="606.497559" width="468" height="145"></rect>
+        <rect x="-1536.78857" y="516.747559" width="468" height="145"></rect>
       </data>
       <data key="dColor">#FFFFFF</data>
     </node>
     <node id="init">
       <data key="dVertex">initial</data>
       <data key="dGeometry">
-        <rect x="-1700.9985699999997" y="564.177559" width="20" height="20"></rect>
+        <point x="-1480.4985699999997" y="448.677559"></point>
       </data>
     </node>
     <edge id="init-n3" source="init" target="n3"></edge>
@@ -96,7 +99,7 @@ exit/
 </data>
       <data key="dColor">#3b1a08</data>
       <data key="dLabelGeometry">
-        <point x="-968.7499999999993" y="401.26000000000005"></point>
+        <point x="-1002.3499999999991" y="550.2099999999995"></point>
       </data>
     </edge>
     <edge id="n3-n0::n1" source="n3" target="n0::n1">
@@ -105,7 +108,7 @@ exit/
 </data>
       <data key="dColor">#531a77</data>
       <data key="dLabelGeometry">
-        <point x="-1335.4000000000008" y="967.0300000000002"></point>
+        <point x="-1201.4000000000008" y="737.5300000000002"></point>
       </data>
     </edge>
     <edge id="n0::n1-n0::n2" source="n0::n1" target="n0::n2">
@@ -114,7 +117,7 @@ exit/
 </data>
       <data key="dColor">#3fe09a</data>
       <data key="dLabelGeometry">
-        <point x="95.90000000000002" y="332.0000000000002"></point>
+        <point x="120.15000000000002" y="204.25000000000023"></point>
       </data>
     </edge>
     <edge id="n0::n2-n0::n1" source="n0::n2" target="n0::n1">
@@ -123,7 +126,15 @@ exit/
 </data>
       <data key="dColor">#554a3b</data>
       <data key="dLabelGeometry">
-        <point x="370.7" y="341.80000000000007"></point>
+        <point x="337.45" y="205.30000000000007"></point>
+      </data>
+    </edge>
+    <edge id="lnjmwqsafxzhjthzfyly" source="n0" target="n3">
+      <data key="dData">АнализаторЦели.ЦельУничтожена/
+
+</data>
+      <data key="dLabelGeometry">
+        <point x="-998.5667849999991" y="650.4424075000005"></point>
       </data>
     </edge>
   </graph>

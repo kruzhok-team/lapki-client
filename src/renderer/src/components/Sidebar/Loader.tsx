@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -37,7 +37,6 @@ export const Loader: React.FC<FlasherProps> = ({
   openAvrdudeGuideModal,
 }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
-  const [serialMonitorSetting, setSerialMonitorSetting] = useSettings('serialmonitor');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();

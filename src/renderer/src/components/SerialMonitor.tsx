@@ -89,12 +89,6 @@ export const SerialMonitorTab: React.FC = () => {
     }
   }, [deviceMessages, log, autoScroll]);
 
-  // useLayoutEffect(() => {
-  //   if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
-  //     SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
-  //   }
-  // }, [baudRate, connectionStatus, device]);
-
   const handleSend = () => {
     if (inputValue.trim() && device != undefined) {
       // Отправляем сообщение через SerialMonitor
@@ -129,12 +123,6 @@ export const SerialMonitorTab: React.FC = () => {
       SerialMonitor.closeMonitor(device?.deviceID);
     } else {
       SerialMonitor.openMonitor(device, Number(baudRate.value));
-    }
-  };
-
-  const handleChangeBaudRate = () => {
-    if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
-      SerialMonitor.changeBaud(device?.deviceID, Number(baudRate.value));
     }
   };
 

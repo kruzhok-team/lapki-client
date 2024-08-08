@@ -28,10 +28,6 @@ import {
   FlasherSelectModal,
   FlasherSelectModalFormValues,
 } from '../serverSelect/FlasherSelectModal';
-import {
-  SerialMonitorSelectModal,
-  SerialMonitorSelectModalFormValues,
-} from '../serverSelect/SerialMonitorSelectModal';
 import { Badge } from '../UI';
 
 export interface SidebarCallbacks {
@@ -55,9 +51,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-  const [serialMonitorSetting, setSerialMonitorSetting] = useSettings('serialmonitor');
-  const [isSerialMonitorOpen, openSerialMonitorSettings, closeSerialMonitorSettings] =
-    useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
   const [openData, setOpenData] = useState<
@@ -91,12 +84,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setFlasherSetting({ ...flasherSetting, ...data });
   };
 
-  const handleSerialMonitorModalSubmit = (data: SerialMonitorSelectModalFormValues) => {
-    if (!serialMonitorSetting) return;
-
-    setSerialMonitorSetting({ ...serialMonitorSetting, ...data });
-  };
-
   const menus = useMemo(
     () => [
       <Menu
@@ -126,7 +113,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Setting
         openCompilerSettings={openCompilerSettings}
         openLoaderSettings={openLoaderSettings}
-        openSerialMonitorSettings={openSerialMonitorSettings}
       />,
     ],
     [compilerData, openData, compilerStatus]
@@ -176,11 +162,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen={isFlasherOpen}
         onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
-      />
-      <SerialMonitorSelectModal
-        isOpen={isSerialMonitorOpen}
-        onSubmit={handleSerialMonitorModalSubmit}
-        onClose={closeSerialMonitorSettings}
       />
       <CompilerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
       <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />

@@ -15,8 +15,6 @@ import { Point } from '@renderer/lib/types';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Event } from '@renderer/types/diagram';
 
-import { InitialStateModal } from './NodeModal/InitialStateModal';
-
 export const DiagramEditor: React.FC = () => {
   const editor = useEditorContext();
 
@@ -105,7 +103,6 @@ export const DiagramEditor: React.FC = () => {
 
           <StateModal />
           <TransitionModal />
-          <InitialStateModal />
 
           <EventsModal
             initialData={eventsModalData}

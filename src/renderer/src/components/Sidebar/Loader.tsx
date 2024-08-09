@@ -185,7 +185,11 @@ export const Loader: React.FC<FlasherProps> = ({
   // добавление вкладки с serial monitor
   const handleAddSerialMonitorTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    if (serialMonitorDevice != null && curDevice != serialMonitorDevice) {
+    if (
+      serialMonitorDevice != null &&
+      curDevice != serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) != undefined
+    ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     closeTab('Монитор порта');
@@ -235,6 +239,13 @@ export const Loader: React.FC<FlasherProps> = ({
       setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
     }
   }, [connectionStatus, setSerialConnectionStatus]);
+
+  useEffect(() => {
+    if (!serialMonitorDevice) return;
+    if (!devices.get(serialMonitorDevice.deviceID)) {
+      SerialMonitor.setDevice(undefined);
+    }
+  }, [devices]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {

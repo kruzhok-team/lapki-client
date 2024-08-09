@@ -5,9 +5,7 @@ import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { ChoiceState, MarkedIconData, Note, picto, Transition } from '@renderer/lib/drawable';
-import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
-import { Layer } from '@renderer/lib/types';
+import { ChoiceState, Note, Transition } from '@renderer/lib/drawable';
 import {
   CopyData,
   CopyType,

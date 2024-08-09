@@ -9,15 +9,12 @@ import {
   GhostTransition,
   DrawableComponent,
   MarkedIconData,
-  picto,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
 import { ModelController } from './ModelController';
-import { StateMachineController } from './ModelController/StateMachineController';
 
 import { CanvasScheme } from '../CanvasScheme';
-import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 /**
  * Класс инкапсулирующий логику инициализации {@link EditorController|контроллера машины состояний}

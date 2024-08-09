@@ -29,7 +29,6 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const { controller } = useEditorContext();
   const isStale = controller.model.useData('isStale');
   const isInitialized = controller.model.useData('isInitialized');
-  const isMounted = controller.model.useData('isMounted');
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 

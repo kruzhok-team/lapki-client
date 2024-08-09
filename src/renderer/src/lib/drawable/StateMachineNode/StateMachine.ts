@@ -8,7 +8,6 @@ import { DrawableComponent } from '../ComponentNode';
 import { MarkedIconData } from '../Picto';
 
 const style = theme.colors.diagram.state;
-const fontSizeMark = 32;
 /**
  * Представление машины состояний на схемотехническом экране
  */
@@ -108,8 +107,6 @@ export class DrawableStateMachine extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    this.drawBody(ctx);
-
     if (this.isSelected) {
       this.drawSelection(ctx);
     }
@@ -134,24 +131,6 @@ export class DrawableStateMachine extends Shape {
     ctx.stroke();
 
     ctx.closePath();
-  }
-
-  private drawBody(ctx: CanvasRenderingContext2D) {
-    const platform = this.app.controller.platform;
-    if (!platform || !this.icon) return;
-
-    // const { x, y, width, height } = this.drawBounds;
-    // picto.drawImage(
-    //   ctx,
-    //   this.icon,
-    //   {
-    //     x: x,
-    //     y: y,
-    //     width: width,
-    //     height: height,
-    //   },
-    //   fontSizeMark
-    // );
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {

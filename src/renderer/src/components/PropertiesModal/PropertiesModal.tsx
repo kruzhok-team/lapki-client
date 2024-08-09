@@ -19,7 +19,8 @@ interface PropertiesModalProps {
 }
 
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
-  const { model } = useEditorContext();
+  const { controller } = useEditorContext();
+  const model = controller.model;
   const meta = model.useData('elements.meta');
 
   const [properties, setProperties] = useState<[string, string][]>([]);

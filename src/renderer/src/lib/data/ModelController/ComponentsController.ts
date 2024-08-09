@@ -54,7 +54,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     };
-    const component = new DrawableComponent(this.app, args.name, markedIcon);
+    const component = new DrawableComponent(this.app, args.name, args.position, markedIcon);
     this.items.set(args.name, component);
     this.watch(component);
 
@@ -90,7 +90,6 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
         args: { name, startPosition, endPosition },
       });
     }
-    console.log('end: ', endPosition);
     this.app.controller.model.changeComponentPosition(name, endPosition);
 
     this.view.isDirty = true;

@@ -10,8 +10,8 @@ import {
 import { Flasher } from './Flasher';
 
 export const SERIAL_MONITOR_CONNECTING = 'Идет подключение...';
-export const SERIAL_MONITOR_CONNECTED = 'Подключен';
-export const SERIAL_MONITOR_NO_CONNECTION = 'Не подключен';
+export const SERIAL_MONITOR_CONNECTED = 'Подключено';
+export const SERIAL_MONITOR_NO_CONNECTION = 'Не подключено';
 export const SERIAL_MONITOR_NO_SERVER_CONNECTION = 'Отсутствует подключение к серверу';
 
 export class SerialMonitor {

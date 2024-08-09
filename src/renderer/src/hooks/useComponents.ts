@@ -98,11 +98,6 @@ export const useComponents = () => {
       parameters: data.parameters,
       newName: newName,
     });
-    // editor.controller.changeComponent({
-    //   name: idx,
-    //   component: data,
-    //   newName,
-    // });
   };
 
   const onDelete = (idx: string) => {

@@ -88,7 +88,7 @@ export type PossibleActions = {
   deleteNote: { id: string; prevData: NoteData };
 
   // TODO (L140-beep): Переделать удаление с DrawableStateMachine на StateMachine при реализации мультидока.
-  // deleteStateMachine: { args: DeleteStateMachineParams; prevStateMachine: DrawableStateMachine };
+  deleteStateMachine: { args: DeleteStateMachineParams; prevStateMachine: DrawableStateMachine };
 };
 export type PossibleActionTypes = keyof PossibleActions;
 export type Action<T extends PossibleActionTypes> = {
@@ -314,14 +314,10 @@ export const actionFunctions: ActionFunctions = {
   }),
 
   // TODO (L140-beep): удаление машин состояний
-  // deleteStateMachine: (sM, args) => ({
-  //   redo: () => {
-  //     return;
-  //   },
-  //   undo: () => {
-  //     return;
-  //   },
-  // }),
+  deleteStateMachine: (sM, { args, prevStateMachine }) => ({
+    redo: sM.stateMachines.deleteStateMachine.bind(sM.stateMachines, args, false),
+    undo: sM.stateMachines.createStateMachineFromObject.bind(sM.stateMachines, prevStateMachine),
+  }),
 
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
@@ -411,7 +407,10 @@ export const actionDescriptions: ActionDescriptions = {
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
-
+  deleteStateMachine: (args) => ({
+    name: 'Удаление машины состояний',
+    description: `Id: ${args.args.id}`,
+  }),
   createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,

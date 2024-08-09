@@ -50,6 +50,12 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
+  createStateMachineFromObject(sm: DrawableStateMachine) {
+    this.items.set(sm.id, sm);
+    this.app.view.children.add(sm, Layer.Machines);
+    this.app.view.isDirty = true;
+  }
+
   createStateMachine(args: CreateStateMachineParams) {
     const markedSmIcon: MarkedIconData = {
       icon: 'stateMachine',
@@ -69,6 +75,8 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     }
     component.parent = sm;
     sm.children.add(component, Layer.Machines);
+
+    this.view.isDirty = true;
   }
 
   getStateMachineById(sm: string): DrawableStateMachine | undefined {
@@ -76,100 +84,32 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     return machineLayer.find((value) => value['id'] === sm) as DrawableStateMachine | undefined;
   }
 
-  changeStateMachine(args: ChangeStateMachineParams) {
-    const component = this.items.get(args.id);
-    if (!component) {
-      throw new Error(`Изменение не существующей МС с идентификатором ${args.id}`);
+  // changeStateMachine(args: ChangeStateMachineParams) {
+  //   const component = this.items.get(args.id);
+  //   if (!component) {
+  //     throw new Error(`Изменение не существующей МС с идентификатором ${args.id}`);
+  //   }
+  // }
+
+  deleteStateMachine(args: DeleteStateMachineParams, canUndo = true) {
+    const sm = this.items.get(args.id);
+    if (!sm) return;
+
+    const numberOfConnectedActions = 0;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteStateMachine',
+        args: { args, prevStateMachine: structuredClone(sm) },
+        numberOfConnectedActions,
+      });
     }
-    // const sm = component.data;
-    // componentData.parameters = args.parameters;
-    // if (args.newName !== undefined) {
-    //   // this.delete(args, false);
-    //   // this.create({ ...componentData, name: args.newName });
-    // } else {
-    //   component.icon.label = args.parameters['label'];
-    //   component.icon.color = args.parameters['labelColor'];
-    // }
+
+    this.view.children.remove(sm, Layer.Machines);
+    // this.unwatch(sm);
+    this.items.delete(args.id);
+    // this.app.controller.model.deleteMa(args.id);
+
+    this.view.isDirty = true;
   }
-
-  // changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
-  //   const component = this.items.get(name);
-  //   if (!component) return;
-  //   if (_canUndo) {
-  //     this.history.do({
-  //       type: 'changeComponentPosition',
-  //       args: { name, startPosition, endPosition },
-  //     });
-  //   }
-
-  //   this.app.controller.model.changeComponentPosition(name, endPosition);
-
-  //   this.view.isDirty = true;
-  // }
-
-  // deleteStateMachine(args: DeleteStateMachineParams, canUndo = true) {
-  //   const sm = this.items.get(args.id);
-  //   if (!sm) return;
-
-  //   const numberOfConnectedActions = 0;
-
-  //   if (canUndo) {
-  //     this.history.do({
-  //       type: 'deleteStateMachine',
-  //       args: { ...args, prevStateMachine: structuredClone(sm) },
-  //       numberOfConnectedActions,
-  //     });
-  //   }
-
-  //   this.view.children.remove(component, Layer.Components);
-  //   this.unwatch(sm);
-  //   this.items.delete(args.id);
-  //   this.app.controller.model.deleteComponent(args.id);
-
-  //   this.view.isDirty = true;
-  // }
-
-  // handleMouseUpOnComponent = (component: DrawableStateMachine) => {
-  //   this.emit('mouseUpOnComponent', component);
-  // };
-
-  // handleMouseDown = (sm: DrawableStateMachine) => {
-  //   this.controller.selectComponent(sm.id);
-  // };
-
-  // handleDoubleClick = (sm: DrawableStateMachine) => {
-  //   this.emit('change', sm);
-  // };
-
-  // handleContextMenu = (component: DrawableStateMachine, e: { event: MyMouseEvent }) => {
-  //   this.controller.selectComponent(component.id);
-
-  //   this.emit('contextMenu', {
-  //     component,
-  //     position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
-  //   });
-  // };
-
-  // handleDragEnd = (
-  //   component: DrawableStateMachine,
-  //   e: { dragStartPosition: Point; dragEndPosition: Point }
-  // ) => {
-  //   this.changeComponentPosition(component.id, e.dragStartPosition, e.dragEndPosition);
-  // };
-
-  // watch(component: DrawableStateMachine) {
-  //   component.on('mousedown', this.handleMouseDown.bind(this, component));
-  //   component.on('dblclick', this.handleDoubleClick.bind(this, component));
-  //   component.on('mouseup', this.handleMouseUpOnComponent.bind(this, component));
-  //   component.on('contextmenu', this.handleContextMenu.bind(this, component));
-  //   component.on('dragend', this.handleDragEnd.bind(this, component));
-  // }
-
-  // unwatch(component: DrawableStateMachine) {
-  //   component.off('mousedown', this.handleMouseDown.bind(this, component));
-  //   component.off('dblclick', this.handleDoubleClick.bind(this, component));
-  //   component.off('mouseup', this.handleMouseUpOnComponent.bind(this, component));
-  //   component.off('contextmenu', this.handleContextMenu.bind(this, component));
-  //   component.off('dragend', this.handleDragEnd.bind(this, component));
-  // }
 }

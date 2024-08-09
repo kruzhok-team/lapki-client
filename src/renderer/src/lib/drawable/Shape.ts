@@ -224,7 +224,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     };
 
     if (this.parent) {
-      console.log(this.parent.position, this.position)
       this.position = {
         x: Math.max(0, this.position.x),
         y: Math.max(0, this.position.y),

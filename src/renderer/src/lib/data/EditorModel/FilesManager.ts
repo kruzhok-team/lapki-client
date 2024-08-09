@@ -32,15 +32,12 @@ export class FilesManager {
     (elements.notes as any) = [];
     elements.platform = platformIdx;
     this.modelController.model.init(null, 'Без названия', elements as any);
-    this.modelController.stateMachines.createStateMachine({
-      id: 'G',
-      components: [],
-      position: {
-        x: 50,
-        y: 50,
+    this.modelController.stateMachines.deleteStateMachine(
+      {
+        id: 'G',
       },
-    });
-    // this.modelController.components.clearComponents();
+      false
+    );
   }
 
   compile() {

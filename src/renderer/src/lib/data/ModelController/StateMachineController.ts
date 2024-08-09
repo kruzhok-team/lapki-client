@@ -1,20 +1,10 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { EventEmitter } from '@renderer/lib/common';
-import { DrawableComponent, MarkedIconData, picto } from '@renderer/lib/drawable';
+import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
-import {
-  ChangeComponentParams,
-  DeleteComponentParams,
-  DeleteStateMachineParams,
-  Layer,
-} from '@renderer/lib/types';
+import { DeleteStateMachineParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
-import {
-  ChangeStateMachineParams,
-  CreateComponentParams,
-  CreateStateMachineParams,
-} from '@renderer/lib/types/ModelTypes';
-import { MyMouseEvent } from '@renderer/lib/types/mouse';
+import { CreateStateMachineParams } from '@renderer/lib/types/ModelTypes';
 
 interface StateMachineEvents {
   change: DrawableStateMachine;
@@ -35,10 +25,6 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
 
   private get view() {
     return this.app.view;
-  }
-
-  private get controller() {
-    return this.app.controller;
   }
 
   private get history() {
@@ -121,9 +107,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
 
     sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);
-    // this.unwatch(sm);
     this.items.delete(args.id);
-    // this.app.controller.model.deleteMa(args.id);
 
     this.view.isDirty = true;
   }

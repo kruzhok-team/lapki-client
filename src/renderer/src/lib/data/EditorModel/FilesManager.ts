@@ -32,12 +32,6 @@ export class FilesManager {
     (elements.notes as any) = [];
     elements.platform = platformIdx;
     this.modelController.model.init(null, 'Без названия', elements as any);
-    this.modelController.stateMachines.deleteStateMachine(
-      {
-        id: 'G',
-      },
-      false
-    );
   }
 
   compile() {
@@ -54,7 +48,7 @@ export class FilesManager {
             content: `Незнакомая платформа "${importData.platform}".`,
           });
         }
-        this.modelController.model.init(
+        this.modelController.initData(
           openData[1]!.replace('.graphml', '.json'),
           openData[2]!.replace('.graphml', '.json'),
           importData
@@ -113,7 +107,7 @@ export class FilesManager {
           });
         }
 
-        this.modelController.model.init(openData[1] ?? '', openData[2] ?? '', data);
+        this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data);
         // this.modelController.components.fromElementsComponents(data.components);
         return makeRight(null);
       } catch (e) {

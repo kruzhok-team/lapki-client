@@ -105,6 +105,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
       });
     }
 
+    sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);
     // this.unwatch(sm);
     this.items.delete(args.id);

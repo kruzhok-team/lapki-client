@@ -65,6 +65,12 @@ export class Initializer {
   }
 
   private resetEntities() {
+    this.controller.stateMachines.deleteStateMachine(
+      {
+        id: 'G',
+      },
+      false
+    );
     this.appEditor.view.children.clear();
     this.appScheme.view.children.clear();
     this.transitions.forEach((value) => {
@@ -182,25 +188,27 @@ export class Initializer {
   }
 
   private initStateMachines() {
-    const markedSmIcon: MarkedIconData = {
-      icon: 'stateMachine',
-      label: 'Машина состояний',
-    };
-    this.appScheme.view.children.add(
-      new DrawableStateMachine(this.appScheme, 'G', markedSmIcon),
-      Layer.Machines
-    );
+    this.controller.stateMachines.createStateMachine({
+      id: 'G',
+      components: [],
+      position: {
+        x: 0,
+        y: 0,
+      },
+    });
     this.initComponents('G');
   }
 
-  initComponents(sm: string) {
+  // Флаг нужен, чтобы повторно не добавлять
+  initComponents(sm: string, platformInit: boolean = false) {
     if (!this.platform) return;
 
     const items = this.controller.model.data.elements.components;
-
     for (const name in items) {
       const component = items[name];
-      this.createComponentView(sm, name);
+      if (!platformInit) {
+        this.createComponentView(sm, name);
+      }
       this.platform.nameToVisual.set(name, {
         component: component.type,
         label: component.parameters['label'],

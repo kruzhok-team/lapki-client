@@ -47,7 +47,7 @@ export const SerialMonitorTab: React.FC = () => {
     { label: 'Без', value: '', hint: 'Без символов окончания строки' },
   ];
 
-  const [autoScroll, setAutoScroll] = useState<boolean>(monitorSetting?.autoScroll ?? true);
+  const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>('');
 
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
@@ -63,7 +63,6 @@ export const SerialMonitorTab: React.FC = () => {
 
   useLayoutEffect(() => {
     if (!monitorSetting) return;
-    setAutoScroll(monitorSetting.autoScroll);
     setBaudRate(makeOption(monitorSetting.baudRate));
     setLineBreak(monitorSetting.breakLine as SelectOption);
   }, [setMonitorSetting, monitorSetting]);
@@ -77,14 +76,6 @@ export const SerialMonitorTab: React.FC = () => {
         value: option.value as string,
         label: option.label as string,
       },
-    });
-  };
-
-  const settingAutoScroll = (newAutoScroll: boolean) => {
-    if (!monitorSetting) return;
-    setMonitorSetting({
-      ...monitorSetting,
-      autoScroll: newAutoScroll,
     });
   };
 
@@ -170,7 +161,7 @@ export const SerialMonitorTab: React.FC = () => {
           <Switch
             checked={autoScroll}
             onCheckedChange={() => {
-              settingAutoScroll(!autoScroll);
+              setAutoScroll(!autoScroll);
             }}
           />
           Автопрокрутка

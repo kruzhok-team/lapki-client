@@ -17,7 +17,6 @@ export const defaultSettings = {
     hasAvrdude: false,
   },
   serialmonitor: {
-    autoScroll: true,
     baudRate: 9600,
     breakLine: {
       value: String.fromCharCode(10),

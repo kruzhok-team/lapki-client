@@ -55,12 +55,12 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
       color: args.parameters['labelColor'],
     };
     const sm = this.controller.stateMachines.getStateMachineById('G');
-    const component = new DrawableComponent(this.app, args.name, markedIcon, sm);
-    this.items.set(args.name, component);
-    this.watch(component);
     if (!sm) {
       return;
     }
+    const component = new DrawableComponent(this.app, args.name, markedIcon, sm);
+    this.items.set(args.name, component);
+    this.watch(component);
     sm.children.add(component, Layer.Components);
 
     this.app.view.isDirty = true;
@@ -89,16 +89,13 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
     const component = this.items.get(name);
     if (!component) return;
-    // if (component.parent && component.parent.drawBounds) {
-
-    // }
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
         args: { name, startPosition, endPosition },
       });
     }
-
+    console.log('end: ', endPosition);
     this.app.controller.model.changeComponentPosition(name, endPosition);
 
     this.view.isDirty = true;

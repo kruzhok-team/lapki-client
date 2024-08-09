@@ -67,6 +67,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     if (!sm) {
       return;
     }
+    component.parent = sm;
     sm.children.add(component, Layer.Machines);
   }
 
@@ -121,9 +122,9 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
   //   }
 
   //   this.view.children.remove(component, Layer.Components);
-  //   this.unwatch(component);
-  //   this.items.delete(args.name);
-  //   this.app.controller.model.deleteComponent(args.name);
+  //   this.unwatch(sm);
+  //   this.items.delete(args.id);
+  //   this.app.controller.model.deleteComponent(args.id);
 
   //   this.view.isDirty = true;
   // }

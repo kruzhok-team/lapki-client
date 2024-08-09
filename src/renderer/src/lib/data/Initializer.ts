@@ -220,8 +220,8 @@ export class Initializer {
       label: modelComponent.parameters['label'],
       color: modelComponent.parameters['labelColor'],
     };
-    const component = new DrawableComponent(this.appScheme, id, markedIcon);
     const smDrawable = this.controller.stateMachines.getStateMachineById(sm);
+    const component = new DrawableComponent(this.appScheme, id, markedIcon, smDrawable);
     if (!smDrawable) {
       return;
     }

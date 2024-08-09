@@ -50,25 +50,17 @@ export class DrawableStateMachine extends Shape {
     };
   }
 
-  private calculateTitlePos() {
-    const { x, y, width, height, childrenHeight } = this.drawBounds;
-    return {
-      x: x,
-      y: y,
-      // + Math.max(height, childrenHeight) - Math.min(height, childrenHeight),
-    };
-  }
-
   //Прорисовка заголовка блока состояния
   private drawTitle(ctx: CanvasRenderingContext2D) {
-    const { x, y } = this.calculateTitlePos();
+    const { x, y } = this.drawBounds;
+    const stateMachineHeight = this.drawBounds.height;
     const { height, width, fontSize, paddingX, paddingY } = this.computedTitleSizes;
-
+    const computedY = y + stateMachineHeight - height;
     ctx.beginPath();
 
     ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, y, width, height, [
+    ctx.roundRect(x, computedY, width, height, [
       6 / this.app.controller.model.data.scale,
       6 / this.app.controller.model.data.scale,
       0,
@@ -77,7 +69,7 @@ export class DrawableStateMachine extends Shape {
     ctx.fill();
     drawText(ctx, this.icon.label || 'Без названия', {
       x: x + paddingX,
-      y: y + paddingY,
+      y: computedY + paddingY,
       textAlign: 'left',
       color: this.icon.label !== '' ? style.titleColor : style.titleColorUndefined,
       font: {
@@ -129,12 +121,11 @@ export class DrawableStateMachine extends Shape {
 
   private drawChildrenBorder(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-
     ctx.lineWidth = 5;
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y, width - 2, childrenHeight, [
+    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
       0,
       0,
       6 / this.app.controller.model.data.scale,

@@ -1,6 +1,6 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { Point } from '@renderer/lib/types';
+import { Dimensions, Point } from '@renderer/lib/types';
 import { getColor } from '@renderer/theme';
 
 import { MarkedIconData, picto } from '../Picto';
@@ -13,12 +13,17 @@ export class DrawableComponent extends Shape {
   isSelected = false;
   icon: MarkedIconData;
   __position: Point;
+  __dimensions: Dimensions;
   constructor(app: CanvasScheme, id: string, icon: MarkedIconData, parent?: Shape) {
     super(app, id, parent);
     this.icon = icon;
     this.__position = {
       x: 0,
       y: 0,
+    };
+    this.__dimensions = {
+      width: 90,
+      height: 50,
     };
   }
 
@@ -48,10 +53,10 @@ export class DrawableComponent extends Shape {
   }
 
   get dimensions() {
-    return { width: 150, height: 100 };
+    return this.__dimensions;
   }
   set dimensions(_value) {
-    throw new Error('Components does not have dimensions');
+    this.__dimensions = _value;
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {

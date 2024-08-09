@@ -93,7 +93,13 @@ export class DrawableComponent extends Shape {
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#FFF';
 
-    ctx.roundRect(x, y, width, height, borderRadius);
+    ctx.roundRect(
+      x,
+      y,
+      width / this.app.controller.model.data.scale,
+      height / this.app.controller.model.data.scale,
+      borderRadius
+    );
     ctx.stroke();
   }
 

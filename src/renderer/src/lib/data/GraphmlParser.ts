@@ -29,6 +29,8 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
+import { Point } from '../types';
+
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
   exit: { component: 'System', method: 'onExit' },
@@ -275,6 +277,29 @@ function getTransitions(
   return transitions;
 }
 
+function getComponentPosition(rawComponent: CGMLComponent): Point {
+  const node = rawComponent.unsupportedDataNodes.find(
+    (value) => value.key == 'dLapkiSchemePosition'
+  );
+  if (!node) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+  if (!node.point) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+
+  return {
+    x: +node.point[0].x,
+    y: +node.point[0].y,
+  };
+}
+
 function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   [id: string]: Component;
 } {
@@ -286,7 +311,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     }
     components[rawComponent.id] = {
       type: rawComponent.type,
-      position: { x: 0, y: 0 },
+      position: getComponentPosition(rawComponent),
       parameters: rawComponent.parameters,
       order: rawComponent.order,
     };
@@ -399,7 +424,7 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
       position: {
         x: 0,
         y: 0,
-      },
+      }, // TODO (L140-beep): что-то нужно с этим придумать
       parameters: {},
       order: 0,
     };

@@ -11,6 +11,7 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
   CGMLNote,
+  CGMLDataNode,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
@@ -35,6 +36,7 @@ import { Platform } from '@renderer/types/platform';
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
 import { ChoiceState } from '../drawable';
+import { Point } from '../types';
 
 function exportMeta(meta: Meta, platform: Platform): CGMLMeta {
   return {
@@ -295,9 +297,23 @@ function serializeNotes(notes: { [id: string]: Note }): { [id: string]: CGMLNote
       text: note.text,
       position: note.position,
       type: 'informal',
+      unsupportedDataNodes: [],
     };
   }
   return cgmlNotes;
+}
+
+function getPointNode(position: Point): CGMLDataNode {
+  return {
+    key: 'dLapkiSchemePosition',
+    content: '',
+    point: [
+      {
+        ...position,
+      },
+    ],
+    rect: undefined,
+  };
 }
 
 function serializeComponents(components: { [id: string]: Component }): {
@@ -311,9 +327,9 @@ function serializeComponents(components: { [id: string]: Component }): {
     cgmlComponents[`c${id}`] = {
       id: id,
       type: component.type,
-      // position: component.position,
       parameters: component.parameters,
       order: component.order,
+      unsupportedDataNodes: [getPointNode(component.position)],
     };
   }
   return cgmlComponents;

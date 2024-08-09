@@ -197,6 +197,13 @@ export class Initializer {
       },
     });
     this.initComponents('G');
+    const sm = this.controller.stateMachines.getStateMachineById('G');
+    if (sm) {
+      sm.dimensions = {
+        width: sm.computedDimensions.width,
+        height: sm.computedDimensions.height,
+      };
+    }
   }
 
   // Флаг нужен, чтобы повторно не добавлять
@@ -229,7 +236,13 @@ export class Initializer {
       color: modelComponent.parameters['labelColor'],
     };
     const smDrawable = this.controller.stateMachines.getStateMachineById(sm);
-    const component = new DrawableComponent(this.appScheme, id, markedIcon, smDrawable);
+    const component = new DrawableComponent(
+      this.appScheme,
+      id,
+      modelComponent.position,
+      markedIcon,
+      smDrawable
+    );
     if (!smDrawable) {
       return;
     }

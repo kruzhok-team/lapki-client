@@ -154,7 +154,12 @@ export class ModelController {
         args: { args },
       });
     }
-
+    if (sm) {
+      sm.dimensions = {
+        width: sm.computedDimensions.width,
+        height: sm.computedDimensions.height,
+      };
+    }
     this.editor.view.isDirty = true;
     this.scheme.view.isDirty = true;
   }

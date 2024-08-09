@@ -28,7 +28,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   onClose,
 }) => {
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
 
   const componentsData = model.useData('elements.components');
   const controller = editor.controller;

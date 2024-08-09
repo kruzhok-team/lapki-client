@@ -1,11 +1,9 @@
 import { useState } from 'react';
 
-import { twMerge } from 'tailwind-merge';
-
-import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
+import { TabPanel } from './TabPanel';
 
 import { NotInitialized } from '../NotInitialized';
 
@@ -25,7 +23,7 @@ export const Tabs: React.FC = () => {
   };
 
   const handleDrop = (tabName: string) => {
-    if (tabName === 'editor' || !dragId) return;
+    if (!dragId || dragId === 'editor' || dragId === 'scheme') return;
 
     swapTabs(dragId, tabName);
   };
@@ -45,7 +43,7 @@ export const Tabs: React.FC = () => {
             key={name}
             isActive={activeTab === name}
             isDragging={dragId === name}
-            draggable={type !== 'editor'}
+            draggable={type !== 'editor' && type !== 'scheme'}
             type={type}
             name={name}
             showName={type !== 'editor'}
@@ -57,18 +55,7 @@ export const Tabs: React.FC = () => {
         ))}
       </section>
 
-      {items.map((item) => (
-        <div
-          key={item.name}
-          className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
-        >
-          {item.type === 'editor' ? (
-            <DiagramEditor />
-          ) : (
-            <CodeEditor initialValue={item.code} language={item.language} />
-          )}
-        </div>
-      ))}
+      <TabPanel activeTab={activeTab} items={items} />
     </>
   );
 };

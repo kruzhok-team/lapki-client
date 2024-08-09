@@ -12,7 +12,7 @@ export class FinalState extends Shape {
   }
 
   get data() {
-    return this.app.model.data.elements.finalStates[this.id];
+    return this.app.controller.model.data.elements.finalStates[this.id];
   }
 
   get position() {
@@ -36,13 +36,13 @@ export class FinalState extends Shape {
 
     drawCircle(ctx, {
       position,
-      radius: radius - 10 / this.app.model.data.scale,
+      radius: radius - 10 / this.app.controller.model.data.scale,
       fillStyle: getColor('primary'),
     });
     drawCircle(ctx, {
       position,
       radius,
-      lineWidth: 3 / this.app.model.data.scale,
+      lineWidth: 3 / this.app.controller.model.data.scale,
       strokeStyle: getColor('primary'),
     });
   }

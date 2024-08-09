@@ -29,9 +29,7 @@ import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
   const editor = useEditorContext();
-
-  const isMounted = editor.model.useData('isMounted');
-
+  const isMounted = editor.controller.model.useData('isMounted');
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
@@ -44,7 +42,6 @@ export const MainContainer: React.FC = () => {
   });
 
   useAppTitle();
-
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       operations.onRequestOpenFile(acceptedFiles[0].path);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
@@ -15,8 +15,8 @@ interface useFileOperationsArgs {
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
-  const editor = useEditorContext();
-  const model = editor.model;
+  const modelController = useSchemeContext().controller;
+  const model = modelController.model;
   const isStale = model.useData('isStale');
   const name = model.useData('name');
 
@@ -47,7 +47,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performOpenFile = async (path?: string) => {
-    const result = await model?.files.open(openImportError, path);
+    const result = await modelController.files.open(openImportError, path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -59,14 +59,14 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (result && isRight(result)) {
       clearTabs();
       openTab({ type: 'editor', name: 'editor' });
+      // openTab({ type: 'scheme', name: 'scheme' });
     }
   };
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
-    await model.files.createFromTemplate(type, name, openImportError);
-
-    clearTabs();
+    await modelController.files.createFromTemplate(type, name, openImportError);
     openTab({ type: 'editor', name: 'editor' });
+    // openTab({ type: 'scheme', name: 'scheme' });
   };
 
   //Создание нового файла
@@ -86,13 +86,14 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (idx: string) => {
-    model?.files.newFile(idx);
+    modelController.files.newFile(idx);
+    // schemeModel?.files.newFile(idx);
     clearTabs();
     openTab({ type: 'editor', name: 'editor' });
   };
 
   const handleSaveAsFile = async () => {
-    const result = await model?.files.saveAs();
+    const result = await modelController.files.saveAs();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
@@ -102,7 +103,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const handleSaveFile = async () => {
-    const result = await model?.files.save();
+    const result = await modelController.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {

@@ -4,6 +4,7 @@ import { EventEmitter } from '@renderer/lib/common';
 import { getColor } from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
+import { CanvasScheme } from '../CanvasScheme';
 
 interface CanvasEvents {
   resize: undefined;
@@ -22,7 +23,7 @@ export class Canvas extends EventEmitter<CanvasEvents> {
 
   resizeObserver!: ResizeObserver;
 
-  constructor(public app: CanvasEditor) {
+  constructor(public app: CanvasEditor | CanvasScheme) {
     super();
 
     window.addEventListener('resize', this.resize);

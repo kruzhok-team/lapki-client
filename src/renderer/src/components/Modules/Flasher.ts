@@ -332,6 +332,7 @@ export class Flasher {
               case 2:
                 SerialMonitor.addLog(`Монитор порта закрыт, так как устройство не подключено.`);
                 SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+                SerialMonitor.setDevice(undefined);
                 break;
               case 3:
                 SerialMonitor.addLog(`Нельзя открыть монитор порта для фальшивого устройства.`);

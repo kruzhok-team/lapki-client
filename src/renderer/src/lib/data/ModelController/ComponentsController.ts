@@ -54,14 +54,9 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     };
-    const sm = this.controller.stateMachines.getStateMachineById('G');
-    if (!sm) {
-      return;
-    }
-    const component = new DrawableComponent(this.app, args.name, markedIcon, sm);
+    const component = new DrawableComponent(this.app, args.name, markedIcon);
     this.items.set(args.name, component);
     this.watch(component);
-    sm.children.add(component, Layer.Components);
 
     this.app.view.isDirty = true;
 

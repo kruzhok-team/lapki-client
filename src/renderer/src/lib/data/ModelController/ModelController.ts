@@ -101,25 +101,16 @@ export class ModelController {
     this.platform = platform;
     //! Инициализировать компоненты нужно сразу после загрузки платформы
     // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
-    this.initializer.initComponents('G');
+    this.initializer.initComponents('G', true);
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
     this.model.makeStale();
-    this.stateMachines.createStateMachine({
-      id: 'G',
-      components: [],
-      position: {
-        x: 0,
-        y: 0,
-      },
-    });
     for (const componentId in elements.components) {
       const component = elements.components[componentId];
       this.createComponent({ ...component, name: componentId }, false, true);
     }
-    // TODO (L140-beep): при добавлении мультидокумента надо будет переделать
   }
 
   loadData() {
@@ -144,9 +135,13 @@ export class ModelController {
     const { name, type } = args;
 
     if (!this.platform) return;
-
-    this.components.createComponent(args);
+    const sm = this.stateMachines.getStateMachineById('G');
+    const component = this.components.createComponent(args);
     if (!init) {
+      if (component) {
+        this.stateMachines.addComponent('G', component);
+        component.parent = sm;
+      }
       this.model.createComponent(args);
     }
     this.platform.nameToVisual.set(name, {

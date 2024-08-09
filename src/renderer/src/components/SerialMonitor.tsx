@@ -67,6 +67,12 @@ export const SerialMonitorTab: React.FC = () => {
     setLineBreak(monitorSetting.breakLine as SelectOption);
   }, [setMonitorSetting, monitorSetting]);
 
+  useLayoutEffect(() => {
+    if (deviceMessages != '' && deviceMessages[length - 1] != '\n') {
+      SerialMonitor.addDeviceMessage('\n');
+    }
+  }, [device]);
+
   const settingLineBreak = (option: SelectOption) => {
     if (!monitorSetting) return;
     setMonitorSetting({

@@ -66,6 +66,7 @@ export class Initializer {
 
   private resetEntities() {
     this.appEditor.view.children.clear();
+    this.appScheme.view.children.clear();
     this.transitions.forEach((value) => {
       this.transitions.unwatchTransition(value);
     });
@@ -81,7 +82,6 @@ export class Initializer {
     this.notes.clear();
     this.history.clear();
 
-    this.appScheme.view.children.clear();
     this.components.forEach((value) => {
       this.components.unwatch(value);
     });

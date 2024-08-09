@@ -79,6 +79,20 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     this.view.isDirty = true;
   }
 
+  deleteComponent(smId: string, componentId: string) {
+    const sm = this.getStateMachineById(smId);
+    if (!sm) {
+      return;
+    }
+    const component = sm.children
+      .getLayer(Layer.Components)
+      .find((value) => value['id'] === componentId);
+    if (!component) {
+      throw Error('Попытка удалить несуществующий компонент!');
+    }
+    sm.children.remove(component, Layer.Components);
+  }
+
   getStateMachineById(sm: string): DrawableStateMachine | undefined {
     const machineLayer = this.view.children.getLayer(Layer.Machines);
     return machineLayer.find((value) => value['id'] === sm) as DrawableStateMachine | undefined;

@@ -214,7 +214,7 @@ export class ModelController {
 
     const prevComponent = this.model.data.elements.components[name];
     this.model.deleteComponent(name);
-
+    this.stateMachines.deleteComponent('G', name);
     if (purge) {
       // TODO: «вымарывание» компонента из машины
       console.error('deleteComponent purge not implemented yet');

@@ -234,12 +234,23 @@ export const Loader: React.FC<FlasherProps> = ({
   }, [flasherSetting, setFlasherSetting]);
 
   useEffect(() => {
+    /*
+      Если соединение с сервером отсутствует, то это означает, что
+      связь с портом (если она была) утерена и к нему нельзя подключиться.
+      Сервер автоматически прервёт соединение с портом на своей стороне при
+      отключении клиента.
+    */
     if (connectionStatus != FLASHER_CONNECTED) {
       setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
+      return;
     }
-    if (connectionStatus == FLASHER_CONNECTED) {
-      setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
-    }
+    /*
+      Если установлена новая связь с сервером, то нужно поменять статус с
+      того, что нет соединения с сервером (SERIAL_MONITOR_NO_SERVER_CONNECTION) на то,
+      что отсутствует соединение с портом, но есть соедиенение с сервером,
+      то есть можно подключиться к порту по нажатии на кнопку.
+    */
+    setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
   }, [connectionStatus, setSerialConnectionStatus]);
 
   useEffect(() => {

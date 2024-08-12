@@ -18,6 +18,7 @@ export const TransitionModal: React.FC = () => {
     source: State | ChoiceState;
     target: State | ChoiceState | FinalState;
   } | null>();
+  const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
   // Данные формы
   const trigger = useTrigger(false);
@@ -41,7 +42,7 @@ export const TransitionModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isInitialTransition() && transition) {
+    if (isInitialTransition && transition) {
       editor.controller.transitions.changeTransition({
         id: transition.id,
         sourceId: transition.source.id,
@@ -165,6 +166,7 @@ export const TransitionModal: React.FC = () => {
 
     setTransition(null);
     setNewTransition(null);
+    setIsInitialTransition(false);
   };
 
   useEffect(() => {
@@ -194,6 +196,8 @@ export const TransitionModal: React.FC = () => {
       setColor(initialData.color);
 
       setTransition(target);
+
+      setIsInitialTransition(initialData.label == undefined);
       open();
     };
 
@@ -207,10 +211,6 @@ export const TransitionModal: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const isInitialTransition = () => {
-    return transition?.data.label == undefined;
-  };
-
   return (
     <>
       <Modal
@@ -221,9 +221,9 @@ export const TransitionModal: React.FC = () => {
         onAfterClose={handleAfterClose}
       >
         <div className="flex flex-col gap-4">
-          {!isInitialTransition() && showTrigger && <Trigger {...trigger} />}
-          {!isInitialTransition() && <Condition {...condition} />}
-          {!isInitialTransition() && <Events {...events} />}
+          {!isInitialTransition && showTrigger && <Trigger {...trigger} />}
+          {!isInitialTransition && <Condition {...condition} />}
+          {!isInitialTransition && <Events {...events} />}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

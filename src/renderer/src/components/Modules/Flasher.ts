@@ -27,7 +27,7 @@ export class Flasher extends ClientWS {
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
   static setFlasherFile: Dispatch<SetStateAction<string | null | undefined>>;
-  static setFlashing: (flashing: boolean) => void;
+  static onFlashingChange: (flashing: boolean) => void;
   // сообщение об ошибке, undefined означает, что ошибки нет
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
   // сообщение о результате последней попытки прошить устройство
@@ -60,15 +60,15 @@ export class Flasher extends ClientWS {
     setFlasherConnectionStatus: (newConnectionStatus: string) => void,
     setFlasherLog: Dispatch<SetStateAction<string | undefined>>,
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
-    setFlashing: (flashing: boolean) => void,
+    onFlashingChange: (flashing: boolean) => void,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
     setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>
   ): void {
-    super.bindReactSuper(setFlasherConnectionStatus);
+    super.setOnStatusChange(setFlasherConnectionStatus);
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
     this.setFlasherFile = setFlasherFile;
-    this.setFlashing = setFlashing;
+    this.onFlashingChange = onFlashingChange;
     this.setErrorMessage = setErrorMessage;
     this.setFlashResult = setFlashResult;
   }
@@ -132,7 +132,7 @@ export class Flasher extends ClientWS {
    * @param {string | undefined} avrdudeMsg - сообщение от avrdude, undefined - если отсутствует
    * */
   static flashingEnd(result: string, avrdudeMsg: string | undefined) {
-    this.setFlashing(false);
+    this.onFlashingChange(false);
     this.setFlasherFile(undefined);
     this.setFlasherLog(result);
     this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
@@ -210,7 +210,7 @@ export class Flasher extends ClientWS {
     super.onOpenHandler();
     console.log(`Flasher: connected to ${Flasher.host}:${Flasher.port}!`);
     this.setErrorMessage(undefined);
-    this.setFlashing(false);
+    this.onFlashingChange(false);
     this.setFlasherFile(undefined);
     this.setFlasherDevices(new Map());
   }
@@ -233,7 +233,7 @@ export class Flasher extends ClientWS {
     const response = JSON.parse(msg.data as string) as FlasherMessage;
     switch (response.type) {
       case 'flash-next-block': {
-        this.setFlashing(true);
+        this.onFlashingChange(true);
         this.sendBlob();
         break;
       }

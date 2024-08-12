@@ -18,10 +18,10 @@ export abstract class ClientWS {
   // static connecting: boolean = false;
   static reconnectTimer: ReconnectTimer = new ReconnectTimer();
 
-  static setConnectionStatus: (newConnectionStatus: string) => void;
+  static onStatusChange: (newConnectionStatus: string) => void;
 
-  static bindReactSuper(setConnectionStatus: (newConnectionStatus: string) => void): void {
-    this.setConnectionStatus = setConnectionStatus;
+  static setOnStatusChange(onStatusChange: (newConnectionStatus: string) => void): void {
+    this.onStatusChange = onStatusChange;
   }
 
   /**
@@ -47,7 +47,7 @@ export abstract class ClientWS {
     } else if (this.connection && this.connection.OPEN) {
       return this.connection;
     }
-    this.setConnectionStatus(ClientStatus.CONNECTING);
+    this.onStatusChange(ClientStatus.CONNECTING);
     /*
       перед отключением нужно глобально поменять значения хоста и порта, 
       чтобы клиент не пытался подключиться обратно
@@ -94,7 +94,7 @@ export abstract class ClientWS {
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     console.log('Close connection', event);
     if (host == this.host && port == this.port) {
-      this.setConnectionStatus(ClientStatus.NO_CONNECTION);
+      this.onStatusChange(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
       if (this.reconnectTimer.isAutoReconnect()) {
         this.reconnectTimer.tryToReconnect(() => {
@@ -106,14 +106,14 @@ export abstract class ClientWS {
 
   static errorHandler(error) {
     console.log('Websocket error', error);
-    this.setConnectionStatus(ClientStatus.CONNECTION_ERROR);
+    this.onStatusChange(ClientStatus.CONNECTION_ERROR);
     this.connection = undefined;
   }
 
   static onOpenHandler() {
     this.reconnectTimer.reset();
     //console.log(`Client: connected to ${this.host}:${this.port}!`);
-    this.setConnectionStatus(ClientStatus.CONNECTED);
+    this.onStatusChange(ClientStatus.CONNECTED);
   }
 
   static cancelConnection() {

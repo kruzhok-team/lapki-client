@@ -155,7 +155,7 @@ export class Compiler extends ClientWS {
   static timeoutTimer = new ComplierTimeoutTimer();
 
   static setDefaultStatus() {
-    this.setConnectionStatus(ComplierStatus.NO_CONNECTION);
+    this.onStatusChange(ComplierStatus.NO_CONNECTION);
     this.setCompilerData(undefined);
   }
 
@@ -164,7 +164,7 @@ export class Compiler extends ClientWS {
     setCompilerStatus: Dispatch<SetStateAction<string>>,
     setImportData: Dispatch<SetStateAction<Elements | undefined>>
   ): void {
-    this.bindReactSuper(setCompilerStatus);
+    this.setOnStatusChange(setCompilerStatus);
     this.setCompilerData = setCompilerData;
     this.setImportData = setImportData;
   }
@@ -238,9 +238,9 @@ export class Compiler extends ClientWS {
             break;
         }
 
-        this.setConnectionStatus(ComplierStatus.COMPILATION);
+        this.onStatusChange(ComplierStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
-          this.setConnectionStatus(ComplierStatus.SOMETHING_WRONG);
+          this.onStatusChange(ComplierStatus.SOMETHING_WRONG);
         });
       } else {
         console.error('Внутренняя ошибка! Отсутствует подключение');
@@ -250,7 +250,7 @@ export class Compiler extends ClientWS {
 
   // обработка входящих через вебсоект сообщений
   static messageHandler(msg: Websocket.MessageEvent) {
-    this.setConnectionStatus(ComplierStatus.CONNECTED);
+    this.onStatusChange(ComplierStatus.CONNECTED);
     this.timeoutTimer.clear();
     let data;
     let elements;

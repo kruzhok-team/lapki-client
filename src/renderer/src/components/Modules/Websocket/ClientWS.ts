@@ -1,13 +1,7 @@
 import Websocket from 'isomorphic-ws';
 
 import { ReconnectTimer } from './ReconnectTimer';
-
-export class ClientStatus {
-  static CONNECTING: string = 'Идет подключение...';
-  static CONNECTED: string = 'Подключен';
-  static NO_CONNECTION: string = 'Не подключен';
-  static CONNECTION_ERROR = 'Ошибка при попытке подключиться';
-}
+import { ClientStatus } from './ClientStatus';
 
 export abstract class ClientWS {
   static port: number;

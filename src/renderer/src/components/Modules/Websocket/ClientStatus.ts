@@ -1,0 +1,11 @@
+export class ClientStatus {
+  static CONNECTING: string = 'Идет подключение...';
+  static CONNECTED: string = 'Подключен';
+  static NO_CONNECTION: string = 'Не подключен';
+  static CONNECTION_ERROR = 'Ошибка при попытке подключиться';
+}
+
+export class ComplierStatus extends ClientStatus {
+  static COMPILATION: string = 'Идет компиляция...';
+  static SOMETHING_WRONG: string = 'Что-то пошло не так...';
+}

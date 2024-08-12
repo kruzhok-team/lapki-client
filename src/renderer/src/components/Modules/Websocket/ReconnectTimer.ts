@@ -119,3 +119,23 @@ export class ReconnectTimer {
     }, nextTimeout);
   }
 }
+
+export class ComplierTimeoutTimer {
+  //Если за данное время не пришел ответ от компилятора
+  //мы считаем, что произошла ошибка.
+  private timeOutTime: number;
+  private timerOutID: NodeJS.Timeout | undefined;
+  constructor(timeOutTime: number = 100000) {
+    this.timeOutTime = timeOutTime;
+  }
+
+  timeOut(complierAction: () => void) {
+    this.timerOutID = setTimeout(() => {
+      complierAction();
+    }, this.timeOutTime);
+  }
+
+  clear() {
+    clearTimeout(this.timerOutID);
+  }
+}

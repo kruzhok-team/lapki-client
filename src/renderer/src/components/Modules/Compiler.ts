@@ -20,7 +20,9 @@ import {
 } from '@renderer/types/CompilerTypes';
 import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
-import { ClientStatus, ClientWS } from './Websocket/ClientWS';
+import { ComplierStatus } from './Websocket/ClientStatus';
+import { ClientWS } from './Websocket/ClientWS';
+import { ComplierTimeoutTimer } from './Websocket/ReconnectTimer';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;
@@ -117,31 +119,6 @@ function actualizeElements(oldElements: CompilerElements): Elements {
     initialStates: initials,
     meta: {},
   };
-}
-
-export class ComplierStatus extends ClientStatus {
-  static COMPILATION: string = 'Идет компиляция...';
-  static SOMETHING_WRONG: string = 'Что-то пошло не так...';
-}
-
-class ComplierTimeoutTimer {
-  //Если за данное время не пришел ответ от компилятора
-  //мы считаем, что произошла ошибка.
-  private timeOutTime: number;
-  private timerOutID: NodeJS.Timeout | undefined;
-  constructor(timeOutTime: number = 100000) {
-    this.timeOutTime = timeOutTime;
-  }
-
-  timeOut(complierAction: () => void) {
-    this.timerOutID = setTimeout(() => {
-      complierAction();
-    }, this.timeOutTime);
-  }
-
-  clear() {
-    clearTimeout(this.timerOutID);
-  }
 }
 
 export class Compiler extends ClientWS {

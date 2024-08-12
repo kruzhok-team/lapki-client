@@ -39,7 +39,6 @@ export class Flasher extends ClientWS {
     this.reader = reader;
     this.reader.onloadend = function (evt) {
       if (evt.target?.readyState == FileReader.DONE) {
-        console.log('BLOB');
         Flasher.connection?.send(this.result as ArrayBuffer);
         Flasher.filePos += Flasher.currentBlob.size;
       }

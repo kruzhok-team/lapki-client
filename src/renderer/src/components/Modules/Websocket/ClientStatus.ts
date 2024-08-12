@@ -5,7 +5,7 @@ export class ClientStatus {
   static CONNECTION_ERROR = 'Ошибка при попытке подключиться';
 }
 
-export class ComplierStatus extends ClientStatus {
+export class CompilerStatus extends ClientStatus {
   static COMPILATION: string = 'Идет компиляция...';
   static SOMETHING_WRONG: string = 'Что-то пошло не так...';
 }

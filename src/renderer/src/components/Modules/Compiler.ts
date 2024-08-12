@@ -20,7 +20,7 @@ import {
 } from '@renderer/types/CompilerTypes';
 import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
-import { ComplierStatus } from './Websocket/ClientStatus';
+import { CompilerStatus } from './Websocket/ClientStatus';
 import { ClientWS } from './Websocket/ClientWS';
 import { ComplierTimeoutTimer } from './Websocket/ReconnectTimer';
 
@@ -132,7 +132,7 @@ export class Compiler extends ClientWS {
   static timeoutTimer = new ComplierTimeoutTimer();
 
   static setDefaultStatus() {
-    this.onStatusChange(ComplierStatus.NO_CONNECTION);
+    this.onStatusChange(CompilerStatus.NO_CONNECTION);
     this.setCompilerData(undefined);
   }
 
@@ -215,9 +215,9 @@ export class Compiler extends ClientWS {
             break;
         }
 
-        this.onStatusChange(ComplierStatus.COMPILATION);
+        this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
-          this.onStatusChange(ComplierStatus.SOMETHING_WRONG);
+          this.onStatusChange(CompilerStatus.SOMETHING_WRONG);
         });
       } else {
         console.error('Внутренняя ошибка! Отсутствует подключение');
@@ -227,7 +227,7 @@ export class Compiler extends ClientWS {
 
   // обработка входящих через вебсоект сообщений
   static messageHandler(msg: Websocket.MessageEvent) {
-    this.onStatusChange(ComplierStatus.CONNECTED);
+    this.onStatusChange(CompilerStatus.CONNECTED);
     this.timeoutTimer.clear();
     let data;
     let elements;

@@ -9,6 +9,7 @@ import { frameworkWords, reservedWordsC, validators } from '@renderer/utils';
 
 import { ComponentFormFields } from './ComponentFormFields';
 
+// название ключа ошибки для поля ввода имени, он также нужен для ComponentFormFields
 export const nameError = 'name';
 
 interface ComponentEditModalProps {

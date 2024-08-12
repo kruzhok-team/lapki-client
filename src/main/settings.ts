@@ -16,14 +16,6 @@ export const defaultSettings = {
     type: 'local' as 'local' | 'remote',
     hasAvrdude: false,
   },
-  serialmonitor: {
-    baudRate: 9600,
-    breakLine: {
-      value: String.fromCharCode(10),
-      label: 'НС',
-      hint: 'Символ новой строки',
-    },
-  },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',
   canvas: {

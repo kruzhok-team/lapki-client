@@ -183,6 +183,8 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   // добавление вкладки с serial monitor
+  // открытие новой вкладки закрывает соединение со старым портом
+  // пока клиент может мониторить только один порт
   const handleAddSerialMonitorTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
     if (

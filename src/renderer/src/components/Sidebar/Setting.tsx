@@ -7,7 +7,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
-import { ClientStatus } from '../Modules/Websocket/ClientWS';
+import { ClientStatus } from '../Modules/Websocket/ClientStatus';
 import { ResetSettingsModal } from '../ResetSettingsModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
 

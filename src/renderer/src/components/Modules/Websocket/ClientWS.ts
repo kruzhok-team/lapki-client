@@ -1,7 +1,7 @@
 import Websocket from 'isomorphic-ws';
 
-import { ReconnectTimer } from './ReconnectTimer';
 import { ClientStatus } from './ClientStatus';
+import { ReconnectTimer } from './ReconnectTimer';
 
 export abstract class ClientWS {
   static port: number;

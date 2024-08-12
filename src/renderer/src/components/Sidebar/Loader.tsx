@@ -12,7 +12,7 @@ import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
-import { ClientStatus } from '../Modules/ClientWS';
+import { ClientStatus } from '../Modules/Websocket/ClientWS';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;

@@ -12,7 +12,7 @@ import {
   FlashResult,
 } from '@renderer/types/FlasherTypes';
 
-import { ClientWS } from './ClientWS';
+import { ClientWS } from './Websocket/ClientWS';
 
 export class Flasher extends ClientWS {
   static devices: Map<string, Device>;

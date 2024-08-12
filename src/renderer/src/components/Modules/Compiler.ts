@@ -20,7 +20,7 @@ import {
 } from '@renderer/types/CompilerTypes';
 import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
-import { ClientStatus, ClientWS } from './ClientWS';
+import { ClientStatus, ClientWS } from './Websocket/ClientWS';
 
 function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
   [key: string]: Transition;

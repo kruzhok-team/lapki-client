@@ -54,10 +54,6 @@ export class ReconnectTimer {
     this.timerID = timerID;
   }
 
-  setReconnection(reconnection: boolean) {
-    this.autoReconnect = reconnection;
-  }
-
   clearTimer() {
     if (this.timerID) {
       clearTimeout(this.timerID);

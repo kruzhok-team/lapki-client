@@ -276,7 +276,9 @@ export class Compiler extends ClientWS {
   }
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
-    toast.error('Ошибка при подключении к компилятору');
+    if (!event.wasClean) {
+      toast.error('Ошибка при подключении к компилятору');
+    }
     super.closeHandler(host, port, event);
   }
 

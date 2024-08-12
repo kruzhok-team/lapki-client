@@ -12,7 +12,7 @@ export class ReconnectTimer {
   */
   private maxReconnectAttempts: number = 3;
   // количество совершённых попыток переподключения, сбрасывается при удачном подключении или при смене хоста
-  private curReconnectAttemps: number = 0;
+  private curReconnectAttempts: number = 0;
   /**  
   максимальное количество мс, через которое клиент будет пытаться переподключиться,
   не должно быть негативным числом (поэтому не стоит делать эту переменную зависимой от maxReconnectAttempts)
@@ -43,7 +43,7 @@ export class ReconnectTimer {
     this.timeoutSetted = false;
 
     this.maxReconnectAttempts = maxReconnectAttempts;
-    this.curReconnectAttemps = 0;
+    this.curReconnectAttempts = 0;
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
@@ -67,7 +67,7 @@ export class ReconnectTimer {
 
     this.curTimeout = this.initialTimeout;
 
-    this.curReconnectAttemps = 0;
+    this.curReconnectAttempts = 0;
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
@@ -87,7 +87,7 @@ export class ReconnectTimer {
   }
 
   incReconnectAttempt() {
-    this.curReconnectAttemps = Math.min(this.curReconnectAttemps + 1, this.maxReconnectAttempts);
+    this.curReconnectAttempts = Math.min(this.curReconnectAttempts + 1, this.maxReconnectAttempts);
   }
 
   // переподключение по таймеру
@@ -95,14 +95,14 @@ export class ReconnectTimer {
     if (
       !this.autoReconnect ||
       this.timeoutSetted || // проверка на то, что на данный момент отсутствует другой таймер
-      (this.maxReconnectAttempts >= 0 && this.curReconnectAttemps >= this.maxReconnectAttempts)
+      (this.maxReconnectAttempts >= 0 && this.curReconnectAttempts >= this.maxReconnectAttempts)
     ) {
       return;
     }
     this.timeoutSetted = true;
     this.timerID = setTimeout(() => {
       console.log(
-        `inTimer: ${this.curTimeout}, attempt ${this.curReconnectAttemps + 1}/${
+        `inTimer: ${this.curTimeout}, attempt ${this.curReconnectAttempts + 1}/${
           this.maxReconnectAttempts
         }`
       );

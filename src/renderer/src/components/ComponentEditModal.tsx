@@ -48,6 +48,9 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
+    if (proto.singletone) {
+      return true;
+    }
     if (isNameDuplicated) {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно повторяться` }));
       return false;

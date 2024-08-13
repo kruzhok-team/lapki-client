@@ -8,3 +8,8 @@ export class ClientStatus {
 export class CompilerStatus extends ClientStatus {
   static COMPILATION: string = 'Идет компиляция...';
 }
+
+export class CompilerNoDataStatus {
+  static DEFAULT: string = 'Нет данных';
+  static TIMEOUT: string = 'Превышено время ожидания компиляции';
+}

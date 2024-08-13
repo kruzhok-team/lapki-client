@@ -42,7 +42,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
-    this.moduleStatus[module] = new ModuleStatus();
+    this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
       const basePath = path
@@ -142,18 +142,18 @@ export class ModuleManager {
         }
         chprocess.on('error', function (err) {
           if (err.code == 'ENOENT') {
-            ModuleManager.moduleStatus[module] = new ModuleStatus(
-              2,
-              `Файл ${modulePath} не найден.`
+            ModuleManager.moduleStatus.set(
+              module,
+              new ModuleStatus(2, `Файл ${modulePath} не найден.`)
             );
           } else {
-            ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
+            ModuleManager.moduleStatus.set(module, new ModuleStatus(2, `${err}`));
           }
           console.error(`${module} spawn error: ` + err);
         });
       }
       if (chprocess !== undefined) {
-        ModuleManager.moduleStatus[module] = new ModuleStatus(1);
+        ModuleManager.moduleStatus.set(module, new ModuleStatus(1));
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {
           console.log(`${module}-stdout: ${data}`);
@@ -163,7 +163,7 @@ export class ModuleManager {
         });
 
         chprocess.on('exit', () => {
-          ModuleManager.moduleStatus[module] = new ModuleStatus(3);
+          ModuleManager.moduleStatus.set(module, new ModuleStatus(3));
           console.log(`${module}-exit!`);
         });
       }
@@ -180,6 +180,6 @@ export class ModuleManager {
   }
 
   static getLocalStatus(module: ModuleName): ModuleStatus {
-    return this.moduleStatus[module];
+    return this.moduleStatus.get(module)!;
   }
 }

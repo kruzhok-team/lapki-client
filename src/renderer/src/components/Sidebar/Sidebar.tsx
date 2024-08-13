@@ -23,11 +23,11 @@ import { Setting } from './Setting';
 
 import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
+import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
 import {
   FlasherSelectModal,
   FlasherSelectModalFormValues,
 } from '../serverSelect/FlasherSelectModal';
-import { ServerSelectModal } from '../serverSelect/ServerSelectModal';
 import { Badge } from '../UI';
 
 export interface SidebarCallbacks {
@@ -69,12 +69,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const closeFlasherModal = () => {
-    Flasher.freezeReconnectionTimer(false);
+    Flasher.freezeReconnectTimer(false);
     closeFlasherSettings();
   };
 
-  const handleHostChange = () => {
-    Flasher.freezeReconnectionTimer(true);
+  const openLoaderSettings = () => {
+    Flasher.freezeReconnectTimer(true);
     openFlasherSettings();
   };
 
@@ -107,11 +107,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       />,
       <Loader
         compilerData={compilerData}
-        handleHostChange={handleHostChange}
+        openLoaderSettings={openLoaderSettings}
         openAvrdudeGuideModal={openAvrdudeGuideModal}
       />,
       <History />,
-      <Setting openCompilerSettings={openCompilerSettings} handleHostChange={handleHostChange} />,
+      <Setting
+        openCompilerSettings={openCompilerSettings}
+        openLoaderSettings={openLoaderSettings}
+      />,
     ],
     [compilerData, openData, compilerStatus]
   );
@@ -161,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
       />
-      <ServerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
+      <CompilerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
       <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </div>
   );

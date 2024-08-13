@@ -44,11 +44,15 @@ export class Label implements Drawable {
 
     ctx.fillStyle = transitionStyle.bgColor;
 
-    if (label.trigger) {
+    if (label.trigger && label.trigger.component !== '' && label.trigger.method !== '') {
       const trigger = label.trigger;
       ctx.beginPath();
       platform.drawEvent(ctx, trigger, x + p, y + p);
       ctx.closePath();
+    } else {
+      picto.drawPicto(ctx, x + p, y + p, {
+        rightIcon: 'condition',
+      });
     }
 
     //Здесь начинается прорисовка действий и условий для связей

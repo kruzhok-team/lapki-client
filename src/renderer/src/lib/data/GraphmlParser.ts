@@ -409,7 +409,6 @@ export function importGraphml(
   try {
     const rawElements: CGMLElements = parseCGML(expression);
     const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
-    console.log(sm);
     const elements: Elements = {
       states: {},
       transitions: {},
@@ -454,7 +453,6 @@ export function importGraphml(
     );
 
     validateElements(elements, platform);
-    console.log(elements);
     return elements;
   } catch (error) {
     console.error(error);

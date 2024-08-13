@@ -7,5 +7,9 @@ export class ClientStatus {
 
 export class CompilerStatus extends ClientStatus {
   static COMPILATION: string = 'Идет компиляция...';
-  static SOMETHING_WRONG: string = 'Что-то пошло не так...';
+}
+
+export class CompilerNoDataStatus {
+  static DEFAULT: string = 'Нет данных';
+  static TIMEOUT: string = 'Превышено время ожидания компиляции';
 }

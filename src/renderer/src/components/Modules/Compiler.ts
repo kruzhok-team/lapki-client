@@ -20,7 +20,7 @@ import {
 } from '@renderer/types/CompilerTypes';
 import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
-import { CompilerStatus } from './Websocket/ClientStatus';
+import { CompilerStatus, CompilerNoDataStatus } from './Websocket/ClientStatus';
 import { ClientWS } from './Websocket/ClientWS';
 import { ComplierTimeoutTimer } from './Websocket/ReconnectTimer';
 
@@ -125,6 +125,7 @@ export class Compiler extends ClientWS {
   static setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>;
   static setCompilerMode: Dispatch<SetStateAction<string>>;
   static setImportData: Dispatch<SetStateAction<Elements | undefined>>;
+  static setCompilerNoDataStatus: Dispatch<SetStateAction<string>>;
   static mode: string;
 
   static filename: string;
@@ -139,11 +140,13 @@ export class Compiler extends ClientWS {
   static bindReact(
     setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>,
     setCompilerStatus: Dispatch<SetStateAction<string>>,
-    setImportData: Dispatch<SetStateAction<Elements | undefined>>
+    setImportData: Dispatch<SetStateAction<Elements | undefined>>,
+    setCompilerNoDataStatus: Dispatch<SetStateAction<string>>
   ): void {
     this.setOnStatusChange(setCompilerStatus);
     this.setCompilerData = setCompilerData;
     this.setImportData = setImportData;
+    this.setCompilerNoDataStatus = setCompilerNoDataStatus;
   }
 
   static binary: Array<Binary> | undefined = undefined;
@@ -187,6 +190,8 @@ export class Compiler extends ClientWS {
   }
 
   static async compile(platform: string, data: Elements | string) {
+    this.setCompilerData(undefined);
+    this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
     this.platform = platform;
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {
@@ -217,7 +222,13 @@ export class Compiler extends ClientWS {
 
         this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
-          this.onStatusChange(CompilerStatus.SOMETHING_WRONG);
+          toast.error(CompilerNoDataStatus.TIMEOUT);
+          this.setCompilerNoDataStatus(CompilerNoDataStatus.TIMEOUT);
+          // возращаем статут соединения, если соединение присутствует
+          // если оно пропало, то статус изменится самостоятельно, то есть тут ничего менять не надо
+          if (this.connection && this.connection.OPEN) {
+            this.onStatusChange(CompilerStatus.CONNECTED);
+          }
         });
       } else {
         console.error('Внутренняя ошибка! Отсутствует подключение');
@@ -276,6 +287,8 @@ export class Compiler extends ClientWS {
   }
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
+    this.timeoutTimer.clear();
+    this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
     if (!event.wasClean) {
       toast.error('Ошибка при подключении к компилятору');
     }
@@ -284,5 +297,10 @@ export class Compiler extends ClientWS {
 
   static makeAddress(host: string, port: number): string {
     return `${super.makeAddress(host, port)}/main`;
+  }
+
+  static onOpenHandler(): void {
+    this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
+    super.onOpenHandler();
   }
 }

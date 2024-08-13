@@ -58,7 +58,7 @@ export const SerialMonitorTab: React.FC = () => {
   }, [deviceMessages, log, autoScroll]);
 
   useLayoutEffect(() => {
-    if (deviceMessages != '' && deviceMessages[length - 1] != '\n') {
+    if (deviceMessages != '' && deviceMessages[deviceMessages.length - 1] != '\n') {
       SerialMonitor.addDeviceMessage('\n');
     }
   }, [device]);

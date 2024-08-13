@@ -60,18 +60,24 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
       return false;
     }
+    // допустимыми символами на первой позиции являются латинские буквы и подчёркивания
     const firstSymbolRegex = '[A-Z]|[a-z]|_';
+    const numberSymbolRegex = '[0-9]';
     if (!name[0].match(firstSymbolRegex)) {
       setErrors((p) => ({
         ...p,
-        [nameError]: `'${name[0]}' является недопустимым первым символом`,
+        [nameError]: `Название должно начинаться с латинской буквы или подчёркивания`,
       }));
       return false;
     }
-    const remainingSymbolsRegex = firstSymbolRegex + '|[0-9]';
+    // допустимыми символами на всех позициях кроме первой являются латинские буквы, подчёркивания и цифры
+    const remainingSymbolsRegex = firstSymbolRegex + '|' + numberSymbolRegex;
     for (const symbol of name) {
       if (!symbol.match(remainingSymbolsRegex)) {
-        setErrors((p) => ({ ...p, [nameError]: `'${symbol}' является недопустимым символом` }));
+        setErrors((p) => ({
+          ...p,
+          [nameError]: `Допускаются только латинские буквы, цифры и подчёркивания`,
+        }));
         return false;
       }
     }

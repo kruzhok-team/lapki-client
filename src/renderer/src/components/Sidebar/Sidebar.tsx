@@ -68,12 +68,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const closeFlasherModal = () => {
-    Flasher.freezeReconnectionTimer(false);
+    Flasher.freezeReconnectTimer(false);
     closeFlasherSettings();
   };
 
   const openLoaderSettings = () => {
-    Flasher.freezeReconnectionTimer(true);
+    Flasher.freezeReconnectTimer(true);
     openFlasherSettings();
   };
 

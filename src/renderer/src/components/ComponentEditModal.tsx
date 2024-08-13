@@ -52,10 +52,12 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     if (proto.singletone) {
       return true;
     }
-    if (isNameDuplicated) {
+
+    if (name !== idx && name in components) {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно повторяться` }));
       return false;
     }
+
     if (name == '') {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
       return false;
@@ -139,12 +141,6 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   const componentType = proto.name ?? data.type;
   const componentName = proto.singletone ? componentType : `${componentType} ${idx}`;
-
-  // Ограничение на повтор имён
-  const isNameDuplicated = useMemo(
-    () => idx !== name && name in components,
-    [components, idx, name]
-  );
 
   useLayoutEffect(() => {
     setName(idx);

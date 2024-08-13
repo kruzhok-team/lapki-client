@@ -47,7 +47,6 @@ export class ReconnectTimer {
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
-    // this.connectionCanceled = false;
   }
 
   setTimerID(timerID: NodeJS.Timeout | undefined) {
@@ -71,7 +70,6 @@ export class ReconnectTimer {
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
-    //this.connectionCanceled = false;
   }
 
   freeze(freeze: boolean) {

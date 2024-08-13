@@ -8,27 +8,41 @@ import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
+import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
+
+import {
+  SERIAL_MONITOR_NO_CONNECTION,
+  SERIAL_MONITOR_NO_SERVER_CONNECTION,
+  SerialMonitor,
+} from '../Modules/SerialMonitor';
 
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
-  handleHostChange: () => void;
+  openLoaderSettings: () => void;
   openAvrdudeGuideModal: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
   compilerData,
-  handleHostChange,
+  openLoaderSettings,
   openAvrdudeGuideModal,
 }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
+  const {
+    device: serialMonitorDevice,
+    setDevice: setSerialMonitorDevice,
+    setConnectionStatus: setSerialConnectionStatus,
+    setLog: setSerialLog,
+    addDeviceMessage,
+  } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -47,6 +61,7 @@ export const Loader: React.FC<FlasherProps> = ({
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const openTab = useTabs((state) => state.openTab);
+  const closeTab = useTabs((state) => state.closeTab);
 
   const isActive = (id: string) => currentDeviceID === id;
 
@@ -154,11 +169,32 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с сообщением от avrdude
   const handleAddAvrdudeTab = () => {
+    closeTab('avrdude');
     openTab({
       type: 'code',
       name: 'avrdude',
       code: flashResult?.report() ?? '',
       language: 'txt',
+    });
+  };
+
+  // добавление вкладки с serial monitor
+  // открытие новой вкладки закрывает соединение со старым портом
+  // пока клиент может мониторить только один порт
+  const handleAddSerialMonitorTab = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    if (
+      serialMonitorDevice != null &&
+      curDevice != serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) != undefined
+    ) {
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
+    closeTab('Монитор порта');
+    setSerialMonitorDevice(curDevice);
+    openTab({
+      type: 'serialMonitor',
+      name: 'Монитор порта',
     });
   };
 
@@ -172,7 +208,12 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlasherError,
       setFlashResult
     );
-
+    SerialMonitor.bindReact(
+      addDeviceMessage,
+      setSerialMonitorDevice,
+      setSerialConnectionStatus,
+      setSerialLog
+    );
     Flasher.initReader(new FileReader());
   }, []);
 
@@ -187,6 +228,33 @@ export const Loader: React.FC<FlasherProps> = ({
       Flasher.connect(host, port);
     }
   }, [flasherSetting, setFlasherSetting]);
+
+  useEffect(() => {
+    /*
+      Если соединение с сервером отсутствует, то это означает, что
+      связь с портом (если она была) утерена и к нему нельзя подключиться.
+      Сервер автоматически прервёт соединение с портом на своей стороне при
+      отключении клиента.
+    */
+    if (connectionStatus != FLASHER_CONNECTED) {
+      setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
+      return;
+    }
+    /*
+      Если установлена новая связь с сервером, то нужно поменять статус с
+      того, что нет соединения с сервером (SERIAL_MONITOR_NO_SERVER_CONNECTION) на то,
+      что отсутствует соединение с портом, но есть соедиенение с сервером,
+      то есть можно подключиться к порту по нажатии на кнопку.
+    */
+    setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+  }, [connectionStatus, setSerialConnectionStatus]);
+
+  useEffect(() => {
+    if (!serialMonitorDevice) return;
+    if (!devices.get(serialMonitorDevice.deviceID)) {
+      SerialMonitor.setDevice(undefined);
+    }
+  }, [devices]);
 
   const display = () => {
     if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {
@@ -301,7 +369,7 @@ export const Loader: React.FC<FlasherProps> = ({
           </button>
           <button
             className="btn-primary px-2"
-            onClick={handleHostChange}
+            onClick={openLoaderSettings}
             disabled={connectionStatus == ClientStatus.CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
@@ -378,6 +446,13 @@ export const Loader: React.FC<FlasherProps> = ({
           disabled={flashResult === undefined}
         >
           Результат прошивки
+        </button>
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddSerialMonitorTab}
+          disabled={currentDeviceID == undefined}
+        >
+          Монитор порта
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>

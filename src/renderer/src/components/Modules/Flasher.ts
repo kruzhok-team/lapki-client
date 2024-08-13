@@ -10,8 +10,15 @@ import {
   FlasherMessage,
   UpdateDelete,
   FlashResult,
+  SerialStatus,
+  SerialRead,
 } from '@renderer/types/FlasherTypes';
 
+import {
+  SerialMonitor,
+  SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_NO_CONNECTION,
+} from './SerialMonitor';
 import { ClientWS } from './Websocket/ClientWS';
 
 export class Flasher extends ClientWS {
@@ -318,7 +325,150 @@ export class Flasher extends ClientWS {
       }
       case 'empty-list': {
         this.setFlasherLog('Устройства не найдены.');
+        break;
       }
+      case 'serial-connection-status': {
+        const serialStatus = response.payload as SerialStatus;
+        switch (serialStatus.code) {
+          case 0:
+            SerialMonitor.addLog('Открыт монитор порта!');
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+            break;
+          case 1: {
+            const mainMessage = 'Монитор порта закрыт';
+            if (serialStatus.comment != '') {
+              SerialMonitor.addLog(`${mainMessage}. Текст ошибки: ${serialStatus.comment}`);
+            } else {
+              SerialMonitor.addLog(`${mainMessage}.`);
+            }
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          }
+          case 2:
+            SerialMonitor.addLog(`Монитор порта закрыт, так как устройство не подключено.`);
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 3:
+            SerialMonitor.addLog(`Нельзя открыть монитор порта для фальшивого устройства.`);
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 4:
+            SerialMonitor.addLog(
+              `Сервер не смог обработать JSON-сообщение от клиента. Текст ошибки: ${serialStatus.comment}`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 5:
+            SerialMonitor.addLog(
+              `Нельзя открыть монитор порта, так как устойство прошивается. Дождитесь окончания прошивки и повторите попытку.`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 6:
+            SerialMonitor.addLog(`Монитор порта открыт другим клиентом.`);
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 7:
+            SerialMonitor.addLog(
+              `Произошла ошибка чтения данных. Порт закрыт. Текст ошибки: ${serialStatus.comment}`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 8:
+            SerialMonitor.addLog(`Монитор порта закрыт по вашему запросу.`);
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 9:
+            SerialMonitor.addLog(
+              `Не удалось сменить скорость передачи данных. Соединение прервано. Выберите другую скорость и попробуйте снова.`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 10:
+            SerialMonitor.addLog(
+              `Монитор порта заново открыт на скорости ${serialStatus.comment} бод.`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+            break;
+          case 11:
+            SerialMonitor.addLog(
+              `Не удалось сменить скорость передачи данных из-за ошибки обработки JSON-сообщения. Текст ошибки: ${serialStatus.comment}`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+            break;
+          case 12:
+            SerialMonitor.addLog(
+              `Нельзя сменить скорость передачи данных, так как монитор порта закрыт.`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 13:
+            SerialMonitor.addLog(
+              `Нельзя сменить скорость передачи данных, так как монитор порта открыт другим клиентом.`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 14:
+            SerialMonitor.addLog(
+              `Этот монитор порта нельзя закрыть, так как он открыт другим клиентом.`
+            );
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+            break;
+          case 15:
+            SerialMonitor.addLog(`Старая скорость передачи данных совпадает с новой.`);
+            SerialMonitor.setConnectionStatus(SERIAL_MONITOR_CONNECTED);
+            break;
+        }
+        break;
+      }
+      case 'serial-sent-status': {
+        const serialStatus = response.payload as SerialStatus;
+        switch (serialStatus.code) {
+          case 0:
+            SerialMonitor.addLog('Сообщение доставлено на устройство.');
+            break;
+          case 1: {
+            const mainMessage = 'Сообщение не удалось доставить на устройство';
+            if (serialStatus.comment != '') {
+              SerialMonitor.addLog(`${mainMessage}. Текст ошибки: ${serialStatus.comment}`);
+            } else {
+              SerialMonitor.addLog(`${mainMessage}.`);
+            }
+            break;
+          }
+          case 2:
+            SerialMonitor.addLog(
+              `Сообщение не удалось доставить на устройство, так как оно не подключено.`
+            );
+            break;
+          case 3:
+            SerialMonitor.addLog(
+              `Сообщение не удалось доставить на устройство, так как монитор порта закрыт.`
+            );
+            break;
+          case 4:
+            SerialMonitor.addLog(
+              `Сообщение не удалось доставить на устройство, из-за ошибки обработки JSON. Текст ошибки: ${serialStatus.comment}`
+            );
+            break;
+          case 5:
+            SerialMonitor.addLog(
+              `Сообщение не удалось доставить на устройство, так его монитор порта открыт другим клиентом.`
+            );
+            break;
+        }
+        break;
+      }
+      case 'serial-device-read': {
+        const serialRead = response.payload as SerialRead;
+        SerialMonitor.addDeviceMessage(serialRead.msg);
+        break;
+      }
+      case 'flash-open-serial-monitor':
+        this.flashingEnd(
+          'Нельзя начать прошивку этого устройства, так как для него открыт монитора порта.',
+          undefined
+        );
     }
   }
 }

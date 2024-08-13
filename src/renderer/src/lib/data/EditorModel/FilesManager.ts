@@ -1,7 +1,5 @@
 import { Dispatch } from 'react';
 
-import { debuglog } from 'util';
-
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Elements, emptyElements } from '@renderer/types/diagram';

@@ -68,19 +68,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const closeFlasherModal = () => {
-    Flasher.reconnectTimer.freeze(false);
+    Flasher.freezeReconnectTimer(false);
     closeFlasherSettings();
   };
 
   const openLoaderSettings = () => {
-    Flasher.reconnectTimer.freeze(true);
+    Flasher.freezeReconnectTimer(true);
     openFlasherSettings();
   };
 
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
     if (!flasherSetting) return;
 
-    Flasher.reconnectTimer.setAutoReconnect(data.type === 'remote');
+    Flasher.setAutoReconnect(data.type === 'remote');
     setFlasherSetting({ ...flasherSetting, ...data });
   };
 

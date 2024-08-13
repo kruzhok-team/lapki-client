@@ -123,4 +123,19 @@ export abstract class ClientWS {
       this.reconnectTimer = new ReconnectTimer();
     }
   }
+
+  static freezeReconnectTimer(freeze: boolean) {
+    if (this.reconnectTimer) {
+      this.reconnectTimer.freeze(freeze);
+    }
+  }
+
+  static setAutoReconnect(reconnect: boolean) {
+    if (this.reconnectTimer) {
+      this.reconnectTimer.setAutoReconnect(reconnect);
+    } else {
+      this.reconnectTimer = new ReconnectTimer();
+      this.reconnectTimer.setAutoReconnect(reconnect);
+    }
+  }
 }

@@ -19,6 +19,11 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
   const componentOptions: SelectOption[] = useMemo(() => {
+    // Почему-то эта функция может вызываться раньше инициаилзации платформы
+    // из-за чего возникают ошибки
+    if (!controller.platform) {
+      return [];
+    }
     const getComponentOption = (id: string) => {
       const proto = controller.platform!.getComponent(id);
 

@@ -276,7 +276,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'flash-blocked': {
-        this.setFlasherLog('Устройство заблокировано другим пользователем для прошивки.');
+        this.flashingEnd('Устройство заблокировано другим пользователем для прошивки.', undefined);
         break;
       }
       case 'flash-large-file': {
@@ -310,7 +310,10 @@ export class Flasher extends ClientWS {
       }
       // эта ошибка скорее для разработчиков, чем для пользователя, она означает, что-то пошло не так на клиенте (либо на сервере)
       case 'flash-not-started': {
-        this.setFlasherLog('Получен файл, хотя процесс прошивки не запускался.');
+        this.flashingEnd(
+          'Сервер начал получать файл с прошивкой, но процесс загрузки не был инициализирован.',
+          undefined
+        );
         break;
       }
       case 'event-not-supported': {

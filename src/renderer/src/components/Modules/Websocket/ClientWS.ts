@@ -8,9 +8,9 @@ export abstract class ClientWS {
   static host: string;
   // соединение с удалённым сервером, если оно отсутстует, то undefined
   static connection: Websocket | undefined;
-  // true - в данный момент идёт подключение
-  // static connecting: boolean = false;
-  static reconnectTimer: ReconnectTimer = new ReconnectTimer();
+
+  // не стоит инициализировать таймер здесь, так как иначе все наследники буду иметь доступ к одному и тому же объекту
+  static reconnectTimer: ReconnectTimer | undefined = undefined;
 
   static onStatusChange: (newConnectionStatus: string) => void;
 
@@ -24,7 +24,7 @@ export abstract class ClientWS {
   static reconnect() {
     // если мы переподключаемся, то можно сбросить текущий таймер переподключения
     // это позволяется избежать ситуации, когда автоматическое переподключение происходит однвременно с ручным (по нажатию на кнопку)
-    this.reconnectTimer.clearTimer();
+    this.reconnectTimer?.clearTimer();
     this.connect(this.host, this.port);
   }
 
@@ -32,16 +32,12 @@ export abstract class ClientWS {
    * подключение к заданному хосту и порту, отключается от предыдущего адреса
    */
   static async connect(host: string, port: number): Promise<Websocket | undefined> {
-    // чтобы предовратить повторное соединение
-    if (this.connection && this.connection.CONNECTING) return this.connection;
-    // проверяем, что адрес является новым
-    if (this.host != host || this.port != port) {
-      this.reconnectTimer = new ReconnectTimer();
-      // проверяем, что не идёт переподключения к текущему соединению
-    } else if (this.connection && this.connection.OPEN) {
+    if (!this.isEqualAdress(host, port)) {
+      this.initOrResetReconnectTimer();
+      // чтобы предовратить повторное соединение
+    } else if (this.connection && (this.connection.OPEN || this.connection.CONNECTING)) {
       return this.connection;
     }
-    this.onStatusChange(ClientStatus.CONNECTING);
     /*
       перед отключением нужно глобально поменять значения хоста и порта, 
       чтобы клиент не пытался подключиться обратно
@@ -49,6 +45,7 @@ export abstract class ClientWS {
     this.host = host;
     this.port = port;
     this.connection?.close();
+    this.onStatusChange(ClientStatus.CONNECTING);
 
     let ws: Websocket;
     try {
@@ -90,7 +87,7 @@ export abstract class ClientWS {
     if (host == this.host && port == this.port) {
       this.onStatusChange(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
-      if (this.reconnectTimer.isAutoReconnect()) {
+      if (this.reconnectTimer && this.reconnectTimer.isAutoReconnect()) {
         this.reconnectTimer.tryToReconnect(() => {
           this.reconnect();
         });
@@ -105,13 +102,25 @@ export abstract class ClientWS {
   }
 
   static onOpenHandler() {
-    this.reconnectTimer.reset();
+    this.initOrResetReconnectTimer();
     //console.log(`Client: connected to ${this.host}:${this.port}!`);
     this.onStatusChange(ClientStatus.CONNECTED);
   }
 
   static cancelConnection() {
-    this.reconnectTimer.reset(false);
+    this.reconnectTimer?.reset(false);
     this.connection?.close();
+  }
+
+  static isEqualAdress(host: string, port: number) {
+    return host == this.host && port == this.port;
+  }
+
+  static initOrResetReconnectTimer() {
+    if (this.reconnectTimer) {
+      this.reconnectTimer.reset();
+    } else {
+      this.reconnectTimer = new ReconnectTimer();
+    }
   }
 }

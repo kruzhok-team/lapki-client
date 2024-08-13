@@ -50,9 +50,9 @@ export class Label implements Drawable {
       platform.drawEvent(ctx, trigger, x + p, y + p);
       ctx.closePath();
     } else {
-      ctx.beginPath();
-      picto.drawImage(ctx, 'condition', this.parent.drawBounds);
-      ctx.closePath();
+      picto.drawPicto(ctx, x + p, y + p, {
+        rightIcon: 'condition',
+      });
     }
 
     //Здесь начинается прорисовка действий и условий для связей

@@ -187,6 +187,7 @@ export class Compiler extends ClientWS {
   }
 
   static async compile(platform: string, data: Elements | string) {
+    this.setCompilerData(undefined);
     this.platform = platform;
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {

@@ -18,7 +18,6 @@ import {
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '../Modules/SerialMonitor';
-
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
 
 export interface FlasherProps {
@@ -236,7 +235,7 @@ export const Loader: React.FC<FlasherProps> = ({
       Сервер автоматически прервёт соединение с портом на своей стороне при
       отключении клиента.
     */
-    if (connectionStatus != FLASHER_CONNECTED) {
+    if (connectionStatus != ClientStatus.CONNECTED) {
       setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
       return;
     }

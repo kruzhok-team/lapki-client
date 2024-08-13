@@ -217,7 +217,12 @@ export class Compiler extends ClientWS {
 
         this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
-          this.onStatusChange(CompilerStatus.SOMETHING_WRONG);
+          toast.error('Превышено время ожидания компиляции');
+          // возращаем статут соединения, если соединение присутствует
+          // если оно пропало, то статус изменится самостоятельно, то есть тут ничего менять не надо
+          if (this.connection && this.connection.OPEN) {
+            this.onStatusChange(CompilerStatus.CONNECTED);
+          }
         });
       } else {
         console.error('Внутренняя ошибка! Отсутствует подключение');

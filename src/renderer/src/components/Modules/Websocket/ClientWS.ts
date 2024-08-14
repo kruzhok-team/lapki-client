@@ -35,7 +35,11 @@ export abstract class ClientWS {
     if (!this.isEqualAdress(host, port)) {
       this.initOrResetReconnectTimer();
       // чтобы предовратить повторное соединение
-    } else if (this.connection && (this.connection.OPEN || this.connection.CONNECTING)) {
+    } else if (
+      this.connection &&
+      (this.connection.readyState == this.connection.OPEN ||
+        this.connection.readyState == this.connection.CONNECTING)
+    ) {
       return this.connection;
     }
     /*

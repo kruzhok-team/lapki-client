@@ -12,7 +12,7 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
-import { CompilerStatus } from '../Modules/Websocket/ClientStatus';
+import { CompilerStatus, CompilerNoDataStatus } from '../Modules/Websocket/ClientStatus';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -36,6 +36,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
+  const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
+    CompilerNoDataStatus.DEFAULT
+  );
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -108,7 +111,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
     const { host, port } = compilerSetting;
 
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setCompilerNoDataStatus);
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
@@ -185,7 +188,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         </p>
 
         <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
-          Результат компиляции: {compilerData ? compilerData.result : 'Нет данных'}
+          Результат компиляции: {compilerData ? compilerData.result : compilerNoDataStatus}
         </div>
 
         {button.map(({ name, handler, disabled }, i) => (

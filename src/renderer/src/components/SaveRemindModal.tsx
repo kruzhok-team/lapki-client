@@ -34,9 +34,9 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
     reset();
   };
 
-  const handleSave = () => {
-    data?.onSave();
-    data?.onOpen();
+  const handleSave = async () => {
+    await data?.onSave();
+    await data?.onOpen();
     // FIXME: не выполняет подтверждаемое действие после сохранения
     onRequestClose();
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { SaveModalData } from '@renderer/components';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -104,7 +104,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const handleSaveFile = async () => {
+  const handleSaveFile = useCallback(async () => {
     const result = await model?.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -114,7 +114,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     } else {
       // TODO: информировать об успешном сохранении
     }
-  };
+  }, [model?.files, openSaveError]);
 
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
@@ -141,7 +141,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     return () => {
       unsubscribe();
     };
-  }, [handleSaveFile, model.data.isStale, model.data.name]);
+  }, [handleSaveFile, model]);
 
   return {
     saveModalProps: { isOpen, onClose, data },

@@ -1,6 +1,7 @@
 import { optimizer, is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import settings from 'electron-settings';
+import { lookpath } from 'lookpath';
 
 import { join } from 'path';
 
@@ -125,6 +126,12 @@ app.whenReady().then(() => {
   ipcMain.handle('getTemplateData', (_, type: string, name: string) => getTemplate(type, name));
 
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
+
+  ipcMain.handle('hasAvrdude', async () => {
+    const path = await lookpath('avrdude');
+    console.log('hasAvrdude', Boolean(path));
+    return Boolean(path);
+  });
 
   // Горячие клавиши для режима разрабочика:
   // - F12 – инструменты разработки

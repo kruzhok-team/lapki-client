@@ -33,7 +33,6 @@ export const Loader: React.FC<FlasherProps> = ({
 }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
-  const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
   const {
     device: serialMonitorDevice,
@@ -47,6 +46,7 @@ export const Loader: React.FC<FlasherProps> = ({
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
+  const [hasAvrdude, setHasAvrdude] = useState<boolean>(true);
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -198,6 +198,10 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   useEffect(() => {
+    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+      console.log('hasAvrdude', has);
+      setHasAvrdude(has);
+    });
     Flasher.bindReact(
       setFlasherDevices,
       setFlasherConnectionStatus,

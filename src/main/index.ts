@@ -129,7 +129,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('hasAvrdude', async () => {
     const path = await lookpath('avrdude');
-    console.log('hasAvrdude', Boolean(path));
+    //console.log('hasAvrdude', Boolean(path));
     return Boolean(path);
   });
 

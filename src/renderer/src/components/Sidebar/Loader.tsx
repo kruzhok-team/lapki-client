@@ -199,7 +199,7 @@ export const Loader: React.FC<FlasherProps> = ({
 
   useEffect(() => {
     window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
-      console.log('hasAvrdude', has);
+      //console.log('hasAvrdude', has);
       setHasAvrdude(has);
     });
     Flasher.bindReact(

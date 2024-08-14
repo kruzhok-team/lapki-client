@@ -127,6 +127,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         onSave: handleSaveFile,
         onOpen: async () => await performImportFile(setOpenData),
       });
+      openSaveModal();
     } else {
       performImportFile(setOpenData);
     }
@@ -135,7 +136,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const performImportFile = async (
     setOpenData?: Dispatch<[boolean, string | null, string | null, string]>
   ) => {
-    console.log('import');
     if (setOpenData) {
       const result = await model?.files.import(setOpenData);
       if (result) {

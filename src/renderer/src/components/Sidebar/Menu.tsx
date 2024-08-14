@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React, { Dispatch, useLayoutEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -19,8 +19,9 @@ export interface MenuProps {
   onRequestOpenFile: () => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
-  onRequestImport: () => void;
+  onRequestImport: (setOpenData: Dispatch<[boolean, string | null, string | null, string]>) => void;
   compilerStatus: string;
+  setOpenData: Dispatch<[boolean, string | null, string | null, string]>;
   // TODO: isModified: boolean;
 }
 
@@ -58,7 +59,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Импорт...',
       onClick: () => {
-        props.onRequestImport();
+        props.onRequestImport(props.setOpenData);
       },
       disabled: props.compilerStatus !== 'Подключен',
     },
@@ -96,7 +97,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         return props.onRequestOpenFile();
       }
       if (e.code === 'KeyI') {
-        return props.onRequestImport();
+        return props.onRequestImport(props.setOpenData);
       }
     }
   };

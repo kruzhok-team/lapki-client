@@ -61,7 +61,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
-  const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
@@ -69,11 +68,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
   const isEditorDataStale = model.useData('isStale');
-
-  const handleImport = async () => {
-    console.log('import sidebar');
-    onRequestImportFile(setOpenData);
-  };
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);
@@ -99,8 +93,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onRequestOpenFile={onRequestOpenFile}
         onRequestSaveFile={onRequestSaveFile}
         onRequestSaveAsFile={onRequestSaveAsFile}
-        onRequestImport={handleImport}
+        onRequestImport={onRequestImportFile}
         compilerStatus={compilerStatus}
+        setOpenData={setOpenData}
       />,
       <Explorer />,
       <CompilerTab

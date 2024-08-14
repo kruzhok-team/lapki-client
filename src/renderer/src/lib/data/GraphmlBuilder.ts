@@ -295,6 +295,7 @@ function serializeNotes(notes: { [id: string]: Note }): { [id: string]: CGMLNote
       text: note.text,
       position: note.position,
       type: 'informal',
+      unsupportedDataNodes: [],
     };
   }
   return cgmlNotes;
@@ -313,6 +314,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       type: component.type,
       parameters: component.parameters,
       order: component.order,
+      unsupportedDataNodes: [],
     };
   }
   return cgmlComponents;

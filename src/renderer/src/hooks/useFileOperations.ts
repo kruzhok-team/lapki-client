@@ -17,8 +17,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const editor = useEditorContext();
   const model = editor.model;
-  const isStale = model.useData('isStale');
-  const name = model.useData('name');
+  // (Roundabout1) Константы были заменены на прямое обращение к полям model, потому что, иначе будет отсутствовать синхронизация, то есть
+  // эти константы будут выдавать неактуальные значения (точно известно, что isStale не актуален, насчёт name - неизвестно).
+  // Не понятно насколько надёжно это решение.
+  //const isStale = model.useData('isStale');
+  //const name = model.useData('name');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -32,9 +35,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
-    if (isStale) {
+    if (model.data.isStale) {
       setData({
-        shownName: name,
+        shownName: model.data.name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
         onConfirm: performOpenFile,
         onSave: handleSaveFile,
@@ -71,9 +74,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   //Создание нового файла
   const handleNewFile = async () => {
-    if (isStale) {
+    if (model.data.isStale) {
       setData({
-        shownName: name,
+        shownName: model.data.name,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
         onConfirm: openCreateSchemeModal,
         onSave: handleSaveFile,
@@ -116,11 +119,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
-      //Данное условие будет всегда работать(проект будет закрываться), потому что
-      //isStale работает неправильно. Если же заккоментировать код в else, то можно проверить работоспособность условия.
-      if (isStale) {
+      if (model.data.isStale) {
         setData({
-          shownName: name,
+          shownName: model.data.name,
           question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
           //При нажатии на любую из кнопок, он должен закрывать редактор
           onConfirm: () => {
@@ -140,7 +141,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     return () => {
       unsubscribe();
     };
-  }, [handleSaveFile, isStale, name]);
+  }, [handleSaveFile, model.data.isStale, model.data.name]);
 
   return {
     saveModalProps: { isOpen, onClose, data },

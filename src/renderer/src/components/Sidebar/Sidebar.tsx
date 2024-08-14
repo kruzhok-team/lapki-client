@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { Dispatch, useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
@@ -35,6 +35,9 @@ export interface SidebarCallbacks {
   onRequestOpenFile: () => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
+  onRequestImportFile: (
+    setOpenData: Dispatch<[boolean, string | null, string | null, string]>
+  ) => void;
 }
 
 interface SidebarProps {
@@ -43,7 +46,13 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  callbacks: { onRequestNewFile, onRequestOpenFile, onRequestSaveFile, onRequestSaveAsFile },
+  callbacks: {
+    onRequestNewFile,
+    onRequestOpenFile,
+    onRequestSaveFile,
+    onRequestSaveAsFile,
+    onRequestImportFile,
+  },
   openImportError,
 }) => {
   const { model } = useEditorContext();
@@ -62,10 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isEditorDataStale = model.useData('isStale');
 
   const handleImport = async () => {
-    if (await model.files.import(setOpenData)) {
-      clearTabs();
-      openTab({ type: 'editor', name: 'editor' });
-    }
+    console.log('import sidebar');
+    onRequestImportFile(setOpenData);
   };
 
   const closeFlasherModal = () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Dispatch } from 'react';
 
 import { SaveModalData } from '@renderer/components';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -116,6 +116,35 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
+  const handleImportFile = async (
+    setOpenData: Dispatch<[boolean, string | null, string | null, string]>
+  ) => {
+    if (model.data.isStale) {
+      setData({
+        shownName: model.data.name,
+        question: 'Хотите сохранить файл перед тем, как импортировать новый?',
+        onConfirm: performImportFile,
+        onSave: handleSaveFile,
+        onOpen: async () => await performImportFile(setOpenData),
+      });
+    } else {
+      performImportFile(setOpenData);
+    }
+  };
+
+  const performImportFile = async (
+    setOpenData?: Dispatch<[boolean, string | null, string | null, string]>
+  ) => {
+    console.log('import');
+    if (setOpenData) {
+      const result = await model?.files.import(setOpenData);
+      if (result) {
+        clearTabs();
+        openTab({ type: 'editor', name: 'editor' });
+      }
+    }
+  };
+
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
@@ -150,6 +179,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       onRequestOpenFile: handleOpenFile,
       onRequestSaveFile: handleSaveFile,
       onRequestSaveAsFile: handleSaveAsFile,
+      onRequestImportFile: handleImportFile,
     },
     performNewFile,
     handleOpenFromTemplate,

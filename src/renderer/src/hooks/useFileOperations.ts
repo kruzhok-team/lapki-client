@@ -114,7 +114,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     } else {
       // TODO: информировать об успешном сохранении
     }
-  }, [model?.files, openSaveError]);
+  }, [model, openSaveError]);
 
   useEffect(() => {
     //Сохранение проекта после закрытия редактора

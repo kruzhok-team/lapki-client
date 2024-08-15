@@ -22,4 +22,4 @@ export interface SerialMonitorTab {
   name: string;
 }
 
-export type Tab = EditorTab | CodeTab | SerialMonitorTab;
+export type Tab = EditorTab | CodeTab | ScreenTab | SerialMonitorTab;

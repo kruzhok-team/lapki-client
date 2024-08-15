@@ -9,7 +9,7 @@ import {
 
 import { DrawableComponent } from '../drawable/ComponentNode';
 
-export interface ChangeComponentParams {
+export interface EditComponentParams {
   sm: string;
   name: string;
   parameters: ComponentData['parameters'];

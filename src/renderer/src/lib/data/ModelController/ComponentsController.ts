@@ -1,7 +1,7 @@
 import { CanvasScheme } from '@renderer/lib/CanvasScheme';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
-import { ChangeComponentParams, DeleteComponentParams, Layer } from '@renderer/lib/types';
+import { EditComponentParams, DeleteComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateComponentParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
@@ -63,7 +63,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     return component;
   }
 
-  changeComponent(args: ChangeComponentParams) {
+  changeComponent(args: EditComponentParams) {
     const component = this.items.get(args.name);
     if (!component) {
       throw new Error(`Изменение не существующего компонента с идентификатором ${args.name}`);

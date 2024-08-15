@@ -68,12 +68,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isEditorDataStale = controller.model.useData('isStale');
 
-  const handleImport = async () => {
-    await controller.files.import(setOpenData);
-    clearTabs();
-    openTab({ type: 'editor', name: 'editor' });
-  };
-
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);
     closeFlasherSettings();

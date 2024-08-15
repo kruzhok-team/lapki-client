@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
-  ChangeComponentParams,
+  EditComponentParams,
   DeleteComponentParams,
   DeleteStateMachineParams,
   UnlinkStateParams,
@@ -78,7 +78,7 @@ export type PossibleActions = {
 
   createComponent: { args: CreateComponentParams };
   deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
-  changeComponent: { args: ChangeComponentParams; prevComponent: Component };
+  changeComponent: { args: EditComponentParams; prevComponent: Component };
   changeComponentPosition: { name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
 
@@ -328,8 +328,8 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.createComponent.bind(sM, { name: args.name, ...prevComponent }, false),
   }),
   changeComponent: (sM, { args, prevComponent }) => ({
-    redo: sM.changeComponent.bind(sM, args, false),
-    undo: sM.changeComponent.bind(
+    redo: sM.editComponent.bind(sM, args, false),
+    undo: sM.editComponent.bind(
       sM,
       {
         sm: 'G',

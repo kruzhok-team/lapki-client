@@ -17,8 +17,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const modelController = useSchemeContext().controller;
   const model = modelController.model;
-  const isStale = model.useData('isStale');
-  const name = model.useData('name');
+  // const isStale = model.useData('isStale');
+  // const name = model.useData('name');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -59,7 +59,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (result && isRight(result)) {
       clearTabs();
       openTab({ type: 'editor', name: 'editor' });
-      // openTab({ type: 'scheme', name: 'scheme' });
+      openTab({ type: 'scheme', name: 'scheme' });
     }
   };
 
@@ -135,7 +135,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     setOpenData?: Dispatch<[boolean, string | null, string | null, string]>
   ) => {
     if (setOpenData) {
-      const result = await model?.files.import(setOpenData);
+      const result = await modelController.files.import(setOpenData);
       if (result) {
         clearTabs();
         openTab({ type: 'editor', name: 'editor' });

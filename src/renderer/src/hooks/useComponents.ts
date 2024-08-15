@@ -8,7 +8,6 @@ import { useModal } from './useModal';
 
 export const useComponents = () => {
   const editor = useEditorContext();
-  const controller = editor.controller;
   const model = editor.controller.model;
 
   const components = model.useData('elements.components');
@@ -16,31 +15,28 @@ export const useComponents = () => {
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<ComponentData>({
     type: '',
-    position: {
-      x: 0,
-      y: 0,
-    },
     parameters: {},
     order: 0,
+    position: { x: 0, y: 0 },
   });
   const [proto, setProto] = useState(systemComponent);
 
   const [vacantComponents, setVacantComponents] = useState([] as ComponentEntry[]);
 
-  const [isCreateOpen, openCreate, closeCreate] = useModal(false);
-  const [isChangeOpen, openChange, changeClose] = useModal(false);
+  const [isAddOpen, openAdd, closeAdd] = useModal(false);
+  const [isEditOpen, openEdit, editClose] = useModal(false);
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
-  const onRequestCreateComponent = () => {
+  const onRequestAddComponent = () => {
     const controller = editor.controller;
     const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
 
-    openCreate();
+    openAdd();
   };
 
-  const onRequestChangeComponent = (idx: string) => {
+  const onRequestEditComponent = (idx: string) => {
     const controller = editor.controller;
 
     if (!controller.platform) return;
@@ -56,7 +52,7 @@ export const useComponents = () => {
     setIdx(idx);
     setData(component);
     setProto(proto);
-    openChange();
+    openEdit();
   };
 
   const onRequestDeleteComponent = (idx: string) => {
@@ -75,35 +71,36 @@ export const useComponents = () => {
     openDelete();
   };
 
-  const onCreate = (idx: string, name: string | undefined) => {
+  const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
     editor.controller.createComponent({
       name: realName,
       type: idx,
-      position: {
-        x: 0,
-        y: 0,
-      },
       parameters: {},
+      position: { x: 0, y: 0 },
       order: 0,
     });
 
-    onRequestChangeComponent(realName);
+    onRequestEditComponent(realName);
   };
 
-  const onChange = (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => {
-    controller.changeComponent({
+  const onEdit = (
+    idx: string,
+    data: Omit<ComponentData, 'order' | 'position'>,
+    newName?: string
+  ) => {
+    editor.controller.components.changeComponent({
       sm: 'G',
       name: idx,
       parameters: data.parameters,
-      newName: newName,
+      newName,
     });
   };
 
   const onDelete = (idx: string) => {
     editor.controller.deleteComponent({ sm: 'G', name: idx, purge: false });
 
-    changeClose();
+    editClose();
   };
 
   const onSwapComponents = (name1: string, name2: string) => {
@@ -111,19 +108,19 @@ export const useComponents = () => {
   };
 
   return {
-    createProps: {
-      isOpen: isCreateOpen,
-      onClose: closeCreate,
+    addProps: {
+      isOpen: isAddOpen,
+      onClose: closeAdd,
       vacantComponents,
-      onSubmit: onCreate,
+      onSubmit: onAdd,
     },
-    changeProps: {
-      isOpen: isChangeOpen,
-      onClose: changeClose,
+    editProps: {
+      isOpen: isEditOpen,
+      onClose: editClose,
       idx,
       data,
       proto,
-      onChange,
+      onEdit,
       onDelete: onRequestDeleteComponent,
     },
     deleteProps: {
@@ -132,12 +129,12 @@ export const useComponents = () => {
       idx,
       data,
       proto,
-      onChange,
+      onEdit,
       onSubmit: onDelete,
     },
     onSwapComponents,
-    onRequestCreateComponent,
+    onRequestAddComponent,
     onRequestDeleteComponent,
-    onRequestChangeComponent,
+    onRequestEditComponent,
   };
 };

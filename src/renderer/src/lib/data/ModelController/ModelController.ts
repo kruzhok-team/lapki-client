@@ -9,7 +9,7 @@ import { ChoiceState, Note, Transition } from '@renderer/lib/drawable';
 import {
   CopyData,
   CopyType,
-  ChangeComponentParams,
+  EditComponentParams,
   DeleteComponentParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { CreateComponentParams, SwapComponentsParams } from '@renderer/lib/types/ModelTypes';
@@ -138,10 +138,10 @@ export class ModelController {
     if (!init) {
       if (component) {
         this.stateMachines.addComponent('G', component);
-        component.parent = sm;
       }
       this.model.createComponent(args);
     }
+
     this.platform.nameToVisual.set(name, {
       component: type,
     });
@@ -162,7 +162,7 @@ export class ModelController {
     this.scheme.view.isDirty = true;
   }
 
-  changeComponent(args: ChangeComponentParams, canUndo = true) {
+  editComponent(args: EditComponentParams, canUndo = true) {
     const { name, parameters, newName } = args;
 
     if (!this.platform) return;

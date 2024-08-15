@@ -60,7 +60,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
       return;
     }
     component.parent = sm;
-    sm.children.add(component, Layer.Machines);
+    sm.children.add(component, Layer.Components);
 
     this.view.isDirty = true;
   }

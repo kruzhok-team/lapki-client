@@ -1,11 +1,7 @@
 import React, { useMemo, useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-import {
-  ComponentDeleteModal,
-  ComponentCreateModal,
-  ComponentChangeModal,
-} from '@renderer/components';
+import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { useComponents } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
 
@@ -19,12 +15,12 @@ export const ComponentsList: React.FC = () => {
   const components = model.useData('elements.components');
 
   const {
-    createProps,
-    changeProps,
+    addProps,
+    editProps,
     deleteProps,
     onSwapComponents,
-    onRequestCreateComponent,
-    onRequestChangeComponent,
+    onRequestAddComponent,
+    onRequestEditComponent,
     onRequestDeleteComponent,
   } = useComponents();
 
@@ -49,7 +45,7 @@ export const ComponentsList: React.FC = () => {
         type="button"
         className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
         disabled={!isInitialized}
-        onClick={onRequestCreateComponent}
+        onClick={onRequestAddComponent}
       >
         <AddIcon className="shrink-0" />
         Добавить...
@@ -63,7 +59,7 @@ export const ComponentsList: React.FC = () => {
             isSelected={name === selectedComponent}
             isDragging={name === dragName}
             onSelect={() => setSelectedComponent(name)}
-            onChange={() => onRequestChangeComponent(name)}
+            onEdit={() => onRequestEditComponent(name)}
             onDelete={() => onRequestDeleteComponent(name)}
             onDragStart={() => setDragName(name)}
             onDrop={() => onDropComponent(name)}
@@ -71,8 +67,8 @@ export const ComponentsList: React.FC = () => {
         ))}
       </div>
 
-      <ComponentCreateModal {...createProps} />
-      <ComponentChangeModal {...changeProps} />
+      <ComponentAddModal {...addProps} />
+      <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
     </>
   );

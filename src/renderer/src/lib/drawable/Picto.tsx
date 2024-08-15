@@ -45,7 +45,8 @@ type BasePictoKey =
   | 'onEnterAlt'
   | 'onExit'
   | 'onExitAlt'
-  | 'stateMachine';
+  | 'stateMachine'
+  | 'condition';
 
 type BasePicto = {
   [key in BasePictoKey]: string;

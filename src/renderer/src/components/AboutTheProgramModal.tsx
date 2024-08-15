@@ -12,8 +12,8 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   ...props
 }) => {
   const [appVersion, setAppVersion] = useState<string>('0.0.0');
-  const releaseName = 'Abyssinian';
-  const releaseDate = '27 января 2023 года';
+  const releaseName = 'Birman';
+  const releaseDate = '15 августа 2024 года';
 
   useEffect(() => {
     window.electron.ipcRenderer.invoke('appVersion').then((version) => {

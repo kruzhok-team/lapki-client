@@ -66,6 +66,12 @@ function serializeEvent(trigger: Event): string {
   }
 }
 
+function getActionDelimeter(platform: Platform, componentType: string): string {
+  const platformComponent = platform.components[componentType];
+  const isArduino = platform.name?.startsWith('Arduino');
+  return platformComponent.singletone && isArduino ? '::' : '.';
+}
+
 function serializeActions(
   actions: Action[],
   components: { [id: string]: Component },
@@ -97,7 +103,7 @@ export function serializeTransitionEvents(
     {
       trigger: {
         event: trigger ? serializeEvent(trigger) : undefined,
-        condition: condition ? serializeCondition(condition) : undefined,
+        condition: condition ? serializeCondition(condition, platform, components) : undefined,
       },
       action: doActions ? serializeActions(doActions, components, platform) : undefined,
     },
@@ -114,7 +120,9 @@ export function serializeStateEvents(
     serializedActions.push({
       trigger: {
         event: serializeEvent(event.trigger),
-        condition: event.condition ? serializeCondition(event.condition) : undefined,
+        condition: event.condition
+          ? serializeCondition(event.condition, platform, components)
+          : undefined,
       },
       action: serializeActions(event.do, components, platform),
     });
@@ -162,22 +170,31 @@ function isConditionArray(value: unknown): value is Condition[] {
   return Array.isArray(value);
 }
 
-function getOperand(operand: string | number | Variable | Condition[]): string | number {
+function getOperand(
+  operand: string | number | Variable | Condition[],
+  platform: Platform,
+  components: { [id: string]: Component }
+): string | number {
   if (isConditionArray(operand)) {
     throw new Error('Internal error: operand is Condition[]');
   }
   if (isVariable(operand)) {
-    return `${operand.component}.${operand.method}`;
+    const component = components[operand.component];
+    return `${operand.component}${getActionDelimeter(platform, component.type)}${operand.method}`;
   }
   return operand;
 }
 
-function serializeCondition(condition: Condition): string {
+function serializeCondition(
+  condition: Condition,
+  platform: Platform,
+  components: { [id: string]: Component }
+): string {
   if (!isConditionArray(condition.value)) {
     throw new Error('Internal error: condition.value is not Condition[];');
   }
-  const lval = getOperand(condition.value[0].value);
-  const rval = getOperand(condition.value[1].value);
+  const lval = getOperand(condition.value[0].value, platform, components);
+  const rval = getOperand(condition.value[1].value, platform, components);
   return `${lval} ${invertOperatorAlias[condition.type]} ${rval}`;
 }
 

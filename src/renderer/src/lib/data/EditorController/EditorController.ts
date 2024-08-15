@@ -311,7 +311,7 @@ export class EditorController {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
       return this.states.createState({
-        ...data,
+        ...structuredClone(data),
         id: undefined, // id должно сгенерится новое, так как это новая сущность
         linkByPoint: false,
         position: {

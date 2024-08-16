@@ -36,7 +36,7 @@ export const SerialMonitorTab: React.FC = () => {
     { label: 'CR', value: String.fromCharCode(13), hint: 'Символ возврата каретки' },
     {
       label: 'CR&LF',
-      value: String.fromCharCode(10) + String.fromCharCode(13),
+      value: String.fromCharCode(13) + String.fromCharCode(10),
       hint: 'Символы возврата каретки и новой строки',
     },
     { label: 'Без', value: '', hint: 'Без символов окончания строки' },

@@ -18,7 +18,7 @@ export const defaultSettings = {
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {
     baudRate: 9600,
-    lineBreak: 'LF' as 'LF' | 'CR' | 'CR&LF' | '',
+    lineBreak: 'LF' as 'LF' | 'CR' | 'CR&LF' | 'Без',
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',

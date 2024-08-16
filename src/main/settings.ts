@@ -15,6 +15,11 @@ export const defaultSettings = {
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
     type: 'local' as 'local' | 'remote',
   },
+  // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
+  serialmonitor: {
+    baudRate: 9600,
+    lineBreak: 'LF' as 'LF' | 'CR' | 'CR&LF' | '',
+  },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',
   canvas: {

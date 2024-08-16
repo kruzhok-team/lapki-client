@@ -10,6 +10,31 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { Select, SelectOption, Switch, TextInput } from './UI';
 
+// опции выбора символа окончания строки
+// при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
+class LineBreakOptions {
+  static LF: SelectOption = {
+    label: 'LF',
+    value: String.fromCharCode(10),
+    hint: 'Символ новой строки',
+  };
+  static CR: SelectOption = {
+    label: 'CR',
+    value: String.fromCharCode(13),
+    hint: 'Символ возврата каретки',
+  };
+  static CRLF: SelectOption = {
+    label: 'CR&LF',
+    value: this.CR.value + this.LF.value,
+    hint: 'Символы возврата каретки и новой строки',
+  };
+  static EMPTY: SelectOption = {
+    label: 'Без',
+    value: '',
+    hint: 'Без символов окончания строки',
+  };
+}
+
 export const SerialMonitorTab: React.FC = () => {
   const {
     deviceMessages,
@@ -30,18 +55,7 @@ export const SerialMonitorTab: React.FC = () => {
     2000000, 2500000, 3000000, 3500000, 4000000,
   ].map(makeOption);
 
-  // при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
-  const lineBreakAll = [
-    { label: 'LF', value: String.fromCharCode(10), hint: 'Символ новой строки' },
-    { label: 'CR', value: String.fromCharCode(13), hint: 'Символ возврата каретки' },
-    {
-      label: 'CR&LF',
-      value: String.fromCharCode(13) + String.fromCharCode(10),
-      hint: 'Символы возврата каретки и новой строки',
-    },
-    { label: 'Без', value: '', hint: 'Без символов окончания строки' },
-  ];
-  const [lineBreak, setLineBreak] = useState<SelectOption>(lineBreakAll[0]);
+  const [lineBreak, setLineBreak] = useState<SelectOption>(LineBreakOptions.LF);
 
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>('');
@@ -121,7 +135,12 @@ export const SerialMonitorTab: React.FC = () => {
                 setLineBreak(option);
               }
             }}
-            options={lineBreakAll}
+            options={[
+              LineBreakOptions.LF,
+              LineBreakOptions.CR,
+              LineBreakOptions.CRLF,
+              LineBreakOptions.EMPTY,
+            ]}
           />
         </div>
         <button

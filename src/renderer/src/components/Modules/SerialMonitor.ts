@@ -1,11 +1,4 @@
-import {
-  Device,
-  FlasherMessage,
-  SerialChangeBaud,
-  SerialConnect,
-  SerialDisconnect,
-  SerialSend,
-} from '@renderer/types/FlasherTypes';
+import { Device } from '@renderer/types/FlasherTypes';
 
 import { Flasher } from './Flasher';
 

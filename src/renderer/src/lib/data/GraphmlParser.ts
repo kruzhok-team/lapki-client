@@ -10,6 +10,8 @@ import {
   CGMLVertex,
 } from '@kruzhok-team/cyberiadaml-js';
 
+import { constants } from 'fs';
+
 import {
   Action,
   ArgList,
@@ -99,7 +101,16 @@ function initArgList(args: string[]): ArgList {
 }
 
 function parseAction(unproccessedAction: string): Action | undefined {
-  let [componentName, action] = unproccessedAction.trim().split('.');
+  const getAction = (delimeter: string, reserveDelimeter: string) => {
+    const trimed = unproccessedAction.trim();
+    const firstSplit = trimed.split(delimeter);
+    if (firstSplit.length > 1) {
+      return firstSplit;
+    }
+    const secondSplit = trimed.split(reserveDelimeter);
+    return secondSplit;
+  };
+  let [componentName, action] = getAction('.', '::');
   if (action === undefined) {
     return;
   }

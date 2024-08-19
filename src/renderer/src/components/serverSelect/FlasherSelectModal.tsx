@@ -1,8 +1,9 @@
 import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
-import { Select, Modal, TextField } from '@renderer/components/UI';
+import { Select, Modal, TextField, Checkbox } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 
 const options = [
@@ -20,6 +21,8 @@ export interface FlasherSelectModalFormValues {
   host: string;
   port: number;
   type: 'local' | 'remote';
+  avrdudePath: string;
+  avrdudeSystemPath: boolean;
 }
 
 export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
@@ -38,6 +41,8 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   } = useForm<FlasherSelectModalFormValues>();
 
   const isSecondaryFieldsDisabled = watch('type') === 'local';
+
+  const isChecked = watch('avrdudeSystemPath') == true;
 
   const handleSubmit = hookHandleSubmit((data) => {
     onSubmit(data);
@@ -60,7 +65,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     <Modal
       {...props}
       onRequestClose={onClose}
-      title={'Укажите адрес загрузчика'}
+      title={'Настройки загрузчика'}
       submitLabel="Подключиться"
       onSubmit={handleSubmit}
     >
@@ -117,6 +122,23 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           }}
           disabled={isSecondaryFieldsDisabled}
         />
+      </div>
+
+      <div className={twMerge('mb-2 flex gap-2', !isSecondaryFieldsDisabled && 'hidden')}>
+        <TextField
+          maxLength={200}
+          className="disabled:opacity-50"
+          label="Путь к avrdude:"
+          {...register('avrdudePath')}
+          placeholder="Напишите путь к avrdude"
+          disabled={isChecked}
+        />
+        <Checkbox
+          checked={isChecked}
+          onCheckedChange={() => setValue('avrdudeSystemPath', !isChecked)}
+          className="mr-2 mt-[9px]"
+        />
+        Использовать системный путь
       </div>
 
       <div>{currentServerLabel}</div>

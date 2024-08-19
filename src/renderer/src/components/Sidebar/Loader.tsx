@@ -15,6 +15,7 @@ import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 import {
   SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
@@ -80,7 +81,12 @@ export const Loader: React.FC<FlasherProps> = ({
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
     }
-    if (serialMonitorDevice && serialConnectionStatus == SERIAL_MONITOR_CONNECTED) {
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == currentDeviceID &&
+      (serialConnectionStatus == SERIAL_MONITOR_CONNECTED ||
+        serialConnectionStatus == SERIAL_MONITOR_CONNECTING)
+    ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     if (flasherFile) {

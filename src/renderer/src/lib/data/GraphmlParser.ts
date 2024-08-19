@@ -10,8 +10,6 @@ import {
   CGMLVertex,
 } from '@kruzhok-team/cyberiadaml-js';
 
-import { constants } from 'fs';
-
 import {
   Action,
   ArgList,

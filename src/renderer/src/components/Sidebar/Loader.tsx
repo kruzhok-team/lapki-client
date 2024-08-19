@@ -198,10 +198,6 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   useEffect(() => {
-    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
-      //console.log('hasAvrdude', has);
-      setHasAvrdude(has);
-    });
     Flasher.bindReact(
       setFlasherDevices,
       setFlasherConnectionStatus,
@@ -222,13 +218,20 @@ export const Loader: React.FC<FlasherProps> = ({
 
   useEffect(() => {
     if (!flasherSetting) return;
-    const { host, port, localPort, type } = flasherSetting;
+    const { host, port, localPort, type, avrdudeSystemPath } = flasherSetting;
     if (type === 'local' && port !== localPort) {
       setFlasherSetting({ ...flasherSetting, port: localPort }).then(() => {
         Flasher.connect(host, localPort);
       });
     } else {
       Flasher.connect(host, port);
+    }
+    if (avrdudeSystemPath) {
+      window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+        setHasAvrdude(has);
+      });
+    } else {
+      setHasAvrdude(true);
     }
   }, [flasherSetting, setFlasherSetting]);
 

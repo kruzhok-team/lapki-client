@@ -59,6 +59,8 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     setValue('type', flasherSetting.type);
     setValue('host', flasherSetting.host ?? '');
     setValue('port', Number(flasherSetting.port ?? ''));
+    setValue('avrdudePath', flasherSetting.avrdudePath);
+    setValue('avrdudeSystemPath', flasherSetting.avrdudeSystemPath);
   }, [setValue, flasherSetting]);
 
   return (

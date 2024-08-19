@@ -108,25 +108,28 @@ export class ModuleManager {
               '-listCooldown=0',
               `-address=localhost:${port}`,
             ];
-
-            let avrdudePath = '';
-            let configPath = '';
-            switch (platform) {
-              case 'darwin':
-              case 'linux':
-                avrdudePath = `${osPath}/avrdude`;
-                configPath = `${osPath}/avrdude.conf`;
-                break;
-              case 'win32':
-                avrdudePath = `${osPath}\\avrdude.exe`;
-                configPath = `${osPath}\\avrdude.conf`;
-                break;
-            }
-            if (existsSync(avrdudePath)) {
-              flasherArgs.push(`-avrdudePath=${avrdudePath}`);
-            }
-            if (existsSync(configPath)) {
-              flasherArgs.push(`-configPath=${configPath}`);
+            const avrdudeSystemPath = await settings.get('flasher.avrdudeSystemPath');
+            const avrdudeFolderPath = await settings.get('flasher.avrdudePath');
+            if (avrdudeSystemPath == false && avrdudeFolderPath) {
+              let avrdudePath = '';
+              let configPath = '';
+              switch (platform) {
+                case 'darwin':
+                case 'linux':
+                  avrdudePath = `${avrdudeFolderPath}/avrdude`;
+                  configPath = `${avrdudeFolderPath}/avrdude.conf`;
+                  break;
+                case 'win32':
+                  avrdudePath = `${avrdudeFolderPath}\\avrdude.exe`;
+                  configPath = `${avrdudeFolderPath}\\avrdude.conf`;
+                  break;
+              }
+              if (existsSync(avrdudePath)) {
+                flasherArgs.push(`-avrdudePath=${avrdudePath}`);
+              }
+              if (existsSync(configPath)) {
+                flasherArgs.push(`-configPath=${configPath}`);
+              }
             }
             chprocess = spawn(modulePath, flasherArgs);
             break;

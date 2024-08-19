@@ -5,13 +5,13 @@ import Websocket from 'isomorphic-ws';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   Device,
-  FlashStart,
   FlashUpdatePort,
   FlasherMessage,
   UpdateDelete,
   FlashResult,
   SerialStatus,
   SerialRead,
+  FlasherPayload,
 } from '@renderer/types/FlasherTypes';
 
 import {
@@ -118,12 +118,7 @@ export class Flasher extends ClientWS {
   }
 
   static getList(): void {
-    this.connection?.send(
-      JSON.stringify({
-        type: 'get-list',
-        payload: undefined,
-      } as FlasherMessage)
-    );
+    this.send('get-list', undefined);
     this.setFlasherLog('Запрос на обновление списка отправлен!');
   }
 
@@ -190,15 +185,10 @@ export class Flasher extends ClientWS {
 
   static flash(device: Device) {
     this.refresh();
-    const payload = {
+    this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
-    } as FlashStart;
-    const request = {
-      type: 'flash-start',
-      payload: payload,
-    } as FlasherMessage;
-    this.connection?.send(JSON.stringify(request));
+    });
     this.setFlasherLog('Идет загрузка...');
     this.currentFlashingDevice = device;
   }
@@ -267,7 +257,7 @@ export class Flasher extends ClientWS {
         this.updatePort(response.payload as FlashUpdatePort);
         break;
       }
-      case 'unmarshal-error': {
+      case 'unmarshal-err': {
         this.setFlasherLog('Не удалось прочесть запрос от клиента (возможно, конфликт версий).');
         break;
       }
@@ -473,5 +463,13 @@ export class Flasher extends ClientWS {
           undefined
         );
     }
+  }
+
+  static send(type: string, payload: FlasherPayload) {
+    const request = {
+      type: type,
+      payload: payload,
+    } as FlasherMessage;
+    this.connection?.send(JSON.stringify(request));
   }
 }

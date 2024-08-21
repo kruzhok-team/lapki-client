@@ -63,6 +63,11 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     setValue('avrdudeSystemPath', flasherSetting.avrdudeSystemPath);
   }, [setValue, flasherSetting]);
 
+  const handleReboot = async () => {
+    // TODO: проверка на то, что монитор порта закрыт и прошивка не идёт
+    await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
+  };
+
   return (
     <Modal
       {...props}
@@ -94,11 +99,13 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
                   options={options}
                   isSearchable={false}
                 />
+                <div>{currentServerLabel}</div>
               </div>
             );
           }}
         />
       </div>
+      <br></br>
       <div className="mb-2 flex gap-2">
         <TextField
           maxLength={80}
@@ -125,25 +132,28 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={isSecondaryFieldsDisabled}
         />
       </div>
-
-      <div className={twMerge('mb-2 flex gap-2', !isSecondaryFieldsDisabled && 'hidden')}>
-        <TextField
-          maxLength={200}
-          className="disabled:opacity-50"
-          label="Путь к avrdude:"
-          {...register('avrdudePath')}
-          placeholder="Напишите путь к avrdude"
-          disabled={isChecked}
-        />
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={() => setValue('avrdudeSystemPath', !isChecked)}
-          className="mr-2 mt-[9px]"
-        />
-        Использовать системный путь
+      <br></br>
+      <div className={twMerge(!isSecondaryFieldsDisabled && 'hidden')}>
+        <div className="mb-2 flex gap-2">
+          <TextField
+            maxLength={200}
+            className="disabled:opacity-50"
+            label="Путь к avrdude:"
+            {...register('avrdudePath')}
+            placeholder="Напишите путь к avrdude"
+            disabled={isChecked}
+          />
+          <Checkbox
+            checked={isChecked}
+            onCheckedChange={() => setValue('avrdudeSystemPath', !isChecked)}
+            className="mr-2 mt-[9px]"
+          />
+          Использовать системный путь
+        </div>
+        <button className="btn-primary" onClick={handleReboot}>
+          Перезапустить <br></br>загрузчик
+        </button>
       </div>
-
-      <div>{currentServerLabel}</div>
     </Modal>
   );
 };

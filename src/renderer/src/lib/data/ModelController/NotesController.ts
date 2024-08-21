@@ -58,7 +58,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    return note;
+    // return note;
   }
 
   changeNoteText = (id: string, text: string, canUndo = true) => {

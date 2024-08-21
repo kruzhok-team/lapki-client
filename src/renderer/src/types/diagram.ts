@@ -106,8 +106,7 @@ export type Component = {
   selection?: boolean;
 };
 
-// Это описание типа схемы которая хранится в json файле
-export type Elements = {
+export type StateMachine = {
   states: { [id: string]: State };
   initialStates: { [id: string]: InitialState };
   finalStates: { [id: string]: FinalState };
@@ -117,12 +116,17 @@ export type Elements = {
   notes: { [id: string]: Note };
 
   platform: string;
-  parameters?: { [key: string]: string };
   compilerSettings?: CompilerSettings | null;
   meta: Meta;
 };
 
-export function emptyElements(): Elements {
+// Это описание типа схемы которая хранится в json файле
+export type Elements = {
+  stateMachines: { [id: string]: StateMachine };
+  parameters?: { [key: string]: string };
+};
+
+export function emptyStateMachine(): StateMachine {
   return {
     states: {},
     initialStates: {},
@@ -131,10 +135,15 @@ export function emptyElements(): Elements {
     transitions: {},
     components: {},
     notes: {},
-
     platform: '',
-    parameters: {},
     compilerSettings: null,
     meta: {},
+  };
+}
+
+export function emptyElements(): Elements {
+  return {
+    stateMachines: {},
+    parameters: {},
   };
 }

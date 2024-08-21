@@ -1,4 +1,4 @@
-import { CanvasScheme } from '@renderer/lib/CanvasScheme';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { EditComponentParams, DeleteComponentParams, Layer } from '@renderer/lib/types';
@@ -19,7 +19,7 @@ interface ComponentsControllerEvents {
 export class ComponentsController extends EventEmitter<ComponentsControllerEvents> {
   items: Map<string, DrawableComponent> = new Map();
 
-  constructor(private app: CanvasScheme) {
+  constructor(private app: CanvasEditor) {
     super();
   }
 

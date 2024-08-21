@@ -1,7 +1,7 @@
 import { Point } from 'electron';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { CanvasScheme } from '@renderer/lib/CanvasScheme';
+import { EventEmitter } from '@renderer/lib/common';
 import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
@@ -15,16 +15,10 @@ import {
 import { CreateComponentParams, SwapComponentsParams } from '@renderer/lib/types/ModelTypes';
 import { Condition, Elements, Variable } from '@renderer/types/diagram';
 
-import { ComponentsController } from './ComponentsController';
-import { NotesController } from './NotesController';
-import { StateMachineController } from './StateMachineController';
-import { StatesController } from './StatesController';
-import { TransitionsController } from './TransitionsController';
-
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
 import { Initializer } from '../Initializer';
-import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
+import { operatorSet, PlatformManager } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.
@@ -42,7 +36,11 @@ import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
-export class ModelController {
+interface ModelControllerEvents {
+  initPlatform: null; // Каждый CanvasController инициализирует свою платформу
+}
+
+export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
 
   //! Порядок создания важен, так как контроллер при инициализации использует представление
@@ -55,43 +53,18 @@ export class ModelController {
       this.history.clear();
     }
   );
-  initializer!: Initializer;
-  platform: PlatformManager | null = null;
   files = new FilesManager(this);
   history = new History(this);
-
-  states!: StatesController;
-  transitions!: TransitionsController;
-  notes!: NotesController;
-  components!: ComponentsController;
-  stateMachines!: StateMachineController;
 
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
-  public constructor(private editor: CanvasEditor, private scheme: CanvasScheme) {
-    this.initializer = new Initializer(editor, scheme, this);
-
-    this.states = new StatesController(editor);
-    this.transitions = new TransitionsController(editor);
-    this.notes = new NotesController(editor);
-
-    this.components = new ComponentsController(scheme);
-    this.stateMachines = new StateMachineController(scheme);
-  }
-
-  static getInstance(editor: CanvasEditor, scheme: CanvasScheme): ModelController {
-    if (!ModelController.instance) {
-      ModelController.instance = new ModelController(editor, scheme);
-    }
-    return ModelController.instance;
-  }
-
   initPlatform() {
-    const platformName = this.model.data.elements.platform;
+    this.emit('initPlatform', null);
+    // const platformName = this.model.data.elements.platform;
 
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platform = loadPlatform(platformName);
+    // const platform = loadPlatform(platformName);
     if (typeof platform === 'undefined') {
       throw Error("couldn't init platform " + platformName);
     }
@@ -114,8 +87,8 @@ export class ModelController {
   loadData() {
     this.initializer.init();
 
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
+    // this.editor.view.isDirty = true;
+    // this.scheme.view.isDirty = true;
   }
 
   selectComponent(id: string) {
@@ -318,203 +291,203 @@ export class ModelController {
     }
   }
 
-  deleteSelected = () => {
-    this.editor.controller.states.forEachState((state) => {
-      if (!state.isSelected) return;
+  // deleteSelected = () => {
+  //   this.editor.controller.states.forEachState((state) => {
+  //     if (!state.isSelected) return;
 
-      if (state.eventBox.selection) {
-        this.editor.controller.states.deleteEvent(state.id, state.eventBox.selection);
-        state.eventBox.selection = undefined;
-        return;
-      }
+  //     if (state.eventBox.selection) {
+  //       this.editor.controller.states.deleteEvent(state.id, state.eventBox.selection);
+  //       state.eventBox.selection = undefined;
+  //       return;
+  //     }
 
-      this.editor.controller.states.deleteState(state.id);
-    });
+  //     this.editor.controller.states.deleteState(state.id);
+  //   });
 
-    this.editor.controller.states.data.choiceStates.forEach((state) => {
-      if (!state.isSelected) return;
+  //   this.editor.controller.states.data.choiceStates.forEach((state) => {
+  //     if (!state.isSelected) return;
 
-      this.editor.controller.states.deleteChoiceState(state.id);
-    });
+  //     this.editor.controller.states.deleteChoiceState(state.id);
+  //   });
 
-    this.editor.controller.transitions.forEach((transition) => {
-      if (!transition.isSelected) return;
+  //   this.editor.controller.transitions.forEach((transition) => {
+  //     if (!transition.isSelected) return;
 
-      this.editor.controller.transitions.deleteTransition(transition.id);
-    });
+  //     this.editor.controller.transitions.deleteTransition(transition.id);
+  //   });
 
-    this.editor.controller.notes.forEach((note) => {
-      if (!note.isSelected) return;
+  //   this.editor.controller.notes.forEach((note) => {
+  //     if (!note.isSelected) return;
 
-      this.editor.controller.notes.deleteNote(note.id);
-    });
+  //     this.editor.controller.notes.deleteNote(note.id);
+  //   });
 
-    this.scheme.controller.components.forEach((component) => {
-      if (!component.isSelected) return;
+  //   this.scheme.controller.components.forEach((component) => {
+  //     if (!component.isSelected) return;
 
-      //scheme.controller.components.deleteComponent(component.id);
-    });
-  };
+  //     //scheme.controller.components.deleteComponent(component.id);
+  //   });
+  // };
 
-  copySelected = () => {
-    const nodeToCopy =
-      [...this.states.data.states.values()].find((state) => state.isSelected) ||
-      [...this.states.data.choiceStates.values()].find((state) => state.isSelected) ||
-      [...this.transitions.items.values()].find((transition) => transition.isSelected) ||
-      [...this.notes.items.values()].find((note) => note.isSelected);
+  // copySelected = () => {
+  //   const nodeToCopy =
+  //     [...this.states.data.states.values()].find((state) => state.isSelected) ||
+  //     [...this.states.data.choiceStates.values()].find((state) => state.isSelected) ||
+  //     [...this.transitions.items.values()].find((transition) => transition.isSelected) ||
+  //     [...this.notes.items.values()].find((note) => note.isSelected);
 
-    if (!nodeToCopy) return;
+  //   if (!nodeToCopy) return;
 
-    // Тип нужен чтобы отделить ноды при вставке
-    let copyType: CopyType = 'state';
-    if (nodeToCopy instanceof ChoiceState) copyType = 'choiceState';
-    if (nodeToCopy instanceof Transition) copyType = 'transition';
-    if (nodeToCopy instanceof Note) copyType = 'note';
+  //   // Тип нужен чтобы отделить ноды при вставке
+  //   let copyType: CopyType = 'state';
+  //   if (nodeToCopy instanceof ChoiceState) copyType = 'choiceState';
+  //   if (nodeToCopy instanceof Transition) copyType = 'transition';
+  //   if (nodeToCopy instanceof Note) copyType = 'note';
 
-    // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
-    if (nodeToCopy.id !== this.copyData?.data.id) {
-      this.pastePositionOffset = 0;
-    }
+  //   // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
+  //   if (nodeToCopy.id !== this.copyData?.data.id) {
+  //     this.pastePositionOffset = 0;
+  //   }
 
-    this.copyData = {
-      type: copyType,
-      data: { ...(structuredClone(nodeToCopy.data) as any), id: nodeToCopy.id },
-    };
-  };
+  //   this.copyData = {
+  //     type: copyType,
+  //     data: { ...(structuredClone(nodeToCopy.data) as any), id: nodeToCopy.id },
+  //   };
+  // };
 
-  pasteSelected = () => {
-    if (!this.copyData) return;
+  // pasteSelected = () => {
+  //   if (!this.copyData) return;
 
-    const { type, data } = this.copyData;
+  //   const { type, data } = this.copyData;
 
-    if (type === 'state') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+  //   if (type === 'state') {
+  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      return this.states.createState({
-        ...structuredClone(data),
-        id: undefined, // id должно сгенерится новое, так как это новая сущность
-        linkByPoint: false,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-    }
+  //     return this.states.createState({
+  //       ...structuredClone(data),
+  //       id: undefined, // id должно сгенерится новое, так как это новая сущность
+  //       linkByPoint: false,
+  //       position: {
+  //         x: data.position.x + this.pastePositionOffset,
+  //         y: data.position.y + this.pastePositionOffset,
+  //       },
+  //     });
+  //   }
 
-    if (type === 'choiceState') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+  //   if (type === 'choiceState') {
+  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      return this.states.createChoiceState({
-        ...data,
-        id: undefined,
-        linkByPoint: false,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-    }
+  //     return this.states.createChoiceState({
+  //       ...data,
+  //       id: undefined,
+  //       linkByPoint: false,
+  //       position: {
+  //         x: data.position.x + this.pastePositionOffset,
+  //         y: data.position.y + this.pastePositionOffset,
+  //       },
+  //     });
+  //   }
 
-    if (type === 'note') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+  //   if (type === 'note') {
+  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      return this.editor.controller.notes.createNote({
-        ...data,
-        id: undefined,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-    }
+  //     return this.editor.controller.notes.createNote({
+  //       ...data,
+  //       id: undefined,
+  //       position: {
+  //         x: data.position.x + this.pastePositionOffset,
+  //         y: data.position.y + this.pastePositionOffset,
+  //       },
+  //     });
+  //   }
 
-    if (type === 'transition') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+  //   if (type === 'transition') {
+  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const getLabel = () => {
-        if (!this.copyData) return;
+  //     const getLabel = () => {
+  //       if (!this.copyData) return;
 
-        if (!data.label) return undefined;
+  //       if (!data.label) return undefined;
 
-        return {
-          ...data.label,
-          position: {
-            x: data.label.position.x + this.pastePositionOffset,
-            y: data.label.position.y + this.pastePositionOffset,
-          },
-        };
-      };
+  //       return {
+  //         ...data.label,
+  //         position: {
+  //           x: data.label.position.x + this.pastePositionOffset,
+  //           y: data.label.position.y + this.pastePositionOffset,
+  //         },
+  //       };
+  //     };
 
-      return this.editor.controller.transitions.createTransition({
-        ...data,
-        id: undefined,
-        label: getLabel(),
-      });
-    }
+  //     return this.editor.controller.transitions.createTransition({
+  //       ...data,
+  //       id: undefined,
+  //       label: getLabel(),
+  //     });
+  //   }
 
-    if (type === 'component') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+  //   if (type === 'component') {
+  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      return this.scheme.controller.components.createComponent({
-        ...data,
-        name: '', // name должно сгенерится новое, так как это новая сушность
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-    }
-    return null;
-  };
+  //     return this.scheme.controller.components.createComponent({
+  //       ...data,
+  //       name: '', // name должно сгенерится новое, так как это новая сушность
+  //       position: {
+  //         x: data.position.x + this.pastePositionOffset,
+  //         y: data.position.y + this.pastePositionOffset,
+  //       },
+  //     });
+  //   }
+  //   return null;
+  // };
 
-  duplicateSelected = () => {
-    this.copySelected();
-    this.pasteSelected();
-  };
+  // duplicateSelected = () => {
+  //   this.copySelected();
+  //   this.pasteSelected();
+  // };
 
-  selectState(id: string) {
-    const state = this.editor.controller.states.data.states.get(id);
-    if (!state) return;
+  // selectState(id: string) {
+  //   const state = this.editor.controller.states.data.states.get(id);
+  //   if (!state) return;
 
-    this.removeSelection();
+  //   this.removeSelection();
 
-    this.model.changeStateSelection(id, true);
+  //   this.model.changeStateSelection(id, true);
 
-    state.setIsSelected(true);
-  }
+  //   state.setIsSelected(true);
+  // }
 
-  selectChoiceState(id: string) {
-    const state = this.editor.controller.states.data.choiceStates.get(id);
-    if (!state) return;
+  // selectChoiceState(id: string) {
+  //   const state = this.editor.controller.states.data.choiceStates.get(id);
+  //   if (!state) return;
 
-    this.removeSelection();
+  //   this.removeSelection();
 
-    this.model.changeChoiceStateSelection(id, true);
+  //   this.model.changeChoiceStateSelection(id, true);
 
-    state.setIsSelected(true);
-  }
+  //   state.setIsSelected(true);
+  // }
 
-  selectTransition(id: string) {
-    const transition = this.editor.controller.transitions.get(id);
-    if (!transition) return;
+  // selectTransition(id: string) {
+  //   const transition = this.editor.controller.transitions.get(id);
+  //   if (!transition) return;
 
-    this.removeSelection();
+  //   this.removeSelection();
 
-    this.model.changeTransitionSelection(id, true);
+  //   this.model.changeTransitionSelection(id, true);
 
-    transition.setIsSelected(true);
-  }
+  //   transition.setIsSelected(true);
+  // }
 
-  selectNote(id: string) {
-    const note = this.editor.controller.notes.get(id);
-    if (!note) return;
+  // selectNote(id: string) {
+  //   const note = this.editor.controller.notes.get(id);
+  //   if (!note) return;
 
-    this.removeSelection();
+  //   this.removeSelection();
 
-    this.model.changeNoteSelection(id, true);
+  //   this.model.changeNoteSelection(id, true);
 
-    note.setIsSelected(true);
-  }
+  //   note.setIsSelected(true);
+  // }
 
   // selectStateMachine(id: string) {
   //   const sm = this.editor.controller.notes.get(id);
@@ -536,55 +509,55 @@ export class ModelController {
    * @privateRemarks
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
-  removeSelection() {
-    this.editor.controller.states.data.choiceStates.forEach((state) => {
-      state.setIsSelected(false);
+  // removeSelection() {
+  //   this.editor.controller.states.data.choiceStates.forEach((state) => {
+  //     state.setIsSelected(false);
 
-      this.model.changeChoiceStateSelection(state.id, false);
-    });
+  //     this.model.changeChoiceStateSelection(state.id, false);
+  //   });
 
-    this.editor.controller.states.forEachState((state) => {
-      state.setIsSelected(false);
-      this.model.changeStateSelection(state.id, false);
-      state.eventBox.selection = undefined;
-    });
+  //   this.editor.controller.states.forEachState((state) => {
+  //     state.setIsSelected(false);
+  //     this.model.changeStateSelection(state.id, false);
+  //     state.eventBox.selection = undefined;
+  //   });
 
-    this.editor.controller.transitions.forEach((transition) => {
-      transition.setIsSelected(false);
-      this.model.changeTransitionSelection(transition.id, false);
-    });
+  //   this.editor.controller.transitions.forEach((transition) => {
+  //     transition.setIsSelected(false);
+  //     this.model.changeTransitionSelection(transition.id, false);
+  //   });
 
-    this.editor.controller.notes.forEach((note) => {
-      note.setIsSelected(false);
-      this.model.changeNoteSelection(note.id, false);
-    });
+  //   this.editor.controller.notes.forEach((note) => {
+  //     note.setIsSelected(false);
+  //     this.model.changeNoteSelection(note.id, false);
+  //   });
 
-    this.scheme.controller.components.forEach((component) => {
-      component.setIsSelected(false);
+  //   this.scheme.controller.components.forEach((component) => {
+  //     component.setIsSelected(false);
 
-      this.model.changeComponentSelection(component.id, false);
-    });
+  //     this.model.changeComponentSelection(component.id, false);
+  //   });
 
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
-  }
+  //   this.editor.view.isDirty = true;
+  //   this.scheme.view.isDirty = true;
+  // }
 
-  getVacantComponents(): ComponentEntry[] {
-    if (!this.platform) return [];
+  // getVacantComponents(): ComponentEntry[] {
+  //   if (!this.platform) return [];
 
-    const components = this.model.data.elements.components;
-    const vacant: ComponentEntry[] = [];
-    for (const idx in this.platform.data.components) {
-      const compo = this.platform.data.components[idx];
-      if (compo.singletone && components.hasOwnProperty(idx)) continue;
-      vacant.push({
-        idx,
-        name: compo.name ?? idx,
-        img: compo.img ?? 'unknown',
-        description: compo.description ?? '',
-        singletone: compo.singletone ?? false,
-      });
-    }
-    return vacant;
-  }
+  //   const components = this.model.data.elements.components;
+  //   const vacant: ComponentEntry[] = [];
+  //   for (const idx in this.platform.data.components) {
+  //     const compo = this.platform.data.components[idx];
+  //     if (compo.singletone && components.hasOwnProperty(idx)) continue;
+  //     vacant.push({
+  //       idx,
+  //       name: compo.name ?? idx,
+  //       img: compo.img ?? 'unknown',
+  //       description: compo.description ?? '',
+  //       singletone: compo.singletone ?? false,
+  //     });
+  //   }
+  //   return vacant;
+  // }
 }

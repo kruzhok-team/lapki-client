@@ -12,20 +12,14 @@ import {
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 
-import { ModelController } from './ModelController';
-
-import { CanvasScheme } from '../CanvasScheme';
+import { CanvasController } from './ModelController/CanvasController';
 
 /**
  * Класс инкапсулирующий логику инициализации {@link EditorController|контроллера машины состояний}
  * который эджектится (https://en.wikipedia.org/wiki/Dependency_injection#Constructor_injection) в конструкторе. Наружу отдаёт только метод init
  */
 export class Initializer {
-  constructor(
-    private appEditor: CanvasEditor,
-    private appScheme: CanvasScheme,
-    private controller: ModelController
-  ) {}
+  constructor(private app: CanvasEditor, private controller: CanvasController) {}
 
   init() {
     this.resetEntities();
@@ -38,21 +32,21 @@ export class Initializer {
     this.initNotes();
     // this.initComponents('G');
     this.initStateMachines();
-    this.appEditor.view.viewCentering();
-    this.appScheme.view.viewCentering();
+    this.app.view.viewCentering();
+    this.app.view.viewCentering();
   }
 
   private get states() {
-    return this.appEditor.controller.states;
+    return this.app.controller.states;
   }
   private get transitions() {
-    return this.appEditor.controller.transitions;
+    return this.app.controller.transitions;
   }
   private get notes() {
-    return this.appEditor.controller.notes;
+    return this.app.controller.notes;
   }
   private get components() {
-    return this.appScheme.controller.components;
+    return this.app.controller.components;
   }
   private get platform() {
     return this.controller.platform;
@@ -68,8 +62,7 @@ export class Initializer {
       },
       false
     );
-    this.appEditor.view.children.clear();
-    this.appScheme.view.children.clear();
+    this.app.view.children.clear();
     this.transitions.forEach((value) => {
       this.transitions.unwatchTransition(value);
     });

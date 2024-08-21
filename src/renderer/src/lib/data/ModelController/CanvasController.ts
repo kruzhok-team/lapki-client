@@ -7,6 +7,10 @@ import {
   CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
+  DeleteComponentParams,
+  DeleteDrawableParams,
+  DeleteStateMachineParams,
+  DeleteStateParams,
   Drawable,
   Layer,
 } from '@renderer/lib/types';
@@ -40,6 +44,12 @@ interface CanvasControllerEvents {
   createFinal: CreateFinalStateParams & { canUndo: boolean };
   createNote: CreateNoteParams & { canUndo: boolean };
   createComponent: CreateComponentParams & { canUndo: boolean };
+  deleteChoice: DeleteDrawableParams & { canUndo: boolean };
+  deleteState: DeleteDrawableParams & { canUndo: boolean };
+  deleteFinal: DeleteDrawableParams & { canUndo: boolean };
+  deleteNote: DeleteDrawableParams & { canUndo: boolean };
+  deleteComponent: DeleteDrawableParams & { canUndo: boolean };
+  // changeComponent: CreateComponentParams & { canUndo: boolean };
 }
 
 export type CanvasData = {
@@ -82,7 +92,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.stateMachinesSub[smId] = [];
   }
 
-  private createDrawable<T>(
+  // Функция для любой обработки Drawable
+  // Используется для обработки сигналов
+  private processDrawable<T>(
     smId: string,
     attribute: CanvasSubscribeAttribute,
     callback: (args: T, canUndo: boolean) => any,
@@ -98,12 +110,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     return callback(parameters, canUndo);
   }
 
-  private createDrawableBindHelper<T extends (args: any) => any>(
+  private bindHelper<T extends (args: any) => any>(
     smId: string,
     attribute: CanvasSubscribeAttribute,
     callback: T
   ) {
-    return this.createDrawable.bind<
+    return this.processDrawable.bind<
       this,
       [smId: string, attribute: CanvasSubscribeAttribute, callback: T],
       Parameters<T>,
@@ -111,42 +123,44 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     >(this, smId, attribute, callback);
   }
 
-  subscribeCreateDrawable(smId: string, attribute: CanvasSubscribeAttribute) {
+  subscribe(smId: string, attribute: CanvasSubscribeAttribute) {
     if (!this.stateMachinesSub[smId]) {
       return;
     }
     switch (attribute) {
       case 'state':
-        this.on(
-          'createState',
-          this.createDrawableBindHelper(smId, 'state', this.states.createState)
-        );
+        this.on('createState', this.bindHelper(smId, 'state', this.states.createState));
+        this.on('deleteState', this.bindHelper(smId, 'state', this.states.deleteState));
         break;
       case 'final':
-        this.on(
-          'createFinal',
-          this.createDrawableBindHelper(smId, 'final', this.states.createFinalState)
-        );
+        this.on('createFinal', this.bindHelper(smId, 'final', this.states.createFinalState));
+        this.on('deleteFinal', this.bindHelper(smId, 'final', this.states.deleteFinalState));
         break;
       case 'choice':
-        this.on(
-          'createChoice',
-          this.createDrawableBindHelper(smId, 'choice', this.states.createChoiceState)
-        );
+        this.on('createChoice', this.bindHelper(smId, 'choice', this.states.createChoiceState));
+        this.on('deleteChoice', this.bindHelper(smId, 'choice', this.states.deleteChoiceState));
         break;
       case 'note':
-        this.on('createNote', this.createDrawableBindHelper(smId, 'note', this.notes.createNote));
+        this.on('createNote', this.bindHelper(smId, 'note', this.notes.createNote));
+        this.on('deleteNote', this.bindHelper(smId, 'note', this.notes.deleteNote));
         break;
       case 'component':
         this.on(
           'createComponent',
-          this.createDrawableBindHelper(smId, 'component', this.components.createComponent)
+          this.bindHelper(smId, 'component', this.components.createComponent)
+        );
+        this.on(
+          'deleteComponent',
+          this.bindHelper(smId, 'component', this.components.deleteComponent)
         );
         break;
       default:
         throw new Error('Unknown attribute');
     }
 
+    if (this.stateMachines[smId].includes(attribute)) {
+      return;
+    }
     this.stateMachinesSub[smId].push(attribute);
   }
 

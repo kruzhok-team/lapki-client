@@ -3,7 +3,7 @@ import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { EditComponentParams, DeleteComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
-import { CreateComponentParams } from '@renderer/lib/types/ModelTypes';
+import { CreateComponentParams, DeleteDrawableParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 interface ComponentsControllerEvents {
@@ -95,8 +95,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.view.isDirty = true;
   }
 
-  deleteComponent(args: DeleteComponentParams, canUndo = true) {
-    const component = this.items.get(args.name);
+  deleteComponent(args: DeleteDrawableParams, canUndo = true) {
+    const component = this.items.get(args.id);
     if (!component) return;
 
     const numberOfConnectedActions = 0;

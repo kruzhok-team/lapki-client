@@ -16,11 +16,6 @@ export interface EditComponentParams {
   newName?: string;
 }
 
-export interface DeleteComponentParams {
-  name: string;
-  sm: string;
-  purge?: boolean;
-}
 export interface DeleteStateMachineParams {
   id: string;
   purge?: boolean;

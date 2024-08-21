@@ -25,6 +25,7 @@ import {
   CreateChoiceStateParams,
   CreateFinalStateParams,
   CreateStateParams,
+  DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';
 import { Action, Event, EventData } from '@renderer/types/diagram';
 
@@ -396,7 +397,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  deleteState = (id: string, canUndo = true) => {
+  deleteState = (args: DeleteDrawableParams, canUndo = true) => {
+    const { id } = args;
     const state = this.data.states.get(id);
     if (!state) return;
 
@@ -653,7 +655,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return state;
   }
 
-  deleteFinalState(id: string, canUndo = true) {
+  deleteFinalState(args: DeleteDrawableParams, canUndo = true) {
+    const { id } = args;
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
@@ -750,7 +753,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  deleteChoiceState(id: string, canUndo = true) {
+  deleteChoiceState(args: DeleteDrawableParams, canUndo = true) {
+    const { id } = args;
     const state = this.data.choiceStates.get(id);
     if (!state) return;
 

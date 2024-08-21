@@ -96,6 +96,11 @@ export type CreateComponentParams = ComponentData & {
   placeInCenter?: boolean;
 };
 
+export type DeleteDrawableParams = {
+  smId: string;
+  id: string;
+};
+
 export interface SwapComponentsParams {
   name1: string;
   name2: string;

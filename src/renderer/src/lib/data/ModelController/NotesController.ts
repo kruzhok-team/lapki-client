@@ -3,7 +3,7 @@ import { EventEmitter } from '@renderer/lib/common';
 import { Note } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
-import { CreateNoteParams } from '@renderer/lib/types/ModelTypes';
+import { CreateNoteParams, DeleteDrawableParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 interface NotesControllerEvents {
@@ -94,7 +94,8 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  deleteNote(id: string, canUndo = true) {
+  deleteNote(args: DeleteDrawableParams, canUndo = true) {
+    const { id } = args;
     const note = this.items.get(id);
     if (!note) return;
 

@@ -70,7 +70,7 @@
             },
             "toggle": {
               "img": "arduino/toggle.svg",
-              "description": "Меняет состояние кнопки на противоположное."
+              "description": "Меняет состояние светодиода на противоположное."
             },
             "blink": {
               "img": "arduino/blink.svg",
@@ -83,7 +83,7 @@
                 {
                   "name": "interval",
                   "type": "unsigned int",
-                  "description": "Длительность мигания."
+                  "description": "Длительность одного мигания (мс)."
                 }
               ],
               "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания."
@@ -121,7 +121,7 @@
                 {
                   "name": "interval",
                   "type": "unsigned long",
-                  "description": "Интервал срабатывания."
+                  "description": "Интервал срабатывания (мс)."
                 }
               ],
               "description": "Запустить таймер. Будет сигнал раз в интервал."
@@ -132,7 +132,7 @@
             "difference": {
               "img": "arduino/difference.svg",
               "type": "unsigned long",
-              "description": "Оставшееся время до окончания таймера."
+              "description": "Оставшееся время до окончания таймера (мс)."
             }
           }
         },
@@ -327,6 +327,14 @@
             "isChanged": {
               "img": "arduino/toggle.svg",
               "description": "Сигнал вызывается, когда меняется значение на пине."
+            },
+            "isLow": {
+              "img": "arduino/isLow.svg",
+              "description": "Сигнал вызывается, когда значение на пине меняется на LOW"
+            },
+            "isHigh": {
+              "img": "arduino/isHigh.svg",
+              "description": "Сигнал вызывается, когда значение на пине меняется на HIGH"
             }
           },
           "parameters": {
@@ -362,7 +370,12 @@
               "description": "Установить значение на аналоговый пин."
             }
           },
-          "parameters": {},
+          "parameters": {
+            "pin": {
+              "type": "uint8_t",
+              "description": "Пин, на который будет подаваться сигнал."
+            }
+          },
           "variables": {
             "value": {
               "img": "common/value.svg",

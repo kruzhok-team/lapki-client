@@ -5,39 +5,51 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
-import {
-  FLASHER_CONNECTED,
-  FLASHER_CONNECTING,
-  FLASHER_CONNECTION_ERROR,
-  FLASHER_NO_CONNECTION,
-  Flasher,
-} from '@renderer/components/Modules/Flasher';
+import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
+import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
+import {
+  SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_CONNECTING,
+  SERIAL_MONITOR_NO_CONNECTION,
+  SERIAL_MONITOR_NO_SERVER_CONNECTION,
+  SerialMonitor,
+} from '../Modules/SerialMonitor';
+import { ClientStatus } from '../Modules/Websocket/ClientStatus';
+
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
-  handleHostChange: () => void;
+  openLoaderSettings: () => void;
   openAvrdudeGuideModal: () => void;
 }
 
 export const Loader: React.FC<FlasherProps> = ({
   compilerData,
-  handleHostChange,
+  openLoaderSettings,
   openAvrdudeGuideModal,
 }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
-  const hasAvrdude = flasherSetting?.hasAvrdude;
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
+  const {
+    device: serialMonitorDevice,
+    setDevice: setSerialMonitorDevice,
+    setConnectionStatus: setSerialConnectionStatus,
+    connectionStatus: serialConnectionStatus,
+    setLog: setSerialLog,
+    addDeviceMessage,
+  } = useSerialMonitor();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
   const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
   const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
+  const [hasAvrdude, setHasAvrdude] = useState<boolean>(true);
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -51,6 +63,7 @@ export const Loader: React.FC<FlasherProps> = ({
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const openTab = useTabs((state) => state.openTab);
+  const closeTab = useTabs((state) => state.closeTab);
 
   const isActive = (id: string) => currentDeviceID === id;
 
@@ -67,6 +80,17 @@ export const Loader: React.FC<FlasherProps> = ({
     if (currentDevice == null || currentDevice == undefined) {
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
+    }
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == currentDeviceID &&
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     if (flasherFile) {
       Flasher.flash(currentDevice);
@@ -101,7 +125,7 @@ export const Loader: React.FC<FlasherProps> = ({
             // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
             case 1:
               switch (connectionStatus) {
-                case FLASHER_CONNECTION_ERROR:
+                case ClientStatus.CONNECTION_ERROR:
                   errorMsg = (
                     <p>
                       {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
@@ -137,7 +161,7 @@ export const Loader: React.FC<FlasherProps> = ({
           }
         });
     } else {
-      if (connectionStatus == FLASHER_CONNECTION_ERROR) {
+      if (connectionStatus == ClientStatus.CONNECTION_ERROR) {
         errorMsg = (
           <p>
             {`Ошибка соединения.`}
@@ -158,6 +182,7 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с сообщением от avrdude
   const handleAddAvrdudeTab = () => {
+    closeTab('avrdude');
     openTab({
       type: 'code',
       name: 'avrdude',
@@ -166,7 +191,31 @@ export const Loader: React.FC<FlasherProps> = ({
     });
   };
 
+  // добавление вкладки с serial monitor
+  // открытие новой вкладки закрывает соединение со старым портом
+  // пока клиент может мониторить только один порт
+  const handleAddSerialMonitorTab = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    if (
+      serialMonitorDevice != null &&
+      curDevice != serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) != undefined
+    ) {
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
+    closeTab('Монитор порта');
+    setSerialMonitorDevice(curDevice);
+    openTab({
+      type: 'serialMonitor',
+      name: 'Монитор порта',
+    });
+  };
+
   useEffect(() => {
+    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+      //console.log('hasAvrdude', has);
+      setHasAvrdude(has);
+    });
     Flasher.bindReact(
       setFlasherDevices,
       setFlasherConnectionStatus,
@@ -176,7 +225,12 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlasherError,
       setFlashResult
     );
-
+    SerialMonitor.bindReact(
+      addDeviceMessage,
+      setSerialMonitorDevice,
+      setSerialConnectionStatus,
+      setSerialLog
+    );
     Flasher.initReader(new FileReader());
   }, []);
 
@@ -192,11 +246,38 @@ export const Loader: React.FC<FlasherProps> = ({
     }
   }, [flasherSetting, setFlasherSetting]);
 
+  useEffect(() => {
+    /*
+      Если соединение с сервером отсутствует, то это означает, что
+      связь с портом (если она была) утерена и к нему нельзя подключиться.
+      Сервер автоматически прервёт соединение с портом на своей стороне при
+      отключении клиента.
+    */
+    if (connectionStatus != ClientStatus.CONNECTED) {
+      setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
+      return;
+    }
+    /*
+      Если установлена новая связь с сервером, то нужно поменять статус с
+      того, что нет соединения с сервером (SERIAL_MONITOR_NO_SERVER_CONNECTION) на то,
+      что отсутствует соединение с портом, но есть соедиенение с сервером,
+      то есть можно подключиться к порту по нажатии на кнопку.
+    */
+    setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
+  }, [connectionStatus, setSerialConnectionStatus]);
+
+  useEffect(() => {
+    if (!serialMonitorDevice) return;
+    if (!devices.get(serialMonitorDevice.deviceID)) {
+      SerialMonitor.setDevice(undefined);
+    }
+  }, [devices]);
+
   const display = () => {
-    if (!flasherIsLocal && connectionStatus == FLASHER_CONNECTING) {
+    if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {
       return 'Отменить';
     }
-    if (connectionStatus == FLASHER_CONNECTED) {
+    if (connectionStatus == ClientStatus.CONNECTED) {
       return 'Обновить';
     } else {
       if (flasherIsLocal) {
@@ -216,7 +297,7 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   // условия отключения кнопки для загрузки прошивки
   const flashButtonDisabled = () => {
-    if (isFlashing || connectionStatus !== FLASHER_CONNECTED) {
+    if (isFlashing || connectionStatus !== ClientStatus.CONNECTED) {
       return true;
     }
     if (avrdudeBlock) {
@@ -260,6 +341,11 @@ export const Loader: React.FC<FlasherProps> = ({
     } else {
       return true;
     }
+    // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
+    // чтобы гарантированно избежать ситуации одноремнной прошивки и подключения к порту
+    if (serialConnectionStatus == SERIAL_MONITOR_CONNECTING) {
+      return true;
+    }
     return false;
   };
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
@@ -287,10 +373,10 @@ export const Loader: React.FC<FlasherProps> = ({
             className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
             onClick={() => {
               switch (connectionStatus) {
-                case FLASHER_CONNECTED:
+                case ClientStatus.CONNECTED:
                   handleGetList();
                   break;
-                case FLASHER_CONNECTING:
+                case ClientStatus.CONNECTING:
                   Flasher.cancelConnection();
                   break;
                 default:
@@ -298,15 +384,15 @@ export const Loader: React.FC<FlasherProps> = ({
                   break;
               }
             }}
-            disabled={connectionStatus == FLASHER_CONNECTING && flasherIsLocal}
+            disabled={connectionStatus == ClientStatus.CONNECTING && flasherIsLocal}
           >
             <Update width="1.5rem" height="1.5rem" />
             {display()}
           </button>
           <button
             className="btn-primary px-2"
-            onClick={handleHostChange}
-            disabled={connectionStatus == FLASHER_CONNECTING || isFlashing}
+            onClick={openLoaderSettings}
+            disabled={connectionStatus == ClientStatus.CONNECTING || isFlashing}
           >
             <Setting width="1.5rem" height="1.5rem" />
           </button>
@@ -320,8 +406,8 @@ export const Loader: React.FC<FlasherProps> = ({
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
-                connectionStatus == FLASHER_NO_CONNECTION ||
-                connectionStatus == FLASHER_CONNECTION_ERROR
+                connectionStatus == ClientStatus.NO_CONNECTION ||
+                connectionStatus == ClientStatus.CONNECTION_ERROR
                   ? 'inline-block'
                   : 'none',
             }}
@@ -382,6 +468,13 @@ export const Loader: React.FC<FlasherProps> = ({
           disabled={flashResult === undefined}
         >
           Результат прошивки
+        </button>
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddSerialMonitorTab}
+          disabled={currentDeviceID == undefined}
+        >
+          Монитор порта
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>

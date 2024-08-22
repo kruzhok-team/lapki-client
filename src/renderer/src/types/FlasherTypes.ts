@@ -14,9 +14,52 @@ export type FlashUpdatePort = {
   portName: string;
 };
 
+export type FlasherType =
+  | 'get-list'
+  | 'device'
+  | 'device-update-delete'
+  | 'device-update-port'
+  | 'empty-list'
+  | 'flash-start'
+  | 'flash-next-block'
+  | 'flash-done'
+  | 'get-max-file-size'
+  | 'max-file-size'
+  | 'flash-wrong-id'
+  | 'flash-disconnected'
+  | 'flash-avrdude-error'
+  | 'flash-not-finished'
+  | 'flash-not-started'
+  | 'flash-blocked'
+  | 'flash-large-file'
+  | 'event-not-supported'
+  | 'unmarshal-err'
+  | 'get-list-cooldown'
+  | 'flash-not-supported'
+  | 'flash-open-serial-monitor'
+  | 'serial-log'
+  | 'serial-connect'
+  | 'serial-connection-status'
+  | 'serial-disconnect'
+  | 'serial-send'
+  | 'serial-sent-status'
+  | 'serial-device-read'
+  | 'serial-change-baud';
+export type FlasherPayload =
+  | string
+  | Device
+  | FlashStart
+  | UpdateDelete
+  | undefined
+  | SerialStatus
+  | SerialConnect
+  | SerialRead
+  | SerialDisconnect
+  | SerialSend
+  | SerialChangeBaud;
 export type FlasherMessage = {
-  type: string;
-  payload: string | Device | FlashStart | UpdateDelete | undefined;
+  type: FlasherType;
+  payload: FlasherPayload;
 };
 
 export type UpdateDelete = {
@@ -65,3 +108,33 @@ export class FlashResult {
 ${avrdudeMsg}`;
   }
 }
+
+export type SerialStatus = {
+  deviceID: string;
+  code: number;
+  comment: string;
+};
+
+export type SerialConnect = {
+  deviceID: string;
+  baud: number;
+};
+
+export type SerialRead = {
+  deviceID: string;
+  msg: string;
+};
+
+export type SerialDisconnect = {
+  deviceID: string;
+};
+
+export type SerialSend = {
+  deviceID: string;
+  msg: string;
+};
+
+export type SerialChangeBaud = {
+  deviceID: string;
+  baud: number;
+};

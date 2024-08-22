@@ -4,6 +4,7 @@ import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 
+import { nameError } from './ComponentEditModal';
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { ColorInput, Select } from './UI';
 
@@ -51,16 +52,19 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const name = event.target.value;
+    // очищаем предыдущий статус ошибки
+    setErrors((p) => ({ ...p, [nameError]: '' }));
+    // динамическая замена пробелов
+    let name = event.target.value;
     const caret = event.target.selectionStart;
     const element = event.target;
     window.requestAnimationFrame(() => {
       element.selectionStart = caret;
       element.selectionEnd = caret;
     });
-    setName(name.replaceAll(' ', '_'));
+    name = name.replaceAll(' ', '_');
+    setName(name);
   };
-
   const protoParametersArray = Object.entries(protoParameters);
 
   // Первоначальное создание объекта ошибок
@@ -86,6 +90,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             maxLength={20}
             value={name}
             onChange={(e) => handleNameChange(e)}
+            error={errors[nameError]}
             autoFocus
           />
 

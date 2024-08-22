@@ -5,7 +5,7 @@ import {
   CGMLKeyNode,
   CGMLComponent,
   exportGraphml,
-  emptyCGMLElements,
+  createEmptyElements,
   CGMLMeta,
   CGMLAction,
   CGMLTransitionAction,
@@ -73,6 +73,12 @@ export function serializeEvent(trigger: Event): string {
   }
 }
 
+function getActionDelimeter(platform: Platform, componentType: string): string {
+  const platformComponent = platform.components[componentType];
+  const isArduino = platform.name?.startsWith('Arduino');
+  return platformComponent.singletone && isArduino ? '::' : '.';
+}
+
 /**
  * Формирует строковую форму пиктографического поведения (набора действий)
  * @param actions Список пиктографических действий
@@ -118,11 +124,15 @@ function getActions(
   return isString(actions) ? actions : serializeActions(actions, components, platform);
 }
 
-function getCondition(condition: null | undefined | string | Condition): string | undefined {
+function getCondition(
+  condition: null | undefined | string | Condition,
+  platform: Platform,
+  components: { [id: string]: Component }
+): string | undefined {
   if (!condition) {
     return undefined;
   }
-  return isString(condition) ? condition : serializeCondition(condition);
+  return isString(condition) ? condition : serializeCondition(condition, platform, components);
 }
 
 function serializeTransitionEvents(
@@ -136,7 +146,7 @@ function serializeTransitionEvents(
     {
       trigger: {
         event: getTrigger(trigger),
-        condition: getCondition(condition),
+        condition: getCondition(condition, platform, components),
       },
       action: getActions(doActions, components, platform),
     },
@@ -153,7 +163,7 @@ function serializeStateEvents(
     serializedActions.push({
       trigger: {
         event: getTrigger(event.trigger) ?? '',
-        condition: getCondition(event.condition),
+        condition: getCondition(event.condition, platform, components),
       },
       action: getActions(event.do, components, platform),
     });
@@ -201,12 +211,17 @@ function isConditionArray(value: unknown): value is Condition[] {
   return Array.isArray(value);
 }
 
-function getOperand(operand: string | number | Variable | Condition[]): string | number {
+function getOperand(
+  operand: string | number | Variable | Condition[],
+  platform: Platform,
+  components: { [id: string]: Component }
+): string | number {
   if (isConditionArray(operand)) {
     throw new Error('Internal error: operand is Condition[]');
   }
   if (isVariable(operand)) {
-    return `${operand.component}.${operand.method}`;
+    const component = components[operand.component];
+    return `${operand.component}${getActionDelimeter(platform, component.type)}${operand.method}`;
   }
   return operand;
 }
@@ -214,14 +229,20 @@ function getOperand(operand: string | number | Variable | Condition[]): string |
 /**
  * Формирует текстовую форму пиктографического условия события.
  * @param condition Данные условия
+ * @param platform Используемая платформа
+ * @param components Текущие компоненты
  * @returns Строка с сериализованным условием
  */
-export function serializeCondition(condition: Condition): string {
+export function serializeCondition(
+  condition: Condition,
+  platform: Platform,
+  components: { [id: string]: Component }
+): string {
   if (!isConditionArray(condition.value)) {
     throw new Error('Internal error: condition.value is not Condition[];');
   }
-  const lval = getOperand(condition.value[0].value);
-  const rval = getOperand(condition.value[1].value);
+  const lval = getOperand(condition.value[0].value, platform, components);
+  const rval = getOperand(condition.value[1].value, platform, components);
   return `${lval} ${invertOperatorAlias[condition.type]} ${rval}`;
 }
 
@@ -339,6 +360,7 @@ function serializeNotes(notes: { [id: string]: Note }): { [id: string]: CGMLNote
       text: note.text,
       position: note.position,
       type: 'informal',
+      unsupportedDataNodes: [],
     };
   }
   return cgmlNotes;
@@ -357,6 +379,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       type: component.type,
       parameters: component.parameters,
       order: component.order,
+      unsupportedDataNodes: [],
     };
   }
   return cgmlComponents;
@@ -367,23 +390,23 @@ export function exportCGML(elements: Elements): string {
   if (!platform) {
     throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
   }
-  const cgmlElements: CGMLElements = emptyCGMLElements();
+  const cgmlElements: CGMLElements = createEmptyElements();
   cgmlElements.meta = exportMeta(elements.meta, platform);
   cgmlElements.format = 'Cyberiada-GraphML-1.0';
   cgmlElements.platform = elements.platform;
-  if (elements.platform.startsWith('Arduino')) {
-    cgmlElements.components = serializeComponents(elements.components);
-  }
-  cgmlElements.states = serializeStates(elements.states, platform, elements.components);
-  cgmlElements.transitions = serializeTransitions(
-    elements.transitions,
-    platform,
-    elements.components
-  );
-  cgmlElements.notes = serializeNotes(elements.notes);
-  cgmlElements.initialStates = serializeVertex(elements.initialStates, 'initial');
-  cgmlElements.finals = serializeVertex(elements.finalStates, 'final');
-  cgmlElements.choices = serializeVertex(elements.choiceStates, 'choice');
+  cgmlElements.stateMachines['g'] = {
+    components: elements.platform.startsWith('Arduino')
+      ? serializeComponents(elements.components)
+      : {},
+    states: serializeStates(elements.states, platform, elements.components),
+    transitions: serializeTransitions(elements.transitions, platform, elements.components),
+    notes: serializeNotes(elements.notes),
+    initialStates: serializeVertex(elements.initialStates, 'initial'),
+    finals: serializeVertex(elements.finalStates, 'final'),
+    choices: serializeVertex(elements.choiceStates, 'choice'),
+    terminates: {},
+    unknownVertexes: {},
+  };
   cgmlElements.keys = getKeys();
   return exportGraphml(cgmlElements);
 }

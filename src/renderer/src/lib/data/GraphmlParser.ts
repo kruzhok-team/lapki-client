@@ -110,7 +110,16 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   if (!regResult) {
     return unproccessedAction;
   }
-  let [componentName, action] = unproccessedAction.trim().split('.');
+  const getAction = (delimeter: string, reserveDelimeter: string) => {
+    const trimed = unproccessedAction.trim();
+    const firstSplit = trimed.split(delimeter);
+    if (firstSplit.length > 1) {
+      return firstSplit;
+    }
+    const secondSplit = trimed.split(reserveDelimeter);
+    return secondSplit;
+  };
+  let [componentName, action] = getAction('.', '::');
 
   // Если в конце действия стоит делимитер, удаляем его
   if (!action.endsWith(')')) {
@@ -439,6 +448,7 @@ export function importGraphml(
 ): Elements | undefined {
   try {
     const rawElements: CGMLElements = parseCGML(expression);
+    const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
     const elements: Elements = {
       states: {},
       transitions: {},
@@ -462,21 +472,21 @@ export function importGraphml(
     if (elements.platform.startsWith('Bearloga')) {
       elements.components = getAllComponent(platform.components);
     } else {
-      elements.components = getComponents(rawElements.components);
+      elements.components = getComponents(sm.components);
     }
     elements.meta = rawElements.meta.values;
-    elements.initialStates = getInitialStates(rawElements.initialStates);
-    elements.finalStates = getFinals(rawElements.finals);
-    elements.notes = rawElements.notes;
-    elements.states = getStates(rawElements.states);
-    elements.transitions = getTransitions(rawElements.transitions);
+    elements.initialStates = getInitialStates(sm.initialStates);
+    elements.finalStates = getFinals(sm.finals);
+    elements.notes = sm.notes;
+    elements.states = getStates(sm.states);
+    elements.transitions = getTransitions(sm.transitions);
     elements.states = labelStateParameters(
       elements.states,
       platform.components,
       elements.components
     );
 
-    elements.choiceStates = getChoices(rawElements.choices);
+    elements.choiceStates = getChoices(sm.choices);
     elements.transitions = labelTransitionParameters(
       elements.transitions,
       platform.components,

@@ -1,7 +1,6 @@
 import settings from 'electron-settings';
 // импорт старой версии (3.0 вместо 4.0), так как новая версия требует ESM
 import fixPath from 'fix-path';
-import { lookpath } from 'lookpath';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
@@ -42,7 +41,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
-    this.moduleStatus[module] = new ModuleStatus();
+    this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
       const basePath = path
@@ -123,13 +122,8 @@ export class ModuleManager {
                 configPath = `${osPath}\\avrdude.conf`;
                 break;
             }
-            const AVRDUDE_SETTING = 'flasher.hasAvrdude';
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
-              settings.setSync(AVRDUDE_SETTING, true);
-            } else {
-              const path = await lookpath('avrdude');
-              settings.set(AVRDUDE_SETTING, Boolean(path));
             }
             if (existsSync(configPath)) {
               flasherArgs.push(`-configPath=${configPath}`);
@@ -142,18 +136,18 @@ export class ModuleManager {
         }
         chprocess.on('error', function (err) {
           if (err.code == 'ENOENT') {
-            ModuleManager.moduleStatus[module] = new ModuleStatus(
-              2,
-              `Файл ${modulePath} не найден.`
+            ModuleManager.moduleStatus.set(
+              module,
+              new ModuleStatus(2, `Файл ${modulePath} не найден.`)
             );
           } else {
-            ModuleManager.moduleStatus[module] = new ModuleStatus(2, `${err}`);
+            ModuleManager.moduleStatus.set(module, new ModuleStatus(2, `${err}`));
           }
           console.error(`${module} spawn error: ` + err);
         });
       }
       if (chprocess !== undefined) {
-        ModuleManager.moduleStatus[module] = new ModuleStatus(1);
+        ModuleManager.moduleStatus.set(module, new ModuleStatus(1));
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {
           console.log(`${module}-stdout: ${data}`);
@@ -163,7 +157,7 @@ export class ModuleManager {
         });
 
         chprocess.on('exit', () => {
-          ModuleManager.moduleStatus[module] = new ModuleStatus(3);
+          ModuleManager.moduleStatus.set(module, new ModuleStatus(3));
           console.log(`${module}-exit!`);
         });
       }
@@ -180,6 +174,6 @@ export class ModuleManager {
   }
 
   static getLocalStatus(module: ModuleName): ModuleStatus {
-    return this.moduleStatus[module];
+    return this.moduleStatus.get(module)!;
   }
 }

@@ -22,6 +22,7 @@ export const TransitionModal: React.FC = () => {
     source: State | ChoiceState;
     target: State | ChoiceState | FinalState;
   } | null>();
+  const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
   // Данные формы
   const trigger = useTrigger(false);
@@ -44,6 +45,18 @@ export const TransitionModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isInitialTransition && transition) {
+      editor.controller.transitions.changeTransition({
+        id: transition.id,
+        sourceId: transition.source.id,
+        targetId: transition.target.id,
+        color,
+      });
+
+      close();
+      return;
+    }
 
     const { selectedComponent, selectedMethod, tabValue } = trigger;
     const triggerText = trigger.text.trim();
@@ -173,6 +186,7 @@ export const TransitionModal: React.FC = () => {
 
     setTransition(null);
     setNewTransition(null);
+    setIsInitialTransition(false);
   };
 
   // Подстановка начальных значений
@@ -196,6 +210,8 @@ export const TransitionModal: React.FC = () => {
       setColor(initialData.color);
 
       setTransition(target);
+
+      setIsInitialTransition(initialData.label == undefined);
       open();
     };
 
@@ -219,9 +235,9 @@ export const TransitionModal: React.FC = () => {
         onAfterClose={handleAfterClose}
       >
         <div className="flex flex-col gap-4">
-          {showTrigger && <Trigger {...trigger} />}
-          <Condition {...condition} />
-          <Actions {...actions} />
+          {!isInitialTransition && showTrigger && <Trigger {...trigger} />}
+          {!isInitialTransition && <Condition {...condition} />}
+          {!isInitialTransition && <Actions {...actions} />}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

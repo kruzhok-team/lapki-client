@@ -7,7 +7,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
-import { FLASHER_CONNECTING } from '../Modules/Flasher';
+import { ClientStatus } from '../Modules/Websocket/ClientStatus';
 import { ResetSettingsModal } from '../ResetSettingsModal';
 import { DocSelectModal } from '../serverSelect/DocSelectModal';
 
@@ -24,10 +24,10 @@ const themeOptions = [
 
 export interface SettingProps {
   openCompilerSettings: () => void;
-  handleHostChange: () => void;
+  openLoaderSettings: () => void;
 }
 
-export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHostChange }) => {
+export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoaderSettings }) => {
   const editor = useEditorContext();
   const isMounted = editor.model.useData('isMounted');
   const [theme, setTheme] = useSettings('theme');
@@ -78,8 +78,8 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, handleHo
         </button>
         <button
           className="btn-primary"
-          onClick={handleHostChange}
-          disabled={connectionStatus === FLASHER_CONNECTING || isFlashing}
+          onClick={openLoaderSettings}
+          disabled={connectionStatus === ClientStatus.CONNECTING || isFlashing}
         >
           Загрузчик…
         </button>

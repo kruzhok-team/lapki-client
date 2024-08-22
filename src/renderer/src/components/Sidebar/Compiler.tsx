@@ -12,6 +12,8 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
+import { CompilerStatus, CompilerNoDataStatus } from '../Modules/Websocket/ClientStatus';
+
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
   compilerData: CompilerResult | undefined;
@@ -34,6 +36,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
+  const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
+    CompilerNoDataStatus.DEFAULT
+  );
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -106,7 +111,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
     const { host, port } = compilerSetting;
 
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData);
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setCompilerNoDataStatus);
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
@@ -143,9 +148,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     },
   ];
   const processing =
-    compilerStatus == 'Идет компиляция...' || compilerStatus == 'Идет подключение...';
-  const canCompile = compilerStatus == 'Подключен' && isInitialized;
-  const disabled = processing || (!processing && !canCompile && compilerStatus !== 'Не подключен');
+    compilerStatus == CompilerStatus.COMPILATION || compilerStatus == CompilerStatus.CONNECTING;
+  const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
+  const disabled =
+    processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -159,7 +165,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
             onClick={canCompile ? handleCompile : handleReconnect}
           >
-            {compilerStatus !== 'Не подключен' ? 'Скомпилировать' : 'Переподключиться'}
+            {compilerStatus !== CompilerStatus.NO_CONNECTION
+              ? 'Скомпилировать'
+              : 'Переподключиться'}
           </button>
 
           <button className="btn-primary px-2" onClick={openCompilerSettings}>
@@ -170,14 +178,17 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         <p>
           Статус:{' '}
           <span
-            className={twMerge('text-primary', compilerStatus === 'Не подключен' && 'text-error')}
+            className={twMerge(
+              'text-primary',
+              compilerStatus === CompilerStatus.NO_CONNECTION && 'text-error'
+            )}
           >
             {compilerStatus}
           </span>
         </p>
 
         <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
-          Результат компиляции: {compilerData ? compilerData.result : 'Нет данных'}
+          Результат компиляции: {compilerData ? compilerData.result : compilerNoDataStatus}
         </div>
 
         {button.map(({ name, handler, disabled }, i) => (

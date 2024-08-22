@@ -6,5 +6,5 @@ export * from './useFileOperations';
 export * from './useWheel';
 export * from './useSettings';
 export * from './useFetch';
-export * from './usePrevious';
 export * from './useModal';
+export * from './usePrevious';

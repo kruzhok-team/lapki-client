@@ -73,7 +73,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       {...props}
       onRequestClose={onClose}
       title={'Настройки загрузчика'}
-      submitLabel="Подключиться"
       onSubmit={handleSubmit}
     >
       <div className="flex items-center">

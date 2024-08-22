@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, Dispatch } from 'react';
 
 import { SaveModalData } from '@renderer/components';
 import { useEditorContext } from '@renderer/store/EditorContext';
@@ -17,8 +17,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const editor = useEditorContext();
   const model = editor.model;
-  const isStale = model.useData('isStale');
-  const name = model.useData('name');
+  // (Roundabout1) Константы были заменены на прямое обращение к полям model, потому что, иначе будет отсутствовать синхронизация, то есть
+  // эти константы будут выдавать неактуальные значения (точно известно, что isStale не актуален, насчёт name - неизвестно).
+  // Не понятно насколько надёжно это решение.
+  //const isStale = model.useData('isStale');
+  //const name = model.useData('name');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -32,9 +35,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
-    if (isStale) {
+    if (model.data.isStale) {
       setData({
-        shownName: name,
+        shownName: model.data.name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
         onConfirm: performOpenFile,
         onSave: handleSaveFile,
@@ -71,9 +74,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   //Создание нового файла
   const handleNewFile = async () => {
-    if (isStale) {
+    if (model.data.isStale) {
       setData({
-        shownName: name,
+        shownName: model.data.name,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
         onConfirm: openCreateSchemeModal,
         onSave: handleSaveFile,
@@ -101,7 +104,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const handleSaveFile = async () => {
+  const handleSaveFile = useCallback(async () => {
     const result = await model?.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -111,16 +114,43 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     } else {
       // TODO: информировать об успешном сохранении
     }
+  }, [model, openSaveError]);
+
+  const handleImportFile = async (
+    setOpenData: Dispatch<[boolean, string | null, string | null, string]>
+  ) => {
+    if (model.data.isStale) {
+      setData({
+        shownName: model.data.name,
+        question: 'Хотите сохранить файл перед тем, как импортировать новый?',
+        onConfirm: performImportFile,
+        onSave: handleSaveFile,
+        onOpen: async () => await performImportFile(setOpenData),
+      });
+      openSaveModal();
+    } else {
+      performImportFile(setOpenData);
+    }
+  };
+
+  const performImportFile = async (
+    setOpenData?: Dispatch<[boolean, string | null, string | null, string]>
+  ) => {
+    if (setOpenData) {
+      const result = await model?.files.import(setOpenData);
+      if (result) {
+        clearTabs();
+        openTab({ type: 'editor', name: 'editor' });
+      }
+    }
   };
 
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
-      //Данное условие будет всегда работать(проект будет закрываться), потому что
-      //isStale работает неправильно. Если же заккоментировать код в else, то можно проверить работоспособность условия.
-      if (isStale) {
+      if (model.data.isStale) {
         setData({
-          shownName: name,
+          shownName: model.data.name,
           question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
           //При нажатии на любую из кнопок, он должен закрывать редактор
           onConfirm: () => {
@@ -140,7 +170,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     return () => {
       unsubscribe();
     };
-  }, [handleSaveFile, isStale, name]);
+  }, [handleSaveFile, model]);
 
   return {
     saveModalProps: { isOpen, onClose, data },
@@ -149,6 +179,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       onRequestOpenFile: handleOpenFile,
       onRequestSaveFile: handleSaveFile,
       onRequestSaveAsFile: handleSaveAsFile,
+      onRequestImportFile: handleImportFile,
     },
     performNewFile,
     handleOpenFromTemplate,

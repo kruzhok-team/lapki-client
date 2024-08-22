@@ -33,7 +33,7 @@ export class ChoiceState extends Shape {
     return { width: 100, height: 100 };
   }
   set dimensions(_value) {
-    throw new Error('FinalState does not have dimensions');
+    throw new Error('ChoiceState does not have dimensions');
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {

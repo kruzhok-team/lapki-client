@@ -110,7 +110,16 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   if (!regResult) {
     return unproccessedAction;
   }
-  let [componentName, action] = unproccessedAction.trim().split('.');
+  const getAction = (delimeter: string, reserveDelimeter: string) => {
+    const trimed = unproccessedAction.trim();
+    const firstSplit = trimed.split(delimeter);
+    if (firstSplit.length > 1) {
+      return firstSplit;
+    }
+    const secondSplit = trimed.split(reserveDelimeter);
+    return secondSplit;
+  };
+  let [componentName, action] = getAction('.', '::');
 
   // Если в конце действия стоит делимитер, удаляем его
   if (!action.endsWith(')')) {

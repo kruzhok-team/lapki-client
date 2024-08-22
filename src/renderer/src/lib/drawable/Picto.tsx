@@ -38,6 +38,7 @@ const basePicto = {
   stubComponent: resolveImg('common/stubComponent.svg'),
   stubEvent: resolveImg('common/stubEvent.svg'),
   stubAction: resolveImg('common/stubAction.svg'),
+  condition: resolveImg('common/condition.svg'),
 
   'op/notEquals': resolveImg('bearloga/compare_not_equal.svg'),
   'op/equals': resolveImg('bearloga/compare_equal.svg'),

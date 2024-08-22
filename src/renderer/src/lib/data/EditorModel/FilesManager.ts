@@ -78,12 +78,17 @@ export class FilesManager {
     return makeLeft(null);
   }
 
-  async import(setOpenData: Dispatch<[boolean, string | null, string | null, string]>) {
+  async import(
+    setOpenData: Dispatch<[boolean, string | null, string | null, string]>
+  ): Promise<boolean> {
     const openData = await window.api.fileHandlers.openFile('Cyberiada');
     if (openData[0]) {
       Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
       setOpenData(openData);
+      return true;
     }
+
+    return false;
   }
 
   async open(

@@ -69,7 +69,7 @@
             },
             "toggle": {
               "img": "arduino/toggle.svg",
-              "description": "Меняет состояние кнопки на противоположное."
+              "description": "Меняет состояние светодиода на противоположное."
             },
             "blink": {
               "img": "arduino/blink.svg",
@@ -82,7 +82,7 @@
                 {
                   "name": "interval",
                   "type": "unsigned int",
-                  "description": "Длительность мигания."
+                  "description": "Длительность одного мигания (мс)."
                 }
               ],
               "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания."
@@ -120,7 +120,7 @@
                 {
                   "name": "interval",
                   "type": "unsigned long",
-                  "description": "Интервал срабатывания."
+                  "description": "Интервал срабатывания (мс)."
                 }
               ],
               "description": "Запустить таймер. Будет сигнал раз в интервал."
@@ -131,7 +131,7 @@
             "difference": {
               "img": "arduino/difference.svg",
               "type": "unsigned long",
-              "description": "Оставшееся время до окончания таймера."
+              "description": "Оставшееся время до окончания таймера (мс)."
             }
           }
         },

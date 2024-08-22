@@ -1,11 +1,4 @@
-import {
-  Device,
-  FlasherMessage,
-  SerialChangeBaud,
-  SerialConnect,
-  SerialDisconnect,
-  SerialSend,
-} from '@renderer/types/FlasherTypes';
+import { Device } from '@renderer/types/FlasherTypes';
 
 import { Flasher } from './Flasher';
 
@@ -38,40 +31,25 @@ export class SerialMonitor {
   }
 
   static openMonitor(device: Device, baudRate: number) {
-    const payload = {
-      deviceID: device.deviceID,
-      baud: baudRate,
-    } as SerialConnect;
-    const request = {
-      type: 'serial-connect',
-      payload: payload,
-    } as FlasherMessage;
     this.setDevice(device);
     this.setConnectionStatus(SERIAL_MONITOR_CONNECTING);
-    Flasher.connection?.send(JSON.stringify(request));
+    Flasher.send('serial-connect', {
+      deviceID: device.deviceID,
+      baud: baudRate,
+    });
   }
 
   static closeMonitor(deviceID: string) {
-    const payload = {
+    Flasher.send('serial-disconnect', {
       deviceID: deviceID,
-    } as SerialDisconnect;
-    const request = {
-      type: 'serial-disconnect',
-      payload: payload,
-    } as FlasherMessage;
-    Flasher.connection?.send(JSON.stringify(request));
+    });
   }
 
   static sendMessage(deviceID: string, message: string) {
-    const payload = {
+    Flasher.send('serial-send', {
       deviceID: deviceID,
       msg: message,
-    } as SerialSend;
-    const request = {
-      type: 'serial-send',
-      payload: payload,
-    } as FlasherMessage;
-    Flasher.connection?.send(JSON.stringify(request));
+    });
   }
 
   static addLog(log: string) {
@@ -79,14 +57,9 @@ export class SerialMonitor {
   }
 
   static changeBaud(deviceID: string, baud: number) {
-    const payload = {
+    Flasher.send('serial-change-baud', {
       deviceID: deviceID,
       baud: baud,
-    } as SerialChangeBaud;
-    const request = {
-      type: 'serial-change-baud',
-      payload: payload,
-    } as FlasherMessage;
-    Flasher.connection?.send(JSON.stringify(request));
+    });
   }
 }

@@ -211,7 +211,13 @@ export const useCondition = () => {
       }
 
       setTabValue(0);
-      if (!visual) setText(serializeCondition(c)); // для перехода в текст
+
+      if (!controller.platform) {
+        console.error('wtf missing platform in useCondition.parse');
+        return undefined;
+      }
+
+      if (!visual) setText(serializeCondition(c, controller.platform.data, componentsData)); // для перехода в текст
 
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {

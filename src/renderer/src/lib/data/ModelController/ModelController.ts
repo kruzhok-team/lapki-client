@@ -1,24 +1,24 @@
 import { Point } from 'electron';
 
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
-import { loadPlatform } from '@renderer/lib/data/PlatformLoader';
-import { ChoiceState, Note, Transition } from '@renderer/lib/drawable';
 import {
   CopyData,
   CopyType,
   EditComponentParams,
-  DeleteComponentParams,
+  SetMountedStatusParams,
 } from '@renderer/lib/types/ControllerTypes';
-import { CreateComponentParams, SwapComponentsParams } from '@renderer/lib/types/ModelTypes';
-import { Condition, Elements, Variable } from '@renderer/types/diagram';
+import {
+  CreateComponentParams,
+  DeleteDrawableParams,
+  SwapComponentsParams,
+} from '@renderer/lib/types/ModelTypes';
+import { Elements } from '@renderer/types/diagram';
+
+import { CanvasControllerEvents } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { Initializer } from '../Initializer';
-import { operatorSet, PlatformManager } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.
@@ -36,9 +36,7 @@ import { operatorSet, PlatformManager } from '../PlatformManager';
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
-interface ModelControllerEvents {
-  initPlatform: null; // Каждый CanvasController инициализирует свою платформу
-}
+type ModelControllerEvents = Record<string, never> & CanvasControllerEvents;
 
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
@@ -56,120 +54,82 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   files = new FilesManager(this);
   history = new History(this);
 
+  constructor() {
+    super();
+    this.watch();
+  }
+
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
+  private watch() {
+    this.on('isMounted', this.setMountStatus);
+  }
+
+  private setMountStatus(args: SetMountedStatusParams) {
+    const canvas = this.model.data.canvas[args.canvasId];
+    if (!canvas) {
+      return;
+    }
+    canvas.isMounted = args.status;
+  }
+
   initPlatform() {
     this.emit('initPlatform', null);
-    // const platformName = this.model.data.elements.platform;
-
-    // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    // const platform = loadPlatform(platformName);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
-    }
-
-    this.platform = platform;
-    //! Инициализировать компоненты нужно сразу после загрузки платформы
-    // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
-    this.initializer.initComponents('G', true);
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
     this.model.makeStale();
-    for (const componentId in elements.components) {
-      const component = elements.components[componentId];
-      this.createComponent({ ...component, name: componentId }, false, true);
-    }
   }
 
   loadData() {
-    this.initializer.init();
-
-    // this.editor.view.isDirty = true;
-    // this.scheme.view.isDirty = true;
+    this.emit('loadData', null);
   }
 
   selectComponent(id: string) {
-    const component = this.scheme.controller.components.get(id);
-    if (!component) return;
-
     this.removeSelection();
 
     this.model.changeComponentSelection(id, true);
-
-    component.setIsSelected(true);
+    this.emit('selectComponent', { id: id });
   }
 
-  createComponent(args: CreateComponentParams, canUndo = true, init = false) {
-    const { name, type } = args;
+  createComponent(args: CreateComponentParams, canUndo = true) {
+    this.model.createComponent(args);
 
-    if (!this.platform) return;
-    const sm = this.stateMachines.getStateMachineById('G');
-    const component = this.components.createComponent(args);
-    if (!init) {
-      if (component) {
-        this.stateMachines.addComponent('G', component);
-      }
-      this.model.createComponent(args);
-    }
-
-    this.platform.nameToVisual.set(name, {
-      component: type,
-    });
-
+    this.emit('createComponent', args);
     if (canUndo) {
       this.history.do({
         type: 'createComponent',
         args: { args },
       });
     }
-    if (sm) {
-      sm.dimensions = {
-        width: sm.computedDimensions.width,
-        height: sm.computedDimensions.height,
-      };
-    }
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
-    const { name, parameters, newName } = args;
+    const { id, parameters, newName, smId } = args;
 
-    if (!this.platform) return;
-
-    const prevComponent = structuredClone(this.model.data.elements.components[name]);
-    const component = {
-      ...prevComponent,
-      parameters: parameters,
-    };
-    this.model.changeComponent(name, parameters);
-    this.components.changeComponent(args);
-    this.platform.nameToVisual.set(name, {
-      component: component.type,
-      label: component.parameters['label'],
-      color: component.parameters['labelColor'],
-    });
+    const prevComponent = structuredClone(
+      this.model.data.elements.stateMachines[smId].components[id]
+    );
+    this.model.editComponent(id, parameters);
 
     if (newName) {
-      this.renameComponent(name, newName);
+      this.renameComponent(id, newName);
     }
-
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
 
     if (canUndo) {
       this.history.do({
-        type: 'changeComponent',
+        type: 'editComponent',
         args: { args, prevComponent },
       });
     }
+
+    this.emit('editComponent', args);
   }
 
   changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
-    this.components.changeComponentPosition(name, startPosition, endPosition, _canUndo);
+    // this.components.changeComponentPosition(name, startPosition, endPosition, _canUndo);
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
@@ -178,23 +138,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   }
 
-  deleteComponent(args: DeleteComponentParams, canUndo = true) {
-    const { name, purge } = args;
+  deleteComponent(args: DeleteDrawableParams, canUndo = true) {
+    const { id, smId } = args;
 
-    if (!this.platform) return;
-
-    const prevComponent = this.model.data.elements.components[name];
-    this.model.deleteComponent(name);
-    this.stateMachines.deleteComponent('G', name);
-    if (purge) {
-      // TODO: «вымарывание» компонента из машины
-      console.error('deleteComponent purge not implemented yet');
-    }
-
-    this.platform.nameToVisual.delete(name);
-
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
+    const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
+    this.model.deleteComponent(id);
 
     if (canUndo) {
       this.history.do({
@@ -202,6 +150,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { args, prevComponent },
       });
     }
+
+    this.emit('deleteComponent', args);
   }
 
   swapComponents(args: SwapComponentsParams, canUndo = true) {
@@ -214,81 +164,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
+    // Нужно ли вызывать сигнал?
+    // this.editor.view.isDirty = true;
+    // this.scheme.view.isDirty = true;
   }
 
   private renameComponent(name: string, newName: string) {
-    if (!this.platform) return;
-
     this.model.changeComponentName(name, newName);
-
-    const visualCompo = this.platform.nameToVisual.get(name);
-
-    if (!visualCompo) return;
-
-    this.platform.nameToVisual.set(newName, visualCompo);
-    this.platform.nameToVisual.delete(name);
-
-    // А сейчас будет занимательное путешествие по схеме с заменой всего
-    this.editor.controller.states.forEachState((state) => {
-      for (const ev of state.eventBox.data) {
-        // заменяем в триггере
-        if (ev.trigger.component == name) {
-          ev.trigger.component = newName;
-        }
-        for (const act of ev.do) {
-          // заменяем в действии
-          if (act.component == name) {
-            act.component = newName;
-          }
-        }
-      }
-    });
-
-    this.editor.controller.transitions.forEach((transition) => {
-      if (!transition.data.label) return;
-
-      if (transition.data.label.trigger?.component === name) {
-        transition.data.label.trigger.component = newName;
-      }
-
-      if (transition.data.label.do) {
-        for (const act of transition.data.label.do) {
-          if (act.component === name) {
-            act.component = newName;
-          }
-        }
-      }
-
-      if (transition.data.label.condition) {
-        this.renameCondition(transition.data.label.condition, name, newName);
-      }
-    });
-
-    this.editor.view.isDirty = true;
-    this.scheme.view.isDirty = true;
-  }
-
-  renameCondition(ac: Condition, oldName: string, newName: string) {
-    if (ac.type == 'value') {
-      return;
-    }
-    if (ac.type == 'component') {
-      if ((ac.value as Variable).component === oldName) {
-        (ac.value as Variable).component = newName;
-      }
-      return;
-    }
-    if (operatorSet.has(ac.type)) {
-      if (Array.isArray(ac.value)) {
-        for (const x of ac.value) {
-          this.renameCondition(x, oldName, newName);
-        }
-        return;
-      }
-      return;
-    }
+    this.emit('renameComponent', { id: name, newName: newName });
   }
 
   // deleteSelected = () => {
@@ -500,48 +383,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   //   note.setIsSelected(true);
   // }
 
-  /**
-   * Снимает выделение со всех нод и переходов.
-   *
-   * @remarks
-   * Выполняется при изменении выделения.
-   *
-   * @privateRemarks
-   * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
-   */
-  // removeSelection() {
-  //   this.editor.controller.states.data.choiceStates.forEach((state) => {
-  //     state.setIsSelected(false);
-
-  //     this.model.changeChoiceStateSelection(state.id, false);
-  //   });
-
-  //   this.editor.controller.states.forEachState((state) => {
-  //     state.setIsSelected(false);
-  //     this.model.changeStateSelection(state.id, false);
-  //     state.eventBox.selection = undefined;
-  //   });
-
-  //   this.editor.controller.transitions.forEach((transition) => {
-  //     transition.setIsSelected(false);
-  //     this.model.changeTransitionSelection(transition.id, false);
-  //   });
-
-  //   this.editor.controller.notes.forEach((note) => {
-  //     note.setIsSelected(false);
-  //     this.model.changeNoteSelection(note.id, false);
-  //   });
-
-  //   this.scheme.controller.components.forEach((component) => {
-  //     component.setIsSelected(false);
-
-  //     this.model.changeComponentSelection(component.id, false);
-  //   });
-
-  //   this.editor.view.isDirty = true;
-  //   this.scheme.view.isDirty = true;
-  // }
-
   // getVacantComponents(): ComponentEntry[] {
   //   if (!this.platform) return [];
 
@@ -560,4 +401,39 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   //   }
   //   return vacant;
   // }
+
+  /**
+   * Снимает выделение со всех нод и переходов.
+   *
+   * @remarks
+   * Выполняется при изменении выделения.
+   *
+   * @privateRemarks
+   * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
+   */
+  removeSelection() {
+    for (const smId in this.model.data.elements.stateMachines) {
+      const sm = this.model.data.elements.stateMachines[smId];
+
+      Object.keys(sm.choiceStates).forEach((id) => {
+        this.model.changeChoiceStateSelection(id, false);
+      });
+
+      Object.keys(sm.states).forEach((id) => {
+        this.model.changeStateSelection(id, false);
+      });
+
+      Object.keys(sm.transitions).forEach((id) => {
+        this.model.changeTransitionSelection(id, false);
+      });
+
+      Object.keys(sm.notes).forEach((id) => {
+        this.model.changeNoteSelection(id, false);
+      });
+
+      Object.keys(sm.components).forEach((id) => {
+        this.model.changeNoteSelection(id, false);
+      });
+    }
+  }
 }

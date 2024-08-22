@@ -31,10 +31,6 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     return this.app.controller;
   }
 
-  private get history() {
-    return this.app.controller.history;
-  }
-
   get = this.items.get.bind(this.items);
   set = this.items.set.bind(this.items);
   clear = this.items.clear.bind(this.items);
@@ -63,10 +59,10 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     return component;
   }
 
-  changeComponent(args: EditComponentParams) {
-    const component = this.items.get(args.name);
+  editComponent(args: EditComponentParams) {
+    const component = this.items.get(args.id);
     if (!component) {
-      throw new Error(`Изменение не существующего компонента с идентификатором ${args.name}`);
+      throw new Error(`Изменение не существующего компонента с идентификатором ${args.id}`);
     }
     const componentData = component.data;
     componentData.parameters = args.parameters;
@@ -79,6 +75,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
       component.icon.label = args.parameters['label'];
       component.icon.color = args.parameters['labelColor'];
     }
+
+    return component;
   }
 
   changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {

@@ -10,13 +10,17 @@ import {
 } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
-import { useEditorContext } from '@renderer/store/EditorContext';
 import { Event } from '@renderer/types/diagram';
 
-export const DiagramEditor: React.FC = () => {
-  const editor = useEditorContext();
+interface DiagramEditorProps {
+  editor: CanvasEditor;
+}
+
+export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
+  const editor = props.editor;
   const isMounted = editor.controller.model.useData('isMounted');
 
   const [canvasSettings] = useSettings('canvas');

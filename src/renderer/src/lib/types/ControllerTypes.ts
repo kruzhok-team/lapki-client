@@ -10,10 +10,26 @@ import {
 import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface EditComponentParams {
-  sm: string;
-  name: string;
+  smId: string;
+  id: string;
+  type: string;
   parameters: ComponentData['parameters'];
   newName?: string;
+}
+
+export interface ChangeSelectionParams {
+  id: string;
+  value: boolean;
+}
+
+export interface SetMountedStatusParams {
+  canvasId: string;
+  status: boolean;
+}
+
+export interface RenameComponentParams {
+  id: string;
+  newName: string;
 }
 
 export interface DeleteStateMachineParams {

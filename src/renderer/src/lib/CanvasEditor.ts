@@ -1,10 +1,12 @@
 import * as TWEEN from '@tweenjs/tween.js';
 
+import { throwDeprecation } from 'process';
+
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
-import { ModelController } from './data/ModelController';
+import { CanvasController } from './data/ModelController/CanvasController';
 
 interface CanvasEditorSettings {
   animations: boolean;
@@ -26,10 +28,9 @@ export class CanvasEditor {
 
   view = new EditorView(this);
 
-  //Вот что я делаю, чтобы получить controller в обоих canvas
-  controller!: ModelController;
+  controller!: CanvasController;
 
-  setController(controller: ModelController) {
+  setController(controller: CanvasController) {
     this.controller = controller;
   }
 
@@ -103,7 +104,10 @@ export class CanvasEditor {
       this.view.isDirty = false;
     });
 
-    this.controller.model.data.isMounted = true;
+    this.controller.emit('isMounted', {
+      canvasId: this.controller.id,
+      status: true,
+    });
     this.controller.model.triggerDataUpdate('isMounted');
 
     this.controller.loadData();

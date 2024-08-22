@@ -3,7 +3,6 @@ import { useRef } from 'react';
 import { MainContainer } from '@renderer/components';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 
-import { CanvasScheme } from './lib/CanvasScheme';
 import { ModelController } from './lib/data/ModelController';
 import { EditorContext } from './store/EditorContext';
 import { SchemeContext } from './store/SchemeContext';

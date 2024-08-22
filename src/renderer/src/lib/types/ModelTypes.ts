@@ -11,9 +11,7 @@ import {
 } from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
-  isMounted: false,
-  isInitialized: false,
-  isStale: false,
+  canvas: {} as { [id: string]: EditorStatus },
   basename: null as string | null,
   name: null as string | null,
 
@@ -23,8 +21,27 @@ export const emptyEditorData = () => ({
   scale: 1,
 });
 
+export function emptyEditorStatus(): EditorStatus {
+  return {
+    prevMounted: false,
+    isMounted: false,
+    isInitialized: false,
+    isStale: false,
+  };
+}
+
+export type EditorStatus = {
+  prevMounted: boolean;
+  isMounted: boolean;
+  isInitialized: boolean;
+  isStale: boolean;
+};
+
 export type EditorData = ReturnType<typeof emptyEditorData>;
-export type EditorDataPropertyName = keyof EditorData | `elements.${keyof EditorData['elements']}`;
+export type EditorDataPropertyName =
+  | keyof EditorData
+  | `elements.${keyof EditorData['elements']}`
+  | `canvas.${keyof EditorStatus}`;
 export type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']
     ? EditorData['elements'][V]
@@ -93,6 +110,7 @@ export type ChangeStateMachineParams = CreateStateMachineParams;
 
 export type CreateComponentParams = ComponentData & {
   name: string;
+  smId: string;
   placeInCenter?: boolean;
 };
 

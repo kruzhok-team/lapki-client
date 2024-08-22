@@ -78,7 +78,7 @@ export type PossibleActions = {
 
   createComponent: { args: CreateComponentParams };
   deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
-  changeComponent: { args: EditComponentParams; prevComponent: Component };
+  editComponent: { args: EditComponentParams; prevComponent: Component };
   changeComponentPosition: { name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
 
@@ -327,7 +327,7 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.deleteComponent.bind(sM, args, false),
     undo: sM.createComponent.bind(sM, { name: args.name, ...prevComponent }, false),
   }),
-  changeComponent: (sM, { args, prevComponent }) => ({
+  editComponent: (sM, { args, prevComponent }) => ({
     redo: sM.editComponent.bind(sM, args, false),
     undo: sM.editComponent.bind(
       sM,
@@ -498,8 +498,8 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Удаление компонента',
     description: `Имя: ${args.name}\nТип: ${prevComponent.type}`,
   }),
-  changeComponent: ({ args, prevComponent }) => {
-    const prev = { prevComponent, name: args.name };
+  editComponent: ({ args, prevComponent }) => {
+    const prev = { prevComponent, name: args.id };
     const newComp = { ...args, type: prevComponent.type };
     delete newComp.newName;
 

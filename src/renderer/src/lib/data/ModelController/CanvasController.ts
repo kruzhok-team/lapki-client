@@ -1,19 +1,18 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { ChoiceState, FinalState, State } from '@renderer/lib/drawable';
 import {
+  ChangeSelectionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
   CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
-  DeleteComponentParams,
   DeleteDrawableParams,
-  DeleteStateMachineParams,
-  DeleteStateParams,
-  Drawable,
-  Layer,
+  EditComponentParams,
+  RenameComponentParams,
+  SetMountedStatusParams,
 } from '@renderer/lib/types';
+import { Condition, Variable } from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
 import { NotesController } from './NotesController';
@@ -23,7 +22,7 @@ import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
 import { loadPlatform } from '../PlatformLoader';
-import { PlatformManager } from '../PlatformManager';
+import { operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
   | 'state'
@@ -37,20 +36,32 @@ export function getSignalName(smId: string, attribute: CanvasSubscribeAttribute)
   return `${smId}/${attribute}`;
 }
 
-interface CanvasControllerEvents {
+export type CanvasControllerEvents = {
+  loadData: null;
   initPlatform: null;
-  createChoice: CreateChoiceStateParams & { canUndo: boolean };
-  createState: CreateStateParams & { canUndo: boolean };
-  createFinal: CreateFinalStateParams & { canUndo: boolean };
-  createNote: CreateNoteParams & { canUndo: boolean };
-  createComponent: CreateComponentParams & { canUndo: boolean };
-  deleteChoice: DeleteDrawableParams & { canUndo: boolean };
-  deleteState: DeleteDrawableParams & { canUndo: boolean };
-  deleteFinal: DeleteDrawableParams & { canUndo: boolean };
-  deleteNote: DeleteDrawableParams & { canUndo: boolean };
-  deleteComponent: DeleteDrawableParams & { canUndo: boolean };
-  // changeComponent: CreateComponentParams & { canUndo: boolean };
-}
+  initEvents: null;
+
+  createChoice: CreateChoiceStateParams;
+  createState: CreateStateParams;
+  createFinal: CreateFinalStateParams;
+  createNote: CreateNoteParams;
+  createComponent: CreateComponentParams;
+  deleteChoice: DeleteDrawableParams;
+  deleteState: DeleteDrawableParams;
+  deleteFinal: DeleteDrawableParams;
+  deleteNote: DeleteDrawableParams;
+  deleteComponent: DeleteDrawableParams;
+  editComponent: EditComponentParams;
+  renameComponent: RenameComponentParams;
+  selectComponent: { id: string };
+
+  isMounted: SetMountedStatusParams;
+  changeStateSelection: ChangeSelectionParams;
+  changeChoiceSelection: ChangeSelectionParams;
+  changeComponentSelection: ChangeSelectionParams;
+  changeNoteSelection: ChangeSelectionParams;
+  changeTransitionSelection: ChangeSelectionParams;
+};
 
 export type CanvasData = {
   platformName: string;
@@ -67,8 +78,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   stateMachines: StateMachineController;
   canvasData: CanvasData;
   stateMachinesSub: { [id: string]: CanvasSubscribeAttribute[] } = {};
-  constructor(app: CanvasEditor, canvasData: CanvasData) {
+  id: string;
+  constructor(id: string, app: CanvasEditor, canvasData: CanvasData) {
     super();
+    this.id = id;
     this.app = app;
     this.initializer = new Initializer(app, this);
 
@@ -79,6 +92,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.components = new ComponentsController(app);
     this.stateMachines = new StateMachineController(app);
     this.canvasData = canvasData;
+    this.watch();
   }
 
   get view() {
@@ -145,14 +159,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('deleteNote', this.bindHelper(smId, 'note', this.notes.deleteNote));
         break;
       case 'component':
-        this.on(
-          'createComponent',
-          this.bindHelper(smId, 'component', this.components.createComponent)
-        );
-        this.on(
-          'deleteComponent',
-          this.bindHelper(smId, 'component', this.components.deleteComponent)
-        );
+        this.on('createComponent', this.bindHelper(smId, 'component', this.createComponent));
+        this.on('deleteComponent', this.bindHelper(smId, 'component', this.deleteComponent));
+        this.on('editComponent', this.bindHelper(smId, 'component', this.editComponent));
+        this.on('renameComponent', this.bindHelper(smId, 'component', this.renameComponent));
+        this.on('selectComponent', this.bindHelper(smId, 'component', this.selectComponent));
         break;
       default:
         throw new Error('Unknown attribute');
@@ -162,6 +173,121 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       return;
     }
     this.stateMachinesSub[smId].push(attribute);
+  }
+
+  private renameComponent(args: RenameComponentParams) {
+    if (!this.platform) {
+      return;
+    }
+    const { id, newName } = args;
+    const visualCompo = this.platform.nameToVisual.get(id);
+
+    if (!visualCompo) return;
+
+    this.platform.nameToVisual.set(newName, visualCompo);
+    this.platform.nameToVisual.delete(id);
+
+    // А сейчас будет занимательное путешествие по схеме с заменой всего
+    this.states.forEachState((state) => {
+      for (const ev of state.eventBox.data) {
+        // заменяем в триггере
+        if (ev.trigger.component == id) {
+          ev.trigger.component = newName;
+        }
+        for (const act of ev.do) {
+          // заменяем в действии
+          if (act.component == id) {
+            act.component = newName;
+          }
+        }
+      }
+    });
+
+    this.transitions.forEach((transition) => {
+      if (!transition.data.label) return;
+
+      if (transition.data.label.trigger?.component === id) {
+        transition.data.label.trigger.component = newName;
+      }
+
+      if (transition.data.label.do) {
+        for (const act of transition.data.label.do) {
+          if (act.component === id) {
+            act.component = newName;
+          }
+        }
+      }
+
+      if (transition.data.label.condition) {
+        this.renameCondition(transition.data.label.condition, id, newName);
+      }
+    });
+
+    this.app.view.isDirty = true;
+  }
+
+  private selectComponent(args: { id: string }) {
+    const component = this.components.items.get(args.id);
+    if (!component) {
+      return;
+    }
+    this.removeSelection();
+    component.setIsSelected(true);
+  }
+
+  private renameCondition(ac: Condition, oldName: string, newName: string) {
+    if (ac.type == 'value') {
+      return;
+    }
+    if (ac.type == 'component') {
+      if ((ac.value as Variable).component === oldName) {
+        (ac.value as Variable).component = newName;
+      }
+      return;
+    }
+    if (operatorSet.has(ac.type)) {
+      if (Array.isArray(ac.value)) {
+        for (const x of ac.value) {
+          this.renameCondition(x, oldName, newName);
+        }
+        return;
+      }
+      return;
+    }
+  }
+
+  private editComponent(args: EditComponentParams) {
+    if (!this.platform) {
+      return;
+    }
+
+    this.components.editComponent(args);
+    this.platform.nameToVisual.set(args.id, {
+      component: args.type,
+      label: args.parameters['label'],
+      color: args.parameters['labelColor'],
+    });
+  }
+
+  private deleteComponent(args: DeleteDrawableParams) {
+    if (!this.platform) {
+      return;
+    }
+
+    this.components.deleteComponent(args);
+    this.stateMachines.deleteComponent(args.smId, args.id);
+    this.platform.nameToVisual.delete(args.id);
+  }
+
+  private createComponent(args: CreateComponentParams) {
+    if (!this.platform) {
+      return;
+    }
+    const component = this.components.createComponent(args);
+    if (!component) {
+      return;
+    }
+    // TODO: Добавление компонентов в StateMachine
   }
 
   private initPlatform() {
@@ -178,8 +304,49 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.initializer.initComponents('', true);
   }
 
+  loadData() {
+    this.initializer.init();
+    this.app.view.isDirty = true;
+  }
+
   // Отлавливание дефолтных событий для контроллера
-  watch() {
-    this.on('initPlatform', this.initPlatform.bind(this));
+  private watch() {
+    this.on('loadData', this.loadData);
+    this.on('initPlatform', this.initPlatform);
+    this.on('initEvents', this.transitions.initEvents);
+  }
+
+  /**
+   * Снимает выделение со всех нод и переходов.
+   *
+   * @remarks
+   * Выполняется при изменении выделения.
+   *
+   * @privateRemarks
+   * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
+   */
+  removeSelection() {
+    this.app.controller.states.data.choiceStates.forEach((state) => {
+      state.setIsSelected(false);
+    });
+
+    this.app.controller.states.forEachState((state) => {
+      state.setIsSelected(false);
+      state.eventBox.selection = undefined;
+    });
+
+    this.app.controller.transitions.forEach((transition) => {
+      transition.setIsSelected(false);
+    });
+
+    this.app.controller.notes.forEach((note) => {
+      note.setIsSelected(false);
+    });
+
+    this.app.controller.components.forEach((component) => {
+      component.setIsSelected(false);
+    });
+
+    this.view.isDirty = true;
   }
 }

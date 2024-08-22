@@ -44,9 +44,8 @@ export class EditorModel {
   constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
   init(basename: string | null, name: string, elements: Elements) {
-    this.data.isInitialized = false; // Для того чтобы весь интерфейс обновился
-    this.triggerDataUpdate('isInitialized');
-
+    this.triggerDataUpdate('canvas');
+    emptyEditorStatus()
     const prevMounted = this.data.isMounted;
 
     this.data = emptyEditorData();
@@ -57,7 +56,7 @@ export class EditorModel {
     this.data.isMounted = prevMounted;
 
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
+    this.triggerDataUpdate('basename', 'name', 'elements');
 
     if (this.data.isMounted) {
       this.resetEditor();
@@ -628,7 +627,7 @@ export class EditorModel {
     return name;
   }
 
-  changeComponent(name: string, parameters: Component['parameters']) {
+  editComponent(name: string, parameters: Component['parameters']) {
     const component = this.data.elements.components[name];
     if (!component) return false;
 

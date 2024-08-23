@@ -47,6 +47,8 @@ export class ReconnectTimer {
 
     this.autoReconnect = autoReconnect;
     this.freezeReconnection = false;
+
+    this.timeoutEnd = 0;
   }
 
   clearTimer() {
@@ -54,6 +56,7 @@ export class ReconnectTimer {
       clearTimeout(this.timerID);
       this.timerID = undefined;
       this.timeoutSetted = false;
+      this.timeoutEnd = 0;
     }
   }
 

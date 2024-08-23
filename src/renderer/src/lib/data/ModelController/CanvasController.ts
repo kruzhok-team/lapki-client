@@ -1,6 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
+  ChangeComponentPosition,
   ChangeSelectionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -53,6 +54,7 @@ export type CanvasControllerEvents = {
   deleteComponent: DeleteDrawableParams;
   editComponent: EditComponentParams;
   renameComponent: RenameComponentParams;
+  changeComponentPosition: ChangeComponentPosition;
   selectComponent: { id: string };
 
   isMounted: SetMountedStatusParams;
@@ -109,32 +111,33 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   // Функция для любой обработки Drawable
   // Используется для обработки сигналов
   private processDrawable<T>(
-    smId: string,
     attribute: CanvasSubscribeAttribute,
     callback: (args: T, canUndo: boolean) => any,
     parameters: T,
     canUndo: boolean = false
   ) {
-    if (!this.stateMachinesSub[smId]) {
-      return;
-    }
-    if (!this.stateMachinesSub[smId].includes(attribute)) {
-      return;
+    const smId = parameters['smId'];
+    if (smId) {
+      if (!this.stateMachinesSub[smId]) {
+        return;
+      }
+      if (!this.stateMachinesSub[smId].includes(attribute)) {
+        return;
+      }
     }
     return callback(parameters, canUndo);
   }
 
   private bindHelper<T extends (args: any) => any>(
-    smId: string,
     attribute: CanvasSubscribeAttribute,
     callback: T
   ) {
     return this.processDrawable.bind<
       this,
-      [smId: string, attribute: CanvasSubscribeAttribute, callback: T],
+      [attribute: CanvasSubscribeAttribute, callback: T],
       Parameters<T>,
       ReturnType<T>
-    >(this, smId, attribute, callback);
+    >(this, attribute, callback);
   }
 
   subscribe(smId: string, attribute: CanvasSubscribeAttribute) {
@@ -143,27 +146,27 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
     switch (attribute) {
       case 'state':
-        this.on('createState', this.bindHelper(smId, 'state', this.states.createState));
-        this.on('deleteState', this.bindHelper(smId, 'state', this.states.deleteState));
+        this.on('createState', this.bindHelper('state', this.states.createState));
+        this.on('deleteState', this.bindHelper('state', this.states.deleteState));
         break;
       case 'final':
-        this.on('createFinal', this.bindHelper(smId, 'final', this.states.createFinalState));
-        this.on('deleteFinal', this.bindHelper(smId, 'final', this.states.deleteFinalState));
+        this.on('createFinal', this.bindHelper('final', this.states.createFinalState));
+        this.on('deleteFinal', this.bindHelper('final', this.states.deleteFinalState));
         break;
       case 'choice':
-        this.on('createChoice', this.bindHelper(smId, 'choice', this.states.createChoiceState));
-        this.on('deleteChoice', this.bindHelper(smId, 'choice', this.states.deleteChoiceState));
+        this.on('createChoice', this.bindHelper('choice', this.states.createChoiceState));
+        this.on('deleteChoice', this.bindHelper('choice', this.states.deleteChoiceState));
         break;
       case 'note':
-        this.on('createNote', this.bindHelper(smId, 'note', this.notes.createNote));
-        this.on('deleteNote', this.bindHelper(smId, 'note', this.notes.deleteNote));
+        this.on('createNote', this.bindHelper('note', this.notes.createNote));
+        this.on('deleteNote', this.bindHelper('note', this.notes.deleteNote));
         break;
       case 'component':
-        this.on('createComponent', this.bindHelper(smId, 'component', this.createComponent));
-        this.on('deleteComponent', this.bindHelper(smId, 'component', this.deleteComponent));
-        this.on('editComponent', this.bindHelper(smId, 'component', this.editComponent));
-        this.on('renameComponent', this.bindHelper(smId, 'component', this.renameComponent));
-        this.on('selectComponent', this.bindHelper(smId, 'component', this.selectComponent));
+        this.on('createComponent', this.bindHelper('component', this.createComponent));
+        this.on('deleteComponent', this.bindHelper('component', this.deleteComponent));
+        this.on('editComponent', this.bindHelper('component', this.editComponent));
+        this.on('renameComponent', this.bindHelper('component', this.renameComponent));
+        this.on('selectComponent', this.bindHelper('component', this.selectComponent));
         break;
       default:
         throw new Error('Unknown attribute');

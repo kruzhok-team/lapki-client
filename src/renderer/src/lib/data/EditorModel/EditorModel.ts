@@ -45,22 +45,22 @@ export class EditorModel {
 
   init(basename: string | null, name: string, elements: Elements) {
     this.triggerDataUpdate('canvas');
-    emptyEditorStatus()
-    const prevMounted = this.data.isMounted;
-
     this.data = emptyEditorData();
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = elements;
-    this.data.isInitialized = true;
-    this.data.isMounted = prevMounted;
+    for (const canvasId in this.data.canvas) {
+      const canvas = this.data.canvas[canvasId];
+      const prevMounted = canvas.isMounted;
+      canvas.isInitialized = true;
+      canvas.isMounted = prevMounted;
+      if (canvas.isMounted) {
+        this.resetEditor();
+      }
+    }
 
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
     this.triggerDataUpdate('basename', 'name', 'elements');
-
-    if (this.data.isMounted) {
-      this.resetEditor();
-    }
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -128,9 +128,14 @@ export class EditorModel {
   }
 
   private getNodeIds() {
-    return Object.keys(this.data.elements.states).concat(
-      Object.keys(this.data.elements.initialStates)
-    );
+    const ids: string[] = [];
+    for (const smId in this.data.elements.stateMachines) {
+      const sm = this.data.elements.stateMachines[smId];
+      ids.push(...Object.keys(sm.states));
+      ids.push(...Object.keys(sm.initialStates));
+    }
+
+    return ids;
   }
 
   createState(args: CreateStateParams) {
@@ -141,6 +146,7 @@ export class EditorModel {
       events = [],
       placeInCenter = false,
       color,
+      smId,
     } = args;
     let position = args.position;
     const { width, height } = stateStyle;
@@ -154,7 +160,7 @@ export class EditorModel {
 
     position = placeInCenter ? centerPosition() : position;
 
-    this.data.elements.states[id] = {
+    this.data.elements.stateMachines[smId].states[id] = {
       position,
       dimensions: { width, height },
       events: events,
@@ -163,7 +169,7 @@ export class EditorModel {
       color,
     };
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return id;
   }
@@ -173,9 +179,10 @@ export class EditorModel {
       id,
       eventData: { do: actions, trigger, condition },
       color,
+      smId,
     } = args;
 
-    const state = this.data.elements.states[id];
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     const eventIndex = state.events.findIndex(
@@ -199,118 +206,124 @@ export class EditorModel {
 
     state.color = color;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  changeStateName(id: string, name: string) {
-    const state = this.data.elements.states[id];
+  changeStateName(smId: string, id: string, name: string) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.name = name;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  changeStateSelection(id: string, selection: boolean) {
-    const state = this.data.elements.states[id];
+  changeStateSelection(smId: string, id: string, selection: boolean) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.selection = selection;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  changeStatePosition(id: string, position: Point) {
-    const state = this.data.elements.states[id];
+  changeStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  linkState(parentId: string, childId: string) {
-    const parent = this.data.elements.states[parentId];
-    const child = this.data.elements.states[childId];
+  linkState(smId: string, parentId: string, childId: string) {
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
+    const child = this.data.elements.stateMachines[smId].states[childId];
 
     if (!parent || !child) return false;
 
     child.parentId = parentId;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  unlinkState(id: string) {
-    const state = this.data.elements.states[id];
+  unlinkState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].states[id];
 
     if (!state || !state.parentId) return false;
 
-    const parent = this.data.elements.states[state.parentId];
+    const parent = this.data.elements.stateMachines[smId].states[state.parentId];
 
     if (!parent) return false;
 
     delete state.parentId;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  deleteState(id: string) {
-    const state = this.data.elements.states[id];
+  deleteState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
-    delete this.data.elements.states[id];
+    delete this.data.elements.stateMachines[smId].states[id];
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
   createInitialState(args: CreateInitialStateParams) {
-    const { id = generateId(this.getNodeIds()), ...other } = args;
+    const { id = generateId(this.getNodeIds()), smId, ...other } = args;
 
-    this.data.elements.initialStates[id] = other;
+    this.data.elements.stateMachines[smId].initialStates[id] = other;
 
-    this.triggerDataUpdate('elements.initialStates');
+    this.triggerDataUpdate('elements.stateMachines.initialStates');
 
     return id;
   }
 
-  deleteInitialState(id: string) {
-    const state = this.data.elements.initialStates[id];
+  deleteInitialState(id: string, smId: string) {
+    const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
 
-    delete this.data.elements.initialStates[id];
+    delete this.data.elements.stateMachines[smId].initialStates[id];
 
-    this.triggerDataUpdate('elements.initialStates');
+    this.triggerDataUpdate('elements.stateMachines.initialStates');
 
     return true;
   }
 
-  changeInitialStatePosition(id: string, position: Point) {
-    const state = this.data.elements.initialStates[id];
+  changeInitialStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.initialStates');
+    this.triggerDataUpdate('elements.stateMachines.initialStates');
 
     return true;
   }
 
   createFinalState(args: CreateFinalStateParams) {
-    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
+    const {
+      smId,
+      id = generateId(this.getNodeIds()),
+      placeInCenter = false,
+      position,
+      ...other
+    } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -320,53 +333,59 @@ export class EditorModel {
       };
     };
 
-    this.data.elements.finalStates[id] = {
+    this.data.elements.stateMachines[smId].finalStates[id] = {
       ...other,
       position: placeInCenter ? centerPosition() : position,
     };
 
-    this.triggerDataUpdate('elements.finalStates');
+    this.triggerDataUpdate('elements.stateMachines.finalStates');
 
     return id;
   }
 
-  deleteFinalState(id: string) {
-    const state = this.data.elements.finalStates[id];
+  deleteFinalState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].finalStates[id];
     if (!state) return false;
 
-    delete this.data.elements.finalStates[id];
+    delete this.data.elements.stateMachines[smId].finalStates[id];
 
-    this.triggerDataUpdate('elements.finalStates');
+    this.triggerDataUpdate('elements.stateMachines.finalStates');
 
     return true;
   }
 
-  changeFinalStatePosition(id: string, position: Point) {
-    const state = this.data.elements.finalStates[id];
+  changeFinalStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].finalStates[id];
     if (!state) return false;
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.finalStates');
+    this.triggerDataUpdate('elements.stateMachines.finalStates');
 
     return true;
   }
 
-  linkFinalState(stateId: string, parentId: string) {
-    const state = this.data.elements.finalStates[stateId];
-    const parent = this.data.elements.states[parentId];
+  linkFinalState(smId: string, stateId: string, parentId: string) {
+    const state = this.data.elements.stateMachines[smId].finalStates[stateId];
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
 
     if (!state || !parent) return false;
 
     state.parentId = parentId;
 
-    this.triggerDataUpdate('elements.finalStates');
+    this.triggerDataUpdate('elements.stateMachines.finalStates');
 
     return true;
   }
 
   createChoiceState(args: CreateChoiceStateParams) {
-    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
+    const {
+      smId,
+      id = generateId(this.getNodeIds()),
+      placeInCenter = false,
+      position,
+      ...other
+    } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -376,64 +395,64 @@ export class EditorModel {
       };
     };
 
-    this.data.elements.choiceStates[id] = {
+    this.data.elements.stateMachines[smId].choiceStates[id] = {
       ...other,
       position: placeInCenter ? centerPosition() : position,
     };
 
-    this.triggerDataUpdate('elements.choiceStates');
+    this.triggerDataUpdate('elements.stateMachines.choiceStates');
 
     return id;
   }
 
-  deleteChoiceState(id: string) {
-    const state = this.data.elements.choiceStates[id];
+  deleteChoiceState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
 
-    delete this.data.elements.choiceStates[id];
+    delete this.data.elements.stateMachines[smId].choiceStates[id];
 
-    this.triggerDataUpdate('elements.choiceStates');
+    this.triggerDataUpdate('elements.stateMachines.choiceStates');
 
     return true;
   }
 
-  changeChoiceStatePosition(id: string, position: Point) {
-    const state = this.data.elements.choiceStates[id];
+  changeChoiceStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.choiceStates');
+    this.triggerDataUpdate('elements.stateMachines.choiceStates');
 
     return true;
   }
 
-  linkChoiceState(stateId: string, parentId: string) {
-    const state = this.data.elements.choiceStates[stateId];
-    const parent = this.data.elements.states[parentId];
+  linkChoiceState(smId: string, stateId: string, parentId: string) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[stateId];
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
 
     if (!state || !parent) return false;
 
     state.parentId = parentId;
 
-    this.triggerDataUpdate('elements.choiceStates');
+    this.triggerDataUpdate('elements.stateMachines.choiceStates');
 
     return true;
   }
 
-  changeChoiceStateSelection(id: string, selection: boolean) {
-    const state = this.data.elements.choiceStates[id];
+  changeChoiceStateSelection(smId: string, id: string, selection: boolean) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
 
     state.selection = selection;
 
-    this.triggerDataUpdate('elements.choiceStates');
+    this.triggerDataUpdate('elements.stateMachines.choiceStates');
 
     return true;
   }
 
-  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
-    const state = this.data.elements.states[stateId];
+  createEvent(smId: string, stateId: string, eventData: EventData, eventIdx?: number) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     if (eventIdx !== undefined) {
@@ -442,26 +461,26 @@ export class EditorModel {
       state.events.push(eventData);
     }
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  createEventAction(stateId: string, event: EventSelection, value: Action) {
-    const state = this.data.elements.states[stateId];
+  createEventAction(smId: string, stateId: string, event: EventSelection, value: Action) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
     state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  changeEvent(stateId: string, eventIdx: number, newValue: Event) {
-    const state = this.data.elements.states[stateId];
+  changeEvent(smId: string, stateId: string, eventIdx: number, newValue: Event) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     // const event = state.events.find(
@@ -485,62 +504,66 @@ export class EditorModel {
     // state.events.splice(eventIdx, 1);
     // }
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
-    const state = this.data.elements.states[stateId];
+  changeEventAction(smId: string, stateId: string, event: EventSelection, newValue: Action) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
     state.events[eventIdx].do[actionIdx as number] = newValue;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  deleteEvent(stateId: string, eventIdx: number) {
-    const state = this.data.elements.states[stateId];
+  deleteEvent(smId: string, stateId: string, eventIdx: number) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     state.events.splice(eventIdx, 1);
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  deleteEventAction(stateId: string, event: EventSelection) {
-    const state = this.data.elements.states[stateId];
+  deleteEventAction(smId: string, stateId: string, event: EventSelection) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
     state.events[eventIdx].do.splice(actionIdx as number, 1);
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
   createTransition(args: CreateTransitionParams) {
-    const { id = generateId(Object.keys(this.data.elements.transitions)), ...other } = args;
+    const {
+      smId,
+      id = generateId(Object.keys(this.data.elements.stateMachines[smId].transitions)),
+      ...other
+    } = args;
 
-    this.data.elements.transitions[id] = other;
+    this.data.elements.stateMachines[smId].transitions[id] = other;
 
-    this.triggerDataUpdate('elements.transitions');
+    this.triggerDataUpdate('elements.stateMachines.transitions');
 
     return id;
   }
 
   changeTransition(args: ChangeTransitionParams) {
-    const { id, label, ...other } = args;
+    const { id, smId, label, ...other } = args;
 
-    const transition = this.data.elements.transitions[id] as TransitionData;
+    const transition = this.data.elements.stateMachines[smId].transitions[id] as TransitionData;
     if (!transition) return false;
 
     //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
@@ -551,48 +574,48 @@ export class EditorModel {
       return { ...(transition.label ?? {}), ...label };
     };
 
-    this.data.elements.transitions[id] = { ...other, label: getNewLabel() };
+    this.data.elements.stateMachines[smId].transitions[id] = { ...other, label: getNewLabel() };
 
-    this.triggerDataUpdate('elements.transitions');
+    this.triggerDataUpdate('elements.stateMachines.transitions');
 
     return true;
   }
 
   //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
-  changeTransitionSelection(id: string, selection: boolean) {
-    const transition = this.data.elements.transitions[id];
+  changeTransitionSelection(smId: string, id: string, selection: boolean) {
+    const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
 
     transition.selection = selection;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.stateMachines.states');
     return true;
   }
 
-  changeTransitionPosition(id: string, position: Point) {
-    const transition = this.data.elements.transitions[id];
+  changeTransitionPosition(smId: string, id: string, position: Point) {
+    const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
 
     transition.label.position = position;
 
-    this.triggerDataUpdate('elements.transitions');
+    this.triggerDataUpdate('elements.stateMachines.transitions');
 
     return true;
   }
 
-  deleteTransition(id: string) {
-    const transition = this.data.elements.transitions[id];
+  deleteTransition(smId: string, id: string) {
+    const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return false;
 
-    delete this.data.elements.transitions[id];
+    delete this.data.elements.stateMachines[smId].transitions[id];
 
-    this.triggerDataUpdate('elements.transitions');
+    this.triggerDataUpdate('elements.stateMachines.transitions');
 
     return true;
   }
 
   createComponent(args: CreateComponentParams) {
-    const { name, type, placeInCenter = false, position, parameters } = args;
+    const { smId, name, type, placeInCenter = false, position, parameters } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -602,98 +625,100 @@ export class EditorModel {
       };
     };
 
-    if (this.data.elements.components.hasOwnProperty(name)) {
+    if (this.data.elements.stateMachines[smId].components.hasOwnProperty(name)) {
       console.error(['bad new component', name, type]);
       return name;
     }
 
     const getOrder = () => {
-      const orders = Object.values(this.data.elements.components).map((c) => c.order);
+      const orders = Object.values(this.data.elements.stateMachines[smId].components).map(
+        (c) => c.order
+      );
 
       if (orders.length === 0) return 0;
 
       return Math.max(...orders) + 1;
     };
 
-    this.data.elements.components[name] = {
+    this.data.elements.stateMachines[smId].components[name] = {
       type,
       position: placeInCenter ? centerPosition() : position,
       parameters,
       order: getOrder(),
     };
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return name;
   }
 
-  editComponent(name: string, parameters: Component['parameters']) {
-    const component = this.data.elements.components[name];
+  editComponent(smId: string, name: string, parameters: Component['parameters']) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
     component.parameters = parameters;
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return true;
   }
 
-  changeComponentName(name: string, newName: string) {
-    const component = this.data.elements.components[name];
+  changeComponentName(smId: string, name: string, newName: string) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
-    this.data.elements.components[newName] = component;
+    this.data.elements.stateMachines[smId].components[newName] = component;
 
-    delete this.data.elements.components[name];
+    delete this.data.elements.stateMachines[smId].components[name];
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return true;
   }
 
-  deleteComponent(name: string) {
-    const component = this.data.elements.components[name];
+  deleteComponent(smId: string, name: string) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
-    delete this.data.elements.components[name];
+    delete this.data.elements.stateMachines[smId].components[name];
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return true;
   }
 
-  swapComponents(args: SwapComponentsParams) {
+  swapComponents(smId: string, args: SwapComponentsParams) {
     const { name1, name2 } = args;
 
-    const component1 = this.data.elements.components[name1];
-    const component2 = this.data.elements.components[name2];
+    const component1 = this.data.elements.stateMachines[smId].components[name1];
+    const component2 = this.data.elements.stateMachines[smId].components[name2];
     if (!component1 || !component2) return false;
 
     [component1.order, component2.order] = [component2.order, component1.order];
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return true;
   }
 
-  changeComponentPosition(name: string, position: Point) {
-    const component = this.data.elements.components[name];
+  changeComponentPosition(name: string, smId: string, position: Point) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
     component.position = position;
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return true;
   }
 
-  changeComponentSelection(name: string, selection: boolean) {
-    const component = this.data.elements.components[name];
+  changeComponentSelection(smId: string, name: string, selection: boolean) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
     component.selection = selection;
 
-    this.triggerDataUpdate('elements.components');
+    this.triggerDataUpdate('elements.stateMachines.components');
 
     return true;
   }
@@ -708,7 +733,8 @@ export class EditorModel {
 
   createNote(params: CreateNoteParams) {
     const {
-      id = generateId(Object.keys(this.data.elements.notes)),
+      smId,
+      id = generateId(Object.keys(this.data.elements.stateMachines[smId].notes)),
       text,
       placeInCenter = false,
     } = params;
@@ -723,64 +749,64 @@ export class EditorModel {
 
     position = placeInCenter ? centerPosition() : position;
 
-    this.data.elements.notes[id] = {
+    this.data.elements.stateMachines[smId].notes[id] = {
       text,
       position,
     };
 
-    this.triggerDataUpdate('elements.notes');
+    this.triggerDataUpdate('elements.stateMachines.notes');
 
     return id;
   }
 
-  changeNoteText(id: string, text: string) {
-    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+  changeNoteText(smId: string, id: string, text: string) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
-    this.data.elements.notes[id].text = text;
+    this.data.elements.stateMachines[smId].notes[id].text = text;
 
-    this.triggerDataUpdate('elements.notes');
+    this.triggerDataUpdate('elements.stateMachines.notes');
 
     return true;
   }
 
   //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
-  changeNoteSelection(id: string, selection: boolean) {
-    const note = this.data.elements.notes[id];
+  changeNoteSelection(smId: string, id: string, selection: boolean) {
+    const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
 
     note.selection = selection;
 
-    this.triggerDataUpdate('elements.notes');
+    this.triggerDataUpdate('elements.stateMachines.notes');
 
     return true;
   }
 
-  changeNotePosition(id: string, position: Point) {
-    const note = this.data.elements.notes[id];
+  changeNotePosition(smId: string, id: string, position: Point) {
+    const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
 
     note.position = position;
 
-    this.triggerDataUpdate('elements.notes');
+    this.triggerDataUpdate('elements.stateMachines.notes');
 
     return true;
   }
 
-  deleteNote(id: string) {
-    const note = this.data.elements.notes[id];
+  deleteNote(smId: string, id: string) {
+    const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
 
-    delete this.data.elements.notes[id];
+    delete this.data.elements.stateMachines[smId].notes[id];
 
-    this.triggerDataUpdate('elements.notes');
+    this.triggerDataUpdate('elements.stateMachines.notes');
 
     return true;
   }
 
-  setMeta(meta: Meta) {
-    this.data.elements.meta = meta;
+  setMeta(smId: string, meta: Meta) {
+    this.data.elements.stateMachines[smId].meta = meta;
 
-    this.triggerDataUpdate('elements.meta');
+    this.triggerDataUpdate('elements.stateMachines.meta');
 
     return true;
   }

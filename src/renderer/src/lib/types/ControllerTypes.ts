@@ -7,6 +7,8 @@ import {
   Note as NoteData,
 } from '@renderer/types/diagram';
 
+import { Point } from './graphics';
+
 import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface EditComponentParams {
@@ -15,6 +17,12 @@ export interface EditComponentParams {
   type: string;
   parameters: ComponentData['parameters'];
   newName?: string;
+}
+
+export interface ChangeComponentPosition {
+  id: string;
+  startPosition: Point;
+  endPosition: Point;
 }
 
 export interface ChangeSelectionParams {
@@ -28,6 +36,7 @@ export interface SetMountedStatusParams {
 }
 
 export interface RenameComponentParams {
+  smId: string;
   id: string;
   newName: string;
 }

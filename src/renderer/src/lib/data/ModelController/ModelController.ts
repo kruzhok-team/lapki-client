@@ -128,8 +128,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('editComponent', args);
   }
 
-  changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
-    // this.components.changeComponentPosition(name, startPosition, endPosition, _canUndo);
+  changeComponentPosition(
+    smId: string,
+    name: string,
+    startPosition: Point,
+    endPosition: Point,
+    _canUndo = true
+  ) {
+    this.emit('changeComponentPosition', {
+      id: name,
+      startPosition: startPosition,
+      endPosition: endPosition,
+    });
+    this.model.changeComponentPosition(smId, name, endPosition);
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
@@ -142,7 +153,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id, smId } = args;
 
     const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
-    this.model.deleteComponent(id);
+    this.model.deleteComponent(smId, id);
 
     if (canUndo) {
       this.history.do({
@@ -169,9 +180,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // this.scheme.view.isDirty = true;
   }
 
-  private renameComponent(name: string, newName: string) {
-    this.model.changeComponentName(name, newName);
-    this.emit('renameComponent', { id: name, newName: newName });
+  private renameComponent(smId: string, name: string, newName: string) {
+    this.model.changeComponentName(smId, name, newName);
+    this.emit('renameComponent', { smId: smId, id: name, newName: newName });
   }
 
   // deleteSelected = () => {

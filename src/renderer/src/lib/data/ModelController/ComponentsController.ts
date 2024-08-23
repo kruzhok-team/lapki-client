@@ -1,7 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
-import { EditComponentParams, DeleteComponentParams, Layer } from '@renderer/lib/types';
+import { EditComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateComponentParams, DeleteDrawableParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
@@ -67,7 +67,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     const componentData = component.data;
     componentData.parameters = args.parameters;
     if (args.newName !== undefined) {
-      this.deleteComponent(args, false);
+      this.deleteComponent(args);
       // (L140-beep) скорее всего придется потом возиться с переходами
       // на схематехническом экране
       this.createComponent({ ...componentData, name: args.newName });
@@ -79,25 +79,18 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     return component;
   }
 
-  changeComponentPosition(name: string, startPosition: Point, endPosition: Point, _canUndo = true) {
+  changeComponentPosition(name: string) {
     const component = this.items.get(name);
     if (!component) return;
-    if (_canUndo) {
-      this.history.do({
-        type: 'changeComponentPosition',
-        args: { name, startPosition, endPosition },
-      });
-    }
-    this.app.controller.model.changeComponentPosition(name, endPosition);
 
     this.view.isDirty = true;
   }
 
-  deleteComponent(args: DeleteDrawableParams, canUndo = true) {
+  deleteComponent(args: DeleteDrawableParams) {
     const component = this.items.get(args.id);
     if (!component) return;
 
-    const numberOfConnectedActions = 0;
+    // const numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
     // this.controller.transitions.forEachByStateId(id, (transition) => {
@@ -105,18 +98,17 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     //   numberOfConnectedActions += 1;
     // });
 
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteComponent',
-        args: { args, prevComponent: structuredClone(component.data) },
-        numberOfConnectedActions,
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'deleteComponent',
+    //     args: { args, prevComponent: structuredClone(component.data) },
+    //     numberOfConnectedActions,
+    //   });
+    // }
 
     this.view.children.remove(component, Layer.Components);
     this.unwatch(component);
-    this.items.delete(args.name);
-    this.app.controller.model.deleteComponent(args.name);
+    this.items.delete(args.id);
 
     this.view.isDirty = true;
   }

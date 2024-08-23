@@ -8,6 +8,7 @@ import {
   FinalState as FinalStateData,
   ChoiceState as ChoiceStateData,
   Component as ComponentData,
+  StateMachine,
 } from '@renderer/types/diagram';
 
 export const emptyEditorData = () => ({
@@ -19,6 +20,7 @@ export const emptyEditorData = () => ({
 
   offset: { x: 0, y: 0 },
   scale: 1,
+  isStale: false,
 });
 
 export function emptyEditorStatus(): EditorStatus {
@@ -26,7 +28,6 @@ export function emptyEditorStatus(): EditorStatus {
     prevMounted: false,
     isMounted: false,
     isInitialized: false,
-    isStale: false,
   };
 }
 
@@ -34,13 +35,12 @@ export type EditorStatus = {
   prevMounted: boolean;
   isMounted: boolean;
   isInitialized: boolean;
-  isStale: boolean;
 };
 
 export type EditorData = ReturnType<typeof emptyEditorData>;
 export type EditorDataPropertyName =
   | keyof EditorData
-  | `elements.${keyof EditorData['elements']}`
+  | `elements.${keyof EditorData['elements']}.${keyof StateMachine}`
   | `canvas.${keyof EditorStatus}`;
 export type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']
@@ -57,6 +57,7 @@ export const emptyDataListeners = Object.fromEntries([
 ]) as any as EditorDataListeners;
 
 export type CreateStateParams = Omit<StateData, 'dimensions' | 'events'> & {
+  smId: string;
   id?: string;
   events?: EventData[];
 
@@ -67,26 +68,28 @@ export type CreateStateParams = Omit<StateData, 'dimensions' | 'events'> & {
   canBeInitial?: boolean;
 };
 
-export type CreateInitialStateParams = InitialStateData & { id?: string };
+export type CreateInitialStateParams = InitialStateData & { smId: string; id?: string };
 export type CreateFinalStateParams = FinalStateData & {
   id?: string;
   placeInCenter?: boolean;
-
+  smId: string;
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
 export type CreateChoiceStateParams = ChoiceStateData & {
   id?: string;
+  smId: string;
   placeInCenter?: boolean;
 
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
 
-export type CreateTransitionParams = TransitionData & { id?: string };
-export type ChangeTransitionParams = TransitionData & { id: string };
+export type CreateTransitionParams = TransitionData & { smId: string; id?: string };
+export type ChangeTransitionParams = TransitionData & { smId: string; id: string };
 
 export interface CreateNoteParams {
+  smId: string;
   id?: string;
   position: Point;
   text: string;
@@ -94,6 +97,7 @@ export interface CreateNoteParams {
 }
 
 export interface ChangeStateEventsParams {
+  smId: string;
   id: string;
   eventData: StateData['events'][number];
   color?: string;

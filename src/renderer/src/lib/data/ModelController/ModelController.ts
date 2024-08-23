@@ -13,7 +13,7 @@ import {
   DeleteDrawableParams,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
-import { Elements } from '@renderer/types/diagram';
+import { Elements, StateMachine } from '@renderer/types/diagram';
 
 import { CanvasControllerEvents } from './CanvasController';
 
@@ -59,9 +59,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.watch();
   }
 
-  private copyData: CopyData | null = null; // То что сейчас скопировано
-  private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
-
   private watch() {
     this.on('isMounted', this.setMountStatus);
   }
@@ -87,10 +84,23 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('loadData', null);
   }
 
+  private getSmId(id: string, element: `${keyof StateMachine}`) {
+    for (const smId in this.model.data.elements.stateMachines) {
+      const sm = this.model.data.elements.stateMachines[smId];
+      if (!sm[element]) {
+        throw new Error('Never is reached');
+      }
+      if (sm[element][id]) {
+        return smId;
+      }
+    }
+    throw new Error('Never is reached');
+  }
+
   selectComponent(id: string) {
     this.removeSelection();
 
-    this.model.changeComponentSelection(id, true);
+    this.model.changeComponentSelection(this.getSmId(id, 'components'), id, true);
     this.emit('selectComponent', { id: id });
   }
 
@@ -233,31 +243,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
-  // copySelected = () => {
-  //   const nodeToCopy =
-  //     [...this.states.data.states.values()].find((state) => state.isSelected) ||
-  //     [...this.states.data.choiceStates.values()].find((state) => state.isSelected) ||
-  //     [...this.transitions.items.values()].find((transition) => transition.isSelected) ||
-  //     [...this.notes.items.values()].find((note) => note.isSelected);
-
-  //   if (!nodeToCopy) return;
-
-  //   // Тип нужен чтобы отделить ноды при вставке
-  //   let copyType: CopyType = 'state';
-  //   if (nodeToCopy instanceof ChoiceState) copyType = 'choiceState';
-  //   if (nodeToCopy instanceof Transition) copyType = 'transition';
-  //   if (nodeToCopy instanceof Note) copyType = 'note';
-
-  //   // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
-  //   if (nodeToCopy.id !== this.copyData?.data.id) {
-  //     this.pastePositionOffset = 0;
-  //   }
-
-  //   this.copyData = {
-  //     type: copyType,
-  //     data: { ...(structuredClone(nodeToCopy.data) as any), id: nodeToCopy.id },
-  //   };
-  // };
+  copySelected = () => {
+    this.emit('copySelected', null);
+  };
 
   // pasteSelected = () => {
   //   if (!this.copyData) return;
@@ -437,23 +425,23 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = this.model.data.elements.stateMachines[smId];
 
       Object.keys(sm.choiceStates).forEach((id) => {
-        this.model.changeChoiceStateSelection(id, false);
+        this.model.changeChoiceStateSelection(smId, id, false);
       });
 
       Object.keys(sm.states).forEach((id) => {
-        this.model.changeStateSelection(id, false);
+        this.model.changeStateSelection(smId, id, false);
       });
 
       Object.keys(sm.transitions).forEach((id) => {
-        this.model.changeTransitionSelection(id, false);
+        this.model.changeTransitionSelection(smId, id, false);
       });
 
       Object.keys(sm.notes).forEach((id) => {
-        this.model.changeNoteSelection(id, false);
+        this.model.changeNoteSelection(smId, id, false);
       });
 
       Object.keys(sm.components).forEach((id) => {
-        this.model.changeNoteSelection(id, false);
+        this.model.changeNoteSelection(smId, id, false);
       });
     }
   }

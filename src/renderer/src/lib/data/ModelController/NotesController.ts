@@ -32,10 +32,6 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     return this.app.controller;
   }
 
-  private get history() {
-    return this.app.controller.history;
-  }
-
   get = this.items.get.bind(this.items);
   set = this.items.set.bind(this.items);
   clear = this.items.clear.bind(this.items);

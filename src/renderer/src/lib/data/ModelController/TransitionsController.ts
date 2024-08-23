@@ -11,7 +11,11 @@ import {
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
-import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/ModelTypes';
+import {
+  ChangeTransitionParams,
+  CreateTransitionParams,
+  DeleteDrawableParams,
+} from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
@@ -193,14 +197,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   }
 
-  deleteTransition(id: string, canUndo = true) {
-    const transition = this.items.get(id);
+  deleteTransition(args: DeleteDrawableParams, canUndo = true) {
+    const transition = this.items.get(args.id);
     if (!transition) return;
 
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    this.forEachByTargetId(id, (transition) => {
+    this.forEachByTargetId(args.id, (transition) => {
       this.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });

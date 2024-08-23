@@ -112,10 +112,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );
-    this.model.editComponent(id, parameters);
+    this.model.editComponent(smId, id, parameters);
 
     if (newName) {
-      this.renameComponent(id, newName);
+      this.renameComponent(smId, id, newName);
     }
 
     if (canUndo) {
@@ -166,7 +166,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   swapComponents(args: SwapComponentsParams, canUndo = true) {
-    this.model.swapComponents(args);
+    this.model.swapComponents(args.smId, args);
 
     if (canUndo) {
       this.history.do({
@@ -185,43 +185,53 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('renameComponent', { smId: smId, id: name, newName: newName });
   }
 
-  // deleteSelected = () => {
-  //   this.editor.controller.states.forEachState((state) => {
-  //     if (!state.isSelected) return;
+  deleteSelected = () => {
+    for (const smId in this.model.data.elements.stateMachines) {
+      const sm = this.model.data.elements.stateMachines[smId];
+      Object.keys(sm.states).forEach((key) => {
+        const state = sm.states[key];
+        if (state.selection) {
+          this.model.deleteState(smId, key);
+        }
+      });
 
-  //     if (state.eventBox.selection) {
-  //       this.editor.controller.states.deleteEvent(state.id, state.eventBox.selection);
-  //       state.eventBox.selection = undefined;
-  //       return;
-  //     }
+      Object.keys(sm.choiceStates).forEach((key) => {
+        const state = sm.choiceStates[key];
+        if (state.selection) {
+          this.model.deleteChoiceState(smId, key);
+        }
+      });
 
-  //     this.editor.controller.states.deleteState(state.id);
-  //   });
+      Object.keys(sm.choiceStates).forEach((key) => {
+        const state = sm.choiceStates[key];
+        if (state.selection) {
+          this.model.deleteChoiceState(smId, key);
+        }
+      });
 
-  //   this.editor.controller.states.data.choiceStates.forEach((state) => {
-  //     if (!state.isSelected) return;
+      Object.keys(sm.transitions).forEach((key) => {
+        const transition = sm.transitions[key];
+        if (transition.selection) {
+          this.model.deleteTransition(smId, key);
+        }
+      });
 
-  //     this.editor.controller.states.deleteChoiceState(state.id);
-  //   });
+      Object.keys(sm.notes).forEach((key) => {
+        const note = sm.notes[key];
+        if (note.selection) {
+          this.model.deleteNote(smId, key);
+        }
+      });
 
-  //   this.editor.controller.transitions.forEach((transition) => {
-  //     if (!transition.isSelected) return;
-
-  //     this.editor.controller.transitions.deleteTransition(transition.id);
-  //   });
-
-  //   this.editor.controller.notes.forEach((note) => {
-  //     if (!note.isSelected) return;
-
-  //     this.editor.controller.notes.deleteNote(note.id);
-  //   });
-
-  //   this.scheme.controller.components.forEach((component) => {
-  //     if (!component.isSelected) return;
-
-  //     //scheme.controller.components.deleteComponent(component.id);
-  //   });
-  // };
+      Object.keys(sm.components).forEach((key) => {
+        const component = sm.components[key];
+        if (component.selection) {
+          this.model.deleteComponent(smId, key);
+        }
+      });
+      this.emit('deleteSelected', smId);
+    }
+  };
 
   // copySelected = () => {
   //   const nodeToCopy =

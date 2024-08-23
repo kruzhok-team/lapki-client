@@ -17,7 +17,7 @@ export const emptyEditorData = () => ({
   name: null as string | null,
 
   elements: emptyElements(),
-
+  currentSm: null as string | null,
   offset: { x: 0, y: 0 },
   scale: 1,
   isStale: false,
@@ -76,6 +76,7 @@ export type CreateFinalStateParams = FinalStateData & {
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };
+
 export type CreateChoiceStateParams = ChoiceStateData & {
   id?: string;
   smId: string;
@@ -124,6 +125,7 @@ export type DeleteDrawableParams = {
 };
 
 export interface SwapComponentsParams {
+  smId: string;
   name1: string;
   name2: string;
 }

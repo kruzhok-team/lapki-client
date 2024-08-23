@@ -55,7 +55,9 @@ export type CanvasControllerEvents = {
   editComponent: EditComponentParams;
   renameComponent: RenameComponentParams;
   changeComponentPosition: ChangeComponentPosition;
+
   selectComponent: { id: string };
+  deleteSelected: string;
 
   isMounted: SetMountedStatusParams;
   changeStateSelection: ChangeSelectionParams;
@@ -229,7 +231,45 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.app.view.isDirty = true;
   }
 
-  private selectComponent(args: { id: string }) {
+  private deleteSelected(smId: string) {
+    this.states.forEachState((state) => {
+      if (!state.isSelected) return;
+
+      if (state.eventBox.selection) {
+        this.states.deleteEvent(state.id, state.eventBox.selection);
+        state.eventBox.selection = undefined;
+        return;
+      }
+
+      this.states.deleteState({ smId: smId, id: state.id });
+    });
+
+    this.states.data.choiceStates.forEach((state) => {
+      if (!state.isSelected) return;
+
+      this.states.deleteChoiceState({ smId: smId, id: state.id });
+    });
+
+    this.transitions.forEach((transition) => {
+      if (!transition.isSelected) return;
+
+      this.transitions.deleteTransition({ smId: smId, id: transition.id });
+    });
+
+    this.notes.forEach((note) => {
+      if (!note.isSelected) return;
+
+      this.notes.deleteNote({ smId: smId, id: note.id });
+    });
+
+    this.components.forEach((component) => {
+      if (!component.isSelected) return;
+
+      this.components.deleteComponent({ smId: smId, id: component.id });
+    });
+  }
+
+  selectComponent(args: { id: string }) {
     const component = this.components.items.get(args.id);
     if (!component) {
       return;
@@ -317,6 +357,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.on('loadData', this.loadData);
     this.on('initPlatform', this.initPlatform);
     this.on('initEvents', this.transitions.initEvents);
+    this.on('deleteSelected', this.deleteSelected);
   }
 
   /**

@@ -79,10 +79,10 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     return component;
   }
 
-  changeComponentPosition(name: string) {
+  changeComponentPosition(name: string, endPosition: Point) {
     const component = this.items.get(name);
     if (!component) return;
-
+    component.position = endPosition;
     this.view.isDirty = true;
   }
 
@@ -118,7 +118,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   };
 
   handleMouseDown = (component: DrawableComponent) => {
-    this.controller.selectComponent(component.id);
+    this.controller.selectComponent({ id: component.id });
   };
 
   handleDoubleClick = (component: DrawableComponent) => {
@@ -126,7 +126,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   };
 
   handleContextMenu = (component: DrawableComponent, e: { event: MyMouseEvent }) => {
-    this.controller.selectComponent(component.id);
+    this.controller.selectComponent({ id: component.id });
 
     this.emit('contextMenu', {
       component,
@@ -138,7 +138,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     component: DrawableComponent,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.changeComponentPosition(component.id, e.dragStartPosition, e.dragEndPosition);
+    this.changeComponentPosition(component.id, e.dragStartPosition);
   };
 
   watch(component: DrawableComponent) {

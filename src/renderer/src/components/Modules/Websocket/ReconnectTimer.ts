@@ -24,6 +24,8 @@ export class ReconnectTimer {
   private autoReconnect: boolean = false;
   // true = установлен timerID
   private timeoutSetted: boolean = false;
+  // время окончания таймера
+  private timeoutEnd: number = 0;
 
   constructor(
     initialTimeout: number = 5000,
@@ -96,6 +98,9 @@ export class ReconnectTimer {
       return;
     }
     this.timeoutSetted = true;
+    // может быть рассинхрон между значением этой переменной и настоящим временем завершения таймера в несколько мс (см. докуметацию setTimeout),
+    // но такая погрешность вряд ли сильно повлияет, если округлить результат до секунд
+    this.timeoutEnd = new Date().getTime() + nextTimeout;
     this.timerID = setTimeout(() => {
       console.log(
         `inTimer: ${this.curTimeout}, attempt ${this.curReconnectAttempts + 1}/${
@@ -113,6 +118,12 @@ export class ReconnectTimer {
         this.tryToReconnect(reconnectFunction, this.freezeTimeout);
       }
     }, nextTimeout);
+  }
+
+  // получить время до завершения таймера
+  getRemainingTime() {
+    const remainingTime = this.timeoutEnd - new Date().getTime();
+    return remainingTime > 0 ? remainingTime : 0;
   }
 }
 

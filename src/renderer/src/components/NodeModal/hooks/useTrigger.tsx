@@ -10,7 +10,7 @@ import { useEditorContext } from '@renderer/store/EditorContext';
  */
 export const useTrigger = (addSystemComponents: boolean) => {
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
 
   const componentsData = model.useData('elements.components');
   const controller = editor.controller;

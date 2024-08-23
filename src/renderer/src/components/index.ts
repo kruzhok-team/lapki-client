@@ -1,5 +1,6 @@
 export * from './CodeEditor';
 export * from './DiagramEditor';
+export * from './SchemeEditor';
 export * from './Documentation/Documentation';
 export * from './SaveRemindModal';
 export * from './CreateSchemeModal';

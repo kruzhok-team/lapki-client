@@ -82,8 +82,18 @@ export interface ChangeStateEventsParams {
   color?: string;
 }
 
-export type AddComponentParams = Omit<ComponentData, 'order'> & {
+export type CreateStateMachineParams = {
+  id: string;
+  components: ComponentData[];
+  position: Point;
+  label?: string;
+};
+
+export type ChangeStateMachineParams = CreateStateMachineParams;
+
+export type CreateComponentParams = ComponentData & {
   name: string;
+  placeInCenter?: boolean;
 };
 
 export interface SwapComponentsParams {

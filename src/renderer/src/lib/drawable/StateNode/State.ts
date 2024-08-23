@@ -19,13 +19,13 @@ export class State extends Shape {
   constructor(app: CanvasEditor, id: string, parent?: Shape) {
     super(app, id, parent);
 
-    this.eventBox = new Events(this.app, this);
+    this.eventBox = new Events(this.app as CanvasEditor, this);
     this.updateEventBox();
-    this.edgeHandlers = new EdgeHandlers(this.app, this);
+    this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
   get data() {
-    return this.app.model.data.elements.states[this.id];
+    return this.app.controller.model.data.elements.states[this.id];
   }
 
   get position() {
@@ -84,10 +84,10 @@ export class State extends Shape {
     ctx.beginPath();
 
     ctx.roundRect(x, y, width, height, [
-      6 / this.app.model.data.scale,
-      6 / this.app.model.data.scale,
-      (this.children.isEmpty ? 6 : 0) / this.app.model.data.scale,
-      (this.children.isEmpty ? 6 : 0) / this.app.model.data.scale,
+      6 / this.app.controller.model.data.scale,
+      6 / this.app.controller.model.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.app.controller.model.data.scale,
+      (this.children.isEmpty ? 6 : 0) / this.app.controller.model.data.scale,
     ]);
     ctx.fill();
 
@@ -102,11 +102,11 @@ export class State extends Shape {
 
   get computedTitleSizes() {
     return {
-      height: this.titleHeight / this.app.model.data.scale,
+      height: this.titleHeight / this.app.controller.model.data.scale,
       width: this.drawBounds.width,
-      fontSize: 15 / this.app.model.data.scale,
-      paddingX: 15 / this.app.model.data.scale,
-      paddingY: 10 / this.app.model.data.scale,
+      fontSize: 15 / this.app.controller.model.data.scale,
+      paddingX: 15 / this.app.controller.model.data.scale,
+      paddingY: 10 / this.app.controller.model.data.scale,
     };
   }
 
@@ -121,8 +121,8 @@ export class State extends Shape {
     ctx.fillStyle = style.titleBg;
 
     ctx.roundRect(x, y, width, height, [
-      6 / this.app.model.data.scale,
-      6 / this.app.model.data.scale,
+      6 / this.app.controller.model.data.scale,
+      6 / this.app.controller.model.data.scale,
       0,
       0,
     ]);
@@ -151,7 +151,7 @@ export class State extends Shape {
     ctx.strokeStyle = this.data.color ?? getColor('default-state-color');
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.controller.model.data.scale);
     ctx.stroke();
     ctx.closePath();
 
@@ -196,7 +196,7 @@ export class State extends Shape {
     ctx.strokeStyle = getColor('primaryActive');
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.app.controller.model.data.scale);
     ctx.stroke();
     ctx.closePath();
   }
@@ -213,8 +213,8 @@ export class State extends Shape {
     ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
       0,
       0,
-      6 / this.app.model.data.scale,
-      6 / this.app.model.data.scale,
+      6 / this.app.controller.model.data.scale,
+      6 / this.app.controller.model.data.scale,
     ]);
     ctx.stroke();
 
@@ -227,8 +227,8 @@ export class State extends Shape {
 
     const { x, y } = this.drawBounds;
     const { width } = this.computedTitleSizes;
-    const size = 16 / this.app.model.data.scale;
-    const p = 9 / this.app.model.data.scale;
+    const size = 16 / this.app.controller.model.data.scale;
+    const p = 9 / this.app.controller.model.data.scale;
 
     ctx.beginPath();
     ctx.fillStyle = style.titleColor;

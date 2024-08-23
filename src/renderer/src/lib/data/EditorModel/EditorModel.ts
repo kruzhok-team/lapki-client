@@ -12,7 +12,7 @@ import {
   CreateTransitionParams,
   ChangeTransitionParams,
   ChangeStateEventsParams,
-  AddComponentParams,
+  CreateComponentParams,
   CreateNoteParams,
   Point,
   CreateInitialStateParams,
@@ -31,7 +31,6 @@ import {
   Meta,
 } from '@renderer/types/diagram';
 
-import { FilesManager } from './FilesManager';
 import { Serializer } from './Serializer';
 
 /**
@@ -40,13 +39,12 @@ import { Serializer } from './Serializer';
 export class EditorModel {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
-  files = new FilesManager(this);
   serializer = new Serializer(this);
 
   constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
   init(basename: string | null, name: string, elements: Elements) {
-    this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
+    this.data.isInitialized = false; // Для того чтобы весь интерфейс обновился
     this.triggerDataUpdate('isInitialized');
 
     const prevMounted = this.data.isMounted;
@@ -594,10 +592,20 @@ export class EditorModel {
     return true;
   }
 
-  addComponent({ name, type, parameters = {} }: AddComponentParams) {
+  createComponent(args: CreateComponentParams) {
+    const { name, type, placeInCenter = false, position, parameters } = args;
+
+    const centerPosition = () => {
+      const size = 50;
+      return {
+        x: position.x - size / 2,
+        y: position.y - size / 2,
+      };
+    };
+
     if (this.data.elements.components.hasOwnProperty(name)) {
       console.error(['bad new component', name, type]);
-      return false;
+      return name;
     }
 
     const getOrder = () => {
@@ -610,16 +618,17 @@ export class EditorModel {
 
     this.data.elements.components[name] = {
       type,
+      position: placeInCenter ? centerPosition() : position,
       parameters,
       order: getOrder(),
     };
 
     this.triggerDataUpdate('elements.components');
 
-    return true;
+    return name;
   }
 
-  editComponent(name: string, parameters: Component['parameters']) {
+  changeComponent(name: string, parameters: Component['parameters']) {
     const component = this.data.elements.components[name];
     if (!component) return false;
 
@@ -630,7 +639,7 @@ export class EditorModel {
     return true;
   }
 
-  renameComponent(name: string, newName: string) {
+  changeComponentName(name: string, newName: string) {
     const component = this.data.elements.components[name];
     if (!component) return false;
 
@@ -643,7 +652,7 @@ export class EditorModel {
     return true;
   }
 
-  removeComponent(name: string) {
+  deleteComponent(name: string) {
     const component = this.data.elements.components[name];
     if (!component) return false;
 
@@ -662,6 +671,28 @@ export class EditorModel {
     if (!component1 || !component2) return false;
 
     [component1.order, component2.order] = [component2.order, component1.order];
+
+    this.triggerDataUpdate('elements.components');
+
+    return true;
+  }
+
+  changeComponentPosition(name: string, position: Point) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    component.position = position;
+
+    this.triggerDataUpdate('elements.components');
+
+    return true;
+  }
+
+  changeComponentSelection(name: string, selection: boolean) {
+    const component = this.data.elements.components[name];
+    if (!component) return false;
+
+    component.selection = selection;
 
     this.triggerDataUpdate('elements.components');
 

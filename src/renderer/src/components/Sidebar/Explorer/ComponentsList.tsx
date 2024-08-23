@@ -9,7 +9,7 @@ import { Component } from './Component';
 
 export const ComponentsList: React.FC = () => {
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
 
   const isInitialized = model.useData('isInitialized');
   const components = model.useData('elements.components');

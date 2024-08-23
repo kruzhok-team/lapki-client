@@ -20,16 +20,16 @@ export class Label implements Drawable {
 
     const { x, y, width, height } = this.parent.drawBounds;
     const eventMargin = picto.eventMargin;
-    const p = 15 / this.app.model.data.scale;
+    const p = 15 / this.app.controller.model.data.scale;
     const px = x + p;
     const py = y + p;
     const yDx = picto.eventHeight + 10;
-    const fontSize = stateStyle.titleFontSize / this.app.model.data.scale;
+    const fontSize = stateStyle.titleFontSize / this.app.controller.model.data.scale;
     const opacity = this.parent.data.selection ? 1.0 : 0.7;
 
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.app.controller.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
@@ -38,7 +38,7 @@ export class Label implements Drawable {
     ctx.fillStyle = 'rgb(23, 23, 23)';
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height, 8 / this.app.model.data.scale);
+    ctx.roundRect(x, y, width, height, 8 / this.app.controller.model.data.scale);
     ctx.fill();
     ctx.closePath();
 
@@ -63,8 +63,10 @@ export class Label implements Drawable {
         const ax = 1;
         const ay = 0;
         const aX =
-          px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.model.data.scale;
-        const aY = py + (ay * yDx) / this.app.model.data.scale;
+          px +
+          (eventMargin + (picto.eventWidth + eventMargin) * ax) /
+            this.app.controller.model.data.scale;
+        const aY = py + (ay * yDx) / this.app.controller.model.data.scale;
         platform.drawCondition(ctx, label.condition, aX, aY, opacity);
       }
       ctx.closePath();
@@ -76,8 +78,10 @@ export class Label implements Drawable {
         const ax = 1 + (actIdx % eventRowLength);
         const ay = 1 + Math.floor(actIdx / eventRowLength);
         const aX =
-          px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.model.data.scale;
-        const aY = py + (ay * yDx) / this.app.model.data.scale;
+          px +
+          (eventMargin + (picto.eventWidth + eventMargin) * ax) /
+            this.app.controller.model.data.scale;
+        const aY = py + (ay * yDx) / this.app.controller.model.data.scale;
         platform.drawAction(ctx, data, aX, aY, opacity);
       });
       ctx.closePath();

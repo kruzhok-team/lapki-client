@@ -3,11 +3,13 @@ import { useSyncExternalStore } from 'react';
 import { EventSelection, Transition } from '@renderer/lib/drawable';
 import {
   EditComponentParams,
-  RemoveComponentParams,
+  DeleteComponentParams,
+  DeleteStateMachineParams,
   UnlinkStateParams,
-} from '@renderer/lib/types/EditorController';
+} from '@renderer/lib/types/ControllerTypes';
+import { Point } from '@renderer/lib/types/graphics';
 import {
-  AddComponentParams,
+  CreateComponentParams,
   ChangeStateEventsParams,
   CreateTransitionParams,
   ChangeTransitionParams,
@@ -16,8 +18,7 @@ import {
   CreateFinalStateParams,
   CreateChoiceStateParams,
   SwapComponentsParams,
-} from '@renderer/lib/types/EditorModel';
-import { Point } from '@renderer/lib/types/graphics';
+} from '@renderer/lib/types/ModelTypes';
 import { roundPoint } from '@renderer/lib/utils';
 import {
   State as StateData,
@@ -31,7 +32,9 @@ import {
   EventData,
 } from '@renderer/types/diagram';
 
-import { EditorController } from './EditorController';
+import { ModelController } from './ModelController';
+
+import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
@@ -73,15 +76,19 @@ export type PossibleActions = {
   deleteEvent: { stateId: string; eventIdx: number; prevValue: EventData };
   deleteEventAction: { stateId: string; event: EventSelection; prevValue: EventAction };
 
-  addComponent: { args: AddComponentParams };
-  removeComponent: { args: RemoveComponentParams; prevComponent: Component };
-  editComponent: { args: EditComponentParams; prevComponent: Component };
+  createComponent: { args: CreateComponentParams };
+  deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
+  changeComponent: { args: EditComponentParams; prevComponent: Component };
+  changeComponentPosition: { name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
 
   createNote: { id: string; params: CreateNoteParams };
   changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { id: string; text: string; prevText: string };
   deleteNote: { id: string; prevData: NoteData };
+
+  // TODO (L140-beep): Переделать удаление с DrawableStateMachine на StateMachine при реализации мультидока.
+  deleteStateMachine: { args: DeleteStateMachineParams; prevStateMachine: DrawableStateMachine };
 };
 export type PossibleActionTypes = keyof PossibleActions;
 export type Action<T extends PossibleActionTypes> = {
@@ -92,7 +99,7 @@ export type Action<T extends PossibleActionTypes> = {
 export type Stack = Array<Action<any>>;
 type ActionFunctions = {
   [Type in PossibleActionTypes]: (
-    sm: EditorController,
+    sm: ModelController,
     args: PossibleActions[Type]
   ) => { undo: () => void; redo: () => void };
 };
@@ -306,25 +313,36 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.states.createEventAction.bind(sM.states, stateId, event, prevValue),
   }),
 
-  addComponent: (sM, { args }) => ({
-    redo: sM.addComponent.bind(sM, args, false),
-    undo: sM.removeComponent.bind(sM, { name: args.name, purge: false }, false),
+  // TODO (L140-beep): удаление машин состояний
+  deleteStateMachine: (sM, { args, prevStateMachine }) => ({
+    redo: sM.stateMachines.deleteStateMachine.bind(sM.stateMachines, args, false),
+    undo: sM.stateMachines.createStateMachineFromObject.bind(sM.stateMachines, prevStateMachine),
   }),
-  removeComponent: (sM, { args, prevComponent }) => ({
-    redo: sM.removeComponent.bind(sM, args, false),
-    undo: sM.addComponent.bind(sM, { name: args.name, ...prevComponent }, false),
+
+  createComponent: (sM, { args }) => ({
+    redo: sM.createComponent.bind(sM, args, false),
+    undo: sM.deleteComponent.bind(sM, { name: args.name, sm: 'G', purge: false }, false),
   }),
-  editComponent: (sM, { args, prevComponent }) => ({
+  deleteComponent: (sM, { args, prevComponent }) => ({
+    redo: sM.deleteComponent.bind(sM, args, false),
+    undo: sM.createComponent.bind(sM, { name: args.name, ...prevComponent }, false),
+  }),
+  changeComponent: (sM, { args, prevComponent }) => ({
     redo: sM.editComponent.bind(sM, args, false),
     undo: sM.editComponent.bind(
       sM,
       {
+        sm: 'G',
         name: args.newName ?? args.name,
         parameters: prevComponent.parameters,
         newName: args.newName ? args.name : undefined,
       },
       false
     ),
+  }),
+  changeComponentPosition: (sM, { name, startPosition, endPosition }) => ({
+    redo: sM.changeComponentPosition.bind(sM, name, startPosition, endPosition, false),
+    undo: sM.changeComponentPosition.bind(sM, name, endPosition, startPosition, false),
   }),
   swapComponents: (sM, { name1, name2 }) => ({
     redo: sM.swapComponents.bind(sM, { name1, name2 }, false),
@@ -389,7 +407,10 @@ export const actionDescriptions: ActionDescriptions = {
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
-
+  deleteStateMachine: (args) => ({
+    name: 'Удаление машины состояний',
+    description: `Id: ${args.args.id}`,
+  }),
   createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,
@@ -469,15 +490,15 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(args.event)}`,
   }),
 
-  addComponent: ({ args }) => ({
+  createComponent: ({ args }) => ({
     name: 'Добавление компонента',
     description: `Имя: ${args.name}\nТип: ${args.type}`,
   }),
-  removeComponent: ({ args, prevComponent }) => ({
+  deleteComponent: ({ args, prevComponent }) => ({
     name: 'Удаление компонента',
     description: `Имя: ${args.name}\nТип: ${prevComponent.type}`,
   }),
-  editComponent: ({ args, prevComponent }) => {
+  changeComponent: ({ args, prevComponent }) => {
     const prev = { prevComponent, name: args.name };
     const newComp = { ...args, type: prevComponent.type };
     delete newComp.newName;
@@ -487,6 +508,12 @@ export const actionDescriptions: ActionDescriptions = {
       description: `Было: ${JSON.stringify(prev)}\nСтало: ${JSON.stringify(newComp)}`,
     };
   },
+  changeComponentPosition: (args) => ({
+    name: 'Перемещение компонента',
+    description: `Имя: "${args.name}"\nБыло: ${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
+  }),
   swapComponents: ({ name1, name2 }) => ({
     name: 'Перетасовка компонентов в списке',
     description: `Имя1: ${name1}\nИмя2: ${name2}`,
@@ -507,6 +534,11 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Удаление заметки',
     description: `ID: ${args.id} Текст: ${args.prevData.text}`,
   }),
+
+  // deleteStateMachine: ({ args, prevStateMachine }) => ({
+  //   name: 'Удаление компонента',
+  //   description: `Имя: ${args.id}`,
+  // }),
 };
 
 export const STACK_SIZE_LIMIT = 100;
@@ -518,7 +550,7 @@ export class History {
   private listeners = [] as (() => void)[];
   private cachedSnapshot = { undoStack: this.undoStack, redoStack: this.redoStack };
 
-  constructor(private stateMachine: EditorController) {}
+  constructor(private stateMachine: ModelController) {}
 
   do<T extends PossibleActionTypes>(action: Action<T>) {
     this.redoStack.length = 0;

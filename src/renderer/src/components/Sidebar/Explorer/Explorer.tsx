@@ -16,7 +16,7 @@ import { ComponentsList } from './ComponentsList';
 
 export const Explorer: React.FC = () => {
   const editor = useEditorContext();
-  const isInitialized = editor.model.useData('isInitialized');
+  const isInitialized = editor.controller.model.useData('isInitialized');
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);

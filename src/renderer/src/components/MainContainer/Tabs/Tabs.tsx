@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor } from '@renderer/components';
+import { CodeEditor, DiagramEditor, SchemeEditor } from '@renderer/components';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 
@@ -67,6 +67,8 @@ export const Tabs: React.FC = () => {
             <DiagramEditor />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />
+          ) : item.type === 'scheme' ? (
+            <SchemeEditor />
           ) : (
             <SerialMonitorTab />
           )}

@@ -77,15 +77,31 @@ export interface Transition {
   selection?: boolean;
 }
 
-export type Component = {
-  type: string;
-  parameters: { [key: string]: string };
-  order: number;
-};
-
 export type Note = {
   position: Point;
   text: string;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
+};
+
+//Получаем тип со всеми машинами состояний
+export type StateMachines = {
+  stateMachines: { [id: string]: Machine };
+};
+
+//Добавляем id для машины состояний, а также прилегающие к ней элементы, плюс выделение
+export type Machine = {
+  elements: Elements;
+  meta: Meta;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
+};
+
+export type Component = {
+  type: string;
+  position: Point;
+  parameters: { [key: string]: string };
+  order: number;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 };

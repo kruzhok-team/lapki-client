@@ -50,6 +50,9 @@
     "Component": {
       "additionalProperties": false,
       "properties": {
+        "position": {
+          "$ref": "#/definitions/Point"
+        },
         "parameters": {
           "additionalProperties": {
             "type": "string"
@@ -62,6 +65,7 @@
       },
       "required": [
         "type",
+        "position",
         "parameters"
       ],
       "type": "object"

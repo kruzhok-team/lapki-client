@@ -19,7 +19,7 @@ interface ComponentEditModalProps {
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => void;
+  onEdit: (idx: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
   onDelete: (idx: string) => void;
 }
 
@@ -33,7 +33,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onDelete,
 }) => {
   const editor = useEditorContext();
-  const { model } = editor;
+  const { model } = editor.controller;
   const components = model.useData('elements.components');
 
   const [name, setName] = useState('');

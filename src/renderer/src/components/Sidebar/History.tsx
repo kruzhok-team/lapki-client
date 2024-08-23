@@ -117,8 +117,8 @@ const HistoryWithEditor: React.FC = () => {
 };
 
 export const History: React.FC = () => {
-  const { model } = useEditorContext();
-  const isInitialized = model.useData('isInitialized');
+  const { controller } = useEditorContext();
+  const isInitialized = controller.model.useData('isInitialized');
 
   return (
     <section className="flex flex-col">

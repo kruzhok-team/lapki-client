@@ -49,10 +49,6 @@ export class ReconnectTimer {
     this.freezeReconnection = false;
   }
 
-  setTimerID(timerID: NodeJS.Timeout | undefined) {
-    this.timerID = timerID;
-  }
-
   clearTimer() {
     if (this.timerID) {
       clearTimeout(this.timerID);

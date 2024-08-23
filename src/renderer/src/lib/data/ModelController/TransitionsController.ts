@@ -10,8 +10,12 @@ import {
   Transition,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
-import { ChangeTransitionParams, CreateTransitionParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
+import {
+  ChangeTransitionParams,
+  CreateTransitionParams,
+  DeleteDrawableParams,
+} from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
@@ -109,7 +113,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     }
 
     // Создание данных
-    const id = this.app.model.createTransition({
+    const id = this.app.controller.model.createTransition({
       id: prevId,
       sourceId,
       targetId,
@@ -172,7 +176,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.app.model.changeTransition(args);
+    this.app.controller.model.changeTransition(args);
 
     this.view.isDirty = true;
   }
@@ -188,19 +192,19 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     }
 
-    this.app.model.changeTransitionPosition(id, endPosition);
+    this.app.controller.model.changeTransitionPosition(id, endPosition);
 
     this.view.isDirty = true;
   }
 
-  deleteTransition(id: string, canUndo = true) {
-    const transition = this.items.get(id);
+  deleteTransition(args: DeleteDrawableParams, canUndo = true) {
+    const transition = this.items.get(args.id);
     if (!transition) return;
 
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    this.forEachByTargetId(id, (transition) => {
+    this.forEachByTargetId(args.id, (transition) => {
       this.deleteTransition(transition.id, canUndo);
       numberOfConnectedActions += 1;
     });
@@ -217,7 +221,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     parent.children.remove(transition, Layer.Transitions);
     this.unwatchTransition(transition);
     this.items.delete(id);
-    this.app.model.deleteTransition(id);
+    this.app.controller.model.deleteTransition(id);
 
     this.view.isDirty = true;
   }

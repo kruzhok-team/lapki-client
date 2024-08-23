@@ -8,12 +8,17 @@ import { useModal } from './useModal';
 
 export const useComponents = () => {
   const editor = useEditorContext();
-  const model = editor.model;
+  const model = editor.controller.model;
 
   const components = model.useData('elements.components');
 
   const [idx, setIdx] = useState('');
-  const [data, setData] = useState<ComponentData>({ type: '', parameters: {}, order: 0 });
+  const [data, setData] = useState<ComponentData>({
+    type: '',
+    parameters: {},
+    order: 0,
+    position: { x: 0, y: 0 },
+  });
   const [proto, setProto] = useState(systemComponent);
 
   const [vacantComponents, setVacantComponents] = useState([] as ComponentEntry[]);
@@ -68,13 +73,24 @@ export const useComponents = () => {
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor.controller.addComponent({ name: realName, type: idx, parameters: {} });
+    editor.controller.createComponent({
+      name: realName,
+      type: idx,
+      parameters: {},
+      position: { x: 0, y: 0 },
+      order: 0,
+    });
 
     onRequestEditComponent(realName);
   };
 
-  const onEdit = (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => {
-    editor.controller.editComponent({
+  const onEdit = (
+    idx: string,
+    data: Omit<ComponentData, 'order' | 'position'>,
+    newName?: string
+  ) => {
+    editor.controller.components.changeComponent({
+      sm: 'G',
       name: idx,
       parameters: data.parameters,
       newName,
@@ -82,7 +98,7 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    editor.controller.removeComponent({ name: idx, purge: false });
+    editor.controller.deleteComponent({ sm: 'G', name: idx, purge: false });
 
     editClose();
   };

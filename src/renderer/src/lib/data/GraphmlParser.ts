@@ -29,6 +29,8 @@ import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/ty
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
+import { Point } from '../types';
+
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
   exit: { component: 'System', method: 'onExit' },
@@ -284,6 +286,29 @@ function getTransitions(
   return transitions;
 }
 
+function getComponentPosition(rawComponent: CGMLComponent): Point {
+  const node = rawComponent.unsupportedDataNodes.find(
+    (value) => value.key == 'dLapkiSchemePosition'
+  );
+  if (!node) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+  if (!node.point) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+
+  return {
+    x: +node.point[0].x,
+    y: +node.point[0].y,
+  };
+}
+
 function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   [id: string]: Component;
 } {
@@ -295,6 +320,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     }
     components[rawComponent.id] = {
       type: rawComponent.type,
+      position: getComponentPosition(rawComponent),
       parameters: rawComponent.parameters,
       order: rawComponent.order,
     };
@@ -404,6 +430,10 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   for (const id in platformComponents) {
     components[id] = {
       type: id,
+      position: {
+        x: 0,
+        y: 0,
+      }, // TODO (L140-beep): что-то нужно с этим придумать
       parameters: {},
       order: 0,
     };
@@ -416,6 +446,7 @@ export function importGraphml(
   openImportError: (error: string) => void
 ): Elements | undefined {
   try {
+    //Вот тут схема не отдает уже позицию компонентов.
     const rawElements: CGMLElements = parseCGML(expression);
     const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
     const elements: Elements = {

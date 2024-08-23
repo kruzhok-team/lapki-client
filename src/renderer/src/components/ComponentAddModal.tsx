@@ -27,7 +27,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   ...props
 }) => {
   const editor = useEditorContext();
-  const { model } = editor;
+  const { model } = editor.controller;
   const components = model.useData('elements.components');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);

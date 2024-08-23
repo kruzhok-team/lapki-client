@@ -2,8 +2,8 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { Note } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
-import { CreateNoteParams } from '@renderer/lib/types/EditorModel';
 import { Point } from '@renderer/lib/types/graphics';
+import { CreateNoteParams, DeleteDrawableParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 interface NotesControllerEvents {
@@ -32,17 +32,13 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     return this.app.controller;
   }
 
-  private get history() {
-    return this.app.controller.history;
-  }
-
   get = this.items.get.bind(this.items);
   set = this.items.set.bind(this.items);
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
   createNote(params: CreateNoteParams, canUndo = true) {
-    const newNoteId = this.app.model.createNote(params);
+    const newNoteId = this.app.controller.model.createNote(params);
     const note = new Note(this.app, newNoteId);
 
     this.items.set(newNoteId, note);
@@ -58,7 +54,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    return note;
+    // return note;
   }
 
   changeNoteText = (id: string, text: string, canUndo = true) => {
@@ -72,7 +68,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.app.model.changeNoteText(id, text);
+    this.app.controller.model.changeNoteText(id, text);
     note.prepareText();
 
     this.view.isDirty = true;
@@ -89,12 +85,13 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
       });
     }
 
-    this.app.model.changeNotePosition(id, endPosition);
+    this.app.controller.model.changeNotePosition(id, endPosition);
 
     this.view.isDirty = true;
   }
 
-  deleteNote(id: string, canUndo = true) {
+  deleteNote(args: DeleteDrawableParams, canUndo = true) {
+    const { id } = args;
     const note = this.items.get(id);
     if (!note) return;
 
@@ -117,7 +114,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.children.remove(note, Layer.Notes);
     this.unwatch(note);
     this.items.delete(id);
-    this.app.model.deleteNote(id);
+    this.app.controller.model.deleteNote(id);
 
     this.view.isDirty = true;
   }

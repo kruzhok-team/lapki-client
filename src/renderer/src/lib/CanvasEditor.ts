@@ -1,10 +1,12 @@
 import * as TWEEN from '@tweenjs/tween.js';
 
+import { throwDeprecation } from 'process';
+
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
-import { EditorController } from '@renderer/lib/data/EditorController';
-import { EditorModel } from '@renderer/lib/data/EditorModel';
 import { preloadPicto } from '@renderer/lib/drawable';
+
+import { CanvasController } from './data/ModelController/CanvasController';
 
 interface CanvasEditorSettings {
   animations: boolean;
@@ -24,18 +26,13 @@ export class CanvasEditor {
 
   private rendererUnsubscribe: (() => void) | null | false = null;
 
-  //! Порядок создания важен, так как контроллер при инициализации использует представление
-  model = new EditorModel(
-    () => {
-      this.controller.initPlatform();
-    },
-    () => {
-      this.controller.loadData();
-      this.controller.history.clear();
-    }
-  );
   view = new EditorView(this);
-  controller = new EditorController(this);
+
+  controller!: CanvasController;
+
+  setController(controller: CanvasController) {
+    this.controller = controller;
+  }
 
   settings: CanvasEditorSettings = {
     animations: true,
@@ -107,8 +104,11 @@ export class CanvasEditor {
       this.view.isDirty = false;
     });
 
-    this.model.data.isMounted = true;
-    this.model.triggerDataUpdate('isMounted');
+    this.controller.emit('isMounted', {
+      canvasId: this.controller.id,
+      status: true,
+    });
+    this.controller.model.triggerDataUpdate('isMounted');
 
     this.controller.loadData();
     this.view.initEvents();
@@ -118,7 +118,7 @@ export class CanvasEditor {
   setSettings(settings: CanvasEditorSettings) {
     this.settings = settings;
 
-    if (this.model.data.isMounted) {
+    if (this.controller.model.data.isMounted) {
       this.view.isDirty = true;
     }
   }
@@ -140,8 +140,8 @@ export class CanvasEditor {
     this._keyboard = null;
     this._render = null;
 
-    this.model.data.isMounted = false;
-    this.model.triggerDataUpdate('isMounted');
+    this.controller.model.data.isMounted = true;
+    this.controller.model.triggerDataUpdate('isMounted');
   }
 
   focus() {

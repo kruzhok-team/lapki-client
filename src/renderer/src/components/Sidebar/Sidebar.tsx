@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   },
   openImportError,
 }) => {
-  const { model } = useEditorContext();
+  const { controller } = useEditorContext();
 
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
-  const isEditorDataStale = model.useData('isStale');
+  const isEditorDataStale = controller.model.useData('isStale');
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);

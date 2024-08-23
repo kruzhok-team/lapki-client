@@ -14,6 +14,8 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 import {
+  SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
@@ -38,6 +40,7 @@ export const Loader: React.FC<FlasherProps> = ({
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     setConnectionStatus: setSerialConnectionStatus,
+    connectionStatus: serialConnectionStatus,
     setLog: setSerialLog,
     addDeviceMessage,
   } = useSerialMonitor();
@@ -77,6 +80,17 @@ export const Loader: React.FC<FlasherProps> = ({
     if (currentDevice == null || currentDevice == undefined) {
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
+    }
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == currentDeviceID &&
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     if (flasherFile) {
       Flasher.flash(currentDevice);
@@ -328,6 +342,11 @@ export const Loader: React.FC<FlasherProps> = ({
           return true;
       }
     } else {
+      return true;
+    }
+    // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
+    // чтобы гарантированно избежать ситуации одноремнной прошивки и подключения к порту
+    if (serialConnectionStatus == SERIAL_MONITOR_CONNECTING) {
       return true;
     }
     return false;

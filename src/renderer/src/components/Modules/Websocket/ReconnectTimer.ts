@@ -24,8 +24,6 @@ export class ReconnectTimer {
   private autoReconnect: boolean = false;
   // true = установлен timerID
   private timeoutSetted: boolean = false;
-  // true = соединение было отменено пользователем и переподключаться не нунжо.
-  // private connectionCanceled: boolean = false;
 
   constructor(
     initialTimeout: number = 5000,

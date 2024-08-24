@@ -6,7 +6,7 @@ import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 
-interface EventsModalParametersProps {
+interface ActionsModalParametersProps {
   protoParameters: ArgumentProto[];
   parameters: ArgList;
   setParameters: (data: ArgList) => void;
@@ -15,7 +15,7 @@ interface EventsModalParametersProps {
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
 
-export const EventsModalParameters: React.FC<EventsModalParametersProps> = ({
+export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   protoParameters,
   parameters,
   setParameters,

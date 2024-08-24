@@ -113,15 +113,17 @@ describe('states', () => {
     });
 
     test('no state found', () => {
-      const res = em.changeStateEvents({
+      const res = em.changeState({
         id: '0',
-        eventData: {
-          trigger: {
-            component: '',
-            method: '',
+        events: [
+          {
+            trigger: {
+              component: '',
+              method: '',
+            },
+            do: [],
           },
-          do: [],
-        },
+        ],
         color: '#FFFFFF',
       });
 

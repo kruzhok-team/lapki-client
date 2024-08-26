@@ -1,11 +1,8 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { ChoiceState, Note, Transition } from '@renderer/lib/drawable';
 import {
   ChangeComponentPosition,
   ChangeSelectionParams,
-  CopyData,
-  CopyType,
   CreateChoiceStateParams,
   CreateComponentParams,
   CreateFinalStateParams,
@@ -15,6 +12,7 @@ import {
   DeleteDrawableParams,
   EditComponentParams,
   RenameComponentParams,
+  SelectDrawable,
   SetMountedStatusParams,
 } from '@renderer/lib/types';
 import { Condition, Variable } from '@renderer/types/diagram';
@@ -61,7 +59,11 @@ export type CanvasControllerEvents = {
   renameComponent: RenameComponentParams;
   changeComponentPosition: ChangeComponentPosition;
 
-  selectComponent: { id: string };
+  selectNote: SelectDrawable;
+  selectState: SelectDrawable;
+  selectComponent: SelectDrawable;
+  selectChoice: SelectDrawable;
+  selectTransition: SelectDrawable;
   deleteSelected: string;
 
   isMounted: SetMountedStatusParams;
@@ -160,6 +162,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       case 'state':
         this.on('createState', this.bindHelper('state', this.states.createState));
         this.on('deleteState', this.bindHelper('state', this.states.deleteState));
+        this.on('selectState', this.bindHelper('state', this.selectComponent));
         break;
       case 'final':
         this.on('createFinal', this.bindHelper('final', this.states.createFinalState));
@@ -168,10 +171,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       case 'choice':
         this.on('createChoice', this.bindHelper('choice', this.states.createChoiceState));
         this.on('deleteChoice', this.bindHelper('choice', this.states.deleteChoiceState));
+        this.on('selectState', this.bindHelper('choice', this.selectChoice));
         break;
       case 'note':
         this.on('createNote', this.bindHelper('note', this.notes.createNote));
         this.on('deleteNote', this.bindHelper('note', this.notes.deleteNote));
+        this.on('selectNote', this.bindHelper('note', this.selectNote));
         break;
       case 'component':
         this.on('createComponent', this.bindHelper('component', this.createComponent));
@@ -185,6 +190,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'createTransition',
           this.bindHelper('transition', this.transitions.createTransition)
         );
+        this.on('selectTransition', this.bindHelper('transition', this.selectTransition));
         break;
       default:
         throw new Error('Unknown attribute');
@@ -280,7 +286,43 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     });
   }
 
-  selectComponent(args: { id: string }) {
+  selectNote(args: SelectDrawable) {
+    const note = this.notes.items.get(args.id);
+    if (!note) {
+      return;
+    }
+    this.removeSelection();
+    note.setIsSelected(true);
+  }
+
+  selectTransition(args: SelectDrawable) {
+    const transition = this.transitions.items.get(args.id);
+    if (!transition) {
+      return;
+    }
+    this.removeSelection();
+    transition.setIsSelected(true);
+  }
+
+  selectChoice(args: SelectDrawable) {
+    const state = this.states.data.choiceStates.get(args.id);
+    if (!state) {
+      return;
+    }
+    this.removeSelection();
+    state.setIsSelected(true);
+  }
+
+  selectState(args: SelectDrawable) {
+    const state = this.states.data.states.get(args.id);
+    if (!state) {
+      return;
+    }
+    this.removeSelection();
+    state.setIsSelected(true);
+  }
+
+  selectComponent(args: SelectDrawable) {
     const component = this.components.items.get(args.id);
     if (!component) {
       return;

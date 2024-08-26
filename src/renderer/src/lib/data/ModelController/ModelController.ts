@@ -20,6 +20,7 @@ import { CanvasControllerEvents } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
+import { ComponentEntry } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.
@@ -104,8 +105,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   selectComponent(id: string) {
     this.removeSelection();
 
+    // TODO: Откуда брать id машины состояний?
     this.model.changeComponentSelection(this.getSmId(id, 'components'), id, true);
-    this.emit('selectComponent', { id: id });
+    this.emit('selectComponent', { id: id, smId: '' });
   }
 
   createComponent(args: CreateComponentParams, canUndo = true) {
@@ -442,50 +444,54 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.pasteSelected();
   };
 
-  // selectState(id: string) {
-  //   const state = this.editor.controller.states.data.states.get(id);
-  //   if (!state) return;
+  selectState(id: string) {
+    // TODO: Откуда брать id машины состояний?
+    const state = this.model.data.elements.stateMachines[''].states[id];
+    if (!state) return;
 
-  //   this.removeSelection();
+    this.removeSelection();
 
-  //   this.model.changeStateSelection(id, true);
+    this.model.changeStateSelection('', id, true);
 
-  //   state.setIsSelected(true);
-  // }
+    this.emit('selectState', { smId: '', id: id });
+  }
 
-  // selectChoiceState(id: string) {
-  //   const state = this.editor.controller.states.data.choiceStates.get(id);
-  //   if (!state) return;
+  selectChoiceState(id: string) {
+    // TODO: Откуда брать id машины состояний?
+    const state = this.model.data.elements.stateMachines[''].choiceStates[id];
+    if (!state) return;
 
-  //   this.removeSelection();
+    this.removeSelection();
 
-  //   this.model.changeChoiceStateSelection(id, true);
+    this.model.changeChoiceStateSelection('', id, true);
 
-  //   state.setIsSelected(true);
-  // }
+    this.emit('selectChoice', { smId: '', id: id });
+  }
 
-  // selectTransition(id: string) {
-  //   const transition = this.editor.controller.transitions.get(id);
-  //   if (!transition) return;
+  selectTransition(id: string) {
+    // TODO: Откуда брать id машины состояний?
+    const transition = this.model.data.elements.stateMachines[''].transitions[id];
+    if (!transition) return;
 
-  //   this.removeSelection();
+    this.removeSelection();
 
-  //   this.model.changeTransitionSelection(id, true);
+    this.model.changeTransitionSelection('', id, true);
 
-  //   transition.setIsSelected(true);
-  // }
+    this.emit('selectTransition', { smId: '', id: id });
+  }
 
-  // selectNote(id: string) {
-  //   const note = this.editor.controller.notes.get(id);
-  //   if (!note) return;
+  selectNote(id: string) {
+    const note = this.model.data.elements.stateMachines[''].notes[id];
+    if (!note) return;
 
-  //   this.removeSelection();
+    this.removeSelection();
 
-  //   this.model.changeNoteSelection(id, true);
+    this.model.changeNoteSelection('', id, true);
 
-  //   note.setIsSelected(true);
-  // }
+    this.emit('selectNote', { smId: '', id: id });
+  }
 
+  // TODO: Доделать
   // selectStateMachine(id: string) {
   //   const sm = this.editor.controller.notes.get(id);
   //   if (!note) return;
@@ -498,9 +504,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // }
 
   // getVacantComponents(): ComponentEntry[] {
-  //   if (!this.platform) return [];
+  //   // if (!this.platform) return [];
 
-  //   const components = this.model.data.elements.components;
+  //   const components = this.model.data.elements.stateMachines[''];
   //   const vacant: ComponentEntry[] = [];
   //   for (const idx in this.platform.data.components) {
   //     const compo = this.platform.data.components[idx];

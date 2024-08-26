@@ -11,6 +11,11 @@ import { Point } from './graphics';
 
 import { DrawableComponent } from '../drawable/ComponentNode';
 
+export interface SelectDrawable {
+  id: string;
+  smId: string;
+}
+
 export interface EditComponentParams {
   smId: string;
   id: string;

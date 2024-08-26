@@ -11,6 +11,7 @@ import {
   CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
+  CreateTransitionParams,
   DeleteDrawableParams,
   EditComponentParams,
   RenameComponentParams,
@@ -45,6 +46,7 @@ export type CanvasControllerEvents = {
   initPlatform: null;
   initEvents: null;
 
+  createTransition: CreateTransitionParams;
   createChoice: CreateChoiceStateParams;
   createState: CreateStateParams;
   createFinal: CreateFinalStateParams;
@@ -61,7 +63,6 @@ export type CanvasControllerEvents = {
 
   selectComponent: { id: string };
   deleteSelected: string;
-  copySelected: null;
 
   isMounted: SetMountedStatusParams;
   changeStateSelection: ChangeSelectionParams;
@@ -87,9 +88,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   canvasData: CanvasData;
   stateMachinesSub: { [id: string]: CanvasSubscribeAttribute[] } = {};
   id: string;
-
-  private copyData: CopyData | null = null; // То что сейчас скопировано
-  private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
   constructor(id: string, app: CanvasEditor, canvasData: CanvasData) {
     super();
@@ -154,6 +152,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!this.stateMachinesSub[smId]) {
       return;
     }
+    if (this.stateMachines[smId].includes(attribute)) {
+      return;
+    }
+    this.stateMachinesSub[smId].push(attribute);
     switch (attribute) {
       case 'state':
         this.on('createState', this.bindHelper('state', this.states.createState));
@@ -178,14 +180,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('renameComponent', this.bindHelper('component', this.renameComponent));
         this.on('selectComponent', this.bindHelper('component', this.selectComponent));
         break;
+      case 'transition':
+        this.on(
+          'createTransition',
+          this.bindHelper('transition', this.transitions.createTransition)
+        );
+        break;
       default:
         throw new Error('Unknown attribute');
     }
-
-    if (this.stateMachines[smId].includes(attribute)) {
-      return;
-    }
-    this.stateMachinesSub[smId].push(attribute);
   }
 
   private renameComponent(args: RenameComponentParams) {
@@ -367,32 +370,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.on('initEvents', this.transitions.initEvents);
     this.on('deleteSelected', this.deleteSelected);
   }
-
-  copySelected = () => {
-    const nodeToCopy =
-      [...this.states.data.states.values()].find((state) => state.isSelected) ||
-      [...this.states.data.choiceStates.values()].find((state) => state.isSelected) ||
-      [...this.transitions.items.values()].find((transition) => transition.isSelected) ||
-      [...this.notes.items.values()].find((note) => note.isSelected);
-
-    if (!nodeToCopy) return;
-
-    // Тип нужен чтобы отделить ноды при вставке
-    let copyType: CopyType = 'state';
-    if (nodeToCopy instanceof ChoiceState) copyType = 'choiceState';
-    if (nodeToCopy instanceof Transition) copyType = 'transition';
-    if (nodeToCopy instanceof Note) copyType = 'note';
-
-    // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
-    if (nodeToCopy.id !== this.copyData?.data.id) {
-      this.pastePositionOffset = 0;
-    }
-
-    this.copyData = {
-      type: copyType,
-      data: { ...(structuredClone(nodeToCopy.data) as any), id: nodeToCopy.id },
-    };
-  };
 
   /**
    * Снимает выделение со всех нод и переходов.

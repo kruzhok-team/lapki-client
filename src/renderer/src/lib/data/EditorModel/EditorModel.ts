@@ -143,7 +143,7 @@ export class EditorModel {
       name,
       parentId,
       id = generateId(this.getNodeIds()),
-      events = [],
+      events = args.events || [],
       placeInCenter = false,
       color,
       smId,

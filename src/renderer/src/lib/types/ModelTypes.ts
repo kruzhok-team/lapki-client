@@ -56,7 +56,7 @@ export const emptyDataListeners = Object.fromEntries([
   ...Object.entries(emptyEditorData().elements).map(([k]) => [`elements.${k}`, []]),
 ]) as any as EditorDataListeners;
 
-export type CreateStateParams = Omit<StateData, 'dimensions' | 'events'> & {
+export type CreateStateParams = Omit<StateData, 'dimensions'> & {
   smId: string;
   id?: string;
   events?: EventData[];

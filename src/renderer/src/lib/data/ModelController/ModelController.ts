@@ -1,6 +1,7 @@
 import { Point } from 'electron';
 
 import { EventEmitter } from '@renderer/lib/common';
+import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import {
   CopyData,
@@ -13,7 +14,7 @@ import {
   DeleteDrawableParams,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
-import { Elements, StateMachine } from '@renderer/types/diagram';
+import { Elements, StateMachine, ChoiceState, Transition, Note } from '@renderer/types/diagram';
 
 import { CanvasControllerEvents } from './CanvasController';
 
@@ -53,6 +54,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   );
   files = new FilesManager(this);
   history = new History(this);
+
+  private copyData: CopyData | null = null; // То что сейчас скопировано
+  private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
   constructor() {
     super();
@@ -243,99 +247,200 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
+  private isChoiceState(value): value is ChoiceState {
+    return (
+      (value as ChoiceState).position !== undefined &&
+      value['text'] === undefined &&
+      value['sourceId'] === undefined
+    );
+  }
+
+  private isTransition(value): value is Transition {
+    return (
+      (value as Transition).label !== undefined ||
+      (value as Transition).sourceId !== undefined ||
+      (value as Transition).targetId !== undefined
+    );
+  }
+
+  private isNote(value): value is Note {
+    return (value as Note).text !== undefined;
+  }
+
   copySelected = () => {
-    this.emit('copySelected', null);
+    // TODO: Откуда брать id машины состояний? Копирование компонентов
+    const [id, nodeToCopy] =
+      [...Object.entries(this.model.data.elements.stateMachines[''].states)].find(
+        (value) => value[1].selection
+      ) ||
+      [...Object.entries(this.model.data.elements.stateMachines[''].choiceStates)].find(
+        (state) => state[1].selection
+      ) ||
+      [...Object.entries(this.model.data.elements.stateMachines[''].transitions)].find(
+        (transition) => transition[1].selection
+      ) ||
+      [...Object.entries(this.model.data.elements.stateMachines[''].notes)].find(
+        (note) => note[1].selection
+      ) ||
+      [];
+
+    if (!nodeToCopy || !id) return;
+
+    // Тип нужен чтобы отделить ноды при вставке
+    let copyType: CopyType = 'state';
+    if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
+    if (this.isTransition(nodeToCopy)) copyType = 'transition';
+    if (this.isNote(nodeToCopy)) copyType = 'note';
+
+    // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
+    if (id !== this.copyData?.data.id) {
+      this.pastePositionOffset = 0;
+    }
+
+    this.copyData = {
+      type: copyType,
+      data: { ...(structuredClone(nodeToCopy) as any), id: id },
+    };
   };
 
-  // pasteSelected = () => {
-  //   if (!this.copyData) return;
+  pasteSelected = () => {
+    if (!this.copyData) {
+      throw new Error('aaa');
+    }
+    const { type, data } = this.copyData;
 
-  //   const { type, data } = this.copyData;
+    // TODO: откуда брать id машины состояний?
 
-  //   if (type === 'state') {
-  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+    if (type === 'state') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+      const newId = this.model.createState({
+        smId: '',
+        ...structuredClone(data),
+        linkByPoint: false,
+        id: undefined,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
+      this.emit('createState', {
+        smId: '',
+        ...structuredClone(data),
+        linkByPoint: false,
+        id: newId,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
+    }
 
-  //     return this.states.createState({
-  //       ...structuredClone(data),
-  //       id: undefined, // id должно сгенерится новое, так как это новая сущность
-  //       linkByPoint: false,
-  //       position: {
-  //         x: data.position.x + this.pastePositionOffset,
-  //         y: data.position.y + this.pastePositionOffset,
-  //       },
-  //     });
-  //   }
+    if (type === 'choiceState') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-  //   if (type === 'choiceState') {
-  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+      const newId = this.model.createChoiceState({
+        ...data,
+        smId: '',
+        id: undefined,
+        linkByPoint: false,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
 
-  //     return this.states.createChoiceState({
-  //       ...data,
-  //       id: undefined,
-  //       linkByPoint: false,
-  //       position: {
-  //         x: data.position.x + this.pastePositionOffset,
-  //         y: data.position.y + this.pastePositionOffset,
-  //       },
-  //     });
-  //   }
+      this.emit('createChoice', {
+        ...data,
+        smId: '',
+        id: newId,
+        linkByPoint: false,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
 
-  //   if (type === 'note') {
-  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+      return;
+    }
 
-  //     return this.editor.controller.notes.createNote({
-  //       ...data,
-  //       id: undefined,
-  //       position: {
-  //         x: data.position.x + this.pastePositionOffset,
-  //         y: data.position.y + this.pastePositionOffset,
-  //       },
-  //     });
-  //   }
+    if (type === 'note') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-  //   if (type === 'transition') {
-  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+      const newId = this.model.createNote({
+        ...data,
+        smId: '',
+        id: undefined,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
 
-  //     const getLabel = () => {
-  //       if (!this.copyData) return;
+      this.emit('createNote', {
+        ...data,
+        smId: '',
+        id: newId,
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
 
-  //       if (!data.label) return undefined;
+      return;
+    }
 
-  //       return {
-  //         ...data.label,
-  //         position: {
-  //           x: data.label.position.x + this.pastePositionOffset,
-  //           y: data.label.position.y + this.pastePositionOffset,
-  //         },
-  //       };
-  //     };
+    if (type === 'transition') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-  //     return this.editor.controller.transitions.createTransition({
-  //       ...data,
-  //       id: undefined,
-  //       label: getLabel(),
-  //     });
-  //   }
+      const getLabel = () => {
+        if (!this.copyData) return;
 
-  //   if (type === 'component') {
-  //     this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+        if (!data.label) return undefined;
 
-  //     return this.scheme.controller.components.createComponent({
-  //       ...data,
-  //       name: '', // name должно сгенерится новое, так как это новая сушность
-  //       position: {
-  //         x: data.position.x + this.pastePositionOffset,
-  //         y: data.position.y + this.pastePositionOffset,
-  //       },
-  //     });
-  //   }
-  //   return null;
-  // };
+        return {
+          ...data.label,
+          position: {
+            x: data.label.position.x + this.pastePositionOffset,
+            y: data.label.position.y + this.pastePositionOffset,
+          },
+        };
+      };
 
-  // duplicateSelected = () => {
-  //   this.copySelected();
-  //   this.pasteSelected();
-  // };
+      const newId = this.model.createTransition({
+        ...data,
+        smId: '',
+        id: undefined,
+        label: getLabel(),
+      });
+
+      this.emit('createTransition', {
+        ...data,
+        smId: '',
+        id: newId,
+        label: getLabel(),
+      });
+    }
+
+    // TODO: Доделать копирование компонентов
+    // if (type === 'component') {
+    //   this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+    //   return this.scheme.controller.components.createComponent({
+    //     ...data,
+    //     name: '', // name должно сгенерится новое, так как это новая сушность
+    //     position: {
+    //       x: data.position.x + this.pastePositionOffset,
+    //       y: data.position.y + this.pastePositionOffset,
+    //     },
+    //   });
+    // }
+    return null;
+  };
+
+  duplicateSelected = () => {
+    this.copySelected();
+    this.pasteSelected();
+  };
 
   // selectState(id: string) {
   //   const state = this.editor.controller.states.data.states.get(id);

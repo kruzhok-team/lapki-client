@@ -20,7 +20,8 @@ import { CanvasControllerEvents } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { ComponentEntry } from '../PlatformManager';
+import { loadPlatform } from '../PlatformLoader';
+import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.
@@ -55,7 +56,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   );
   files = new FilesManager(this);
   history = new History(this);
-
+  vacantComponents: { [id: string]: ComponentEntry[] } = {};
+  platforms: { [id: string]: PlatformManager } = {};
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
@@ -77,6 +79,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   initPlatform() {
+    //TODO: исправить то, что платформы загружаются и в ModelController, и в CanvasController
+    for (const smId in this.model.data.elements.stateMachines) {
+      const sm = this.model.data.elements.stateMachines[smId];
+      const platform = loadPlatform(sm.platform);
+      if (platform) {
+        this.platforms[platform.name] = platform;
+      }
+    }
     this.emit('initPlatform', null);
   }
 
@@ -503,24 +513,29 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   //   note.setIsSelected(true);
   // }
 
-  // getVacantComponents(): ComponentEntry[] {
-  //   // if (!this.platform) return [];
+  getVacantComponents(): ComponentEntry[] {
+    if (!this.platforms) return [];
 
-  //   const components = this.model.data.elements.stateMachines[''];
-  //   const vacant: ComponentEntry[] = [];
-  //   for (const idx in this.platform.data.components) {
-  //     const compo = this.platform.data.components[idx];
-  //     if (compo.singletone && components.hasOwnProperty(idx)) continue;
-  //     vacant.push({
-  //       idx,
-  //       name: compo.name ?? idx,
-  //       img: compo.img ?? 'unknown',
-  //       description: compo.description ?? '',
-  //       singletone: compo.singletone ?? false,
-  //     });
-  //   }
-  //   return vacant;
-  // }
+    const sm = this.model.data.elements.stateMachines[''];
+    const components = sm.components;
+    const vacant: ComponentEntry[] = [];
+    const platform = this.platforms[sm.platform];
+    if (!platform) {
+      throw new Error('aaaaaaa');
+    }
+    for (const idx in platform.data.components) {
+      const compo = platform.data.components[idx];
+      if (compo.singletone && components.hasOwnProperty(idx)) continue;
+      vacant.push({
+        idx,
+        name: compo.name ?? idx,
+        img: compo.img ?? 'unknown',
+        description: compo.description ?? '',
+        singletone: compo.singletone ?? false,
+      });
+    }
+    return vacant;
+  }
 
   /**
    * Снимает выделение со всех нод и переходов.

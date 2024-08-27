@@ -80,10 +80,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return this.app.controller;
   }
 
-  private get history() {
-    return this.app.controller.history;
-  }
-
   /**
    * ! По всем видам состояний
    */
@@ -140,9 +136,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createState = (args: CreateStateParams, canUndo = true) => {
-    const { parentId, position, linkByPoint = true, canBeInitial = true } = args;
+    const { id, parentId, position, linkByPoint = true, canBeInitial = true } = args;
 
-    const newStateId = this.app.controller.model.createState(args); // Создание данных
     const state = new State(this.app, newStateId); // Создание вьюшки
 
     this.data.states.set(state.id, state);

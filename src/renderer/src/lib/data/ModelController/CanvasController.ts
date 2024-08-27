@@ -25,7 +25,7 @@ import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
 import { loadPlatform } from '../PlatformLoader';
-import { operatorSet, PlatformManager } from '../PlatformManager';
+import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
   | 'state'

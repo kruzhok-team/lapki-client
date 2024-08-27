@@ -60,7 +60,6 @@ export type PossibleActions = {
   createTransition: { id: string; params: CreateTransitionParams };
   deleteTransition: { transition: Transition; prevData: TransitionData };
   changeTransition: {
-    transition: Transition;
     args: ChangeTransitionParams;
     prevData: TransitionData;
   };
@@ -268,12 +267,12 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  changeTransition: (sM, { transition, args, prevData }) => ({
+  changeTransition: (sM, { args, prevData }) => ({
     redo: sM.transitions.changeTransition.bind(sM.transitions, args, false),
     undo: sM.transitions.changeTransition.bind(
       sM.transitions,
       {
-        id: transition.id,
+        id: args.id,
         ...prevData,
       },
       false

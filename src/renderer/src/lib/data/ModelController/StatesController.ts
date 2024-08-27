@@ -21,6 +21,7 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
+  ChangeInitialPosition,
   ChangeStateEventsParams,
   CreateChoiceStateParams,
   CreateFinalStateParams,
@@ -136,7 +137,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createState = (args: CreateStateParams, canUndo = true) => {
-    const { id, parentId, position, linkByPoint = true, canBeInitial = true } = args;
+    const { smId, id, parentId, position, linkByPoint = true, canBeInitial = true } = args;
 
     const state = new State(this.app, newStateId); // Создание вьюшки
 
@@ -148,7 +149,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     // вкладываем состояние, если оно создано над другим
     if (parentId) {
-      this.linkState({ parentId, childId: newStateId, canBeInitial }, canUndo);
+      this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
     } else if (linkByPoint) {
       // TODO(bryzZz) Тут перемешаны разные виды координат, в Shape отлов клика идет по координатам окна, нужно переделать на мировые
@@ -543,18 +544,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  changeInitialStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+  changeInitialStatePosition(args: ChangeInitialPosition) {
+    const { id } = args;
     const state = this.data.initialStates.get(id);
     if (!state) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeInitialStatePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.app.controller.model.changeInitialStatePosition(id, endPosition);
 
     this.view.isDirty = true;
   }

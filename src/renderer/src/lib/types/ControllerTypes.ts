@@ -52,6 +52,7 @@ export interface DeleteStateMachineParams {
 }
 
 export interface LinkStateParams {
+  smId: string;
   parentId: string;
   childId: string;
 

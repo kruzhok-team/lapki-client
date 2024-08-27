@@ -1,8 +1,11 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
+  CCreateInitialStateParams,
   ChangeComponentPosition,
+  ChangePosition,
   ChangeSelectionParams,
+  ChangeTransitionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
   CreateFinalStateParams,
@@ -25,7 +28,7 @@ import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
 import { loadPlatform } from '../PlatformLoader';
-import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
+import { operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
   | 'state'
@@ -33,7 +36,8 @@ export type CanvasSubscribeAttribute =
   | 'transition'
   | 'note'
   | 'final'
-  | 'choice';
+  | 'choice'
+  | 'initialState';
 
 export function getSignalName(smId: string, attribute: CanvasSubscribeAttribute): string {
   return `${smId}/${attribute}`;
@@ -45,10 +49,14 @@ export type CanvasControllerEvents = {
   initEvents: null;
 
   createTransition: CreateTransitionParams;
+  changeTransition: ChangeTransitionParams;
   createChoice: CreateChoiceStateParams;
   createState: CreateStateParams;
+  changeStatePosition: ChangePosition;
   createFinal: CreateFinalStateParams;
   createNote: CreateNoteParams;
+  createInitial: CCreateInitialStateParams;
+  changeInitialPosition: ChangePosition;
   createComponent: CreateComponentParams;
   deleteChoice: DeleteDrawableParams;
   deleteState: DeleteDrawableParams;
@@ -164,6 +172,13 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('deleteState', this.bindHelper('state', this.states.deleteState));
         this.on('selectState', this.bindHelper('state', this.selectComponent));
         break;
+      case 'initialState':
+        this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));
+        this.on(
+          'changeInitialPosition',
+          this.bindHelper('initialState', this.states.changeInitialStatePosition)
+        );
+        break;
       case 'final':
         this.on('createFinal', this.bindHelper('final', this.states.createFinalState));
         this.on('deleteFinal', this.bindHelper('final', this.states.deleteFinalState));
@@ -189,6 +204,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on(
           'createTransition',
           this.bindHelper('transition', this.transitions.createTransition)
+        );
+        this.on(
+          'changeTransition',
+          this.bindHelper('transition', this.transitions.changeTransition)
         );
         this.on('selectTransition', this.bindHelper('transition', this.selectTransition));
         break;

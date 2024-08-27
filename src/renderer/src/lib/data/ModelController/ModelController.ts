@@ -1,20 +1,33 @@
 import { Point } from 'electron';
 
 import { EventEmitter } from '@renderer/lib/common';
-import { PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
+import { INITIAL_STATE_OFFSET, PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import {
   CopyData,
   CopyType,
   EditComponentParams,
+  LinkStateParams,
   SetMountedStatusParams,
+  StatesControllerDataStateType,
 } from '@renderer/lib/types/ControllerTypes';
 import {
   CreateComponentParams,
+  CreateNoteParams,
+  CreateStateParams,
+  CreateTransitionParams,
   DeleteDrawableParams,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
-import { Elements, StateMachine, ChoiceState, Transition, Note } from '@renderer/types/diagram';
+import {
+  Elements,
+  StateMachine,
+  ChoiceState,
+  Transition,
+  Note,
+  InitialState,
+  State,
+} from '@renderer/types/diagram';
 
 import { CanvasControllerEvents } from './CanvasController';
 
@@ -128,6 +141,252 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.history.do({
         type: 'createComponent',
         args: { args },
+      });
+    }
+  }
+
+  createNote(args: CreateNoteParams, canUndo = true) {
+    const newId = this.model.createNote(args);
+
+    this.emit('createNote', { ...args, id: newId });
+    if (canUndo) {
+      this.history.do({
+        type: 'createNote',
+        args: { id: newId, params: args },
+      });
+    }
+  }
+
+  createTransition(args: CreateTransitionParams, canUndo = true) {
+    const newId = this.model.createTransition(args);
+
+    this.emit('createTransition', { ...args, id: newId });
+    if (canUndo) {
+      this.history.do({
+        type: 'createTransition',
+        args: { id: newId, params: args },
+      });
+    }
+  }
+
+  getAllByTargetId(smId: string, id: string | string[]): [Transition[], string[]] {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const transitions: Transition[] = [];
+    const ids: string[] = [];
+    for (const transitionId in sm.transitions) {
+      const transition = sm.transitions[transitionId];
+      if (transition.targetId === id || (Array.isArray(id) && id.includes(transition.targetId))) {
+        transitions.push(transition);
+        ids.push(transitionId);
+      }
+    }
+    return [transitions, ids];
+  }
+
+  private getSiblings(
+    smId: string,
+    stateId: string | undefined,
+    parentId: string | undefined,
+    stateType: StatesControllerDataStateType = 'states'
+  ): [(State | ChoiceState | InitialState)[], string[]] {
+    const siblings: (State | ChoiceState | InitialState)[] = [];
+    const siblingIds: string[] = [];
+    for (const value of Object.entries(this.model.data.elements.stateMachines[smId][stateType])) {
+      const [id, state] = value;
+      if (state.parentId === parentId && id !== stateId) {
+        siblings.push(state);
+        siblingIds.push(id);
+      }
+    }
+    return [siblings, siblingIds];
+  }
+
+  /**
+   * Назначить состояние начальным
+   * TODO(bryzZz) Очень сложно искать переход из начального состояния в обычное состояние
+   */
+  setInitialState(smId: string, stateId: string, canUndo = true) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const state = sm.states[stateId];
+    if (!state) return;
+
+    // Проверка на то что состояние уже является, тем на которое есть переход из начального
+    const stateTransitions = this.getAllByTargetId(smId, stateId)[0] ?? [];
+    if (stateTransitions.find(({ sourceId }) => sm.initialStates[sourceId] !== undefined)) return;
+
+    const siblingsIds = this.getSiblings(stateId, state.parentId, 'states')[1];
+    const [siblingsTransitions, siblingIds] = this.getAllByTargetId(smId, siblingsIds);
+    let id: string | undefined = undefined;
+    const transitionFromInitialState = siblingsTransitions.find((transition, index) => {
+      id = siblingIds[index];
+      return sm.initialStates[transition.sourceId] !== undefined;
+    });
+
+    if (!transitionFromInitialState || !id) return;
+
+    const initialState = sm.initialStates[transitionFromInitialState.sourceId];
+
+    const position = {
+      x: state.position.x - INITIAL_STATE_OFFSET,
+      y: state.position.y - INITIAL_STATE_OFFSET,
+    };
+
+    if (state.parentId) {
+      position.x = Math.max(0, position.x);
+      position.y = Math.max(0, position.y);
+    }
+
+    this.emit('changeTransition', {
+      smId: smId,
+      id: id,
+      ...transitionFromInitialState,
+      targetId: stateId,
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeTransition',
+        args: {
+          args: { smId, id, ...transitionFromInitialState },
+          prevData: structuredClone({ ...transitionFromInitialState }),
+        },
+      });
+    }
+
+    this.model.changeTransition({
+      smId: smId,
+      id: id,
+      ...transitionFromInitialState,
+      targetId: stateId,
+    });
+
+    this.changeInitialStatePosition(smId, id, initialState.position, position, canUndo);
+  }
+
+  changeInitialStatePosition(
+    smId: string,
+    id: string,
+    startPosition: Point,
+    endPosition: Point,
+    canUndo = true
+  ) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const state = sm.initialStates[id];
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeInitialStatePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.model.changeInitialStatePosition(smId, id, endPosition);
+    this.emit('changeInitialPosition', { smId, id, startPosition, endPosition });
+  }
+
+  changeStatePosition(
+    smId: string,
+    id: string,
+    startPosition: Point,
+    endPosition: Point,
+    canUndo = true
+  ) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const state = sm.states[id];
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeStatePosition',
+        args: { id, startPosition, endPosition },
+      });
+    }
+
+    this.model.changeStatePosition(smId, id, endPosition);
+    this.emit('changeStatePosition', { smId, id, startPosition, endPosition });
+  }
+
+  linkState(args: LinkStateParams, canUndo = true) {
+    const { smId, parentId, childId, addOnceOff = false, canBeInitial = true } = args;
+
+    const parent = this.model.data.elements.stateMachines[smId].states[parentId];
+    const child = this.model.data.elements.stateMachines[smId].states[childId];
+
+    if (!parent || !child) return;
+
+    let numberOfConnectedActions = 0;
+
+    // Проверка на то что состояние является, тем на которое есть переход из начального
+    // TODO(bryzZz) Вынести в функцию
+    const stateTransitions: Transition[] = this.getAllByTargetId(smId, childId)[0] ?? [];
+    const transitionFromInitialState = stateTransitions.find(
+      ({ sourceId }) =>
+        this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
+    );
+
+    if (transitionFromInitialState) {
+      this.setInitialState(smId, parentId, canUndo);
+      numberOfConnectedActions += 2;
+    }
+
+    this.model.linkState(smId, parentId, childId);
+    this.changeStatePosition(smId, childId, child.position, { x: 0, y: 0 }, false);
+
+    // (child.parent || this.view).children.remove(child, Layer.States);
+    // child.parent = parent;
+    // parent.children.add(child, Layer.States);
+
+    // Перелинковка переходов
+    //! Нужно делать до создания перехода из начального состояния
+    this.controller.transitions.forEachByStateId(childId, (transition) => {
+      this.controller.transitions.linkTransition(transition.id);
+    });
+
+    // Если не было начального состояния, им станет новое
+    if (
+      canBeInitial &&
+      this.getSiblings(smId, child.id, child.data.parentId, 'states')[0].length === 0
+    ) {
+      this.changeStatePosition(
+        childId,
+        child.position,
+        { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
+        false
+      );
+      this.createInitialStateWithTransition(child.id, canUndo);
+      numberOfConnectedActions += 2;
+    }
+
+    if (canUndo) {
+      this.history.do({
+        type: 'linkState',
+        args: { parentId, childId },
+        numberOfConnectedActions,
+      });
+      if (addOnceOff) {
+        child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+      }
+    }
+
+    this.view.isDirty = true;
+  }
+
+  createState(args: CreateStateParams, canUndo = true) {
+    const { smId, id, parentId, position, linkByPoint = true, canBeInitial = true } = args;
+    let numberOfConnectedActions = 0;
+    const newStateId = this.model.createState(args);
+
+    if (parentId) {
+      this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
+      numberOfConnectedActions += 1;
+    }
+    // Еще много чего...
+    this.emit('createState', { ...args, id: newStateId });
+    if (canUndo) {
+      this.history.do({
+        type: 'createState',
+        args: { ...args, newStateId: newStateId },
       });
     }
   }

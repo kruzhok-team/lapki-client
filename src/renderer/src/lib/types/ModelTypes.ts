@@ -113,6 +113,13 @@ export type CreateStateMachineParams = {
 
 export type ChangeStateMachineParams = CreateStateMachineParams;
 
+export type ChangePosition = {
+  smId: string;
+  id: string;
+  startPosition: Point;
+  endPosition: Point;
+};
+
 export type CreateComponentParams = ComponentData & {
   name: string;
   smId: string;

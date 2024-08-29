@@ -39,6 +39,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
     CompilerNoDataStatus.DEFAULT
   );
+  // секунд до переподключения, 0 - означает, что либо идёт переподключение, либо перподключения больше не будет
   const [secondsUntillReconnect, setSecondsUntillReconnect] = useState<number>(0);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
@@ -159,6 +160,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
   const disabled =
     processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
+  const showReconnectTime = () => {
+    if (secondsUntillReconnect == 0) return;
+    return <p>До подключения: {secondsUntillReconnect} сек.</p>;
+  };
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -193,7 +198,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             {compilerStatus}
           </span>
         </p>
-
+        {showReconnectTime()}
         <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
           Результат компиляции: {compilerData ? compilerData.result : compilerNoDataStatus}
         </div>

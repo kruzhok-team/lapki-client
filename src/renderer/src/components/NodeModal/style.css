@@ -1,0 +1,19 @@
+.editor .cm-editor {
+  @apply h-full rounded border border-border-primary bg-bg-secondary py-1 text-[0.875rem] text-text-primary;
+}
+
+.editor .cm-content {
+  @apply min-h-[7rem];
+}
+
+.editor .cm-cursor {
+  @apply border-l-text-primary;
+}
+
+.editor .cm-line {
+  @apply pl-2 !important;
+}
+
+.editor .cm-activeLine {
+  @apply bg-bg-hover;
+}

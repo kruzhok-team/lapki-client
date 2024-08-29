@@ -4,19 +4,24 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { Event } from '@renderer/types/diagram';
+import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
 export const useTrigger = (addSystemComponents: boolean) => {
-  const editor = useEditorContext();
-  const model = editor.model;
+  const { controller, model } = useEditorContext();
 
   const componentsData = model.useData('elements.components');
-  const controller = editor.controller;
+  const visual = model.useData('elements.visual');
+
+  const [tabValue, setTabValue] = useState(0);
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+
+  const [text, setText] = useState('');
 
   const componentOptions: SelectOption[] = useMemo(() => {
     // Почему-то эта функция может вызываться раньше инициаилзации платформы
@@ -25,13 +30,13 @@ export const useTrigger = (addSystemComponents: boolean) => {
       return [];
     }
     const getComponentOption = (id: string) => {
-      const proto = controller.platform!.getComponent(id);
+      const proto = controller.platform?.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 size-7'),
       };
     };
 
@@ -44,7 +49,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
     }
 
     return result;
-  }, [componentsData, addSystemComponents, controller]);
+  }, [componentsData, addSystemComponents, controller.platform, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform) return [];
@@ -60,12 +65,12 @@ export const useTrigger = (addSystemComponents: boolean) => {
         icon: (
           <img
             src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
+            className="mr-1 size-7 object-contain"
           />
         ),
       };
     });
-  }, [controller, selectedComponent]);
+  }, [controller.platform, selectedComponent, visual]);
 
   const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? null);
@@ -79,11 +84,38 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const clear = useCallback(() => {
     setSelectedComponent(null);
     setSelectedMethod(null);
+    setText('');
+    setTabValue(0);
   }, []);
+
+  const parse = useCallback(
+    (triggerToParse: Event | string | undefined) => {
+      clear();
+
+      if (!triggerToParse) return;
+
+      if (typeof triggerToParse !== 'string') {
+        setSelectedComponent(triggerToParse.component);
+        setSelectedMethod(triggerToParse.method);
+        if (!visual) setText(serializeEvent(triggerToParse)); // для перехода в текст
+        return setTabValue(0);
+      }
+
+      setText(triggerToParse);
+      setTabValue(1);
+    },
+    [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
+  );
 
   return {
     componentOptions,
     methodOptions,
+
+    tabValue,
+    onTabChange: setTabValue,
+
+    text,
+    onChangeText: setText,
 
     selectedComponent,
     selectedMethod,
@@ -92,6 +124,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
     setSelectedComponent,
     setSelectedMethod,
 
+    parse,
     clear,
   };
 };

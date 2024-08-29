@@ -20,7 +20,7 @@ import {
   StateVariant,
 } from '@renderer/lib/types/EditorController';
 import {
-  ChangeStateEventsParams,
+  ChangeStateParams,
   CreateChoiceStateParams,
   CreateFinalStateParams,
   CreateStateParams,
@@ -138,6 +138,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     );
   }
 
+  updateAll() {
+    this.forEachState((state) => {
+      state.updateEventBox();
+    });
+  }
+
   createState = (args: CreateStateParams, canUndo = true) => {
     const { parentId, position, linkByPoint = true, canBeInitial = true } = args;
 
@@ -187,30 +193,23 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   };
 
-  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id, eventData } = args;
+  changeState(args: ChangeStateParams, canUndo = true) {
+    const { id } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
 
     if (canUndo) {
-      const prevEvent = state.data.events.find(
-        (value) =>
-          eventData.trigger.component === value.trigger.component &&
-          eventData.trigger.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      const prevActions = structuredClone(prevEvent?.do ?? []);
+      const prevEvents = state.data.events;
+      const prevColor = state.data.color;
 
       this.history.do({
-        type: 'changeStateEvents',
-        args: { args, prevActions },
+        type: 'changeState',
+        args: { args, prevEvents, prevColor },
       });
     }
 
-    this.app.model.changeStateEvents(args);
-
+    this.app.model.changeState(args);
     state.updateEventBox();
 
     this.view.isDirty = true;
@@ -831,7 +830,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  // Редактирование события в состояниях
+  /**
+   * Редактирование события в состояниях
+   * * Не работает на текстовые данные
+   */
   changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -846,7 +848,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEventAction',
-          args: { stateId, event, newValue, prevValue },
+          args: { stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -857,7 +859,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEvent',
-          args: { stateId, event, newValue, prevValue },
+          args: { stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     }
@@ -867,8 +869,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  // Удаление события в состояниях
-  //TODO показывать предупреждение при удалении события в состоянии(модалка)
+  /**
+   * Удаление события в состояниях
+   * * Не работает на текстовые данные
+   */
+  // TODO показывать предупреждение при удалении события в состоянии(модалка)
   deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -888,7 +893,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { stateId, event, prevValue },
+          args: { stateId, event, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -955,24 +960,28 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
     if (y <= titleHeight) {
-      this.emit('changeStateName', state);
-    } else {
-      // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
-      // FIXME: пересчитывает координаты внутри, ещё раз
-      const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
-      if (!eventSelection) {
-        this.emit('changeState', state);
-      } else {
-        const eventData = state.eventBox.data[eventSelection.eventIdx];
-        const event =
-          eventSelection.actionIdx === null
-            ? eventData.trigger
-            : eventData.do[eventSelection.actionIdx];
-        const isEditingEvent = eventSelection.actionIdx === null;
-
-        this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
-      }
+      return this.emit('changeStateName', state);
     }
+
+    if (!this.app.model.data.elements.visual) {
+      return this.emit('changeState', state);
+    }
+
+    // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
+    // FIXME: пересчитывает координаты внутри, ещё раз
+    const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+    if (!eventSelection) {
+      return this.emit('changeState', state);
+    }
+
+    const eventData = state.eventBox.data[eventSelection.eventIdx];
+    const event =
+      eventSelection.actionIdx === null
+        ? eventData.trigger
+        : eventData.do[eventSelection.actionIdx];
+    const isEditingEvent = eventSelection.actionIdx === null;
+
+    this.emit('changeEvent', { state, eventSelection, event: event as Event, isEditingEvent });
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {

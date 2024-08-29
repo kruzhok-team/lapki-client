@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react';
+
 import Websocket from 'isomorphic-ws';
 
 import { ClientStatus } from './ClientStatus';
@@ -14,8 +16,14 @@ export abstract class ClientWS {
 
   static onStatusChange: (newConnectionStatus: string) => void;
 
-  static setOnStatusChange(onStatusChange: (newConnectionStatus: string) => void): void {
+  static setSecondsUntillReconnect: Dispatch<SetStateAction<number>>;
+
+  static bind(
+    onStatusChange: (newConnectionStatus: string) => void,
+    setSecondsUntillReconnect: Dispatch<SetStateAction<number>>
+  ): void {
     this.onStatusChange = onStatusChange;
+    this.setSecondsUntillReconnect = setSecondsUntillReconnect;
   }
 
   /**
@@ -94,6 +102,9 @@ export abstract class ClientWS {
       if (this.reconnectTimer && this.reconnectTimer.isAutoReconnect()) {
         this.reconnectTimer.tryToReconnect(() => {
           this.reconnect();
+        });
+        this.reconnectTimer.startInterval((remainingTime: number) => {
+          this.setSecondsUntillReconnect(Math.round(remainingTime / 1000));
         });
       }
     }

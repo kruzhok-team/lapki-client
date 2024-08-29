@@ -59,7 +59,8 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   const [flashResult, setFlashResult] = useState<FlashResult>();
-
+  const [secondsUntillReconnect, setSecondsUntillReconnect] = useState<number>(0);
+  // setSecondsUntillReconnect: Dispatch<SetStateAction<number>>
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const openTab = useTabs((state) => state.openTab);
@@ -223,7 +224,8 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlasherFile,
       setIsFlashing,
       setFlasherError,
-      setFlashResult
+      setFlashResult,
+      setSecondsUntillReconnect
     );
     SerialMonitor.bindReact(
       addDeviceMessage,

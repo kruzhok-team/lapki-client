@@ -69,9 +69,10 @@ export class Flasher extends ClientWS {
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     onFlashingChange: (flashing: boolean) => void,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>
+    setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>,
+    setSecondsUntillReconnect: Dispatch<SetStateAction<number>>
   ): void {
-    super.setOnStatusChange(setFlasherConnectionStatus);
+    super.bind(setFlasherConnectionStatus, setSecondsUntillReconnect);
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
     this.setFlasherFile = setFlasherFile;

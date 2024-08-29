@@ -39,6 +39,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
     CompilerNoDataStatus.DEFAULT
   );
+  const [secondsUntillReconnect, setSecondsUntillReconnect] = useState<number>(0);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -111,7 +112,13 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
     const { host, port } = compilerSetting;
 
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setCompilerNoDataStatus);
+    Compiler.bindReact(
+      setCompilerData,
+      setCompilerStatus,
+      setImportData,
+      setCompilerNoDataStatus,
+      setSecondsUntillReconnect
+    );
     Compiler.connect(host, port);
   }, [compilerSetting]);
 

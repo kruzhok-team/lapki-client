@@ -16,6 +16,7 @@ export abstract class ClientWS {
 
   static onStatusChange: (newConnectionStatus: string) => void;
 
+  // секунд до переподключения, 0 - означает, что либо идёт переподключение, либо перподключения больше не будет
   static setSecondsUntillReconnect: Dispatch<SetStateAction<number>>;
 
   static bind(
@@ -58,6 +59,7 @@ export abstract class ClientWS {
     this.port = port;
     this.connection?.close();
     this.onStatusChange(ClientStatus.CONNECTING);
+    this.setSecondsUntillReconnect(0);
 
     let ws: Websocket;
     try {
@@ -96,6 +98,7 @@ export abstract class ClientWS {
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     console.log('Close connection', event);
+    this.setSecondsUntillReconnect(0);
     if (host == this.host && port == this.port) {
       this.onStatusChange(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
@@ -120,6 +123,7 @@ export abstract class ClientWS {
     this.initOrResetReconnectTimer();
     //console.log(`Client: connected to ${this.host}:${this.port}!`);
     this.onStatusChange(ClientStatus.CONNECTED);
+    this.setSecondsUntillReconnect(0);
   }
 
   static cancelConnection() {

@@ -26,6 +26,11 @@ export class ReconnectTimer {
   private timeoutSetted: boolean = false;
   // время окончания таймера
   private timeoutEnd: number = 0;
+  private intervalID: NodeJS.Timeout | undefined;
+  // длительность интервала intervalID
+  private intervalMS: number = 1000;
+  // таймер, отвечающий за уничтожение интервала intervalID, по истечению таймаута переподключения
+  private intervalDestroyerID: NodeJS.Timeout | undefined;
 
   constructor(
     initialTimeout: number = 5000,
@@ -33,7 +38,8 @@ export class ReconnectTimer {
     maxReconnectAttempts: number = 3,
     maxTimeout: number = 50000,
     freezeTimeout: number = 1000,
-    autoReconnect: boolean = true
+    autoReconnect: boolean = true,
+    intervalMS: number = 1000
   ) {
     this.initialTimeout = initialTimeout;
     this.curTimeout = initialTimeout;
@@ -49,6 +55,7 @@ export class ReconnectTimer {
     this.freezeReconnection = false;
 
     this.timeoutEnd = 0;
+    this.intervalMS = intervalMS;
   }
 
   clearTimer() {
@@ -57,6 +64,12 @@ export class ReconnectTimer {
       this.timerID = undefined;
       this.timeoutSetted = false;
       this.timeoutEnd = 0;
+    }
+    if (this.intervalID) {
+      clearTimeout(this.intervalID);
+    }
+    if (this.intervalDestroyerID) {
+      clearTimeout(this.intervalDestroyerID);
     }
   }
 
@@ -123,6 +136,21 @@ export class ReconnectTimer {
   getRemainingTime() {
     const remainingTime = this.timeoutEnd - new Date().getTime();
     return remainingTime > 0 ? remainingTime : 0;
+  }
+
+  // запустить интервал, который будет работать до попытки переподключения
+  // длительность интервала указывается при создании таймера
+  // при вызове таймера, будет выполнять функцию action, в которую будет передавать оставшееся время до переподключения
+  // возвращает время в мс
+  startInterval(action: (remainingTime: number) => void) {
+    action(this.getRemainingTime());
+    this.intervalID = setInterval(() => {
+      action(this.getRemainingTime());
+    }, this.intervalMS);
+    this.intervalDestroyerID = setTimeout(() => {
+      clearTimeout(this.intervalID);
+      this.intervalID = undefined;
+    }, this.curTimeout);
   }
 }
 

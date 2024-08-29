@@ -285,7 +285,7 @@ export const Loader: React.FC<FlasherProps> = ({
       if (flasherIsLocal) {
         return 'Перезапустить';
       } else {
-        return 'Переподключиться';
+        return 'Подключиться';
       }
     }
   };

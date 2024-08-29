@@ -366,12 +366,7 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   const showReconnectTime = () => {
     if (secondsUntillReconnect == 0) return;
-    return (
-      <div>
-        <p>До переподключения:</p>
-        <p>{secondsUntillReconnect} сек.</p>
-      </div>
-    );
+    return <p>До подключения: {secondsUntillReconnect} сек.</p>;
   };
   return (
     <section className="flex h-full flex-col text-center">

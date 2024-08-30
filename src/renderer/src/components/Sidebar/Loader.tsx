@@ -59,8 +59,8 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   const [flashResult, setFlashResult] = useState<FlashResult>();
-  // секунд до переподключения, 0 - означает, что либо идёт переподключение, либо перподключения больше не будет
-  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number>(0);
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
 
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
@@ -365,7 +365,7 @@ export const Loader: React.FC<FlasherProps> = ({
     );
   };
   const showReconnectTime = () => {
-    if (secondsUntilReconnect == 0) return;
+    if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
   return (

@@ -70,7 +70,7 @@ export class Flasher extends ClientWS {
     onFlashingChange: (flashing: boolean) => void,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
     setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>,
-    setSecondsUntilReconnect: Dispatch<SetStateAction<number>>
+    setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
   ): void {
     super.bind(setFlasherConnectionStatus, setSecondsUntilReconnect);
     this.setFlasherDevices = setFlasherDevices;

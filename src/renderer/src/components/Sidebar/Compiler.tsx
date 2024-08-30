@@ -39,8 +39,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
     CompilerNoDataStatus.DEFAULT
   );
-  // секунд до переподключения, 0 - означает, что либо идёт переподключение, либо перподключения больше не будет
-  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number>(0);
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -161,7 +161,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const disabled =
     processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
   const showReconnectTime = () => {
-    if (secondsUntilReconnect == 0) return;
+    if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
   return (

@@ -16,12 +16,12 @@ export abstract class ClientWS {
 
   static onStatusChange: (newConnectionStatus: string) => void;
 
-  // секунд до переподключения, 0 - означает, что либо идёт переподключение, либо перподключения больше не будет
-  static setSecondsUntilReconnect: Dispatch<SetStateAction<number>>;
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  static setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>;
 
   static bind(
     onStatusChange: (newConnectionStatus: string) => void,
-    setSecondsUntilReconnect: Dispatch<SetStateAction<number>>
+    setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
   ): void {
     this.onStatusChange = onStatusChange;
     this.setSecondsUntilReconnect = setSecondsUntilReconnect;
@@ -59,7 +59,7 @@ export abstract class ClientWS {
     this.port = port;
     this.connection?.close();
     this.onStatusChange(ClientStatus.CONNECTING);
-    this.setSecondsUntilReconnect(0);
+    this.setSecondsUntilReconnect(null);
 
     let ws: Websocket;
     try {
@@ -98,7 +98,7 @@ export abstract class ClientWS {
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     console.log('Close connection', event);
-    this.setSecondsUntilReconnect(0);
+    this.setSecondsUntilReconnect(null);
     if (host == this.host && port == this.port) {
       this.onStatusChange(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
@@ -107,7 +107,12 @@ export abstract class ClientWS {
           this.reconnect();
         });
         this.reconnectTimer.startInterval((remainingTime: number) => {
-          this.setSecondsUntilReconnect(Math.round(remainingTime / 1000));
+          const seconds: number = Math.round(remainingTime / 1000);
+          if (seconds == 0) {
+            this.setSecondsUntilReconnect(null);
+          } else {
+            this.setSecondsUntilReconnect(Math.round(remainingTime / 1000));
+          }
         });
       }
     }
@@ -123,7 +128,7 @@ export abstract class ClientWS {
     this.initOrResetReconnectTimer();
     //console.log(`Client: connected to ${this.host}:${this.port}!`);
     this.onStatusChange(ClientStatus.CONNECTED);
-    this.setSecondsUntilReconnect(0);
+    this.setSecondsUntilReconnect(null);
   }
 
   static cancelConnection() {

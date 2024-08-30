@@ -143,9 +143,9 @@ export class Compiler extends ClientWS {
     setCompilerStatus: Dispatch<SetStateAction<string>>,
     setImportData: Dispatch<SetStateAction<Elements | undefined>>,
     setCompilerNoDataStatus: Dispatch<SetStateAction<string>>,
-    setSecondsUntillReconnect: Dispatch<SetStateAction<number>>
+    setSecondsUntilReconnect: Dispatch<SetStateAction<number>>
   ): void {
-    super.bind(setCompilerStatus, setSecondsUntillReconnect);
+    super.bind(setCompilerStatus, setSecondsUntilReconnect);
     this.setCompilerData = setCompilerData;
     this.setImportData = setImportData;
     this.setCompilerNoDataStatus = setCompilerNoDataStatus;

@@ -60,8 +60,8 @@ export const Loader: React.FC<FlasherProps> = ({
 
   const [flashResult, setFlashResult] = useState<FlashResult>();
   // секунд до переподключения, 0 - означает, что либо идёт переподключение, либо перподключения больше не будет
-  const [secondsUntillReconnect, setSecondsUntillReconnect] = useState<number>(0);
-  // setSecondsUntillReconnect: Dispatch<SetStateAction<number>>
+  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number>(0);
+
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const openTab = useTabs((state) => state.openTab);
@@ -226,7 +226,7 @@ export const Loader: React.FC<FlasherProps> = ({
       setIsFlashing,
       setFlasherError,
       setFlashResult,
-      setSecondsUntillReconnect
+      setSecondsUntilReconnect
     );
     SerialMonitor.bindReact(
       addDeviceMessage,
@@ -365,8 +365,8 @@ export const Loader: React.FC<FlasherProps> = ({
     );
   };
   const showReconnectTime = () => {
-    if (secondsUntillReconnect == 0) return;
-    return <p>До подключения: {secondsUntillReconnect} сек.</p>;
+    if (secondsUntilReconnect == 0) return;
+    return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
   return (
     <section className="flex h-full flex-col text-center">

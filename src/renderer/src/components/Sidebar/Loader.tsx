@@ -59,6 +59,8 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   const [flashResult, setFlashResult] = useState<FlashResult>();
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
 
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
@@ -223,7 +225,8 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlasherFile,
       setIsFlashing,
       setFlasherError,
-      setFlashResult
+      setFlashResult,
+      setSecondsUntilReconnect
     );
     SerialMonitor.bindReact(
       addDeviceMessage,
@@ -283,7 +286,7 @@ export const Loader: React.FC<FlasherProps> = ({
       if (flasherIsLocal) {
         return 'Перезапустить';
       } else {
-        return 'Переподключиться';
+        return 'Подключиться';
       }
     }
   };
@@ -361,6 +364,10 @@ export const Loader: React.FC<FlasherProps> = ({
       </button>
     );
   };
+  const showReconnectTime = () => {
+    if (secondsUntilReconnect == null) return;
+    return <p>До подключения: {secondsUntilReconnect} сек.</p>;
+  };
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -400,6 +407,7 @@ export const Loader: React.FC<FlasherProps> = ({
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
           <p>{connectionStatus}</p>
+          {showReconnectTime()}
           <br></br>
           <button
             className="btn-primary mb-2 w-full"

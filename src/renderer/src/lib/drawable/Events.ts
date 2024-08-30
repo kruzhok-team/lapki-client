@@ -1,8 +1,12 @@
 import { State, picto } from '@renderer/lib/drawable';
-import { Point, Rectangle } from '@renderer/lib/types/graphics';
+import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { isPointInRectangle } from '@renderer/lib/utils';
+import { drawText, prepareText } from '@renderer/lib/utils/text';
+import theme from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
+import { serializeStateActions } from '../data/GraphmlBuilder';
+import { getPlatform } from '../data/PlatformLoader';
 
 export type EventSelection = {
   eventIdx: number;
@@ -15,7 +19,10 @@ export type EventSelection = {
  * обработку событий мыши.
  */
 export class Events {
-  bounds!: Rectangle;
+  dimensions!: Dimensions;
+
+  private textArray = [] as string[];
+  // private textEvents = [] as string[];
 
   selection?: EventSelection;
 
@@ -25,21 +32,39 @@ export class Events {
   minHeight = picto.eventHeight;
 
   constructor(private app: CanvasEditor, public parent: State) {
-    this.bounds = {
-      x: 15,
-      y: 10,
+    this.dimensions = {
       width: this.minWidth,
       height: this.minHeight,
     };
 
-    this.recalculate();
+    this.update();
   }
 
   get data() {
     return this.parent.data.events;
   }
 
-  recalculate() {
+  update() {
+    if (!this.app.model.data.elements.visual) {
+      const text = serializeStateActions(
+        this.parent.data.events,
+        getPlatform(this.app.model.data.elements.platform)!,
+        this.app.model.data.elements.components
+      );
+
+      //TODO(bryzZz) изменение параметров текста (общее для редактора)
+      const textData = prepareText(text, this.parent.dimensions.width - 2 * 15, {
+        fontFamily: 'Fira Sans',
+        fontSize: 16,
+        lineHeight: 1.2,
+      });
+
+      this.dimensions.height = textData.height + 10 * 2;
+      this.textArray = textData.textArray;
+
+      return;
+    }
+
     let eventRows = 0;
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
@@ -48,10 +73,8 @@ export class Events {
         eventRows += 1;
       }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
-      // TODO: пересчитывать карту кнопок
-      // this.buttonMap.set(..., [i, -1]);
     });
-    this.bounds.height = Math.max(this.minHeight, 50 * eventRows);
+    this.dimensions.height = picto.eventHeight * eventRows + (eventRows - 1) * 10 + 10 * 2;
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
@@ -60,8 +83,8 @@ export class Events {
 
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
-    const px = this.bounds.x / this.app.model.data.scale;
-    const py = this.bounds.y / this.app.model.data.scale;
+    const px = 15 / this.app.model.data.scale;
+    const py = 10 / this.app.model.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -119,11 +142,14 @@ export class Events {
   }
 
   handleDoubleClick(p: Point) {
-    const idx = this.calculatePictoIndex(p);
-    return idx;
+    return this.calculatePictoIndex(p);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    if (!this.app.model.data.elements.visual) {
+      return this.drawTextEvents(ctx);
+    }
+
     this.drawImageEvents(ctx);
   }
 
@@ -140,8 +166,8 @@ export class Events {
       Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
-    const px = this.bounds.x / this.app.model.data.scale;
-    const py = this.bounds.y / this.app.model.data.scale;
+    const px = 15 / this.app.model.data.scale;
+    const py = 10 / this.app.model.data.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -157,9 +183,12 @@ export class Events {
           picto.drawCursor(ctx, eX, eY);
         }
       }
-      platform.drawEvent(ctx, events.trigger, eX, eY);
 
-      if (events.condition) {
+      if (typeof events.trigger !== 'string') {
+        platform.drawEvent(ctx, events.trigger, eX, eY);
+      }
+
+      if (events.condition && typeof events.condition !== 'string') {
         ctx.beginPath();
         platform.drawCondition(
           ctx,
@@ -170,23 +199,46 @@ export class Events {
         ctx.closePath();
       }
 
-      events.do.forEach((act, actIdx) => {
-        const ax = 1 + (actIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
-        const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
-        const aY = baseY + (ay * yDx) / this.app.model.data.scale;
-        if (typeof this.selection !== 'undefined') {
-          if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-            picto.drawCursor(ctx, aX, aY);
+      if (typeof events.do !== 'string') {
+        events.do.forEach((act, actIdx) => {
+          const ax = 1 + (actIdx % eventRowLength);
+          const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
+          const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
+          const aY = baseY + (ay * yDx) / this.app.model.data.scale;
+          if (typeof this.selection !== 'undefined') {
+            if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
+              picto.drawCursor(ctx, aX, aY);
+            }
           }
-        }
-        platform.drawAction(ctx, act, aX, aY);
-      });
+          platform.drawAction(ctx, act, aX, aY);
+        });
+      }
 
       eventRow +=
         Math.max(1, Math.ceil(events.do.length / eventRowLength)) + (events.condition ? 1 : 0);
     });
 
     ctx.closePath();
+  }
+
+  private drawTextEvents(ctx: CanvasRenderingContext2D) {
+    const scale = this.app.model.data.scale;
+    const { x, y } = this.parent.drawBounds;
+    const titleHeight = this.parent.titleHeight / scale;
+    const px = 15 / scale;
+    const py = 10 / scale;
+    const fontSize = 16 / scale;
+
+    drawText(ctx, this.textArray, {
+      x: x + px,
+      y: y + titleHeight + py,
+      textAlign: 'left',
+      color: theme.colors.diagram.state.titleColor,
+      font: {
+        fontSize,
+        fontFamily: 'Fira Sans',
+        lineHeight: 1.2,
+      },
+    });
   }
 }

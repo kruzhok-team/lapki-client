@@ -11,6 +11,7 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
   CGMLNote,
+  serializeActions as serializeActionsCGML,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
@@ -31,6 +32,7 @@ import {
   Note,
 } from '@renderer/types/diagram';
 import { Platform } from '@renderer/types/platform';
+import { isString } from '@renderer/utils';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
@@ -54,7 +56,12 @@ function serializeArgs(args: ArgList | undefined) {
   return Object.values(args).join(', ');
 }
 
-function serializeEvent(trigger: Event): string {
+/**
+ * Формирует текстовую форму пиктографического триггера события.
+ * @param trigger Данные триггера
+ * @returns Строка с сериализованным триггером
+ */
+export function serializeEvent(trigger: Event): string {
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
@@ -72,7 +79,14 @@ function getActionDelimeter(platform: Platform, componentType: string): string {
   return platformComponent.singletone && isArduino ? '::' : '.';
 }
 
-function serializeActions(
+/**
+ * Формирует строковую форму пиктографического поведения (набора действий)
+ * @param actions Список пиктографических действий
+ * @param components Описание компонентов
+ * @param platform Текущая платформа
+ * @returns Строка с сериализованной формой
+ */
+export function serializeActions(
   actions: Action[],
   components: { [id: string]: Component },
   platform: Platform
@@ -92,25 +106,54 @@ function serializeActions(
   return serialized.trim();
 }
 
-export function serializeTransitionEvents(
-  doActions: Action[] | undefined,
-  trigger: Event | undefined,
-  condition: null | undefined | Condition,
+function getTrigger(trigger: Event | string | undefined): string | undefined {
+  if (!trigger) {
+    return undefined;
+  }
+  return isString(trigger) ? trigger : serializeEvent(trigger);
+}
+
+function getActions(
+  actions: Action[] | string | undefined,
+  components: { [id: string]: Component },
+  platform: Platform
+): string | undefined {
+  if (!actions) {
+    return undefined;
+  }
+  return isString(actions) ? actions : serializeActions(actions, components, platform);
+}
+
+function getCondition(
+  condition: null | undefined | string | Condition,
   platform: Platform,
   components: { [id: string]: Component }
+): string | undefined {
+  if (!condition) {
+    return undefined;
+  }
+  return isString(condition) ? condition : serializeCondition(condition, platform, components);
+}
+
+function serializeTransitionEvents(
+  doActions: Action[] | string | undefined,
+  trigger: Event | string | undefined,
+  condition: null | undefined | string | Condition,
+  components: { [id: string]: Component },
+  platform: Platform
 ): CGMLTransitionAction[] {
   return [
     {
       trigger: {
-        event: trigger ? serializeEvent(trigger) : undefined,
-        condition: condition ? serializeCondition(condition, platform, components) : undefined,
+        event: getTrigger(trigger),
+        condition: getCondition(condition, platform, components),
       },
-      action: doActions ? serializeActions(doActions, components, platform) : undefined,
+      action: getActions(doActions, components, platform),
     },
   ];
 }
 
-export function serializeStateEvents(
+function serializeStateEvents(
   events: EventData[],
   platform: Platform,
   components: { [id: string]: Component }
@@ -119,12 +162,10 @@ export function serializeStateEvents(
   for (const event of events) {
     serializedActions.push({
       trigger: {
-        event: serializeEvent(event.trigger),
-        condition: event.condition
-          ? serializeCondition(event.condition, platform, components)
-          : undefined,
+        event: getTrigger(event.trigger) ?? '',
+        condition: getCondition(event.condition, platform, components),
       },
-      action: serializeActions(event.do, components, platform),
+      action: getActions(event.do, components, platform),
     });
   }
   return serializedActions;
@@ -185,7 +226,14 @@ function getOperand(
   return operand;
 }
 
-function serializeCondition(
+/**
+ * Формирует текстовую форму пиктографического условия события.
+ * @param condition Данные условия
+ * @param platform Используемая платформа
+ * @param components Текущие компоненты
+ * @returns Строка с сериализованным условием
+ */
+export function serializeCondition(
   condition: Condition,
   platform: Platform,
   components: { [id: string]: Component }
@@ -246,8 +294,8 @@ function serializeTransitions(
       transition.label.do,
       transition.label.trigger,
       transition.label.condition,
-      platform,
-      components
+      components,
+      platform
     );
     cgmlTransitions[id] = cgmlTransition;
   }
@@ -361,4 +409,28 @@ export function exportCGML(elements: Elements): string {
   };
   cgmlElements.keys = getKeys();
   return exportGraphml(cgmlElements);
+}
+
+export function serializeTransitionActions(
+  label: Exclude<Transition['label'], undefined>,
+  platform: Platform,
+  components: { [id: string]: Component }
+) {
+  const cgmlData = serializeTransitionEvents(
+    label.do,
+    label.trigger,
+    label.condition,
+    components,
+    platform
+  );
+  return serializeActionsCGML(cgmlData).trim();
+}
+
+export function serializeStateActions(
+  events: State['events'],
+  platform: Platform,
+  components: { [id: string]: Component }
+) {
+  const cgmlData = serializeStateEvents(events, platform, components);
+  return serializeActionsCGML(cgmlData).trim();
 }

@@ -4,34 +4,33 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
-import { Event, ArgList } from '@renderer/types/diagram';
+import { Action, ArgList } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
-import { EventsModalParameters } from './EventsModalParameters';
+import { ActionsModalParameters } from './ActionsModalParameters';
 
-export interface EventsModalData {
-  event: Event;
+export interface ActionsModalData {
+  action: Action;
   isEditingEvent: boolean;
 }
 
-interface EventsModalProps {
-  initialData?: EventsModalData;
+interface ActionsModalProps {
+  initialData?: ActionsModalData;
   isOpen: boolean;
-  onSubmit: (data: Event) => void;
+  onSubmit: (data: Action) => void;
   onClose: () => void;
 }
 
-export const EventsModal: React.FC<EventsModalProps> = ({
+export const ActionsModal: React.FC<ActionsModalProps> = ({
   initialData,
   onSubmit,
   isOpen,
   onClose,
 }) => {
-  const editor = useEditorContext();
-  const model = editor.model;
-
+  const { controller, model } = useEditorContext();
   const componentsData = model.useData('elements.components');
-  const controller = editor.controller;
+  const visual = model.useData('elements.visual');
+
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -50,7 +49,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 size-7'),
       };
     };
 
@@ -63,7 +62,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
     }
 
     return result;
-  }, [componentsData, isEditingEvent, controller]);
+  }, [controller.platform, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform) return [];
@@ -80,12 +79,12 @@ export const EventsModal: React.FC<EventsModalProps> = ({
         icon: (
           <img
             src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
+            className="mr-1 size-7 object-contain"
           />
         ),
       };
     });
-  }, [isEditingEvent, controller, selectedComponent]);
+  }, [selectedComponent, controller.platform, isEditingEvent, visual]);
 
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
@@ -95,8 +94,8 @@ export const EventsModal: React.FC<EventsModalProps> = ({
 
     // Этот блок нужен для то чтобы по возвращению на начальное состояние сбросить параметры до начального состояния а не очищать совсем)
     if (initialData) {
-      if (initialData.event.component === componentName && initialData.event.method === method) {
-        parameters = initialData.event.args ?? {};
+      if (initialData.action.component === componentName && initialData.action.method === method) {
+        parameters = initialData.action.args ?? {};
       }
     }
 
@@ -159,10 +158,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       return;
     }
 
-    const init = (event: Event, path: 'signals' | 'methods') => {
+    const init = (action: Action, path: 'signals' | 'methods') => {
       if (!controller.platform) return;
 
-      const { component, method, args = {} } = event;
+      const { component, method, args = {} } = action;
       const componentProto = controller.platform.getComponent(component);
       const argumentProto = componentProto?.[path][method]?.parameters ?? [];
 
@@ -179,9 +178,9 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       );
     };
 
-    const { event, isEditingEvent } = initialData;
+    const { action, isEditingEvent: isEditingAction } = initialData;
 
-    init(event, isEditingEvent ? 'signals' : 'methods');
+    init(action, isEditingAction ? 'signals' : 'methods');
   }, [controller, initialData]);
 
   return (
@@ -213,7 +212,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
         />
       </div>
 
-      <EventsModalParameters
+      <ActionsModalParameters
         protoParameters={protoParameters}
         parameters={parameters}
         setParameters={setParameters}

@@ -5,13 +5,13 @@ import Websocket from 'isomorphic-ws';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   Device,
-  FlashStart,
   FlashUpdatePort,
   FlasherMessage,
   UpdateDelete,
   FlashResult,
   SerialStatus,
   SerialRead,
+  FlasherPayload,
 } from '@renderer/types/FlasherTypes';
 
 import {
@@ -118,12 +118,7 @@ export class Flasher extends ClientWS {
   }
 
   static getList(): void {
-    this.connection?.send(
-      JSON.stringify({
-        type: 'get-list',
-        payload: undefined,
-      } as FlasherMessage)
-    );
+    this.send('get-list', undefined);
     this.setFlasherLog('Запрос на обновление списка отправлен!');
   }
 
@@ -189,18 +184,13 @@ export class Flasher extends ClientWS {
   }
 
   static flash(device: Device) {
+    this.currentFlashingDevice = device;
     this.refresh();
-    const payload = {
+    this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
-    } as FlashStart;
-    const request = {
-      type: 'flash-start',
-      payload: payload,
-    } as FlasherMessage;
-    this.connection?.send(JSON.stringify(request));
+    });
     this.setFlasherLog('Идет загрузка...');
-    this.currentFlashingDevice = device;
   }
 
   // получение адреса в виде строки
@@ -267,7 +257,7 @@ export class Flasher extends ClientWS {
         this.updatePort(response.payload as FlashUpdatePort);
         break;
       }
-      case 'unmarshal-error': {
+      case 'unmarshal-err': {
         this.setFlasherLog('Не удалось прочесть запрос от клиента (возможно, конфликт версий).');
         break;
       }
@@ -468,10 +458,31 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'flash-open-serial-monitor':
-        this.flashingEnd(
-          'Нельзя начать прошивку этого устройства, так как для него открыт монитора порта.',
-          undefined
-        );
+        // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку (см. handleFlash из Loader.tsx)
+        // обычно монитор порта закрывается с первой попытки и этот код не воспроизводится
+        console.log('flash-open-serial-monitor');
+        if (this.currentFlashingDevice) {
+          SerialMonitor.closeMonitor(this.currentFlashingDevice.deviceID);
+          this.flash(this.currentFlashingDevice);
+        } else {
+          /*
+            если эта ошибка получена и currentFlashingDevice == undefined, то значит что-то пошло не так, 
+            ведь перед тем как получить эту ошибку клиент должен вызвать функцию flash в которой назначается 
+            currentFlashingDevice
+          */
+          this.flashingEnd(
+            'Получена неожиданная ошибка типа "flash-open-serial-monitor", сообщите об этом разработчикам! Эта ошибка означает, что монитор порта не удалось отключить автоматически перед тем, как начать прошивку. Вам придётся самостоятельно отключить монитор порта и повторить попытку прошивки.',
+            undefined
+          );
+        }
     }
+  }
+
+  static send(type: string, payload: FlasherPayload) {
+    const request = {
+      type: type,
+      payload: payload,
+    } as FlasherMessage;
+    this.connection?.send(JSON.stringify(request));
   }
 }

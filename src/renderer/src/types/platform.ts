@@ -49,6 +49,7 @@ export type Platform = {
   description?: string;
   version: string;
   standardVersion: string;
+  visual: boolean;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

@@ -30,7 +30,7 @@ export class ReconnectTimer {
   // длительность интервала intervalID
   private intervalMS: number = 1000;
   // таймер, отвечающий за уничтожение интервала intervalID, по истечению таймаута переподключения
-  private intervalDestroyerID: NodeJS.Timeout | undefined;
+  private intervalDestructorID: NodeJS.Timeout | undefined;
 
   constructor(
     initialTimeout: number = 5000,
@@ -68,8 +68,8 @@ export class ReconnectTimer {
     if (this.intervalID) {
       clearTimeout(this.intervalID);
     }
-    if (this.intervalDestroyerID) {
-      clearTimeout(this.intervalDestroyerID);
+    if (this.intervalDestructorID) {
+      clearTimeout(this.intervalDestructorID);
     }
   }
 
@@ -147,7 +147,7 @@ export class ReconnectTimer {
     this.intervalID = setInterval(() => {
       action(this.getRemainingTime());
     }, this.intervalMS);
-    this.intervalDestroyerID = setTimeout(() => {
+    this.intervalDestructorID = setTimeout(() => {
       clearTimeout(this.intervalID);
       this.intervalID = undefined;
     }, this.curTimeout);

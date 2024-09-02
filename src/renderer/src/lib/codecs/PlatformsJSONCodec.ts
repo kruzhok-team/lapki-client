@@ -203,11 +203,13 @@ const typeMap: any = {
   Platform: o(
     [
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
+      { json: 'delimeter', js: 'delimeter', typ: '' },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'hidden', js: 'hidden', typ: u(undefined, true) },
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
       { json: 'standardVersion', js: 'standardVersion', typ: '' },
+      { json: 'staticActionDelimeter', js: 'staticActionDelimeter', typ: '' },
       { json: 'version', js: 'version', typ: '' },
       { json: 'visual', js: 'visual', typ: true },
     ],

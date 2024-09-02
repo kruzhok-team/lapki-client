@@ -50,6 +50,8 @@ export type Platform = {
   version: string;
   standardVersion: string;
   visual: boolean;
+  delimeter: string;
+  staticActionDelimeter: string;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

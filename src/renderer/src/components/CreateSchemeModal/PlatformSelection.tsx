@@ -40,7 +40,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         ))}
       </div>
 
-      <div>{selectedPlatform?.description || 'Пока что нет описания'}</div>
+      <div>{selectedPlatform?.description || ''}</div>
     </div>
   );
 };

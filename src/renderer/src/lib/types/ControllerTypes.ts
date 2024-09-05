@@ -67,6 +67,12 @@ export interface UnlinkStateParams {
   canUndo?: boolean;
 }
 
+export interface ChangeStateNameParams {
+  smId: string;
+  id: string;
+  name: string;
+}
+
 export interface CCreateInitialStateParams {
   id?: string;
   smId: string;

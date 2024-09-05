@@ -18,10 +18,11 @@ import {
   getStatesControllerDefaultData,
   StatesControllerDataStateType,
   StateVariant,
+  ChangeStateNameParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
-  ChangeInitialPosition,
+  ChangePosition,
   ChangeStateEventsParams,
   CreateChoiceStateParams,
   CreateFinalStateParams,
@@ -137,7 +138,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createState = (args: CreateStateParams) => {
-    const { smId, id, parentId, position, linkByPoint = true, canBeInitial = true } = args;
+    const { id } = args;
 
     if (!id) return;
     const state = new State(this.app, id); // Создание вьюшки
@@ -146,94 +147,34 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.view.children.add(state, Layer.States);
 
-    // вкладываем состояние, если оно создано над другим
-    if (parentId) {
-      this.linkState({ smId, parentId, childId: id, canBeInitial });
-    } else if (linkByPoint) {
-      // TODO(bryzZz) Тут перемешаны разные виды координат, в Shape отлов клика идет по координатам окна, нужно переделать на мировые
-      const possibleParent = this.getPossibleParentState(this.view.worldToWindowCoords(position), [
-        state.id,
-      ]);
-      if (possibleParent) {
-        this.linkState({ smId, parentId: possibleParent.id, childId: state.id, addOnceOff: true });
-      }
-    }
-
-    // Если не было начального состояния, им станет новое
-    // if (canBeInitial && this.getSiblings(state.id, state.data.parentId, 'states').length === 0) {
-    //   // this.createInitialStateWithTransition(state.id, canUndo);
-    // }
-
     this.watch(state);
 
     this.view.isDirty = true;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createState',
-        args: { ...args, newStateId },
-        numberOfConnectedActions,
-      });
-    }
   };
 
-  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { id, eventData } = args;
+  changeStateEvents(args: ChangeStateEventsParams) {
+    const { id } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
-
-    if (canUndo) {
-      const prevEvent = state.data.events.find(
-        (value) =>
-          eventData.trigger.component === value.trigger.component &&
-          eventData.trigger.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      const prevActions = structuredClone(prevEvent?.do ?? []);
-
-      this.history.do({
-        type: 'changeStateEvents',
-        args: { args, prevActions },
-      });
-    }
-
-    this.app.controller.model.changeStateEvents(args);
 
     state.updateEventBox();
 
     this.view.isDirty = true;
   }
 
-  changeStateName = (id: string, name: string, canUndo = true) => {
+  changeStateName = (args: ChangeStateNameParams) => {
+    const { id } = args;
     const state = this.data.states.get(id);
     if (!state) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeStateName',
-        args: { id, name, prevName: state.data.name },
-      });
-    }
-
-    this.app.controller.model.changeStateName(id, name);
 
     this.view.isDirty = true;
   };
 
-  changeStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+  changeStatePosition(args: ChangePosition) {
+    const { id } = args;
     const state = this.data.states.get(id);
     if (!state) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeStatePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.app.controller.model.changeStatePosition(id, endPosition);
 
     this.view.isDirty = true;
   }
@@ -303,66 +244,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  deleteState = (args: DeleteDrawableParams, canUndo = true) => {
+  deleteState = (args: DeleteDrawableParams) => {
     const { id } = args;
     const state = this.data.states.get(id);
     if (!state) return;
 
-    const parentId = state.data.parentId;
-    let numberOfConnectedActions = 0;
-
-    // Проверка на то что состояние является, тем на которое есть переход из начального
-    const stateTransitions = this.controller.transitions.getAllByTargetId(id) ?? [];
-    const transitionFromInitialState = stateTransitions.find(
-      ({ source }) => source instanceof InitialState
-    );
-
-    if (transitionFromInitialState) {
-      // Перемещаем начальное состояние, на первое найденное в родителе
-      const newState = [...this.data.states.values()].find(
-        (s) => s.data.parentId === parentId && s.id !== id
-      );
-
-      if (newState) {
-        this.setInitialState(newState?.id, canUndo);
-      } else {
-        this.deleteInitialStateWithTransition(transitionFromInitialState.source.id, canUndo);
-      }
-
-      numberOfConnectedActions += 2;
-    }
-
-    // Удаляем зависимые переходы
-    this.controller.transitions.forEachByStateId(id, (transition) => {
-      this.controller.transitions.deleteTransition(transition.id, canUndo);
-      numberOfConnectedActions += 1;
-    });
-
-    // Ищем дочерние состояния и отвязываем их от текущего
-    this.forEachByParentId(id, (childState) => {
-      // Если есть родительское, перепривязываем к нему
-      if (state.data.parentId) {
-        this.linkState({ parentId: state.data.parentId, childId: childState.id }, canUndo);
-      } else {
-        this.unlinkState({ id: childState.id }, canUndo);
-      }
-
-      numberOfConnectedActions += 1;
-    });
-
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteState',
-        args: { id, stateData: { ...structuredClone(state.data), parentId } },
-        numberOfConnectedActions,
-      });
-    }
-
     (state.parent || this.view).children.remove(state, Layer.States); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обрабочик событий с вью
     this.data.states.delete(id); // Удаляем само вью
-    this.app.controller.model.deleteState(id); // Удаляем модель
-
     this.view.isDirty = true;
   };
 
@@ -423,55 +312,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  changeInitialStatePosition(args: ChangeInitialPosition) {
+  changeInitialStatePosition(args: ChangePosition) {
     const { id } = args;
     const state = this.data.initialStates.get(id);
     if (!state) return;
 
     this.view.isDirty = true;
-  }
-
-  /**
-   * Назначить состояние начальным
-   * TODO(bryzZz) Очень сложно искать переход из начального состояния в обычное состояние
-   */
-  setInitialState(stateId: string, canUndo = true) {
-    const state = this.data.states.get(stateId);
-    if (!state) return;
-
-    // Проверка на то что состояние уже является, тем на которое есть переход из начального
-    const stateTransitions = this.controller.transitions.getAllByTargetId(stateId) ?? [];
-    if (stateTransitions.find(({ source }) => source instanceof InitialState)) return;
-
-    const siblingsIds = this.getSiblings(state.id, state.data.parentId, 'states').map((s) => s.id);
-    const siblingsTransitions = this.controller.transitions.getAllByTargetId(siblingsIds);
-    const transitionFromInitialState = siblingsTransitions.find(
-      (transition) => transition.source instanceof InitialState
-    );
-
-    const initialState = transitionFromInitialState?.source as InitialState;
-
-    if (!transitionFromInitialState) return;
-
-    const position = {
-      x: state.position.x - INITIAL_STATE_OFFSET,
-      y: state.position.y - INITIAL_STATE_OFFSET,
-    };
-
-    if (state.data.parentId) {
-      position.x = Math.max(0, position.x);
-      position.y = Math.max(0, position.y);
-    }
-
-    this.controller.transitions.changeTransition(
-      {
-        id: transitionFromInitialState.id,
-        ...transitionFromInitialState.data,
-        targetId: stateId,
-      },
-      canUndo
-    );
-    this.changeInitialStatePosition(initialState.id, initialState.position, position, canUndo);
   }
 
   createFinalState(params: CreateFinalStateParams, canUndo = true) {

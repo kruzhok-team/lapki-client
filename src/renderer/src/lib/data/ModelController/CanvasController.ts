@@ -6,6 +6,8 @@ import {
   ChangeComponentPosition,
   ChangePosition,
   ChangeSelectionParams,
+  ChangeStateEventsParams,
+  ChangeStateNameParams,
   ChangeTransitionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -91,6 +93,8 @@ export type CanvasControllerEvents = {
   addDragendStateSig: AddDragendStateSig;
   linkState: LinkStateParams;
   unlinkState: UnlinkStateParams;
+  changeStateEvents: ChangeStateEventsParams;
+  changeStateName: ChangeStateNameParams;
 };
 
 export type CanvasData = {
@@ -185,6 +189,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('addDragendStateSig', this.bindHelper('state', this.addDragendState));
         this.on('linkState', this.bindHelper('state', this.linkState));
         this.on('unlinkState', this.bindHelper('state', this.states.unlinkState));
+        this.on('changeStateEvents', this.bindHelper('state', this.states.changeStateEvents));
+        this.on('changeStateName', this.bindHelper('state', this.states.changeStateName));
+        this.on('changeStatePosition', this.bindHelper('state', this.states.changeStatePosition));
         break;
       case 'initialState':
         this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));

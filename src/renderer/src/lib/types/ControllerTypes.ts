@@ -63,6 +63,8 @@ export interface LinkStateParams {
 
 export interface UnlinkStateParams {
   id: string;
+  smId: string;
+  canUndo?: boolean;
 }
 
 export interface CCreateInitialStateParams {

@@ -21,6 +21,7 @@ import {
   RenameComponentParams,
   SelectDrawable,
   SetMountedStatusParams,
+  UnlinkStateParams,
 } from '@renderer/lib/types';
 import { Condition, Variable } from '@renderer/types/diagram';
 
@@ -67,6 +68,7 @@ export type CanvasControllerEvents = {
   deleteFinal: DeleteDrawableParams;
   deleteNote: DeleteDrawableParams;
   deleteComponent: DeleteDrawableParams;
+  deleteTransition: DeleteDrawableParams;
   editComponent: EditComponentParams;
   renameComponent: RenameComponentParams;
   changeComponentPosition: ChangeComponentPosition;
@@ -87,7 +89,8 @@ export type CanvasControllerEvents = {
 
   linkTransitions: LinkTransitionParams;
   addDragendStateSig: AddDragendStateSig;
-  linkStates: LinkStateParams;
+  linkState: LinkStateParams;
+  unlinkState: UnlinkStateParams;
 };
 
 export type CanvasData = {
@@ -180,7 +183,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('deleteState', this.bindHelper('state', this.states.deleteState));
         this.on('selectState', this.bindHelper('state', this.selectComponent));
         this.on('addDragendStateSig', this.bindHelper('state', this.addDragendState));
-        this.on('linkStates', this.bindHelper('state', this.linkState));
+        this.on('linkState', this.bindHelper('state', this.linkState));
+        this.on('unlinkState', this.bindHelper('state', this.states.unlinkState));
         break;
       case 'initialState':
         this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));
@@ -214,6 +218,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on(
           'createTransition',
           this.bindHelper('transition', this.transitions.createTransition)
+        );
+        this.on(
+          'deleteTransition',
+          this.bindHelper('transition', this.transitions.deleteTransition)
         );
         this.on(
           'changeTransition',

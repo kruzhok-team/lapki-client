@@ -45,8 +45,8 @@ export type PossibleActions = {
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; params: UnlinkStateParams };
 
-  createInitialState: { id: string; targetId: string };
-  deleteInitialState: { id: string; targetId: string };
+  createInitialState: { smId: string; id: string };
+  deleteInitialState: { smId: string; id: string };
   changeInitialStatePosition: { id: string; startPosition: Point; endPosition: Point };
 
   createFinalState: CreateFinalStateParams & { newStateId: string };
@@ -58,7 +58,7 @@ export type PossibleActions = {
   changeChoiceStatePosition: { id: string; startPosition: Point; endPosition: Point };
 
   createTransition: { id: string; params: CreateTransitionParams };
-  deleteTransition: { transition: Transition; prevData: TransitionData };
+  deleteTransition: { prevData: TransitionData };
   changeTransition: {
     args: ChangeTransitionParams;
     prevData: TransitionData;

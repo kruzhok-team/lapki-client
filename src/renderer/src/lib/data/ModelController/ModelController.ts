@@ -1,7 +1,11 @@
 import { Point } from 'electron';
 
 import { EventEmitter } from '@renderer/lib/common';
-import { INITIAL_STATE_OFFSET, PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
+import {
+  CHILDREN_PADDING,
+  INITIAL_STATE_OFFSET,
+  PASTE_POSITION_OFFSET_STEP,
+} from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import {
   CCreateInitialStateParams,
@@ -11,6 +15,7 @@ import {
   LinkStateParams,
   SetMountedStatusParams,
   StatesControllerDataStateType,
+  UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
 import {
   CreateComponentParams,
@@ -30,7 +35,7 @@ import {
   State,
 } from '@renderer/types/diagram';
 
-import { CanvasControllerEvents } from './CanvasController';
+import { CanvasControllerEvents, CanvasSubscribeAttribute } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
@@ -308,6 +313,130 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('changeStatePosition', { smId, id, startPosition, endPosition });
   }
 
+  getBySourceId(smId: string, sourceId: string) {
+    return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].find(
+      (transition) => transition[0] === sourceId
+    );
+  }
+
+  private deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
+    const transitionWithId = this.getBySourceId(smId, initialStateId);
+    if (!transitionWithId) return;
+
+    this.deleteTransition({ smId, id: transitionWithId[0] }, canUndo);
+
+    this.deleteInitialState({ smId, id: initialStateId }, canUndo);
+  }
+
+  deleteInitialState(args: DeleteDrawableParams, canUndo) {
+    const { smId, id } = args;
+
+    const state = this.model.data.elements.stateMachines[smId].initialStates[id];
+    if (!state) return;
+
+    this.model.deleteInitialState(smId, id); // Удаляем модель
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteInitialState',
+        args: args,
+      });
+    }
+  }
+
+  deleteTransition(args: DeleteDrawableParams, canUndo = true) {
+    const { smId, id } = args;
+    const transition = this.model.data.elements.stateMachines[smId].transitions[id];
+    if (!transition) return;
+
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    const dependetTransitions = this.getAllByTargetId(smId, id)[1];
+
+    dependetTransitions.forEach((transitionId) => {
+      this.deleteTransition({ smId, id: transitionId }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteTransition',
+        args: { prevData: structuredClone(transition) },
+        numberOfConnectedActions,
+      });
+    }
+    this.model.deleteTransition(smId, id);
+    this.emit('deleteTransition', args);
+  }
+
+  compoundStatePosition(
+    smId: string,
+    id: string,
+    type: 'states' | 'finalStates' | 'choiceStates' | 'initialStates'
+  ) {
+    const state = this.model.data.elements.stateMachines[smId][type][id];
+    let { x, y } = state.position;
+    if (state.parentId) {
+      const parent = this.model.data.elements.stateMachines[smId].states[state.parentId];
+      const { x: px, y: py } = this.compoundStatePosition(smId, id, 'states');
+
+      x += px + CHILDREN_PADDING;
+      y += py + parent.dimensions.height + CHILDREN_PADDING;
+    }
+
+    return { x, y };
+  }
+
+  unlinkState(params: UnlinkStateParams) {
+    const { id, smId, canUndo } = params;
+
+    const state = this.model.data.elements.stateMachines[smId].states[id];
+    if (!state || !state.parentId) return;
+
+    const parentId = state.parentId;
+    let numberOfConnectedActions = 0;
+
+    // Проверка на то что состояние является, тем на которое есть переход из начального
+    // TODO(bryzZz) Вынести в функцию
+    const stateTransitions = this.getAllByTargetId(smId, id)[0] ?? [];
+    const transitionFromInitialState = stateTransitions.find(
+      ({ sourceId }) =>
+        this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
+    );
+
+    if (transitionFromInitialState) {
+      // Перемещаем начальное состояние, на первое найденное в родителе
+      const newState = [
+        ...Object.entries(this.model.data.elements.stateMachines[smId].states),
+      ].find((s) => s[1].parentId === parentId && s[0] !== id);
+
+      if (newState) {
+        this.setInitialState(smId, newState[0]);
+      } else {
+        this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
+      }
+
+      numberOfConnectedActions += 2;
+    }
+
+    // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
+    const newPosition = { ...this.compoundStatePosition(smId, id, 'states') }; // ??
+    this.changeStatePosition(smId, id, state.position, newPosition, canUndo);
+    numberOfConnectedActions += 1;
+
+    this.model.unlinkState(smId, id);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'unlinkState',
+        args: { parentId, params },
+        numberOfConnectedActions,
+      });
+    }
+    this.emit('unlinkState', params);
+  }
+
   linkState(args: LinkStateParams, canUndo = true) {
     const { smId, parentId, childId, addOnceOff = false, canBeInitial = true } = args;
 
@@ -334,7 +463,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.linkState(smId, parentId, childId);
     this.changeStatePosition(smId, childId, child.position, { x: 0, y: 0 }, false);
 
-    this.emit('linkStates', args);
+    this.emit('linkState', args);
 
     // Перелинковка переходов
     //! Нужно делать до создания перехода из начального состояния
@@ -392,7 +521,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createInitialState',
-        args: { id, targetId },
+        args: { smId, id },
       });
     }
 
@@ -431,6 +560,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         type: 'createState',
         args: { ...args, newStateId: newStateId },
       });
+      numberOfConnectedActions;
     }
   }
 

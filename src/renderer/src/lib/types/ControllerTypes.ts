@@ -67,7 +67,13 @@ export interface UnlinkStateParams {
 
 export interface CCreateInitialStateParams {
   id?: string;
+  smId: string;
   targetId: string;
+}
+
+export interface AddDragendStateSig {
+  smId: string;
+  stateId: string;
 }
 
 export interface DeleteInitialStateParams {
@@ -117,3 +123,8 @@ export type CopyData =
   | { type: 'note'; data: NoteData & { id: string } }
   | { type: 'component'; data: ComponentData & { id: string } };
 export type CopyType = CopyData['type'];
+
+export type LinkTransitionParams = {
+  smId: string;
+  stateId: string;
+};

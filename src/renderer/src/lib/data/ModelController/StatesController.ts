@@ -479,27 +479,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.deleteInitialState({ id: initialStateId, targetId }, canUndo);
   }
 
-  createInitialState(params: CCreateInitialStateParams, canUndo = true) {
-    const { id: prevId, targetId } = params;
+  createInitialState(params: CCreateInitialStateParams) {
+    const { id, targetId } = params;
 
     const target = this.data.states.get(targetId);
-    if (!target) return;
-
-    const position = {
-      x: target.position.x - INITIAL_STATE_OFFSET,
-      y: target.position.y - INITIAL_STATE_OFFSET,
-    };
-
-    if (target.data.parentId) {
-      position.x = Math.max(0, position.x);
-      position.y = Math.max(0, position.y);
-    }
-
-    const id = this.app.controller.model.createInitialState({
-      position,
-      parentId: target.data.parentId,
-      id: prevId,
-    });
+    if (!target || !id) return;
 
     const state = new InitialState(this.app, id);
 
@@ -512,13 +496,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     this.watch(state);
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createInitialState',
-        args: { id, targetId },
-      });
-    }
 
     return state;
   }

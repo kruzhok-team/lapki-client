@@ -1,6 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
+  AddDragendStateSig,
   CCreateInitialStateParams,
   ChangeComponentPosition,
   ChangePosition,
@@ -14,6 +15,9 @@ import {
   CreateTransitionParams,
   DeleteDrawableParams,
   EditComponentParams,
+  Layer,
+  LinkStateParams,
+  LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
   SetMountedStatusParams,
@@ -80,6 +84,10 @@ export type CanvasControllerEvents = {
   changeComponentSelection: ChangeSelectionParams;
   changeNoteSelection: ChangeSelectionParams;
   changeTransitionSelection: ChangeSelectionParams;
+
+  linkTransitions: LinkTransitionParams;
+  addDragendStateSig: AddDragendStateSig;
+  linkStates: LinkStateParams;
 };
 
 export type CanvasData = {
@@ -171,6 +179,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('createState', this.bindHelper('state', this.states.createState));
         this.on('deleteState', this.bindHelper('state', this.states.deleteState));
         this.on('selectState', this.bindHelper('state', this.selectComponent));
+        this.on('addDragendStateSig', this.bindHelper('state', this.addDragendState));
+        this.on('linkStates', this.bindHelper('state', this.linkState));
         break;
       case 'initialState':
         this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));
@@ -210,10 +220,21 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.bindHelper('transition', this.transitions.changeTransition)
         );
         this.on('selectTransition', this.bindHelper('transition', this.selectTransition));
+        this.on('linkTransitions', this.bindHelper('transition', this.linkTransitions));
         break;
       default:
         throw new Error('Unknown attribute');
     }
+  }
+
+  private addDragendState(args: AddDragendStateSig) {
+    const { stateId } = args;
+    const state = this.states.get(stateId);
+    if (!state) {
+      return;
+    }
+    state.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+    this.view.isDirty = true;
   }
 
   private renameComponent(args: RenameComponentParams) {
@@ -430,6 +451,23 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.on('initPlatform', this.initPlatform);
     this.on('initEvents', this.transitions.initEvents);
     this.on('deleteSelected', this.deleteSelected);
+  }
+
+  private linkState(args: LinkStateParams) {
+    const { childId, parentId } = args;
+    const child = this.states.get(childId);
+    const parent = this.states.get(parentId);
+    if (!child || !parent) return;
+    (child.parent || this.view).children.remove(child, Layer.States);
+    child.parent = parent;
+    parent.children.add(child, Layer.States);
+  }
+
+  private linkTransitions(args: LinkTransitionParams) {
+    const { stateId } = args;
+    this.transitions.forEachByStateId(stateId, (transition) =>
+      this.transitions.linkTransition(transition.id)
+    );
   }
 
   /**

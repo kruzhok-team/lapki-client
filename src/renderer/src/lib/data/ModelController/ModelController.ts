@@ -4,6 +4,7 @@ import { EventEmitter } from '@renderer/lib/common';
 import { INITIAL_STATE_OFFSET, PASTE_POSITION_OFFSET_STEP } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import {
+  CCreateInitialStateParams,
   CopyData,
   CopyType,
   EditComponentParams,
@@ -333,28 +334,23 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.linkState(smId, parentId, childId);
     this.changeStatePosition(smId, childId, child.position, { x: 0, y: 0 }, false);
 
-    // (child.parent || this.view).children.remove(child, Layer.States);
-    // child.parent = parent;
-    // parent.children.add(child, Layer.States);
+    this.emit('linkStates', args);
 
     // Перелинковка переходов
     //! Нужно делать до создания перехода из начального состояния
-    this.controller.transitions.forEachByStateId(childId, (transition) => {
-      this.controller.transitions.linkTransition(transition.id);
-    });
+    this.emit('linkTransitions', { smId: smId, stateId: childId });
+    // Заметка: Если что, можно будет пройтись по канвас контроллерам
 
     // Если не было начального состояния, им станет новое
-    if (
-      canBeInitial &&
-      this.getSiblings(smId, child.id, child.data.parentId, 'states')[0].length === 0
-    ) {
+    if (canBeInitial && this.getSiblings(smId, childId, child.parentId, 'states')[0].length === 0) {
       this.changeStatePosition(
+        smId,
         childId,
         child.position,
         { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
         false
       );
-      this.createInitialStateWithTransition(child.id, canUndo);
+      this.createInitialStateWithTransition(smId, childId, canUndo);
       numberOfConnectedActions += 2;
     }
 
@@ -365,11 +361,58 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         numberOfConnectedActions,
       });
       if (addOnceOff) {
-        child.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+        this.emit('addDragendStateSig', { smId, stateId: childId });
       }
     }
+  }
 
-    this.view.isDirty = true;
+  createInitialState(params: CCreateInitialStateParams, canUndo = true) {
+    const { id: prevId, targetId, smId } = params;
+
+    const target = this.model.data.elements[smId].states.get(targetId);
+    if (!target) return;
+
+    const position = {
+      x: target.position.x - INITIAL_STATE_OFFSET,
+      y: target.position.y - INITIAL_STATE_OFFSET,
+    };
+
+    if (target.data.parentId) {
+      position.x = Math.max(0, position.x);
+      position.y = Math.max(0, position.y);
+    }
+
+    const id = this.model.createInitialState({
+      smId,
+      position,
+      parentId: target.data.parentId,
+      id: prevId,
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createInitialState',
+        args: { id, targetId },
+      });
+    }
+
+    this.emit('createInitial', { ...params, id: id });
+    return id;
+  }
+
+  private createInitialStateWithTransition(smId: string, targetId: string, canUndo = true) {
+    const stateId = this.createInitialState({ smId, targetId }, canUndo);
+    const target = this.model.data.elements.stateMachines[smId].states[targetId];
+    if (!stateId || !target) return;
+
+    this.createTransition(
+      {
+        smId,
+        sourceId: stateId,
+        targetId: targetId,
+      },
+      canUndo
+    );
   }
 
   createState(args: CreateStateParams, canUndo = true) {

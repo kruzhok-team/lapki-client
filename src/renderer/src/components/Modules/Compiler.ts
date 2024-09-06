@@ -255,8 +255,7 @@ export class Compiler extends ClientWS {
         }
         this.setCompilerData({
           result: data.result,
-          stdout: data.stdout,
-          stderr: data.stderr,
+          commands: data.commands,
           binary: this.binary,
           source: this.getSourceFiles(data.source),
           platform: this.platform,
@@ -271,6 +270,7 @@ export class Compiler extends ClientWS {
         data = JSON.parse(msg.data as string) as SourceFile;
         this.setCompilerData({
           result: 'OK',
+          commands: [],
           binary: [],
           //В данный момент название файла, которое приходит от компилятора
           //Выглядит так: Robot_время.

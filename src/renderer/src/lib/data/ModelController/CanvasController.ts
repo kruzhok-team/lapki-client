@@ -20,6 +20,7 @@ import {
   Layer,
   LinkStateParams,
   LinkTransitionParams,
+  Point,
   RenameComponentParams,
   SelectDrawable,
   SetMountedStatusParams,
@@ -92,9 +93,11 @@ export type CanvasControllerEvents = {
   linkTransitions: LinkTransitionParams;
   addDragendStateSig: AddDragendStateSig;
   linkState: LinkStateParams;
+  linkFinalState: LinkStateParams;
   unlinkState: UnlinkStateParams;
   changeStateEvents: ChangeStateEventsParams;
   changeStateName: ChangeStateNameParams;
+  changeFinalStatePosition: ChangePosition;
 };
 
 export type CanvasData = {
@@ -203,6 +206,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       case 'final':
         this.on('createFinal', this.bindHelper('final', this.states.createFinalState));
         this.on('deleteFinal', this.bindHelper('final', this.states.deleteFinalState));
+        this.on(
+          'changeFinalStatePosition',
+          this.bindHelper('final', this.states.changeFinalStatePosition)
+        );
+        this.on('linkFinalState', this.states.linkFinalState);
         break;
       case 'choice':
         this.on('createChoice', this.bindHelper('choice', this.states.createChoiceState));

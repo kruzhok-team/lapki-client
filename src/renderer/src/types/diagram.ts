@@ -31,6 +31,7 @@ export type EventData = {
 
 interface BaseState {
   parentId?: string;
+  dimensions: Dimensions;
   position: Point;
 }
 

@@ -321,7 +321,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createFinalState(params: CreateFinalStateParams, canUndo = true) {
-    const { parentId, linkByPoint = true } = params;
+    const { smId, parentId, linkByPoint = true } = params;
 
     // Проверка на то что в скоупе уже есть конечное состояние
     // Страшно, очень страшно
@@ -342,7 +342,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.children.add(state, Layer.FinalStates);
 
     if (parentId) {
-      this.linkFinalState(id, parentId);
+      this.linkFinalState(smId, id, parentId);
     } else if (linkByPoint && parent) {
       const newPosition = {
         x: state.data.position.x - parent.compoundPosition.x,
@@ -373,37 +373,36 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
-    const parentId = state.data.parentId;
-    let numberOfConnectedActions = 0;
+    // const parentId = state.data.parentId;
+    // let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    this.controller.transitions.forEachByTargetId(id, (transition) => {
-      this.controller.transitions.deleteTransition(transition.id, canUndo);
-      numberOfConnectedActions += 1;
-    });
+    // this.controller.transitions.forEachByTargetId(id, (transition) => {
+    //   this.controller.transitions.deleteTransition(transition.id, canUndo);
+    //   numberOfConnectedActions += 1;
+    // });
 
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteFinalState',
-        args: { id, stateData: { ...structuredClone(state.data), parentId } },
-        numberOfConnectedActions,
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'deleteFinalState',
+    //     args: { id, stateData: { ...structuredClone(state.data), parentId } },
+    //     numberOfConnectedActions,
+    //   });
+    // }
 
     (state.parent || this.view).children.remove(state, Layer.FinalStates); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обработчик событий с вью
     this.data.finalStates.delete(id); // Удаляем само вью
-    this.app.controller.model.deleteFinalState(id); // Удаляем модель
+    // this.app.controller.model.deleteFinalState(id); // Удаляем модель
 
     this.view.isDirty = true;
   }
 
-  private linkFinalState(stateId: string, parentId: string) {
-    const state = this.data.finalStates.get(stateId);
+  linkFinalState(args: LinkStateParams) {
+    const { childId, parentId } = args;
+    const state = this.data.finalStates.get(childId);
     const parent = this.data.states.get(parentId);
     if (!state || !parent) return;
-
-    this.app.controller.model.linkFinalState(stateId, parentId);
 
     state.parent = parent;
     this.view.children.remove(state, Layer.FinalStates);
@@ -412,18 +411,19 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  changeFinalStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+  changeFinalStatePosition(args: ChangePosition) {
+    const { id } = args;
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'changeFinalStatePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeFinalStatePosition',
+    //     args: { id, startPosition, endPosition },
+    //   });
+    // }
 
-    this.app.controller.model.changeFinalStatePosition(id, endPosition);
+    // this.app.controller.model.changeFinalStatePosition(id, endPosition);
 
     this.view.isDirty = true;
   }

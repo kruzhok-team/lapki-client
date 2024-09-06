@@ -8,7 +8,6 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { isPointInRectangle } from '@renderer/lib/utils';
 
 import { CanvasEditor } from '../CanvasEditor';
-import { CanvasScheme } from '../CanvasScheme';
 
 interface ShapeEvents {
   mousedown: { event: MyMouseEvent };
@@ -46,11 +45,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   //флаг для перемещения перехода лишь при нажатии на прямоугольный блок, нежели на стрелку
   private canDrag = false;
 
-  constructor(
-    protected app: CanvasEditor | CanvasScheme,
-    public id: string,
-    public parent?: Shape
-  ) {
+  constructor(protected app: CanvasEditor, public id: string, public parent?: Shape) {
     super();
   }
 

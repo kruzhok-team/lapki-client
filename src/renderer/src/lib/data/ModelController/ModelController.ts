@@ -20,12 +20,14 @@ import {
 import {
   ChangeStateEventsParams,
   CreateComponentParams,
+  CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
   DeleteDrawableParams,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
+import { isPointInRectangle } from '@renderer/lib/utils';
 import {
   Elements,
   StateMachine,
@@ -34,6 +36,7 @@ import {
   Note,
   InitialState,
   State,
+  FinalState,
 } from '@renderer/types/diagram';
 
 import { CanvasControllerEvents, CanvasSubscribeAttribute } from './CanvasController';
@@ -60,6 +63,9 @@ import { ComponentEntry, PlatformManager } from '../PlatformManager';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
 type ModelControllerEvents = Record<string, never> & CanvasControllerEvents;
+
+const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;
+type StateType = (typeof StateTypes)[number];
 
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
@@ -371,6 +377,61 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('deleteTransition', args);
   }
 
+  private getDrawBounds(smId: string, stateId: string) {
+    return {
+      ...this.getComputedPosition(smId, stateId, 'states'),
+      ...this.getComputedDimensions(smId, stateId, 'states'),
+    };
+  }
+
+  isUnderMouse(smId: string, stateId: string, { x, y }: Point, includeChildrenHeight?: boolean) {
+    const drawBounds = this.getDrawBounds(smId, stateId);
+    const bounds = !includeChildrenHeight
+      ? drawBounds
+      : { ...drawBounds, height: drawBounds.height + drawBounds.childrenHeight };
+    return isPointInRectangle(bounds, { x, y });
+  }
+
+  private getPossibleParentState(
+    smId: string,
+    position: Point,
+    exclude: string[] = []
+  ): [string, State] | [null, null] {
+    // назначаем родительское состояние по месту его создания
+    let possibleParent: State | null = null;
+    let possibleParentId: string | null = null;
+    for (const [id, item] of Object.entries(this.model.data.elements.stateMachines[smId].states)) {
+      if (exclude.includes(id)) continue;
+      if (!this.isUnderMouse(smId, id, position, true)) continue;
+
+      if (possibleParent === null || possibleParentId === null) {
+        possibleParent = item;
+        possibleParentId = id;
+        continue;
+      }
+
+      // учитываем вложенность, нужно поместить состояние
+      // в максимально дочернее
+      if (!this.model.data.elements.stateMachines[smId].states[possibleParentId]) continue;
+      const children = this.getEachByParentId(smId, possibleParentId);
+      let searchPending = true;
+      while (searchPending) {
+        searchPending = false;
+        // TODO(bryzZz) Нужно проверять по модели а не по вью
+        for (const [id, child] of children || []) {
+          if (exclude.includes(id)) continue;
+          if (!this.isUnderMouse(smId, id, position, true)) continue;
+
+          possibleParent = child;
+          searchPending = true;
+          break;
+        }
+      }
+    }
+
+    return [possibleParentId, possibleParent];
+  }
+
   compoundStatePosition(
     smId: string,
     id: string,
@@ -516,6 +577,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       smId,
       position,
       parentId: target.data.parentId,
+      dimensions: { width: 50, height: 50 },
       id: prevId,
     });
 
@@ -758,6 +820,219 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.deleteState(smId, id); // Удаляем модель
     this.emit('deleteState', args);
+  }
+
+  getEachObjectByParentId(
+    smId: string,
+    parentId: string
+  ): Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'> {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const objects: Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'> = {
+      states: {},
+      initialStates: {},
+      finalStates: {},
+      choiceStates: {},
+      notes: {},
+    };
+
+    for (const objectType of StateTypes) {
+      for (const objectId in sm[objectType]) {
+        const object = sm[objectType][objectId];
+        if (object.parentId === parentId) {
+          objects[objectType][objectId] = object;
+        }
+      }
+    }
+
+    return objects;
+  }
+
+  private getChildrenContainerHeight(smId: string, stateId: string, stateType: StateType) {
+    const children = this.getEachObjectByParentId(smId, stateId);
+
+    if ([...Object.values(children)].length === 0) return 0;
+
+    const bottomChildData = this.getChildren(children);
+    if (!bottomChildData) throw Error('No bottom child!');
+    let bottomChildId = bottomChildData[0];
+    let bottomChildType = bottomChildData[1];
+    let bottomChild = children[bottomChildType][bottomChildType];
+    let bottomChildContainerHeight = 0;
+    let result = 0;
+
+    for (const childType of StateTypes) {
+      for (const childId in children[childType]) {
+        const child = children[childType][childId];
+        const y = child.position.y;
+        const height = child.dimensions.height;
+        const childrenContainerHeight = this.getChildrenContainerHeight(smId, childId, childType);
+        const bY = bottomChild.position.y;
+        const bHeight = bottomChild.dimensions.height;
+        const bChildrenContainerHeight = this.getChildrenContainerHeight(
+          smId,
+          bottomChildId,
+          bottomChildType
+        );
+        if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
+          bottomChild = child;
+          bottomChildId = childId;
+          bottomChildType = childType;
+          bottomChildContainerHeight = childrenContainerHeight;
+        }
+      }
+    }
+
+    result =
+      (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
+        this.model.data.scale +
+      bottomChildContainerHeight;
+
+    return result;
+  }
+
+  getComputedHeight(object: State | InitialState | FinalState | ChoiceState) {
+    return object.dimensions.height / this.model.data.scale;
+  }
+
+  getComputedDimensions(smId: string, stateId: string, stateType: StateType) {
+    const object = this.model.data.elements.stateMachines[smId][stateType][stateId];
+    const width = this.getComputedWidth(smId, stateId, stateType);
+    const height = this.getComputedHeight(object);
+    const childrenHeight = this.getChildrenContainerHeight(smId, stateId, stateType);
+
+    return { width, height, childrenHeight };
+  }
+
+  getComputedPosition(
+    smId: string,
+    stateId: string,
+    stateType: 'states' | 'finalStates' | 'initialStates' | 'choiceStates'
+  ) {
+    const { x, y } = this.compoundStatePosition(smId, stateId, stateType);
+
+    return {
+      x: (x + this.model.data.offset.x) / this.model.data.scale,
+      y: (y + this.model.data.offset.y) / this.model.data.scale,
+    };
+  }
+
+  private getChildren(
+    objects: Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'>
+  ): [string, StateType] | undefined {
+    for (const stateType of StateTypes) {
+      if ([Object.values(objects[stateType])].length !== 0) {
+        const id = [...Object.keys(objects[stateType])][0];
+        return [id, stateType];
+      }
+    }
+
+    return;
+  }
+
+  getComputedWidth(smId: string, stateId: string, stateType: StateType) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const state = sm[stateType][stateId];
+
+    let width = state.dimensions.width / this.model.data.scale;
+
+    const children = this.getEachObjectByParentId(smId, stateId);
+
+    if (stateType === 'states' && [...Object.values(children)].length !== 0) {
+      const rightChildren = this.getChildren(children);
+      if (!rightChildren) throw Error('NO RIGHT CHILDREN');
+      let rightChildrenId = rightChildren[0];
+      let rightChildrenType = rightChildren[1];
+      for (const childrenType in Object.keys(children)) {
+        for (const childId in children[childrenType]) {
+          const x = this.getComputedPosition(smId, childId, childrenType as StateType).x;
+          const width = this.getComputedWidth(smId, childId, childrenType as StateType);
+          if (
+            x + width >
+            this.getComputedPosition(smId, rightChildrenId, rightChildrenType).x +
+              this.getComputedWidth(smId, rightChildrenId, rightChildrenType)
+          ) {
+            rightChildrenId = childId;
+            rightChildrenType = childrenType as StateType;
+          }
+        }
+      }
+
+      const x = this.getComputedPosition(smId, stateId, stateType).x;
+      const cx = this.getComputedPosition(smId, rightChildrenId, rightChildrenType).x;
+
+      width = Math.max(
+        width,
+        cx +
+          this.getComputedDimensions(smId, rightChildrenId, rightChildrenType).width -
+          x +
+          CHILDREN_PADDING / this.model.data.scale
+      );
+    }
+
+    return width;
+  }
+
+  private linkFinalState(smId: string, stateId: string, parentId: string) {
+    const state = this.model.data.elements.stateMachines[smId].finalStates[stateId];
+    const parent = this.model.data.elements.stateMachines[smId].states[parentId];
+    if (!state || !parent) return;
+
+    this.model.linkFinalState(smId, stateId, parentId);
+
+    this.emit('linkFinalState', { smId, childId: stateId, parentId });
+  }
+
+  createFinalState(params: CreateFinalStateParams, canUndo = true) {
+    const { smId, parentId, linkByPoint = true } = params;
+
+    // Проверка на то что в скоупе уже есть конечное состояние
+    // Страшно, очень страшно
+    const gotParent = parentId
+      ? this.model.data.elements.stateMachines[smId].states[parentId]
+      : null;
+    const computedParent = linkByPoint ? this.getPossibleParentState(smId, params.position) : null;
+    if (!params.id) return;
+    const siblings = this.getSiblings(params.id, parentId, 'finalStates');
+    if (siblings.length) return;
+
+    const id = this.model.createFinalState(params);
+    const state = this.model.data.elements.stateMachines[smId].finalStates[id];
+    // emit создание final state
+    // const state = new FinalState(this.app, id);
+
+    // this.data.finalStates.set(id, state);
+
+    // this.view.children.add(state, Layer.FinalStates);
+
+    if (gotParent && parentId) {
+      this.linkFinalState(smId, id, parentId);
+    } else if (linkByPoint && computedParent) {
+      const [parentId, parentItem] = computedParent;
+      if (!parentId || !parentId) return;
+      const parentCompoundPosition = this.compoundStatePosition(smId, parentId, 'states');
+      const newPosition = {
+        x: state.position.x - parentCompoundPosition.x,
+        y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
+      };
+
+      this.linkFinalState(smId, id, parentId);
+      this.model.changeFinalStatePosition(smId, id, newPosition);
+      // emit change Final position
+    }
+
+    // this.watch(state);
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createFinalState',
+        args: { ...params, ...state, newStateId: id },
+        numberOfConnectedActions: 0,
+      });
+    }
+
+    // this.view.isDirty = true;
+
+    return state;
   }
 
   deleteSelected = () => {

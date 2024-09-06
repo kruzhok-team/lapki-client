@@ -125,7 +125,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const button = [
     {
-      name: 'Показать команды компиляции',
+      name: 'Показать журнал компиляции',
       handler: handleAddStdoutTab,
       disabled: compilerData?.commands.length === 0 || compilerData?.commands === undefined,
     },

@@ -40,7 +40,10 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         ))}
       </div>
 
-      <div>{selectedPlatform?.description || 'Пока что нет описания'}</div>
+      <div className={twMerge(selectedPlatform?.description ?? 'opacity-70')}>
+        {selectedPlatform?.description ||
+          'Для начала работы выберите платформу из списка слева. Платформа определяет, для чего создаётся схема и с помощью каких элементов.'}
+      </div>
     </div>
   );
 };

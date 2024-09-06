@@ -214,6 +214,7 @@ function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: str
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
     const [isVisual, events] = actionsToEventData(rawState.actions);
+    // FIXME: здесь нужно пробросить предупреждение о переходе в тестовый режим
     if (!isVisual) {
       visual = false;
     }
@@ -252,6 +253,7 @@ function actionsToEventData(
     if (action.action) {
       const parsedActions = parseActions(action.action);
       if (parsedActions && !Array.isArray(parsedActions)) {
+        // FIXME: здесь нужно пробросить предупреждение о переходе в тестовый режим
         visual = false;
       }
       if (parsedActions) {

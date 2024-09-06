@@ -100,7 +100,7 @@ function initArgList(args: string[]): ArgList {
   return argList;
 }
 
-const pictoRegex: RegExp = /.+\..+\(.*\)/;
+const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
 
 function parseAction(unproccessedAction: string): Action | undefined | string {
   if (unproccessedAction === '') {
@@ -208,11 +208,16 @@ function getChoices(rawChoices: { [id: string]: CGMLVertex }): {
   return choices;
 }
 
-function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: State } {
+function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: string]: State }] {
   const states: { [id: string]: State } = {};
+  let visual = true;
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
-    const events: EventData[] = actionsToEventData(rawState.actions);
+    const [isVisual, events] = actionsToEventData(rawState.actions);
+    // FIXME: здесь нужно пробросить предупреждение о переходе в тестовый режим
+    if (!isVisual) {
+      visual = false;
+    }
     states[rawStateId] = {
       // ПОМЕНЯТЬ ЦВЕТ
       color: rawState.color ?? '#FFFFFF',
@@ -229,11 +234,14 @@ function getStates(rawStates: { [id: string]: CGMLState }): { [id: string]: Stat
       events: events,
     };
   }
-  return states;
+  return [visual, states];
 }
 
-function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>): EventData[] {
+function actionsToEventData(
+  rawActions: Array<CGMLAction | CGMLTransitionAction>
+): [boolean, EventData[]] {
   const eventDataArr: EventData[] = [];
+  let visual = true;
   for (const action of rawActions) {
     const eventData: EventData = {
       trigger: {
@@ -244,6 +252,10 @@ function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>
     };
     if (action.action) {
       const parsedActions = parseActions(action.action);
+      if (parsedActions && !Array.isArray(parsedActions)) {
+        // FIXME: здесь нужно пробросить предупреждение о переходе в тестовый режим
+        visual = false;
+      }
       if (parsedActions) {
         eventData.do = parsedActions;
       }
@@ -259,13 +271,14 @@ function actionsToEventData(rawActions: Array<CGMLAction | CGMLTransitionAction>
     }
     eventDataArr.push(eventData);
   }
-  return eventDataArr;
+  return [visual, eventDataArr];
 }
 
 function getTransitions(
   rawTransitions: Record<string, CGMLTransition>
-): Record<string, Transition> {
+): [boolean, Record<string, Transition>] {
   const transitions: Record<string, Transition> = {};
+  let visual = true;
   for (const id in rawTransitions) {
     const rawTransition = rawTransitions[id];
     if (rawTransition.actions.length == 0) {
@@ -277,20 +290,23 @@ function getTransitions(
       continue;
     }
     // В данный момент поддерживается только один триггер на переход
-    const eventData = actionsToEventData(rawTransition.actions)[0];
+    const [isVisual, eventData] = actionsToEventData(rawTransition.actions);
+    if (!isVisual) {
+      visual = isVisual;
+    }
     transitions[id] = {
       sourceId: rawTransition.source,
       targetId: rawTransition.target,
       color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
-        trigger: eventData.trigger,
-        do: eventData.do,
-        condition: eventData.condition,
+        trigger: eventData[0].trigger,
+        do: eventData[0].do,
+        condition: eventData[0].condition,
       },
     };
   }
-  return transitions;
+  return [visual, transitions];
 }
 
 function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
@@ -427,12 +443,16 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   return components;
 }
 
-function getVisualFlag(rawMeta: CGMLMeta, platformVisual: boolean): boolean {
+function getVisualFlag(
+  rawMeta: CGMLMeta,
+  platformVisual: boolean,
+  computedValue: boolean // Значение, которое выдал парсер после парсинга схемы
+): boolean {
   const visual: boolean | undefined = rawMeta.values['lapkiVisual']
     ? rawMeta.values['lapkiVisual'] === 'true'
     : undefined;
   if (visual === undefined) {
-    return platformVisual;
+    return platformVisual && computedValue;
   }
   if (visual && !platformVisual) {
     throw new Error(
@@ -464,6 +484,7 @@ export function importGraphml(
     if (!isPlatformAvailable(rawElements.platform)) {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
+
     // TODO: добавить в платформу флаг для статических компонентов
     const platform: Platform | undefined = getPlatform(elements.platform);
     if (platform === undefined) {
@@ -478,8 +499,10 @@ export function importGraphml(
     elements.initialStates = getInitialStates(sm.initialStates);
     elements.finalStates = getFinals(sm.finals);
     elements.notes = sm.notes;
-    elements.states = getStates(sm.states);
-    elements.transitions = getTransitions(sm.transitions);
+    const [stateVisual, states] = getStates(sm.states);
+    elements.states = states;
+    const [transitionVisual, transitions] = getTransitions(sm.transitions);
+    elements.transitions = transitions;
     elements.states = labelStateParameters(
       elements.states,
       platform.components,
@@ -492,7 +515,11 @@ export function importGraphml(
       platform.components,
       elements.components
     );
-    elements.visual = getVisualFlag(rawElements.meta, platform.visual);
+    elements.visual = getVisualFlag(
+      rawElements.meta,
+      platform.visual,
+      stateVisual && transitionVisual
+    );
 
     validateElements(elements, platform);
     return elements;

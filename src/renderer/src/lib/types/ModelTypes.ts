@@ -9,7 +9,11 @@ import {
   ChoiceState as ChoiceStateData,
   Component as ComponentData,
   StateMachine,
+  Action,
+  Event,
 } from '@renderer/types/diagram';
+
+import { EventSelection } from '../drawable';
 
 export const emptyEditorData = () => ({
   canvas: {} as { [id: string]: EditorStatus },
@@ -118,6 +122,34 @@ export type ChangePosition = {
   id: string;
   startPosition?: Point;
   endPosition: Point;
+};
+
+export type ChangeEventParams = {
+  smId: string;
+  stateId: string;
+  event: EventSelection;
+  newValue: Event | Action;
+  canUndo?: boolean;
+};
+
+export type DeleteEventParams = {
+  smId: string;
+  stateId: string;
+  event: EventSelection;
+};
+
+export type CreateEventActionParams = {
+  smId: string;
+  stateId: string;
+  event: EventSelection;
+  value: Action;
+};
+
+export type CreateEventParams = {
+  smId: string;
+  stateId: string;
+  eventData: EventData;
+  eventIdx?: number;
 };
 
 export type CreateComponentParams = ComponentData & {

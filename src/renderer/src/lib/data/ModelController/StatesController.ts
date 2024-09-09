@@ -22,12 +22,16 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
+  ChangeEventParams,
   ChangePosition,
   ChangeStateEventsParams,
   CreateChoiceStateParams,
+  CreateEventActionParams,
+  CreateEventParams,
   CreateFinalStateParams,
   CreateStateParams,
   DeleteDrawableParams,
+  DeleteEventParams,
 } from '@renderer/lib/types/ModelTypes';
 import { Action, Event, EventData } from '@renderer/types/diagram';
 
@@ -395,22 +399,20 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
+  createEvent(args: CreateEventParams) {
+    const { stateId } = args;
     const state = this.data.states.get(stateId);
     if (!state) return;
-
-    this.app.controller.model.createEvent(stateId, eventData, eventIdx);
 
     state.updateEventBox();
 
     this.view.isDirty = true;
   }
 
-  createEventAction(stateId: string, event: EventSelection, value: Action) {
+  createEventAction(args: CreateEventActionParams) {
+    const { stateId } = args;
     const state = this.data.states.get(stateId);
     if (!state) return;
-
-    this.app.controller.model.createEventAction(stateId, event, value);
 
     state.updateEventBox();
 
@@ -418,35 +420,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   // Редактирование события в состояниях
-  changeEvent(stateId: string, event: EventSelection, newValue: Event | Action, canUndo = true) {
-    const state = this.data.states.get(stateId);
+  changeEvent(args: ChangeEventParams) {
+    const state = this.data.states.get(args.stateId);
     if (!state) return;
-
-    const { eventIdx, actionIdx } = event;
-
-    if (actionIdx !== null) {
-      const prevValue = state.data.events[eventIdx].do[actionIdx];
-
-      this.app.controller.model.changeEventAction(stateId, event, newValue);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'changeEventAction',
-          args: { stateId, event, newValue, prevValue },
-        });
-      }
-    } else {
-      const prevValue = state.data.events[eventIdx].trigger;
-
-      this.app.controller.model.changeEvent(stateId, eventIdx, newValue);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'changeEvent',
-          args: { stateId, event, newValue, prevValue },
-        });
-      }
-    }
 
     state.updateEventBox();
 
@@ -455,40 +431,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в состоянии(модалка)
-  deleteEvent(stateId: string, event: EventSelection, canUndo = true) {
-    const state = this.data.states.get(stateId);
+  deleteEvent(args: DeleteEventParams) {
+    const state = this.data.states.get(args.stateId);
     if (!state) return;
-
-    const { eventIdx, actionIdx } = event;
-
-    if (actionIdx !== null) {
-      // Проверяем если действие в событие последнее то надо удалить всё событие
-      if (state.data.events[eventIdx].do.length === 1) {
-        return this.deleteEvent(stateId, { eventIdx, actionIdx: null });
-      }
-
-      const prevValue = state.data.events[eventIdx].do[actionIdx];
-
-      this.app.controller.model.deleteEventAction(stateId, event);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'deleteEventAction',
-          args: { stateId, event, prevValue },
-        });
-      }
-    } else {
-      const prevValue = state.data.events[eventIdx];
-
-      this.app.controller.model.deleteEvent(stateId, eventIdx);
-
-      if (canUndo) {
-        this.history.do({
-          type: 'deleteEvent',
-          args: { stateId, eventIdx, prevValue },
-        });
-      }
-    }
 
     state.updateEventBox();
 
@@ -518,13 +463,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const y = e.event.y - drawBounds.y;
     const x = e.event.x - drawBounds.x;
 
-    if (y <= titleHeight && x >= drawBounds.width - 25 / this.app.controller.model.data.scale) {
+    if (y <= titleHeight && x >= drawBounds.width - 25 / this.controller.scale) {
       this.emit('changeStateName', state);
     }
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    this.controller.selectState(state.id);
+    // Пустое название машины состояний - заглушка
+    this.controller.selectState({ smId: '', id: state.id });
 
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
@@ -562,7 +508,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
-    this.controller.selectState(state.id);
+    this.controller.selectState({ smId: '', id: state.id });
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,
@@ -593,7 +539,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleLongPress = (state: State) => {
     if (!state.data.parentId) return;
 
-    this.unlinkState({ id: state.id });
+    this.unlinkState({ smId: '', id: state.id });
   };
 
   handleDrag: DragHandler = throttle<DragHandler>((state, e) => {
@@ -616,26 +562,30 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     if (this.dragInfo && state instanceof State) {
-      this.linkState({ parentId: this.dragInfo.parentId, childId: this.dragInfo.childId });
+      this.linkState({
+        smId: '',
+        parentId: this.dragInfo.parentId,
+        childId: this.dragInfo.childId,
+      });
       this.dragInfo = null;
       return;
     }
 
-    this.changeStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+    this.changeStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   };
 
   handleInitialStateDragEnd(
     state: InitialState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) {
-    this.changeInitialStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+    this.changeInitialStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   }
 
   handleFinalStateDragEnd(
     state: InitialState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) {
-    this.changeFinalStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+    this.changeFinalStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   }
 
   handleFinalStateContextMenu = (state: FinalState, e: { event: MyMouseEvent }) => {
@@ -646,18 +596,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleChoiceStateMouseDown = (state: ChoiceState) => {
-    this.controller.selectChoiceState(state.id);
+    this.controller.selectChoice({ smId: '', id: state.id });
   };
 
   handleChoiceStateDragEnd(
     state: ChoiceState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) {
-    this.changeChoiceStatePosition(state.id, e.dragStartPosition, e.dragEndPosition);
+    this.changeChoiceStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   }
 
   handleChoiceStateContextMenu = (state: ChoiceState, e: { event: MyMouseEvent }) => {
-    this.controller.selectChoiceState(state.id);
+    this.controller.selectChoice({ smId: '', id: state.id });
     this.emit('choiceStateContextMenu', {
       state,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },

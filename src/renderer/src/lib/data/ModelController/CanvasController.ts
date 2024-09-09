@@ -4,6 +4,7 @@ import {
   AddDragendStateSig,
   CCreateInitialStateParams,
   ChangeComponentPosition,
+  ChangeEventParams,
   ChangePosition,
   ChangeSelectionParams,
   ChangeStateEventsParams,
@@ -11,11 +12,14 @@ import {
   ChangeTransitionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
+  CreateEventActionParams,
+  CreateEventParams,
   CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
   DeleteDrawableParams,
+  DeleteEventParams,
   EditComponentParams,
   Layer,
   LinkStateParams,
@@ -76,6 +80,12 @@ export type CanvasControllerEvents = {
   changeComponentPosition: ChangeComponentPosition;
   changeChoicePosition: ChangePosition;
 
+  createEvent: CreateEventParams;
+  createEventAction: CreateEventActionParams;
+  changeEvent: ChangeEventParams;
+  changeEventAction: ChangeEventParams;
+  deleteEvent: DeleteEventParams;
+
   selectNote: SelectDrawable;
   selectState: SelectDrawable;
   selectComponent: SelectDrawable;
@@ -84,7 +94,9 @@ export type CanvasControllerEvents = {
   deleteSelected: string;
 
   isMounted: SetMountedStatusParams;
+  changeScale: number;
   changeStateSelection: ChangeSelectionParams;
+
   changeChoiceSelection: ChangeSelectionParams;
   changeComponentSelection: ChangeSelectionParams;
   changeNoteSelection: ChangeSelectionParams;
@@ -99,6 +111,7 @@ export type CanvasControllerEvents = {
   changeStateEvents: ChangeStateEventsParams;
   changeStateName: ChangeStateNameParams;
   changeFinalStatePosition: ChangePosition;
+  deleteEventAction: DeleteEventParams;
 };
 
 export type CanvasData = {
@@ -117,6 +130,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   canvasData: CanvasData;
   stateMachinesSub: { [id: string]: CanvasSubscribeAttribute[] } = {};
   id: string;
+  scale = 1;
 
   constructor(id: string, app: CanvasEditor, canvasData: CanvasData) {
     super();
@@ -196,6 +210,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('changeStateEvents', this.bindHelper('state', this.states.changeStateEvents));
         this.on('changeStateName', this.bindHelper('state', this.states.changeStateName));
         this.on('changeStatePosition', this.bindHelper('state', this.states.changeStatePosition));
+        this.on('createEvent', this.bindHelper('state', this.states.createEvent));
+        this.on('createEventAction', this.bindHelper('state', this.states.createEventAction));
+        this.on('changeEvent', this.bindHelper('state', this.states.changeEvent));
+        this.on('changeEventAction', this.bindHelper('state', this.states.changeEvent));
+        this.on('deleteEventAction', this.bindHelper('state', this.states.deleteEvent));
         break;
       case 'initialState':
         this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));
@@ -322,7 +341,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       if (!state.isSelected) return;
 
       if (state.eventBox.selection) {
-        this.states.deleteEvent(state.id, state.eventBox.selection);
+        this.states.deleteEvent({ smId, stateId: state.id, event: state.eventBox.selection });
         state.eventBox.selection = undefined;
         return;
       }
@@ -480,6 +499,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.on('initPlatform', this.initPlatform);
     this.on('initEvents', this.transitions.initEvents);
     this.on('deleteSelected', this.deleteSelected);
+    this.on('changeScale', (value) => {
+      this.scale = value;
+    });
   }
 
   private linkState(args: LinkStateParams) {

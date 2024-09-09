@@ -41,7 +41,11 @@ export class EditorModel {
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   serializer = new Serializer(this);
 
-  constructor(private initPlatform: () => void, private resetEditor: () => void) {}
+  constructor(
+    private initPlatform: () => void,
+    private resetEditor: () => void,
+    private scaleEmitter: (scale: number) => void
+  ) {}
 
   init(basename: string | null, name: string, elements: Elements) {
     this.triggerDataUpdate('canvas');
@@ -483,33 +487,23 @@ export class EditorModel {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
-    // const event = state.events.find(
-    //   (value, id) =>
-    //     eventIdx !== id &&
-    //     newValue.component === value.trigger.component &&
-    //     newValue.method === value.trigger.method &&
-    //     undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    // );
-
     const event = state.events[eventIdx];
 
     if (!event) return false;
 
     event.trigger = newValue;
 
-    // if (trueTab === undefined) {
-    //   state.events[eventIdx].trigger = newValue;
-    // } else {
-    // event.do = [...event.do, ...state.events[eventIdx].do];
-    // state.events.splice(eventIdx, 1);
-    // }
-
     this.triggerDataUpdate('elements.stateMachines.states');
 
     return true;
   }
 
-  changeEventAction(smId: string, stateId: string, event: EventSelection, newValue: Action) {
+  changeEventAction(
+    smId: string,
+    stateId: string,
+    event: EventSelection,
+    newValue: Event | Action
+  ) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
@@ -725,9 +719,8 @@ export class EditorModel {
 
   setScale(value: number) {
     this.data.scale = value;
-
     this.triggerDataUpdate('scale');
-
+    this.scaleEmitter(value);
     return true;
   }
 

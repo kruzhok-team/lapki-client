@@ -18,14 +18,18 @@ import {
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
 import {
+  ChangeEventParams,
   ChangeStateEventsParams,
   CreateChoiceStateParams,
   CreateComponentParams,
+  CreateEventActionParams,
+  CreateEventParams,
   CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
   DeleteDrawableParams,
+  DeleteEventParams,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
 import { isPointInRectangle } from '@renderer/lib/utils';
@@ -79,6 +83,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     () => {
       this.loadData();
       this.history.clear();
+    },
+    (scale: number) => {
+      this.emit('changeScale', scale);
     }
   );
   files = new FilesManager(this);
@@ -1190,6 +1197,98 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   private isNote(value): value is Note {
     return (value as Note).text !== undefined;
+  }
+
+  createEvent(args: CreateEventParams) {
+    const { stateId, smId, eventData, eventIdx } = args;
+    const state = this.model.data.elements.stateMachines[smId].states[stateId];
+    if (!state) return;
+
+    this.model.createEvent(smId, stateId, eventData, eventIdx);
+
+    this.emit('createEvent', args);
+  }
+
+  createEventAction(args: CreateEventActionParams) {
+    const { stateId, value, event, smId } = args;
+    const state = this.model.data.elements.stateMachines[smId].states[stateId];
+    if (!state) return;
+
+    this.model.createEventAction(smId, stateId, event, value);
+    this.emit('createEventAction', args);
+  }
+
+  // Редактирование события в состояниях
+  changeEvent(args: ChangeEventParams) {
+    const { stateId, smId, event, newValue, canUndo = true } = args;
+    const state = this.model.data.elements.stateMachines[smId].states[stateId];
+    if (!state) return;
+
+    const { eventIdx, actionIdx } = event;
+
+    if (actionIdx !== null) {
+      const prevValue = state.events[eventIdx].do[actionIdx];
+
+      this.model.changeEventAction(smId, stateId, event, newValue);
+      this.emit('changeEventAction', { smId, stateId, event, newValue });
+
+      if (canUndo) {
+        this.history.do({
+          type: 'changeEventAction',
+          args: { stateId, event, newValue, prevValue },
+        });
+      }
+    } else {
+      const prevValue = state.events[eventIdx].trigger;
+
+      this.model.changeEvent(smId, stateId, eventIdx, newValue);
+      this.emit('changeEvent', { smId, stateId, event, newValue });
+      if (canUndo) {
+        this.history.do({
+          type: 'changeEvent',
+          args: { stateId, event, newValue, prevValue },
+        });
+      }
+    }
+  }
+
+  // Удаление события в состояниях
+  //TODO показывать предупреждение при удалении события в состоянии(модалка)
+  deleteEvent(args: DeleteEventParams, canUndo = true) {
+    const { stateId, event, smId } = args;
+    const state = this.model.data.elements.stateMachines[smId].states[stateId];
+    if (!state) return;
+
+    const { eventIdx, actionIdx } = event;
+
+    if (actionIdx !== null) {
+      // Проверяем если действие в событие последнее то надо удалить всё событие
+      if (state.events[eventIdx].do.length === 1) {
+        return this.deleteEvent({ stateId, smId, event: { eventIdx, actionIdx: null } });
+      }
+
+      const prevValue = state.events[eventIdx].do[actionIdx];
+
+      this.model.deleteEventAction(smId, stateId, event);
+      this.emit('deleteEventAction', { smId, stateId, event });
+      if (canUndo) {
+        this.history.do({
+          type: 'deleteEventAction',
+          args: { stateId, event, prevValue },
+        });
+      }
+    } else {
+      const prevValue = state.events[eventIdx];
+
+      this.model.deleteEvent(smId, stateId, eventIdx);
+      this.emit('deleteEvent', { smId, stateId, event });
+      if (canUndo) {
+        this.history.do({
+          type: 'deleteEvent',
+          args: { stateId, eventIdx, prevValue },
+        });
+      }
+    }
   }
 
   copySelected = () => {

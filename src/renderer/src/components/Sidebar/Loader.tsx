@@ -381,6 +381,75 @@ export const Loader: React.FC<FlasherProps> = ({
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
+  const deviceInfoDisplay = (device: Device | undefined) => {
+    if (!device) return;
+    if (Flasher.isMSDevice(device)) {
+      return (
+        <div>
+          <div className="flex items-center">{device.name}</div>
+          <p>Серийный номер: {device.serialID}</p>
+          <p>Порт загрузчика: {device.portName}</p>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <div className="flex items-center">{device.name}</div>
+          <p>Серийный номер: {device.serialID}</p>
+          <p>Порт: {device.portName}</p>
+          <p>Контроллер: {device.controller}</p>
+          <p>Программатор: {device.programmer}</p>
+        </div>
+      );
+    }
+  };
+  const buttonsDisplay = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    if (!curDevice || !Flasher.isMSDevice(curDevice)) {
+      return (
+        <div>
+          <div className="flex justify-between gap-2">
+            <button
+              className="btn-primary mb-2 w-full"
+              onClick={handleFlash}
+              disabled={flashButtonDisabled()}
+            >
+              Загрузить
+            </button>
+            <button
+              className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
+              onClick={handleFileChoose}
+              disabled={isFlashing || avrdudeBlock}
+            >
+              {flasherFile ? '✖' : '…'}
+            </button>
+          </div>
+          {flasherFile ? (
+            <p className="mb-2 rounded bg-primaryActive text-white">
+              из файла <span className="font-medium">{flasherFile}</span>
+            </p>
+          ) : (
+            ''
+          )}
+          <button
+            className="btn-primary mb-2 w-full"
+            onClick={handleAddAvrdudeTab}
+            disabled={flashResult === undefined}
+          >
+            Результат прошивки
+          </button>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
+            Менеджер МС-ТЮК
+          </button>
+        </div>
+      );
+    }
+  };
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -451,54 +520,18 @@ export const Loader: React.FC<FlasherProps> = ({
         <div className="mb-2 h-64 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
           {[...devices.keys()].map((key) => (
             <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
-              <div className="flex items-center">{devices.get(key)?.name}</div>
-              <p>Серийный номер: {devices.get(key)?.serialID}</p>
-              <p>Порт: {devices.get(key)?.portName}</p>
-              <p>Контроллер: {devices.get(key)?.controller}</p>
-              <p>Программатор: {devices.get(key)?.programmer}</p>
+              {deviceInfoDisplay(devices.get(key))}
             </div>
           ))}
         </div>
         {avrdudeCheck()}
-        <div className="flex justify-between gap-2">
-          <button
-            className="btn-primary mb-2 w-full"
-            onClick={handleFlash}
-            disabled={flashButtonDisabled()}
-          >
-            Загрузить
-          </button>
-          <button
-            className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
-            onClick={handleFileChoose}
-            disabled={isFlashing || avrdudeBlock}
-          >
-            {flasherFile ? '✖' : '…'}
-          </button>
-        </div>
-        {flasherFile ? (
-          <p className="mb-2 rounded bg-primaryActive text-white">
-            из файла <span className="font-medium">{flasherFile}</span>
-          </p>
-        ) : (
-          ''
-        )}
-        <button
-          className="btn-primary mb-2 w-full"
-          onClick={handleAddAvrdudeTab}
-          disabled={flashResult === undefined}
-        >
-          Результат прошивки
-        </button>
+        {buttonsDisplay()}
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddSerialMonitorTab}
           disabled={currentDeviceID == undefined}
         >
           Монитор порта
-        </button>
-        <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
-          Менеджер МС-ТЮК
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>

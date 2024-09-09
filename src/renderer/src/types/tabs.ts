@@ -1,3 +1,5 @@
+import { Device } from './FlasherTypes';
+
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
@@ -17,4 +19,10 @@ export interface SerialMonitorTab {
   name: string;
 }
 
-export type Tab = EditorTab | CodeTab | SerialMonitorTab;
+export interface ManagerMSTab {
+  type: 'managerMS';
+  name: string;
+  device: Device | undefined;
+}
+
+export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

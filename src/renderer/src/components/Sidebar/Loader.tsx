@@ -213,6 +213,17 @@ export const Loader: React.FC<FlasherProps> = ({
     });
   };
 
+  const handleAddManagerMSTab = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    // setCurrentManagerMSDevic(curDevice);
+    closeTab('Менеджер МС-ТЮК');
+    openTab({
+      type: 'managerMS',
+      name: 'Менеджер МС-ТЮК',
+      device: curDevice,
+    });
+  };
+
   useEffect(() => {
     window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
       //console.log('hasAvrdude', has);
@@ -270,10 +281,12 @@ export const Loader: React.FC<FlasherProps> = ({
   }, [connectionStatus, setSerialConnectionStatus]);
 
   useEffect(() => {
-    if (!serialMonitorDevice) return;
-    if (!devices.get(serialMonitorDevice.deviceID)) {
+    if (serialMonitorDevice && !devices.get(serialMonitorDevice.deviceID)) {
       SerialMonitor.setDevice(undefined);
     }
+    // if (currentManagerMSDevice && !devices.get(currentManagerMSDevice.deviceID)) {
+    //   setCurrentManagerMSDevic(undefined);
+    // }
   }, [devices]);
 
   const display = () => {
@@ -483,6 +496,9 @@ export const Loader: React.FC<FlasherProps> = ({
           disabled={currentDeviceID == undefined}
         >
           Монитор порта
+        </button>
+        <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
+          Менеджер МС-ТЮК
         </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>

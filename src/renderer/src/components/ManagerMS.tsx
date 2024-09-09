@@ -1,11 +1,11 @@
 /*
 Окно менеджера для МС-ТЮК
 */
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { Device } from '@renderer/types/FlasherTypes';
 
-import { Select, SelectOption, Switch, TextField, TextInput } from './UI';
+import { TextField } from './UI';
 
 export interface ManagerMSProps {
   device: Device | undefined;

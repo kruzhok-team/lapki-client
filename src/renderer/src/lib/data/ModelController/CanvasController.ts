@@ -5,6 +5,7 @@ import {
   CCreateInitialStateParams,
   ChangeComponentPosition,
   ChangeEventParams,
+  ChangeNoteText,
   ChangePosition,
   ChangeSelectionParams,
   ChangeStateEventsParams,
@@ -86,6 +87,8 @@ export type CanvasControllerEvents = {
   changeEventAction: ChangeEventParams;
   deleteEvent: DeleteEventParams;
 
+  changeNoteText: ChangeNoteText;
+  changeNotePosition: ChangePosition;
   selectNote: SelectDrawable;
   selectState: SelectDrawable;
   selectComponent: SelectDrawable;
@@ -246,6 +249,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('createNote', this.bindHelper('note', this.notes.createNote));
         this.on('deleteNote', this.bindHelper('note', this.notes.deleteNote));
         this.on('selectNote', this.bindHelper('note', this.selectNote));
+        this.on('changeNoteText', this.bindHelper('note', this.notes.changeNoteText));
+        this.on('changeNotePosition', this.bindHelper('note', this.notes.changeNotePosition));
         break;
       case 'component':
         this.on('createComponent', this.bindHelper('component', this.createComponent));

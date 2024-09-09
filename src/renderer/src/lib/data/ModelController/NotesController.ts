@@ -3,7 +3,12 @@ import { EventEmitter } from '@renderer/lib/common';
 import { Note } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
-import { CreateNoteParams, DeleteDrawableParams } from '@renderer/lib/types/ModelTypes';
+import {
+  ChangeNoteText,
+  ChangePosition,
+  CreateNoteParams,
+  DeleteDrawableParams,
+} from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 
 interface NotesControllerEvents {
@@ -37,84 +42,42 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
-  createNote(params: CreateNoteParams, canUndo = true) {
-    const newNoteId = this.app.controller.model.createNote(params);
-    const note = new Note(this.app, newNoteId);
+  createNote(params: CreateNoteParams) {
+    const { id } = params;
+    if (!id) return;
+    const note = new Note(this.app, id);
 
-    this.items.set(newNoteId, note);
+    this.items.set(id, note);
     this.watch(note);
     this.view.children.add(note, Layer.Notes);
 
     this.view.isDirty = true;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createNote',
-        args: { id: newNoteId, params },
-      });
-    }
-
-    // return note;
   }
 
-  changeNoteText = (id: string, text: string, canUndo = true) => {
-    const note = this.items.get(id);
+  changeNoteText = (args: ChangeNoteText) => {
+    const note = this.items.get(args.id);
     if (!note) return;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'changeNoteText',
-        args: { id, text, prevText: note.data.text },
-      });
-    }
-
-    this.app.controller.model.changeNoteText(id, text);
     note.prepareText();
 
     this.view.isDirty = true;
   };
 
-  changeNotePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
-    const note = this.items.get(id);
+  changeNotePosition(args: ChangePosition) {
+    const note = this.items.get(args.id);
     if (!note) return;
-
-    if (canUndo) {
-      this.history.do({
-        type: 'changeNotePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.app.controller.model.changeNotePosition(id, endPosition);
 
     this.view.isDirty = true;
   }
 
-  deleteNote(args: DeleteDrawableParams, canUndo = true) {
+  deleteNote(args: DeleteDrawableParams) {
     const { id } = args;
     const note = this.items.get(id);
     if (!note) return;
 
-    let numberOfConnectedActions = 0;
-
-    // Удаляем зависимые переходы
-    this.controller.transitions.forEachByStateId(id, (transition) => {
-      this.controller.transitions.deleteTransition(transition.id, canUndo);
-      numberOfConnectedActions += 1;
-    });
-
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteNote',
-        args: { id, prevData: structuredClone(note.data) },
-        numberOfConnectedActions,
-      });
-    }
-
     this.view.children.remove(note, Layer.Notes);
     this.unwatch(note);
     this.items.delete(id);
-    this.app.controller.model.deleteNote(id);
 
     this.view.isDirty = true;
   }
@@ -137,7 +100,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleMouseDown = (note: Note) => {
-    this.controller.selectNote(note.id);
+    this.controller.selectNote({ smId: '', id: note.id });
   };
 
   handleDoubleClick = (note: Note) => {
@@ -145,7 +108,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
-    this.controller.selectNote(note.id);
+    this.controller.selectNote({ smId: '', id: note.id });
 
     this.emit('contextMenu', {
       note,
@@ -154,7 +117,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleDragEnd = (note: Note, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
-    this.changeNotePosition(note.id, e.dragStartPosition, e.dragEndPosition);
+    this.changeNotePosition({ smId: '', id: note.id, endPosition: e.dragEndPosition });
   };
 
   watch(note: Note) {

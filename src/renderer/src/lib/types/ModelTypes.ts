@@ -101,6 +101,12 @@ export interface CreateNoteParams {
   placeInCenter?: boolean;
 }
 
+export interface ChangeNoteText {
+  smId: string;
+  id: string;
+  text: string;
+}
+
 export interface ChangeStateEventsParams {
   smId: string;
   id: string;

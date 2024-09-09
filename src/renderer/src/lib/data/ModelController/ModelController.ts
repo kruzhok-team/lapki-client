@@ -19,6 +19,8 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import {
   ChangeEventParams,
+  ChangeNoteText,
+  ChangePosition,
   ChangeStateEventsParams,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -357,6 +359,65 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: args,
       });
     }
+  }
+
+  changeNoteText = (args: ChangeNoteText, canUndo = true) => {
+    const { id, smId, text } = args;
+    const note = this.model.data.elements.stateMachines[smId].notes[smId];
+    if (!note) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteText',
+        args: { id, text, prevText: note.text },
+      });
+    }
+
+    this.model.changeNoteText(smId, id, text);
+    this.emit('changeNoteText', args);
+  };
+
+  changeNotePosition(args: ChangePosition, canUndo = true) {
+    const { id, smId, startPosition, endPosition } = args;
+    const note = this.model.data.elements.stateMachines[smId].notes[smId];
+    if (!note) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNotePosition',
+        args: { id, startPosition: startPosition ?? { x: 0, y: 0 }, endPosition },
+      });
+    }
+
+    this.model.changeNotePosition(smId, id, endPosition);
+
+    this.emit('changeNotePosition', args);
+  }
+
+  deleteNote(args: DeleteDrawableParams, canUndo = true) {
+    const { id, smId } = args;
+    const note = this.model.data.elements.stateMachines[smId].notes[smId];
+    if (!note) return;
+
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
+    dependetTransitionsIds.forEach((transitionId) => {
+      this.deleteTransition({ smId, id: transitionId }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteNote',
+        args: { id, prevData: structuredClone(note) },
+        numberOfConnectedActions,
+      });
+    }
+
+    this.model.deleteNote(smId, id);
+    this.emit('deleteNote', args);
   }
 
   deleteTransition(args: DeleteDrawableParams, canUndo = true) {

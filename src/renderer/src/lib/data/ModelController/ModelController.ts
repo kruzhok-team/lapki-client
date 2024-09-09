@@ -19,6 +19,7 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import {
   ChangeStateEventsParams,
+  CreateChoiceStateParams,
   CreateComponentParams,
   CreateFinalStateParams,
   CreateNoteParams,
@@ -396,7 +397,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     smId: string,
     position: Point,
     exclude: string[] = []
-  ): [string, State] | [null, null] {
+  ): [string | null, State | null] {
     // назначаем родительское состояние по месту его создания
     let possibleParent: State | null = null;
     let possibleParentId: string | null = null;
@@ -982,6 +983,103 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('linkFinalState', { smId, childId: stateId, parentId });
   }
 
+  deleteFinalState(args: DeleteDrawableParams, canUndo = true) {
+    const { smId, id } = args;
+    const state = this.model.data.elements.stateMachines[smId].finalStates[id];
+    if (!state) return;
+
+    const parentId = state.parentId;
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
+    dependetTransitionsIds.forEach((transitionId) => {
+      this.deleteTransition({ smId, id: transitionId }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteFinalState',
+        args: { id, stateData: { ...structuredClone(state), parentId } },
+        numberOfConnectedActions,
+      });
+    }
+    this.model.deleteFinalState(smId, id); // Удаляем модель
+
+    this.emit('deleteFinal', args);
+  }
+
+  private linkChoiceState(smId: string, stateId: string, parentId: string) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const state = sm.choiceStates[stateId];
+    const parent = sm.choiceStates[parentId];
+    if (!state || !parent) return;
+
+    this.model.linkChoiceState(smId, stateId, parentId);
+    this.emit('linkChoiceState', { smId, childId: stateId, parentId });
+  }
+
+  createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
+    const { smId, parentId, position, linkByPoint = true } = params;
+
+    const id = this.model.createChoiceState(params);
+
+    this.emit('createChoice', params);
+    const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
+
+    if (parentId) {
+      this.linkChoiceState(smId, id, parentId);
+    } else if (linkByPoint) {
+      const [computedParentId, parentItem] = this.getPossibleParentState(smId, position);
+      if (!computedParentId || !parentItem) return;
+      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
+      if (parentItem) {
+        const newPosition = {
+          x: state.position.x - parentCompoundPosition.x,
+          y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
+        };
+        this.linkChoiceState(smId, id, computedParentId);
+        this.model.changeChoiceStatePosition(smId, id, newPosition);
+        this.emit('changeChoicePosition', { smId, id, endPosition: newPosition });
+      }
+    }
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createChoiceState',
+        args: { ...params, ...state, newStateId: id },
+        numberOfConnectedActions: 0,
+      });
+    }
+  }
+
+  deleteChoiceState(args: DeleteDrawableParams, canUndo = true) {
+    const { smId, id } = args;
+    const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
+    if (!state) return;
+
+    const parentId = state.parentId;
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
+    dependetTransitionsIds.forEach((transitionId) => {
+      this.deleteTransition({ smId, id: transitionId }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteChoiceState',
+        args: { id, stateData: { ...structuredClone(state), parentId } },
+        numberOfConnectedActions,
+      });
+    }
+    this.model.deleteChoiceState(smId, id); // Удаляем модель
+    this.emit('deleteChoice', args);
+  }
+
   createFinalState(params: CreateFinalStateParams, canUndo = true) {
     const { smId, parentId, linkByPoint = true } = params;
 
@@ -997,18 +1095,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     const id = this.model.createFinalState(params);
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
-    // emit создание final state
-    // const state = new FinalState(this.app, id);
-
-    // this.data.finalStates.set(id, state);
-
-    // this.view.children.add(state, Layer.FinalStates);
+    this.emit('createFinal', params);
 
     if (gotParent && parentId) {
       this.linkFinalState(smId, id, parentId);
     } else if (linkByPoint && computedParent) {
       const [parentId, parentItem] = computedParent;
-      if (!parentId || !parentId) return;
+      if (!parentId || !parentId || !parentItem) return;
       const parentCompoundPosition = this.compoundStatePosition(smId, parentId, 'states');
       const newPosition = {
         x: state.position.x - parentCompoundPosition.x,
@@ -1017,10 +1110,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       this.linkFinalState(smId, id, parentId);
       this.model.changeFinalStatePosition(smId, id, newPosition);
-      // emit change Final position
+      this.emit('changeFinalStatePosition', { smId, id, endPosition: newPosition });
     }
-
-    // this.watch(state);
 
     if (canUndo) {
       this.history.do({
@@ -1029,8 +1120,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         numberOfConnectedActions: 0,
       });
     }
-
-    // this.view.isDirty = true;
 
     return state;
   }

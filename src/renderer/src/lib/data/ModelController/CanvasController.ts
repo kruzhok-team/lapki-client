@@ -20,7 +20,6 @@ import {
   Layer,
   LinkStateParams,
   LinkTransitionParams,
-  Point,
   RenameComponentParams,
   SelectDrawable,
   SetMountedStatusParams,
@@ -75,6 +74,7 @@ export type CanvasControllerEvents = {
   editComponent: EditComponentParams;
   renameComponent: RenameComponentParams;
   changeComponentPosition: ChangeComponentPosition;
+  changeChoicePosition: ChangePosition;
 
   selectNote: SelectDrawable;
   selectState: SelectDrawable;
@@ -94,6 +94,7 @@ export type CanvasControllerEvents = {
   addDragendStateSig: AddDragendStateSig;
   linkState: LinkStateParams;
   linkFinalState: LinkStateParams;
+  linkChoiceState: LinkStateParams;
   unlinkState: UnlinkStateParams;
   changeStateEvents: ChangeStateEventsParams;
   changeStateName: ChangeStateNameParams;
@@ -216,6 +217,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('createChoice', this.bindHelper('choice', this.states.createChoiceState));
         this.on('deleteChoice', this.bindHelper('choice', this.states.deleteChoiceState));
         this.on('selectState', this.bindHelper('choice', this.selectChoice));
+        this.on('linkChoiceState', this.bindHelper('choice', this.states.linkChoiceState));
+        this.on(
+          'changeChoicePosition',
+          this.bindHelper('choice', this.states.changeChoiceStatePosition)
+        );
         break;
       case 'note':
         this.on('createNote', this.bindHelper('note', this.notes.createNote));

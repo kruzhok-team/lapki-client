@@ -255,29 +255,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  // private createInitialStateWithTransition(targetId: string, canUndo = true) {
-  // const state = this.createInitialState({ targetId }, canUndo);
-  // const target = this.data.states.get(targetId);
-  // if (!state || !target) return;
-
-  // this.controller.transitions.createTransition(
-  //   {
-  //     sourceId: state.id,
-  //     targetId: target.id,
-  //   },
-  //   canUndo
-  // );
-  // }
-  private deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
-    const transition = this.controller.transitions.getBySourceId(initialStateId);
-    const targetId = transition?.data.targetId;
-    if (!transition || !targetId) return;
-
-    this.controller.transitions.deleteTransition(smId, transition.id);
-
-    this.deleteInitialState({ id: initialStateId, targetId }, canUndo);
-  }
-
   createInitialState(params: CCreateInitialStateParams) {
     const { id, targetId } = params;
 
@@ -320,80 +297,29 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   }
 
-  createFinalState(params: CreateFinalStateParams, canUndo = true) {
-    const { smId, parentId, linkByPoint = true } = params;
-
-    // Проверка на то что в скоупе уже есть конечное состояние
-    // Страшно, очень страшно
-    const parent = parentId
-      ? this.data.states.get(parentId)
-      : linkByPoint
-      ? this.getPossibleParentState(params.position)
-      : null;
-    const siblings = this.getSiblings(params.id, parent?.id, 'finalStates');
-    if (siblings.length) return;
-
-    const id = this.app.controller.model.createFinalState(params);
-
+  createFinalState(params: CreateFinalStateParams) {
+    const { id } = params;
+    if (!id) return;
     const state = new FinalState(this.app, id);
 
     this.data.finalStates.set(id, state);
 
     this.view.children.add(state, Layer.FinalStates);
 
-    if (parentId) {
-      this.linkFinalState(smId, id, parentId);
-    } else if (linkByPoint && parent) {
-      const newPosition = {
-        x: state.data.position.x - parent.compoundPosition.x,
-        y: state.data.position.y - parent.compoundPosition.y - parent.data.dimensions.height,
-      };
-
-      this.linkFinalState(id, parent.id);
-      this.app.controller.model.changeFinalStatePosition(id, newPosition);
-    }
-
     this.watch(state);
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createFinalState',
-        args: { ...params, ...state.data, newStateId: id },
-        numberOfConnectedActions: 0,
-      });
-    }
-
     this.view.isDirty = true;
 
     return state;
   }
 
-  deleteFinalState(args: DeleteDrawableParams, canUndo = true) {
+  deleteFinalState(args: DeleteDrawableParams) {
     const { id } = args;
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
-    // const parentId = state.data.parentId;
-    // let numberOfConnectedActions = 0;
-
-    // Удаляем зависимые переходы
-    // this.controller.transitions.forEachByTargetId(id, (transition) => {
-    //   this.controller.transitions.deleteTransition(transition.id, canUndo);
-    //   numberOfConnectedActions += 1;
-    // });
-
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'deleteFinalState',
-    //     args: { id, stateData: { ...structuredClone(state.data), parentId } },
-    //     numberOfConnectedActions,
-    //   });
-    // }
-
     (state.parent || this.view).children.remove(state, Layer.FinalStates); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обработчик событий с вью
     this.data.finalStates.delete(id); // Удаляем само вью
-    // this.app.controller.model.deleteFinalState(id); // Удаляем модель
 
     this.view.isDirty = true;
   }
@@ -416,22 +342,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'changeFinalStatePosition',
-    //     args: { id, startPosition, endPosition },
-    //   });
-    // }
-
-    // this.app.controller.model.changeFinalStatePosition(id, endPosition);
-
     this.view.isDirty = true;
   }
 
-  createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
-    const { parentId, position, linkByPoint = true } = params;
-
-    const id = this.app.controller.model.createChoiceState(params);
+  createChoiceState(params: CreateChoiceStateParams) {
+    const { id } = params;
+    if (!id) return;
 
     const state = new ChoiceState(this.app, id);
 
@@ -439,85 +355,38 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.view.children.add(state, Layer.ChoiceStates);
 
-    if (parentId) {
-      this.linkChoiceState(id, parentId);
-    } else if (linkByPoint) {
-      const parent = this.getPossibleParentState(position);
-      if (parent) {
-        const newPosition = {
-          x: state.data.position.x - parent.compoundPosition.x,
-          y: state.data.position.y - parent.compoundPosition.y - parent.data.dimensions.height,
-        };
-        this.linkChoiceState(id, parent.id);
-        this.app.controller.model.changeChoiceStatePosition(id, newPosition);
-      }
-    }
-
     this.watch(state);
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createChoiceState',
-        args: { ...params, ...state.data, newStateId: id },
-        numberOfConnectedActions: 0,
-      });
-    }
 
     this.view.isDirty = true;
   }
 
-  deleteChoiceState(args: DeleteDrawableParams, canUndo = true) {
+  deleteChoiceState(args: DeleteDrawableParams) {
     const { id } = args;
     const state = this.data.choiceStates.get(id);
     if (!state) return;
 
-    const parentId = state.data.parentId;
-    let numberOfConnectedActions = 0;
-
-    // Удаляем зависимые переходы
-    this.controller.transitions.forEachByStateId(id, (transition) => {
-      this.controller.transitions.deleteTransition(transition.id, canUndo);
-      numberOfConnectedActions += 1;
-    });
-
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteChoiceState',
-        args: { id, stateData: { ...structuredClone(state.data), parentId } },
-        numberOfConnectedActions,
-      });
-    }
-
     (state.parent || this.view).children.remove(state, Layer.ChoiceStates); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обрабочик событий с вью
     this.data.choiceStates.delete(id); // Удаляем само вью
-    this.app.controller.model.deleteChoiceState(id); // Удаляем модель
 
     this.view.isDirty = true;
   }
 
-  changeChoiceStatePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
+  changeChoiceStatePosition(args: ChangePosition) {
+    const { id, endPosition } = args;
     const state = this.data.choiceStates.get(id);
     if (!state) return;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'changeChoiceStatePosition',
-        args: { id, startPosition, endPosition },
-      });
-    }
-
-    this.app.controller.model.changeChoiceStatePosition(id, endPosition);
+    state.position = endPosition;
 
     this.view.isDirty = true;
   }
 
-  private linkChoiceState(stateId: string, parentId: string) {
-    const state = this.data.choiceStates.get(stateId);
+  linkChoiceState(args: LinkStateParams) {
+    const { childId, parentId } = args;
+    const state = this.data.choiceStates.get(childId);
     const parent = this.data.states.get(parentId);
     if (!state || !parent) return;
-
-    this.app.controller.model.linkChoiceState(stateId, parentId);
 
     state.parent = parent;
     this.view.children.remove(state, Layer.ChoiceStates);

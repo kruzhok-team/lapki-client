@@ -116,7 +116,7 @@ export type ChangeStateMachineParams = CreateStateMachineParams;
 export type ChangePosition = {
   smId: string;
   id: string;
-  startPosition: Point;
+  startPosition?: Point;
   endPosition: Point;
 };
 

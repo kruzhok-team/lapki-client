@@ -104,6 +104,7 @@ export type CanvasControllerEvents = {
   changeComponentSelection: ChangeSelectionParams;
   changeNoteSelection: ChangeSelectionParams;
   changeTransitionSelection: ChangeSelectionParams;
+  changeTransitionPosition: ChangePosition;
 
   linkTransitions: LinkTransitionParams;
   addDragendStateSig: AddDragendStateSig;
@@ -272,6 +273,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeTransition',
           this.bindHelper('transition', this.transitions.changeTransition)
         );
+        this.on('changeTransitionPosition', this.transitions.changeTransitionPosition);
         this.on('selectTransition', this.bindHelper('transition', this.selectTransition));
         this.on('linkTransitions', this.bindHelper('transition', this.linkTransitions));
         break;

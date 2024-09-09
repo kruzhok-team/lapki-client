@@ -8,6 +8,11 @@ import {
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import {
+  State as DrawableState,
+  ChoiceState as DrawableChoiceState,
+  FinalState as DrawableFinalState,
+} from '@renderer/lib/drawable';
+import {
   CCreateInitialStateParams,
   CopyData,
   CopyType,
@@ -22,6 +27,7 @@ import {
   ChangeNoteText,
   ChangePosition,
   ChangeStateEventsParams,
+  ChangeTransitionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
@@ -46,7 +52,7 @@ import {
   FinalState,
 } from '@renderer/types/diagram';
 
-import { CanvasControllerEvents, CanvasSubscribeAttribute } from './CanvasController';
+import { CanvasControllerEvents } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
@@ -69,7 +75,12 @@ import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
-type ModelControllerEvents = Record<string, never> & CanvasControllerEvents;
+type ModelControllerEvents = CanvasControllerEvents & {
+  createTransitionFromController: {
+    source: DrawableState | DrawableChoiceState;
+    target: DrawableState | DrawableChoiceState | DrawableFinalState;
+  };
+};
 
 const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;
 type StateType = (typeof StateTypes)[number];
@@ -180,14 +191,69 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   }
 
-  createTransition(args: CreateTransitionParams, canUndo = true) {
-    const newId = this.model.createTransition(args);
+  changeTransition(args: ChangeTransitionParams, canUndo = true) {
+    const transition = this.model.data.elements.stateMachines[args.smId][args.id];
+    if (!transition) return;
 
-    this.emit('createTransition', { ...args, id: newId });
+    if (canUndo) {
+      this.history.do({
+        type: 'changeTransition',
+        args: { args, prevData: structuredClone(transition.data) },
+      });
+    }
+
+    this.emit('changeTransition', args);
+  }
+
+  changeTransitionPosition(args: ChangePosition, canUndo = true) {
+    const { smId, id, startPosition, endPosition } = args;
+
+    const transition = this.model.data.elements.stateMachines[args.smId][args.id];
+    if (!transition) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeTransitionPosition',
+        args: { id, startPosition: startPosition ?? { x: 0, y: 0 }, endPosition },
+      });
+    }
+
+    this.model.changeTransitionPosition(smId, id, endPosition);
+
+    this.emit('changeTransitionPosition', args);
+  }
+
+  createTransition(params: CreateTransitionParams, canUndo = true) {
+    const { sourceId, targetId, color, id: prevId, label, smId } = params;
+    const sm = this.model.data.elements.stateMachines[smId];
+    //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
+    const source = sm.states[sourceId] || sm.notes[sourceId];
+    const target = sm.states[targetId] || sm.notes[targetId] || sm.transitions[targetId];
+
+    if (!source || !target) return;
+
+    if (label && !label.position) {
+      label.position = {
+        x: (source.position.x + target.position.x) / 2,
+        y: (source.position.y + target.position.y) / 2,
+      };
+    }
+
+    // Создание данных
+    const newId = this.model.createTransition({
+      smId,
+      id: prevId,
+      sourceId,
+      targetId,
+      color,
+      label,
+    });
+
+    this.emit('createTransition', { ...params, id: newId });
     if (canUndo) {
       this.history.do({
         type: 'createTransition',
-        args: { id: newId, params: args },
+        args: { id: newId, params: params },
       });
     }
   }

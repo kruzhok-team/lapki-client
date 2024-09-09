@@ -1,4 +1,4 @@
-import { CanvasScheme } from '@renderer/lib/CanvasScheme';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
@@ -12,6 +12,7 @@ interface StateMachineEvents {
   contextMenu: { component: DrawableStateMachine; position: Point };
 }
 
+// TODO: Доделать
 /**
  * Контроллер {@link DrawableStateMachine|машин состояний}.
  * Обрабатывает события, связанные с ними.
@@ -19,16 +20,12 @@ interface StateMachineEvents {
 export class StateMachineController extends EventEmitter<StateMachineEvents> {
   items: Map<string, DrawableStateMachine> = new Map();
 
-  constructor(private app: CanvasScheme) {
+  constructor(private app: CanvasEditor) {
     super();
   }
 
   private get view() {
     return this.app.view;
-  }
-
-  private get history() {
-    return this.app.controller.history;
   }
 
   get = this.items.get.bind(this.items);
@@ -84,26 +81,19 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     return machineLayer.find((value) => value['id'] === sm) as DrawableStateMachine | undefined;
   }
 
-  // changeStateMachine(args: ChangeStateMachineParams) {
-  //   const component = this.items.get(args.id);
-  //   if (!component) {
-  //     throw new Error(`Изменение не существующей МС с идентификатором ${args.id}`);
-  //   }
-  // }
-
-  deleteStateMachine(args: DeleteStateMachineParams, canUndo = true) {
+  deleteStateMachine(args: DeleteStateMachineParams) {
     const sm = this.items.get(args.id);
     if (!sm) return;
 
-    const numberOfConnectedActions = 0;
+    // const numberOfConnectedActions = 0;
 
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteStateMachine',
-        args: { args, prevStateMachine: structuredClone(sm) },
-        numberOfConnectedActions,
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'deleteStateMachine',
+    //     args: { args, prevStateMachine: structuredClone(sm) },
+    //     numberOfConnectedActions,
+    //   });
+    // }
 
     sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);

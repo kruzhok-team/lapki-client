@@ -1710,4 +1710,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
   }
+
+  createTransitionFromController(args: {
+    source: DrawableState | DrawableChoiceState;
+    target: DrawableState | DrawableChoiceState | DrawableFinalState;
+  }) {
+    const sourceType = args.source instanceof DrawableState ? 'states' : 'choiceStates';
+
+    const targetType =
+      args.target instanceof DrawableState
+        ? 'states'
+        : args.target instanceof DrawableChoiceState
+        ? 'choiceStates'
+        : 'finalStates';
+    const sourceSm = this.getSmId(args.source.id, sourceType);
+    const targetSm = this.getSmId(args.target.id, targetType);
+
+    if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
+
+    this.model.createTransition({
+      smId: sourceSm,
+      sourceId: args.source.id,
+      targetId: args.target.id,
+    });
+  }
 }

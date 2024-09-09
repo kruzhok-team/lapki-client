@@ -35,7 +35,7 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
 
   const Icon = icons[type];
 
-  const parts = search ? title.split(new RegExp(`(${search})`, 'gi')) : [title];
+  const parts = search ? title.split(new RegExp(`(${search})`, 'gi')) : [title.toString()];
 
   return (
     <div className="group flex w-full items-center gap-2">

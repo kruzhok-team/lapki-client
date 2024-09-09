@@ -8,7 +8,7 @@ import { useSettings } from '@renderer/hooks';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
@@ -68,20 +68,20 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     await model.files.saveIntoFolder(compilerData!.source!);
   };
 
+  const commandsResultToStr = (compilerCommands: CompileCommandResult[]): string => {
+    let stdout = '';
+    compilerCommands.forEach((element) => {
+      stdout += `${element.command}\nreturn_code: ${element.return_code}\nstdout: ${element.stdout}\n stderr: ${element.stderr}\n\n`;
+    });
+
+    return stdout;
+  };
+
   const handleAddStdoutTab = () => {
     openTab({
       type: 'code',
-      name: 'stdout',
-      code: compilerData!.stdout ?? '',
-      language: 'txt',
-    });
-  };
-
-  const handleAddStderrTab = () => {
-    openTab({
-      type: 'code',
-      name: 'stderr',
-      code: compilerData!.stderr ?? '',
+      name: 'compilerLog',
+      code: commandsResultToStr(compilerData!.commands),
       language: 'txt',
     });
   };
@@ -125,34 +125,29 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const button = [
     {
-      name: 'Показать stderr',
-      handler: handleAddStderrTab,
-      disabled: compilerData?.stderr === undefined,
-    },
-    {
-      name: 'Показать stdout',
+      name: 'Показать журнал компиляции',
       handler: handleAddStdoutTab,
-      disabled: compilerData?.stdout === undefined,
+      disabled: compilerData?.commands.length === 0 || compilerData?.commands === undefined,
     },
     {
       name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
-      disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
+      disabled: compilerData?.binary === undefined || compilerData.binary.length === 0,
     },
     {
       name: 'Сохранить код',
       handler: handleSaveSourceIntoFolder,
-      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
+      disabled: compilerData?.source == undefined || compilerData?.source.length === 0,
     },
     {
       name: 'Показать код',
       handler: handleShowSource,
-      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
+      disabled: compilerData?.source == undefined || compilerData?.source.length === 0,
     },
     {
       name: 'Прошить...',
       handler: handleFlashButton,
-      disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
+      disabled: compilerData?.binary === undefined || compilerData.binary.length === 0,
     },
   ];
   const processing =

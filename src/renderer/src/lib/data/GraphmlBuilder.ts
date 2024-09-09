@@ -38,13 +38,14 @@ import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator
 
 import { ChoiceState } from '../drawable';
 
-function exportMeta(meta: Meta, platform: Platform): CGMLMeta {
+function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
   return {
     id: 'coreMeta',
     values: {
       ...meta,
       standardVersion: platform.standardVersion,
       platformVersion: platform.version,
+      lapkiVisual: visual.toString(),
     },
   };
 }
@@ -389,7 +390,7 @@ export function exportCGML(elements: Elements): string {
     throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
   }
   const cgmlElements: CGMLElements = createEmptyElements();
-  cgmlElements.meta = exportMeta(elements.meta, platform);
+  cgmlElements.meta = exportMeta(elements.visual, elements.meta, platform);
   cgmlElements.format = 'Cyberiada-GraphML-1.0';
   cgmlElements.platform = elements.platform;
   cgmlElements.stateMachines['g'] = {

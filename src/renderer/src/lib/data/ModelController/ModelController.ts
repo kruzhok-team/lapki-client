@@ -87,7 +87,7 @@ type StateType = (typeof StateTypes)[number];
 
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
-
+  currentSmId: null | string = null;
   //! Порядок создания важен, так как контроллер при инициализации использует представление
   model = new EditorModel(
     () => {
@@ -171,12 +171,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.createComponent(args);
 
     this.emit('createComponent', args);
-    if (canUndo) {
-      this.history.do({
-        type: 'createComponent',
-        args: { args },
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'createComponent',
+    //     args: { args },
+    //   });
+    // }
   }
 
   createNote(args: CreateNoteParams, canUndo = true) {
@@ -856,12 +856,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
     this.model.deleteComponent(smId, id);
 
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteComponent',
-        args: { args, prevComponent },
-      });
-    }
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'deleteComponent',
+    //     args: { args, prevComponent },
+    //   });
+    // }
 
     this.emit('deleteComponent', args);
   }
@@ -1177,8 +1177,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
         };
         this.linkChoiceState(smId, id, computedParentId);
-        this.model.changeChoiceStatePosition(smId, id, newPosition);
-        this.emit('changeChoicePosition', { smId, id, endPosition: newPosition });
+        this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
       }
     }
 
@@ -1217,6 +1216,30 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('deleteChoice', args);
   }
 
+  changeFinalStatePosition(args: ChangePosition, canUndo = true) {
+    this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
+    this.emit('changeFinalStatePosition', args);
+    const { startPosition } = args;
+    if (canUndo && startPosition !== undefined) {
+      this.history.do({
+        type: 'changeFinalStatePosition',
+        args: { ...args, startPosition: startPosition },
+      });
+    }
+  }
+
+  changeChoiceStatePosition(args: ChangePosition, canUndo = true) {
+    this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);
+    this.emit('changeChoicePosition', args);
+    const { startPosition } = args;
+    if (canUndo && startPosition !== undefined) {
+      this.history.do({
+        type: 'changeChoiceStatePosition',
+        args: { ...args, startPosition: startPosition },
+      });
+    }
+  }
+
   createFinalState(params: CreateFinalStateParams, canUndo = true) {
     const { smId, parentId, linkByPoint = true } = params;
 
@@ -1246,8 +1269,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       };
 
       this.linkFinalState(smId, id, parentId);
-      this.model.changeFinalStatePosition(smId, id, newPosition);
-      this.emit('changeFinalStatePosition', { smId, id, endPosition: newPosition });
+      this.changeFinalStatePosition({ smId, id, endPosition: newPosition }, false);
     }
 
     if (canUndo) {
@@ -1404,7 +1426,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { stateId, event, prevValue },
+          args: { smId, stateId, event, prevValue },
         });
       }
     } else {

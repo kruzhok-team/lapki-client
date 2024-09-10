@@ -186,7 +186,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createNote',
-        args: { id: newId, params: args },
+        args: { smId: args.smId, id: newId, params: args },
       });
     }
   }
@@ -214,7 +214,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeTransitionPosition',
-        args: { id, startPosition: startPosition ?? { x: 0, y: 0 }, endPosition },
+        args: { smId, id, startPosition: startPosition ?? { x: 0, y: 0 }, endPosition },
       });
     }
 
@@ -253,7 +253,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createTransition',
-        args: { id: newId, params: params },
+        args: { smId, id: newId, params: params },
       });
     }
   }
@@ -366,7 +366,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeInitialStatePosition',
-        args: { id, startPosition, endPosition },
+        args: { smId, id, startPosition, endPosition },
       });
     }
 
@@ -388,7 +388,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeStatePosition',
-        args: { id, startPosition, endPosition },
+        args: { smId, id, startPosition, endPosition },
       });
     }
 
@@ -435,7 +435,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeNoteText',
-        args: { id, text, prevText: note.text },
+        args: { smId, id, text, prevText: note.text },
       });
     }
 
@@ -451,7 +451,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeNotePosition',
-        args: { id, startPosition: startPosition ?? { x: 0, y: 0 }, endPosition },
+        args: { smId, id, startPosition: startPosition ?? { x: 0, y: 0 }, endPosition },
       });
     }
 
@@ -477,7 +477,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'deleteNote',
-        args: { id, prevData: structuredClone(note) },
+        args: { smId, id, prevData: structuredClone(note) },
         numberOfConnectedActions,
       });
     }
@@ -504,7 +504,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'deleteTransition',
-        args: { prevData: structuredClone(transition) },
+        args: { smId, id: id, prevData: structuredClone(transition) },
         numberOfConnectedActions,
       });
     }
@@ -627,7 +627,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'unlinkState',
-        args: { parentId, params },
+        args: { smId, parentId, params },
         numberOfConnectedActions,
       });
     }
@@ -683,7 +683,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'linkState',
-        args: { parentId, childId },
+        args: { smId, parentId, childId },
         numberOfConnectedActions,
       });
       if (addOnceOff) {
@@ -778,7 +778,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeStateName',
-        args: { id, name, prevName: state.name },
+        args: { smId, id, name, prevName: state.name },
       });
     }
 
@@ -951,7 +951,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'deleteState',
-        args: { id, stateData: { ...structuredClone(state), parentId } },
+        args: { smId, id, stateData: { ...structuredClone(state), parentId } },
         numberOfConnectedActions,
       });
     }
@@ -1138,7 +1138,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'deleteFinalState',
-        args: { id, stateData: { ...structuredClone(state), parentId } },
+        args: { smId, id, stateData: { ...structuredClone(state), parentId } },
         numberOfConnectedActions,
       });
     }
@@ -1208,7 +1208,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'deleteChoiceState',
-        args: { id, stateData: { ...structuredClone(state), parentId } },
+        args: { smId, id, stateData: { ...structuredClone(state), parentId } },
         numberOfConnectedActions,
       });
     }
@@ -1387,7 +1387,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEventAction',
-          args: { stateId, event, newValue, prevValue },
+          args: { smId, stateId, event, newValue, prevValue },
         });
       }
     } else {
@@ -1398,7 +1398,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEvent',
-          args: { stateId, event, newValue, prevValue },
+          args: { smId, stateId, event, newValue, prevValue },
         });
       }
     }
@@ -1437,7 +1437,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'deleteEvent',
-          args: { stateId, eventIdx, prevValue },
+          args: { smId, stateId, eventIdx, prevValue },
         });
       }
     }

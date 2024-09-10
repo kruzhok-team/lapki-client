@@ -30,7 +30,7 @@ export class EdgeHandlers {
   }
 
   get position(): Point[] {
-    const offset = 4 / this.app.controller.model.data.scale;
+    const offset = 4 / this.app.controller.scale;
     let { x, y, width, height, childrenHeight } = this.shape.drawBounds;
 
     height += childrenHeight ?? 0;
@@ -56,7 +56,7 @@ export class EdgeHandlers {
   }
 
   get size() {
-    return 20 / this.app.controller.model.data.scale;
+    return 20 / this.app.controller.scale;
   }
 
   draw(ctx: CanvasRenderingContext2D) {

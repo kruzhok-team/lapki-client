@@ -5,6 +5,7 @@ import {
   ChoiceState as ChoiseData,
   Transition as TransitionData,
   Note as NoteData,
+  InitialState as InitialStateData,
 } from '@renderer/types/diagram';
 
 import { Point } from './graphics';
@@ -73,11 +74,13 @@ export interface ChangeStateNameParams {
   name: string;
 }
 
-export interface CCreateInitialStateParams {
+export type CCreateInitialStateParams = {
   id?: string;
   smId: string;
   targetId: string;
-}
+};
+
+export type CreateInitialStateControllerParams = CCreateInitialStateParams & InitialStateData;
 
 export interface AddDragendStateSig {
   smId: string;

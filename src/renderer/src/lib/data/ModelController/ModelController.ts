@@ -722,8 +722,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { smId, id },
       });
     }
-
-    this.emit('createInitial', { ...params, id: id });
+    this.emit('createInitial', {
+      ...params,
+      id: id,
+      ...this.model.data.elements.stateMachines[smId].initialStates[id],
+    });
     return id;
   }
 

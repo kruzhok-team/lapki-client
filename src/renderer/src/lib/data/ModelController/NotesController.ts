@@ -45,7 +45,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   createNote(params: CreateNoteParams) {
     const { id } = params;
     if (!id) return;
-    const note = new Note(this.app, id);
+    const note = new Note(this.app, id, { ...params });
 
     this.items.set(id, note);
     this.watch(note);
@@ -58,6 +58,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     const note = this.items.get(args.id);
     if (!note) return;
 
+    note.data.text = args.text;
     note.prepareText();
 
     this.view.isDirty = true;
@@ -66,6 +67,8 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   changeNotePosition(args: ChangePosition) {
     const note = this.items.get(args.id);
     if (!note) return;
+
+    note.position = args.endPosition;
 
     this.view.isDirty = true;
   }

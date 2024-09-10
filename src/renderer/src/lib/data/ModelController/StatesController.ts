@@ -19,6 +19,7 @@ import {
   StatesControllerDataStateType,
   StateVariant,
   ChangeStateNameParams,
+  CreateInitialStateControllerParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -131,21 +132,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   }
 
-  private getSiblings(
-    stateId: string | undefined,
-    parentId: string | undefined,
-    stateType: StatesControllerDataStateType = 'states'
-  ) {
-    return [...this.data[stateType].values()].filter(
-      (s) => s.data.parentId === parentId && s.id !== stateId
-    );
-  }
-
   createState = (args: CreateStateParams) => {
     const { id } = args;
 
     if (!id) return;
-    const state = new State(this.app, id); // Создание вьюшки
+    const state = new State(this.app, id, { ...args }); // Создание вьюшки
 
     this.data.states.set(state.id, state);
 
@@ -157,29 +148,38 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeStateEvents(args: ChangeStateEventsParams) {
-    const { id } = args;
+    const { id, eventData } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
 
+    const eventIndex = state.data.events.findIndex(
+      (value) =>
+        eventData.trigger.component === value.trigger.component &&
+        eventData.trigger.method === value.trigger.method &&
+        undefined === value.trigger.args // FIXME: сравнение по args может не работать
+    );
+
+    state.data.events[eventIndex] = eventData;
     state.updateEventBox();
 
     this.view.isDirty = true;
   }
 
   changeStateName = (args: ChangeStateNameParams) => {
-    const { id } = args;
+    const { id, name } = args;
     const state = this.data.states.get(id);
     if (!state) return;
 
+    state.data.name = name;
     this.view.isDirty = true;
   };
 
   changeStatePosition(args: ChangePosition) {
-    const { id } = args;
+    const { id, endPosition } = args;
     const state = this.data.states.get(id);
     if (!state) return;
-
+    state.position = endPosition;
     this.view.isDirty = true;
   }
 
@@ -196,39 +196,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     parent.children.add(child, Layer.States);
 
     this.view.isDirty = true;
-  }
-
-  private getPossibleParentState(position: Point, exclude: string[] = []) {
-    // назначаем родительское состояние по месту его создания
-    let possibleParent: State | null = null;
-    for (const item of this.data.states.values()) {
-      if (exclude.includes(item.id)) continue;
-      if (!item.isUnderMouse(position, true)) continue;
-
-      if (possibleParent === null) {
-        possibleParent = item;
-        continue;
-      }
-
-      // учитываем вложенность, нужно поместить состояние
-      // в максимально дочернее
-      let searchPending = true;
-      while (searchPending) {
-        searchPending = false;
-        // TODO(bryzZz) Нужно проверять по модели а не по вью
-        for (const child of possibleParent.children.layers?.[Layer.States] || []) {
-          if (!(child instanceof State)) continue;
-          if (exclude.includes(child.id)) continue;
-          if (!child.isUnderMouse(position, true)) continue;
-
-          possibleParent = child as State;
-          searchPending = true;
-          break;
-        }
-      }
-    }
-
-    return possibleParent;
   }
 
   unlinkState(params: UnlinkStateParams) {
@@ -259,13 +226,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  createInitialState(params: CCreateInitialStateParams) {
+  createInitialState(params: CreateInitialStateControllerParams) {
     const { id, targetId } = params;
 
     const target = this.data.states.get(targetId);
     if (!target || !id) return;
 
-    const state = new InitialState(this.app, id);
+    const state = new InitialState(this.app, id, { ...params });
 
     this.data.initialStates.set(id, state);
 
@@ -353,7 +320,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const { id } = params;
     if (!id) return;
 
-    const state = new ChoiceState(this.app, id);
+    const state = new ChoiceState(this.app, id, { ...params });
 
     this.data.choiceStates.set(id, state);
 

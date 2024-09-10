@@ -16,6 +16,7 @@ import {
   CreateEventActionParams,
   CreateEventParams,
   CreateFinalStateParams,
+  CreateInitialStateControllerParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
@@ -67,7 +68,7 @@ export type CanvasControllerEvents = {
   changeStatePosition: ChangePosition;
   createFinal: CreateFinalStateParams;
   createNote: CreateNoteParams;
-  createInitial: CCreateInitialStateParams;
+  createInitial: CreateInitialStateControllerParams;
   changeInitialPosition: ChangePosition;
   createComponent: CreateComponentParams;
   deleteChoice: DeleteDrawableParams;
@@ -135,6 +136,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   stateMachinesSub: { [id: string]: CanvasSubscribeAttribute[] } = {};
   id: string;
   scale = 1;
+  offset = { x: 0, y: 0 }; // Нигде не меняется?
 
   constructor(id: string, app: CanvasEditor, canvasData: CanvasData) {
     super();
@@ -154,6 +156,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   get view() {
     return this.app.view;
+  }
+
+  setOffset(value: { x: number; y: number }) {
+    this.offset = value;
   }
 
   addStateMachineId(smId: string) {

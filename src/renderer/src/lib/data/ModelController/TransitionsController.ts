@@ -103,7 +103,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (!source || !target || !params.id) return;
 
     // Создание модельки
-    const transition = new Transition(this.app, params.id);
+    const transition = new Transition(this.app, params.id, { ...params });
 
     this.items.set(params.id, transition);
 
@@ -142,13 +142,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   changeTransition(args: ChangeTransitionParams) {
     const transition = this.items.get(args.id);
     if (!transition) return;
-
+    transition.data = { ...args };
     this.view.isDirty = true;
   }
 
   changeTransitionPosition(args: ChangePosition) {
     const transition = this.items.get(args.id);
     if (!transition) return;
+    transition.position = args.endPosition;
 
     this.view.isDirty = true;
   }

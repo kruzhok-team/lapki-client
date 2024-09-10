@@ -3,6 +3,7 @@ import { ArrowsWithLabel, ArrowsWithoutLabel, Label, Shape } from '@renderer/lib
 import { transitionStyle } from '@renderer/lib/styles';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { isPointOnLine } from '@renderer/lib/utils';
+import { Transition as DataTransition } from '@renderer/types/diagram';
 
 /**
  * Переход между состояниями.
@@ -11,18 +12,14 @@ export class Transition extends Shape {
   isSelected = false;
   label!: Label;
   arrow!: ArrowsWithLabel | ArrowsWithoutLabel;
-
-  constructor(protected app: CanvasEditor, public id: string) {
+  data: DataTransition;
+  constructor(protected app: CanvasEditor, public id: string, data: DataTransition) {
     super(app, id);
-
+    this.data = data;
     this.label = new Label(this, this.app);
     this.arrow = this.data.label
       ? new ArrowsWithLabel(this, this.app)
       : new ArrowsWithoutLabel(this, this.app);
-  }
-
-  get data() {
-    return this.app.controller.model.data.elements.transitions[this.id];
   }
 
   get source() {
@@ -89,7 +86,7 @@ export class Transition extends Shape {
 
     ctx.beginPath();
     ctx.strokeStyle = transitionStyle.bgColor;
-    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.controller.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.controller.scale);
     ctx.stroke();
     ctx.closePath();
   }

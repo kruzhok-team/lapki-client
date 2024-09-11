@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Device } from '@renderer/types/FlasherTypes';
 
+import { ManagerMS } from './Modules/ManagerMS';
 import { TextField } from './UI';
 
 export interface ManagerMSProps {
@@ -12,15 +13,18 @@ export interface ManagerMSProps {
 }
 
 export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
-  const [inputValue, setInputValue] = useState<string>('');
+  const [address, setAddress] = useState<string>('');
   const handleGetAddress = () => {
-    console.log('address');
+    if (!device) return;
+    ManagerMS.getAddress(device.deviceID);
   };
   const handleSendBin = () => {
-    console.log('bin');
+    if (!device) return;
+    ManagerMS.binStart(device.deviceID, 0, address);
   };
   const handlePing = () => {
-    console.log('ping');
+    if (!device) return;
+    ManagerMS.ping(device.deviceID, address);
   };
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {
@@ -36,8 +40,8 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
           label="Адрес:"
           className="mr-2 max-w-full"
           placeholder="Напишите адрес"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
         />
       </div>
       <div className="m-2 flex">

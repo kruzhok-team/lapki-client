@@ -44,7 +44,10 @@ export type FlasherType =
   | 'serial-send'
   | 'serial-sent-status'
   | 'serial-device-read'
-  | 'serial-change-baud';
+  | 'serial-change-baud'
+  | 'ms-bin-start'
+  | 'ms-ping'
+  | 'ms-get-address';
 export type FlasherPayload =
   | string
   | Device
@@ -56,7 +59,10 @@ export type FlasherPayload =
   | SerialRead
   | SerialDisconnect
   | SerialSend
-  | SerialChangeBaud;
+  | SerialChangeBaud
+  | MSBinStart
+  | MSGetAddress
+  | MSPing;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -137,4 +143,19 @@ export type SerialSend = {
 export type SerialChangeBaud = {
   deviceID: string;
   baud: number;
+};
+
+export type MSBinStart = {
+  deviceID: string;
+  fileSize: number;
+  address: string;
+};
+
+export type MSPing = {
+  deviceID: string;
+  address: string;
+};
+
+export type MSGetAddress = {
+  deviceID: string;
 };

@@ -13,6 +13,7 @@ import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
+import { ManagerMS } from '../Modules/ManagerMS';
 import {
   SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
@@ -383,7 +384,7 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   const deviceInfoDisplay = (device: Device | undefined) => {
     if (!device) return;
-    if (Flasher.isMSDevice(device)) {
+    if (ManagerMS.isMSDevice(device)) {
       return (
         <div>
           <div className="flex items-center">{device.name}</div>
@@ -405,7 +406,7 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   const buttonsDisplay = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    if (!curDevice || !Flasher.isMSDevice(curDevice)) {
+    if (!curDevice || !ManagerMS.isMSDevice(curDevice)) {
       return (
         <div>
           <div className="flex justify-between gap-2">

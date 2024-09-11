@@ -12,6 +12,7 @@ import {
   SerialStatus,
   SerialRead,
   FlasherPayload,
+  FlasherType,
 } from '@renderer/types/FlasherTypes';
 
 import {
@@ -479,16 +480,11 @@ export class Flasher extends ClientWS {
     }
   }
 
-  static send(type: string, payload: FlasherPayload) {
+  static send(type: FlasherType, payload: FlasherPayload) {
     const request = {
       type: type,
       payload: payload,
     } as FlasherMessage;
     this.connection?.send(JSON.stringify(request));
-  }
-
-  static isMSDevice(device: Device) {
-    // TODO: придумать более надёжный способ идентификации МС-ТЮК
-    return device.name == 'МС-ТЮК';
   }
 }

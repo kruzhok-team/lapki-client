@@ -40,7 +40,7 @@ export class Initializer {
     // this.initTransitions();
     // this.initNotes();
     // this.initComponents('G');
-    this.initStateMachines();
+    // this.initStateMachines();
     this.app.view.viewCentering();
     this.app.view.viewCentering();
   }
@@ -97,7 +97,7 @@ export class Initializer {
    *
    * Это нужно потому что в схемы могут идти сначала дети а потом родители
    */
-  private initStates(states: { [id: string]: DataState }) {
+  initStates(states: { [id: string]: DataState }) {
     for (const id in states) {
       this.createStateView(id, states[id]);
     }
@@ -111,7 +111,7 @@ export class Initializer {
     }
   }
 
-  private initInitialStates(states: { [id: string]: DataInitialState }) {
+  initInitialStates(states: { [id: string]: DataInitialState }) {
     for (const id in states) {
       const state = states[id];
       this.createInitialStateView(id, state);
@@ -126,7 +126,7 @@ export class Initializer {
     }
   }
 
-  private initFinalStates(finals: { [id: string]: DataFinalState }) {
+  initFinalStates(finals: { [id: string]: DataFinalState }) {
     for (const id in finals) {
       const final = finals[id];
       this.createFinalStateView(id, final);
@@ -141,7 +141,7 @@ export class Initializer {
     }
   }
 
-  private initChoiceStates(choices: { [id: string]: DataChoiceState }) {
+  initChoiceStates(choices: { [id: string]: DataChoiceState }) {
     for (const id in choices) {
       const choice = choices[id];
       this.createChoiceStateView(id, choice);
@@ -156,7 +156,7 @@ export class Initializer {
     }
   }
 
-  private initTransitions(transitions: { [id: string]: DataTransition }) {
+  initTransitions(transitions: { [id: string]: DataTransition }) {
     for (const id in transitions) {
       const transition = transitions[id];
       this.createTransitionView(id, transition);
@@ -167,7 +167,7 @@ export class Initializer {
     this.app.view.children.add(this.transitions.ghost, Layer.GhostTransition);
   }
 
-  private initNotes(notes: { [id: string]: DataNote }) {
+  initNotes(notes: { [id: string]: DataNote }) {
     for (const id in notes) {
       this.createNoteView(id, notes[id]);
     }

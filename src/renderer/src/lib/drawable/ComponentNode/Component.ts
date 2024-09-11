@@ -1,4 +1,4 @@
-import { CanvasScheme } from '@renderer/lib/CanvasScheme';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, Point } from '@renderer/lib/types';
 import { getColor } from '@renderer/theme';
@@ -15,7 +15,7 @@ export class DrawableComponent extends Shape {
   __position: Point;
   __dimensions: Dimensions;
   constructor(
-    app: CanvasScheme,
+    app: CanvasEditor,
     id: string,
     position: Point,
     icon: MarkedIconData,
@@ -31,7 +31,7 @@ export class DrawableComponent extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.app.controller.model.data.scale;
+    const scale = this.app.controller.scale;
 
     return {
       padding: 10 / scale,
@@ -41,8 +41,14 @@ export class DrawableComponent extends Shape {
     };
   }
 
+  // TODO (L140-beep): заглушка
   get data() {
-    return this.app.controller.model.data.elements.components[this.id];
+    return {
+      position: {
+        x: 0,
+        y: 0,
+      },
+    };
   }
 
   get position() {
@@ -99,8 +105,8 @@ export class DrawableComponent extends Shape {
     ctx.roundRect(
       x,
       y,
-      width / this.app.controller.model.data.scale,
-      height / this.app.controller.model.data.scale,
+      width / this.app.controller.scale,
+      height / this.app.controller.scale,
       borderRadius
     );
     ctx.stroke();

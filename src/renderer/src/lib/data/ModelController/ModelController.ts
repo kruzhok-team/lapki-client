@@ -1,5 +1,6 @@
 import { Point } from 'electron';
 
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
   CHILDREN_PADDING,
@@ -40,7 +41,7 @@ import {
   DeleteEventParams,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
-import { isPointInRectangle } from '@renderer/lib/utils';
+import { generateId, isPointInRectangle } from '@renderer/lib/utils';
 import {
   Elements,
   StateMachine,
@@ -52,7 +53,7 @@ import {
   FinalState,
 } from '@renderer/types/diagram';
 
-import { CanvasControllerEvents } from './CanvasController';
+import { CanvasController, CanvasControllerEvents } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
@@ -105,12 +106,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   history = new History(this);
   vacantComponents: { [id: string]: ComponentEntry[] } = {};
   platforms: { [id: string]: PlatformManager } = {};
+  controllers: { [id: string]: CanvasController } = {};
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
   constructor() {
     super();
     this.watch();
+  }
+
+  // TODO: setup SchemeScreenController с другими подписками
+  setupDiagramEditorController(smId: string, app: CanvasEditor) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    if (!sm) return;
+    const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
+    controller.subscribe(smId, 'choice', sm.choiceStates);
+    controller.subscribe(smId, 'final', sm.finalStates);
+    controller.subscribe(smId, 'state', sm.states);
+    controller.subscribe(smId, 'note', sm.notes);
+    controller.subscribe(smId, 'transition', sm.transitions);
+    controller.subscribe(smId, 'initialState', sm.initialStates);
+
+    return controller;
   }
 
   private watch() {
@@ -139,7 +156,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
-    this.emit('initData', elements)
     this.model.makeStale();
     this.history.clear();
   }
@@ -855,15 +871,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
 
-    const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
+    // const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
     this.model.deleteComponent(smId, id);
 
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'deleteComponent',
-    //     args: { args, prevComponent },
-    //   });
-    // }
+    if (canUndo) {
+      //   this.history.do({
+      //     type: 'deleteComponent',
+      //     args: { args, prevComponent },
+      //   });
+    }
 
     this.emit('deleteComponent', args);
   }
@@ -987,7 +1003,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return objects;
   }
 
-  private getChildrenContainerHeight(smId: string, stateId: string, stateType: StateType) {
+  private getChildrenContainerHeight(smId: string, stateId: string) {
     const children = this.getEachObjectByParentId(smId, stateId);
 
     if ([...Object.values(children)].length === 0) return 0;
@@ -1005,14 +1021,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         const child = children[childType][childId];
         const y = child.position.y;
         const height = child.dimensions.height;
-        const childrenContainerHeight = this.getChildrenContainerHeight(smId, childId, childType);
+        const childrenContainerHeight = this.getChildrenContainerHeight(smId, childId);
         const bY = bottomChild.position.y;
         const bHeight = bottomChild.dimensions.height;
-        const bChildrenContainerHeight = this.getChildrenContainerHeight(
-          smId,
-          bottomChildId,
-          bottomChildType
-        );
+        const bChildrenContainerHeight = this.getChildrenContainerHeight(smId, bottomChildId);
         if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
           bottomChild = child;
           bottomChildId = childId;
@@ -1038,7 +1050,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const object = this.model.data.elements.stateMachines[smId][stateType][stateId];
     const width = this.getComputedWidth(smId, stateId, stateType);
     const height = this.getComputedHeight(object);
-    const childrenHeight = this.getChildrenContainerHeight(smId, stateId, stateType);
+    const childrenHeight = this.getChildrenContainerHeight(smId, stateId);
 
     return { width, height, childrenHeight };
   }

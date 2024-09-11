@@ -1,12 +1,11 @@
 import * as TWEEN from '@tweenjs/tween.js';
 
-import { throwDeprecation } from 'process';
-
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
 import { CanvasController } from './data/ModelController/CanvasController';
+import { generateId } from './utils';
 
 interface CanvasEditorSettings {
   animations: boolean;
@@ -25,6 +24,8 @@ export class CanvasEditor {
   private _render: Render | null = null;
 
   private rendererUnsubscribe: (() => void) | null | false = null;
+
+  id = generateId();
 
   view = new EditorView(this);
 

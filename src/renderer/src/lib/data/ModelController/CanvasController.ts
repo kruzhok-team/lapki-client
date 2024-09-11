@@ -2,7 +2,6 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
   AddDragendStateSig,
-  CCreateInitialStateParams,
   ChangeComponentPosition,
   ChangeEventParams,
   ChangeNoteText,
@@ -31,7 +30,19 @@ import {
   SetMountedStatusParams,
   UnlinkStateParams,
 } from '@renderer/lib/types';
-import { Condition, Elements, StateMachine, Variable } from '@renderer/types/diagram';
+import {
+  ChoiceState,
+  Component,
+  Condition,
+  Elements,
+  FinalState,
+  InitialState,
+  Note,
+  State,
+  StateMachine,
+  Transition,
+  Variable,
+} from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
 import { NotesController } from './NotesController';
@@ -52,12 +63,21 @@ export type CanvasSubscribeAttribute =
   | 'choice'
   | 'initialState';
 
+type DiagramData =
+  | { [id: string]: State }
+  | { [id: string]: InitialState }
+  | { [id: string]: FinalState }
+  | { [id: string]: ChoiceState }
+  | { [id: string]: Transition }
+  | { [name: string]: Component }
+  | { [id: string]: Note };
+
 export function getSignalName(smId: string, attribute: CanvasSubscribeAttribute): string {
   return `${smId}/${attribute}`;
 }
 
 export type CanvasControllerEvents = {
-  loadData: StateMachine;
+  loadData: null;
   initPlatform: null;
   initEvents: null;
 
@@ -137,7 +157,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   id: string;
   scale = 1;
   offset = { x: 0, y: 0 }; // Нигде не меняется?
-
+  isMounted = false;
+  canvasId: string | null = null;
   constructor(id: string, app: CanvasEditor, canvasData: CanvasData) {
     super();
     this.id = id;
@@ -201,7 +222,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     >(this, attribute, callback);
   }
 
-  subscribe(smId: string, attribute: CanvasSubscribeAttribute) {
+  subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
     if (!this.stateMachinesSub[smId]) {
       return;
     }
@@ -225,6 +246,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('changeEvent', this.bindHelper('state', this.states.changeEvent));
         this.on('changeEventAction', this.bindHelper('state', this.states.changeEvent));
         this.on('deleteEventAction', this.bindHelper('state', this.states.deleteEvent));
+        this.initializer.initStates(initData as { [id: string]: State });
         break;
       case 'initialState':
         this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));
@@ -232,6 +254,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeInitialPosition',
           this.bindHelper('initialState', this.states.changeInitialStatePosition)
         );
+        this.initializer.initInitialStates(initData as { [id: string]: InitialState });
         break;
       case 'final':
         this.on('createFinal', this.bindHelper('final', this.states.createFinalState));
@@ -241,6 +264,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.bindHelper('final', this.states.changeFinalStatePosition)
         );
         this.on('linkFinalState', this.states.linkFinalState);
+        this.initializer.initFinalStates(initData as { [id: string]: FinalState });
         break;
       case 'choice':
         this.on('createChoice', this.bindHelper('choice', this.states.createChoiceState));
@@ -251,6 +275,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeChoicePosition',
           this.bindHelper('choice', this.states.changeChoiceStatePosition)
         );
+        this.initializer.initChoiceStates(initData as { [id: string]: ChoiceState });
         break;
       case 'note':
         this.on('createNote', this.bindHelper('note', this.notes.createNote));
@@ -258,6 +283,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('selectNote', this.bindHelper('note', this.selectNote));
         this.on('changeNoteText', this.bindHelper('note', this.notes.changeNoteText));
         this.on('changeNotePosition', this.bindHelper('note', this.notes.changeNotePosition));
+        this.initializer.initNotes(initData as { [id: string]: Note });
         break;
       case 'component':
         this.on('createComponent', this.bindHelper('component', this.createComponent));
@@ -265,6 +291,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('editComponent', this.bindHelper('component', this.editComponent));
         this.on('renameComponent', this.bindHelper('component', this.renameComponent));
         this.on('selectComponent', this.bindHelper('component', this.selectComponent));
+        // this.initializer.initNotes(initData as { [id: string]: Note });
         break;
       case 'transition':
         this.on(
@@ -282,6 +309,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.on('changeTransitionPosition', this.transitions.changeTransitionPosition);
         this.on('selectTransition', this.bindHelper('transition', this.selectTransition));
         this.on('linkTransitions', this.bindHelper('transition', this.linkTransitions));
+        this.initializer.initTransitions(initData as { [id: string]: Transition });
         break;
       default:
         throw new Error('Unknown attribute');
@@ -515,6 +543,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.on('changeScale', (value) => {
       this.scale = value;
     });
+    this.on('isMounted', this.setMountStatus);
+  }
+
+  private setMountStatus(args: SetMountedStatusParams) {
+    if (args.canvasId !== this.app.id) return;
+    this.isMounted = args.status;
   }
 
   private linkState(args: LinkStateParams) {

@@ -92,7 +92,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   createTransition(params: CreateTransitionParams) {
-    const { sourceId, targetId, id: prevId } = params;
+    const { sourceId, targetId } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
     const target =

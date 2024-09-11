@@ -1,4 +1,4 @@
-import { CanvasScheme } from '@renderer/lib/CanvasScheme';
+import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, Layer, Point } from '@renderer/lib/types';
 import { drawText } from '@renderer/lib/utils/text';
@@ -16,7 +16,7 @@ export class DrawableStateMachine extends Shape {
   icon: MarkedIconData;
   __position: Point;
   __dimensions: Dimensions;
-  constructor(app: CanvasScheme, id: string, icon: MarkedIconData, parent?: Shape) {
+  constructor(app: CanvasEditor, id: string, icon: MarkedIconData, parent?: Shape) {
     super(app, id, parent);
     this.icon = icon;
     this.__position = {
@@ -41,11 +41,11 @@ export class DrawableStateMachine extends Shape {
 
   get computedTitleSizes() {
     return {
-      height: this.titleHeight / this.app.controller.model.data.scale,
+      height: this.titleHeight / this.app.controller.scale,
       width: this.drawBounds.width,
-      fontSize: 15 / this.app.controller.model.data.scale,
-      paddingX: 15 / this.app.controller.model.data.scale,
-      paddingY: 10 / this.app.controller.model.data.scale,
+      fontSize: 15 / this.app.controller.scale,
+      paddingX: 15 / this.app.controller.scale,
+      paddingY: 10 / this.app.controller.scale,
     };
   }
 
@@ -60,8 +60,8 @@ export class DrawableStateMachine extends Shape {
     ctx.fillStyle = style.titleBg;
 
     ctx.roundRect(x, computedY, width, height, [
-      6 / this.app.controller.model.data.scale,
-      6 / this.app.controller.model.data.scale,
+      6 / this.app.controller.scale,
+      6 / this.app.controller.scale,
       0,
       0,
     ]);
@@ -82,7 +82,7 @@ export class DrawableStateMachine extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.app.controller.model.data.scale;
+    const scale = this.app.controller.scale;
 
     return {
       padding: 10 / scale,
@@ -125,8 +125,8 @@ export class DrawableStateMachine extends Shape {
     ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
       0,
       0,
-      6 / this.app.controller.model.data.scale,
-      6 / this.app.controller.model.data.scale,
+      6 / this.app.controller.scale,
+      6 / this.app.controller.scale,
     ]);
     ctx.stroke();
 

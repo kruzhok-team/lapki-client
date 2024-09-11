@@ -21,7 +21,7 @@ interface DiagramEditorProps {
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
   const editor = props.editor;
-  const isMounted = editor.controller.model.useData('isMounted');
+  const isMounted = editor.;
 
   const [canvasSettings] = useSettings('canvas');
 

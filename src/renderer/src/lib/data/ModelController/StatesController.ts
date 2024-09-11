@@ -2,7 +2,6 @@ import throttle from 'lodash.throttle';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { INITIAL_STATE_OFFSET } from '@renderer/lib/constants';
 import {
   State,
   EventSelection,
@@ -12,7 +11,6 @@ import {
 } from '@renderer/lib/drawable';
 import { MyMouseEvent, Layer, DeleteInitialStateParams } from '@renderer/lib/types';
 import {
-  CCreateInitialStateParams,
   UnlinkStateParams,
   LinkStateParams,
   getStatesControllerDefaultData,
@@ -34,7 +32,7 @@ import {
   DeleteDrawableParams,
   DeleteEventParams,
 } from '@renderer/lib/types/ModelTypes';
-import { Action, Event, EventData } from '@renderer/types/diagram';
+import { Event } from '@renderer/types/diagram';
 
 type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
 

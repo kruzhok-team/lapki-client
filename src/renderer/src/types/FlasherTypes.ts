@@ -89,22 +89,22 @@ export class FlashResult {
   private device: Device | undefined;
   /** результат обработки запроса*/
   private result: string | undefined;
-  /** сообщение от avrdude*/
-  private avrdudeMsg: string | undefined;
+  /** сообщение от программы для прошивки (например, avrdude)*/
+  private flashMsg: string | undefined;
   constructor(
     device: Device | undefined,
     result: string | undefined,
-    avrdudeMsg: string | undefined
+    flashMsg: string | undefined
   ) {
     this.device = device;
     this.result = result;
-    this.avrdudeMsg = avrdudeMsg;
+    this.flashMsg = flashMsg;
   }
   /** получить результат прошивки*/
   public report(): string {
     const deviceDesc = this.device ? `${this.device.name} (${this.device.portName})` : 'неизвестно';
     const serialID = this.device?.serialID ? this.device?.serialID : 'отсутствует';
-    const avrdudeMsg = this.avrdudeMsg ? this.avrdudeMsg : 'отсутствует сообщение';
+    const avrdudeMsg = this.flashMsg ? this.flashMsg : 'отсутствует сообщение';
     return `
 Устройство: ${deviceDesc}
 Серийный номер устройства: ${serialID}

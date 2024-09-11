@@ -175,24 +175,52 @@ export class Flasher extends ClientWS {
     }
   }
 
-  static flashCompiler(binaries: Array<Binary>, device: Device): void {
+  static flashPreparation(
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == device.deviceID &&
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
+    this.currentFlashingDevice = device;
+    this.refresh();
+    this.setFlasherLog('Идет загрузка...');
+  }
+
+  static flashCompiler(
+    binaries: Array<Binary>,
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
         Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
         return;
       }
     });
-    this.flash(device);
+    this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 
-  static flash(device: Device) {
-    this.currentFlashingDevice = device;
-    this.refresh();
+  static flash(
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    this.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
     this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
     });
-    this.setFlasherLog('Идет загрузка...');
   }
 
   // получение адреса в виде строки

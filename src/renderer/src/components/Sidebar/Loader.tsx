@@ -15,7 +15,6 @@ import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from '../Modules/ManagerMS';
 import {
-  SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,

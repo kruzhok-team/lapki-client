@@ -3,8 +3,10 @@
 */
 import { useState } from 'react';
 
+import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { Device } from '@renderer/types/FlasherTypes';
 
+import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { TextField } from './UI';
 
@@ -13,6 +15,8 @@ export interface ManagerMSProps {
 }
 
 export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
+  const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
+    useSerialMonitor();
   const [address, setAddress] = useState<string>('');
   const handleGetAddress = () => {
     if (!device) return;
@@ -20,7 +24,9 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
   };
   const handleSendBin = () => {
     if (!device) return;
-    ManagerMS.binStart(device.deviceID, 0, address);
+    Flasher.setFile().then(() => {
+      ManagerMS.binStart(device, address, serialMonitorDevice, serialConnectionStatus);
+    });
   };
   const handlePing = () => {
     if (!device) return;

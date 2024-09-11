@@ -3,10 +3,16 @@ import { Device } from '@renderer/types/FlasherTypes';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
-  static binStart(deviceID: string, fileSize: number, address: string) {
+  static binStart(
+    device: Device,
+    address: string,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    Flasher.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
     Flasher.send('ms-bin-start', {
-      deviceID: deviceID,
-      fileSize: fileSize,
+      deviceID: device.deviceID,
+      fileSize: Flasher.binary.size,
       address: address,
     });
   }

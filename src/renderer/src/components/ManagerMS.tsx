@@ -3,9 +3,11 @@
 */
 import { useState } from 'react';
 
+import { useModal } from '@renderer/hooks';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { Device } from '@renderer/types/FlasherTypes';
 
+import { AddressModalMS } from './AddressModalMS';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { TextField } from './UI';
@@ -18,9 +20,11 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [address, setAddress] = useState<string>('');
+  const [isAddressModalOpen, openAddressModal, closeAddressModal] = useModal(false);
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);
+    openAddressModal();
   };
   const handleSendBin = () => {
     if (!device) return;
@@ -61,6 +65,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
           Пинг
         </button>
       </div>
+      <AddressModalMS isOpen={isAddressModalOpen} onClose={closeAddressModal}></AddressModalMS>
     </section>
   );
 };

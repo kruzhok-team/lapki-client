@@ -425,13 +425,6 @@ export const Loader: React.FC<FlasherProps> = ({
           ) : (
             ''
           )}
-          <button
-            className="btn-primary mb-2 w-full"
-            onClick={handleAddAvrdudeTab}
-            disabled={flashResult === undefined}
-          >
-            Результат прошивки
-          </button>
         </div>
       );
     } else {
@@ -520,6 +513,13 @@ export const Loader: React.FC<FlasherProps> = ({
         </div>
         {avrdudeCheck()}
         {buttonsDisplay()}
+        <button
+          className="btn-primary mb-2 w-full"
+          onClick={handleAddAvrdudeTab}
+          disabled={flashResult === undefined}
+        >
+          Результат прошивки
+        </button>
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddSerialMonitorTab}

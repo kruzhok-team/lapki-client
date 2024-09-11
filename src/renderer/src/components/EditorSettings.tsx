@@ -6,18 +6,18 @@ import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { CanvasScheme } from '@renderer/lib/CanvasScheme';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export interface EditorSettingsProps {
   toggle: () => void;
-  canvas: CanvasEditor | CanvasScheme;
+  canvas: CanvasEditor;
 }
 
 export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle, canvas }) => {
-  const model = canvas.controller.model;
+  const modelController = useModelContext();
 
-  const scale = model.useData('scale');
-  const isMounted = canvas.controller.model.useData('isMounted');
+  const scale = modelController.model.useData('scale');
+  const isMounted = canvas.controller.isMounted;
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {

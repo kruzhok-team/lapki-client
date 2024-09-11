@@ -7,7 +7,7 @@ import { ScrollableList } from '@renderer/components/ScrollableList';
 import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
@@ -26,9 +26,8 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   vacantComponents,
   ...props
 }) => {
-  const editor = useEditorContext();
-  const { model } = editor.controller;
-  const components = model.useData('elements.components');
+  const model = useModelContext();
+  const components = model.model.useData('elements.stateMachines.components');
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 

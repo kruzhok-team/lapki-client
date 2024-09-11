@@ -15,7 +15,7 @@ import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
 import { FinalState, State } from '@renderer/lib/drawable';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';
@@ -28,18 +28,17 @@ export interface HierarchyItemData {
 }
 
 export const Hierarchy: React.FC = () => {
-  const editor = useEditorContext();
-  const model = editor.controller.model;
-  const controller = editor.controller;
+  const controller = useModelContext();
+  const model = controller.model;
 
   const [theme] = useSettings('theme');
-
-  const states = model.useData('elements.states');
-  const initialStates = model.useData('elements.initialStates');
-  const finalStates = model.useData('elements.finalStates');
-  const choiceStates = model.useData('elements.choiceStates');
-  const transitions = model.useData('elements.transitions');
-  const notes = model.useData('elements.notes');
+  const sm = model.data.elements.stateMachines[controller.currentSmId!];
+  const states = sm.states;
+  const initialStates = sm.initialStates;
+  const finalStates = sm.finalStates;
+  const choiceStates = sm.choiceStates;
+  const transitions = sm.transitions;
+  const notes = sm.notes;
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -172,18 +171,18 @@ export const Hierarchy: React.FC = () => {
       const childId = value.index.toString();
 
       if (target.targetType === 'root') {
-        return controller.states.unlinkState({ id: childId });
+        return controller.unlinkState({ smId: controller.currentSmId!, id: childId });
       }
 
       const parent = target.parentItem.toString();
 
       if (parent === 'root') {
-        return controller.states.unlinkState({ id: childId });
+        return controller.unlinkState({ smId: controller.currentSmId!, id: childId });
       }
 
       if (parent === childId) return;
 
-      return controller.states.linkState({ parentId: parent, childId });
+      return controller.linkState({ smId: controller.currentSmId!, parentId: parent, childId });
     });
   };
 

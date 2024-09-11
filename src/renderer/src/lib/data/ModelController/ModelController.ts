@@ -140,6 +140,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       return;
     }
     canvas.isMounted = args.status;
+    this.model.triggerDataUpdate('canvas.isMounted');
   }
 
   initPlatform() {
@@ -1626,6 +1627,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // }
     return null;
   };
+
+  getCurrentCanvas() {
+    return this.controllers[this.currentSmId!].app;
+  }
 
   duplicateSelected = () => {
     this.copySelected();

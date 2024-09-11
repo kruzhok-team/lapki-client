@@ -21,6 +21,9 @@ export class FilesManager {
   private get data() {
     return this.modelController.model.data;
   }
+  private get controller() {
+    return this.modelController;
+  }
 
   newFile(platformIdx: string) {
     if (!isPlatformAvailable(platformIdx)) {
@@ -28,24 +31,33 @@ export class FilesManager {
     }
 
     const elements = emptyElements();
-    (elements.transitions as any) = [];
-    (elements.notes as any) = [];
-    elements.platform = platformIdx;
     this.modelController.model.init(null, 'Без названия', elements as any);
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, this.data.elements);
+    Compiler.compile(this.data.elements);
+  }
+
+  isPlatformsAvailable(importData: Elements) {
+    for (const smId in importData.stateMachines) {
+      const sm = importData.stateMachines[smId];
+      if (!isPlatformAvailable(sm.platform)) {
+        return [false, sm.platform];
+      }
+    }
+
+    return [true, null];
   }
 
   // Теперь называется так, потому что данные не парсятся
   initImportData(importData: Elements, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
-        if (!isPlatformAvailable(importData.platform)) {
+        const checkResult = this.isPlatformsAvailable(importData);
+        if (!checkResult[0]) {
           return makeLeft({
             name: openData[1]!,
-            content: `Незнакомая платформа "${importData.platform}".`,
+            content: `Незнакомая платформа "${checkResult[1]}".`,
           });
         }
         this.modelController.initData(
@@ -81,7 +93,7 @@ export class FilesManager {
   ): Promise<boolean> {
     const openData = await window.api.fileHandlers.openFile('Cyberiada');
     if (openData[0]) {
-      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
+      Compiler.compile(openData[3]);
       setOpenData(openData);
       return true;
     }
@@ -100,10 +112,11 @@ export class FilesManager {
         if (data == undefined) {
           return makeLeft(null);
         }
-        if (!isPlatformAvailable(data.platform)) {
+        const checkResult = this.isPlatformsAvailable(data);
+        if (!checkResult[1]) {
           return makeLeft({
             name: openData[1]!,
-            content: `Незнакомая платформа "${data.platform}".`,
+            content: `Незнакомая платформа "${checkResult[2]}".`,
           });
         }
 
@@ -132,7 +145,9 @@ export class FilesManager {
   }
 
   save = async (): Promise<Either<FileError | null, null>> => {
-    if (!this.data.isInitialized) return makeLeft(null);
+    const canvas = this.controller.getCurrentCanvas();
+    const isInitialized = this.data.canvas[canvas.id].isInitialized;
+    if (!isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
     }
@@ -152,7 +167,9 @@ export class FilesManager {
   };
 
   saveAs = async (): Promise<Either<FileError | null, null>> => {
-    if (!this.data.isInitialized) return makeLeft(null);
+    const canvas = this.controller.getCurrentCanvas();
+    const isInitialized = this.data.canvas[canvas.id].isInitialized;
+    if (!isInitialized) return makeLeft(null);
     const data = this.modelController.model.serializer.getAll('Cyberiada');
     const saveData = await window.api.fileHandlers.saveAsFile(this.data.basename as string, data);
     if (saveData[0]) {

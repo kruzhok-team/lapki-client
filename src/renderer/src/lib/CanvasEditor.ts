@@ -4,6 +4,7 @@ import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
+import { ModelController } from './data/ModelController';
 import { CanvasController } from './data/ModelController/CanvasController';
 import { generateId } from './utils';
 
@@ -26,8 +27,10 @@ export class CanvasEditor {
   private rendererUnsubscribe: (() => void) | null | false = null;
 
   id = generateId();
-
-  view = new EditorView(this);
+  view: EditorView;
+  constructor(modelController: ModelController) {
+    this.view = new EditorView(this, modelController);
+  }
 
   controller!: CanvasController;
 
@@ -109,7 +112,6 @@ export class CanvasEditor {
       canvasId: this.controller.id,
       status: true,
     });
-    this.controller.model.triggerDataUpdate('isMounted');
 
     this.controller.loadData();
     this.view.initEvents();
@@ -119,7 +121,7 @@ export class CanvasEditor {
   setSettings(settings: CanvasEditorSettings) {
     this.settings = settings;
 
-    if (this.controller.model.data.isMounted) {
+    if (this.controller.isMounted) {
       this.view.isDirty = true;
     }
   }
@@ -141,8 +143,11 @@ export class CanvasEditor {
     this._keyboard = null;
     this._render = null;
 
-    this.controller.model.data.isMounted = true;
-    this.controller.model.triggerDataUpdate('isMounted');
+    this.controller.isMounted = true;
+    this.controller.emit('isMounted', {
+      canvasId: this.controller.id,
+      status: true,
+    });
   }
 
   focus() {

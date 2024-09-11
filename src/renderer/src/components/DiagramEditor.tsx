@@ -13,18 +13,18 @@ import { useModal } from '@renderer/hooks/useModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Event } from '@renderer/types/diagram';
-
 interface DiagramEditorProps {
   editor: CanvasEditor;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
   const editor = props.editor;
-  const isMounted = editor.;
+  const isMounted = editor.controller.isMounted;
 
   const [canvasSettings] = useSettings('canvas');
-
+  const modelController = useModelContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
@@ -41,7 +41,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
     const handleDblclick = (position: Point) => {
       editor.controller.states.createState({
+        smId: modelController.currentSmId!,
         name: 'Состояние',
+        events: [],
+        dimensions: { width: 100, height: 50 }, // TODO (L140-beep): перепроверить
         position,
         placeInCenter: true,
       });
@@ -85,11 +88,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   const handleEventsModalSubmit = (data: Event) => {
     if (!eventsModalParentData) return;
 
-    editor.controller.states.changeEvent(
-      eventsModalParentData.state.id,
-      eventsModalParentData.eventSelection,
-      data
-    );
+    modelController.changeEvent({
+      smId: modelController.currentSmId!,
+      stateId: eventsModalParentData.state.id,
+      event: eventsModalParentData.eventSelection,
+      newValue: data,
+    });
 
     closeEventsModal();
   };

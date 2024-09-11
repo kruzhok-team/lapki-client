@@ -79,6 +79,7 @@ function actualizeInitialState(
   };
   const initial: InitialState = {
     position: oldInitial.position,
+    dimensions: { width: 50, height: 50 },
   };
   return [{ [initialId]: initial }, { [transitionId]: transition }];
 }
@@ -105,19 +106,23 @@ function actualizeComponents(oldComponents: { [id: string]: CompilerComponent })
 function actualizeElements(oldElements: CompilerElements): Elements {
   const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
   return {
-    platform: oldElements.platform,
     parameters: oldElements.parameters,
-    components: actualizeComponents(oldElements.components),
-    states: actualizeStates(oldElements.states),
-    finalStates: {},
-    choiceStates: {},
-    notes: {},
-    transitions: {
-      ...actualizeTransitions(oldElements.transitions),
-      ...initialTransition,
+    stateMachines: {
+      G: {
+        platform: oldElements.platform,
+        components: actualizeComponents(oldElements.components),
+        states: actualizeStates(oldElements.states),
+        finalStates: {},
+        choiceStates: {},
+        notes: {},
+        transitions: {
+          ...actualizeTransitions(oldElements.transitions),
+          ...initialTransition,
+        },
+        initialStates: initials,
+        meta: {},
+      },
     },
-    initialStates: initials,
-    meta: {},
   };
 }
 
@@ -189,36 +194,35 @@ export class Compiler extends ClientWS {
     return result;
   }
 
-  static async compile(platform: string, data: Elements | string) {
+  static async compile(data: Elements | string) {
     this.setCompilerData(undefined);
     this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
-    this.platform = platform;
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {
-        const [mainPlatform, subPlatform] = platform.split('-');
-        switch (mainPlatform) {
-          case 'BearlogaDefendImport':
-            ws.send('berlogaImport');
-            ws.send(data as string);
-            ws.send(subPlatform);
-            this.mode = 'import';
-            break;
-          case 'BearlogaDefend':
-            ws.send('berlogaExport');
-            ws.send(JSON.stringify(data));
-            if (subPlatform !== undefined) {
-              ws.send(subPlatform);
-            } else {
-              ws.send('Robot');
-            }
-            this.mode = 'export';
-            break;
-          default:
-            ws.send('cgml');
-            this.mode = 'compile';
-            ws.send(exportCGML(data as Elements));
-            break;
-        }
+        // TODO (L140-beep): Понять, что с этим делать
+        // switch (mainPlatform) {
+        //   case 'BearlogaDefendImport':
+        //     ws.send('berlogaImport');
+        //     ws.send(data as string);
+        //     ws.send(subPlatform);
+        //     this.mode = 'import';
+        //     break;
+        //   case 'BearlogaDefend':
+        //     ws.send('berlogaExport');
+        //     ws.send(JSON.stringify(data));
+        //     if (subPlatform !== undefined) {
+        //       ws.send(subPlatform);
+        //     } else {
+        //       ws.send('Robot');
+        //     }
+        //     this.mode = 'export';
+        //     break;
+        //   default:
+        ws.send('cgml');
+        this.mode = 'compile';
+        ws.send(exportCGML(data as Elements));
+        // break;
+        // }
 
         this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {

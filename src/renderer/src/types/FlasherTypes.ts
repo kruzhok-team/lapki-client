@@ -110,7 +110,7 @@ export class FlashResult {
 Серийный номер устройства: ${serialID}
 Результат прошивки: "${this.result}"
 
-Вывод avrdude 
+Вывод программы для загрузки прошивки:
 ${avrdudeMsg}`;
   }
 }

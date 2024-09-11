@@ -11,6 +11,15 @@ import {
   MarkedIconData,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
+import {
+  State as DataState,
+  Transition as DataTransition,
+  Note as DataNote,
+  InitialState as DataInitialState,
+  ChoiceState as DataChoiceState,
+  FinalState as DataFinalState,
+  Component,
+} from '@renderer/types/diagram';
 
 import { CanvasController } from './ModelController/CanvasController';
 
@@ -24,12 +33,12 @@ export class Initializer {
   init() {
     this.resetEntities();
 
-    this.initStates();
-    this.initInitialStates();
-    this.initFinalStates();
-    this.initChoiceStates();
-    this.initTransitions();
-    this.initNotes();
+    // this.initStates();
+    // this.initInitialStates();
+    // this.initFinalStates();
+    // this.initChoiceStates();
+    // this.initTransitions();
+    // this.initNotes();
     // this.initComponents('G');
     this.initStateMachines();
     this.app.view.viewCentering();
@@ -51,17 +60,14 @@ export class Initializer {
   private get platform() {
     return this.controller.platform;
   }
-  private get history() {
-    return this.controller.history;
-  }
 
   private resetEntities() {
-    this.controller.stateMachines.deleteStateMachine(
-      {
-        id: 'G',
-      },
-      false
-    );
+    // this.controller.stateMachines.deleteStateMachine(
+    //   {
+    //     id: 'G',
+    //   },
+    //   false
+    // );
     this.app.view.children.clear();
     this.transitions.forEach((value) => {
       this.transitions.unwatchTransition(value);
@@ -76,14 +82,12 @@ export class Initializer {
     this.states.clear();
     this.transitions.clear();
     this.notes.clear();
-    this.history.clear();
 
     this.components.forEach((value) => {
       this.components.unwatch(value);
     });
 
     this.components.clear();
-    this.history.clear(); // Общая история
   }
 
   /**
@@ -93,15 +97,13 @@ export class Initializer {
    *
    * Это нужно потому что в схемы могут идти сначала дети а потом родители
    */
-  private initStates() {
-    const items = this.controller.model.data.elements.states;
-
-    for (const id in items) {
-      this.createStateView(id);
+  private initStates(states: { [id: string]: DataState }) {
+    for (const id in states) {
+      this.createStateView(id, states[id]);
     }
 
-    for (const id in items) {
-      const data = items[id];
+    for (const id in states) {
+      const data = states[id];
 
       if (!data.parentId) continue;
 
@@ -109,15 +111,14 @@ export class Initializer {
     }
   }
 
-  private initInitialStates() {
-    const items = this.controller.model.data.elements.initialStates;
-
-    for (const id in items) {
-      this.createInitialStateView(id);
+  private initInitialStates(states: { [id: string]: DataInitialState }) {
+    for (const id in states) {
+      const state = states[id];
+      this.createInitialStateView(id, state);
     }
 
-    for (const id in items) {
-      const data = items[id];
+    for (const id in states) {
+      const data = states[id];
 
       if (!data.parentId) continue;
 
@@ -125,15 +126,14 @@ export class Initializer {
     }
   }
 
-  private initFinalStates() {
-    const items = this.controller.model.data.elements.finalStates;
-
-    for (const id in items) {
-      this.createFinalStateView(id);
+  private initFinalStates(finals: { [id: string]: DataFinalState }) {
+    for (const id in finals) {
+      const final = finals[id];
+      this.createFinalStateView(id, final);
     }
 
-    for (const id in items) {
-      const data = items[id];
+    for (const id in finals) {
+      const data = finals[id];
 
       if (!data.parentId) continue;
 
@@ -141,15 +141,14 @@ export class Initializer {
     }
   }
 
-  private initChoiceStates() {
-    const items = this.controller.model.data.elements.choiceStates;
-
-    for (const id in items) {
-      this.createChoiceStateView(id);
+  private initChoiceStates(choices: { [id: string]: DataChoiceState }) {
+    for (const id in choices) {
+      const choice = choices[id];
+      this.createChoiceStateView(id, choice);
     }
 
-    for (const id in items) {
-      const data = items[id];
+    for (const id in choices) {
+      const data = choices[id];
 
       if (!data.parentId) continue;
 
@@ -157,55 +156,49 @@ export class Initializer {
     }
   }
 
-  private initTransitions() {
-    const items = this.controller.model.data.elements.transitions;
-
-    for (const id in items) {
-      this.createTransitionView(id);
+  private initTransitions(transitions: { [id: string]: DataTransition }) {
+    for (const id in transitions) {
+      const transition = transitions[id];
+      this.createTransitionView(id, transition);
     }
 
     // Инициализация призрачного перехода
-    this.transitions.ghost = new GhostTransition(this.appEditor);
-    this.appEditor.view.children.add(this.transitions.ghost, Layer.GhostTransition);
+    this.transitions.ghost = new GhostTransition(this.app);
+    this.app.view.children.add(this.transitions.ghost, Layer.GhostTransition);
   }
 
-  private initNotes() {
-    const items = this.controller.model.data.elements.notes;
-
-    for (const id in items) {
-      this.createNoteView(id);
+  private initNotes(notes: { [id: string]: DataNote }) {
+    for (const id in notes) {
+      this.createNoteView(id, notes[id]);
     }
   }
 
-  private initStateMachines() {
-    this.controller.stateMachines.createStateMachine({
-      id: 'G',
-      components: [],
-      position: {
-        x: 0,
-        y: 0,
-      },
-    });
-    this.initComponents('G');
-    const sm = this.controller.stateMachines.getStateMachineById('G');
-    if (sm) {
-      sm.dimensions = {
-        width: sm.computedDimensions.width,
-        height: sm.computedDimensions.height,
-      };
-    }
-  }
+  // private initStateMachines() {
+  //   this.controller.stateMachines.createStateMachine({
+  //     id: 'G',
+  //     components: [],
+  //     position: {
+  //       x: 0,
+  //       y: 0,
+  //     },
+  //   });
+  //   // this.initComponents('G');
+  //   const sm = this.controller.stateMachines.getStateMachineById('G');
+  //   if (sm) {
+  //     sm.dimensions = {
+  //       width: sm.computedDimensions.width,
+  //       height: sm.computedDimensions.height,
+  //     };
+  //   }
+  // }
 
   // Флаг нужен, чтобы повторно не добавлять
-  initComponents(sm: string, platformInit: boolean = false) {
+  initComponents(sm: string, components: { [id: string]: Component }) {
     if (!this.platform) return;
-
-    const items = this.controller.model.data.elements.components;
-    for (const name in items) {
-      const component = items[name];
-      if (!platformInit) {
-        this.createComponentView(sm, name);
-      }
+    for (const name in components) {
+      const component = components[name];
+      // this.createComponentView(sm, name);
+      // }
       this.platform.nameToVisual.set(name, {
         component: component.type,
         label: component.parameters['label'],
@@ -214,41 +207,41 @@ export class Initializer {
     }
   }
 
-  private createComponentView(sm: string, id: string) {
-    const icon = this.controller.platform?.getComponentIcon(id, true);
-    if (!icon) {
-      return;
-    }
-    const modelComponent = this.controller.model.data.elements.components[id];
-    const markedIcon: MarkedIconData = {
-      icon: icon,
-      label: modelComponent.parameters['label'],
-      color: modelComponent.parameters['labelColor'],
-    };
-    const smDrawable = this.controller.stateMachines.getStateMachineById(sm);
-    const component = new DrawableComponent(
-      this.appScheme,
-      id,
-      modelComponent.position,
-      markedIcon,
-      smDrawable
-    );
-    if (!smDrawable) {
-      return;
-    }
-    this.components.set(id, component);
-    this.components.watch(component);
-    if (smDrawable.children) {
-      smDrawable.children.add(component, Layer.Components);
-    }
-  }
+  // private createComponentView(sm: string, id: string) {
+  //   const icon = this.controller.platform?.getComponentIcon(id, true);
+  //   if (!icon) {
+  //     return;
+  //   }
+  //   const modelComponent = this.controller.model.data.elements.components[id];
+  //   const markedIcon: MarkedIconData = {
+  //     icon: icon,
+  //     label: modelComponent.parameters['label'],
+  //     color: modelComponent.parameters['labelColor'],
+  //   };
+  //   const smDrawable = this.controller.stateMachines.getStateMachineById(sm);
+  //   const component = new DrawableComponent(
+  //     this.appScheme,
+  //     id,
+  //     modelComponent.position,
+  //     markedIcon,
+  //     smDrawable
+  //   );
+  //   if (!smDrawable) {
+  //     return;
+  //   }
+  //   this.components.set(id, component);
+  //   this.components.watch(component);
+  //   if (smDrawable.children) {
+  //     smDrawable.children.add(component, Layer.Components);
+  //   }
+  // }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
-  private createStateView(id: string) {
-    const state = new State(this.appEditor, id);
+  private createStateView(id: string, dataState: DataState) {
+    const state = new State(this.app, id, dataState);
     this.states.data.states.set(state.id, state);
     this.states.watch(state);
-    this.appEditor.view.children.add(state, Layer.States);
+    this.app.view.children.add(state, Layer.States);
   }
 
   private linkStateView(parentId: string, childId: string) {
@@ -257,30 +250,30 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.appEditor.view.children.remove(child, Layer.States);
+    this.app.view.children.remove(child, Layer.States);
     child.parent = parent;
     parent.children.add(child, Layer.States);
   }
 
-  private createTransitionView(id: string) {
-    const transition = new Transition(this.appEditor, id);
+  private createTransitionView(id: string, transitionData: DataTransition) {
+    const transition = new Transition(this.app, id, transitionData);
     this.transitions.set(id, transition);
     this.transitions.linkTransition(id);
     this.transitions.watchTransition(transition);
   }
 
-  private createNoteView(id: string) {
-    const note = new Note(this.appEditor, id);
+  private createNoteView(id: string, noteData: DataNote) {
+    const note = new Note(this.app, id, noteData);
     this.notes.set(id, note);
-    this.appEditor.view.children.add(note, Layer.Notes);
+    this.app.view.children.add(note, Layer.Notes);
     this.notes.watch(note);
   }
 
-  private createInitialStateView(id: string) {
-    const state = new InitialState(this.appEditor, id);
+  private createInitialStateView(id: string, initialStateData: DataInitialState) {
+    const state = new InitialState(this.app, id, initialStateData);
     this.states.data.initialStates.set(state.id, state);
     this.states.watch(state);
-    this.appEditor.view.children.add(state, Layer.InitialStates);
+    this.app.view.children.add(state, Layer.InitialStates);
   }
 
   private linkInitialStateView(parentId: string, childId: string) {
@@ -289,16 +282,16 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.appEditor.view.children.remove(child, Layer.InitialStates);
+    this.app.view.children.remove(child, Layer.InitialStates);
     child.parent = parent;
     parent.children.add(child, Layer.InitialStates);
   }
 
-  private createFinalStateView(id: string) {
-    const state = new FinalState(this.appEditor, id);
+  private createFinalStateView(id: string, finalStateData: DataFinalState) {
+    const state = new FinalState(this.app, id, finalStateData);
     this.states.data.finalStates.set(state.id, state);
     this.states.watch(state);
-    this.appEditor.view.children.add(state, Layer.FinalStates);
+    this.app.view.children.add(state, Layer.FinalStates);
   }
 
   private linkFinalStateView(parentId: string, childId: string) {
@@ -307,16 +300,16 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.appEditor.view.children.remove(child, Layer.FinalStates);
+    this.app.view.children.remove(child, Layer.FinalStates);
     child.parent = parent;
     parent.children.add(child, Layer.FinalStates);
   }
 
-  private createChoiceStateView(id: string) {
-    const state = new ChoiceState(this.appEditor, id);
+  private createChoiceStateView(id: string, choiceStateData: DataChoiceState) {
+    const state = new ChoiceState(this.app, id, choiceStateData);
     this.states.data.choiceStates.set(state.id, state);
     this.states.watch(state);
-    this.appEditor.view.children.add(state, Layer.ChoiceStates);
+    this.app.view.children.add(state, Layer.ChoiceStates);
   }
 
   private linkChoiceStateView(parentId: string, childId: string) {
@@ -325,7 +318,7 @@ export class Initializer {
 
     if (!parent || !child) return;
 
-    this.appEditor.view.children.remove(child, Layer.ChoiceStates);
+    this.app.view.children.remove(child, Layer.ChoiceStates);
     child.parent = parent;
     parent.children.add(child, Layer.ChoiceStates);
   }

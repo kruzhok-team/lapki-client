@@ -271,7 +271,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   createFinalState(params: CreateFinalStateParams) {
     const { id } = params;
     if (!id) return;
-    const state = new FinalState(this.app, id);
+    const state = new FinalState(this.app, id, { ...params });
 
     this.data.finalStates.set(id, state);
 

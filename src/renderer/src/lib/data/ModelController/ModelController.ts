@@ -139,7 +139,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
+    this.emit('initData', elements)
     this.model.makeStale();
+    this.history.clear();
   }
 
   loadData() {

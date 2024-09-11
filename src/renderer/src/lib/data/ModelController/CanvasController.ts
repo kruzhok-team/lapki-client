@@ -31,7 +31,7 @@ import {
   SetMountedStatusParams,
   UnlinkStateParams,
 } from '@renderer/lib/types';
-import { Condition, Variable } from '@renderer/types/diagram';
+import { Condition, Elements, StateMachine, Variable } from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
 import { NotesController } from './NotesController';
@@ -57,7 +57,7 @@ export function getSignalName(smId: string, attribute: CanvasSubscribeAttribute)
 }
 
 export type CanvasControllerEvents = {
-  loadData: null;
+  loadData: StateMachine;
   initPlatform: null;
   initEvents: null;
 
@@ -498,11 +498,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.platform = platform;
     //! Инициализировать компоненты нужно сразу после загрузки платформы
     // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
-    this.initializer.initComponents('', true);
+    // this.initializer.initComponents('', true);
   }
 
   loadData() {
-    this.initializer.init();
+    // this.initializer.init();
     this.app.view.isDirty = true;
   }
 

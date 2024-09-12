@@ -2,21 +2,24 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+// import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
+import { ChangeTransitionParams } from '@renderer/lib/types';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Transition } from '@renderer/types/diagram';
 
 import { Events, Condition, ColorField, Trigger } from './components';
 import { useTrigger, useCondition, useEvents } from './hooks';
 
 export const TransitionModal: React.FC = () => {
-  const editor = useEditorContext();
-
+  const modelController = useModelContext();
+  const currentSm = modelController.currentSmId!;
+  const sm = modelController.model.data.elements.stateMachines[currentSm];
   const [isOpen, open, close] = useModal(false);
-
+  const [transitionId, setTransitionId] = useState<string | null>(null);
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransition, setNewTransition] = useState<{
-    source: State | ChoiceState;
-    target: State | ChoiceState | FinalState;
+    sourceId: string;
+    targetId: string;
   } | null>();
   const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
@@ -29,11 +32,11 @@ export const TransitionModal: React.FC = () => {
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
   const showTrigger = useMemo(() => {
     if (newTransition) {
-      return !(newTransition.source instanceof ChoiceState);
+      return !sm.choiceStates[newTransition.sourceId];
     }
 
     if (transition) {
-      return !(transition.source instanceof ChoiceState);
+      return !sm.choiceStates[transition.sourceId];
     }
 
     return true;
@@ -42,11 +45,12 @@ export const TransitionModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isInitialTransition && transition) {
-      editor.controller.transitions.changeTransition({
-        id: transition.id,
-        sourceId: transition.source.id,
-        targetId: transition.target.id,
+    if (isInitialTransition && transition && transitionId) {
+      modelController.changeTransition({
+        smId: currentSm,
+        id: transitionId,
+        sourceId: transition.sourceId,
+        targetId: transition.targetId,
         color,
       });
 
@@ -124,11 +128,12 @@ export const TransitionModal: React.FC = () => {
     };
 
     // Если редактируем состояние
-    if (transition) {
-      editor.controller.transitions.changeTransition({
-        id: transition.id,
-        sourceId: transition.source.id,
-        targetId: transition.target.id,
+    if (transition && transitionId) {
+      modelController.changeTransition({
+        smId: currentSm,
+        id: transitionId,
+        sourceId: transition.sourceId,
+        targetId: transition.targetId,
         color,
         label: {
           trigger: getTrigger(),
@@ -142,9 +147,10 @@ export const TransitionModal: React.FC = () => {
 
     // Если создаем новое
     if (newTransition) {
-      editor.controller.transitions.createTransition({
-        sourceId: newTransition.source.id,
-        targetId: newTransition.target.id,
+      modelController.createTransition({
+        smId: currentSm,
+        sourceId: newTransition.sourceId,
+        targetId: newTransition.targetId,
         color,
         label: {
           trigger: getTrigger(),
@@ -165,48 +171,44 @@ export const TransitionModal: React.FC = () => {
     setColor(undefined);
 
     setTransition(null);
+    setTransitionId(null);
     setNewTransition(null);
     setIsInitialTransition(false);
   };
 
   useEffect(() => {
-    const handleCreateTransition = (data: {
-      source: State | ChoiceState;
-      target: State | ChoiceState | FinalState;
-    }) => {
+    const handleCreateTransition = (data: { sourceId: string; targetId: string }) => {
       setNewTransition(data);
       events.setEvents([]);
       open();
     };
 
-    const handleChangeTransition = (target: Transition) => {
-      const { data: initialData } = target;
-
-      if (initialData.label?.trigger) {
-        trigger.setSelectedComponent(initialData.label.trigger.component);
-        trigger.setSelectedMethod(initialData.label.trigger.method);
+    const handleChangeTransition = (args: ChangeTransitionParams) => {
+      const { id, label, color } = args;
+      if (label?.trigger) {
+        trigger.setSelectedComponent(label.trigger.component);
+        trigger.setSelectedMethod(label.trigger.method);
       }
 
-      condition.parseCondition(initialData.label?.condition);
+      condition.parseCondition(label?.condition);
 
-      if (initialData.label?.do) {
-        events.setEvents(initialData.label.do);
+      if (label?.do) {
+        events.setEvents(label.do);
       }
 
-      setColor(initialData.color);
+      setColor(color);
 
-      setTransition(target);
-
-      setIsInitialTransition(initialData.label == undefined);
+      setTransition({ ...args });
+      setTransitionId(id);
+      setIsInitialTransition(label == undefined);
       open();
     };
-
-    editor.controller.transitions.on('createTransition', handleCreateTransition);
-    editor.controller.transitions.on('changeTransition', handleChangeTransition);
+    modelController.on('createTransition', handleCreateTransition);
+    modelController.on('changeTransition', handleChangeTransition);
 
     return () => {
-      editor.controller.transitions.off('createTransition', handleCreateTransition);
-      editor.controller.transitions.off('changeTransition', handleChangeTransition);
+      modelController.off('createTransition', handleCreateTransition);
+      modelController.off('changeTransition', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

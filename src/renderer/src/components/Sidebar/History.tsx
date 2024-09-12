@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-down.svg';
 import { Action, actionDescriptions, Stack } from '@renderer/lib/data/History';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 const groupByNumberOfConnectedActions = (stack: Stack) => {
   const res: Array<Action<any> | Action<any>[]> = [];
@@ -60,17 +60,17 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
 };
 
 const HistoryWithEditor: React.FC = () => {
-  const editor = useEditorContext();
+  const modelController = useModelContext();
 
-  const { undoStack, redoStack } = editor.controller.history.use();
+  const { undoStack, redoStack } = modelController.history.use();
 
   return (
     <div>
       <div className="mb-4 flex gap-1">
-        <button className="btn-secondary" onClick={() => editor.controller.history.undo()}>
+        <button className="btn-secondary" onClick={() => modelController.history.undo()}>
           Назад
         </button>
-        <button className="btn-secondary" onClick={() => editor.controller.history.redo()}>
+        <button className="btn-secondary" onClick={() => modelController.history.redo()}>
           Вперёд
         </button>
       </div>
@@ -117,7 +117,7 @@ const HistoryWithEditor: React.FC = () => {
 };
 
 export const History: React.FC = () => {
-  const { controller } = useEditorContext();
+  const modelController = useModelContext();
   const isInitialized = controller.model.useData('isInitialized');
 
   return (

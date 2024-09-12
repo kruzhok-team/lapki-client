@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { WithHint } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 interface ComponentProps {
   name: string;
@@ -18,8 +18,8 @@ interface ComponentProps {
 
 export const Component: React.FC<ComponentProps> = (props) => {
   const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
-
-  const editor = useEditorContext();
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
 
   const [dragOver, setDragOver] = useState(false);
 

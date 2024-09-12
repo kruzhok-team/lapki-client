@@ -168,7 +168,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private getSmId(id: string, element: `${keyof StateMachine}`) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
-      if (!sm[element]) {
+      if (sm[element] === undefined || sm[element] === null) {
         throw new Error('Never is reached');
       }
       if (sm[element][id]) {

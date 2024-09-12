@@ -3,16 +3,16 @@ import React, { useMemo, useState } from 'react';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { useComponents } from '@renderer/hooks';
-import { useEditorContext } from '@renderer/store/EditorContext';
 
 import { Component } from './Component';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export const ComponentsList: React.FC = () => {
-  const editor = useEditorContext();
-  const model = editor.controller.model;
-
-  const isInitialized = model.useData('isInitialized');
-  const components = model.useData('elements.components');
+  const modelController = useModelContext();
+  const model = modelController.model;
+  const editor = modelController.getCurrentCanvas();
+  const isInitialized = model.data.canvas[editor.id];
+  const components = model.data.elements.stateMachines[modelController.currentSmId!].components;
 
   const {
     addProps,

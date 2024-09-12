@@ -25,10 +25,12 @@ import {
 import { preloadPicto } from '@renderer/lib/drawable';
 
 import { Tabs } from './Tabs';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export const MainContainer: React.FC = () => {
-  const editor = useEditorContext();
-  const isMounted = editor.controller.model.useData('isMounted');
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  const isMounted = editor.controller.isMounted;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =

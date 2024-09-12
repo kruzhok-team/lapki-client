@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 import { frameworkWords, reservedWordsC, validators } from '@renderer/utils';
@@ -32,9 +32,10 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const editor = useEditorContext();
-  const { model } = editor.controller;
-  const components = model.useData('elements.components');
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  const { model } = modelController;
+  const components = model.data.elements.stateMachines[modelController.currentSmId!].components;
 
   const [name, setName] = useState('');
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
@@ -106,8 +107,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       }
     }
     // проверка на то, что название не совпадает с названием класса компонентов
-    const controller = editor.controller;
-    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
+    const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
     for (const component of vacantComponents) {
       if (component.name == name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));

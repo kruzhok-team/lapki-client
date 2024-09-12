@@ -3,7 +3,7 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Event, ArgList } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
@@ -27,10 +27,11 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const editor = useEditorContext();
-  const model = editor.controller.model;
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  const model = modelController.model;
 
-  const componentsData = model.useData('elements.components');
+  const componentsData = model.data.elements.stateMachines[modelController.currentSmId!].components;
   const controller = editor.controller;
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 

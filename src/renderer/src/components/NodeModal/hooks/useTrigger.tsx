@@ -3,16 +3,16 @@ import { useCallback, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
 export const useTrigger = (addSystemComponents: boolean) => {
-  const editor = useEditorContext();
-  const model = editor.controller.model;
-
-  const componentsData = model.useData('elements.components');
+  const modelController = useModelContext();
+  const sm = modelController.model.data.elements.stateMachines[modelController.currentSmId!];
+  const editor = modelController.getCurrentCanvas();
+  const componentsData = sm.components;
   const controller = editor.controller;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

@@ -2,15 +2,18 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor, SchemeEditor } from '@renderer/components';
+import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
 
 import { NotInitialized } from '../NotInitialized';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export const Tabs: React.FC = () => {
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
   const [items, activeTab, setActiveTab, swapTabs, closeTab] = useTabs((state) => [
     state.items,
     state.activeTab,
@@ -64,11 +67,9 @@ export const Tabs: React.FC = () => {
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
-            <DiagramEditor />
+            <DiagramEditor editor={editor} />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />
-          ) : item.type === 'scheme' ? (
-            <SchemeEditor />
           ) : (
             <SerialMonitorTab />
           )}

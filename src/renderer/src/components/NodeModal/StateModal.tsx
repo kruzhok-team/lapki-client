@@ -3,13 +3,15 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { State } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Events, ColorField, Trigger, Condition } from './components';
 import { useTrigger, useEvents, useCondition } from './hooks';
 
 export const StateModal: React.FC = () => {
-  const editor = useEditorContext();
+  const modelController = useModelContext();
+  const currentSm = modelController.currentSmId!;
+  const editor = modelController.getCurrentCanvas();
 
   const [isOpen, open, close] = useModal(false);
 
@@ -103,7 +105,8 @@ export const StateModal: React.FC = () => {
       return events.events;
     };
 
-    editor.controller.states.changeStateEvents({
+    modelController.changeStateEvents({
+      smId: currentSm,
       id: state.id,
       eventData: {
         trigger: getTrigger(),

@@ -49,8 +49,8 @@ interface StatesControllerEvents {
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
-  finalStateContextMenu: { state: FinalState; position: Point };
-  choiceStateContextMenu: { state: ChoiceState; position: Point };
+  finalStateContextMenu: { stateId: string; position: Point };
+  choiceStateContextMenu: { stateId: string; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -472,7 +472,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   };
 
-  handleContextMenu = (state: State, e: { event: MyMouseEvent }) => {
+  handleContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
+    const state = this.data.states.get(stateId);
+    if (!state) return;
     this.controller.selectState({ smId: '', id: state.id });
 
     const eventIdx = state.eventBox.handleClick({
@@ -553,9 +555,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.changeFinalStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   }
 
-  handleFinalStateContextMenu = (state: FinalState, e: { event: MyMouseEvent }) => {
+  handleFinalStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
+    const item = this.data.finalStates.get(stateId);
+    if (!item) return;
     this.emit('finalStateContextMenu', {
-      state,
+      stateId,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -571,10 +575,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.changeChoiceStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   }
 
-  handleChoiceStateContextMenu = (state: ChoiceState, e: { event: MyMouseEvent }) => {
-    this.controller.selectChoice({ smId: '', id: state.id });
+  handleChoiceStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
+    const item = this.data.choiceStates.get(stateId);
+    if (!item) return;
+    this.controller.selectChoice({ smId: '', id: stateId });
     this.emit('choiceStateContextMenu', {
-      state,
+      stateId,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -617,7 +623,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mousedown', this.handleStateMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
-    state.on('contextmenu', this.handleContextMenu.bind(this, state));
+    state.on('contextmenu', this.handleContextMenu.bind(this, state.id));
     state.on('drag', this.handleDrag.bind(this, state));
     state.on('longpress', this.handleLongPress.bind(this, state));
 
@@ -629,7 +635,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.off('mousedown', this.handleStateMouseDown.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
-    state.off('contextmenu', this.handleContextMenu.bind(this, state));
+    state.off('contextmenu', this.handleContextMenu.bind(this, state.id));
     state.off('drag', this.handleDrag.bind(this, state));
     state.off('longpress', this.handleLongPress.bind(this, state));
 
@@ -646,18 +652,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   private watchFinalState(state: FinalState) {
     state.on('dragend', this.handleFinalStateDragEnd.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnFinalState.bind(this, state));
-    state.on('contextmenu', this.handleFinalStateContextMenu.bind(this, state));
+    state.on('contextmenu', this.handleFinalStateContextMenu.bind(this, state.id));
   }
   private unwatchFinalState(state: FinalState) {
     state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnFinalState.bind(this, state));
-    state.off('contextmenu', this.handleFinalStateContextMenu.bind(this, state));
+    state.off('contextmenu', this.handleFinalStateContextMenu.bind(this, state.id));
   }
   private watchChoiceState(state: ChoiceState) {
     state.on('dragend', this.handleChoiceStateDragEnd.bind(this, state));
     state.on('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state));
+    state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
   }
@@ -665,7 +671,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.off('dragend', this.handleChoiceStateDragEnd.bind(this, state));
     state.off('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.off('contextmenu', this.handleChoiceStateContextMenu.bind(this, state));
+    state.off('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
 
     state.edgeHandlers.unbindEvents();
   }

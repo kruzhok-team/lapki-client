@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { TemplatesList } from '@renderer/types/templates';
 
 interface TemplateSelectionProps {
@@ -14,7 +14,7 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   selectedTemplate,
   setSelectedTemplate,
 }) => {
-  const { controller } = useEditorContext();
+  const modelController = useModelContext();
 
   const [isLoading, setIsLoading] = useState(true);
   const [templates, setTemplates] = useState({} as TemplatesList);
@@ -24,14 +24,14 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
 
   useEffect(() => {
     const fn = async () => {
-      const data = await controller.files.getAllTemplates();
+      const data = await modelController.files.getAllTemplates();
 
       setTemplates(data);
       setIsLoading(false);
     };
 
     fn();
-  }, [controller.files]);
+  }, [modelController.files]);
 
   if (isLoading) {
     return <div>Loading...</div>;

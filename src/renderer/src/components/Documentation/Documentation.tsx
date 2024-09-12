@@ -7,15 +7,13 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
-import { useEditorContext } from '@renderer/store/EditorContext';
-import { useSchemeContext } from '@renderer/store/SchemeContext';
 import { useDoc } from '@renderer/store/useDoc';
-import { useTabs } from '@renderer/store/useTabs';
 import { File } from '@renderer/types/documentation';
 
 import { Navigation } from './components/Navigation';
 import { Show } from './components/Show';
 import { Tree } from './components/Tree';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export interface CurrentItem {
   isHtml: boolean;
@@ -28,9 +26,8 @@ interface DocumentationProps {
 }
 
 export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false }) => {
-  const editor = useEditorContext();
-  const scheme = useSchemeContext();
-
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
   const [doc] = useSettings('doc');
   const url = doc?.host ?? '';
 
@@ -38,7 +35,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     url && `${url}/index.json?nocache=true`
   );
 
-  const [tab] = useTabs((state) => [state.activeTab]);
+  // const [tab] = useTabs((state) => [state.activeTab]);
 
   const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
@@ -191,10 +188,8 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
           >
             <Question height={40} width={40} />
           </button>
-        ) : tab === 'editor' ? (
-          <EditorSettings toggle={onDocumentationToggle} canvas={editor} />
         ) : (
-          tab === 'scheme' && <EditorSettings toggle={onDocumentationToggle} canvas={scheme} />
+          <EditorSettings toggle={onDocumentationToggle} canvas={editor} />
         )}
         <div className="h-full">{renderContent()}</div>
       </Resizable>

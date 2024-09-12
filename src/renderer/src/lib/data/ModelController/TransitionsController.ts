@@ -22,11 +22,11 @@ import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
   createTransitionFromController: {
-    source: State | ChoiceState;
-    target: State | ChoiceState | FinalState;
+    source: string;
+    target: string;
   };
-  changeTransition: Transition;
-  transitionContextMenu: { transition: Transition; position: Point };
+  changeTransition: string;
+  transitionContextMenu: { transitionId: string; position: Point };
 }
 
 /**
@@ -187,17 +187,19 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
-    this.emit('changeTransition', transition);
+    this.emit('changeTransition', transition.id);
   };
 
-  handleContextMenu = (transition: Transition, e: { event: MyMouseEvent }) => {
+  handleContextMenu = (transitionId: string, e: { event: MyMouseEvent }) => {
+    const item = this.items.get(transitionId);
+    if (!item) return;
     this.controller.removeSelection();
-    transition.setIsSelected(true);
+    item.setIsSelected(true);
 
-    if (transition.source instanceof InitialState) return;
+    if (item.source instanceof InitialState) return;
 
     this.emit('transitionContextMenu', {
-      transition,
+      transitionId,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -223,7 +225,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
     else if (state !== this.ghost?.source) {
-      this.emit('createTransitionFromController', { source: this.ghost?.source, target: state });
+      this.emit('createTransitionFromController', {
+        source: this.ghost?.source.id,
+        target: state.id,
+      });
     }
     this.ghost?.clear();
 
@@ -289,7 +294,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
         targetId: state.id,
       });
     } else {
-      this.emit('createTransitionFromController', { source: this.ghost.source, target: state });
+      this.emit('createTransitionFromController', {
+        source: this.ghost.source.id,
+        target: state.id,
+      });
     }
 
     this.ghost?.clear();
@@ -314,7 +322,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     transition.on('click', this.handleConditionClick.bind(this, transition));
     transition.on('dblclick', this.handleConditionDoubleClick.bind(this, transition));
     transition.on('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
-    transition.on('contextmenu', this.handleContextMenu.bind(this, transition));
+    transition.on('contextmenu', this.handleContextMenu.bind(this, transition.id));
     transition.on('dragend', this.handleDragEnd.bind(this, transition));
   }
 
@@ -322,7 +330,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     transition.off('click', this.handleConditionClick.bind(this, transition));
     transition.off('dblclick', this.handleConditionDoubleClick.bind(this, transition));
     transition.off('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
-    transition.off('contextmenu', this.handleContextMenu.bind(this, transition));
+    transition.off('contextmenu', this.handleContextMenu.bind(this, transition.id));
     transition.off('dragend', this.handleDragEnd.bind(this, transition));
   }
 }

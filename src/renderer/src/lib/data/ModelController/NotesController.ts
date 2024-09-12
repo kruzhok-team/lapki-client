@@ -15,7 +15,7 @@ interface NotesControllerEvents {
   change: Note;
   mouseUpOnNote: Note;
   startNewTransitionNote: Note;
-  contextMenu: { note: Note; position: Point };
+  contextMenu: { noteId: string; position: Point };
 }
 
 /**
@@ -110,11 +110,13 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.emit('change', note);
   };
 
-  handleContextMenu = (note: Note, e: { event: MyMouseEvent }) => {
-    this.controller.selectNote({ smId: '', id: note.id });
+  handleContextMenu = (noteId: string, e: { event: MyMouseEvent }) => {
+    const item = this.items.get(noteId);
+    if (!item) return;
+    this.controller.selectNote({ smId: '', id: noteId });
 
     this.emit('contextMenu', {
-      note,
+      noteId,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -127,7 +129,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.on('mousedown', this.handleMouseDown.bind(this, note));
     note.on('dblclick', this.handleDoubleClick.bind(this, note));
     note.on('mouseup', this.handleMouseUpOnNote.bind(this, note));
-    note.on('contextmenu', this.handleContextMenu.bind(this, note));
+    note.on('contextmenu', this.handleContextMenu.bind(this, note.id));
     note.on('dragend', this.handleDragEnd.bind(this, note));
 
     note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
@@ -137,7 +139,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.off('mousedown', this.handleMouseDown.bind(this, note));
     note.off('dblclick', this.handleDoubleClick.bind(this, note));
     note.off('mouseup', this.handleMouseUpOnNote.bind(this, note));
-    note.off('contextmenu', this.handleContextMenu.bind(this, note));
+    note.off('contextmenu', this.handleContextMenu.bind(this, note.id));
     note.off('dragend', this.handleDragEnd.bind(this, note));
 
     note.edgeHandlers.unbindEvents();

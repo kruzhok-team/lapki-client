@@ -13,7 +13,6 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
-import { FinalState, State } from '@renderer/lib/drawable';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { escapeRegExp } from '@renderer/utils';
@@ -163,7 +162,7 @@ export const Hierarchy: React.FC = () => {
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
   const handleRename = (item: TreeItem, name: string) => {
-    controller.states.changeStateName(item.index.toString(), name);
+    controller.changeStateName(controller.currentSmId!, item.index.toString(), name);
   };
 
   const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
@@ -222,24 +221,29 @@ export const Hierarchy: React.FC = () => {
       nativeEvent: e.nativeEvent,
     };
 
-    const state = controller.states.get(item.index.toString());
-    if (state && state instanceof State) {
-      return controller.states.handleContextMenu(state, { event: mouse });
+    const sm = controller.model.data.elements.stateMachines[controller.currentSmId!];
+    const itemId = item.index.toString();
+    const state = sm.states[itemId];
+    const canvasController = controller.getCurrentCanvas().controller;
+    if (state !== undefined) {
+      return canvasController.states.handleContextMenu(itemId, { event: mouse });
     }
-    if (state && state instanceof FinalState) {
-      return controller.states.handleFinalStateContextMenu(state, {
+
+    const finalState = sm.finalStates[itemId];
+    if (finalState) {
+      return canvasController.states.handleFinalStateContextMenu(itemId, {
         event: mouse,
       });
     }
-    const transition = controller.transitions.get(item.index.toString());
+    const transition = sm.transitions[itemId];
     if (transition) {
-      return controller.transitions.handleContextMenu(transition, {
+      return canvasController.transitions.handleContextMenu(itemId, {
         event: mouse,
       });
     }
-    const note = controller.notes.get(item.index.toString());
+    const note = sm.notes[itemId];
     if (note) {
-      return controller.notes.handleContextMenu(note, {
+      return canvasController.notes.handleContextMenu(itemId, {
         event: mouse,
       });
     }

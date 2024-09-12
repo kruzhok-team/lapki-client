@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useSettings } from '@renderer/hooks';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
@@ -32,7 +32,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   compilerStatus,
   setCompilerStatus,
 }) => {
-  const { controller } = useEditorContext();
+  const modelController = useModelContext();
 
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
@@ -42,8 +42,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = controller.model.useData('name');
-  const isInitialized = controller.model.useData('isInitialized');
+  const name = modelController.model.useData('name');
+  const editor = modelController.getCurrentCanvas();
+  const isInitialized = modelController.model.data.canvas[editor.id];
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной
@@ -52,18 +53,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleSaveBinaryIntoFolder = async () => {
     const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    controller.files.saveIntoFolder(preparedData);
+    modelController.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    controller.files.compile();
+    modelController.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await controller.files.saveIntoFolder(compilerData!.source!);
+    await modelController.files.saveIntoFolder(compilerData!.source!);
   };
 
   const handleAddStdoutTab = () => {
@@ -101,7 +102,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      controller.files.initImportData(importData, openData!);
+      modelController.files.initImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);

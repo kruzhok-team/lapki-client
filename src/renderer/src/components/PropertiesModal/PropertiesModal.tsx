@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { Modal } from '@renderer/components/UI';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Meta, MetaFormValues } from './Meta';
 
@@ -19,9 +19,10 @@ interface PropertiesModalProps {
 }
 
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
-  const { controller } = useEditorContext();
-  const model = controller.model;
-  const meta = model.useData('elements.meta');
+  const modelController = useModelContext();
+  const sm = modelController.model.data.elements.stateMachines[modelController.currentSmId!];
+  const meta = sm.meta;
+  const model = modelController.model;
 
   const [properties, setProperties] = useState<[string, string][]>([]);
 
@@ -36,7 +37,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
 
     const propertiesValues: [string, string][] = [
       ['Название', model.data.name ?? 'отсутствует'],
-      ['Платформа', getPlatform(model.data.elements.platform)?.name ?? 'отсутствует'],
+      ['Платформа', getPlatform(sm.platform)?.name ?? 'отсутствует'],
     ];
     if (model.data?.basename) {
       const stat = await window.api.fileHandlers.getMetadata(model.data.basename);
@@ -49,7 +50,8 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   };
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
-    controller.model.setMeta(
+    model.setMeta(
+      modelController.currentSmId!,
       data.meta.reduce((acc, cur) => {
         acc[cur.name] = cur.value;
 

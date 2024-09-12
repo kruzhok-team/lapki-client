@@ -18,7 +18,7 @@ import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
 import { useDiagramContextMenu } from '@renderer/hooks/useDiagramContextMenu';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { getVirtualElement } from '@renderer/utils';
 
 const contextData = {
@@ -85,7 +85,8 @@ const contextData = {
 };
 
 export const DiagramContextMenu: React.FC = () => {
-  const editor = useEditorContext();
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
 
   const { position, items, isOpen, onClose } = useDiagramContextMenu();
   //Проверка на открытие дополнительных окон, пока реализовал таким методом, чтобы проверить и распределить данные как следует

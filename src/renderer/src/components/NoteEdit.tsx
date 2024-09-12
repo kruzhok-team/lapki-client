@@ -5,11 +5,13 @@ import { twMerge } from 'tailwind-merge';
 import { TextAreaAutoResize } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { Note } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { placeCaretAtEnd } from '@renderer/utils';
 
 export const NoteEdit: React.FC = () => {
-  const editor = useEditorContext();
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  const smId = modelController.currentSmId!;
 
   const [isOpen, open, close] = useModal(false);
   const [noteId, setNoteId] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export const NoteEdit: React.FC = () => {
     const value = (el?.textContent ?? '').trim();
 
     if (noteId !== null && initialText !== value)
-      editor.controller.notes.changeNoteText(noteId, value);
+      modelController.changeNoteText({ smId, id: noteId, text: value });
 
     if (noteId) editor.controller.notes.setIsVisible(noteId, true);
 
@@ -79,6 +81,7 @@ export const NoteEdit: React.FC = () => {
       open();
     };
 
+    // TODO (L140-beep): А работает ли?
     editor.controller.notes.on('change', handler);
 
     return () => {

@@ -22,7 +22,6 @@ export interface SerialMonitorTab {
 export interface ManagerMSTab {
   type: 'managerMS';
   name: string;
-  device: Device | undefined;
 }
 
 export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

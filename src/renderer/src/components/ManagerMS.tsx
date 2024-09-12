@@ -4,19 +4,16 @@
 import { useState } from 'react';
 
 import { useModal } from '@renderer/hooks';
+import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
-import { Device } from '@renderer/types/FlasherTypes';
 
 import { AddressModalMS } from './AddressModalMS';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { TextField } from './UI';
 
-export interface ManagerMSProps {
-  device: Device | undefined;
-}
-
-export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
+export const ManagerMSTab: React.FC = () => {
+  const { device, log } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [address, setAddress] = useState<string>('');
@@ -35,6 +32,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
   const handlePing = () => {
     if (!device) return;
     ManagerMS.ping(device.deviceID, address);
+    ManagerMS.addLog('sent ping');
   };
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {
@@ -66,6 +64,11 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ device }) => {
         </button>
       </div>
       <AddressModalMS isOpen={isAddressModalOpen} onClose={closeAddressModal}></AddressModalMS>
+      <div className="mx-2 h-full overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        {log.map((msg, index) => (
+          <div key={index}>{msg}</div>
+        ))}
+      </div>
     </section>
   );
 };

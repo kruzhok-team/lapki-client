@@ -8,6 +8,7 @@ import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
+import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
@@ -44,6 +45,7 @@ export const Loader: React.FC<FlasherProps> = ({
     setLog: setSerialLog,
     addDeviceMessage,
   } = useSerialMonitor();
+  const { device: deviceMS, setDevice: setDeviceMS, setLog: setLogMS } = useManagerMS();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -209,12 +211,11 @@ export const Loader: React.FC<FlasherProps> = ({
 
   const handleAddManagerMSTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    // setCurrentManagerMSDevic(curDevice);
+    setDeviceMS(curDevice);
     closeTab('Менеджер МС-ТЮК');
     openTab({
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
-      device: curDevice,
     });
   };
 
@@ -239,6 +240,7 @@ export const Loader: React.FC<FlasherProps> = ({
       setSerialConnectionStatus,
       setSerialLog
     );
+    ManagerMS.bindReact(setDeviceMS, setLogMS);
     Flasher.initReader(new FileReader());
   }, []);
 
@@ -278,9 +280,9 @@ export const Loader: React.FC<FlasherProps> = ({
     if (serialMonitorDevice && !devices.get(serialMonitorDevice.deviceID)) {
       SerialMonitor.setDevice(undefined);
     }
-    // if (currentManagerMSDevice && !devices.get(currentManagerMSDevice.deviceID)) {
-    //   setCurrentManagerMSDevic(undefined);
-    // }
+    if (deviceMS && !devices.get(deviceMS.deviceID)) {
+      setDeviceMS(undefined);
+    }
   }, [devices]);
 
   const display = () => {

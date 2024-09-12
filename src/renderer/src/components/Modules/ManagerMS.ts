@@ -3,6 +3,16 @@ import { Device } from '@renderer/types/FlasherTypes';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
+  static setDevice: (currentDevice: Device | undefined) => void;
+  static setLog: (update: (prevMessages: string[]) => string[]) => void;
+
+  static bindReact(
+    setDevice: (currentDevice: Device | undefined) => void,
+    setLog: (update: (prevMessages: string[]) => string[]) => void
+  ): void {
+    this.setDevice = setDevice;
+    this.setLog = setLog;
+  }
   static binStart(
     device: Device,
     address: string,
@@ -29,6 +39,9 @@ export class ManagerMS {
   }
   static isMSDevice(device: Device) {
     // TODO: придумать более надёжный способ идентификации МС-ТЮК
-    return device.name == 'МС-ТЮК';
+    return device.name != 'МС-ТЮК';
+  }
+  static addLog(log: string) {
+    this.setLog((prevMessages) => [...prevMessages, log]);
   }
 }

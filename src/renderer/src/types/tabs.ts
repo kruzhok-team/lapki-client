@@ -1,5 +1,3 @@
-import { Device } from './FlasherTypes';
-
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {

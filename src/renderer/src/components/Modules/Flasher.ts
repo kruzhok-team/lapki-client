@@ -9,7 +9,7 @@ import {
   FlasherMessage,
   UpdateDelete,
   FlashResult,
-  SerialStatus,
+  DeviceCommentCode,
   SerialRead,
   FlasherPayload,
   FlasherType,
@@ -353,7 +353,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'serial-connection-status': {
-        const serialStatus = response.payload as SerialStatus;
+        const serialStatus = response.payload as DeviceCommentCode;
         switch (serialStatus.code) {
           case 0:
             SerialMonitor.addLog('Открыт монитор порта!');
@@ -447,7 +447,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'serial-sent-status': {
-        const serialStatus = response.payload as SerialStatus;
+        const serialStatus = response.payload as DeviceCommentCode;
         switch (serialStatus.code) {
           case 0:
             SerialMonitor.addLog('Сообщение доставлено на устройство.');
@@ -519,11 +519,32 @@ export class Flasher extends ClientWS {
               ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
               break;
             case 2:
-              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг');
+              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг.');
               break;
           }
         }
         break;
+      case 'ms-address': {
+        const getAddressStatus = response.payload as DeviceCommentCode;
+        switch (getAddressStatus.code) {
+          case 0:
+            ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
+            break;
+          case 1:
+            ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
+            break;
+          case 2: {
+            const errorText = getAddressStatus.comment;
+            const errorLog = 'Возникла ошибка при попытке узнать адрес';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${getAddressStatus.comment}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            break;
+          }
+        }
+      }
     }
   }
 

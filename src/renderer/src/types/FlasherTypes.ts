@@ -48,14 +48,15 @@ export type FlasherType =
   | 'ms-bin-start'
   | 'ms-ping'
   | 'ms-get-address'
-  | 'ms-ping-result';
+  | 'ms-ping-result'
+  | 'ms-address';
 export type FlasherPayload =
   | string
   | Device
   | FlashStart
   | UpdateDelete
   | undefined
-  | SerialStatus
+  | DeviceCommentCode
   | SerialConnect
   | SerialRead
   | SerialDisconnect
@@ -116,7 +117,7 @@ ${avrdudeMsg}`;
   }
 }
 
-export type SerialStatus = {
+export type DeviceCommentCode = {
   deviceID: string;
   code: number;
   comment: string;

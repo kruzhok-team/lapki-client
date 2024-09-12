@@ -39,7 +39,7 @@ export class ManagerMS {
   }
   static isMSDevice(device: Device) {
     // TODO: придумать более надёжный способ идентификации МС-ТЮК
-    return device.name != 'МС-ТЮК';
+    return device.name == 'МС-ТЮК';
   }
   static addLog(log: string) {
     this.setLog((prevMessages) => [...prevMessages, log]);

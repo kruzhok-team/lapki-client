@@ -21,14 +21,14 @@ export class Serializer {
   }
 
   getState(id: string) {
-    const state = this.data.elements.states[id];
+    const state = this.data.elements.stateMachines[this.data.currentSm!].states[id];
     if (!state) return null;
     delete state.selection;
     return JSON.stringify(state, undefined, 2);
   }
 
   getTransition(id: string) {
-    const transition = this.data.elements.transitions[id];
+    const transition = this.data.elements.stateMachines[this.data.currentSm!].transitions[id];
     if (!transition || !transition.label) return null;
 
     delete transition.selection;
@@ -36,7 +36,7 @@ export class Serializer {
   }
 
   getNote(id: string) {
-    const note = this.data.elements.notes[id];
+    const note = this.data.elements.stateMachines[this.data.currentSm!].notes[id];
     if (!note) return null;
 
     delete note.selection;
@@ -44,7 +44,7 @@ export class Serializer {
   }
 
   getComponent(name: string) {
-    const component = this.data.elements.components[name];
+    const component = this.data.elements.stateMachines[this.data.currentSm!].components[name];
     if (!component) return null;
 
     delete component.selection;

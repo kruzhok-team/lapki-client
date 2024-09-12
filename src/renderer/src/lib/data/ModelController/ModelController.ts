@@ -1,4 +1,5 @@
 import { Point } from 'electron';
+import { s } from 'vitest/dist/reporters-5f784f42';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
@@ -51,6 +52,7 @@ import {
   InitialState,
   State,
   FinalState,
+  emptyStateMachine,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -88,7 +90,7 @@ type StateType = (typeof StateTypes)[number];
 
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
-  currentSmId: null | string = null;
+  currentSmId: string = '';
   //! Порядок создания важен, так как контроллер при инициализации использует представление
   model = new EditorModel(
     () => {
@@ -113,6 +115,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   constructor() {
     super();
     this.watch();
+
+    const editor = new CanvasEditor('', this);
+    const controller = new CanvasController('', editor, { platformName: '' });
+    editor.setController(controller);
+    this.controllers[''] = controller;
+    this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
+    this.model.data.elements.stateMachines[''] = emptyStateMachine();
   }
 
   // TODO: setup SchemeScreenController с другими подписками
@@ -157,7 +166,25 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   initData(basename: string | null, filename: string, elements: Elements) {
     this.model.init(basename, filename, elements);
+    const smId = Object.keys(elements.stateMachines)[0];
+    this.currentSmId = smId;
+    this.model.currentSmId = smId;
+
+    const canvasId = generateId();
+    const editor = new CanvasEditor(canvasId, this);
+    const controller = this.setupDiagramEditorController(smId, editor);
+
+    if (!controller) return;
+
+    editor.setController(controller);
+    this.controllers[canvasId] = controller;
+    this.model.data.canvas[canvasId] = {
+      isInitialized: true,
+      isMounted: false,
+      prevMounted: false,
+    };
     this.model.makeStale();
+    console.log(this.model.data.elements.stateMachines);
     this.history.clear();
   }
 
@@ -1629,7 +1656,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   getCurrentCanvas() {
-    return this.controllers[this.currentSmId!].app;
+    return this.controllers[this.currentSmId].app;
   }
 
   duplicateSelected = () => {

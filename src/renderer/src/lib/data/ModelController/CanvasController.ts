@@ -34,12 +34,10 @@ import {
   ChoiceState,
   Component,
   Condition,
-  Elements,
   FinalState,
   InitialState,
   Note,
   State,
-  StateMachine,
   Transition,
   Variable,
 } from '@renderer/types/diagram';

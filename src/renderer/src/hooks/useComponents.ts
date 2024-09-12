@@ -1,16 +1,16 @@
 import { useState } from 'react';
 
 import { systemComponent, ComponentEntry } from '@renderer/lib/data/PlatformManager';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { useModal } from './useModal';
 
 export const useComponents = () => {
-  const editor = useEditorContext();
-  const model = editor.controller.model;
-
-  const components = model.useData('elements.components');
+  const modelController = useModelContext();
+  const model = modelController.model;
+  const editor = modelController.getCurrentCanvas();
+  const components = model.data.elements.stateMachines[modelController.currentSmId!].components;
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<ComponentData>({
@@ -28,8 +28,7 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const controller = editor.controller;
-    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
+    const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
 
@@ -73,7 +72,8 @@ export const useComponents = () => {
 
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
-    editor.controller.createComponent({
+    modelController.createComponent({
+      smId: modelController.currentSmId!,
       name: realName,
       type: idx,
       parameters: {},
@@ -89,22 +89,23 @@ export const useComponents = () => {
     data: Omit<ComponentData, 'order' | 'position'>,
     newName?: string
   ) => {
-    editor.controller.components.changeComponent({
-      sm: 'G',
-      name: idx,
+    modelController.editComponent({
+      smId: modelController.currentSmId!,
+      id: idx,
+      type: data.type,
       parameters: data.parameters,
       newName,
     });
   };
 
   const onDelete = (idx: string) => {
-    editor.controller.deleteComponent({ sm: 'G', name: idx, purge: false });
+    modelController.deleteComponent({ smId: modelController.currentSmId!, id: idx });
 
     editClose();
   };
 
   const onSwapComponents = (name1: string, name2: string) => {
-    editor.controller.swapComponents({ name1, name2 });
+    modelController.swapComponents({ smId: modelController.currentSmId!, name1, name2 });
   };
 
   return {

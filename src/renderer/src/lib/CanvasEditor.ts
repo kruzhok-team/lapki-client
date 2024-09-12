@@ -26,10 +26,11 @@ export class CanvasEditor {
 
   private rendererUnsubscribe: (() => void) | null | false = null;
 
-  id = generateId();
+  id: string;
   view: EditorView;
-  constructor(modelController: ModelController) {
+  constructor(id: string, modelController: ModelController) {
     this.view = new EditorView(this, modelController);
+    this.id = id;
   }
 
   controller!: CanvasController;

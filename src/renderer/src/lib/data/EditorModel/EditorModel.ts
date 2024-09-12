@@ -40,6 +40,7 @@ export class EditorModel {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   serializer = new Serializer(this);
+  currentSmId: string | null = null;
 
   constructor(
     private initPlatform: () => void,

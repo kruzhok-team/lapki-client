@@ -8,7 +8,7 @@ import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
@@ -54,7 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   },
   openImportError,
 }) => {
-  const { controller } = useEditorContext();
+  const modelController = useModelContext();
+  // const { controller } = useEditorContext();
 
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
@@ -66,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
-  const isEditorDataStale = controller.model.useData('isStale');
+  const isEditorDataStale = modelController.model.useData('isStale');
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);

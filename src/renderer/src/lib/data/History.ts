@@ -1,15 +1,13 @@
 import { useSyncExternalStore } from 'react';
 
-import { EventSelection, Transition } from '@renderer/lib/drawable';
+import { EventSelection } from '@renderer/lib/drawable';
 import {
   EditComponentParams,
   // DeleteComponentParams,
-  DeleteStateMachineParams,
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
-  CreateComponentParams,
   ChangeStateEventsParams,
   CreateTransitionParams,
   ChangeTransitionParams,
@@ -34,7 +32,7 @@ import {
 
 import { ModelController } from './ModelController';
 
-import { DrawableStateMachine } from '../drawable/StateMachineNode';
+// import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };

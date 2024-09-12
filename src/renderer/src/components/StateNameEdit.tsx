@@ -12,10 +12,11 @@ import { twMerge } from 'tailwind-merge';
 import { WithHint } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks';
 import { State } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export const StateNameEdit: React.FC = () => {
-  const editor = useEditorContext();
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
 
   const [isOpen, open, close] = useModal(false);
   const [stateId, setStateId] = useState<string | null>(null);
@@ -28,12 +29,12 @@ export const StateNameEdit: React.FC = () => {
     const value = (el?.value ?? '').trim();
 
     if (stateId !== null && initialName !== value)
-      editor.controller.states.changeStateName(stateId, value);
+      modelController.changeStateName(modelController.currentSmId!, stateId, value);
 
     setStateId(null);
     setInitialName(null);
     close();
-  }, [close, editor.controller.states, initialName, stateId]);
+  }, [close, modelController.model, initialName, stateId]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return handleSubmit();
@@ -78,7 +79,7 @@ export const StateNameEdit: React.FC = () => {
       setTimeout(() => el.focus(), 0);
       open();
     };
-
+    // TODO (L140-beep): работает ли?
     editor.controller.states.on('changeStateName', handler);
 
     return () => {

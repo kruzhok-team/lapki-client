@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { PropertiesModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 interface MenuItem {
@@ -26,9 +26,11 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { controller } = useEditorContext();
-  const isStale = controller.model.useData('isStale');
-  const isInitialized = controller.model.useData('isInitialized');
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  console.log(modelController.model.data.canvas, editor.id);
+  const isStale = modelController.model.useData('isStale');
+  const isInitialized = modelController.model.data.canvas[editor.id].isInitialized;
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 

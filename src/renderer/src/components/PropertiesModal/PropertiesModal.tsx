@@ -21,6 +21,8 @@ interface PropertiesModalProps {
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
   const modelController = useModelContext();
   const sm = modelController.model.data.elements.stateMachines[modelController.currentSmId!];
+  console.log(modelController.currentSmId);
+  console.log(modelController.model.data.elements.stateMachines);
   const meta = sm.meta;
   const model = modelController.model;
 

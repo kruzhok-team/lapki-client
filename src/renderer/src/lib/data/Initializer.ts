@@ -7,8 +7,6 @@ import {
   FinalState,
   ChoiceState,
   GhostTransition,
-  DrawableComponent,
-  MarkedIconData,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import {
@@ -193,7 +191,7 @@ export class Initializer {
   // }
 
   // Флаг нужен, чтобы повторно не добавлять
-  initComponents(sm: string, components: { [id: string]: Component }) {
+  initComponents(components: { [id: string]: Component }) {
     if (!this.platform) return;
     for (const name in components) {
       const component = components[name];

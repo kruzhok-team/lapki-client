@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react';
 
-import {
-  ChoiceState,
-  EventSelection,
-  FinalState,
-  Note,
-  State,
-  Transition,
-} from '@renderer/lib/drawable';
+import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types/graphics';
-import { useEditorContext } from '@renderer/store/EditorContext';
-import { useSchemeContext } from '@renderer/store/SchemeContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 export type DiagramContextMenuItem = {
@@ -22,8 +14,8 @@ export type DiagramContextMenuItem = {
 };
 
 export const useDiagramContextMenu = () => {
-  const editor = useEditorContext();
-  const scheme = useSchemeContext();
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
 
   const openTab = useTabs((state) => state.openTab);
 
@@ -52,14 +44,17 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.controller.pasteSelected();
+            modelController.pasteSelected();
           },
         },
         {
           label: 'Вставить состояние',
           type: 'pasteState',
           action: () => {
-            editor.controller.states.createState({
+            modelController.createState({
+              smId: modelController.currentSmId!,
+              events: [],
+              dimensions: { width: 100, height: 50 }, // TODO (L140-beep): уточнить
               name: 'Состояние',
               position: canvasPos,
               placeInCenter: true,
@@ -70,7 +65,9 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить конечное состояние',
           type: 'pasteFinalState',
           action: () => {
-            editor.controller.states.createFinalState({
+            modelController.createFinalState({
+              smId: modelController.currentSmId!,
+              dimensions: { width: 100, height: 50 },
               position: canvasPos,
               placeInCenter: true,
             });
@@ -80,7 +77,9 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить состояние выбора',
           type: 'pasteChoiceState',
           action: () => {
-            editor.controller.states.createChoiceState({
+            modelController.createChoiceState({
+              smId: modelController.currentSmId!,
+              dimensions: { width: 100, height: 50 },
               position: canvasPos,
               placeInCenter: true,
             });
@@ -90,13 +89,14 @@ export const useDiagramContextMenu = () => {
           label: 'Вставить заметку',
           type: 'note',
           action: () => {
-            const note = editor.controller.notes.createNote({
+            modelController.createNote({
+              smId: modelController.currentSmId!,
               position: canvasPos,
               placeInCenter: true,
               text: '',
             });
 
-            editor.controller.notes.emit('change', note);
+            // editor.controller.notes.emit('change', note);
           },
         },
         {
@@ -105,8 +105,8 @@ export const useDiagramContextMenu = () => {
           action: () => {
             openTab({
               type: 'code',
-              name: editor.controller.model.data.name ?? 'Безымянная',
-              code: editor.controller.model.serializer.getAll('JSON'),
+              name: modelController.model.data.name ?? 'Безымянная',
+              code: modelController.model.serializer.getAll('JSON'),
               language: 'json',
             });
           },
@@ -121,37 +121,6 @@ export const useDiagramContextMenu = () => {
       ]);
     };
 
-    const handleViewScreenContextMenu = (position: Point) => {
-      handleEvent(position, [
-        {
-          label: 'Вставить',
-          type: 'paste',
-          action: () => {
-            scheme?.controller.pasteSelected();
-          },
-        },
-        {
-          label: 'Посмотреть код',
-          type: 'showCodeAll',
-          action: () => {
-            openTab({
-              type: 'code',
-              name: scheme.controller.model.data.name ?? 'Безымянная',
-              code: scheme.controller.model.serializer.getAll('JSON'),
-              language: 'json',
-            });
-          },
-        },
-        {
-          label: 'Центрировать камеру',
-          type: 'centerCamera',
-          action: () => {
-            scheme?.view.viewCentering();
-          },
-        },
-      ]);
-    };
-
     const handleStateContextMenu = (data: { state: State; position: Point }) => {
       const { state, position } = data;
 
@@ -160,21 +129,21 @@ export const useDiagramContextMenu = () => {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.controller.copySelected();
+            modelController.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.controller.pasteSelected();
+            modelController.pasteSelected();
           },
         },
         {
           label: 'Дублировать',
           type: 'clone',
           action: () => {
-            editor?.controller.duplicateSelected();
+            modelController.duplicateSelected();
           },
         },
         {
@@ -186,14 +155,17 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                editor.controller.states.setInitialState(state.id);
+                modelController.setInitialState(modelController.currentSmId!, state.id);
               },
             },
             {
               label: 'Вставить состояние',
               type: 'pasteState',
               action: () => {
-                editor.controller.states.createState({
+                modelController.createState({
+                  smId: modelController.currentSmId!,
+                  dimensions: { width: 100, height: 50 },
+                  events: [],
                   name: 'Состояние',
                   position: editor.view.windowToWorldCoords(position),
                   parentId: state.id,
@@ -211,7 +183,7 @@ export const useDiagramContextMenu = () => {
             openTab({
               type: 'state',
               name: state.data.name,
-              code: editor.controller.model.serializer.getState(state.id) ?? '',
+              code: modelController.model.serializer.getState(state.id) ?? '',
               language: 'json',
             });
           },
@@ -220,54 +192,54 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.controller.states.deleteState(state.id);
+            modelController.deleteState({ smId: modelController.currentSmId!, id: state.id });
           },
         },
       ]);
     };
-    const handleFinalStateContextMenu = (data: { state: FinalState; position: Point }) => {
-      const { state, position } = data;
+    const handleFinalStateContextMenu = (data: { stateId: string; position: Point }) => {
+      const { stateId, position } = data;
 
       handleEvent(position, [
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.controller.states.deleteFinalState(state.id);
+            modelController.deleteFinalState({ smId: modelController.currentSmId!, id: stateId });
           },
         },
       ]);
     };
-    const handleChoiceStateContextMenu = (data: { state: ChoiceState; position: Point }) => {
-      const { state, position } = data;
+    const handleChoiceStateContextMenu = (data: { stateId: string; position: Point }) => {
+      const { stateId, position } = data;
 
       handleEvent(position, [
         {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.controller.copySelected();
+            modelController.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.controller.pasteSelected();
+            modelController.pasteSelected();
           },
         },
         {
           label: 'Дублировать',
           type: 'clone',
           action: () => {
-            editor?.controller.duplicateSelected();
+            modelController.duplicateSelected();
           },
         },
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.controller.states.deleteChoiceState(state.id);
+            modelController.deleteChoiceState({ smId: modelController.currentSmId!, id: stateId });
           },
         },
       ]);
@@ -283,22 +255,30 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.controller.states.deleteEvent(state.id, event);
+            modelController.deleteEvent({
+              smId: modelController.currentSmId!,
+              stateId: state.id,
+              event: event,
+            });
           },
         },
       ]);
     };
-    const handleTransitionContextMenu = (data: { transition: Transition; position: Point }) => {
-      const { transition, position } = data;
-
+    const handleTransitionContextMenu = (data: { transitionId: string; position: Point }) => {
+      const { transitionId, position } = data;
+      const transitionData =
+        modelController.model.data.elements.stateMachines[modelController.currentSmId!].transitions[
+          transitionId
+        ];
       const source = (state: State) => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'source',
           action: () => {
-            editor.controller.transitions.changeTransition({
-              ...transition.data,
-              id: transition.id,
+            modelController.changeTransition({
+              ...transitionData,
+              smId: modelController.currentSmId!,
+              id: transitionId,
               sourceId: state.id,
             });
           },
@@ -310,9 +290,10 @@ export const useDiagramContextMenu = () => {
           label: state.eventBox.parent.data.name,
           type: 'target',
           action: () => {
-            editor.controller.transitions.changeTransition({
-              ...transition.data,
-              id: transition.id,
+            modelController.changeTransition({
+              ...transitionData,
+              smId: modelController.currentSmId!,
+              id: transitionId,
               targetId: state.id,
             });
           },
@@ -321,31 +302,31 @@ export const useDiagramContextMenu = () => {
 
       const sourceArray = [
         ...Array.from(editor.controller.states.getStates()).filter(
-          (value) => transition.data.sourceId !== value[0]
+          (value) => transitionData.sourceId !== value[0]
         ),
       ];
 
       const targetArray = [
         ...Array.from(editor.controller.states.getStates()).filter(
-          (value) => transition.data.targetId !== value[0]
+          (value) => transitionData.targetId !== value[0]
         ),
       ];
 
       handleEvent(position, [
-        ...(transition.data.label
+        ...(transitionData.label
           ? [
               {
                 label: 'Копировать',
                 type: 'copy',
                 action: () => {
-                  editor?.controller.copySelected();
+                  modelController.copySelected();
                 },
               },
               {
                 label: 'Дублировать',
                 type: 'clone',
                 action: () => {
-                  editor?.controller.duplicateSelected();
+                  modelController.duplicateSelected();
                 },
               },
               {
@@ -370,8 +351,8 @@ export const useDiagramContextMenu = () => {
                 action: () => {
                   openTab({
                     type: 'transition',
-                    name: transition.id,
-                    code: editor.controller.model.serializer.getTransition(transition.id) ?? '',
+                    name: transitionId,
+                    code: modelController.model.serializer.getTransition(transitionId) ?? '',
                     language: 'json',
                   });
                 },
@@ -382,48 +363,56 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor.controller.transitions.deleteTransition(transition.id);
+            modelController.deleteTransition({
+              smId: modelController.currentSmId!,
+              id: transitionId,
+            });
           },
         },
       ]);
     };
-    const handleNoteContextMenu = (data: { note: Note; position: Point }) => {
-      const { note, position } = data;
+    const handleNoteContextMenu = (data: { noteId: string; position: Point }) => {
+      const { noteId, position } = data;
 
       handleEvent(position, [
         {
           label: 'Копировать',
           type: 'copy',
           action: () => {
-            editor?.controller.copySelected();
+            modelController.copySelected();
           },
         },
         {
           label: 'Вставить',
           type: 'paste',
           action: () => {
-            editor?.controller.pasteSelected();
+            modelController.pasteSelected();
           },
         },
         {
           label: 'Дублировать',
           type: 'clone',
           action: () => {
-            editor?.controller.duplicateSelected();
+            modelController.duplicateSelected();
           },
         },
         {
           label: 'Редактировать',
           type: 'edit',
           action: () => {
-            editor.controller.notes.emit('change', note);
+            // TODO (L140-beep): А работает ли?
+            const note = editor.controller.notes.items.get(noteId);
+            if (note) editor.controller.notes.emit('change', note);
           },
         },
         {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            editor?.controller.notes.deleteNote(note.id);
+            editor?.controller.notes.deleteNote({
+              smId: modelController.currentSmId!,
+              id: noteId,
+            });
           },
         },
       ]);
@@ -441,8 +430,6 @@ export const useDiagramContextMenu = () => {
     editor.controller.transitions.on('transitionContextMenu', handleTransitionContextMenu);
     editor.controller.notes.on('contextMenu', handleNoteContextMenu);
 
-    // контекстное меню для пустого поля схемотехнического экрана
-    scheme.view.on('contextMenu', handleViewScreenContextMenu);
     // контекстное меню для компонентов
     //screen.controller.components.on('contextMenu', handleComponentContextMenu);
     //! Не забывать удалять слушатели
@@ -454,11 +441,9 @@ export const useDiagramContextMenu = () => {
       editor.controller.states.off('eventContextMenu', handleEventContextMenu);
       editor.controller.transitions.off('transitionContextMenu', handleTransitionContextMenu);
       editor.controller.notes.off('contextMenu', handleNoteContextMenu);
-
-      scheme.view.off('contextMenu', handleViewScreenContextMenu);
       //screen.controller.components.on('contextMenu', handleComponentContextMenu);
     };
-  }, [editor, scheme, openTab]);
+  }, [editor, openTab]);
 
   return { isOpen, onClose, items, position };
 };

@@ -92,7 +92,7 @@ export type CreateChoiceStateParams = ChoiceStateData & {
 
 export type CreateTransitionParams = TransitionData & { smId: string; id?: string };
 export type ChangeTransitionParams = TransitionData & { smId: string; id: string };
-
+export type ChangeComponent = ComponentData & { smId: string; id: string };
 export interface CreateNoteParams {
   smId: string;
   id?: string;

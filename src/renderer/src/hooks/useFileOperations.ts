@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, Dispatch } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { useSchemeContext } from '@renderer/store/SchemeContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
@@ -15,7 +15,7 @@ interface useFileOperationsArgs {
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
-  const modelController = useSchemeContext().controller;
+  const modelController = useModelContext();
   const model = modelController.model;
   // const isStale = model.useData('isStale');
   // const name = model.useData('name');

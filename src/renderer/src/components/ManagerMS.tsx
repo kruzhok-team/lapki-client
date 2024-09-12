@@ -13,10 +13,9 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch, TextField } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log } = useManagerMS();
+  const { device, log, address } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
-  const [address, setAddress] = useState<string>('');
   const [isAddressModalOpen, openAddressModal, closeAddressModal] = useModal(false);
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -55,9 +54,10 @@ export const ManagerMSTab: React.FC = () => {
         <TextField
           label="Адрес:"
           className="mr-2 max-w-full"
-          placeholder="Напишите адрес"
+          //placeholder="Напишите адрес"
           value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          //onChange={(e) => setAddress(e.target.value)}
+          disabled={true}
         />
       </div>
       <div className="m-2 flex">

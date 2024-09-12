@@ -5,13 +5,16 @@ import { Flasher } from './Flasher';
 export class ManagerMS {
   static setDevice: (currentDevice: Device | undefined) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
+  static setAddress: (curAddress: string) => void;
 
   static bindReact(
     setDevice: (currentDevice: Device | undefined) => void,
-    setLog: (update: (prevMessages: string[]) => string[]) => void
+    setLog: (update: (prevMessages: string[]) => string[]) => void,
+    setAddress: (curAddress: string) => void
   ): void {
     this.setDevice = setDevice;
     this.setLog = setLog;
+    this.setAddress = setAddress;
   }
   static binStart(
     device: Device,

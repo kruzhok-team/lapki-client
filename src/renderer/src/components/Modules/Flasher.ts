@@ -529,9 +529,11 @@ export class Flasher extends ClientWS {
         switch (getAddressStatus.code) {
           case 0:
             ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
+            ManagerMS.setAddress(getAddressStatus.comment);
             break;
           case 1:
             ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
+            ManagerMS.setAddress('');
             break;
           case 2: {
             const errorText = getAddressStatus.comment;
@@ -541,6 +543,7 @@ export class Flasher extends ClientWS {
             } else {
               ManagerMS.addLog(`${errorLog}.`);
             }
+            ManagerMS.setAddress('');
             break;
           }
         }

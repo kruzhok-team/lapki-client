@@ -13,8 +13,10 @@ import {
   SerialRead,
   FlasherPayload,
   FlasherType,
+  MSPingResult,
 } from '@renderer/types/FlasherTypes';
 
+import { ManagerMS } from './ManagerMS';
 import {
   SerialMonitor,
   SERIAL_MONITOR_CONNECTED,
@@ -505,6 +507,23 @@ export class Flasher extends ClientWS {
             undefined
           );
         }
+        break;
+      case 'ms-ping-result':
+        {
+          const pingResult = response.payload as MSPingResult;
+          switch (pingResult.code) {
+            case 0:
+              ManagerMS.addLog('Понг');
+              break;
+            case 1:
+              ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
+              break;
+            case 2:
+              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг');
+              break;
+          }
+        }
+        break;
     }
   }
 

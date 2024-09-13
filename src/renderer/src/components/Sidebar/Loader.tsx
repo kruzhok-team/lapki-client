@@ -385,10 +385,19 @@ export const Loader: React.FC<FlasherProps> = ({
   const deviceInfoDisplay = (device: Device | undefined) => {
     if (!device) return;
     if (ManagerMS.isMSDevice(device)) {
+      let portNames = '';
+      if (device.portNames && device.portNames.length > 1) {
+        for (let i = 0; i < device.portNames.length; i++) {
+          portNames = portNames + ' ' + device.portNames[i];
+        }
+      } else {
+        portNames = device.portName;
+      }
+
       return (
         <div>
           <div className="flex items-center">{device.name}</div>
-          <p>Порт(ы): {device.portName}</p>
+          <p>Порт(ы): {portNames}</p>
         </div>
       );
     } else {
@@ -441,6 +450,16 @@ export const Loader: React.FC<FlasherProps> = ({
           </button>
         </div>
       );
+    }
+  };
+  const displayDeviceName = (device: Device | undefined) => {
+    if (!device) return '';
+    if (device.portNames && device.portNames.length > 1) {
+      return `${device.name} (${device.portNames[0]}-${
+        device.portNames[device.portNames.length - 1]
+      })`;
+    } else {
+      return `${device.name} (${device.portName})`;
     }
   };
   return (
@@ -506,7 +525,7 @@ export const Loader: React.FC<FlasherProps> = ({
               )}
               onClick={() => setCurrentDevice(key)}
             >
-              {devices.get(key)?.name + ' (' + devices.get(key)?.portName + ')'}
+              {displayDeviceName(devices.get(key))}
             </button>
           ))}
         </div>

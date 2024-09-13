@@ -80,6 +80,7 @@ export type Device = {
   controller: string;
   programmer: string;
   portName: string;
+  portNames: string[];
   serialID: string;
 };
 

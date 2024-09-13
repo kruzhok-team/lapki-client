@@ -388,8 +388,7 @@ export const Loader: React.FC<FlasherProps> = ({
       return (
         <div>
           <div className="flex items-center">{device.name}</div>
-          <p>Серийный номер: {device.serialID}</p>
-          <p>Порт загрузчика: {device.portName}</p>
+          <p>Порт(ы): {device.portName}</p>
         </div>
       );
     } else {

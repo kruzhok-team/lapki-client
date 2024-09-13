@@ -1,7 +1,7 @@
 /*
 Окно менеджера для МС-ТЮК
 */
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useModal } from '@renderer/hooks';
 import { useManagerMS } from '@renderer/store/useManagerMS';
@@ -13,7 +13,7 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch, TextField } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log, address } = useManagerMS();
+  const { device, log, address, setAddress } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [isAddressModalOpen, openAddressModal, closeAddressModal] = useModal(false);
@@ -25,6 +25,9 @@ export const ManagerMSTab: React.FC = () => {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [log, autoScroll]);
+  useEffect(() => {
+    setAddress('');
+  }, [device]);
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);

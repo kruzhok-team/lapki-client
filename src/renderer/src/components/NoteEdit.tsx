@@ -11,7 +11,7 @@ import { placeCaretAtEnd } from '@renderer/utils';
 export const NoteEdit: React.FC = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-  const smId = modelController.currentSmId!;
+  const smId = modelController.model.useData('', 'currentSm');
 
   const [isOpen, open, close] = useModal(false);
   const [noteId, setNoteId] = useState<string | null>(null);

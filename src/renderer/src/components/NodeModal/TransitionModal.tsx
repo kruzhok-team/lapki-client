@@ -12,7 +12,7 @@ import { useTrigger, useCondition, useEvents } from './hooks';
 
 export const TransitionModal: React.FC = () => {
   const modelController = useModelContext();
-  const currentSm = modelController.currentSmId!;
+  const currentSm = modelController.model.useData('', 'currentSm');
   const sm = modelController.model.data.elements.stateMachines[currentSm];
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);

@@ -17,7 +17,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 export const StateNameEdit: React.FC = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-
+  const currentSmId = modelController.model.useData('', 'currentSm');
   const [isOpen, open, close] = useModal(false);
   const [stateId, setStateId] = useState<string | null>(null);
   const [initialName, setInitialName] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export const StateNameEdit: React.FC = () => {
     const value = (el?.value ?? '').trim();
 
     if (stateId !== null && initialName !== value)
-      modelController.changeStateName(modelController.currentSmId!, stateId, value);
+      modelController.changeStateName(currentSmId, stateId, value);
 
     setStateId(null);
     setInitialName(null);

@@ -6,7 +6,6 @@ import { preloadPicto } from '@renderer/lib/drawable';
 
 import { ModelController } from './data/ModelController';
 import { CanvasController } from './data/ModelController/CanvasController';
-import { generateId } from './utils';
 
 interface CanvasEditorSettings {
   animations: boolean;

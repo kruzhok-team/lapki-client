@@ -16,8 +16,12 @@ export interface EditorSettingsProps {
 export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle, canvas }) => {
   const modelController = useModelContext();
 
-  const scale = modelController.model.useData('scale');
-  const isMounted = canvas.controller.isMounted;
+  const scale = modelController.model.useData('', 'scale');
+  const isMounted = modelController.model.useData(
+    '',
+    'canvas.isMounted',
+    modelController.getCurrentCanvas().id
+  );
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {

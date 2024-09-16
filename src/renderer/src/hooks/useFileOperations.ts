@@ -17,8 +17,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const modelController = useModelContext();
   const model = modelController.model;
-  // const isStale = model.useData('isStale');
-  // const name = model.useData('name');
+  const name = model.useData('', 'name') as string | null;
+  const isStale = model.useData('', 'isStale');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -32,9 +32,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
-    if (model.data.isStale) {
+    if (isStale) {
       setData({
-        shownName: model.data.name,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
         onConfirm: performOpenFile,
         onSave: handleSaveFile,
@@ -59,7 +59,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (result && isRight(result)) {
       clearTabs();
       openTab({ type: 'editor', name: 'editor' });
-      openTab({ type: 'scheme', name: 'scheme' });
     }
   };
 
@@ -71,9 +70,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   //Создание нового файла
   const handleNewFile = async () => {
-    if (model.data.isStale) {
+    if (isStale) {
       setData({
-        shownName: model.data.name,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
         onConfirm: openCreateSchemeModal,
         onSave: handleSaveFile,
@@ -117,9 +116,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const handleImportFile = async (
     setOpenData: Dispatch<[boolean, string | null, string | null, string]>
   ) => {
-    if (model.data.isStale) {
+    if (isStale) {
       setData({
-        shownName: model.data.name,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как импортировать новый?',
         onConfirm: performImportFile,
         onSave: handleSaveFile,
@@ -146,9 +145,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
-      if (model.data.isStale) {
+      if (isStale) {
         setData({
-          shownName: model.data.name,
+          shownName: name,
           question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
           //При нажатии на любую из кнопок, он должен закрывать редактор
           onConfirm: () => {

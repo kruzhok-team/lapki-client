@@ -7,13 +7,13 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
 
 import { Navigation } from './components/Navigation';
 import { Show } from './components/Show';
 import { Tree } from './components/Tree';
-import { useModelContext } from '@renderer/store/ModelContext';
 
 export interface CurrentItem {
   isHtml: boolean;

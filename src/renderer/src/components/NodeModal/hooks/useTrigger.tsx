@@ -4,15 +4,18 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { Component } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
 export const useTrigger = (addSystemComponents: boolean) => {
   const modelController = useModelContext();
-  const sm = modelController.model.data.elements.stateMachines[modelController.currentSmId!];
+  const currentSmId = modelController.model.useData('', 'currentSm');
+  const componentsData = modelController.model.useData(currentSmId, 'elements.components') as {
+    [id: string]: Component;
+  };
   const editor = modelController.getCurrentCanvas();
-  const componentsData = sm.components;
   const controller = editor.controller;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

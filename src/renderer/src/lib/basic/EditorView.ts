@@ -35,6 +35,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   initEvents() {
+    if (!this.app) return;
     //* Это на будущее
     // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
     // this.app.canvas.element.addEventListener('drop', this.handleDrop);

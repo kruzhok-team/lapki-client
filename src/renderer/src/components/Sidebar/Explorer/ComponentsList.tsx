@@ -3,16 +3,20 @@ import React, { useMemo, useState } from 'react';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentEditModal, ComponentAddModal, ComponentDeleteModal } from '@renderer/components';
 import { useComponents } from '@renderer/hooks';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { Component } from './Component';
-import { useModelContext } from '@renderer/store/ModelContext';
 
 export const ComponentsList: React.FC = () => {
   const modelController = useModelContext();
   const model = modelController.model;
+  const currentSm = modelController.model.useData('', 'currentSm');
   const editor = modelController.getCurrentCanvas();
-  const isInitialized = model.data.canvas[editor.id];
-  const components = model.data.elements.stateMachines[modelController.currentSmId!].components;
+  const isInitialized = model.useData('', 'canvas.isInitialized', editor.id) as boolean;
+  const components = model.useData(currentSm, 'elements.components') as {
+    [id: string]: ComponentData;
+  };
 
   const {
     addProps,

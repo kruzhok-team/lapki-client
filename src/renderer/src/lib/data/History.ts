@@ -131,14 +131,14 @@ export const actionFunctions: ActionFunctions = {
       { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
       false
     ),
-    undo: sM.deleteState.bind(sM, { smId: sM.currentSmId!, id: args.newStateId }, false),
+    undo: sM.deleteState.bind(sM, { smId: sM.model.data.currentSm, id: args.newStateId }, false),
   }),
   deleteState: (sM, { id, stateData }) => ({
-    redo: sM.deleteState.bind(sM, { smId: sM.currentSmId!, id }, false),
+    redo: sM.deleteState.bind(sM, { smId: sM.model.data.currentSm, id }, false),
     undo: sM.createState.bind(
       sM,
       {
-        smId: sM.currentSmId!,
+        smId: sM.model.data.currentSm,
         name: stateData.name,
         id,
         dimensions: stateData.dimensions,
@@ -153,8 +153,8 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
   changeStateName: (sM, { id, name, prevName }) => ({
-    redo: sM.changeStateName.bind(sM, sM.currentSmId!, id, name, false),
-    undo: sM.changeStateName.bind(sM, sM.currentSmId!, id, prevName, false),
+    redo: sM.changeStateName.bind(sM, sM.model.data.currentSm, id, name, false),
+    undo: sM.changeStateName.bind(sM, sM.model.data.currentSm, id, prevName, false),
   }),
 
   changeStateEvents: (sM, { args, prevActions }) => ({
@@ -171,18 +171,36 @@ export const actionFunctions: ActionFunctions = {
   linkState: (sM, { parentId, childId }) => ({
     redo: sM.linkState.bind(
       sM,
-      { smId: sM.currentSmId!, parentId, childId, canBeInitial: false },
+      { smId: sM.model.data.currentSm, parentId, childId, canBeInitial: false },
       false
     ),
-    undo: sM.unlinkState.bind(sM, { smId: sM.currentSmId!, id: childId, canUndo: false }),
+    undo: sM.unlinkState.bind(sM, { smId: sM.model.data.currentSm, id: childId, canUndo: false }),
   }),
   unlinkState: (sM, { parentId, params }) => ({
     redo: sM.unlinkState.bind(sM, { ...params, canUndo: false }),
-    undo: sM.linkState.bind(sM, { smId: sM.currentSmId!, parentId, childId: params.id }, false),
+    undo: sM.linkState.bind(
+      sM,
+      { smId: sM.model.data.currentSm, parentId, childId: params.id },
+      false
+    ),
   }),
   changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.changeStatePosition.bind(sM, sM.currentSmId!, id, startPosition, endPosition, false),
-    undo: sM.changeStatePosition.bind(sM, sM.currentSmId!, id, endPosition, startPosition, false),
+    redo: sM.changeStatePosition.bind(
+      sM,
+      sM.model.data.currentSm,
+      id,
+      startPosition,
+      endPosition,
+      false
+    ),
+    undo: sM.changeStatePosition.bind(
+      sM,
+      sM.model.data.currentSm,
+      id,
+      endPosition,
+      startPosition,
+      false
+    ),
   }),
 
   // TODO (L140-beep): Разобраться с targetId.
@@ -242,14 +260,18 @@ export const actionFunctions: ActionFunctions = {
       { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
       false
     ),
-    undo: sM.deleteChoiceState.bind(sM, { ...args, id: args.id!, smId: sM.currentSmId! }, false),
+    undo: sM.deleteChoiceState.bind(
+      sM,
+      { ...args, id: args.id!, smId: sM.model.data.currentSm },
+      false
+    ),
   }),
   deleteChoiceState: (sM, { id, stateData }) => ({
-    redo: sM.deleteChoiceState.bind(sM, { smId: sM.currentSmId!, id }, false),
+    redo: sM.deleteChoiceState.bind(sM, { smId: sM.model.data.currentSm, id }, false),
     undo: sM.createChoiceState.bind(
       sM,
       {
-        smId: sM.currentSmId!,
+        smId: sM.model.data.currentSm,
         dimensions: stateData.dimensions,
         id,
         position: stateData.position,
@@ -397,7 +419,7 @@ export const actionFunctions: ActionFunctions = {
   changeComponentPosition: (sM, { name, startPosition, endPosition }) => ({
     redo: sM.changeComponentPosition.bind(
       sM,
-      sM.currentSmId!,
+      sM.model.data.currentSm,
       name,
       startPosition,
       endPosition,
@@ -405,7 +427,7 @@ export const actionFunctions: ActionFunctions = {
     ),
     undo: sM.changeComponentPosition.bind(
       sM,
-      sM.currentSmId!,
+      sM.model.data.currentSm,
       name,
       endPosition,
       startPosition,

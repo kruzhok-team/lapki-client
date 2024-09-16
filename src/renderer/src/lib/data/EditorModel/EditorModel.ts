@@ -40,7 +40,6 @@ export class EditorModel {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   serializer = new Serializer(this);
-  currentSmId: string | null = null;
 
   constructor(
     private initPlatform: () => void,
@@ -49,11 +48,22 @@ export class EditorModel {
   ) {}
 
   init(basename: string | null, name: string, elements: Elements) {
-    this.triggerDataUpdate('canvas');
+    // this.triggerDataUpdate('canvas');
     this.data = emptyEditorData();
+    this.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = elements;
+    this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
+    this.triggerDataUpdate('basename', 'name', 'elements');
+  }
+
+  changeCurrentSm(newValue: string) {
+    this.data.currentSm = newValue;
+    this.triggerDataUpdate('currentSm');
+  }
+
+  initCanvasData() {
     for (const canvasId in this.data.canvas) {
       const canvas = this.data.canvas[canvasId];
       const prevMounted = canvas.isMounted;
@@ -62,10 +72,8 @@ export class EditorModel {
       if (canvas.isMounted) {
         this.resetEditor();
       }
+      this.triggerDataUpdate('canvas.isInitialized', 'canvas.isMounted');
     }
-
-    this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('basename', 'name', 'elements');
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -81,6 +89,9 @@ export class EditorModel {
   }
 
   private subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
+    if (!this.dataListeners[propertyName]) {
+      this.dataListeners[propertyName] = [];
+    }
     this.dataListeners[propertyName].push(listener);
 
     return () => {
@@ -90,17 +101,26 @@ export class EditorModel {
     };
   };
 
-  useData<T extends EditorDataPropertyName>(propertyName: T): EditorDataReturn<T> {
+  // TODO (L140-beep): разобраться с возвращаемым never
+  // TODO (L140-beep): триггерить апдейт при изменении currentSmId
+  // TODO (L140-beep): сделать stateId необязательным
+  useData<T extends EditorDataPropertyName>(
+    smId: string,
+    propertyName: T,
+    canvasId?: string
+  ): EditorDataReturn<T> {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
-      return !propertyName.startsWith('elements.');
+      return !propertyName.startsWith('elements');
     };
 
     const getSnapshot = () => {
       if (isShallow(propertyName)) {
+        if (propertyName.startsWith('canvas') && canvasId !== undefined) {
+          return this.data.canvas[canvasId][propertyName.split('.')[1]];
+        }
         return this.data[propertyName];
       }
-
-      return this.data['elements'][propertyName.split('.')[1]];
+      return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
     };
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -115,11 +135,10 @@ export class EditorModel {
     for (const name of propertyNames) {
       if (!isShallow(name)) {
         const subName = name.split('.')[1];
-        const prevValue = this.data.elements[subName];
-
+        const prevValue = this.data.elements.stateMachines[this.data.currentSm][subName];
         // Ссылку нужно обновлять только у объектов
         if (typeof prevValue === 'object' && prevValue !== null) {
-          this.data.elements[subName] = {
+          this.data.elements.stateMachines[this.data.currentSm][subName] = {
             ...prevValue,
           };
         }
@@ -174,7 +193,7 @@ export class EditorModel {
       color,
     };
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return id;
   }
@@ -211,7 +230,7 @@ export class EditorModel {
 
     state.color = color;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -222,7 +241,7 @@ export class EditorModel {
 
     state.name = name;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -233,7 +252,7 @@ export class EditorModel {
 
     state.selection = selection;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -244,7 +263,7 @@ export class EditorModel {
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -257,7 +276,7 @@ export class EditorModel {
 
     child.parentId = parentId;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -273,7 +292,7 @@ export class EditorModel {
 
     delete state.parentId;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -284,7 +303,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].states[id];
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -294,7 +313,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].initialStates[id] = other;
 
-    this.triggerDataUpdate('elements.stateMachines.initialStates');
+    this.triggerDataUpdate('elements.initialStates');
 
     return id;
   }
@@ -305,7 +324,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].initialStates[id];
 
-    this.triggerDataUpdate('elements.stateMachines.initialStates');
+    this.triggerDataUpdate('elements.initialStates');
 
     return true;
   }
@@ -316,7 +335,7 @@ export class EditorModel {
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.initialStates');
+    this.triggerDataUpdate('elements.initialStates');
 
     return true;
   }
@@ -343,7 +362,7 @@ export class EditorModel {
       position: placeInCenter ? centerPosition() : position,
     };
 
-    this.triggerDataUpdate('elements.stateMachines.finalStates');
+    this.triggerDataUpdate('elements.finalStates');
 
     return id;
   }
@@ -354,7 +373,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].finalStates[id];
 
-    this.triggerDataUpdate('elements.stateMachines.finalStates');
+    this.triggerDataUpdate('elements.finalStates');
 
     return true;
   }
@@ -365,7 +384,7 @@ export class EditorModel {
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.finalStates');
+    this.triggerDataUpdate('elements.finalStates');
 
     return true;
   }
@@ -378,7 +397,7 @@ export class EditorModel {
 
     state.parentId = parentId;
 
-    this.triggerDataUpdate('elements.stateMachines.finalStates');
+    this.triggerDataUpdate('elements.finalStates');
 
     return true;
   }
@@ -405,7 +424,7 @@ export class EditorModel {
       position: placeInCenter ? centerPosition() : position,
     };
 
-    this.triggerDataUpdate('elements.stateMachines.choiceStates');
+    this.triggerDataUpdate('elements.choiceStates');
 
     return id;
   }
@@ -416,7 +435,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].choiceStates[id];
 
-    this.triggerDataUpdate('elements.stateMachines.choiceStates');
+    this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }
@@ -427,7 +446,7 @@ export class EditorModel {
 
     state.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.choiceStates');
+    this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }
@@ -440,7 +459,7 @@ export class EditorModel {
 
     state.parentId = parentId;
 
-    this.triggerDataUpdate('elements.stateMachines.choiceStates');
+    this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }
@@ -451,7 +470,7 @@ export class EditorModel {
 
     state.selection = selection;
 
-    this.triggerDataUpdate('elements.stateMachines.choiceStates');
+    this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }
@@ -466,7 +485,7 @@ export class EditorModel {
       state.events.push(eventData);
     }
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -479,7 +498,7 @@ export class EditorModel {
 
     state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -494,7 +513,7 @@ export class EditorModel {
 
     event.trigger = newValue;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -512,7 +531,7 @@ export class EditorModel {
 
     state.events[eventIdx].do[actionIdx as number] = newValue;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -523,7 +542,7 @@ export class EditorModel {
 
     state.events.splice(eventIdx, 1);
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -536,7 +555,7 @@ export class EditorModel {
 
     state.events[eventIdx].do.splice(actionIdx as number, 1);
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
 
     return true;
   }
@@ -550,7 +569,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].transitions[id] = other;
 
-    this.triggerDataUpdate('elements.stateMachines.transitions');
+    this.triggerDataUpdate('elements.transitions');
 
     return id;
   }
@@ -571,7 +590,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].transitions[id] = { ...other, label: getNewLabel() };
 
-    this.triggerDataUpdate('elements.stateMachines.transitions');
+    this.triggerDataUpdate('elements.transitions');
 
     return true;
   }
@@ -583,7 +602,7 @@ export class EditorModel {
 
     transition.selection = selection;
 
-    this.triggerDataUpdate('elements.stateMachines.states');
+    this.triggerDataUpdate('elements.states');
     return true;
   }
 
@@ -593,7 +612,7 @@ export class EditorModel {
 
     transition.label.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.transitions');
+    this.triggerDataUpdate('elements.transitions');
 
     return true;
   }
@@ -604,7 +623,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].transitions[id];
 
-    this.triggerDataUpdate('elements.stateMachines.transitions');
+    this.triggerDataUpdate('elements.transitions');
 
     return true;
   }
@@ -641,8 +660,7 @@ export class EditorModel {
       parameters,
       order: getOrder(),
     };
-
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return name;
   }
@@ -653,7 +671,7 @@ export class EditorModel {
 
     component.parameters = parameters;
 
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -666,7 +684,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].components[name];
 
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -677,7 +695,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].components[name];
 
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -691,7 +709,7 @@ export class EditorModel {
 
     [component1.order, component2.order] = [component2.order, component1.order];
 
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -702,7 +720,7 @@ export class EditorModel {
 
     component.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -713,7 +731,7 @@ export class EditorModel {
 
     component.selection = selection;
 
-    this.triggerDataUpdate('elements.stateMachines.components');
+    this.triggerDataUpdate('elements.components');
 
     return true;
   }
@@ -748,7 +766,7 @@ export class EditorModel {
       position,
     };
 
-    this.triggerDataUpdate('elements.stateMachines.notes');
+    this.triggerDataUpdate('elements.notes');
 
     return id;
   }
@@ -758,7 +776,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].notes[id].text = text;
 
-    this.triggerDataUpdate('elements.stateMachines.notes');
+    this.triggerDataUpdate('elements.notes');
 
     return true;
   }
@@ -770,7 +788,7 @@ export class EditorModel {
 
     note.selection = selection;
 
-    this.triggerDataUpdate('elements.stateMachines.notes');
+    this.triggerDataUpdate('elements.notes');
 
     return true;
   }
@@ -781,7 +799,7 @@ export class EditorModel {
 
     note.position = position;
 
-    this.triggerDataUpdate('elements.stateMachines.notes');
+    this.triggerDataUpdate('elements.notes');
 
     return true;
   }
@@ -792,7 +810,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId].notes[id];
 
-    this.triggerDataUpdate('elements.stateMachines.notes');
+    this.triggerDataUpdate('elements.notes');
 
     return true;
   }
@@ -800,7 +818,7 @@ export class EditorModel {
   setMeta(smId: string, meta: Meta) {
     this.data.elements.stateMachines[smId].meta = meta;
 
-    this.triggerDataUpdate('elements.stateMachines.meta');
+    this.triggerDataUpdate('elements.meta');
 
     return true;
   }

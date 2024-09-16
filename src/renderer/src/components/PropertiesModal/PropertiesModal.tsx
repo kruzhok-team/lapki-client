@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Modal } from '@renderer/components/UI';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { Meta as MetaData } from '@renderer/types/diagram';
 
 import { Meta, MetaFormValues } from './Meta';
 
@@ -20,12 +21,12 @@ interface PropertiesModalProps {
 
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
   const modelController = useModelContext();
-  const sm = modelController.model.data.elements.stateMachines[modelController.currentSmId!];
-  console.log(modelController.currentSmId);
-  console.log(modelController.model.data.elements.stateMachines);
-  const meta = sm.meta;
   const model = modelController.model;
-
+  const name = model.useData('', 'name');
+  const basename = model.useData('', 'basename');
+  const currentSm = model.useData('', 'currentSm');
+  const platform = model.useData(currentSm, 'elements.platform');
+  const meta: MetaData = model.useData(currentSm, 'elements.meta');
   const [properties, setProperties] = useState<[string, string][]>([]);
 
   const metaForm = useForm<MetaFormValues>();
@@ -38,12 +39,12 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
     metaForm.clearErrors();
 
     const propertiesValues: [string, string][] = [
-      ['Название', model.data.name ?? 'отсутствует'],
-      ['Платформа', getPlatform(sm.platform)?.name ?? 'отсутствует'],
+      ['Название', name ?? 'отсутствует'],
+      ['Платформа', getPlatform(platform)?.name ?? 'отсутствует'],
     ];
-    if (model.data?.basename) {
-      const stat = await window.api.fileHandlers.getMetadata(model.data.basename);
-      propertiesValues.push(['Путь к файлу', model.data.basename]);
+    if (basename) {
+      const stat = await window.api.fileHandlers.getMetadata(basename);
+      propertiesValues.push(['Путь к файлу', basename]);
       propertiesValues.push(['Дата и время последнего изменения файла', dateFormat(stat['mtime'])]);
       propertiesValues.push(['Дата и время создания файла', dateFormat(stat['birthtime'])]);
       propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
@@ -53,7 +54,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
     model.setMeta(
-      modelController.currentSmId!,
+      currentSm,
       data.meta.reduce((acc, cur) => {
         acc[cur.name] = cur.value;
 

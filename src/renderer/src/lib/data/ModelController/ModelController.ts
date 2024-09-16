@@ -90,7 +90,6 @@ type StateType = (typeof StateTypes)[number];
 
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
-  currentSmId: string = '';
   //! Порядок создания важен, так как контроллер при инициализации использует представление
   model = new EditorModel(
     () => {
@@ -108,7 +107,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   history = new History(this);
   vacantComponents: { [id: string]: ComponentEntry[] } = {};
   platforms: { [id: string]: PlatformManager } = {};
-  controllers: { [id: string]: CanvasController } = {};
+  controllers: { [id: string]: { controller: CanvasController; isHead: boolean } } = {};
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
@@ -119,24 +118,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const editor = new CanvasEditor('', this);
     const controller = new CanvasController('', editor, { platformName: '' });
     editor.setController(controller);
-    this.controllers[''] = controller;
+    this.controllers[''] = { controller, isHead: true };
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
+    ModelController.instance = this;
   }
 
   // TODO: setup SchemeScreenController с другими подписками
-  setupDiagramEditorController(smId: string, app: CanvasEditor) {
+  setupDiagramEditorController(smId: string, controller: CanvasController) {
     const sm = this.model.data.elements.stateMachines[smId];
     if (!sm) return;
-    const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
-    controller.subscribe(smId, 'choice', sm.choiceStates);
-    controller.subscribe(smId, 'final', sm.finalStates);
-    controller.subscribe(smId, 'state', sm.states);
-    controller.subscribe(smId, 'note', sm.notes);
-    controller.subscribe(smId, 'transition', sm.transitions);
-    controller.subscribe(smId, 'initialState', sm.initialStates);
-
-    return controller;
+    console.log('created');
+    // const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
+    controller.addStateMachineId(smId);
+    // controller.subscribe(smId, 'choice', sm.choiceStates);
+    // controller.subscribe(smId, 'final', sm.finalStates);
+    // controller.subscribe(smId, 'state', sm.states);
+    // controller.subscribe(smId, 'note', sm.notes);
+    // controller.subscribe(smId, 'transition', sm.transitions);
+    // controller.subscribe(smId, 'initialState', sm.initialStates);
+    controller.subscribe(smId, 'component', sm.components);
+    controller.watch();
+    // return controller;
   }
 
   private watch() {
@@ -161,31 +164,38 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.platforms[platform.name] = platform;
       }
     }
+    console.log('EMITED');
     this.emit('initPlatform', null);
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
-    this.model.init(basename, filename, elements);
+    this.controllers[''].isHead = false;
+    this.controllers[''].controller.unwatch();
     const smId = Object.keys(elements.stateMachines)[0];
-    this.currentSmId = smId;
-    this.model.currentSmId = smId;
+    this.model.init(basename, filename, elements);
+    this.model.changeCurrentSm(smId);
 
     const canvasId = generateId();
     const editor = new CanvasEditor(canvasId, this);
-    const controller = this.setupDiagramEditorController(smId, editor);
+    const controller = new CanvasController(canvasId, editor, {
+      platformName: elements.stateMachines[smId].platform,
+    });
 
     if (!controller) return;
 
     editor.setController(controller);
-    this.controllers[canvasId] = controller;
+    this.controllers[canvasId] = { controller, isHead: true };
     this.model.data.canvas[canvasId] = {
       isInitialized: true,
       isMounted: false,
       prevMounted: false,
     };
     this.model.makeStale();
-    console.log(this.model.data.elements.stateMachines);
     this.history.clear();
+    this.model.initCanvasData();
+    this.initPlatform();
+    controller.initPlatform();
+    this.setupDiagramEditorController(smId, controller);
   }
 
   loadData() {
@@ -217,6 +227,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.createComponent(args);
 
     this.emit('createComponent', args);
+    console.log('EMITED_CREATE_COMPONENT');
+    console.log();
     // if (canUndo) {
     //   this.history.do({
     //     type: 'createComponent',
@@ -1656,7 +1668,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   getCurrentCanvas() {
-    return this.controllers[this.currentSmId].app;
+    const currentController = [...Object.values(this.controllers)].find((value) => value.isHead);
+    if (!currentController) return this.controllers[''].controller.app;
+    return currentController.controller.app;
   }
 
   duplicateSelected = () => {
@@ -1725,8 +1739,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   getVacantComponents(): ComponentEntry[] {
     if (!this.platforms) return [];
-
-    const sm = this.model.data.elements.stateMachines[''];
+    if (!this.model.data.currentSm) return [];
+    const sm = this.model.data.elements.stateMachines[this.model.data.currentSm];
     const components = sm.components;
     const vacant: ComponentEntry[] = [];
     const platform = this.platforms[sm.platform];

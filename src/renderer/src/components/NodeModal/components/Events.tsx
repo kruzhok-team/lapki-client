@@ -5,9 +5,9 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { EventsModal } from '@renderer/components';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useEvents } from '../hooks';
-import { useModelContext } from '@renderer/store/ModelContext';
 
 type EventsProps = ReturnType<typeof useEvents>;
 

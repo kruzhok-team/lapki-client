@@ -21,7 +21,7 @@ export const emptyEditorData = () => ({
   name: null as string | null,
 
   elements: emptyElements(),
-  currentSm: null as string | null,
+  currentSm: '' as string,
   offset: { x: 0, y: 0 },
   scale: 1,
   isStale: false,
@@ -44,7 +44,7 @@ export type EditorStatus = {
 export type EditorData = ReturnType<typeof emptyEditorData>;
 export type EditorDataPropertyName =
   | keyof EditorData
-  | `elements.${keyof EditorData['elements']}.${keyof StateMachine}`
+  | `elements.${keyof StateMachine}`
   | `canvas.${keyof EditorStatus}`;
 export type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']

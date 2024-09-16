@@ -16,7 +16,8 @@ export type DiagramContextMenuItem = {
 export const useDiagramContextMenu = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-
+  const name = modelController.model.useData('', 'name') as string | null;
+  const currentSm = modelController.model.useData('', 'currentSm');
   const openTab = useTabs((state) => state.openTab);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +53,7 @@ export const useDiagramContextMenu = () => {
           type: 'pasteState',
           action: () => {
             modelController.createState({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               events: [],
               dimensions: { width: 100, height: 50 }, // TODO (L140-beep): уточнить
               name: 'Состояние',
@@ -66,7 +67,7 @@ export const useDiagramContextMenu = () => {
           type: 'pasteFinalState',
           action: () => {
             modelController.createFinalState({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               dimensions: { width: 100, height: 50 },
               position: canvasPos,
               placeInCenter: true,
@@ -78,7 +79,7 @@ export const useDiagramContextMenu = () => {
           type: 'pasteChoiceState',
           action: () => {
             modelController.createChoiceState({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               dimensions: { width: 100, height: 50 },
               position: canvasPos,
               placeInCenter: true,
@@ -90,7 +91,7 @@ export const useDiagramContextMenu = () => {
           type: 'note',
           action: () => {
             modelController.createNote({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               position: canvasPos,
               placeInCenter: true,
               text: '',
@@ -105,7 +106,7 @@ export const useDiagramContextMenu = () => {
           action: () => {
             openTab({
               type: 'code',
-              name: modelController.model.data.name ?? 'Безымянная',
+              name: name ?? 'Безымянная',
               code: modelController.model.serializer.getAll('JSON'),
               language: 'json',
             });
@@ -155,7 +156,7 @@ export const useDiagramContextMenu = () => {
               label: 'Назначить начальным',
               type: 'initialState',
               action: () => {
-                modelController.setInitialState(modelController.currentSmId!, state.id);
+                modelController.setInitialState(currentSm, state.id);
               },
             },
             {
@@ -163,7 +164,7 @@ export const useDiagramContextMenu = () => {
               type: 'pasteState',
               action: () => {
                 modelController.createState({
-                  smId: modelController.currentSmId!,
+                  smId: currentSm,
                   dimensions: { width: 100, height: 50 },
                   events: [],
                   name: 'Состояние',
@@ -192,7 +193,7 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            modelController.deleteState({ smId: modelController.currentSmId!, id: state.id });
+            modelController.deleteState({ smId: currentSm, id: state.id });
           },
         },
       ]);
@@ -205,7 +206,7 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            modelController.deleteFinalState({ smId: modelController.currentSmId!, id: stateId });
+            modelController.deleteFinalState({ smId: currentSm, id: stateId });
           },
         },
       ]);
@@ -239,7 +240,7 @@ export const useDiagramContextMenu = () => {
           label: 'Удалить',
           type: 'delete',
           action: () => {
-            modelController.deleteChoiceState({ smId: modelController.currentSmId!, id: stateId });
+            modelController.deleteChoiceState({ smId: currentSm, id: stateId });
           },
         },
       ]);
@@ -256,7 +257,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             modelController.deleteEvent({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               stateId: state.id,
               event: event,
             });
@@ -267,9 +268,7 @@ export const useDiagramContextMenu = () => {
     const handleTransitionContextMenu = (data: { transitionId: string; position: Point }) => {
       const { transitionId, position } = data;
       const transitionData =
-        modelController.model.data.elements.stateMachines[modelController.currentSmId!].transitions[
-          transitionId
-        ];
+        modelController.model.data.elements.stateMachines[currentSm].transitions[transitionId];
       const source = (state: State) => {
         return {
           label: state.eventBox.parent.data.name,
@@ -277,7 +276,7 @@ export const useDiagramContextMenu = () => {
           action: () => {
             modelController.changeTransition({
               ...transitionData,
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               id: transitionId,
               sourceId: state.id,
             });
@@ -292,7 +291,7 @@ export const useDiagramContextMenu = () => {
           action: () => {
             modelController.changeTransition({
               ...transitionData,
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               id: transitionId,
               targetId: state.id,
             });
@@ -364,7 +363,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             modelController.deleteTransition({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               id: transitionId,
             });
           },
@@ -410,7 +409,7 @@ export const useDiagramContextMenu = () => {
           type: 'delete',
           action: () => {
             editor?.controller.notes.deleteNote({
-              smId: modelController.currentSmId!,
+              smId: currentSm,
               id: noteId,
             });
           },

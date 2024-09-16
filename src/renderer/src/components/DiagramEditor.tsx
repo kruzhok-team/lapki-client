@@ -21,12 +21,12 @@ interface DiagramEditorProps {
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
   const editor = props.editor;
-  const isMounted = editor.controller.isMounted;
 
   const [canvasSettings] = useSettings('canvas');
   const modelController = useModelContext();
+  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  const currentSmId = modelController.model.useData('', 'currentSm');
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
   // Дополнительные данные о родителе события
@@ -41,7 +41,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
     const handleDblclick = (position: Point) => {
       editor.controller.states.createState({
-        smId: modelController.currentSmId!,
+        smId: currentSmId,
         name: 'Состояние',
         events: [],
         dimensions: { width: 100, height: 50 }, // TODO (L140-beep): перепроверить
@@ -89,7 +89,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     if (!eventsModalParentData) return;
 
     modelController.changeEvent({
-      smId: modelController.currentSmId!,
+      smId: currentSmId,
       stateId: eventsModalParentData.state.id,
       event: eventsModalParentData.eventSelection,
       newValue: data,

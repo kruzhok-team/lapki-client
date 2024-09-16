@@ -4,7 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Event, ArgList } from '@renderer/types/diagram';
+import { Event, ArgList, Component } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { EventsModalParameters } from './EventsModalParameters';
@@ -30,8 +30,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const model = modelController.model;
-
-  const componentsData = model.data.elements.stateMachines[modelController.currentSmId!].components;
+  const currentSm = model.useData('', 'currentSm');
+  const componentsData = model.useData(currentSm, 'elements.components') as {
+    [id: string]: Component;
+  };
   const controller = editor.controller;
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 

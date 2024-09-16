@@ -5,17 +5,18 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Condition, Variable as VariableData } from '@renderer/types/diagram';
+import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики условия формы
  */
 export const useCondition = () => {
   const modelController = useModelContext();
-  const sm = modelController.model.data.elements.stateMachines[modelController.currentSmId!];
+  const currentSmId = modelController.model.useData('', 'currentSm');
+  const componentsData = modelController.model.useData(currentSmId, 'elements.components') as {
+    [id: string]: Component;
+  };
   const editor = modelController.getCurrentCanvas();
-  // const model = editor.controller.model;
-  const componentsData = sm.components;
   const controller = editor.controller;
 
   const [errors, setErrors] = useState({} as Record<string, string>);

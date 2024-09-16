@@ -10,7 +10,7 @@ import { useTrigger, useEvents, useCondition } from './hooks';
 
 export const StateModal: React.FC = () => {
   const modelController = useModelContext();
-  const currentSm = modelController.currentSmId!;
+  const currentSm = modelController.model.useData('', 'currentSm');
   const editor = modelController.getCurrentCanvas();
 
   const [isOpen, open, close] = useModal(false);

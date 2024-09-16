@@ -2,7 +2,7 @@ import { Dispatch } from 'react';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
-import { Elements, emptyElements } from '@renderer/types/diagram';
+import { Elements, emptyElements, emptyStateMachine } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { TemplatesList } from '@renderer/types/templates';
 
@@ -29,9 +29,11 @@ export class FilesManager {
     if (!isPlatformAvailable(platformIdx)) {
       throw Error('unknown platform ' + platformIdx);
     }
-
     const elements = emptyElements();
-    this.modelController.model.init(null, 'Без названия', elements as any);
+    elements.stateMachines['G'] = emptyStateMachine();
+    elements.stateMachines['G'].platform = platformIdx;
+    this.modelController.initData(null, 'Без названия', elements as any);
+    // this.modelController.model.init(null, 'Без названия', elements as any);
   }
 
   compile() {
@@ -119,7 +121,9 @@ export class FilesManager {
             content: `Незнакомая платформа "${checkResult[2]}".`,
           });
         }
-
+        if (this.modelController.controllers['']) {
+          this.modelController.controllers[''].controller.app.unmount();
+        }
         this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data);
         // this.modelController.components.fromElementsComponents(data.components);
         return makeRight(null);

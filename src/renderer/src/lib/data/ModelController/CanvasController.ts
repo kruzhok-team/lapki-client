@@ -49,7 +49,7 @@ import { StatesController } from './StatesController';
 import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
-import { loadPlatform } from '../PlatformLoader';
+import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
 import { operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
@@ -170,7 +170,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.components = new ComponentsController(app);
     this.stateMachines = new StateMachineController(app);
     this.canvasData = canvasData;
-    this.watch();
+    this.initPlatform();
+    // this.watch();
   }
 
   get view() {
@@ -192,26 +193,30 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   // Используется для обработки сигналов
   private processDrawable<T>(
     attribute: CanvasSubscribeAttribute,
-    callback: (args: T, canUndo: boolean) => any,
-    parameters: T,
-    canUndo: boolean = false
+    callback: (args: T) => any,
+    parameters: T
   ) {
+    console.log('aaaaaaaaaaaaaaaaaaaaaa');
     const smId = parameters['smId'];
     if (smId) {
       if (!this.stateMachinesSub[smId]) {
+        console.log('!this.tateMachinesSub[smId]');
         return;
       }
       if (!this.stateMachinesSub[smId].includes(attribute)) {
+        console.log('!this.StateMachinesSub.includes');
         return;
       }
     }
-    return callback(parameters, canUndo);
+    console.log('hereee');
+    return callback(parameters);
   }
 
   private bindHelper<T extends (args: any) => any>(
     attribute: CanvasSubscribeAttribute,
     callback: T
   ) {
+    console.log('bindHelper', attribute);
     return this.processDrawable.bind<
       this,
       [attribute: CanvasSubscribeAttribute, callback: T],
@@ -220,14 +225,127 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     >(this, attribute, callback);
   }
 
+  unwatch() {
+    const attributes = Object.values(this.stateMachinesSub);
+    for (const attributeSet of attributes) {
+      for (const attribute of attributeSet) {
+        switch (attribute) {
+          case 'state':
+            this.off('createState', this.bindHelper('state', this.states.createState));
+            this.off('deleteState', this.bindHelper('state', this.states.deleteState));
+            this.off('selectState', this.bindHelper('state', this.selectComponent));
+            this.off('addDragendStateSig', this.bindHelper('state', this.addDragendState));
+            this.off('linkState', this.bindHelper('state', this.linkState));
+            this.off('unlinkState', this.bindHelper('state', this.states.unlinkState));
+            this.off('changeStateEvents', this.bindHelper('state', this.states.changeStateEvents));
+            this.off('changeStateName', this.bindHelper('state', this.states.changeStateName));
+            this.off(
+              'changeStatePosition',
+              this.bindHelper('state', this.states.changeStatePosition)
+            );
+            this.off('createEvent', this.bindHelper('state', this.states.createEvent));
+            this.off('createEventAction', this.bindHelper('state', this.states.createEventAction));
+            this.off('changeEvent', this.bindHelper('state', this.states.changeEvent));
+            this.off('changeEventAction', this.bindHelper('state', this.states.changeEvent));
+            this.off('deleteEventAction', this.bindHelper('state', this.states.deleteEvent));
+            break;
+          case 'initialState':
+            this.off(
+              'createInitial',
+              this.bindHelper('initialState', this.states.createInitialState)
+            );
+            this.off(
+              'changeInitialPosition',
+              this.bindHelper('initialState', this.states.changeInitialStatePosition)
+            );
+            break;
+          case 'final':
+            this.off('createFinal', this.bindHelper('final', this.states.createFinalState));
+            this.off('deleteFinal', this.bindHelper('final', this.states.deleteFinalState));
+            this.off(
+              'changeFinalStatePosition',
+              this.bindHelper('final', this.states.changeFinalStatePosition)
+            );
+            this.off('linkFinalState', this.states.linkFinalState);
+            break;
+          case 'choice':
+            this.off('createChoice', this.bindHelper('choice', this.states.createChoiceState));
+            this.off('deleteChoice', this.bindHelper('choice', this.states.deleteChoiceState));
+            this.off('selectState', this.bindHelper('choice', this.selectChoice));
+            this.off('linkChoiceState', this.bindHelper('choice', this.states.linkChoiceState));
+            this.off(
+              'changeChoicePosition',
+              this.bindHelper('choice', this.states.changeChoiceStatePosition)
+            );
+            break;
+          case 'note':
+            this.off('createNote', this.bindHelper('note', this.notes.createNote));
+            this.off('deleteNote', this.bindHelper('note', this.notes.deleteNote));
+            this.off('selectNote', this.bindHelper('note', this.selectNote));
+            this.off('changeNoteText', this.bindHelper('note', this.notes.changeNoteText));
+            this.off('changeNotePosition', this.bindHelper('note', this.notes.changeNotePosition));
+            break;
+          case 'component':
+            this.off('createComponent', this.bindHelper('component', this.createComponent));
+            this.off('deleteComponent', this.bindHelper('component', this.deleteComponent));
+            this.off('editComponent', this.bindHelper('component', this.editComponent));
+            this.off('renameComponent', this.bindHelper('component', this.renameComponent));
+            this.off('selectComponent', this.bindHelper('component', this.selectComponent));
+            // this.initializer.initNotes(initData as { [id: string]: Note });
+            break;
+          case 'transition':
+            this.off(
+              'createTransition',
+              this.bindHelper('transition', this.transitions.createTransition)
+            );
+            this.off(
+              'deleteTransition',
+              this.bindHelper('transition', this.transitions.deleteTransition)
+            );
+            this.off(
+              'changeTransition',
+              this.bindHelper('transition', this.transitions.changeTransition)
+            );
+            this.off('changeTransitionPosition', this.transitions.changeTransitionPosition);
+            this.off('selectTransition', this.bindHelper('transition', this.selectTransition));
+            this.off('linkTransitions', this.bindHelper('transition', this.linkTransitions));
+            break;
+          default:
+            throw new Error('Unknown attribute');
+        }
+      }
+    }
+
+    this.off('loadData', this.loadData);
+    this.off('initPlatform', this.initPlatform);
+    this.off('initEvents', this.transitions.initEvents);
+    this.off('deleteSelected', this.deleteSelected);
+    this.off('changeScale', (value) => {
+      this.scale = value;
+    });
+    this.off('isMounted', this.setMountStatus);
+  }
+
+  initComponents(components: { [id: string]: Component }) {
+    if (!this.platform) return;
+    for (const [id, componentData] of Object.entries(components)) {
+      this.platform.nameToVisual.set(id, {
+        component: componentData.type,
+        label: componentData.parameters['label'],
+        color: componentData.parameters['labelColor'],
+      });
+    }
+  }
+
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
     if (!this.stateMachinesSub[smId]) {
       return;
     }
-    if (this.stateMachines[smId].includes(attribute)) {
+    if (this.stateMachinesSub[smId].includes(attribute)) {
       return;
     }
     this.stateMachinesSub[smId].push(attribute);
+    console.log('subscribe: ', smId, attribute);
     switch (attribute) {
       case 'state':
         this.on('createState', this.bindHelper('state', this.states.createState));
@@ -284,12 +402,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.initializer.initNotes(initData as { [id: string]: Note });
         break;
       case 'component':
+        console.log('subscribed', this.id);
         this.on('createComponent', this.bindHelper('component', this.createComponent));
         this.on('deleteComponent', this.bindHelper('component', this.deleteComponent));
         this.on('editComponent', this.bindHelper('component', this.editComponent));
         this.on('renameComponent', this.bindHelper('component', this.renameComponent));
         this.on('selectComponent', this.bindHelper('component', this.selectComponent));
         // this.initializer.initNotes(initData as { [id: string]: Note });
+        this.initComponents(initData as { [id: string]: Component });
         break;
       case 'transition':
         this.on(
@@ -484,7 +604,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       return;
     }
 
-    this.components.editComponent(args);
+    // this.components.editComponent(args);
     this.platform.nameToVisual.set(args.id, {
       component: args.type,
       label: args.parameters['label'],
@@ -497,31 +617,40 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       return;
     }
 
-    this.components.deleteComponent(args);
-    this.stateMachines.deleteComponent(args.smId, args.id);
+    // this.components.deleteComponent(args);
+    // this.stateMachines.deleteComponent(args.smId, args.id);
     this.platform.nameToVisual.delete(args.id);
   }
 
   private createComponent(args: CreateComponentParams) {
+    console.log('in createComponent function');
     if (!this.platform) {
       return;
     }
-    const component = this.components.createComponent(args);
-    if (!component) {
-      return;
-    }
+    console.log('leetsss gooo');
+    this.platform.nameToVisual.set(args.name, {
+      component: args.type,
+      label: args.parameters['label'],
+      color: args.parameters['labelColor'],
+    });
+    // const component = this.components.createComponent(args);
+    // if (!component) {
+    // return;
+    // }
     // TODO: Добавление компонентов в StateMachine
   }
 
-  private initPlatform() {
+  initPlatform() {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    const platformName = this.canvasData.platformName;
-    const platform = loadPlatform(platformName);
-    if (typeof platform === 'undefined') {
-      throw Error("couldn't init platform " + platformName);
+    console.log('INIT_PLATFORM');
+    if (!this.platform && isPlatformAvailable(this.canvasData.platformName)) {
+      const platformName = this.canvasData.platformName;
+      const platform = loadPlatform(platformName);
+      if (typeof platform === 'undefined') {
+        throw Error("couldn't init platform " + platformName);
+      }
+      this.platform = platform;
     }
-
-    this.platform = platform;
     //! Инициализировать компоненты нужно сразу после загрузки платформы
     // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
     // this.initializer.initComponents('', true);
@@ -529,13 +658,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   loadData() {
     // this.initializer.init();
-    this.app.view.isDirty = true;
+    if (this.app) {
+      this.app.view.isDirty = true;
+    }
   }
 
   // Отлавливание дефолтных событий для контроллера
-  private watch() {
+  watch() {
+    console.log('watch!');
     this.on('loadData', this.loadData);
-    this.on('initPlatform', this.initPlatform);
     this.on('initEvents', this.transitions.initEvents);
     this.on('deleteSelected', this.deleteSelected);
     this.on('changeScale', (value) => {
@@ -545,7 +676,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   private setMountStatus(args: SetMountedStatusParams) {
-    if (args.canvasId !== this.app.id) return;
+    if (!this || args.canvasId !== this.app.id) return;
     this.isMounted = args.status;
   }
 

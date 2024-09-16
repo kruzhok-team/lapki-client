@@ -28,9 +28,12 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-  console.log(modelController.model.data.canvas, editor.id);
-  const isStale = modelController.model.useData('isStale');
-  const isInitialized = modelController.model.data.canvas[editor.id].isInitialized;
+  const isStale = modelController.model.useData('', 'isStale');
+  const isInitialized = modelController.model.useData(
+    '',
+    'canvas.isInitialized',
+    editor.id
+  ) as string;
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 

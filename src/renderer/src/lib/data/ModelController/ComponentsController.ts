@@ -64,13 +64,12 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     if (!component) {
       throw new Error(`Изменение не существующего компонента с идентификатором ${args.id}`);
     }
-    const componentData = component.data;
-    componentData.parameters = args.parameters;
+    // const componentData = component.data;
     if (args.newName !== undefined) {
       this.deleteComponent(args);
       // (L140-beep) скорее всего придется потом возиться с переходами
       // на схематехническом экране
-      this.createComponent({ ...componentData, name: args.newName });
+      // this.createComponent({ ...component, ...args });
     } else {
       component.icon.label = args.parameters['label'];
       component.icon.color = args.parameters['labelColor'];

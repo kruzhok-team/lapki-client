@@ -15,6 +15,14 @@ import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useModelContext } from '@renderer/store/ModelContext';
+import {
+  ChoiceState,
+  FinalState,
+  InitialState,
+  Note,
+  State,
+  Transition,
+} from '@renderer/types/diagram';
 import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';
@@ -31,13 +39,15 @@ export const Hierarchy: React.FC = () => {
   const model = controller.model;
 
   const [theme] = useSettings('theme');
-  const sm = model.data.elements.stateMachines[controller.currentSmId!];
-  const states = sm.states;
-  const initialStates = sm.initialStates;
-  const finalStates = sm.finalStates;
-  const choiceStates = sm.choiceStates;
-  const transitions = sm.transitions;
-  const notes = sm.notes;
+  const smId = controller.model.useData('', 'currentSm');
+  const states = model.useData(smId, 'elements.states') as { [id: string]: State };
+  const initialStates = model.useData(smId, 'elements.initialStates') as {
+    [id: string]: InitialState;
+  };
+  const finalStates = model.useData(smId, 'elements.finalStates') as { [id: string]: FinalState };
+  const choiceStates = model.useData(smId, 'elements.finalStates') as { [id: string]: ChoiceState };
+  const transitions = model.useData(smId, 'elements.transitions') as { [id: string]: Transition };
+  const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -162,7 +172,7 @@ export const Hierarchy: React.FC = () => {
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
   const handleRename = (item: TreeItem, name: string) => {
-    controller.changeStateName(controller.currentSmId!, item.index.toString(), name);
+    controller.changeStateName(smId, item.index.toString(), name);
   };
 
   const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
@@ -170,18 +180,18 @@ export const Hierarchy: React.FC = () => {
       const childId = value.index.toString();
 
       if (target.targetType === 'root') {
-        return controller.unlinkState({ smId: controller.currentSmId!, id: childId });
+        return controller.unlinkState({ smId: smId, id: childId });
       }
 
       const parent = target.parentItem.toString();
 
       if (parent === 'root') {
-        return controller.unlinkState({ smId: controller.currentSmId!, id: childId });
+        return controller.unlinkState({ smId: smId, id: childId });
       }
 
       if (parent === childId) return;
 
-      return controller.linkState({ smId: controller.currentSmId!, parentId: parent, childId });
+      return controller.linkState({ smId: smId, parentId: parent, childId });
     });
   };
 
@@ -221,7 +231,7 @@ export const Hierarchy: React.FC = () => {
       nativeEvent: e.nativeEvent,
     };
 
-    const sm = controller.model.data.elements.stateMachines[controller.currentSmId!];
+    const sm = controller.model.data.elements.stateMachines[smId];
     const itemId = item.index.toString();
     const state = sm.states[itemId];
     const canvasController = controller.getCurrentCanvas().controller;

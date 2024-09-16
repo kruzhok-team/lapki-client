@@ -17,8 +17,12 @@ import { ComponentsList } from './ComponentsList';
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-  const isInitialized = modelController.model.data.canvas[editor.id].isInitialized;
-
+  const isInitialized = modelController.model.useData(
+    '',
+    'canvas.isInitialized',
+    editor.id
+  ) as boolean;
+  console.log(modelController.model.data.canvas, editor.id, isInitialized);
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
 

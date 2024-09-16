@@ -10,7 +10,10 @@ export const useComponents = () => {
   const modelController = useModelContext();
   const model = modelController.model;
   const editor = modelController.getCurrentCanvas();
-  const components = model.data.elements.stateMachines[modelController.currentSmId!].components;
+  const currentSm = model.useData('', 'currentSm');
+  const components = model.useData(currentSm, 'elements.components') as {
+    [id: string]: ComponentData;
+  };
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<ComponentData>({
@@ -73,7 +76,7 @@ export const useComponents = () => {
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
     modelController.createComponent({
-      smId: modelController.currentSmId!,
+      smId: currentSm,
       name: realName,
       type: idx,
       parameters: {},
@@ -90,7 +93,7 @@ export const useComponents = () => {
     newName?: string
   ) => {
     modelController.editComponent({
-      smId: modelController.currentSmId!,
+      smId: currentSm,
       id: idx,
       type: data.type,
       parameters: data.parameters,
@@ -99,13 +102,13 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    modelController.deleteComponent({ smId: modelController.currentSmId!, id: idx });
+    modelController.deleteComponent({ smId: currentSm, id: idx });
 
     editClose();
   };
 
   const onSwapComponents = (name1: string, name2: string) => {
-    modelController.swapComponents({ smId: modelController.currentSmId!, name1, name2 });
+    modelController.swapComponents({ smId: currentSm, name1, name2 });
   };
 
   return {

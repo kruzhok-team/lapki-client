@@ -183,12 +183,12 @@ export const Loader: React.FC<FlasherProps> = ({
     openMsgModal(msg);
   };
 
-  // добавление вкладки с сообщением от avrdude
+  // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
   const handleAddAvrdudeTab = () => {
-    closeTab('avrdude');
+    closeTab('Прошивка');
     openTab({
       type: 'code',
-      name: 'avrdude',
+      name: 'Прошивка',
       code: flashResult?.report() ?? '',
       language: 'txt',
     });

@@ -146,19 +146,32 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeStateEvents(args: ChangeStateEventsParams) {
-    const { id, eventData } = args;
-
+    const {
+      id,
+      eventData: { do: actions, trigger, condition },
+    } = args;
     const state = this.data.states.get(id);
     if (!state) return;
 
     const eventIndex = state.data.events.findIndex(
       (value) =>
-        eventData.trigger.component === value.trigger.component &&
-        eventData.trigger.method === value.trigger.method &&
+        trigger.component === value.trigger.component &&
+        trigger.method === value.trigger.method &&
         undefined === value.trigger.args // FIXME: сравнение по args может не работать
     );
 
-    state.data.events[eventIndex] = eventData;
+    const event = state.data.events[eventIndex];
+
+    if (event === undefined) {
+      state.data.events = [...state.data.events, args.eventData];
+    } else {
+      if (actions.length) {
+        event.condition = condition;
+        event.do = [...actions];
+      } else {
+        state.data.events.splice(eventIndex, 1);
+      }
+    }
     state.updateEventBox();
 
     this.view.isDirty = true;

@@ -131,7 +131,6 @@ export class Events {
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const platform = this.app.controller.platform;
     if (!platform) return;
-
     const { x, y, width } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / this.app.controller.scale;
 

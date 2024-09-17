@@ -805,7 +805,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
     const { smId, id, eventData } = args;
-
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 

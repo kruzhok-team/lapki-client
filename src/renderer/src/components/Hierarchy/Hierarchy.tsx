@@ -45,7 +45,9 @@ export const Hierarchy: React.FC = () => {
     [id: string]: InitialState;
   };
   const finalStates = model.useData(smId, 'elements.finalStates') as { [id: string]: FinalState };
-  const choiceStates = model.useData(smId, 'elements.finalStates') as { [id: string]: ChoiceState };
+  const choiceStates = model.useData(smId, 'elements.choiceStates') as {
+    [id: string]: ChoiceState;
+  };
   const transitions = model.useData(smId, 'elements.transitions') as { [id: string]: Transition };
   const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 

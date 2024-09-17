@@ -131,7 +131,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.addStateMachineId(smId);
     // controller.subscribe(smId, 'choice', sm.choiceStates);
     // controller.subscribe(smId, 'final', sm.finalStates);
-    // controller.subscribe(smId, 'state', sm.states);
+    controller.subscribe(smId, 'state', sm.states);
     // controller.subscribe(smId, 'note', sm.notes);
     // controller.subscribe(smId, 'transition', sm.transitions);
     // controller.subscribe(smId, 'initialState', sm.initialStates);
@@ -140,8 +140,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // return controller;
   }
 
-  private watch() {
-    this.on('isMounted', this.setMountStatus);
+  private watch(controller: CanvasController) {
+    controller.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
   }
 
   private setMountStatus(args: SetMountedStatusParams) {
@@ -193,6 +193,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       isMounted: false,
       prevMounted: false,
     };
+    this.watch(controller);
     this.model.makeStale();
     this.history.clear();
     this.model.initCanvasData();
@@ -1302,12 +1303,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       ? this.model.data.elements.stateMachines[smId].states[parentId]
       : null;
     const computedParent = linkByPoint ? this.getPossibleParentState(smId, params.position) : null;
-    if (!params.id) return;
-    const siblings = this.getSiblings(params.id, parentId, 'finalStates');
-    if (siblings.length) return;
 
     const id = this.model.createFinalState(params);
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
+    const siblings = this.getSiblings(smId, id, parentId, 'finalStates')[0];
+    if (siblings.length) {
+      console.log('heereeee');
+      this.model.deleteFinalState(smId, id);
+      return;
+    }
     this.emit('createFinal', params);
 
     if (gotParent && parentId) {
@@ -1678,20 +1682,20 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   selectState(id: string) {
-    // TODO: Откуда брать id машины состояний?
-    const state = this.model.data.elements.stateMachines[''].states[id];
+    const state = this.model.data.elements.stateMachines[this.model.data.currentSm].states[id];
     if (!state) return;
 
     this.removeSelection();
 
-    this.model.changeStateSelection('', id, true);
+    this.model.changeStateSelection(this.model.data.currentSm, id, true);
 
-    this.emit('selectState', { smId: '', id: id });
+    this.emit('selectState', { smId: this.model.data.currentSm, id: id });
   }
 
   selectChoiceState(id: string) {
     // TODO: Откуда брать id машины состояний?
-    const state = this.model.data.elements.stateMachines[''].choiceStates[id];
+    const state =
+      this.model.data.elements.stateMachines[this.model.data.currentSm].choiceStates[id];
     if (!state) return;
 
     this.removeSelection();

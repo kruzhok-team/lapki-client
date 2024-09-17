@@ -24,7 +24,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
   const [canvasSettings] = useSettings('canvas');
   const modelController = useModelContext();
-  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id);
+  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
   const containerRef = useRef<HTMLDivElement>(null);
   const currentSmId = modelController.model.useData('', 'currentSm');
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
@@ -40,7 +40,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     editor.mount(containerRef.current);
 
     const handleDblclick = (position: Point) => {
-      editor.controller.states.createState({
+      modelController.createState({
         smId: currentSmId,
         name: 'Состояние',
         events: [],

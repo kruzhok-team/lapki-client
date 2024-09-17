@@ -227,6 +227,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     >(this, attribute, callback);
   }
 
+  // TODO(L140-beep): ПОФИКСИТЬ СОБЫТИЯ ТАК, ЧТОБЫ БЫЛО КАК В SUBSCRIBE
   unwatch() {
     const attributes = Object.values(this.stateMachinesSub);
     for (const attributeSet of attributes) {

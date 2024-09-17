@@ -16,6 +16,7 @@ import {
   CreateEventParams,
   CreateFinalStateParams,
   CreateInitialStateControllerParams,
+  CreateInitialStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
@@ -43,6 +44,7 @@ import {
 } from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
+import { ModelController } from './ModelController';
 import { NotesController } from './NotesController';
 import { StateMachineController } from './StateMachineController';
 import { StatesController } from './StatesController';
@@ -157,7 +159,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   offset = { x: 0, y: 0 }; // Нигде не меняется?
   isMounted = false;
   canvasId: string | null = null;
-  constructor(id: string, app: CanvasEditor, canvasData: CanvasData) {
+  model: ModelController;
+  constructor(id: string, app: CanvasEditor, canvasData: CanvasData, model: ModelController) {
     super();
     this.id = id;
     this.app = app;
@@ -170,6 +173,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.components = new ComponentsController(app);
     this.stateMachines = new StateMachineController(app);
     this.canvasData = canvasData;
+    this.model = model;
     this.initPlatform();
     // this.watch();
   }
@@ -191,24 +195,23 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   // Функция для любой обработки Drawable
   // Используется для обработки сигналов
-  private processDrawable<T>(
+  processDrawable<T>(
     attribute: CanvasSubscribeAttribute,
     callback: (args: T) => any,
     parameters: T
   ) {
-    console.log('aaaaaaaaaaaaaaaaaaaaaa');
     const smId = parameters['smId'];
     if (smId) {
+      // сюда не попадаем
       if (!this.stateMachinesSub[smId]) {
-        console.log('!this.tateMachinesSub[smId]');
-        return;
+        return () => null;
       }
+      // сюда тоже
       if (!this.stateMachinesSub[smId].includes(attribute)) {
-        console.log('!this.StateMachinesSub.includes');
-        return;
+        return () => null;
       }
     }
-    console.log('hereee');
+    console.log('return callback');
     return callback(parameters);
   }
 
@@ -216,7 +219,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     attribute: CanvasSubscribeAttribute,
     callback: T
   ) {
-    console.log('bindHelper', attribute);
     return this.processDrawable.bind<
       this,
       [attribute: CanvasSubscribeAttribute, callback: T],
@@ -338,7 +340,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
-    if (!this.stateMachinesSub[smId]) {
+    if (!this.stateMachinesSub[smId] || !this.model) {
       return;
     }
     if (this.stateMachinesSub[smId].includes(attribute)) {
@@ -348,85 +350,214 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     console.log('subscribe: ', smId, attribute);
     switch (attribute) {
       case 'state':
-        this.on('createState', this.bindHelper('state', this.states.createState));
-        this.on('deleteState', this.bindHelper('state', this.states.deleteState));
-        this.on('selectState', this.bindHelper('state', this.selectComponent));
-        this.on('addDragendStateSig', this.bindHelper('state', this.addDragendState));
-        this.on('linkState', this.bindHelper('state', this.linkState));
-        this.on('unlinkState', this.bindHelper('state', this.states.unlinkState));
-        this.on('changeStateEvents', this.bindHelper('state', this.states.changeStateEvents));
-        this.on('changeStateName', this.bindHelper('state', this.states.changeStateName));
-        this.on('changeStatePosition', this.bindHelper('state', this.states.changeStatePosition));
-        this.on('createEvent', this.bindHelper('state', this.states.createEvent));
-        this.on('createEventAction', this.bindHelper('state', this.states.createEventAction));
-        this.on('changeEvent', this.bindHelper('state', this.states.changeEvent));
-        this.on('changeEventAction', this.bindHelper('state', this.states.changeEvent));
-        this.on('deleteEventAction', this.bindHelper('state', this.states.deleteEvent));
+        this.model.on(
+          'createState',
+          this.bindHelper('state', (args: CreateStateParams) => this.states.createState(args))
+        );
+        this.model.on(
+          'deleteState',
+          this.bindHelper('state', (args: DeleteDrawableParams) => this.states.deleteState(args))
+        );
+        this.model.on(
+          'selectState',
+          this.bindHelper('state', (args: SelectDrawable) => this.selectComponent(args))
+        );
+        this.model.on(
+          'addDragendStateSig',
+          this.bindHelper('state', (args: AddDragendStateSig) => this.addDragendState(args))
+        );
+        this.model.on(
+          'linkState',
+          this.bindHelper('state', (args: LinkStateParams) => this.linkState(args))
+        );
+        this.model.on(
+          'unlinkState',
+          this.bindHelper('state', (args: UnlinkStateParams) => this.states.unlinkState(args))
+        );
+        this.model.on(
+          'changeStateEvents',
+          this.bindHelper('state', (args: ChangeStateEventsParams) =>
+            this.states.changeStateEvents(args)
+          )
+        );
+        this.model.on(
+          'changeStateName',
+          this.bindHelper('state', (args: ChangeStateNameParams) =>
+            this.states.changeStateName(args)
+          )
+        );
+        this.model.on(
+          'changeStatePosition',
+          this.bindHelper('state', (args: ChangePosition) => this.states.changeStatePosition(args))
+        );
+        this.model.on(
+          'createEvent',
+          this.bindHelper('state', (args: CreateEventParams) => this.states.createEvent(args))
+        );
+        this.model.on(
+          'createEventAction',
+          this.bindHelper('state', (args: CreateEventActionParams) =>
+            this.states.createEventAction(args)
+          )
+        );
+        this.model.on(
+          'changeEvent',
+          this.bindHelper('state', (args: ChangeEventParams) => this.states.changeEvent(args))
+        );
+        this.model.on(
+          'changeEventAction',
+          this.bindHelper('state', (args: ChangeEventParams) => this.states.changeEvent(args))
+        );
+        this.model.on(
+          'deleteEventAction',
+          this.bindHelper('state', (args: DeleteEventParams) => this.states.deleteEvent(args))
+        );
         this.initializer.initStates(initData as { [id: string]: State });
         break;
       case 'initialState':
-        this.on('createInitial', this.bindHelper('initialState', this.states.createInitialState));
-        this.on(
+        this.model.on(
+          'createInitial',
+          this.bindHelper('initialState', (args: CreateInitialStateControllerParams) =>
+            this.states.createInitialState(args)
+          )
+        );
+        this.model.on(
           'changeInitialPosition',
-          this.bindHelper('initialState', this.states.changeInitialStatePosition)
+          this.bindHelper('initialState', (args: ChangePosition) =>
+            this.states.changeInitialStatePosition(args)
+          )
         );
         this.initializer.initInitialStates(initData as { [id: string]: InitialState });
         break;
       case 'final':
-        this.on('createFinal', this.bindHelper('final', this.states.createFinalState));
-        this.on('deleteFinal', this.bindHelper('final', this.states.deleteFinalState));
-        this.on(
-          'changeFinalStatePosition',
-          this.bindHelper('final', this.states.changeFinalStatePosition)
+        this.model.on(
+          'createFinal',
+          this.bindHelper('final', (args: CreateFinalStateParams) =>
+            this.states.createFinalState(args)
+          )
         );
-        this.on('linkFinalState', this.states.linkFinalState);
+        this.model.on(
+          'deleteFinal',
+          this.bindHelper('final', (args: DeleteDrawableParams) =>
+            this.states.deleteFinalState(args)
+          )
+        );
+        this.model.on(
+          'changeFinalStatePosition',
+          this.bindHelper('final', (args: ChangePosition) =>
+            this.states.changeFinalStatePosition(args)
+          )
+        );
+        this.model.on('linkFinalState', this.states.linkFinalState);
         this.initializer.initFinalStates(initData as { [id: string]: FinalState });
         break;
       case 'choice':
-        this.on('createChoice', this.bindHelper('choice', this.states.createChoiceState));
-        this.on('deleteChoice', this.bindHelper('choice', this.states.deleteChoiceState));
-        this.on('selectState', this.bindHelper('choice', this.selectChoice));
-        this.on('linkChoiceState', this.bindHelper('choice', this.states.linkChoiceState));
-        this.on(
+        this.model.on(
+          'createChoice',
+          this.bindHelper('choice', (args: CreateChoiceStateParams) =>
+            this.states.createChoiceState(args)
+          )
+        );
+        this.model.on(
+          'deleteChoice',
+          this.bindHelper('choice', (args: DeleteDrawableParams) =>
+            this.states.deleteChoiceState(args)
+          )
+        );
+        this.model.on(
+          'selectState',
+          this.bindHelper('choice', (args: SelectDrawable) => this.selectChoice(args))
+        );
+        this.model.on(
+          'linkChoiceState',
+          this.bindHelper('choice', (args: LinkStateParams) => this.states.linkChoiceState(args))
+        );
+        this.model.on(
           'changeChoicePosition',
-          this.bindHelper('choice', this.states.changeChoiceStatePosition)
+          this.bindHelper('choice', (args: ChangePosition) =>
+            this.states.changeChoiceStatePosition(args)
+          )
         );
         this.initializer.initChoiceStates(initData as { [id: string]: ChoiceState });
         break;
       case 'note':
-        this.on('createNote', this.bindHelper('note', this.notes.createNote));
-        this.on('deleteNote', this.bindHelper('note', this.notes.deleteNote));
-        this.on('selectNote', this.bindHelper('note', this.selectNote));
-        this.on('changeNoteText', this.bindHelper('note', this.notes.changeNoteText));
-        this.on('changeNotePosition', this.bindHelper('note', this.notes.changeNotePosition));
+        this.model.on(
+          'createNote',
+          this.bindHelper('note', (args: CreateNoteParams) => this.notes.createNote(args))
+        );
+        this.model.on(
+          'deleteNote',
+          this.bindHelper('note', (args: DeleteDrawableParams) => this.notes.deleteNote(args))
+        );
+        this.model.on(
+          'selectNote',
+          this.bindHelper('note', (args: SelectDrawable) => this.selectNote(args))
+        );
+        this.model.on(
+          'changeNoteText',
+          this.bindHelper('note', (args: ChangeNoteText) => this.notes.changeNoteText(args))
+        );
+        this.model.on(
+          'changeNotePosition',
+          this.bindHelper('note', (args: ChangePosition) => this.notes.changeNotePosition(args))
+        );
         this.initializer.initNotes(initData as { [id: string]: Note });
         break;
       case 'component':
         console.log('subscribed', this.id);
-        this.on('createComponent', this.bindHelper('component', this.createComponent));
-        this.on('deleteComponent', this.bindHelper('component', this.deleteComponent));
-        this.on('editComponent', this.bindHelper('component', this.editComponent));
-        this.on('renameComponent', this.bindHelper('component', this.renameComponent));
-        this.on('selectComponent', this.bindHelper('component', this.selectComponent));
+        this.model.on(
+          'createComponent',
+          this.bindHelper('component', (args: CreateComponentParams) => this.createComponent(args))
+        );
+        this.model.on(
+          'deleteComponent',
+          this.bindHelper('component', (args: DeleteDrawableParams) => this.deleteComponent(args))
+        );
+        this.model.on(
+          'editComponent',
+          this.bindHelper('component', (args: EditComponentParams) => this.editComponent(args))
+        );
+        this.model.on(
+          'renameComponent',
+          this.bindHelper('component', (args: RenameComponentParams) => this.renameComponent(args))
+        );
+        this.model.on(
+          'selectComponent',
+          this.bindHelper('component', (args: SelectDrawable) => this.selectComponent(args))
+        );
         // this.initializer.initNotes(initData as { [id: string]: Note });
         this.initComponents(initData as { [id: string]: Component });
         break;
       case 'transition':
-        this.on(
+        this.model.on(
           'createTransition',
-          this.bindHelper('transition', this.transitions.createTransition)
+          this.bindHelper('transition', (args: CreateTransitionParams) =>
+            this.transitions.createTransition(args)
+          )
         );
-        this.on(
+        this.model.on(
           'deleteTransition',
-          this.bindHelper('transition', this.transitions.deleteTransition)
+          this.bindHelper('transition', (args: DeleteDrawableParams) =>
+            this.transitions.deleteTransition(args)
+          )
         );
-        this.on(
+        this.model.on(
           'changeTransition',
-          this.bindHelper('transition', this.transitions.changeTransition)
+          this.bindHelper('transition', (args: ChangeTransitionParams) =>
+            this.transitions.changeTransition(args)
+          )
         );
-        this.on('changeTransitionPosition', this.transitions.changeTransitionPosition);
-        this.on('selectTransition', this.bindHelper('transition', this.selectTransition));
-        this.on('linkTransitions', this.bindHelper('transition', this.linkTransitions));
+        this.model.on('changeTransitionPosition', (args: ChangePosition) =>
+          this.transitions.changeTransitionPosition(args)
+        );
+        this.model.on(
+          'selectTransition',
+          this.bindHelper('transition', (args: SelectDrawable) => this.selectTransition(args))
+        );
+        this.model.on(
+          'linkTransitions',
+          this.bindHelper('transition', (args: LinkTransitionParams) => this.linkTransitions(args))
+        );
         this.initializer.initTransitions(initData as { [id: string]: Transition });
         break;
       default:
@@ -622,12 +753,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.platform.nameToVisual.delete(args.id);
   }
 
-  private createComponent(args: CreateComponentParams) {
-    console.log('in createComponent function');
+  createComponent(args: CreateComponentParams) {
     if (!this.platform) {
       return;
     }
-    console.log('leetsss gooo');
     this.platform.nameToVisual.set(args.name, {
       component: args.type,
       label: args.parameters['label'],
@@ -665,14 +794,13 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   // Отлавливание дефолтных событий для контроллера
   watch() {
-    console.log('watch!');
-    this.on('loadData', this.loadData);
-    this.on('initEvents', this.transitions.initEvents);
-    this.on('deleteSelected', this.deleteSelected);
-    this.on('changeScale', (value) => {
+    this.model.on('loadData', () => this.loadData());
+    this.model.on('initEvents', () => this.transitions.initEvents());
+    this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));
+    this.model.on('changeScale', (value) => {
       this.scale = value;
     });
-    this.on('isMounted', this.setMountStatus);
+    this.model.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
   }
 
   private setMountStatus(args: SetMountedStatusParams) {

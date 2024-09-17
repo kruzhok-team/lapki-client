@@ -113,10 +113,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   constructor() {
     super();
-    this.watch();
 
     const editor = new CanvasEditor('', this);
-    const controller = new CanvasController('', editor, { platformName: '' });
+    const controller = new CanvasController('', editor, { platformName: '' }, this);
     editor.setController(controller);
     this.controllers[''] = { controller, isHead: true };
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
@@ -128,7 +127,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   setupDiagramEditorController(smId: string, controller: CanvasController) {
     const sm = this.model.data.elements.stateMachines[smId];
     if (!sm) return;
-    console.log('created');
     // const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
     controller.addStateMachineId(smId);
     // controller.subscribe(smId, 'choice', sm.choiceStates);
@@ -177,9 +175,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     const canvasId = generateId();
     const editor = new CanvasEditor(canvasId, this);
-    const controller = new CanvasController(canvasId, editor, {
-      platformName: elements.stateMachines[smId].platform,
-    });
+    const controller = new CanvasController(
+      canvasId,
+      editor,
+      {
+        platformName: elements.stateMachines[smId].platform,
+      },
+      this
+    );
 
     if (!controller) return;
 
@@ -194,7 +197,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.history.clear();
     this.model.initCanvasData();
     this.initPlatform();
-    controller.initPlatform();
     this.setupDiagramEditorController(smId, controller);
   }
 
@@ -225,10 +227,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createComponent(args: CreateComponentParams, canUndo = true) {
     this.model.createComponent(args);
-
     this.emit('createComponent', args);
-    console.log('EMITED_CREATE_COMPONENT');
-    console.log();
     // if (canUndo) {
     //   this.history.do({
     //     type: 'createComponent',

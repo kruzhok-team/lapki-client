@@ -129,12 +129,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!sm) return;
     // const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
     controller.addStateMachineId(smId);
-    // controller.subscribe(smId, 'choice', sm.choiceStates);
-    // controller.subscribe(smId, 'final', sm.finalStates);
+    controller.subscribe(smId, 'choice', sm.choiceStates);
+    controller.subscribe(smId, 'final', sm.finalStates);
     controller.subscribe(smId, 'state', sm.states);
-    // controller.subscribe(smId, 'note', sm.notes);
-    // controller.subscribe(smId, 'transition', sm.transitions);
-    // controller.subscribe(smId, 'initialState', sm.initialStates);
+    controller.subscribe(smId, 'note', sm.notes);
+    controller.subscribe(smId, 'transition', sm.transitions);
+    controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
     controller.watch();
     // return controller;
@@ -280,13 +280,21 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.emit('changeTransitionPosition', args);
   }
-
-  createTransition(params: CreateTransitionParams, canUndo = true) {
+  // Флаг withInitial нужен, когда мы автоматически создаем переход из начального состояния
+  createTransition(params: CreateTransitionParams, withInitial: boolean = false, canUndo = true) {
     const { sourceId, targetId, color, id: prevId, label, smId } = params;
     const sm = this.model.data.elements.stateMachines[smId];
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
-    const source = sm.states[sourceId] || sm.notes[sourceId];
-    const target = sm.states[targetId] || sm.notes[targetId] || sm.transitions[targetId];
+    const source =
+      sm.states[sourceId] ||
+      sm.notes[sourceId] ||
+      sm.initialStates[sourceId] ||
+      sm.choiceStates[sourceId];
+    const target =
+      sm.states[targetId] ||
+      sm.notes[targetId] ||
+      sm.choiceStates[targetId] ||
+      sm.transitions[targetId];
 
     if (!source || !target) return;
 
@@ -306,7 +314,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       color,
       label,
     });
-
+    if (withInitial) {
+      this.emit('createTransitionFromInitialState', { ...params, id: newId });
+      return;
+    }
     this.emit('createTransition', { ...params, id: newId });
     if (canUndo) {
       this.history.do({
@@ -752,8 +763,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createInitialState(params: CCreateInitialStateParams, canUndo = true) {
     const { id: prevId, targetId, smId } = params;
-
-    const target = this.model.data.elements[smId].states.get(targetId);
+    const target = this.model.data.elements.stateMachines[smId].states[targetId];
     if (!target) return;
 
     const position = {
@@ -761,7 +771,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       y: target.position.y - INITIAL_STATE_OFFSET,
     };
 
-    if (target.data.parentId) {
+    if (target.parentId) {
       position.x = Math.max(0, position.x);
       position.y = Math.max(0, position.y);
     }
@@ -769,7 +779,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const id = this.model.createInitialState({
       smId,
       position,
-      parentId: target.data.parentId,
+      parentId: target.parentId,
       dimensions: { width: 50, height: 50 },
       id: prevId,
     });
@@ -848,6 +858,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let numberOfConnectedActions = 0;
     const newStateId = this.model.createState(args);
     this.emit('createState', { ...args, id: newStateId });
+
+    const siblings = this.getSiblings(smId, newStateId, parentId)[0];
+    if (!siblings.length) {
+      console.log('hereee');
+      this.createInitialStateWithTransition(smId, newStateId);
+    }
 
     if (parentId) {
       this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);

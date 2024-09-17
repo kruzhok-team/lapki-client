@@ -126,7 +126,7 @@ export type CanvasControllerEvents = {
   changeNoteSelection: ChangeSelectionParams;
   changeTransitionSelection: ChangeSelectionParams;
   changeTransitionPosition: ChangePosition;
-
+  createTransitionFromInitialState: CreateTransitionParams;
   linkTransitions: LinkTransitionParams;
   addDragendStateSig: AddDragendStateSig;
   linkState: LinkStateParams;
@@ -339,7 +339,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       });
     }
   }
-
+  // TODO (L140-beep): Поменять привязанные функции на стрелочные (сами функции, а не при привязке)
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
     if (!this.stateMachinesSub[smId] || !this.model) {
       return;
@@ -543,6 +543,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           )
         );
         this.model.on(
+          'createTransitionFromInitialState',
+          this.bindHelper('transition', (args: CreateTransitionParams) =>
+            this.transitions.createTransition(args)
+          )
+        );
+        this.model.on(
           'changeTransition',
           this.bindHelper('transition', (args: ChangeTransitionParams) =>
             this.transitions.changeTransition(args)
@@ -562,6 +568,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.initializer.initTransitions(initData as { [id: string]: Transition });
         break;
       default:
+        console.log(attribute);
         throw new Error('Unknown attribute');
     }
   }

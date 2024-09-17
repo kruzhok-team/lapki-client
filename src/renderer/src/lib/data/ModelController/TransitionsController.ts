@@ -106,6 +106,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = new Transition(this.app, params.id, { ...params });
 
     this.items.set(params.id, transition);
+    this.view.children.add(transition, Layer.Transitions);
 
     this.watchTransition(transition);
 

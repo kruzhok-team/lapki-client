@@ -48,7 +48,7 @@ export const ManagerMSTab: React.FC = () => {
     if (device === undefined) {
       return 'Устройство отсутствует';
     }
-    return `${device?.name} (${device?.portName})`;
+    return `${device?.name} (${device?.portNames[0]})`;
   };
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">

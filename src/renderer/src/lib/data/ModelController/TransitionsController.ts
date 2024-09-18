@@ -212,7 +212,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnState = (state: State | ChoiceState) => {
     if (!this.ghost?.source) return;
     // TODO (L140-beep): И что с этим делать?
-    // debugger;
     if (this.ghost.source instanceof Note) {
       this.createTransition({
         smId: '',

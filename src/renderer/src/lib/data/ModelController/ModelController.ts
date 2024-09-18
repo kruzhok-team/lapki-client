@@ -1,5 +1,4 @@
 import { Point } from 'electron';
-import { s } from 'vitest/dist/reporters-5f784f42';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
@@ -9,11 +8,6 @@ import {
   PASTE_POSITION_OFFSET_STEP,
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
-import {
-  State as DrawableState,
-  ChoiceState as DrawableChoiceState,
-  FinalState as DrawableFinalState,
-} from '@renderer/lib/drawable';
 import {
   CCreateInitialStateParams,
   CopyData,
@@ -500,7 +494,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   changeNoteText = (args: ChangeNoteText, canUndo = true) => {
     const { id, smId, text } = args;
-    const note = this.model.data.elements.stateMachines[smId].notes[smId];
+    const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
 
     if (canUndo) {

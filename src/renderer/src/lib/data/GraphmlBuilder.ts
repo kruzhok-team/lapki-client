@@ -353,27 +353,28 @@ function serializeComponents(components: { [id: string]: Component }): {
 }
 
 export function exportCGML(elements: Elements): string {
-  const platform = getPlatform(elements.platform);
-  if (!platform) {
-    throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
-  }
   const cgmlElements: CGMLElements = createEmptyElements();
-  cgmlElements.meta = exportMeta(elements.meta, platform);
-  cgmlElements.format = 'Cyberiada-GraphML-1.0';
-  cgmlElements.platform = elements.platform;
-  cgmlElements.stateMachines['g'] = {
-    components: elements.platform.startsWith('Arduino')
-      ? serializeComponents(elements.components)
-      : {},
-    states: serializeStates(elements.states, platform, elements.components),
-    transitions: serializeTransitions(elements.transitions, platform, elements.components),
-    notes: serializeNotes(elements.notes),
-    initialStates: serializeVertex(elements.initialStates, 'initial'),
-    finals: serializeVertex(elements.finalStates, 'final'),
-    choices: serializeVertex(elements.choiceStates, 'choice'),
-    terminates: {},
-    unknownVertexes: {},
-  };
-  cgmlElements.keys = getKeys();
+  for (const smId in elements.stateMachines) {
+    const sm = elements.stateMachines[smId];
+    const platform = getPlatform(sm.platform);
+    if (!platform) {
+      throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
+    }
+    cgmlElements.meta = exportMeta(sm.meta, platform);
+    cgmlElements.format = 'Cyberiada-GraphML-1.0';
+    cgmlElements.platform = sm.platform;
+    cgmlElements.stateMachines[smId] = {
+      components: sm.platform.startsWith('Arduino') ? serializeComponents(sm.components) : {},
+      states: serializeStates(sm.states, platform, sm.components),
+      transitions: serializeTransitions(sm.transitions, platform, sm.components),
+      notes: serializeNotes(sm.notes),
+      initialStates: serializeVertex(sm.initialStates, 'initial'),
+      finals: serializeVertex(sm.finalStates, 'final'),
+      choices: serializeVertex(sm.choiceStates, 'choice'),
+      terminates: {},
+      unknownVertexes: {},
+    };
+    cgmlElements.keys = getKeys();
+  }
   return exportGraphml(cgmlElements);
 }

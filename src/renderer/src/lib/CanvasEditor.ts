@@ -116,6 +116,8 @@ export class CanvasEditor {
     this.controller.loadData();
     this.view.initEvents();
     this.controller.transitions.initEvents();
+    this.controller.initializer.init();
+    this.controller.init();
   }
 
   setSettings(settings: CanvasEditorSettings) {

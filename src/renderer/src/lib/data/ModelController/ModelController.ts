@@ -706,7 +706,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   linkState(args: LinkStateParams, canUndo = true) {
-    const { parentId, childId, addOnceOff = false, canBeInitial = true } = args;
+    const { parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const smId = args.smId ?? this.model.data.currentSm;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
@@ -861,12 +861,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const newStateId = this.model.createState(args);
     this.emit('createState', { ...args, id: newStateId });
 
-    // const siblings = this.getSiblings(smId, newStateId, parentId)[0];
-    // console.log(siblings);
-    // if (!siblings.length) {
-    // console.log('hereee');
-    // this.createInitialStateWithTransition(smId, newStateId);
-    // }
+    const siblings = this.getSiblings(smId, newStateId, parentId)[0];
+    if (!siblings.length && !parentId) {
+      this.createInitialStateWithTransition(smId, newStateId);
+    }
 
     if (parentId) {
       this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);

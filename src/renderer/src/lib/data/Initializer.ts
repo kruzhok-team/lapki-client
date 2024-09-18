@@ -242,6 +242,47 @@ export class Initializer {
     this.app.view.children.add(state, Layer.States);
   }
 
+  // watch() {
+  //   this.watchStates();
+  //   this.watchNotes();
+  //   this.watchTransitions();
+  // }
+
+  // private watchTransitions() {
+  //   for (const transition of this.transitions.items.values()) {
+  //     this.transitions.watchTransition(transition);
+  //   }
+  // }
+
+  // private watchNotes() {
+  //   for (const note of this.notes.items.values()) {
+  //     this.notes.watch(note);
+  //   }
+  // }
+
+  // private watchStates() {
+  //   for (const stateId in this.states.data.states) {
+  //     const state = this.states.data.states.get(stateId);
+  //     if (!state) continue;
+  //     this.states.watch(state);
+  //   }
+  //   for (const stateId in this.states.data.finalStates) {
+  //     const state = this.states.data.finalStates.get(stateId);
+  //     if (!state) continue;
+  //     this.states.watch(state);
+  //   }
+  //   for (const stateId in this.states.data.choiceStates) {
+  //     const state = this.states.data.choiceStates.get(stateId);
+  //     if (!state) continue;
+  //     this.states.watch(state);
+  //   }
+  //   for (const stateId in this.states.data.initialStates) {
+  //     const state = this.states.data.initialStates.get(stateId);
+  //     if (!state) continue;
+  //     this.states.watch(state);
+  //   }
+  // }
+
   private linkStateView(parentId: string, childId: string) {
     const parent = this.states.get(parentId);
     const child = this.states.get(childId);

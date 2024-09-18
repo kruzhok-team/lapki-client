@@ -9,6 +9,7 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
 } from '@kruzhok-team/cyberiadaml-js';
+import { s } from 'vitest/dist/reporters-5f784f42';
 
 import {
   Action,
@@ -23,6 +24,8 @@ import {
   Event,
   FinalState,
   ChoiceState,
+  emptyElements,
+  emptyStateMachine,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 
@@ -151,6 +154,7 @@ function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]
           }
         : { x: -1, y: -1 },
       parentId: final.parent,
+      dimensions: { width: 100, height: 50 },
     };
   }
   return finalStates;
@@ -168,6 +172,7 @@ function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }):
     initialStates[initialId] = {
       position: rawInitial.position,
       parentId: rawInitial.parent,
+      dimensions: { width: 100, height: 50 },
     };
   }
   return initialStates;
@@ -185,6 +190,7 @@ function getChoices(rawChoices: { [id: string]: CGMLVertex }): {
     choices[choiceId] = {
       position: rawChoice.position,
       parentId: rawChoice.parent,
+      dimensions: { width: 100, height: 50 },
     };
   }
   return choices;
@@ -440,50 +446,42 @@ export function importGraphml(
     //Вот тут схема не отдает уже позицию компонентов.
     const rawElements: CGMLElements = parseCGML(expression);
     const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
-    const elements: Elements = {
-      states: {},
-      transitions: {},
-      notes: {},
-      finalStates: {},
-      initialStates: {},
-      choiceStates: {},
-      components: {},
-      platform: rawElements.platform,
-      meta: {},
-    };
+    const elements: Elements = emptyElements();
     if (!isPlatformAvailable(rawElements.platform)) {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
+    const platform: Platform | undefined = getPlatform(rawElements.platform);
     // TODO: добавить в платформу флаг для статических компонентов
-    const platform: Platform | undefined = getPlatform(elements.platform);
     if (platform === undefined) {
       throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
     }
-    if (elements.platform.startsWith('Bearloga')) {
-      elements.components = getAllComponent(platform.components);
-    } else {
-      elements.components = getComponents(sm.components);
+    for (const smId in rawElements.stateMachines) {
+      const rawSm = rawElements.stateMachines[smId];
+      const sm = emptyStateMachine();
+      if (rawElements.platform.startsWith('Bearloga')) {
+        sm.components = getAllComponent(platform.components);
+      } else {
+        sm.components = getComponents(rawSm.components);
+      }
+      sm.meta = rawElements.meta.values;
+      sm.initialStates = getInitialStates(rawSm.initialStates);
+      sm.finalStates = getFinals(rawSm.finals);
+      sm.notes = rawSm.notes;
+      sm.states = getStates(rawSm.states);
+      sm.transitions = getTransitions(rawSm.transitions);
+      sm.states = labelStateParameters(sm.states, platform.components, sm.components);
+      sm.platform = rawElements.platform;
+      sm.choiceStates = getChoices(rawSm.choices);
+      sm.transitions = labelTransitionParameters(
+        sm.transitions,
+        platform.components,
+        sm.components
+      );
+      elements.stateMachines[smId] = sm;
     }
-    elements.meta = rawElements.meta.values;
-    elements.initialStates = getInitialStates(sm.initialStates);
-    elements.finalStates = getFinals(sm.finals);
-    elements.notes = sm.notes;
-    elements.states = getStates(sm.states);
-    elements.transitions = getTransitions(sm.transitions);
-    elements.states = labelStateParameters(
-      elements.states,
-      platform.components,
-      elements.components
-    );
-
-    elements.choiceStates = getChoices(sm.choices);
-    elements.transitions = labelTransitionParameters(
-      elements.transitions,
-      platform.components,
-      elements.components
-    );
-
-    validateElements(elements, platform);
+    const platforms: { [id: string]: Platform } = {};
+    platforms[rawElements.platform] = platform;
+    validateElements(elements, platforms);
     return elements;
   } catch (error) {
     console.error(error);

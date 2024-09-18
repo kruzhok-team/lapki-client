@@ -16,7 +16,6 @@ import {
   CreateEventParams,
   CreateFinalStateParams,
   CreateInitialStateControllerParams,
-  CreateInitialStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
@@ -35,10 +34,12 @@ import {
   ChoiceState,
   Component,
   Condition,
+  emptyStateMachine,
   FinalState,
   InitialState,
   Note,
   State,
+  StateMachine,
   Transition,
   Variable,
 } from '@renderer/types/diagram';
@@ -157,6 +158,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   notes: NotesController;
   components: ComponentsController;
   stateMachines: StateMachineController;
+  initData: StateMachine = emptyStateMachine();
   canvasData: CanvasData;
   stateMachinesSub: { [id: string]: CanvasSubscribeAttribute[] } = {};
   id: string;
@@ -216,8 +218,18 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         return () => null;
       }
     }
-    console.log('return callback');
+
     return callback(parameters);
+  }
+
+  init() {
+    this.initComponents(this.initData.components);
+    this.initializer.initStates(this.initData.states);
+    this.initializer.initChoiceStates(this.initData.choiceStates);
+    this.initializer.initFinalStates(this.initData.finalStates);
+    this.initializer.initNotes(this.initData.notes);
+    this.initializer.initInitialStates(this.initData.initialStates);
+    this.initializer.initTransitions(this.initData.transitions);
   }
 
   private bindHelper<T extends (args: any) => any>(
@@ -299,6 +311,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.off('editComponent', this.bindHelper('component', this.editComponent));
             this.off('renameComponent', this.bindHelper('component', this.renameComponent));
             this.off('selectComponent', this.bindHelper('component', this.selectComponent));
+            // this.initData.components = {
+            //   ...this.initData.components,
+            //   ...(initData as { [id: string]: ChoiceState }),
+            // };
             // this.initializer.initNotes(initData as { [id: string]: Note });
             break;
           case 'transition':
@@ -418,7 +434,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'deleteEventAction',
           this.bindHelper('state', (args: DeleteEventParams) => this.states.deleteEvent(args))
         );
-        this.initializer.initStates(initData as { [id: string]: State });
+        this.initData.states = {
+          ...this.initData.states,
+          ...(initData as { [id: string]: State }),
+        };
+        // this.initializer.initStates(initData as { [id: string]: State });
         break;
       case 'initialState':
         this.model.on(
@@ -433,7 +453,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.states.changeInitialStatePosition(args)
           )
         );
-        this.initializer.initInitialStates(initData as { [id: string]: InitialState });
+        this.initData.initialStates = {
+          ...this.initData.initialStates,
+          ...(initData as { [id: string]: InitialState }),
+        };
+        // this.initializer.initInitialStates(initData as { [id: string]: InitialState });
         break;
       case 'final':
         this.model.on(
@@ -455,7 +479,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           )
         );
         this.model.on('linkFinalState', this.states.linkFinalState);
-        this.initializer.initFinalStates(initData as { [id: string]: FinalState });
+        this.initData.finalStates = {
+          ...this.initData.finalStates,
+          ...(initData as { [id: string]: FinalState }),
+        };
+        // this.initializer.initFinalStates(initData as { [id: string]: FinalState });
         break;
       case 'choice':
         this.model.on(
@@ -484,7 +512,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.states.changeChoiceStatePosition(args)
           )
         );
-        this.initializer.initChoiceStates(initData as { [id: string]: ChoiceState });
+        this.initData.choiceStates = {
+          ...this.initData.choiceStates,
+          ...(initData as { [id: string]: ChoiceState }),
+        };
+        // this.initializer.initChoiceStates(initData as { [id: string]: ChoiceState });
         break;
       case 'note':
         this.model.on(
@@ -507,7 +539,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeNotePosition',
           this.bindHelper('note', (args: ChangePosition) => this.notes.changeNotePosition(args))
         );
-        this.initializer.initNotes(initData as { [id: string]: Note });
+        this.initData.notes = {
+          ...this.initData.notes,
+          ...(initData as { [id: string]: Note }),
+        };
+        // this.initializer.initNotes(initData as { [id: string]: Note });
         break;
       case 'component':
         console.log('subscribed', this.id);
@@ -531,8 +567,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'selectComponent',
           this.bindHelper('component', (args: SelectDrawable) => this.selectComponent(args))
         );
+        this.initData.components = {
+          ...this.initData.components,
+          ...(initData as { [id: string]: Component }),
+        };
         // this.initializer.initNotes(initData as { [id: string]: Note });
-        this.initComponents(initData as { [id: string]: Component });
+        // this.initComponents(initData as { [id: string]: Component });
         break;
       case 'transition':
         this.model.on(
@@ -570,10 +610,13 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'linkTransitions',
           this.bindHelper('transition', (args: LinkTransitionParams) => this.linkTransitions(args))
         );
-        this.initializer.initTransitions(initData as { [id: string]: Transition });
+        // this.initializer.initTransitions(initData as { [id: string]: Transition });
+        this.initData.transitions = {
+          ...this.initData.transitions,
+          ...(initData as { [id: string]: Transition }),
+        };
         break;
       default:
-        console.log(attribute);
         throw new Error('Unknown attribute');
     }
   }

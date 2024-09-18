@@ -48,7 +48,8 @@ export const ManagerMSTab: React.FC = () => {
     if (device === undefined) {
       return 'Устройство отсутствует';
     }
-    const displayedPort = (device.portNames && device.portNames.length > 0) ? device.portNames[0] : device.portName  
+    const displayedPort =
+      device.portNames && device.portNames.length > 0 ? device.portNames[0] : device.portName;
     return `${device?.name} (${displayedPort})`;
   };
   return (

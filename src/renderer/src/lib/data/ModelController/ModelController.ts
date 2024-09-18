@@ -142,6 +142,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   private watch(controller: CanvasController) {
     controller.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
+    controller.on('linkState', (args: LinkStateParams) => this.linkState(args));
   }
 
   private setMountStatus(args: SetMountedStatusParams) {
@@ -367,12 +368,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.states[stateId];
     if (!state) return;
-
     // Проверка на то что состояние уже является, тем на которое есть переход из начального
     const stateTransitions = this.getAllByTargetId(smId, stateId)[0] ?? [];
     if (stateTransitions.find(({ sourceId }) => sm.initialStates[sourceId] !== undefined)) return;
 
-    const siblingsIds = this.getSiblings(stateId, state.parentId, 'states')[1];
+    const siblingsIds = this.getSiblings(smId, stateId, state.parentId, 'states')[1];
     const [siblingsTransitions, siblingIds] = this.getAllByTargetId(smId, siblingsIds);
     let id: string | undefined = undefined;
     const transitionFromInitialState = siblingsTransitions.find((transition, index) => {
@@ -394,13 +394,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       position.y = Math.max(0, position.y);
     }
 
-    this.emit('changeTransition', {
-      smId: smId,
-      id: id,
-      ...transitionFromInitialState,
-      targetId: stateId,
-    });
-
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
@@ -412,6 +405,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     this.model.changeTransition({
+      smId: smId,
+      id: id,
+      ...transitionFromInitialState,
+      targetId: stateId,
+    });
+
+    this.emit('changeTransition', {
       smId: smId,
       id: id,
       ...transitionFromInitialState,
@@ -704,11 +704,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   linkState(args: LinkStateParams, canUndo = true) {
-    const { smId, parentId, childId, addOnceOff = false, canBeInitial = true } = args;
-
+    const { parentId, childId, addOnceOff = false, canBeInitial = true } = args;
+    const smId = args.smId ?? this.model.data.currentSm;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
-
     if (!parent || !child) return;
 
     let numberOfConnectedActions = 0;
@@ -809,6 +808,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         sourceId: stateId,
         targetId: targetId,
       },
+      true,
       canUndo
     );
   }
@@ -859,16 +859,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const newStateId = this.model.createState(args);
     this.emit('createState', { ...args, id: newStateId });
 
-    const siblings = this.getSiblings(smId, newStateId, parentId)[0];
-    if (!siblings.length) {
-      console.log('hereee');
-      this.createInitialStateWithTransition(smId, newStateId);
-    }
+    // const siblings = this.getSiblings(smId, newStateId, parentId)[0];
+    // console.log(siblings);
+    // if (!siblings.length) {
+    // console.log('hereee');
+    // this.createInitialStateWithTransition(smId, newStateId);
+    // }
 
     if (parentId) {
       this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
-      this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
+      // this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
     }
 
     if (canUndo) {
@@ -973,6 +974,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteState(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
+    console.log('heereee');
+    debugger;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
@@ -1356,6 +1359,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteSelected = () => {
+    debugger;
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       Object.keys(sm.states).forEach((key) => {

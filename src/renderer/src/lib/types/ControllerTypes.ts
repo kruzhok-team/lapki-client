@@ -53,11 +53,11 @@ export interface DeleteStateMachineParams {
 }
 
 export interface LinkStateParams {
-  smId: string;
   parentId: string;
   childId: string;
 
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
+  smId?: string;
   addOnceOff?: boolean;
   canBeInitial?: boolean;
 }

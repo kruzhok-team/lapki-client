@@ -228,6 +228,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   deleteState = (args: DeleteDrawableParams) => {
     const { id } = args;
+    debugger;
     const state = this.data.states.get(id);
     if (!state) return;
 
@@ -547,8 +548,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         parentId: this.dragInfo.parentId,
         childId: this.dragInfo.childId,
       });
+      this.app.controller.emit('linkState', {
+        childId: this.dragInfo.childId,
+        parentId: this.dragInfo.parentId,
+      });
       this.dragInfo = null;
-      return;
     }
 
     this.changeStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });

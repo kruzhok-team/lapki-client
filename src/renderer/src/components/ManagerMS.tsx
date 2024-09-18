@@ -59,10 +59,9 @@ export const ManagerMSTab: React.FC = () => {
         <TextField
           label="Адрес:"
           className="mr-2 max-w-full"
-          //placeholder="Напишите адрес"
+          placeholder="Напишите адрес"
           value={address}
-          //onChange={(e) => setAddress(e.target.value)}
-          disabled={true}
+          onChange={(e) => setAddress(e.target.value)}
         />
       </div>
       <div className="m-2 flex">

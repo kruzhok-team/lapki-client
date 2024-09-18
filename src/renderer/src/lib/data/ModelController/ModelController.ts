@@ -80,10 +80,7 @@ import { ComponentEntry, PlatformManager } from '../PlatformManager';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
 type ModelControllerEvents = CanvasControllerEvents & {
-  createTransitionFromController: {
-    source: DrawableState | DrawableChoiceState;
-    target: DrawableState | DrawableChoiceState | DrawableFinalState;
-  };
+  openCreateTransitionModal;
 };
 
 const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;
@@ -145,6 +142,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
     controller.on('linkState', (args: LinkStateParams) => this.linkState(args));
     controller.on('selectState', (args: SelectDrawable) => this.selectState(args.id));
+    controller.on('createTransitionFromController', (args: { source: string; target: string }) =>
+      this.emit('openCreateTransitionModal', { sourceId: args.source, targetId: args.target })
+    );
   }
 
   private setMountStatus(args: SetMountedStatusParams) {
@@ -1359,7 +1359,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteSelected = () => {
-    // debugger;
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       Object.keys(sm.states).forEach((key) => {
@@ -1725,26 +1724,27 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   selectTransition(id: string) {
-    // TODO: Откуда брать id машины состояний?
-    const transition = this.model.data.elements.stateMachines[''].transitions[id];
+    const smId = this.model.data.currentSm;
+    const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
 
     this.removeSelection();
 
-    this.model.changeTransitionSelection('', id, true);
+    this.model.changeTransitionSelection(smId, id, true);
 
-    this.emit('selectTransition', { smId: '', id: id });
+    this.emit('selectTransition', { smId: smId, id: id });
   }
 
   selectNote(id: string) {
-    const note = this.model.data.elements.stateMachines[''].notes[id];
+    const smId = this.model.data.currentSm;
+    const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
 
     this.removeSelection();
 
-    this.model.changeNoteSelection('', id, true);
+    this.model.changeNoteSelection(smId, id, true);
 
-    this.emit('selectNote', { smId: '', id: id });
+    this.emit('selectNote', { smId: smId, id: id });
   }
 
   // TODO: Доделать
@@ -1818,27 +1818,29 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   }
 
-  createTransitionFromController(args: {
-    source: DrawableState | DrawableChoiceState;
-    target: DrawableState | DrawableChoiceState | DrawableFinalState;
-  }) {
-    const sourceType = args.source instanceof DrawableState ? 'states' : 'choiceStates';
+  createTransitionFromController(args: { source: string; target: string }) {
+    const currentSmId = this.model.data.currentSm;
+    const sm = this.model.data.elements.stateMachines[currentSmId];
+    const sourceType = sm.states[args.source]
+      ? 'states'
+      : sm.choiceStates
+      ? 'choiceStates'
+      : 'finalStates';
 
-    const targetType =
-      args.target instanceof DrawableState
-        ? 'states'
-        : args.target instanceof DrawableChoiceState
-        ? 'choiceStates'
-        : 'finalStates';
-    const sourceSm = this.getSmId(args.source.id, sourceType);
-    const targetSm = this.getSmId(args.target.id, targetType);
+    const targetType = sm.states[args.source]
+      ? 'states'
+      : sm.choiceStates
+      ? 'choiceStates'
+      : 'finalStates';
+    const sourceSm = this.getSmId(args.source, sourceType);
+    const targetSm = this.getSmId(args.target, targetType);
 
     if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
 
-    this.model.createTransition({
+    this.createTransition({
       smId: sourceSm,
-      sourceId: args.source.id,
-      targetId: args.target.id,
+      sourceId: args.source,
+      targetId: args.target,
     });
   }
 }

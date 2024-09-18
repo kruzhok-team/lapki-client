@@ -21,10 +21,6 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
-  createTransitionFromController: {
-    source: string;
-    target: string;
-  };
   changeTransition: string;
   transitionContextMenu: { transitionId: string; position: Point };
 }
@@ -216,6 +212,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnState = (state: State | ChoiceState) => {
     if (!this.ghost?.source) return;
     // TODO (L140-beep): И что с этим делать?
+    // debugger;
     if (this.ghost.source instanceof Note) {
       this.createTransition({
         smId: '',
@@ -226,7 +223,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     // Переход создаётся только на другое состояние
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
     else if (state !== this.ghost?.source) {
-      this.emit('createTransitionFromController', {
+      this.controller.emit('createTransitionFromController', {
         source: this.ghost?.source.id,
         target: state.id,
       });
@@ -295,7 +292,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
         targetId: state.id,
       });
     } else {
-      this.emit('createTransitionFromController', {
+      this.controller.emit('createTransitionFromController', {
         source: this.ghost.source.id,
         target: state.id,
       });

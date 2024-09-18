@@ -81,6 +81,11 @@ export type CanvasControllerEvents = {
   initPlatform: null;
   initEvents: null;
 
+  createTransitionFromController: {
+    source: string;
+    target: string;
+  };
+
   createTransition: CreateTransitionParams;
   changeTransition: ChangeTransitionParams;
   createChoice: CreateChoiceStateParams;

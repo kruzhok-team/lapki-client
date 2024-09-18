@@ -44,7 +44,6 @@ export const TransitionModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isInitialTransition && transition && transitionId) {
       modelController.changeTransition({
         smId: currentSm,
@@ -159,7 +158,6 @@ export const TransitionModal: React.FC = () => {
         } as any, // Из-за position
       });
     }
-
     close();
   };
 
@@ -203,11 +201,11 @@ export const TransitionModal: React.FC = () => {
       setIsInitialTransition(label == undefined);
       open();
     };
-    modelController.on('createTransition', handleCreateTransition);
+    modelController.on('openCreateTransitionModal', handleCreateTransition);
     modelController.on('changeTransition', handleChangeTransition);
 
     return () => {
-      modelController.off('createTransition', handleCreateTransition);
+      modelController.off('openCreateTransitionModal', handleCreateTransition);
       modelController.off('changeTransition', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

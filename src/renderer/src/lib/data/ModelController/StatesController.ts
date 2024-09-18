@@ -228,7 +228,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   deleteState = (args: DeleteDrawableParams) => {
     const { id } = args;
-    debugger;
     const state = this.data.states.get(id);
     if (!state) return;
 
@@ -450,7 +449,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     // Пустое название машины состояний - заглушка
     this.controller.selectState({ smId: '', id: state.id });
-
+    this.controller.emit('selectState', { id: state.id });
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
     const y = e.event.y - targetPos.y;

@@ -14,7 +14,7 @@ import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface SelectDrawable {
   id: string;
-  smId: string;
+  smId?: string;
 }
 
 export interface EditComponentParams {

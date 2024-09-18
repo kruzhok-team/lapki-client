@@ -20,6 +20,7 @@ import {
   CopyType,
   EditComponentParams,
   LinkStateParams,
+  SelectDrawable,
   SetMountedStatusParams,
   StatesControllerDataStateType,
   UnlinkStateParams,
@@ -143,6 +144,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private watch(controller: CanvasController) {
     controller.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
     controller.on('linkState', (args: LinkStateParams) => this.linkState(args));
+    controller.on('selectState', (args: SelectDrawable) => this.selectState(args.id));
   }
 
   private setMountStatus(args: SetMountedStatusParams) {
@@ -974,8 +976,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteState(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
-    console.log('heereee');
-    debugger;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
@@ -1359,7 +1359,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteSelected = () => {
-    debugger;
+    // debugger;
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       Object.keys(sm.states).forEach((key) => {
@@ -1411,7 +1411,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return (
       (value as ChoiceState).position !== undefined &&
       value['text'] === undefined &&
-      value['sourceId'] === undefined
+      value['sourceId'] === undefined &&
+      value['events'] === undefined
     );
   }
 
@@ -1520,18 +1521,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   copySelected = () => {
-    // TODO: Откуда брать id машины состояний? Копирование компонентов
+    const currentSm = this.model.data.currentSm;
     const [id, nodeToCopy] =
-      [...Object.entries(this.model.data.elements.stateMachines[''].states)].find(
+      [...Object.entries(this.model.data.elements.stateMachines[currentSm].states)].find(
         (value) => value[1].selection
       ) ||
-      [...Object.entries(this.model.data.elements.stateMachines[''].choiceStates)].find(
+      [...Object.entries(this.model.data.elements.stateMachines[currentSm].choiceStates)].find(
         (state) => state[1].selection
       ) ||
-      [...Object.entries(this.model.data.elements.stateMachines[''].transitions)].find(
+      [...Object.entries(this.model.data.elements.stateMachines[currentSm].transitions)].find(
         (transition) => transition[1].selection
       ) ||
-      [...Object.entries(this.model.data.elements.stateMachines[''].notes)].find(
+      [...Object.entries(this.model.data.elements.stateMachines[currentSm].notes)].find(
         (note) => note[1].selection
       ) ||
       [];
@@ -1560,13 +1561,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       throw new Error('aaa');
     }
     const { type, data } = this.copyData;
-
     // TODO: откуда брать id машины состояний?
-
+    const smId = this.model.data.currentSm;
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
       const newId = this.model.createState({
-        smId: '',
+        smId,
         ...structuredClone(data),
         linkByPoint: false,
         id: undefined,
@@ -1576,7 +1576,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         },
       });
       this.emit('createState', {
-        smId: '',
+        smId,
         ...structuredClone(data),
         linkByPoint: false,
         id: newId,
@@ -1592,7 +1592,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       const newId = this.model.createChoiceState({
         ...data,
-        smId: '',
+        smId,
         id: undefined,
         linkByPoint: false,
         position: {
@@ -1603,7 +1603,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       this.emit('createChoice', {
         ...data,
-        smId: '',
+        smId,
         id: newId,
         linkByPoint: false,
         position: {
@@ -1620,7 +1620,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       const newId = this.model.createNote({
         ...data,
-        smId: '',
+        smId,
         id: undefined,
         position: {
           x: data.position.x + this.pastePositionOffset,
@@ -1630,7 +1630,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       this.emit('createNote', {
         ...data,
-        smId: '',
+        smId,
         id: newId,
         position: {
           x: data.position.x + this.pastePositionOffset,
@@ -1660,7 +1660,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       const newId = this.model.createTransition({
         ...data,
-        smId: '',
+        smId,
         id: undefined,
         label: getLabel(),
       });

@@ -45,7 +45,8 @@ export type EditorData = ReturnType<typeof emptyEditorData>;
 export type EditorDataPropertyName =
   | keyof EditorData
   | `elements.${keyof StateMachine}`
-  | `canvas.${keyof EditorStatus}`;
+  | `canvas.${keyof EditorStatus}`
+  | `currentSm`;
 export type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']
     ? EditorData['elements'][V]

@@ -106,13 +106,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   constructor() {
     super();
 
+    this.emptyController();
+    ModelController.instance = this;
+  }
+
+  emptyController() {
     const editor = new CanvasEditor('', this);
     const controller = new CanvasController('', editor, { platformName: '' }, this);
     editor.setController(controller);
     this.controllers[''] = { controller, isHead: true };
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
-    ModelController.instance = this;
+    this.model.changeCurrentSm('');
+  }
+
+  reset() {
+    for (const controllerId in this.controllers) {
+      const controller = this.controllers[controllerId].controller;
+      controller.unwatch();
+      this.controllers[controllerId].isHead = false;
+      // controller.app.unmount();
+    }
+    this.emptyController();
   }
 
   // TODO: setup SchemeScreenController с другими подписками
@@ -133,25 +148,27 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private watch(controller: CanvasController) {
-    controller.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
-    controller.on('linkState', (args: LinkStateParams) => this.linkState(args));
-    controller.on('selectState', (args: SelectDrawable) => this.selectState(args.id));
-    controller.on('createTransitionFromController', (args: { source: string; target: string }) =>
-      this.emit('openCreateTransitionModal', { sourceId: args.source, targetId: args.target })
-    );
+    controller.on('isMounted', this.setMountStatus);
+    controller.on('linkState', this.linkState);
+    controller.on('selectState', this.selectState);
+    controller.on('createTransitionFromController', this.onCreateTransitionModal);
   }
 
-  private setMountStatus(args: SetMountedStatusParams) {
+  private onCreateTransitionModal = (args: { source: string; target: string }) => {
+    this.emit('openCreateTransitionModal', { sourceId: args.source, targetId: args.target });
+  };
+
+  private setMountStatus = (args: SetMountedStatusParams) => {
     const canvas = this.model.data.canvas[args.canvasId];
     if (!canvas) {
       return;
     }
     canvas.isMounted = args.status;
     this.model.triggerDataUpdate('canvas.isMounted');
-  }
+  };
 
   initPlatform() {
-    //TODO: исправить то, что платформы загружаются и в ModelController, и в CanvasController
+    //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       const platform = loadPlatform(sm.platform);
@@ -159,7 +176,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.platforms[platform.name] = platform;
       }
     }
-    console.log('EMITED');
     this.emit('initPlatform', null);
   }
 
@@ -181,8 +197,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this
     );
 
-    if (!controller) return;
-
     editor.setController(controller);
     this.controllers[canvasId] = { controller, isHead: true };
     this.model.data.canvas[canvasId] = {
@@ -196,6 +210,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.initCanvasData();
     this.initPlatform();
     this.setupDiagramEditorController(smId, controller);
+    this.model.changeCurrenstSm(smId);
   }
 
   loadData() {
@@ -699,7 +714,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('unlinkState', params);
   }
 
-  linkState(args: LinkStateParams, canUndo = true) {
+  linkState = (args: LinkStateParams, canUndo = true) => {
     const { parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const smId = args.smId ?? this.model.data.currentSm;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
@@ -754,7 +769,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.emit('addDragendStateSig', { smId, stateId: childId });
       }
     }
-  }
+  };
 
   createInitialState(params: CCreateInitialStateParams, canUndo = true) {
     const { id: prevId, targetId, smId } = params;
@@ -1691,7 +1706,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.pasteSelected();
   };
 
-  selectState(id: string) {
+  selectState = (args: { id: string }) => {
+    const { id } = args;
     const state = this.model.data.elements.stateMachines[this.model.data.currentSm].states[id];
     if (!state) return;
 
@@ -1700,7 +1716,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeStateSelection(this.model.data.currentSm, id, true);
 
     this.emit('selectState', { smId: this.model.data.currentSm, id: id });
-  }
+  };
 
   selectChoiceState(id: string) {
     // TODO: Откуда брать id машины состояний?

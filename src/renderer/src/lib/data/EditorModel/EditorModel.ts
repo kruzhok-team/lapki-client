@@ -268,6 +268,11 @@ export class EditorModel {
     return true;
   }
 
+  changeCurrenstSm(newSmId: string) {
+    this.data.currentSm = newSmId;
+    this.triggerDataUpdate('currentSm');
+  }
+
   linkState(smId: string, parentId: string, childId: string) {
     const parent = this.data.elements.stateMachines[smId].states[parentId];
     const child = this.data.elements.stateMachines[smId].states[childId];

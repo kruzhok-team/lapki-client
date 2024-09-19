@@ -33,13 +33,13 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
-  createStateMachineFromObject(sm: DrawableStateMachine) {
+  createStateMachineFromObject = (sm: DrawableStateMachine) => {
     this.items.set(sm.id, sm);
     this.app.view.children.add(sm, Layer.Machines);
     this.app.view.isDirty = true;
-  }
+  };
 
-  createStateMachine(args: CreateStateMachineParams) {
+  createStateMachine = (args: CreateStateMachineParams) => {
     const markedSmIcon: MarkedIconData = {
       icon: 'stateMachine',
       label: 'Машина состояний',
@@ -49,9 +49,9 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     this.app.view.children.add(sm, Layer.Machines);
     this.app.view.isDirty = true;
     return sm;
-  }
+  };
 
-  addComponent(smId: string, component: DrawableComponent) {
+  addComponent = (smId: string, component: DrawableComponent) => {
     const sm = this.getStateMachineById(smId);
     if (!sm) {
       return;
@@ -60,9 +60,9 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     sm.children.add(component, Layer.Components);
 
     this.view.isDirty = true;
-  }
+  };
 
-  deleteComponent(smId: string, componentId: string) {
+  deleteComponent = (smId: string, componentId: string) => {
     const sm = this.getStateMachineById(smId);
     if (!sm) {
       return;
@@ -74,14 +74,14 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
       throw Error('Попытка удалить несуществующий компонент!');
     }
     sm.children.remove(component, Layer.Components);
-  }
+  };
 
   getStateMachineById(sm: string): DrawableStateMachine | undefined {
     const machineLayer = this.view.children.getLayer(Layer.Machines);
     return machineLayer.find((value) => value['id'] === sm) as DrawableStateMachine | undefined;
   }
 
-  deleteStateMachine(args: DeleteStateMachineParams) {
+  deleteStateMachine = (args: DeleteStateMachineParams) => {
     const sm = this.items.get(args.id);
     if (!sm) return;
 
@@ -100,5 +100,5 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     this.items.delete(args.id);
 
     this.view.isDirty = true;
-  }
+  };
 }

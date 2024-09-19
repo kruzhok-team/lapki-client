@@ -36,6 +36,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   }>();
 
   useEffect(() => {
+    debugger;
     if (!containerRef.current) return;
     editor.mount(containerRef.current);
 
@@ -70,14 +71,13 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     return () => {
       editor.view.off('dblclick', handleDblclick);
       editor.controller.states.off('changeEvent', handleChangeEvent);
-
       editor.unmount();
     };
     // FIXME: containerRef не влияет на перезапуск эффекта.
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [editor, openEventsModal]);
+  }, [currentSmId, editor, openEventsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;

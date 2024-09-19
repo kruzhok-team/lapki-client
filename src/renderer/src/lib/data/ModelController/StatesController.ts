@@ -145,7 +145,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  changeStateEvents(args: ChangeStateEventsParams) {
+  changeStateEvents = (args: ChangeStateEventsParams) => {
     const {
       id,
       eventData: { do: actions, trigger, condition },
@@ -175,7 +175,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.updateEventBox();
 
     this.view.isDirty = true;
-  }
+  };
 
   changeStateName = (args: ChangeStateNameParams) => {
     const { id, name } = args;
@@ -186,15 +186,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  changeStatePosition(args: ChangePosition) {
+  changeStatePosition = (args: ChangePosition) => {
     const { id, endPosition } = args;
     const state = this.data.states.get(id);
     if (!state) return;
     state.position = endPosition;
     this.view.isDirty = true;
-  }
+  };
 
-  linkState(args: LinkStateParams) {
+  linkState = (args: LinkStateParams) => {
     const { parentId, childId } = args;
 
     const parent = this.data.states.get(parentId);
@@ -207,9 +207,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     parent.children.add(child, Layer.States);
 
     this.view.isDirty = true;
-  }
+  };
 
-  unlinkState(params: UnlinkStateParams) {
+  unlinkState = (params: UnlinkStateParams) => {
     const { id, canUndo } = params;
 
     const state = this.data.states.get(id);
@@ -224,7 +224,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     this.view.isDirty = true;
-  }
+  };
 
   deleteState = (args: DeleteDrawableParams) => {
     const { id } = args;
@@ -237,7 +237,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  createInitialState(params: CreateInitialStateControllerParams) {
+  createInitialState = (params: CreateInitialStateControllerParams) => {
     const { id, targetId } = params;
 
     const target = this.data.states.get(targetId);
@@ -256,9 +256,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.watch(state);
 
     return state;
-  }
+  };
 
-  deleteInitialState(params: DeleteInitialStateParams) {
+  deleteInitialState = (params: DeleteInitialStateParams) => {
     const { id } = params;
 
     const state = this.data.initialStates.get(id);
@@ -269,17 +269,17 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.data.initialStates.delete(state.id); // Удаляем само вью
 
     this.view.isDirty = true;
-  }
+  };
 
-  changeInitialStatePosition(args: ChangePosition) {
+  changeInitialStatePosition = (args: ChangePosition) => {
     const { id } = args;
     const state = this.data.initialStates.get(id);
     if (!state) return;
 
     this.view.isDirty = true;
-  }
+  };
 
-  createFinalState(params: CreateFinalStateParams) {
+  createFinalState = (params: CreateFinalStateParams) => {
     const { id } = params;
     if (!id) return;
     const state = new FinalState(this.app, id, { ...params });
@@ -292,9 +292,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
 
     return state;
-  }
+  };
 
-  deleteFinalState(args: DeleteDrawableParams) {
+  deleteFinalState = (args: DeleteDrawableParams) => {
     const { id } = args;
     const state = this.data.finalStates.get(id);
     if (!state) return;
@@ -304,9 +304,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.data.finalStates.delete(id); // Удаляем само вью
 
     this.view.isDirty = true;
-  }
+  };
 
-  linkFinalState(args: LinkStateParams) {
+  linkFinalState = (args: LinkStateParams) => {
     const { childId, parentId } = args;
     const state = this.data.finalStates.get(childId);
     const parent = this.data.states.get(parentId);
@@ -317,17 +317,17 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     parent.children.add(state, Layer.FinalStates);
 
     this.view.isDirty = true;
-  }
+  };
 
-  changeFinalStatePosition(args: ChangePosition) {
+  changeFinalStatePosition = (args: ChangePosition) => {
     const { id } = args;
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
     this.view.isDirty = true;
-  }
+  };
 
-  createChoiceState(params: CreateChoiceStateParams) {
+  createChoiceState = (params: CreateChoiceStateParams) => {
     const { id } = params;
     if (!id) return;
 
@@ -340,9 +340,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.watch(state);
 
     this.view.isDirty = true;
-  }
+  };
 
-  deleteChoiceState(args: DeleteDrawableParams) {
+  deleteChoiceState = (args: DeleteDrawableParams) => {
     const { id } = args;
     const state = this.data.choiceStates.get(id);
     if (!state) return;
@@ -352,9 +352,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.data.choiceStates.delete(id); // Удаляем само вью
 
     this.view.isDirty = true;
-  }
+  };
 
-  changeChoiceStatePosition(args: ChangePosition) {
+  changeChoiceStatePosition = (args: ChangePosition) => {
     const { id, endPosition } = args;
     const state = this.data.choiceStates.get(id);
     if (!state) return;
@@ -362,9 +362,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.position = endPosition;
 
     this.view.isDirty = true;
-  }
+  };
 
-  linkChoiceState(args: LinkStateParams) {
+  linkChoiceState = (args: LinkStateParams) => {
     const { childId, parentId } = args;
     const state = this.data.choiceStates.get(childId);
     const parent = this.data.states.get(parentId);
@@ -375,9 +375,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     parent.children.add(state, Layer.ChoiceStates);
 
     this.view.isDirty = true;
-  }
+  };
 
-  createEvent(args: CreateEventParams) {
+  createEvent = (args: CreateEventParams) => {
     const { stateId } = args;
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -385,9 +385,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.updateEventBox();
 
     this.view.isDirty = true;
-  }
+  };
 
-  createEventAction(args: CreateEventActionParams) {
+  createEventAction = (args: CreateEventActionParams) => {
     const { stateId } = args;
     const state = this.data.states.get(stateId);
     if (!state) return;
@@ -395,28 +395,28 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.updateEventBox();
 
     this.view.isDirty = true;
-  }
+  };
 
   // Редактирование события в состояниях
-  changeEvent(args: ChangeEventParams) {
+  changeEvent = (args: ChangeEventParams) => {
     const state = this.data.states.get(args.stateId);
     if (!state) return;
 
     state.updateEventBox();
 
     this.view.isDirty = true;
-  }
+  };
 
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в состоянии(модалка)
-  deleteEvent(args: DeleteEventParams) {
+  deleteEvent = (args: DeleteEventParams) => {
     const state = this.data.states.get(args.stateId);
     if (!state) return;
 
     state.updateEventBox();
 
     this.view.isDirty = true;
-  }
+  };
 
   handleStartNewTransition = (state: State | ChoiceState) => {
     this.emit('startNewTransitionState', state);
@@ -557,19 +557,19 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.changeStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   };
 
-  handleInitialStateDragEnd(
+  handleInitialStateDragEnd = (
     state: InitialState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
-  ) {
+  ) => {
     this.changeInitialStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
-  }
+  };
 
-  handleFinalStateDragEnd(
+  handleFinalStateDragEnd = (
     state: InitialState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
-  ) {
+  ) => {
     this.changeFinalStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
-  }
+  };
 
   handleFinalStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const item = this.data.finalStates.get(stateId);
@@ -584,12 +584,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.controller.selectChoice({ smId: '', id: state.id });
   };
 
-  handleChoiceStateDragEnd(
+  handleChoiceStateDragEnd = (
     state: ChoiceState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
-  ) {
+  ) => {
     this.changeChoiceStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
-  }
+  };
 
   handleChoiceStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const item = this.data.choiceStates.get(stateId);
@@ -615,6 +615,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     this.watchInitialState(state);
+  }
+
+  unwatchAll() {
+    for (const itemsMap of Object.values(this.data)) {
+      for (const item of itemsMap.values()) {
+        this.unwatch(item);
+      }
+    }
   }
 
   unwatch(state: StateVariant) {

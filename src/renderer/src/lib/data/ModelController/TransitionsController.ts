@@ -87,7 +87,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     return [...this.items.values()].find(({ source }) => source.id === sourceId);
   }
 
-  createTransition(params: CreateTransitionParams) {
+  createTransition = (params: CreateTransitionParams) => {
     const { sourceId, targetId } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
@@ -107,9 +107,9 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.watchTransition(transition);
 
     this.view.isDirty = true;
-  }
+  };
 
-  linkTransition(id: string) {
+  linkTransition = (id: string) => {
     const transition = this.items.get(id);
     if (!transition) return;
 
@@ -134,24 +134,24 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
       parent.children.add(transition, Layer.Transitions);
     }
-  }
+  };
 
-  changeTransition(args: ChangeTransitionParams) {
+  changeTransition = (args: ChangeTransitionParams) => {
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.data = { ...args };
     this.view.isDirty = true;
-  }
+  };
 
-  changeTransitionPosition(args: ChangePosition) {
+  changeTransitionPosition = (args: ChangePosition) => {
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.position = args.endPosition;
 
     this.view.isDirty = true;
-  }
+  };
 
-  deleteTransition(args: DeleteDrawableParams) {
+  deleteTransition = (args: DeleteDrawableParams) => {
     const transition = this.items.get(args.id);
     if (!transition) return;
 
@@ -161,7 +161,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.items.delete(args.id);
 
     this.view.isDirty = true;
-  }
+  };
 
   initEvents() {
     this.app.mouse.on('mousemove', this.handleMouseMove);

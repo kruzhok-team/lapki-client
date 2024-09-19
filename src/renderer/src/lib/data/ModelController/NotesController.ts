@@ -42,7 +42,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
-  createNote(params: CreateNoteParams) {
+  createNote = (params: CreateNoteParams) => {
     const { id } = params;
     if (!id) return;
     const note = new Note(this.app, id, { ...params });
@@ -52,7 +52,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.children.add(note, Layer.Notes);
 
     this.view.isDirty = true;
-  }
+  };
 
   changeNoteText = (args: ChangeNoteText) => {
     const note = this.items.get(args.id);
@@ -64,16 +64,16 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  changeNotePosition(args: ChangePosition) {
+  changeNotePosition = (args: ChangePosition) => {
     const note = this.items.get(args.id);
     if (!note) return;
 
     note.position = args.endPosition;
 
     this.view.isDirty = true;
-  }
+  };
 
-  deleteNote(args: DeleteDrawableParams) {
+  deleteNote = (args: DeleteDrawableParams) => {
     const { id } = args;
     const note = this.items.get(id);
     if (!note) return;
@@ -83,16 +83,16 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.items.delete(id);
 
     this.view.isDirty = true;
-  }
+  };
 
-  setIsVisible(id: string, isVisible: boolean) {
+  setIsVisible = (id: string, isVisible: boolean) => {
     const note = this.items.get(id);
     if (!note) return;
 
     note.setVisible(isVisible);
 
     this.app.view.isDirty = true;
-  }
+  };
 
   handleStartNewTransition = (note: Note) => {
     this.emit('startNewTransitionNote', note);

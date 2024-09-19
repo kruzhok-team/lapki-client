@@ -40,7 +40,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.items.clear();
   }
 
-  createComponent(args: CreateComponentParams) {
+  createComponent = (args: CreateComponentParams) => {
     const icon = this.controller.platform?.getComponentIcon(args.type);
     if (!icon) {
       return;
@@ -57,9 +57,9 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.app.view.isDirty = true;
 
     return component;
-  }
+  };
 
-  editComponent(args: EditComponentParams) {
+  editComponent = (args: EditComponentParams) => {
     const component = this.items.get(args.id);
     if (!component) {
       throw new Error(`Изменение не существующего компонента с идентификатором ${args.id}`);
@@ -76,16 +76,16 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     }
 
     return component;
-  }
+  };
 
-  changeComponentPosition(name: string, endPosition: Point) {
+  changeComponentPosition = (name: string, endPosition: Point) => {
     const component = this.items.get(name);
     if (!component) return;
     component.position = endPosition;
     this.view.isDirty = true;
-  }
+  };
 
-  deleteComponent(args: DeleteDrawableParams) {
+  deleteComponent = (args: DeleteDrawableParams) => {
     const component = this.items.get(args.id);
     if (!component) return;
 
@@ -110,7 +110,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.items.delete(args.id);
 
     this.view.isDirty = true;
-  }
+  };
 
   handleMouseUpOnComponent = (component: DrawableComponent) => {
     this.emit('mouseUpOnComponent', component);

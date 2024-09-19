@@ -51,7 +51,8 @@ export type FlasherType =
   | 'ms-ping'
   | 'ms-get-address'
   | 'ms-ping-result'
-  | 'ms-address';
+  | 'ms-address'
+  | 'ms-device';
 export type FlasherPayload =
   | string
   | Device

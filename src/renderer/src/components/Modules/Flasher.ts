@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import Websocket from 'isomorphic-ws';
 
-import { Device, ArduinoDevice } from '@renderer/components/Modules/Device';
+import { Device, ArduinoDevice, MSDevice } from '@renderer/components/Modules/Device';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   FlashUpdatePort,
@@ -99,6 +99,9 @@ export class Flasher extends ClientWS {
       newValue.set(device.deviceID, device);
       return newValue;
     });
+    if (isNew) {
+      this.setFlasherLog('Добавлено устройство!');
+    }
     return isNew;
   }
 
@@ -280,11 +283,12 @@ export class Flasher extends ClientWS {
       }
       case 'device': {
         const device = new ArduinoDevice(response.payload as ArduinoDevice);
-        if (this.addDevice(device)) {
-          this.setFlasherLog('Добавлено устройство!');
-        } else {
-          this.setFlasherLog('Состояние об устройстве синхронизировано.');
-        }
+        this.addDevice(device);
+        break;
+      }
+      case 'ms-device': {
+        const device = new MSDevice(response.payload as MSDevice);
+        this.addDevice(device);
         break;
       }
       case 'device-update-delete': {

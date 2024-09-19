@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
+import { Device } from '@renderer/components/Modules/Device';
 import { SERIAL_MONITOR_NO_CONNECTION } from '@renderer/components/Modules/SerialMonitor';
-import { Device } from '@renderer/types/FlasherTypes';
 
 interface SerialMonitorState {
   deviceMessages: string;

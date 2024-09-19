@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
-import { Device } from '@renderer/types/FlasherTypes';
+import { MSDevice } from '@renderer/components/Modules/Device';
 
 interface ManagerMSState {
-  device: Device | undefined;
-  setDevice: (currentDevice: Device | undefined) => void;
+  device: MSDevice | undefined;
+  setDevice: (currentDevice: MSDevice | undefined) => void;
   log: string[];
   setLog: (update: (prevMessages: string[]) => string[]) => void;
   address: string;

@@ -12,8 +12,9 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { Device, FlashResult } from '@renderer/types/FlasherTypes';
+import { FlashResult } from '@renderer/types/FlasherTypes';
 
+import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
 import { ManagerMS } from '../Modules/ManagerMS';
 import {
   SERIAL_MONITOR_CONNECTING,
@@ -216,7 +217,7 @@ export const Loader: React.FC<FlasherProps> = ({
 
   const handleAddManagerMSTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    setDeviceMS(curDevice);
+    setDeviceMS(curDevice as MSDevice);
     closeTab('Менеджер МС-ТЮК');
     openTab({
       type: 'managerMS',
@@ -384,37 +385,34 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   const deviceInfoDisplay = (device: Device | undefined) => {
     if (!device) return;
-    if (ManagerMS.isMSDevice(device)) {
+    if (device.isMSDevice()) {
+      const MSDevice = device as MSDevice;
       let portNames = '';
-      if (device.portNames && device.portNames.length > 1) {
-        for (let i = 0; i < device.portNames.length; i++) {
-          portNames = portNames + ' ' + device.portNames[i];
-        }
-      } else {
-        portNames = device.portName;
+      for (let i = 0; i < MSDevice.portNames.length; i++) {
+        portNames = portNames + ' ' + MSDevice.portNames[i];
       }
-
       return (
         <div>
-          <div className="flex items-center">{device.name}</div>
-          <p>Порт(ы): {portNames}</p>
+          <div className="flex items-center">{MSDevice.name}</div>
+          <p>Порты: {portNames}</p>
         </div>
       );
     } else {
+      const ArduinoDevice = device as ArduinoDevice;
       return (
         <div>
-          <div className="flex items-center">{device.name}</div>
-          <p>Серийный номер: {device.serialID}</p>
-          <p>Порт: {device.portName}</p>
-          <p>Контроллер: {device.controller}</p>
-          <p>Программатор: {device.programmer}</p>
+          <div className="flex items-center">{ArduinoDevice.name}</div>
+          <p>Серийный номер: {ArduinoDevice.serialID}</p>
+          <p>Порт: {ArduinoDevice.portName}</p>
+          <p>Контроллер: {ArduinoDevice.controller}</p>
+          <p>Программатор: {ArduinoDevice.programmer}</p>
         </div>
       );
     }
   };
   const buttonsDisplay = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    if (!curDevice || !ManagerMS.isMSDevice(curDevice)) {
+    if (!curDevice || !curDevice.isMSDevice()) {
       return (
         <div>
           <div className="flex justify-between gap-2">
@@ -450,16 +448,6 @@ export const Loader: React.FC<FlasherProps> = ({
           </button>
         </div>
       );
-    }
-  };
-  const displayDeviceName = (device: Device | undefined) => {
-    if (!device) return '';
-    if (device.portNames && device.portNames.length > 1) {
-      return `${device.name} (${device.portNames[0]}-${
-        device.portNames[device.portNames.length - 1]
-      })`;
-    } else {
-      return `${device.name} (${device.portName})`;
     }
   };
   return (
@@ -525,7 +513,7 @@ export const Loader: React.FC<FlasherProps> = ({
               )}
               onClick={() => setCurrentDevice(key)}
             >
-              {displayDeviceName(devices.get(key))}
+              {devices.get(key)?.displayName()}
             </button>
           ))}
         </div>

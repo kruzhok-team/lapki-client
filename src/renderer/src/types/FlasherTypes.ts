@@ -1,3 +1,5 @@
+import { ArduinoDevice, Device } from '@renderer/components/Modules/Device';
+
 export type FlasherData = {
   devices: Map<string, Device>;
   log: string | undefined;
@@ -74,16 +76,6 @@ export type UpdateDelete = {
   deviceID: string;
 };
 
-export type Device = {
-  deviceID: string;
-  name: string;
-  controller: string;
-  programmer: string;
-  portName: string;
-  portNames: string[];
-  serialID: string;
-};
-
 /**
  * результат попытки прошить устройство
  */
@@ -105,8 +97,11 @@ export class FlashResult {
   }
   /** получить результат прошивки*/
   public report(): string {
-    const deviceDesc = this.device ? `${this.device.name} (${this.device.portName})` : 'неизвестно';
-    const serialID = this.device?.serialID ? this.device?.serialID : 'отсутствует';
+    const deviceDesc = this.device ? this.device.displayName() : 'неизвестно';
+    const serialID =
+      this.device && (this.device as ArduinoDevice).serialID
+        ? (this.device as ArduinoDevice).serialID
+        : 'отсутствует';
     const avrdudeMsg = this.flashMsg ? this.flashMsg : 'отсутствует сообщение';
     return `
 Устройство: ${deviceDesc}

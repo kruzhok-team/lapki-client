@@ -2,9 +2,9 @@ import { Dispatch, SetStateAction } from 'react';
 
 import Websocket from 'isomorphic-ws';
 
+import { Device, ArduinoDevice } from '@renderer/components/Modules/Device';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
-  Device,
   FlashUpdatePort,
   FlasherMessage,
   UpdateDelete,
@@ -110,10 +110,15 @@ export class Flasher extends ClientWS {
     });
   }
 
+  // обновление порта (только для ArduinoDevice)
+  /**
+   * обновление порта (сообщение приходит только для {@link ArduinoDevice})
+   * @param port сообщение от сервера об обновлении порта
+   */
   static updatePort(port: FlashUpdatePort): void {
     this.setFlasherDevices((oldValue) => {
       const newValue = new Map(oldValue);
-      const device = newValue.get(port.deviceID)!;
+      const device = newValue.get(port.deviceID)! as ArduinoDevice;
       device.portName = port.portName;
       newValue.set(port.deviceID, device);
 
@@ -274,7 +279,8 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'device': {
-        if (this.addDevice(response.payload as Device)) {
+        const device = new ArduinoDevice(response.payload as ArduinoDevice);
+        if (this.addDevice(device)) {
           this.setFlasherLog('Добавлено устройство!');
         } else {
           this.setFlasherLog('Состояние об устройстве синхронизировано.');

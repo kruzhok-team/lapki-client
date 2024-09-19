@@ -1,14 +1,13 @@
-import { Device } from '@renderer/types/FlasherTypes';
-
+import { Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
-  static setDevice: (currentDevice: Device | undefined) => void;
+  static setDevice: (currentDevice: MSDevice | undefined) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
   static setAddress: (curAddress: string) => void;
 
   static bindReact(
-    setDevice: (currentDevice: Device | undefined) => void,
+    setDevice: (currentDevice: MSDevice | undefined) => void,
     setLog: (update: (prevMessages: string[]) => string[]) => void,
     setAddress: (curAddress: string) => void
   ): void {
@@ -17,7 +16,7 @@ export class ManagerMS {
     this.setAddress = setAddress;
   }
   static binStart(
-    device: Device,
+    device: MSDevice,
     address: string,
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
@@ -39,10 +38,6 @@ export class ManagerMS {
     Flasher.send('ms-get-address', {
       deviceID: deviceID,
     });
-  }
-  static isMSDevice(device: Device) {
-    // TODO: придумать более надёжный способ идентификации МС-ТЮК
-    return device.name == 'МС-ТЮК';
   }
   static addLog(log: string) {
     this.setLog((prevMessages) => [...prevMessages, log]);

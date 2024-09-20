@@ -13,7 +13,7 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch, TextField } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log, address, setAddress } = useManagerMS();
+  const { device, log, setLog, address, setAddress } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [isAddressModalOpen, openAddressModal, closeAddressModal] = useModal(false);
@@ -50,6 +50,9 @@ export const ManagerMSTab: React.FC = () => {
     }
     return device.displayName();
   };
+  const handleClear = () => {
+    setLog(() => []);
+  };
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
@@ -63,6 +66,17 @@ export const ManagerMSTab: React.FC = () => {
         />
       </div>
       <div className="m-2 flex">
+        <button className="btn-primary mr-4" onClick={handleGetAddress}>
+          Узнать адрес...
+        </button>
+        <button className="btn-primary mr-4" onClick={handleSendBin}>
+          Отправить bin...
+        </button>
+        <button className="btn-primary mr-4" onClick={handlePing}>
+          Пинг
+        </button>
+      </div>
+      <div className="m-2 flex">
         <div className="mr-4 flex w-40 items-center justify-between">
           <Switch
             checked={autoScroll}
@@ -72,14 +86,8 @@ export const ManagerMSTab: React.FC = () => {
           />
           Автопрокрутка
         </div>
-        <button className="btn-primary mr-4" onClick={handleGetAddress}>
-          Узнать адрес...
-        </button>
-        <button className="btn-primary mr-4" onClick={handleSendBin}>
-          Отправить bin...
-        </button>
-        <button className="btn-primary mr-4" onClick={handlePing}>
-          Пинг
+        <button className="btn-primary" onClick={handleClear}>
+          Очистить
         </button>
       </div>
       <AddressModalMS isOpen={isAddressModalOpen} onClose={closeAddressModal}></AddressModalMS>

@@ -15,7 +15,9 @@ interface TabsState {
 export const useTabs = create<TabsState>((set) => ({
   items: [],
   activeTab: 'editor',
-  setActiveTab: (activeTab) => set({ activeTab }),
+  setActiveTab: (activeTab) => {
+    set({ activeTab });
+  },
   openTab: (tab) =>
     set(({ items }) => {
       // Если пытаемся открыть одну и ту же вкладку

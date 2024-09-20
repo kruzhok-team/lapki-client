@@ -2,7 +2,7 @@ export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
   type: 'editor';
-  name: 'editor';
+  name: string;
 }
 
 export interface ScreenTab {

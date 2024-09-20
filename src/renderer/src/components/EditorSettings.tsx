@@ -25,14 +25,17 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle, canvas }
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
+    modelController.model.setScale(scale + 0.1);
     canvas.view.changeScale(0.1);
   };
 
   const handleZoomIn = () => {
+    modelController.model.setScale(scale - 0.1);
     canvas.view.changeScale(-0.1);
   };
 
   const handleReset = () => {
+    modelController.model.setScale(1);
     canvas.view.changeScale(1, true);
   };
 

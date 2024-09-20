@@ -115,15 +115,13 @@ export class FilesManager {
         if (data == undefined) {
           return makeLeft(null);
         }
+
         const checkResult = this.isPlatformsAvailable(data);
-        if (!checkResult[1]) {
+        if (!checkResult[0]) {
           return makeLeft({
             name: openData[1]!,
             content: `Незнакомая платформа "${checkResult[2]}".`,
           });
-        }
-        if (this.modelController.controllers['']) {
-          this.modelController.controllers[''].controller.app.unmount();
         }
         this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data);
         // this.modelController.components.fromElementsComponents(data.components);

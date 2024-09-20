@@ -132,7 +132,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   createState = (args: CreateStateParams) => {
     const { id } = args;
-
+    debugger;
     if (!id) return;
     const state = new State(this.app, id, { ...args }); // Создание вьюшки
 

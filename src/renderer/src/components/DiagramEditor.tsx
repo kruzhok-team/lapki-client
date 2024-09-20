@@ -36,7 +36,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   }>();
 
   useEffect(() => {
-    debugger;
     if (!containerRef.current) return;
     editor.mount(containerRef.current);
 

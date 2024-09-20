@@ -4,16 +4,15 @@ import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 import { Tab } from './Tab';
 
 import { NotInitialized } from '../NotInitialized';
-import { useModelContext } from '@renderer/store/ModelContext';
 
 export const Tabs: React.FC = () => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
   const [items, activeTab, setActiveTab, swapTabs, closeTab] = useTabs((state) => [
     state.items,
     state.activeTab,
@@ -32,6 +31,16 @@ export const Tabs: React.FC = () => {
     if (tabName === 'editor' || !dragId) return;
 
     swapTabs(dragId, tabName);
+  };
+  let headCanvasId = '';
+  const getCanvasBySmId = (smId: string) => {
+    for (const canvasId in modelController.controllers) {
+      const controller = modelController.controllers[canvasId].controller;
+      if (controller.stateMachinesSub[smId]) {
+        headCanvasId = canvasId;
+        return controller.app;
+      }
+    }
   };
 
   if (items.length === 0) {
@@ -55,7 +64,10 @@ export const Tabs: React.FC = () => {
             showName={type !== 'editor'}
             onDragStart={() => handleDrag(name)}
             onDrop={() => handleDrop(name)}
-            onMouseDown={() => setActiveTab(name)}
+            onMouseDown={() => {
+              modelController.model.changeCurrentSm(name);
+              setActiveTab(name);
+            }}
             onClose={() => closeTab(name)}
           />
         ))}
@@ -67,7 +79,9 @@ export const Tabs: React.FC = () => {
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
-            <DiagramEditor editor={editor} />
+            <DiagramEditor
+              editor={getCanvasBySmId(item.name) ?? modelController.getCurrentCanvas()}
+            />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />
           ) : (

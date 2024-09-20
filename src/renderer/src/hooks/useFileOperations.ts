@@ -58,7 +58,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
     if (result && isRight(result)) {
       clearTabs();
-      openTab({ type: 'editor', name: 'editor' });
+      for (const smId in modelController.model.data.elements.stateMachines) {
+        openTab({ type: 'editor', name: smId });
+      }
     }
   };
 

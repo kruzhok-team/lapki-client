@@ -120,6 +120,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeCurrentSm('');
   }
 
+  setHeadCanvas(headCanvasId: string) {
+    for (const canvasId in this.controllers) {
+      if (canvasId === headCanvasId) {
+        this.controllers[canvasId].isHead = true;
+        continue;
+      }
+      this.controllers[canvasId].isHead = false;
+    }
+  }
+
   reset() {
     for (const controllerId in this.controllers) {
       const controller = this.controllers[controllerId].controller;
@@ -182,35 +192,39 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   initData(basename: string | null, filename: string, elements: Elements) {
     this.controllers[''].isHead = false;
     this.controllers[''].controller.unwatch();
-    const smId = Object.keys(elements.stateMachines)[0];
     this.model.init(basename, filename, elements);
-    this.model.changeCurrentSm(smId);
-
-    const canvasId = generateId();
-    const editor = new CanvasEditor(canvasId, this);
-    const controller = new CanvasController(
-      canvasId,
-      editor,
-      {
-        platformName: elements.stateMachines[smId].platform,
-      },
-      this
-    );
-
-    editor.setController(controller);
-    this.controllers[canvasId] = { controller, isHead: true };
-    this.model.data.canvas[canvasId] = {
-      isInitialized: true,
-      isMounted: false,
-      prevMounted: false,
-    };
-    this.watch(controller);
+    let headCanvas = '';
+    let currentSm = 'G';
+    for (const smId in elements.stateMachines) {
+      const canvasId = generateId();
+      this.model.changeCurrentSm(smId);
+      const editor = new CanvasEditor(canvasId, this);
+      const controller = new CanvasController(
+        canvasId,
+        editor,
+        {
+          platformName: elements.stateMachines[smId].platform,
+        },
+        this
+      );
+      editor.setController(controller);
+      this.controllers[canvasId] = { controller, isHead: false };
+      headCanvas = canvasId;
+      currentSm = smId;
+      this.model.data.canvas[canvasId] = {
+        isInitialized: true,
+        isMounted: false,
+        prevMounted: false,
+      };
+      this.watch(controller);
+      this.setupDiagramEditorController(smId, controller);
+    }
+    this.controllers[headCanvas].isHead = true;
     this.model.makeStale();
     this.history.clear();
     this.model.initCanvasData();
     this.initPlatform();
-    this.setupDiagramEditorController(smId, controller);
-    this.model.changeCurrenstSm(smId);
+    this.model.changeCurrenstSm(currentSm);
   }
 
   loadData() {

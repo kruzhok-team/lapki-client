@@ -805,6 +805,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));
     this.model.on('changeScale', (value) => {
       this.scale = value;
+      this.app.view.isDirty = true;
     });
     this.model.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
   }

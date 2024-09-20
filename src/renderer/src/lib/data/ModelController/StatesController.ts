@@ -71,7 +71,7 @@ interface StatesControllerEvents {
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
 
-  data = getStatesControllerDefaultData();
+  __data = getStatesControllerDefaultData();
 
   constructor(private app: CanvasEditor) {
     super();
@@ -85,6 +85,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return this.app.controller;
   }
 
+  get data() {
+    return this.__data;
+  }
   /**
    * ! По всем видам состояний
    */
@@ -132,7 +135,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   createState = (args: CreateStateParams) => {
     const { id } = args;
-    debugger;
+
     if (!id) return;
     const state = new State(this.app, id, { ...args }); // Создание вьюшки
 

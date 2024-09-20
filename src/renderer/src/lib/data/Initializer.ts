@@ -29,7 +29,7 @@ export class Initializer {
   constructor(private app: CanvasEditor, private controller: CanvasController) {}
 
   init() {
-    this.resetEntities();
+    // this.resetEntities();
 
     // this.initStates();
     // this.initInitialStates();

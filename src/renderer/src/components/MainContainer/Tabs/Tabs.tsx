@@ -65,6 +65,11 @@ export const Tabs: React.FC = () => {
             onDragStart={() => handleDrag(name)}
             onDrop={() => handleDrop(name)}
             onMouseDown={() => {
+              const canvas = getCanvasBySmId(name);
+              if (!canvas) {
+                return;
+              }
+              modelController.setHeadCanvas(canvas.id);
               modelController.model.changeCurrentSm(name);
               setActiveTab(name);
             }}

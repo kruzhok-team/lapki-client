@@ -495,11 +495,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   getBySourceId(smId: string, sourceId: string) {
     return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].find(
-      (transition) => transition[0] === sourceId
+      (transition) => transition[1].sourceId === sourceId
     );
   }
 
   private deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
+    // debugger;
     const transitionWithId = this.getBySourceId(smId, initialStateId);
     if (!transitionWithId) return;
 
@@ -508,7 +509,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.deleteInitialState({ smId, id: initialStateId }, canUndo);
   }
 
-  deleteInitialState(args: DeleteDrawableParams, canUndo) {
+  deleteInitialState(args: DeleteDrawableParams, canUndo = true) {
     const { smId, id } = args;
 
     const state = this.model.data.elements.stateMachines[smId].initialStates[id];
@@ -522,6 +523,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: args,
       });
     }
+    this.emit('deleteInitialState', args);
   }
 
   changeNoteText = (args: ChangeNoteText, canUndo = true) => {
@@ -674,7 +676,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let { x, y } = state.position;
     if (state.parentId) {
       const parent = this.model.data.elements.stateMachines[smId].states[state.parentId];
-      const { x: px, y: py } = this.compoundStatePosition(smId, id, 'states');
+      const { x: px, y: py } = this.compoundStatePosition(smId, state.parentId, 'states');
 
       x += px + CHILDREN_PADDING;
       y += py + parent.dimensions.height + CHILDREN_PADDING;
@@ -1034,6 +1036,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
+    debugger;
     const nestedStates = this.getEachByParentId(smId, id);
     // Ищем дочерние состояния и отвязываем их от текущего
     nestedStates.forEach((childState) => {

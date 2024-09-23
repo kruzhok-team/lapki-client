@@ -87,6 +87,7 @@ export type CanvasControllerEvents = {
     target: string;
   };
 
+  deleteInitialState: DeleteDrawableParams;
   createTransition: CreateTransitionParams;
   changeTransition: ChangeTransitionParams;
   createChoice: CreateChoiceStateParams;
@@ -272,6 +273,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);
             this.model.off('changeInitialPosition', this.binded['changeInitialPosition']);
+            this.model.off('deleteInitialState', this.binded['deleteInitialState']);
             // this.initializer.initInitialStates(initData as { [id: string]: InitialState });
             break;
           case 'final':
@@ -419,6 +421,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.model.on(
           'createInitial',
           this.bindHelper('initialState', 'createInitial', this.states.createInitialState)
+        );
+        this.model.on(
+          'deleteInitialState',
+          this.bindHelper('initialState', 'deleteInitialState', this.states.deleteInitialState)
         );
         this.model.on(
           'changeInitialPosition',

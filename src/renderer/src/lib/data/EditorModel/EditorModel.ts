@@ -323,7 +323,7 @@ export class EditorModel {
     return id;
   }
 
-  deleteInitialState(id: string, smId: string) {
+  deleteInitialState(smId: string, id: string) {
     const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
 

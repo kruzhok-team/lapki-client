@@ -3,11 +3,9 @@
 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { useModal } from '@renderer/hooks';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
-import { AddressModalMS } from './AddressModalMS';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch, TextField } from './UI';
@@ -16,7 +14,6 @@ export const ManagerMSTab: React.FC = () => {
   const { device, log, setLog, address, setAddress } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
-  const [isAddressModalOpen, openAddressModal, closeAddressModal] = useModal(false);
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const logContainerRef = useRef<HTMLDivElement>(null);
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -31,7 +28,6 @@ export const ManagerMSTab: React.FC = () => {
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);
-    openAddressModal();
   };
   const handleSendBin = () => {
     if (!device) return;
@@ -90,7 +86,6 @@ export const ManagerMSTab: React.FC = () => {
           Очистить
         </button>
       </div>
-      <AddressModalMS isOpen={isAddressModalOpen} onClose={closeAddressModal}></AddressModalMS>
       <div
         className="mx-2 h-full overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}

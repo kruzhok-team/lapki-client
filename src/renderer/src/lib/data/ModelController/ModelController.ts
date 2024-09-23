@@ -423,23 +423,23 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.history.do({
         type: 'changeTransition',
         args: {
-          args: { smId, id, ...transitionFromInitialState },
+          args: { smId, id, ...transitionFromInitialState, targetId: stateId },
           prevData: structuredClone({ ...transitionFromInitialState }),
         },
       });
     }
 
     this.model.changeTransition({
+      ...transitionFromInitialState,
       smId: smId,
       id: id,
-      ...transitionFromInitialState,
       targetId: stateId,
     });
 
     this.emit('changeTransition', {
+      ...transitionFromInitialState,
       smId: smId,
       id: id,
-      ...transitionFromInitialState,
       targetId: stateId,
     });
 
@@ -582,6 +582,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteTransition(args: DeleteDrawableParams, canUndo = true) {
     const { smId, id } = args;
+
     const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
 
@@ -999,7 +1000,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id, smId } = args;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
-
     const parentId = state.parentId;
     let numberOfConnectedActions = 0;
 
@@ -1024,7 +1024,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       numberOfConnectedActions += 2;
     }
-
     // Удаляем зависимые переходы
     const dependetTransitions = this.getEachByStateId(smId, id);
     dependetTransitions.forEach((transition) => {
@@ -1385,42 +1384,42 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       Object.keys(sm.states).forEach((key) => {
         const state = sm.states[key];
         if (state.selection) {
-          this.model.deleteState(smId, key);
+          this.deleteState({ smId, id: key });
         }
       });
 
       Object.keys(sm.choiceStates).forEach((key) => {
         const state = sm.choiceStates[key];
         if (state.selection) {
-          this.model.deleteChoiceState(smId, key);
+          this.deleteChoiceState({ smId, id: key });
         }
       });
 
       Object.keys(sm.choiceStates).forEach((key) => {
         const state = sm.choiceStates[key];
         if (state.selection) {
-          this.model.deleteChoiceState(smId, key);
+          this.deleteChoiceState({ smId: smId, id: key });
         }
       });
 
       Object.keys(sm.transitions).forEach((key) => {
         const transition = sm.transitions[key];
         if (transition.selection) {
-          this.model.deleteTransition(smId, key);
+          this.deleteTransition({ smId: smId, id: key });
         }
       });
 
       Object.keys(sm.notes).forEach((key) => {
         const note = sm.notes[key];
         if (note.selection) {
-          this.model.deleteNote(smId, key);
+          this.deleteNote({ smId: smId, id: key });
         }
       });
 
       Object.keys(sm.components).forEach((key) => {
         const component = sm.components[key];
         if (component.selection) {
-          this.model.deleteComponent(smId, key);
+          this.deleteComponent({ smId, id: key });
         }
       });
       this.emit('deleteSelected', smId);

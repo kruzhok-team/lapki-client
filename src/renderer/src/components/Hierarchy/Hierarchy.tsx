@@ -37,7 +37,6 @@ export interface HierarchyItemData {
 export const Hierarchy: React.FC = () => {
   const controller = useModelContext();
   const model = controller.model;
-
   const [theme] = useSettings('theme');
   const smId = controller.model.useData('', 'currentSm');
   const states = model.useData(smId, 'elements.states') as { [id: string]: State };
@@ -55,7 +54,6 @@ export const Hierarchy: React.FC = () => {
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
-
   const hierarchy = useMemo(() => {
     const data: Record<TreeItemIndex, TreeItem<HierarchyItemData>> = {
       root: {
@@ -158,12 +156,14 @@ export const Hierarchy: React.FC = () => {
         canRename: false,
         canMove: false,
       };
-      data[transition.sourceId].children?.push(transitionId);
-      data[transition.sourceId].isFolder = true;
+      if (data[transition.sourceId]) {
+        data[transition.sourceId].children?.push(transitionId);
+        data[transition.sourceId].isFolder = true;
+      }
     }
 
     return data;
-  }, [choiceStates, finalStates, initialStates, notes, states, transitions]);
+  }, [smId, choiceStates, finalStates, initialStates, notes, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
@@ -198,7 +198,7 @@ export const Hierarchy: React.FC = () => {
   };
 
   const onFocus = (item: TreeItem) => () => {
-    controller.selectState(item.index.toString());
+    controller.selectState({ id: item.index.toString() });
     controller.selectNote(item.index.toString());
     controller.selectTransition(item.index.toString());
   };

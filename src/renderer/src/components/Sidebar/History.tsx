@@ -14,7 +14,7 @@ const groupByNumberOfConnectedActions = (stack: Stack) => {
     const numberOfConnectedActions = stack[i].numberOfConnectedActions;
     if (numberOfConnectedActions) {
       const block: Action<any>[] = [];
-      for (let j = 0; j < numberOfConnectedActions + 1; j++) {
+      for (let j = 0; j < numberOfConnectedActions; j++) {
         block.push(stack[i]);
         i--;
       }
@@ -61,7 +61,6 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
 
 const HistoryWithEditor: React.FC = () => {
   const modelController = useModelContext();
-
   const { undoStack, redoStack } = modelController.history.use();
 
   return (

@@ -32,15 +32,14 @@ export const Tabs: React.FC = () => {
 
     swapTabs(dragId, tabName);
   };
-  let headCanvasId = '';
   const getCanvasBySmId = (smId: string) => {
     for (const canvasId in modelController.controllers) {
       const controller = modelController.controllers[canvasId].controller;
       if (controller.stateMachinesSub[smId]) {
-        headCanvasId = canvasId;
         return controller.app;
       }
     }
+    return null;
   };
 
   if (items.length === 0) {

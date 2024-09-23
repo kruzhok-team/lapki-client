@@ -154,7 +154,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   deleteTransition = (args: DeleteDrawableParams) => {
     const transition = this.items.get(args.id);
     if (!transition) return;
-
     const parent = transition.parent ?? this.view;
     parent.children.remove(transition, Layer.Transitions);
     this.unwatchTransition(transition);

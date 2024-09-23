@@ -39,7 +39,6 @@ export class Transition extends Shape {
       this.app.controller.states.get(this.data.targetId) ||
       this.app.controller.notes.get(this.data.targetId) ||
       this.app.controller.transitions.get(this.data.targetId);
-
     if (!node) {
       throw new Error(`State with id ${this.data.targetId} does not exist`);
     }

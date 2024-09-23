@@ -18,6 +18,10 @@ export class Device {
   displayName(): string {
     return this.name;
   }
+
+  disaplySerialName(): string {
+    return this.displayName();
+  }
 }
 
 export class ArduinoDevice extends Device {
@@ -49,5 +53,8 @@ export class MSDevice extends Device {
 
   displayName(): string {
     return `${this.name} (${this.portNames[0]})`;
+  }
+  disaplySerialName(): string {
+    return `${this.name} (${this.portNames[3]})`
   }
 }

@@ -114,6 +114,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const editor = new CanvasEditor('', this);
     const controller = new CanvasController('', editor, { platformName: '' }, this);
     editor.setController(controller);
+    this.controllers = {};
     this.controllers[''] = { controller, isHead: true };
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
@@ -132,10 +133,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   reset() {
     for (const controllerId in this.controllers) {
-      const controller = this.controllers[controllerId].controller;
-      controller.unwatch();
-      this.controllers[controllerId].isHead = false;
-      // controller.app.unmount();
+      if (this.model.data.canvas[controllerId].isMounted) {
+        const controller = this.controllers[controllerId].controller;
+        controller.unwatch();
+        this.controllers[controllerId].isHead = false;
+      }
     }
     this.emptyController();
   }
@@ -190,11 +192,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
-    this.controllers[''].isHead = false;
-    this.controllers[''].controller.unwatch();
+    this.reset();
     this.model.init(basename, filename, elements);
+    this.controllers[''].controller.unwatch();
+    this.controllers[''].isHead = false;
     let headCanvas = '';
-    let currentSm = 'G';
+    let currentSm = 'G'; // Если данных нет, у нас по умолчанию создается МС 'G'
     for (const smId in elements.stateMachines) {
       const canvasId = generateId();
       this.model.changeCurrentSm(smId);
@@ -1346,7 +1349,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
     const siblings = this.getSiblings(smId, id, parentId, 'finalStates')[0];
     if (siblings.length) {
-      console.log('heereeee');
       this.model.deleteFinalState(smId, id);
       return;
     }

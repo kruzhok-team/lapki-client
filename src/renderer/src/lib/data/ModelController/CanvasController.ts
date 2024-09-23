@@ -777,7 +777,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   initPlatform = () => {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
-    console.log('INIT_PLATFORM');
     if (!this.platform && isPlatformAvailable(this.canvasData.platformName)) {
       const platformName = this.canvasData.platformName;
       const platform = loadPlatform(platformName);

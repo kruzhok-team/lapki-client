@@ -523,7 +523,7 @@ export class Flasher extends ClientWS {
           const pingResult = response.payload as MSPingResult;
           switch (pingResult.code) {
             case 0:
-              ManagerMS.addLog('Понг');
+              ManagerMS.addLog('Получен ответ устройства на пинг');
               break;
             case 1:
               ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');

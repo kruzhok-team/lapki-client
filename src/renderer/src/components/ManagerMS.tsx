@@ -38,7 +38,7 @@ export const ManagerMSTab: React.FC = () => {
   const handlePing = () => {
     if (!device) return;
     ManagerMS.ping(device.deviceID, address);
-    ManagerMS.addLog('Пинг');
+    ManagerMS.addLog('Отправлен пинг на устройство');
   };
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {

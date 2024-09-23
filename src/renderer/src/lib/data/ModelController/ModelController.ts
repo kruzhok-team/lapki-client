@@ -14,7 +14,6 @@ import {
   CopyType,
   EditComponentParams,
   LinkStateParams,
-  SelectDrawable,
   SetMountedStatusParams,
   StatesControllerDataStateType,
   UnlinkStateParams,
@@ -732,6 +731,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
     this.emit('unlinkState', params);
+
+    const [, siblingIds] = this.getSiblings(
+      smId,
+      id,
+      this.model.data.elements.stateMachines[smId].states[parentId].parentId,
+      'initialStates'
+    );
+    if (!siblingIds.length) {
+      this.createInitialStateWithTransition(smId, id);
+    }
   }
 
   linkState = (args: LinkStateParams, canUndo = true) => {
@@ -1036,7 +1045,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
-    debugger;
     const nestedStates = this.getEachByParentId(smId, id);
     // Ищем дочерние состояния и отвязываем их от текущего
     nestedStates.forEach((childState) => {

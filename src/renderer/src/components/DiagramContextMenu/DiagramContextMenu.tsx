@@ -16,7 +16,7 @@ import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useModal } from '@renderer/hooks';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
-import { DEFAULT_STATE_COLOR } from '@renderer/lib/constants';
+// import {  } from '@renderer/lib/constants'
 import {
   Note,
   ChoiceState,
@@ -124,7 +124,6 @@ export const DiagramContextMenu: React.FC = () => {
 
   const content = useMemo(() => {
     if (!menuVariant) return null;
-
     if (menuVariant.type === 'view') {
       const { position } = menuVariant;
 
@@ -146,7 +145,6 @@ export const DiagramContextMenu: React.FC = () => {
                 name: 'Состояние',
                 position: canvasPos,
                 placeInCenter: true,
-                color: DEFAULT_STATE_COLOR,
               })
             }
           >
@@ -236,7 +234,6 @@ export const DiagramContextMenu: React.FC = () => {
                     name: 'Состояние',
                     position: editor.view.windowToWorldCoords(position),
                     parentId: state.id,
-                    color: DEFAULT_STATE_COLOR,
                   })
                 }
               >
@@ -321,10 +318,10 @@ export const DiagramContextMenu: React.FC = () => {
       const { transition, position } = menuVariant;
 
       const sourceArray = Array.from(editor.controller.states.getStates()).filter(
-        (value) => transition.data.source !== value[0]
+        (value) => transition.data.sourceId !== value[0]
       );
       const targetArray = Array.from(editor.controller.states.getStates()).filter(
-        (value) => transition.data.target !== value[0]
+        (value) => transition.data.targetId !== value[0]
       );
 
       return (
@@ -348,7 +345,7 @@ export const DiagramContextMenu: React.FC = () => {
                     editor.controller.transitions.changeTransition({
                       ...transition.data,
                       id: transition.id,
-                      source: id,
+                      sourceId: id,
                     })
                   }
                 >
@@ -373,7 +370,7 @@ export const DiagramContextMenu: React.FC = () => {
                     editor.controller.transitions.changeTransition({
                       ...transition.data,
                       id: transition.id,
-                      target: id,
+                      targetId: id,
                     })
                   }
                 >
@@ -410,7 +407,6 @@ export const DiagramContextMenu: React.FC = () => {
 
     if (menuVariant.type === 'note') {
       const { note, position } = menuVariant;
-
       return <NoteMenu onClose={close} note={note} position={position} />;
     }
 

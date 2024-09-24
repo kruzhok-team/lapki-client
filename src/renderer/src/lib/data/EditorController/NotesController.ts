@@ -80,6 +80,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
 
   changeNoteBackgroundColor = (id: string, color: string | undefined, canUndo = true) => {
     const note = this.items.get(id);
+    debugger;
     if (!note) return;
 
     if (canUndo) {

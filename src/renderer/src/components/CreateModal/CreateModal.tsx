@@ -247,7 +247,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
     const { data } = transition;
 
     if (data.label?.trigger) {
-      trigger.setSelectedComponent(data.label.trigger.component);
+      trigger.setSelectedComponent(typeof data.label.trigger === 'string' ? data.label.trigger : data.label.trigger.component);
       trigger.setSelectedMethod(data.label.trigger.method);
     }
 

@@ -137,13 +137,6 @@ export const useDiagramContextMenu = () => {
           },
         },
         {
-          label: 'Дублировать',
-          type: 'clone',
-          action: () => {
-            editor?.controller.duplicateSelected();
-          },
-        },
-        {
           label: 'Редактировать',
           type: 'edit',
           isFolder: true,
@@ -209,27 +202,6 @@ export const useDiagramContextMenu = () => {
 
       handleEvent(position, [
         {
-          label: 'Копировать',
-          type: 'copy',
-          action: () => {
-            editor?.controller.copySelected();
-          },
-        },
-        {
-          label: 'Вставить',
-          type: 'paste',
-          action: () => {
-            editor?.controller.pasteSelected();
-          },
-        },
-        {
-          label: 'Дублировать',
-          type: 'clone',
-          action: () => {
-            editor?.controller.duplicateSelected();
-          },
-        },
-        {
           label: 'Удалить',
           type: 'delete',
           action: () => {
@@ -261,6 +233,7 @@ export const useDiagramContextMenu = () => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'source',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
@@ -275,6 +248,7 @@ export const useDiagramContextMenu = () => {
         return {
           label: state.eventBox.parent.data.name,
           type: 'target',
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           action: () => {
             editor.controller.transitions.changeTransition({
               ...transition.data,
@@ -305,13 +279,6 @@ export const useDiagramContextMenu = () => {
                 type: 'copy',
                 action: () => {
                   editor?.controller.copySelected();
-                },
-              },
-              {
-                label: 'Дублировать',
-                type: 'clone',
-                action: () => {
-                  editor?.controller.duplicateSelected();
                 },
               },
               {
@@ -357,27 +324,6 @@ export const useDiagramContextMenu = () => {
       const { note, position } = data;
 
       handleEvent(position, [
-        {
-          label: 'Копировать',
-          type: 'copy',
-          action: () => {
-            editor?.controller.copySelected();
-          },
-        },
-        {
-          label: 'Вставить',
-          type: 'paste',
-          action: () => {
-            editor?.controller.pasteSelected();
-          },
-        },
-        {
-          label: 'Дублировать',
-          type: 'clone',
-          action: () => {
-            editor?.controller.duplicateSelected();
-          },
-        },
         {
           label: 'Редактировать',
           type: 'edit',

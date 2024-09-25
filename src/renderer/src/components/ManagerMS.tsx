@@ -3,9 +3,11 @@
 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { useModal } from '@renderer/hooks/useModal';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
+import { AddressBookModal } from './AddressBook';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch, TextField } from './UI';
@@ -15,6 +17,7 @@ export const ManagerMSTab: React.FC = () => {
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
+  const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
   // При изменении log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
@@ -28,6 +31,9 @@ export const ManagerMSTab: React.FC = () => {
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);
+  };
+  const handleOpenAddressBook = () => {
+    openAddressBook();
   };
   const handleSendBin = () => {
     if (!device) return;
@@ -65,6 +71,9 @@ export const ManagerMSTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
           Узнать адрес...
         </button>
+        <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
+          Адресная книга
+        </button>
         <button className="btn-primary mr-4" onClick={handleSendBin}>
           Отправить bin...
         </button>
@@ -94,6 +103,7 @@ export const ManagerMSTab: React.FC = () => {
           <div key={index}>{msg}</div>
         ))}
       </div>
+      <AddressBookModal isOpen={isAddressBookOpen} onClose={closeAddressBook}></AddressBookModal>
     </section>
   );
 };

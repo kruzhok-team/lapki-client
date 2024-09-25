@@ -191,6 +191,7 @@ export class Flasher extends ClientWS {
     serialConnectionStatus: string = ''
   ) {
     if (
+      device instanceof ArduinoDevice &&
       serialMonitorDevice &&
       serialMonitorDevice.deviceID == device.deviceID &&
       serialConnectionStatus == SERIAL_MONITOR_CONNECTED

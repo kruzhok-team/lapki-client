@@ -3,6 +3,7 @@ import React from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow.svg';
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { Modal, TextInput } from '@renderer/components/UI';
 
@@ -34,6 +35,13 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({ onClose, ...
           {fields.length === 0 && <p className="text-text-inactive">Нет записей в книге</p>}
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-start gap-1">
+              <button
+                type="button"
+                className="rounded p-2 transition-colors hover:bg-bg-hover active:bg-bg-active"
+                onClick={() => remove(index)}
+              >
+                <CloseIcon className="h-3 w-3" />
+              </button>
               <label className="flex flex-col">
                 <TextInput
                   {...register(`desc.${index}.name` as const, { required: 'Обязательное поле' })}
@@ -53,12 +61,12 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({ onClose, ...
                 />
                 <p className="text-sm text-error">{errors?.desc?.[index]?.address?.message}</p>
               </label>
+
               <button
                 type="button"
                 className="rounded p-2 transition-colors hover:bg-bg-hover active:bg-bg-active"
-                onClick={() => remove(index)}
               >
-                <CloseIcon className="h-3 w-3" />
+                <ArrowIcon className="h-3 w-3" />
               </button>
             </div>
           ))}

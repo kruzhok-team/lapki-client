@@ -8,7 +8,7 @@ import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { Modal, TextInput } from '@renderer/components/UI';
 
 export interface AddressBookFormValues {
-  desc: { name: string; address: string }[];
+  desc: { name: string; address: string; type: string }[];
 }
 
 interface AddressBookModalProps {
@@ -62,6 +62,10 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({ onClose, ...
                 <p className="text-sm text-error">{errors?.desc?.[index]?.address?.message}</p>
               </label>
 
+              <label className="flex flex-col">
+                <TextInput placeholder="Тип" className="w-full max-w-full" disabled={true} />
+              </label>
+
               <button
                 type="button"
                 className="rounded p-2 transition-colors hover:bg-bg-hover active:bg-bg-active"
@@ -75,7 +79,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({ onClose, ...
         <button
           type="button"
           className="btn-primary flex items-center gap-3 pl-5"
-          onClick={() => append({ name: '', address: '' })}
+          onClick={() => append({ name: '', address: '', type: '' })}
         >
           <AddIcon className="size-6" />
           Добавить

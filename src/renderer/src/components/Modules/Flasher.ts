@@ -113,7 +113,6 @@ export class Flasher extends ClientWS {
     });
   }
 
-  // обновление порта (только для ArduinoDevice)
   /**
    * обновление порта (сообщение приходит только для {@link ArduinoDevice})
    * @param port сообщение от сервера об обновлении порта

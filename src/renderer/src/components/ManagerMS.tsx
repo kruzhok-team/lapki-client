@@ -55,6 +55,9 @@ export const ManagerMSTab: React.FC = () => {
   const handleClear = () => {
     setLog(() => []);
   };
+  // const onSelectAddress = () => {
+
+  // };
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
@@ -103,7 +106,13 @@ export const ManagerMSTab: React.FC = () => {
           <div key={index}>{msg}</div>
         ))}
       </div>
-      <AddressBookModal isOpen={isAddressBookOpen} onClose={closeAddressBook}></AddressBookModal>
+      <AddressBookModal
+        isOpen={isAddressBookOpen}
+        onClose={closeAddressBook}
+        onSelect={(selectedAddress: string) => {
+          setAddress(selectedAddress);
+        }}
+      ></AddressBookModal>
     </section>
   );
 };

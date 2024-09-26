@@ -163,3 +163,10 @@ export type MSPingResult = {
   deviceID: string;
   code: number;
 };
+
+// адрес и ассоциированные с ним данные (для МС-ТЮК)
+export type AddressData = {
+  name: string;
+  address: string;
+  type: string;
+};

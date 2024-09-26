@@ -10,7 +10,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { AddressBookModal } from './AddressBook';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
-import { Switch, TextField } from './UI';
+import { Switch } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
   const { device, log, setLog, address, setAddress } = useManagerMS();

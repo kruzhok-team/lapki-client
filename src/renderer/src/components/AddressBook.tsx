@@ -7,10 +7,6 @@ import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookRow } from './AddressBookRow';
 
-export interface AddressBookFormValues {
-  desc: AddressData[];
-}
-
 interface AddressBookModalProps {
   isOpen: boolean;
   onClose: () => void;

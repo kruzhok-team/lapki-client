@@ -26,6 +26,7 @@ export const defaultSettings = {
     animations: true,
     grid: true,
   },
+  addressBookMS: [{ name: '', address: '', type: '' }],
 };
 
 export type Settings = typeof defaultSettings;

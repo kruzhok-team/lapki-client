@@ -1,9 +1,6 @@
-import React from 'react';
-
-import { useFieldArray, useForm } from 'react-hook-form';
-
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { Modal } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks/useSettings';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookRow } from './AddressBookRow';
@@ -23,12 +20,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   onSelect,
   ...props
 }) => {
-  const { control } = useForm<AddressBookFormValues>();
-
-  const { fields, append, remove } = useFieldArray({
-    name: 'desc',
-    control,
-  });
+  const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
 
   const handleOnSelect = (address: string | undefined) => {
     if (address != undefined) {
@@ -37,17 +29,27 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     }
   };
   return (
-    <Modal {...props} onRequestClose={onClose} title="Адресная книга">
+    <Modal
+      {...props}
+      onRequestClose={onClose}
+      title="Адресная книга"
+      onAfterClose={() => {
+        if (!addressBookSetting) return;
+        setAddressBookSetting(addressBookSetting);
+      }}
+    >
       <div>
         <div className="mb-2 flex flex-col gap-1">
-          {fields.length === 0 && <p className="text-text-inactive">Нет записей в книге</p>}
-          {fields.map((field, index) => (
-            <div key={field.id}>
+          {addressBookSetting?.length === 0 && (
+            <p className="text-text-inactive">Нет записей в книге</p>
+          )}
+          {addressBookSetting?.map((field, index) => (
+            <div key={index}>
               <AddressBookRow
                 data={field}
                 onSelect={handleOnSelect}
                 onRemove={() => {
-                  remove(index);
+                  setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
                 }}
               ></AddressBookRow>
             </div>
@@ -57,7 +59,14 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         <button
           type="button"
           className="btn-primary flex items-center gap-3 pl-5"
-          onClick={() => append({ name: '', address: '', type: '' })}
+          onClick={() => {
+            const emptyRow: AddressData = { name: '', address: '', type: '' };
+            if (addressBookSetting != null) {
+              setAddressBookSetting([...addressBookSetting, emptyRow]);
+            } else {
+              setAddressBookSetting([emptyRow]);
+            }
+          }}
         >
           <AddIcon className="size-6" />
           Добавить

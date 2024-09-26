@@ -2,23 +2,25 @@ import { useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { Modal } from '@renderer/components/UI';
-import { useSettings } from '@renderer/hooks/useSettings';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookRow } from './AddressBookRow';
 
 interface AddressBookModalProps {
+  addressBookSetting: AddressData[] | null;
+  setAddressBookSetting: (value: AddressData[]) => Promise<any>;
   isOpen: boolean;
   onClose: () => void;
   onSelect: (address: string) => void;
 }
 
 export const AddressBookModal: React.FC<AddressBookModalProps> = ({
+  addressBookSetting,
+  setAddressBookSetting,
   onClose,
   onSelect,
   ...props
 }) => {
-  const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
   const [idStorage, setIdStorage] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
   const getID = (index: number) => {

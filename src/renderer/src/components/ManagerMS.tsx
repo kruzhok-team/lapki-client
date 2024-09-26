@@ -4,6 +4,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useModal } from '@renderer/hooks/useModal';
+import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
@@ -13,9 +14,11 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log, setLog, address, setAddress } = useManagerMS();
+  const { device, log, setLog, address: serverAddress } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
+  const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
+  const [address, setAddress] = useState<string>('');
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +31,30 @@ export const ManagerMSTab: React.FC = () => {
   useEffect(() => {
     setAddress('');
   }, [device]);
+  useEffect(() => {
+    setAddress(serverAddress);
+    let found = false;
+    if (addressBookSetting) {
+      for (const addr of addressBookSetting) {
+        if (addr.address == serverAddress) {
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
+      const newRow = {
+        name: '',
+        address: serverAddress,
+        type: '',
+      };
+      if (!addressBookSetting) {
+        setAddressBookSetting([newRow]);
+      } else {
+        setAddressBookSetting([...addressBookSetting, newRow]);
+      }
+    }
+  }, [serverAddress]);
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);
@@ -96,6 +123,8 @@ export const ManagerMSTab: React.FC = () => {
         ))}
       </div>
       <AddressBookModal
+        addressBookSetting={addressBookSetting}
+        setAddressBookSetting={setAddressBookSetting}
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
         onSelect={(selectedAddress: string) => {

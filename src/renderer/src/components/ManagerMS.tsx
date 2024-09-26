@@ -55,21 +55,10 @@ export const ManagerMSTab: React.FC = () => {
   const handleClear = () => {
     setLog(() => []);
   };
-  // const onSelectAddress = () => {
-
-  // };
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
-      <div className="m-2">
-        <TextField
-          label="Адрес:"
-          className="mr-2 max-w-full"
-          placeholder="Напишите адрес"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-        />
-      </div>
+      <label className="m-2">Адрес: {address}</label>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
           Узнать адрес...

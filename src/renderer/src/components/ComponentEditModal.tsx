@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
@@ -34,6 +35,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 }) => {
   const editor = useEditorContext();
   const { model } = editor;
+  const platformName = model.useData('elements.platform');
+  const platform = getPlatform(platformName);
   const components = model.useData('elements.components');
 
   const [name, setName] = useState('');
@@ -49,7 +52,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
-    if (proto.singletone) {
+    if (proto.singletone || (platform && platform.staticComponents)) {
       return true;
     }
 

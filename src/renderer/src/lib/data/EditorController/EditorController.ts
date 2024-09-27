@@ -472,13 +472,17 @@ export class EditorController {
     const vacant: ComponentEntry[] = [];
     for (const idx in this.platform.data.components) {
       const compo = this.platform.data.components[idx];
-      if (compo.singletone && components.hasOwnProperty(idx)) continue;
+      if (
+        (compo.singletone || this.platform.data.staticComponents) &&
+        components.hasOwnProperty(idx)
+      )
+        continue;
       vacant.push({
         idx,
         name: compo.name ?? idx,
         img: compo.img || 'stubComponent',
         description: compo.description ?? '',
-        singletone: compo.singletone ?? false,
+        singletone: compo.singletone || this.platform.data.staticComponents,
       });
     }
     return vacant;

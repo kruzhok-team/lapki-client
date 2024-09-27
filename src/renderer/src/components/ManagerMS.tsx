@@ -59,8 +59,10 @@ export const ManagerMSTab: React.FC = () => {
   };
   const handleSendBin = () => {
     if (!device) return;
-    Flasher.setFile().then(() => {
-      ManagerMS.binStart(device, address, serialMonitorDevice, serialConnectionStatus);
+    Flasher.setFile().then((isOpen: boolean) => {
+      if (isOpen) {
+        ManagerMS.binStart(device, address, serialMonitorDevice, serialConnectionStatus);
+      }
     });
   };
   const handlePing = () => {

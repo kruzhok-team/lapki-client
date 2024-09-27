@@ -178,9 +178,11 @@ export class Flasher extends ClientWS {
       //console.log(buffer.toString());
       Flasher.binary = new Blob([buffer]);
       this.setFlasherFile(openData[2]);
+      return true;
     } else {
       //console.log('set file (false)');
       this.setFlasherFile(undefined);
+      return false;
     }
   }
 

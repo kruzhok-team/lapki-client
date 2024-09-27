@@ -1,0 +1,494 @@
+{
+  "name": "Arduino Uno",
+  "id": "ArduinoUno",
+  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!", 
+  "icon": "путь/до/иконки",
+  "staticComponents": false,
+  "version": "1.0",
+  "standardVersion": "1.0",
+  "formatVersion": "1.0",
+  "language": "C++",
+  "author": "Maxim Klypin",
+  "visual": true,
+  "compile": true,
+  "mainFunction": false,
+  "mainFileExtension": "ino",
+  "compilingSettings": [
+    {
+      "command": "arduino-cli",
+      "flags": ["compile", "--export-binaries", "-b", "arduino:avr:uno"]
+    }
+  ],
+  "delimeter": ";",
+  "components": {
+    "Button": {
+      "description": "Компонент для взаимодействия с физической кнопкой",
+      "img": "arduino/button.svg",
+      "signals": {
+        "isPressed": {
+          "img": "arduino/isPressed.svg",
+          "description": "Создает сигнал, если кнопка была нажата",
+          "checkMethod": "isPressed"
+        },
+        "clicked": {
+          "img": "arduino/clicked.svg",
+          "description": "Создает сигнал, если кнопка была кликнута",
+          "checkMethod": "clicked"
+        }
+      },
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, к которому подключена кнопка"
+        },
+        "buttonMode": {
+          "type": "uint8_t",
+          "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
+          "optional": true            
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущее значение на пине"
+        }
+      },
+      "loopActions": ["scan"],
+      "buildFiles": ["Button.h", "Button.ino"],
+      "importFiles": ["Button.h"],
+      "methods": {},
+      "singletone": false
+    },
+
+    "LED": {
+      "description": "Компонент для взаимодействия со светодиодом",
+      "img": "arduino/led.svg",
+      "signals": {},
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, к которому подключен светодиод"
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущее значение на пине"
+        }
+      },
+      "methods": {
+        "on": {
+          "img": "arduino/switch-on.svg",
+          "description": "Зажечь светодиод"
+        },
+        "off": {
+          "img": "arduino/switch-off.svg",
+          "description": "Выключить светодиод"
+        },
+        "toggle": {
+          "img": "arduino/toggle.svg",
+          "description": "Меняет состояние кнопки на противоположное"
+        },
+        "blink": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "times",
+              "type": "byte",
+              "description": "Количество миганий"
+            },
+            {
+              "name": "interval",
+              "type": "unsigned int",
+              "description": "Длительность мигания"
+            }
+          ],
+          "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания"
+        }
+      },
+      "buildFiles": ["LED.h", "LED.ino"],
+      "importFiles": ["LED.h"],
+      "singletone": false
+    },
+
+    "Timer": {
+      "description": "Программный таймер",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "timeout": {
+          "img": "arduino/timeout.svg",
+          "description": "Время вышло!",
+          "checkMethod": "timeout"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "reset": {
+          "img": "arduino/reset.svg",
+          "description": "Сбросить таймер, отчет начнется сначала"
+        },
+        "disable": {
+          "img": "arduino/timer-stop.svg",
+          "description": "Отключить таймер."
+        },
+        "enable": {
+          "img": "arduino/timer-start.svg",
+          "description": "Включить таймер."
+        },
+        "start": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "interval",
+              "type": "unsigned long",
+              "description": "Интервал срабатывания."
+            }
+          ],
+          "description": "Запустить таймер. Будет сигнал раз в интервал."
+        }
+      },
+      "buildFiles": ["Timer.h", "Timer.ino"],
+      "importFiles": ["Timer.h"],
+      "singletone": false,
+      "variables": {
+        "difference": {
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Оставшееся время до окончания таймера."
+        }
+      }
+    },
+    "Counter": {
+      "description": "Переменная-счетчик.",
+      "img": "arduino/counter.svg",
+      "signals": {
+        "isEqual": {
+          "img": "arduino/isEqual.svg",
+          "description": "Издать сигнал, если значение счетчика равно value",
+          "checkMethod": "isEqual",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "isLess": {
+          "img": "arduino/isLess.svg",
+          "description": "Издать сигнал, если значение счетчика меньше value",
+          "checkMethod": "isLess",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "isGreater": {
+          "img": "arduino/isGreater.svg",
+          "description": "Издать сигнал, если значение счетчика больше value",
+          "checkMethod": "isGreater",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "add": {
+          "img": "arduino/add.svg",
+          "description": "Добавить value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "sub": {
+          "img": "arduino/sub.svg",
+          "description": "Вычесть value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "reset": {
+          "img": "arduino/reset.svg",
+          "description": "Обнулить значение счетчика."
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "description": "Текущее значение счетчика",
+          "type": "int"
+        }
+      },
+      "buildFiles": ["Counter.h", "Counter.ino"],
+      "importFiles": ["Counter.h"],
+      "singletone": false
+    },
+    "QHsmSerial": {
+      "description": "Класс-надстройка над Serial. Вызывает сигналы при получении данных.",
+      "img": "arduino/serial.svg",
+      "signals": {
+        "noByteReceived": {
+          "img": "arduino/noByteReceived.svg",
+          "description": "Был вызван read, но данные не были получены",
+          "checkMethod": "noByteReceived"
+        },
+        "byteReceived": {
+          "img": "arduino/byteReceived.svg",
+          "description": "Были получены данные",
+          "checkMethod": "byteReceived"
+        }
+      },
+      "initializationParameters": {
+        "baud": {
+          "description": "Установить частоту работы Serial",
+          "type": "unsigned long"
+        }
+      },
+      "initializationFunction": "init",
+      "methods": {
+        "println": {
+          "img": "arduino/println.svg",
+          "description": "Вывести данные в Serial монитор с добавлением \\n в конце",
+          "parameters": [
+            {
+              "name": "data",
+              "description": "Данные для вывода",
+              "type": "int | char[]"
+            }
+          ]
+        },
+        "print": {
+          "img": "arduino/print.svg",
+          "description": "Вывести данные в Serial монитор.",
+          "parameters": [
+            {
+              "name": "data",
+              "description": "Данные для вывода",
+              "type": "int | char[]"
+            }
+          ]
+        },
+        "read": {
+          "img": "arduino/read.svg",
+          "description": "Запросить данные из Serial."
+        }
+      },
+      "variables": {
+        "lastByte": {
+          "type": "int",
+          "description": "Последний прочитанный байт.",
+          "img": "common/value.svg"
+        }
+      },
+      "loopActions": ["read"],
+      "buildFiles": ["QHsmSerial.h", "QHsmSerial.ino"],
+      "importFiles": ["QHsmSerial.h"],
+      "singletone": true
+    },
+    "PWM": {
+      "description": "Класс, реализующий ШИМ",
+      "img": "arduino/pwm.svg",
+      "signals": {},
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, на котором будет установлен ШИМ"
+        }
+      },
+      "methods": {
+        "write": {
+          "img": "arduino/write.svg",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ],
+          "description": "Установить значение на ШИМ"
+        }
+      },
+      "buildFiles": ["PWM.h", "PWM.ino"],
+      "importFiles": ["PWM.h"],
+      "variables": {},
+      "singletone": false
+    },
+
+    "DigitalOut": {
+      "description": "Класс для подачи LOW, HIGH на пин",
+      "img": "arduino/digitalOut.svg",
+      "signals": {},
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, на который будет подаваться сигнал."
+        }
+      },
+      "methods": {
+        "low": {
+          "img": "arduino/switch-off.svg",
+          "description": "Подать LOW на пин."
+        },
+        "high": {
+          "img": "arduino/switch-on.svg",
+          "description": "Подать HIGH на пин."
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущее значение на пине."
+        }
+      },
+      "buildFiles": ["DigitalOut.h", "DigitalOut.ino"],
+      "importFiles": ["DigitalOut.h"],
+      "singletone": false
+    },
+
+    "DigitalIn": {
+      "description": "Класс для считывания сигнала с пина",
+      "img": "arduino/digitalIn.svg",
+      "signals": {
+        "isChanged": {
+          "img": "arduino/toggle.svg",
+          "description": "Сигнал вызывается, когда меняется значение на пине.",
+          "checkMethod": "isChanged"
+        },
+        "isLow": {
+          "img": "arduino/isLow.svg",
+          "description": "Сигнал вызывается, когда значение на пине меняется на LOW",
+          "checkMethod": "isLow"
+        },
+        "isHigh": {
+          "img": "arduino/isHigh.svg",
+          "description": "Сигнал вызывается, когда значение на пине меняется на LOW",
+          "checkMethod": "isHigh"
+        }
+      },
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, с которого будут считываться данные."
+        }
+      },
+      "methods": {},
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущее значение на пине."
+        }
+      },
+      "buildFiles": ["DigitalIn.h", "DigitalIn.ino"],
+      "importFiles": ["DigitalIn.h"],
+      "singletone": false
+    },
+
+    "AnalogOut": {
+      "description": "Класс для установки значения на аналоговые пины",
+      "img": "arduino/analogOut.svg",
+      "signals": {},
+      "methods": {
+        "write": {
+          "img": "arduino/write.svg",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ],
+          "description": "Установить значение на аналоговый пин"
+        }
+      },
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, на который будет подаваться сигнал."
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущее значение на пине."
+        }
+      },
+      "buildFiles": ["AnalogOut.h", "AnalogOut.ino"],
+      "importFiles": ["AnalogOut.h"],
+      "singletone": false
+    },
+
+    "AnalogIn": {
+      "description": "Класс для получения значения с аналогового пина",
+      "img": "arduino/analogIn.svg",
+      "signals": {},
+      "methods": {},
+      "constructorParameters": {
+        "pin": {
+          "type": "uint8_t",
+          "description": "Пин, с которого будут считываться данные."
+        }
+      },
+      "variables": {
+        "value": {
+          "type": "int",
+          "description": "Данные, считанные с аналогового пина"
+        }
+      },
+      "loopActions": ["read"],
+      "buildFiles": ["AnalogIn.h", "AnalogIn.ino"],
+      "importFiles": ["AnalogIn.h"],
+      "singletone": false
+    },
+
+    "ShiftRegister": {
+      "description": "Класс вывода байта информации на порт вход/выхода последовательно (побитно).",
+      "img": "arduino/shiftRegister.svg",
+      "signals": {},
+      "methods": {
+        "shift": {
+          "img": "arduino/shift.svg",
+          "description": "Выводит байт информации на порт вход/выхода последовательно (побитно).\nВывод может осуществляться как с первого (левого), так и с последнего (правого) бита. \nКаждый бит последовательно подается на заданный порт, после чего подается сигнал на синхронизирующий порт вход/выход, информируя о доступности к считыванию бита.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        }
+      },
+      "constructorParameters": {
+        "dataPin": {
+          "type": "uint8_t",
+          "description": "Пин вход/выхода, на который выводятся биты"
+        },
+        "clockPin": {
+          "type": "uint8_t",
+          "description": "Пин по которому производится синхронизация "
+        },
+        "bitOrder": {
+          "type": "uint8_t",
+          "description": "Порядок битов. MSBFIRST - первый бит самый значимый, LSBFIRST - последний",
+          "optional": true
+        }
+      },
+      "buildFiles": ["ShiftRegister.h", "ShiftRegister.ino"],
+      "importFiles": ["ShiftRegister.h"],
+      "variables": {},
+      "singletone": false
+    }
+  }
+}

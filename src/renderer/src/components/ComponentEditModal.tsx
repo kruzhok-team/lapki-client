@@ -163,7 +163,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     >
       <ComponentFormFields
         showMainData={!proto.singletone}
-        protoParameters={proto.parameters}
+        protoParameters={proto.constructorParameters}
+        protoInitializationParameters={proto.initializationParameters}
         name={name}
         setName={setName}
         parameters={parameters}

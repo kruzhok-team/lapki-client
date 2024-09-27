@@ -96,7 +96,7 @@ export const ManagerMSTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={handleSendBin} disabled={address == ''}>
           Отправить bin...
         </button>
-        <button className="btn-primary mr-4" onClick={handlePing}>
+        <button className="btn-primary mr-4" onClick={handlePing} disabled={address == ''}>
           Пинг
         </button>
         <button className="btn-primary mr-4" onClick={handleReset} disabled={address == ''}>

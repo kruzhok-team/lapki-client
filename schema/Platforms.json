@@ -129,6 +129,9 @@
           },
           "type": "object"
         },
+        "delimeter": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -147,6 +150,9 @@
         "standardVersion": {
           "type": "string"
         },
+        "staticActionDelimeter": {
+          "type": "string"
+        },
         "version": {
           "type": "string"
         },
@@ -158,6 +164,8 @@
         "version",
         "standardVersion",
         "visual",
+        "delimeter",
+        "staticActionDelimeter",
         "components"
       ],
       "type": "object"

@@ -42,4 +42,10 @@ export class ManagerMS {
   static addLog(log: string) {
     this.setLog((prevMessages) => [...prevMessages, log]);
   }
+  static reset(deviceID: string, address: string) {
+    Flasher.send('ms-reset', {
+      deviceID: deviceID,
+      address: address,
+    });
+  }
 }

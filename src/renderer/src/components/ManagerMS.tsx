@@ -73,6 +73,11 @@ export const ManagerMSTab: React.FC = () => {
     ManagerMS.ping(device.deviceID, address);
     ManagerMS.addLog('Отправлен пинг на устройство');
   };
+  const handleReset = () => {
+    if (!device) return;
+    ManagerMS.reset(device.deviceID, address);
+    ManagerMS.addLog('Отправлен запрос на сброс устройства');
+  };
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {
       return 'Устройство отсутствует';
@@ -93,11 +98,14 @@ export const ManagerMSTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адресная книга
         </button>
-        <button className="btn-primary mr-4" onClick={handleSendBin}>
+        <button className="btn-primary mr-4" onClick={handleSendBin} disabled={address == ''}>
           Отправить bin...
         </button>
         <button className="btn-primary mr-4" onClick={handlePing}>
           Пинг
+        </button>
+        <button className="btn-primary mr-4" onClick={handleReset} disabled={address == ''}>
+          Сброс
         </button>
       </div>
       <div className="m-2 flex">

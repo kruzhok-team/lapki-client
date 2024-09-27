@@ -557,6 +557,43 @@ export class Flasher extends ClientWS {
             break;
           }
         }
+        break;
+      }
+      case 'ms-reset-result': {
+        const result = response.payload as DeviceCommentCode;
+        switch (result.code) {
+          case 0:
+            ManagerMS.addLog(`Выполнена операция сброса.`);
+            break;
+          case 1:
+            ManagerMS.addLog('Не удалось выполнить сброс устройства, так как оно не подключено.');
+            break;
+          case 2: {
+            const errorText = result.comment;
+            const errorLog = 'Возникла ошибка при попытке сбросить устройство';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${result.comment}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            ManagerMS.setAddress('');
+            break;
+          }
+          case 3:
+            ManagerMS.addLog('Переданное устройство для сброса не является МС-ТЮК');
+            break;
+          case 4: {
+            const errorText = result.comment;
+            const errorLog = 'Возникла ошибка при попытке сбросить устройство';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            break;
+          }
+        }
+        break;
       }
     }
   }

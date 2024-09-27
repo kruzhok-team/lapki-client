@@ -32,14 +32,13 @@ export const ManagerMSTab: React.FC = () => {
     setAddress('');
   }, [device]);
   useEffect(() => {
+    if (serverAddress == '' || addressBookSetting == null) return;
     setAddress(serverAddress);
     let found = false;
-    if (addressBookSetting) {
-      for (const addr of addressBookSetting) {
-        if (addr.address == serverAddress) {
-          found = true;
-          break;
-        }
+    for (const addr of addressBookSetting) {
+      if (addr.address == serverAddress) {
+        found = true;
+        break;
       }
     }
     if (!found) {
@@ -48,11 +47,7 @@ export const ManagerMSTab: React.FC = () => {
         address: serverAddress,
         type: '',
       };
-      if (!addressBookSetting) {
-        setAddressBookSetting([newRow]);
-      } else {
-        setAddressBookSetting([...addressBookSetting, newRow]);
-      }
+      setAddressBookSetting([...addressBookSetting, newRow]);
     }
   }, [serverAddress]);
   const handleGetAddress = () => {
@@ -71,16 +66,16 @@ export const ManagerMSTab: React.FC = () => {
   const handlePing = () => {
     if (!device) return;
     ManagerMS.ping(device.deviceID, address);
-    ManagerMS.addLog('Отправлен пинг на устройство');
+    ManagerMS.addLog('Отправлен пинг на устройство.');
   };
   const handleReset = () => {
     if (!device) return;
     ManagerMS.reset(device.deviceID, address);
-    ManagerMS.addLog('Отправлен запрос на сброс устройства');
+    ManagerMS.addLog('Отправлен запрос на сброс устройства.');
   };
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {
-      return 'Устройство отсутствует';
+      return 'Устройство отсутствует.';
     }
     return device.displayName();
   };

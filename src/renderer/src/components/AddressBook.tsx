@@ -71,13 +71,11 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           type="button"
           className="btn-primary flex items-center gap-3 pl-5"
           onClick={() => {
+            if (!addressBookSetting) return;
             const emptyRow: AddressData = { name: '', address: '', type: '' };
-            if (addressBookSetting != null) {
-              setAddressBookSetting([...addressBookSetting, emptyRow]);
-            } else {
-              setAddressBookSetting([emptyRow]);
-            }
+            setAddressBookSetting([...addressBookSetting, emptyRow]);
           }}
+          disabled={!addressBookSetting}
         >
           <AddIcon className="size-6" />
           Добавить

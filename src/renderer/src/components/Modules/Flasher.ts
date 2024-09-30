@@ -529,9 +529,16 @@ export class Flasher extends ClientWS {
             case 1:
               ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
               break;
-            case 2:
-              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг.');
+            case 2: {
+              const errorText = pingResult.comment;
+              const errorLog = 'Возникла ошибка при попытке отправить пинг';
+              if (errorText != '') {
+                ManagerMS.addLog(`${errorLog}. Текст ошибки ${errorText}`);
+              } else {
+                ManagerMS.addLog(`${errorLog}.`);
+              }
               break;
+            }
             case 3:
               ManagerMS.addLog(
                 'Не удалось отправить пинг, так как переданное устройство не является МС-ТЮК.'

@@ -17,8 +17,18 @@ export const defaultSettings = {
   },
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {
+    /**
+     * скорость передачи данных
+     */
     baudRate: 9600,
-    lineBreak: 'LF' as 'LF' | 'CR' | 'CR&LF' | 'Без',
+    /**
+     * символ переноса строки в конце сообщения от клиента на устройство
+     */
+    lineBreak: 'LF' as 'LF' | 'CR' | 'CRLF' | 'EMPTY',
+    /**
+     * Если true, то будет автоматическая прокрутка окна с логами
+     */
+    autoScroll: true,
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',

@@ -18,6 +18,7 @@ export class ManagerMS {
   static binStart(
     device: MSDevice,
     address: string,
+    verification: boolean = false,
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ) {
@@ -26,6 +27,7 @@ export class ManagerMS {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
       address: address,
+      verification: verification,
     });
   }
   static ping(deviceID: string, address: string) {

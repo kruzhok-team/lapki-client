@@ -150,6 +150,7 @@ export type MSBinStart = {
   deviceID: string;
   fileSize: number;
   address: string;
+  verification: boolean;
 };
 
 export type MSAddressAction = {

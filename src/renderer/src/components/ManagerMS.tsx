@@ -20,6 +20,11 @@ export const ManagerMSTab: React.FC = () => {
   const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
   const [address, setAddress] = useState<string>('');
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
+  /**
+   * Параметр, отправляемый загрузчику при запросе прошивки.
+   * Если true, то загрузчик потратит дополнительное время на проверку прошивки.
+   */
+  const [verification, setVerification] = useState<boolean>(false);
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -61,7 +66,13 @@ export const ManagerMSTab: React.FC = () => {
     if (!device) return;
     Flasher.setFile().then((isOpen: boolean) => {
       if (isOpen) {
-        ManagerMS.binStart(device, address, serialMonitorDevice, serialConnectionStatus);
+        ManagerMS.binStart(
+          device,
+          address,
+          verification,
+          serialMonitorDevice,
+          serialConnectionStatus
+        );
       }
     });
   };
@@ -95,9 +106,6 @@ export const ManagerMSTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адресная книга
         </button>
-        <button className="btn-primary mr-4" onClick={handleSendBin} disabled={address == ''}>
-          Отправить bin...
-        </button>
         <button className="btn-primary mr-4" onClick={handlePing} disabled={address == ''}>
           Пинг
         </button>
@@ -106,13 +114,17 @@ export const ManagerMSTab: React.FC = () => {
         </button>
       </div>
       <div className="m-2 flex">
+        <button className="btn-primary mr-4" onClick={handleSendBin} disabled={address == ''}>
+          Отправить bin...
+        </button>
         <div className="mr-4 flex w-40 items-center justify-between">
-          <Switch
-            checked={autoScroll}
-            onCheckedChange={() => {
-              setAutoScroll(!autoScroll);
-            }}
-          />
+          <Switch checked={verification} onCheckedChange={() => setVerification(!verification)} />
+          Верификация
+        </div>
+      </div>
+      <div className="m-2 flex">
+        <div className="mr-4 flex w-40 items-center justify-between">
+          <Switch checked={autoScroll} onCheckedChange={() => setAutoScroll(!autoScroll)} />
           Автопрокрутка
         </div>
         <button className="btn-primary" onClick={handleClear}>

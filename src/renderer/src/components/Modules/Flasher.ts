@@ -146,7 +146,11 @@ export class Flasher extends ClientWS {
   static flashingEnd(result: string, avrdudeMsg: string | undefined) {
     this.onFlashingChange(false);
     this.setFlasherFile(undefined);
-    this.setFlasherLog(result);
+    if (this.currentFlashingDevice instanceof ArduinoDevice) {
+      this.setFlasherLog(result);
+    } else {
+      ManagerMS.addLog(result);
+    }
     this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
     this.currentFlashingDevice = undefined;
   }
@@ -204,7 +208,12 @@ export class Flasher extends ClientWS {
     }
     this.currentFlashingDevice = device;
     this.refresh();
-    this.setFlasherLog('Идет загрузка...');
+    const loading: string = 'Идет загрузка...';
+    if (device instanceof ArduinoDevice) {
+      this.setFlasherLog(loading);
+    } else {
+      ManagerMS.addLog(loading);
+    }
   }
 
   static flashCompiler(

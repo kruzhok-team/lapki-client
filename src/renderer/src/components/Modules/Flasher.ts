@@ -82,7 +82,7 @@ export class Flasher extends ClientWS {
     this.setErrorMessage = setErrorMessage;
     this.setFlashResult = setFlashResult;
   }
-  /*
+  /**
     Добавляет устройство в список устройств
 
     @param {device} устройство для добавления

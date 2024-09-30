@@ -18,21 +18,16 @@ export const ManagerMSTab: React.FC = () => {
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
+  const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [address, setAddress] = useState<string>('');
-  const [autoScroll, setAutoScroll] = useState<boolean>(true);
-  /**
-   * Параметр, отправляемый загрузчику при запросе прошивки.
-   * Если true, то загрузчик потратит дополнительное время на проверку прошивки.
-   */
-  const [verification, setVerification] = useState<boolean>(false);
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
   // При изменении log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
-    if (autoScroll && logContainerRef.current) {
+    if (managerMSSetting?.autoScroll && logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  }, [log, autoScroll]);
+  }, [log, managerMSSetting]);
   useEffect(() => {
     setAddress('');
   }, [device]);
@@ -69,7 +64,7 @@ export const ManagerMSTab: React.FC = () => {
         ManagerMS.binStart(
           device,
           address,
-          verification,
+          managerMSSetting?.verification,
           serialMonitorDevice,
           serialConnectionStatus
         );
@@ -95,6 +90,9 @@ export const ManagerMSTab: React.FC = () => {
   const handleClear = () => {
     setLog(() => []);
   };
+  if (!managerMSSetting) {
+    return null;
+  }
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
@@ -118,13 +116,26 @@ export const ManagerMSTab: React.FC = () => {
           Отправить bin...
         </button>
         <div className="mr-4 flex w-40 items-center justify-between">
-          <Switch checked={verification} onCheckedChange={() => setVerification(!verification)} />
+          <Switch
+            checked={managerMSSetting.verification}
+            onCheckedChange={() =>
+              setManagerMSSetting({
+                ...managerMSSetting,
+                verification: !managerMSSetting.verification,
+              })
+            }
+          />
           Верификация
         </div>
       </div>
       <div className="m-2 flex">
         <div className="mr-4 flex w-40 items-center justify-between">
-          <Switch checked={autoScroll} onCheckedChange={() => setAutoScroll(!autoScroll)} />
+          <Switch
+            checked={managerMSSetting.autoScroll}
+            onCheckedChange={() =>
+              setManagerMSSetting({ ...managerMSSetting, autoScroll: !managerMSSetting.autoScroll })
+            }
+          />
           Автопрокрутка
         </div>
         <button className="btn-primary" onClick={handleClear}>

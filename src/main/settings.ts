@@ -27,6 +27,20 @@ export const defaultSettings = {
     grid: true,
   },
   addressBookMS: [{ name: '', address: '', type: '' }],
+  /**
+   * Параметры менеджера МС-ТЮК
+   */
+  managerMS: {
+    /**
+     * Параметр, отправляемый загрузчику при запросе прошивки.
+     * Если true, то загрузчик потратит дополнительное время на проверку прошивки.
+     */
+    verification: false,
+    /**
+     * Если true, то будет автоматическая прокрутка окна с логами
+     */
+    autoScroll: true,
+  },
 };
 
 export type Settings = typeof defaultSettings;

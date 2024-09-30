@@ -13,7 +13,6 @@ import {
   SerialRead,
   FlasherPayload,
   FlasherType,
-  MSPingResult,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -522,7 +521,7 @@ export class Flasher extends ClientWS {
         break;
       case 'ms-ping-result':
         {
-          const pingResult = response.payload as MSPingResult;
+          const pingResult = response.payload as DeviceCommentCode;
           switch (pingResult.code) {
             case 0:
               ManagerMS.addLog('Получен ответ устройства на пинг');
@@ -533,6 +532,22 @@ export class Flasher extends ClientWS {
             case 2:
               ManagerMS.addLog('Возникла ошибка при попытке отправить пинг.');
               break;
+            case 3:
+              ManagerMS.addLog(
+                'Не удалось отправить пинг, так как переданное устройство не является МС-ТЮК.'
+              );
+              break;
+            case 4: {
+              const errorText = pingResult.comment;
+              const errorLog =
+                'Не удалось отправить пинг на устройство из-за ошибки обработки JSON';
+              if (errorText != '') {
+                ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+              } else {
+                ManagerMS.addLog(`${errorLog}.`);
+              }
+              break;
+            }
           }
         }
         break;
@@ -556,6 +571,21 @@ export class Flasher extends ClientWS {
               ManagerMS.addLog(`${errorLog}.`);
             }
             ManagerMS.setAddress('');
+            break;
+          }
+          case 3:
+            ManagerMS.addLog(
+              'Не удалось узнать адрес, так как переданное устройство не является МС-ТЮК.'
+            );
+            break;
+          case 4: {
+            const errorText = getAddressStatus.comment;
+            const errorLog = 'Не удалось узнать адрес устройства из-за ошибки обработки JSON';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
             break;
           }
         }
@@ -582,11 +612,11 @@ export class Flasher extends ClientWS {
             break;
           }
           case 3:
-            ManagerMS.addLog('Переданное устройство для сброса не является МС-ТЮК');
+            ManagerMS.addLog('Переданное устройство для сброса не является МС-ТЮК.');
             break;
           case 4: {
             const errorText = result.comment;
-            const errorLog = 'Возникла ошибка при попытке сбросить устройство';
+            const errorLog = 'Не удалось сбросить устройство из-за ошибки обработки JSON';
             if (errorText != '') {
               ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
             } else {

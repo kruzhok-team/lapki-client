@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
@@ -38,6 +39,11 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
       onSelect(address);
     }
   };
+  const addAddressEntry = () => {
+    if (!addressBookSetting) return;
+    const emptyRow: AddressData = { name: '', address: '', type: '' };
+    setAddressBookSetting([...addressBookSetting, emptyRow]);
+  };
   return (
     <Modal
       {...props}
@@ -48,10 +54,10 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         setAddressBookSetting(addressBookSetting);
       }}
     >
-      <div>
-        <div className="mb-2 flex flex-col gap-1">
+      <div className="flex gap-2 pl-4">
+        <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {addressBookSetting?.length === 0 && (
-            <p className="text-text-inactive">Нет записей в книге</p>
+            <p className="mx-2 my-2 flex text-text-inactive">Нет записей в книге</p>
           )}
           {addressBookSetting?.map((field, index) => (
             <div key={getID(index)}>
@@ -67,19 +73,19 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           ))}
         </div>
 
-        <button
-          type="button"
-          className="btn-primary flex items-center gap-3 pl-5"
-          onClick={() => {
-            if (!addressBookSetting) return;
-            const emptyRow: AddressData = { name: '', address: '', type: '' };
-            setAddressBookSetting([...addressBookSetting, emptyRow]);
-          }}
-          disabled={!addressBookSetting}
-        >
-          <AddIcon className="size-6" />
-          Добавить
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            className="btn-secondary p-1"
+            onClick={addAddressEntry}
+            disabled={!addressBookSetting}
+          >
+            <AddIcon />
+          </button>
+          <button type="button" className="btn-secondary p-1">
+            <SubtractIcon />
+          </button>
+        </div>
       </div>
     </Modal>
   );

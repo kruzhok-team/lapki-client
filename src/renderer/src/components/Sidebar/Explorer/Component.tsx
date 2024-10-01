@@ -4,11 +4,14 @@ import { twMerge } from 'tailwind-merge';
 
 import { WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { ComponentProto } from '@renderer/types/platform';
 
 interface ComponentProps {
   name: string;
   isSelected: boolean;
   isDragging: boolean;
+  icon: React.ReactNode | undefined;
+  description: string | undefined;
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -17,13 +20,20 @@ interface ComponentProps {
 }
 
 export const Component: React.FC<ComponentProps> = (props) => {
-  const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
-  const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
+  const {
+    name,
+    isSelected,
+    isDragging,
+    onSelect,
+    onEdit,
+    onDelete,
+    onDragStart,
+    onDrop,
+    description,
+    icon,
+  } = props;
 
   const [dragOver, setDragOver] = useState(false);
-
-  const proto = editor.controller.platform?.getComponent(name);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key !== 'Delete') return;
@@ -53,7 +63,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
   };
 
   return (
-    <WithHint key={name} hint={proto?.description ?? ''} placement="right">
+    <WithHint key={name} hint={description ?? ''} placement="right">
       {(props) => (
         <button
           type="button"
@@ -73,7 +83,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {editor.controller.platform?.getFullComponentIcon(name)}
+          {icon}
           <p className="ml-2 line-clamp-1">{name}</p>
         </button>
       )}

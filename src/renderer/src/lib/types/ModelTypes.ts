@@ -44,6 +44,7 @@ export type EditorStatus = {
 export type EditorData = ReturnType<typeof emptyEditorData>;
 export type EditorDataPropertyName =
   | keyof EditorData
+  | 'elements.stateMachines'
   | `elements.${keyof StateMachine}`
   | `canvas.${keyof EditorStatus}`
   | `currentSm`;

@@ -60,6 +60,8 @@ export const ComponentsList: React.FC = () => {
           <Component
             key={name}
             name={name}
+            description={editor.controller.platform?.getComponent(name)?.description}
+            icon={editor.controller.platform?.getFullComponentIcon(name)}
             isSelected={name === selectedComponent}
             isDragging={name === dragName}
             onSelect={() => setSelectedComponent(name)}

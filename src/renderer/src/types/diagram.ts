@@ -108,6 +108,7 @@ export type Component = {
 };
 
 export type StateMachine = {
+  name?: string;
   states: { [id: string]: State };
   initialStates: { [id: string]: InitialState };
   finalStates: { [id: string]: FinalState };

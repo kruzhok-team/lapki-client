@@ -1,5 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
+import { s } from 'vitest/dist/reporters-5f784f42';
+
+import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { EventSelection } from '@renderer/lib/drawable';
 import { stateStyle } from '@renderer/lib/styles';
 import {
@@ -29,6 +32,7 @@ import {
   Elements,
   EventData,
   Meta,
+  StateMachine,
 } from '@renderer/types/diagram';
 
 import { Serializer } from './Serializer';
@@ -46,6 +50,22 @@ export class EditorModel {
     private resetEditor: () => void,
     private scaleEmitter: (scale: number) => void
   ) {}
+
+  createStateMachine(smId: string, data: StateMachine) {
+    if (this.data.elements[smId]) return;
+
+    this.data.elements.stateMachines[smId] = data;
+
+    this.triggerDataUpdate('elements.stateMachines');
+  }
+
+  deleteStateMachine(smId: string) {
+    if (!this.data.elements[smId]) return;
+
+    delete this.data.elements.stateMachines[smId];
+
+    this.triggerDataUpdate('elements.stateMachines');
+  }
 
   init(basename: string | null, name: string, elements: Elements) {
     // this.triggerDataUpdate('canvas');
@@ -101,8 +121,18 @@ export class EditorModel {
     };
   };
 
+  editStateMachine(smId: string, data: StateMachineData) {
+    const sm = this.data.elements.stateMachines[smId];
+
+    if (!sm) return;
+
+    sm.name = data.name;
+    sm.name = data.name;
+
+    this.triggerDataUpdate('elements.stateMachines');
+  }
+
   // TODO (L140-beep): разобраться с возвращаемым never
-  // TODO (L140-beep): триггерить апдейт при изменении currentSmId
   // TODO (L140-beep): сделать stateId необязательным
   useData<T extends EditorDataPropertyName>(
     smId: string,
@@ -119,6 +149,11 @@ export class EditorModel {
           return this.data.canvas[canvasId][propertyName.split('.')[1]];
         }
         return this.data[propertyName];
+      }
+
+      if (propertyName === 'elements.stateMachines') {
+        console.log(this.data);
+        return this.data['elements'].stateMachines;
       }
       return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
     };

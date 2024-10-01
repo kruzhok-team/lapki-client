@@ -1,5 +1,6 @@
 import { Point } from 'electron';
 
+import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
@@ -196,30 +197,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[''].controller.unwatch();
     this.controllers[''].isHead = false;
     let headCanvas = '';
-    let currentSm = 'G'; // Если данных нет, у нас по умолчанию создается МС 'G'
+    const currentSm = 'G'; // Если данных нет, у нас по умолчанию создается МС 'G'
     for (const smId in elements.stateMachines) {
-      const canvasId = generateId();
-      this.model.changeCurrentSm(smId);
-      const editor = new CanvasEditor(canvasId, this);
-      const controller = new CanvasController(
-        canvasId,
-        editor,
-        {
-          platformName: elements.stateMachines[smId].platform,
-        },
-        this
-      );
-      editor.setController(controller);
-      this.controllers[canvasId] = { controller, isHead: false };
+      const canvasId = this.createStateMachine(smId, elements.stateMachines[smId]);
       headCanvas = canvasId;
-      currentSm = smId;
       this.model.data.canvas[canvasId] = {
         isInitialized: true,
         isMounted: false,
         prevMounted: false,
       };
-      this.watch(controller);
-      this.setupDiagramEditorController(smId, controller);
     }
     this.controllers[headCanvas].isHead = true;
     this.model.makeStale();
@@ -446,6 +432,68 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     this.changeInitialStatePosition(smId, id, initialState.position, position, canUndo);
+  }
+
+  createStateMachine(smId: string, data: StateMachine) {
+    const canvasId = generateId();
+    this.model.changeCurrentSm(smId);
+    const editor = new CanvasEditor(canvasId, this);
+    const controller = new CanvasController(
+      canvasId,
+      editor,
+      {
+        platformName: data.platform,
+      },
+      this
+    );
+    editor.setController(controller);
+    this.controllers[canvasId] = { controller, isHead: false };
+    this.model.data.canvas[canvasId] = {
+      isInitialized: true,
+      isMounted: false,
+      prevMounted: false,
+    };
+    this.model.createStateMachine(smId, data);
+    this.watch(controller);
+    this.setupDiagramEditorController(smId, controller);
+
+    // TODO: Известить о создании машины состояний
+
+    return canvasId;
+  }
+
+  getCanvasBySmId(smId: string) {
+    for (const [canvasId, controller] of Object.entries(this.controllers)) {
+      if (controller.controller.stateMachinesSub[smId]) {
+        return canvasId;
+      }
+    }
+
+    return null;
+  }
+
+  editStateMachine(smId: string, data: StateMachineData) {
+    this.model.editStateMachine(smId, data);
+    // TODO: emit('editStateMachine', data)
+  }
+
+  deleteStateMachine(smId: string) {
+    const canvasId = this.getCanvasBySmId(smId);
+    if (!canvasId) return;
+    const controller = this.controllers[canvasId].controller;
+    controller.unwatch();
+
+    this.controllers[canvasId].isHead = false;
+    // TODO: Известить об удалении машины состояний
+
+    delete this.controllers[canvasId];
+    if (this.model.data.currentSm === smId) {
+      const newHeadCanvasId = Object.keys(this.controllers)[0];
+      const canvas = this.controllers[newHeadCanvasId];
+      this.controllers[newHeadCanvasId].isHead = true;
+      this.model.changeCurrentSm(Object.keys(canvas.controller.stateMachinesSub)[0]);
+    }
+    this.model.deleteStateMachine(smId);
   }
 
   changeInitialStatePosition(

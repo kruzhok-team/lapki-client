@@ -13,6 +13,8 @@ interface AddressBookModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (address: string) => void;
+  addressEnrtyEdit: (data: AddressData) => void;
+  addressEntryAdd: () => void;
 }
 
 export const AddressBookModal: React.FC<AddressBookModalProps> = ({
@@ -20,6 +22,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   setAddressBookSetting,
   onClose,
   onSelect,
+  addressEnrtyEdit,
+  addressEntryAdd,
   ...props
 }) => {
   const [idStorage, setIdStorage] = useState<number[]>([]);
@@ -38,11 +42,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
       onClose();
       onSelect(address);
     }
-  };
-  const addAddressEntry = () => {
-    if (!addressBookSetting) return;
-    const emptyRow: AddressData = { name: '', address: '', type: '' };
-    setAddressBookSetting([...addressBookSetting, emptyRow]);
   };
   return (
     <Modal
@@ -77,7 +76,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           <button
             type="button"
             className="btn-secondary p-1"
-            onClick={addAddressEntry}
+            onClick={addressEntryAdd}
             disabled={!addressBookSetting}
           >
             <AddIcon />

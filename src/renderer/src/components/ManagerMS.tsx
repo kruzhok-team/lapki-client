@@ -7,8 +7,10 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
+import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
+import { AddressEntryEditModal } from './AddressEntryEdit';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
@@ -21,6 +23,9 @@ export const ManagerMSTab: React.FC = () => {
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [address, setAddress] = useState<string>('');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
+  const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
+  const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
+  const [addressEntryEditData, setAddressEntryEditData] = useState<AddressData>();
   const logContainerRef = useRef<HTMLDivElement>(null);
   // При изменении log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
@@ -90,6 +95,45 @@ export const ManagerMSTab: React.FC = () => {
   const handleClear = () => {
     setLog(() => []);
   };
+  /**
+   * Проверка на наличие адреса в адресной книге
+   * @param address адрес МС-ТЮК
+   * @returns истина, если адрес уже встречается в адресной книге; undefined, если адресная книга не загрузилась (если она является null)
+   */
+  const isDuplicate = (address: string): boolean | undefined => {
+    if (!addressBookSetting) return undefined;
+    let found = false;
+    for (const addr of addressBookSetting) {
+      if (addr.address == address) {
+        found = true;
+        break;
+      }
+    }
+    return found;
+  };
+  /**
+   * Открытие модального окна для редактирования существующей записи в адресной книге
+   * @param data данные, которые нужно отредактированть
+   */
+  const addressEnrtyEdit = (data: AddressData) => {
+    setAddressEntryEditData(data);
+    openAddressEnrtyEdit();
+  };
+  /**
+   * Обновление адресной книги после редактирования
+   */
+  const addressEntryEditSubmitHandle = () => {
+    if (!addressBookSetting) return;
+    setAddressBookSetting(addressBookSetting);
+  };
+  /**
+   * Добавление новой записи в адресную книгу
+   * @param data запись, которую следует добавить
+   */
+  const addressEntryAddSubmitHandle = (data: AddressData) => {
+    if (!addressBookSetting) return;
+    setAddressBookSetting([...addressBookSetting, data]);
+  };
   if (!managerMSSetting) {
     return null;
   }
@@ -158,7 +202,25 @@ export const ManagerMSTab: React.FC = () => {
         onSelect={(selectedAddress: string) => {
           setAddress(selectedAddress);
         }}
+        addressEnrtyEdit={addressEnrtyEdit}
+        addressEntryAdd={openAddressEnrtyAdd}
       ></AddressBookModal>
+      <AddressEntryEditModal
+        data={addressEntryEditData}
+        isOpen={isAddressEnrtyEditOpen}
+        onClose={closeAddressEnrtyEdit}
+        isDuplicate={isDuplicate}
+        onSubmit={addressEntryEditSubmitHandle}
+        submitLabel="Сохранить"
+      ></AddressEntryEditModal>
+      <AddressEntryEditModal
+        data={undefined}
+        isOpen={isAddressEnrtyAddOpen}
+        onClose={closeAddressEnrtyAdd}
+        isDuplicate={isDuplicate}
+        onSubmit={addressEntryAddSubmitHandle}
+        submitLabel="Добавить"
+      ></AddressEntryEditModal>
     </section>
   );
 };

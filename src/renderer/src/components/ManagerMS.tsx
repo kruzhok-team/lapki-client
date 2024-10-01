@@ -10,7 +10,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { AddressEntryEditModal } from './AddressEntryEdit';
+import { AddressEntryEditModal } from './AddressEntryModal';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';

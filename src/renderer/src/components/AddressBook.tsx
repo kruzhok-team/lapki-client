@@ -8,7 +8,7 @@ import { AddressBookRow } from './AddressBookRow';
 
 interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
-  setAddressBookSetting: (value: AddressData[]) => Promise<any>;
+  setAddressBookSetting: (value: AddressData[]) => Promise<unknown>;
   isOpen: boolean;
   onClose: () => void;
   onSelect: (address: string) => void;

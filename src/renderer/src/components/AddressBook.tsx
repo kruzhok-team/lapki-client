@@ -37,11 +37,13 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     setIdCounter(id + 1);
     return id;
   };
-  const handleOnSelect = (address: string | undefined) => {
-    if (address != undefined) {
-      onClose();
-      onSelect(address);
-    }
+  // выбранная запись с адресом, undefined означает, что ни одна запись не выбрана
+  const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
+  const onRemove = () => {
+    if (!addressBookSetting || !selectedEntry) return;
+    setIdStorage(idStorage.toSpliced(selectedEntry, 1));
+    setAddressBookSetting(addressBookSetting.toSpliced(selectedEntry, 1));
+    setSelectedEntry(undefined);
   };
   return (
     <Modal
@@ -61,12 +63,16 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           {addressBookSetting?.map((field, index) => (
             <div key={getID(index)}>
               <AddressBookRow
+                isSelected={index == selectedEntry}
                 data={field}
-                onSelect={handleOnSelect}
-                onRemove={() => {
-                  setIdStorage(idStorage.toSpliced(index, 1));
-                  setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
+                onSelect={() => {
+                  if (index != selectedEntry) {
+                    setSelectedEntry(index);
+                  } else {
+                    setSelectedEntry(undefined);
+                  }
                 }}
+                onEdit={() => addressEnrtyEdit(field)}
               ></AddressBookRow>
             </div>
           ))}
@@ -81,7 +87,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           >
             <AddIcon />
           </button>
-          <button type="button" className="btn-secondary p-1">
+          <button type="button" className="btn-secondary p-1" onClick={onRemove}>
             <SubtractIcon />
           </button>
         </div>

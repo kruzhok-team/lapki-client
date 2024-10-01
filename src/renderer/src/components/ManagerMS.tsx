@@ -116,6 +116,7 @@ export const ManagerMSTab: React.FC = () => {
    * @param data данные, которые нужно отредактированть
    */
   const addressEnrtyEdit = (data: AddressData) => {
+    console.log(data);
     setAddressEntryEditData(data);
     openAddressEnrtyEdit();
   };

@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 
 import { AddressData } from '@renderer/types/FlasherTypes';
 
@@ -6,51 +6,52 @@ import { Modal } from './UI';
 import { TextInput } from './UI/TextInput';
 
 interface AddressEntryEditModalProps {
-  data: AddressData | undefined;
   isOpen: boolean;
   onClose: () => void;
   isDuplicate: (address: string) => boolean | undefined;
   onSubmit: (data: AddressData) => void;
   submitLabel: string;
+  form: UseFormReturn<AddressData>;
 }
 
 /**
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { data, isOpen, isDuplicate, onClose, onSubmit, submitLabel } = props;
+  const { isOpen, isDuplicate, onClose, onSubmit, submitLabel, form } = props;
   const {
     handleSubmit: hookHandleSubmit,
     register,
-    formState: { errors },
+    formState: { errors, dirtyFields },
     setError,
-    clearErrors,
-    reset,
-  } = useForm<AddressData>({
-    defaultValues: data,
-  });
-  const handleSubmit = hookHandleSubmit((data) => {
-    if (data.address == '') {
+  } = form;
+  const handleSubmit = hookHandleSubmit((submitData) => {
+    const sendSubmit = () => {
+      onSubmit(submitData);
+      onClose();
+    };
+    if (submitData.address != '' && !dirtyFields.address) {
+      sendSubmit();
+      return;
+    }
+    if (submitData.address == '') {
       setError('address', { message: 'Необходимо указать адрес' });
       return;
     }
-    if (data.address.length != 16) {
+    if (submitData.address.length != 16) {
       setError('address', { message: 'Длина адреса должна быть равна 16' });
       return;
     }
     const re: RegExp = /[0-9A-Fa-f]{6}/g;
-    if (!re.test(data.address)) {
+    if (!re.test(submitData.address)) {
       setError('address', { message: 'Адрес не является корректным шестнадцатеричным числом' });
       return;
     }
-    if (isDuplicate(data.address)) {
+    if (isDuplicate(submitData.address)) {
       setError('address', { message: 'Адрес уже содержится в книге' });
       return;
     }
-    clearErrors();
-    reset();
-    onSubmit(data);
-    onClose();
+    sendSubmit();
   });
   return (
     <Modal

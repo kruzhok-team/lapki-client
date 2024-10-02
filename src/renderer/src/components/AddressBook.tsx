@@ -47,7 +47,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   // выбранная запись с адресом, undefined означает, что ни одна запись не выбрана
   const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
   const onRemove = () => {
-    if (!addressBookSetting || !selectedEntry) return;
+    if (!addressBookSetting || selectedEntry == undefined) return;
     setIdStorage(idStorage.toSpliced(selectedEntry, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(selectedEntry, 1));
     setSelectedEntry(undefined);

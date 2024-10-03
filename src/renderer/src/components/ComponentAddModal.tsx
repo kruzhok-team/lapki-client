@@ -28,9 +28,10 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   ...props
 }) => {
   const modelController = useModelContext();
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const editor = modelController.getCurrentCanvas();
-  const currentSmId = modelController.model.useData('', 'currentSm');
-  const components = modelController.model.useData(currentSmId, 'elements.components') as {
+  const components = modelController.model.useData(stateMachines, 'elements.components') as {
     [id: string]: Component;
   };
 

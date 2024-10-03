@@ -21,8 +21,8 @@ export const emptyEditorData = () => ({
   name: null as string | null,
 
   elements: emptyElements(),
-  currentSm: '' as string,
   offset: { x: 0, y: 0 },
+  headControllerId: '',
   scale: 1,
   isStale: false,
 });
@@ -44,7 +44,7 @@ export type EditorStatus = {
 export type EditorData = ReturnType<typeof emptyEditorData>;
 export type EditorDataPropertyName =
   | keyof EditorData
-  | 'elements.stateMachines'
+  | 'elements.stateMachinesId'
   | `elements.${keyof StateMachine}`
   | `canvas.${keyof EditorStatus}`
   | `currentSm`;
@@ -138,6 +138,10 @@ export type ChangeEventParams = {
   event: EventSelection;
   newValue: Event | Action;
   canUndo?: boolean;
+};
+
+export type deleteStateMachineParams = {
+  smId: string;
 };
 
 export type DeleteEventParams = {

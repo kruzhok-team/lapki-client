@@ -32,15 +32,6 @@ export const Tabs: React.FC = () => {
 
     swapTabs(dragId, tabName);
   };
-  const getCanvasBySmId = (smId: string) => {
-    for (const canvasId in modelController.controllers) {
-      const controller = modelController.controllers[canvasId].controller;
-      if (controller.stateMachinesSub[smId]) {
-        return controller.app;
-      }
-    }
-    return null;
-  };
 
   if (items.length === 0) {
     return <NotInitialized />;
@@ -52,27 +43,26 @@ export const Tabs: React.FC = () => {
         className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current"
         tabIndex={-1}
       >
-        {items.map(({ type, name }) => (
+        {items.map((tab) => (
           <Tab
-            key={name}
-            isActive={activeTab === name}
-            isDragging={dragId === name}
-            draggable={type !== 'editor'}
-            type={type}
-            name={name}
-            showName={type !== 'editor'}
-            onDragStart={() => handleDrag(name)}
-            onDrop={() => handleDrop(name)}
+            key={tab.name}
+            isActive={activeTab === tab.name}
+            isDragging={dragId === tab.name}
+            draggable={tab.type !== 'editor'}
+            type={tab.type}
+            name={tab.name}
+            showName={true}
+            onDragStart={() => handleDrag(tab.name)}
+            onDrop={() => handleDrop(tab.name)}
             onMouseDown={() => {
-              const canvas = getCanvasBySmId(name);
-              if (!canvas) {
-                return;
+              if (tab.type === 'editor') {
+                modelController.model.changeHeadControllerId(tab.canvasId);
               }
-              modelController.setHeadCanvas(canvas.id);
-              modelController.model.changeCurrentSm(name);
-              setActiveTab(name);
+              setActiveTab(tab.name);
             }}
-            onClose={() => closeTab(name)}
+            onClose={() => {
+              closeTab(tab.name);
+            }}
           />
         ))}
       </section>
@@ -83,9 +73,7 @@ export const Tabs: React.FC = () => {
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
-            <DiagramEditor
-              editor={getCanvasBySmId(item.name) ?? modelController.getCurrentCanvas()}
-            />
+            <DiagramEditor editor={modelController.controllers[item.canvasId].app} />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />
           ) : (

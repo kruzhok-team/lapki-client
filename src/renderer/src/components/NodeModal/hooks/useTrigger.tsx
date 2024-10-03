@@ -11,8 +11,10 @@ import { Component } from '@renderer/types/diagram';
  */
 export const useTrigger = (addSystemComponents: boolean) => {
   const modelController = useModelContext();
-  const currentSmId = modelController.model.useData('', 'currentSm');
-  const componentsData = modelController.model.useData(currentSmId, 'elements.components') as {
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const componentsData = modelController.model.useData(stateMachines, 'elements.components') as {
     [id: string]: Component;
   };
   const editor = modelController.getCurrentCanvas();

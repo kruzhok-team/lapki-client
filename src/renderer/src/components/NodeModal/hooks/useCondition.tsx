@@ -12,8 +12,12 @@ import { Component, Condition, Variable as VariableData } from '@renderer/types/
  */
 export const useCondition = () => {
   const modelController = useModelContext();
-  const currentSmId = modelController.model.useData('', 'currentSm');
-  const componentsData = modelController.model.useData(currentSmId, 'elements.components') as {
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
+
+  const componentsData = modelController.model.useData([smId], 'elements.components') as {
     [id: string]: Component;
   };
   const editor = modelController.getCurrentCanvas();

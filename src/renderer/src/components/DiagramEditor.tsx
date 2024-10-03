@@ -24,9 +24,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
   const [canvasSettings] = useSettings('canvas');
   const modelController = useModelContext();
-  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
+  const headControllerId = modelController.model.useData([''], 'headControllerId');
+  console.log(headControllerId);
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0]; // TODO: Как понять в какую именно машину состояний мы добавляем?
+  const isMounted = modelController.model.useData([''], 'canvas.isMounted', editor.id) as boolean;
   const containerRef = useRef<HTMLDivElement>(null);
-  const currentSmId = modelController.model.useData('', 'currentSm');
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();
   // Дополнительные данные о родителе события
@@ -41,7 +44,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
     const handleDblclick = (position: Point) => {
       modelController.createState({
-        smId: currentSmId,
+        smId: smId,
         name: 'Состояние',
         events: [],
         dimensions: { width: 100, height: 50 }, // TODO (L140-beep): перепроверить
@@ -76,7 +79,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [currentSmId, editor, openEventsModal]);
+  }, [stateMachines, editor, openEventsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;
@@ -88,7 +91,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     if (!eventsModalParentData) return;
 
     modelController.changeEvent({
-      smId: currentSmId,
+      smId: smId,
       stateId: eventsModalParentData.state.id,
       event: eventsModalParentData.eventSelection,
       newValue: data,

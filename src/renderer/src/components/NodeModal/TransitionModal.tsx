@@ -12,8 +12,11 @@ import { useTrigger, useCondition, useEvents } from './hooks';
 
 export const TransitionModal: React.FC = () => {
   const modelController = useModelContext();
-  const currentSm = modelController.model.useData('', 'currentSm');
-  const sm = modelController.model.data.elements.stateMachines[currentSm];
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
+  const sm = modelController.model.data.elements.stateMachines[smId];
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);
   const [transition, setTransition] = useState<Transition | null>(null);
@@ -46,7 +49,7 @@ export const TransitionModal: React.FC = () => {
     e.preventDefault();
     if (isInitialTransition && transition && transitionId) {
       modelController.changeTransition({
-        smId: currentSm,
+        smId: smId,
         id: transitionId,
         sourceId: transition.sourceId,
         targetId: transition.targetId,
@@ -129,7 +132,7 @@ export const TransitionModal: React.FC = () => {
     // Если редактируем состояние
     if (transition && transitionId) {
       modelController.changeTransition({
-        smId: currentSm,
+        smId: smId,
         id: transitionId,
         sourceId: transition.sourceId,
         targetId: transition.targetId,
@@ -147,7 +150,7 @@ export const TransitionModal: React.FC = () => {
     // Если создаем новое
     if (newTransition) {
       modelController.createTransition({
-        smId: currentSm,
+        smId: smId,
         sourceId: newTransition.sourceId,
         targetId: newTransition.targetId,
         color,

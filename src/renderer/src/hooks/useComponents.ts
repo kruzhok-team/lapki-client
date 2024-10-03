@@ -10,8 +10,12 @@ export const useComponents = () => {
   const modelController = useModelContext();
   const model = modelController.model;
   const editor = modelController.getCurrentCanvas();
-  const currentSm = model.useData('', 'currentSm');
-  const components = model.useData(currentSm, 'elements.components') as {
+
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const currentSm = stateMachines[0];
+  const components = model.useData(stateMachines, 'elements.components') as {
     [id: string]: ComponentData;
   };
 

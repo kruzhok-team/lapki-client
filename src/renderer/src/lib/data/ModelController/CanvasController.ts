@@ -21,6 +21,7 @@ import {
   CreateTransitionParams,
   DeleteDrawableParams,
   DeleteEventParams,
+  DeleteStateMachineParams,
   EditComponentParams,
   Layer,
   LinkStateParams,
@@ -144,11 +145,20 @@ export type CanvasControllerEvents = {
   changeStateName: ChangeStateNameParams;
   changeFinalStatePosition: ChangePosition;
   deleteEventAction: DeleteEventParams;
+  deleteStateMachine: DeleteStateMachineParams;
 };
 
 export type CanvasData = {
   platformName: string;
 };
+
+// Это разделение нужно при удалении машин состояний.
+// scheme и common все равно контроллерам, если связанные с ними машины состояний удалят
+// А specific становится не нужным, если его машину состояний удалят
+// specific - канвас для работы с определенной машиной состояний
+// scheme - схемотехнический экран
+// common - для работы сразу со всеми машинами состояний
+export type CanvasControllerType = 'specific' | 'scheme' | 'common';
 
 export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   app: CanvasEditor;
@@ -166,14 +176,21 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   scale = 1;
   offset = { x: 0, y: 0 }; // Нигде не меняется?
   isMounted = false;
-  binded = {};
+  binded = {}; // Функции обработчики
   model: ModelController;
-  constructor(id: string, app: CanvasEditor, canvasData: CanvasData, model: ModelController) {
+  type: CanvasControllerType;
+  constructor(
+    id: string,
+    type: CanvasControllerType,
+    app: CanvasEditor,
+    canvasData: CanvasData,
+    model: ModelController
+  ) {
     super();
     this.id = id;
     this.app = app;
     this.initializer = new Initializer(app, this);
-
+    this.type = type;
     this.states = new StatesController(app);
     this.transitions = new TransitionsController(app);
     this.notes = new NotesController(app);
@@ -803,8 +820,16 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
   };
 
+  deleteStateMAchine(args: DeleteStateMachineParams) {
+    const { id } = args;
+    if (!this.stateMachinesSub[id]) return;
+
+    delete this.stateMachinesSub[id];
+  }
+
   // Отлавливание дефолтных событий для контроллера
   watch() {
+    this.model.on('deleteStateMachine', this.deleteStateMAchine);
     this.model.on('loadData', () => this.loadData());
     this.model.on('initEvents', () => this.transitions.initEvents());
     this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));

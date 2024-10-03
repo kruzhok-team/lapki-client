@@ -93,7 +93,7 @@ export type PossibleActions = {
   // createComponent: { args: CreateComponentParams };
   // deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
-  changeComponentPosition: { name: string; startPosition: Point; endPosition: Point };
+  changeComponentPosition: { smId: string; name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
 
   createNote: { smId: string; id: string; params: CreateNoteParams };
@@ -131,14 +131,14 @@ export const actionFunctions: ActionFunctions = {
       { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
       false
     ),
-    undo: sM.deleteState.bind(sM, { smId: sM.model.data.currentSm, id: args.newStateId }, false),
+    undo: sM.deleteState.bind(sM, { smId: args.smId, id: args.newStateId }, false),
   }),
-  deleteState: (sM, { id, stateData }) => ({
-    redo: sM.deleteState.bind(sM, { smId: sM.model.data.currentSm, id }, false),
+  deleteState: (sM, { id, smId, stateData }) => ({
+    redo: sM.deleteState.bind(sM, { smId, id }, false),
     undo: sM.createState.bind(
       sM,
       {
-        smId: sM.model.data.currentSm,
+        smId,
         name: stateData.name,
         id,
         dimensions: stateData.dimensions,
@@ -152,9 +152,9 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  changeStateName: (sM, { id, name, prevName }) => ({
-    redo: sM.changeStateName.bind(sM, sM.model.data.currentSm, id, name, false),
-    undo: sM.changeStateName.bind(sM, sM.model.data.currentSm, id, prevName, false),
+  changeStateName: (sM, { smId, id, name, prevName }) => ({
+    redo: sM.changeStateName.bind(sM, smId, id, name, false),
+    undo: sM.changeStateName.bind(sM, smId, id, prevName, false),
   }),
 
   changeStateEvents: (sM, { args, prevActions }) => ({
@@ -168,39 +168,17 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  linkState: (sM, { parentId, childId }) => ({
-    redo: sM.linkState.bind(
-      sM,
-      { smId: sM.model.data.currentSm, parentId, childId, canBeInitial: false },
-      false
-    ),
-    undo: sM.unlinkState.bind(sM, { smId: sM.model.data.currentSm, id: childId, canUndo: false }),
+  linkState: (sM, { smId, parentId, childId }) => ({
+    redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
+    undo: sM.unlinkState.bind(sM, { smId, id: childId, canUndo: false }),
   }),
-  unlinkState: (sM, { parentId, params }) => ({
+  unlinkState: (sM, { smId, parentId, params }) => ({
     redo: sM.unlinkState.bind(sM, { ...params, canUndo: false }),
-    undo: sM.linkState.bind(
-      sM,
-      { smId: sM.model.data.currentSm, parentId, childId: params.id },
-      false
-    ),
+    undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id }, false),
   }),
-  changeStatePosition: (sM, { id, startPosition, endPosition }) => ({
-    redo: sM.changeStatePosition.bind(
-      sM,
-      sM.model.data.currentSm,
-      id,
-      startPosition,
-      endPosition,
-      false
-    ),
-    undo: sM.changeStatePosition.bind(
-      sM,
-      sM.model.data.currentSm,
-      id,
-      endPosition,
-      startPosition,
-      false
-    ),
+  changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
+    redo: sM.changeStatePosition.bind(sM, smId, id, startPosition, endPosition, false),
+    undo: sM.changeStatePosition.bind(sM, smId, id, endPosition, startPosition, false),
   }),
 
   // TODO (L140-beep): Разобраться с targetId.
@@ -260,18 +238,14 @@ export const actionFunctions: ActionFunctions = {
       { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
       false
     ),
-    undo: sM.deleteChoiceState.bind(
-      sM,
-      { ...args, id: args.id!, smId: sM.model.data.currentSm },
-      false
-    ),
+    undo: sM.deleteChoiceState.bind(sM, { ...args, id: args.id!, smId: args.smId }, false),
   }),
-  deleteChoiceState: (sM, { id, stateData }) => ({
-    redo: sM.deleteChoiceState.bind(sM, { smId: sM.model.data.currentSm, id }, false),
+  deleteChoiceState: (sM, { id, smId, stateData }) => ({
+    redo: sM.deleteChoiceState.bind(sM, { smId: smId, id }, false),
     undo: sM.createChoiceState.bind(
       sM,
       {
-        smId: sM.model.data.currentSm,
+        smId,
         dimensions: stateData.dimensions,
         id,
         position: stateData.position,
@@ -416,23 +390,9 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
-  changeComponentPosition: (sM, { name, startPosition, endPosition }) => ({
-    redo: sM.changeComponentPosition.bind(
-      sM,
-      sM.model.data.currentSm,
-      name,
-      startPosition,
-      endPosition,
-      false
-    ),
-    undo: sM.changeComponentPosition.bind(
-      sM,
-      sM.model.data.currentSm,
-      name,
-      endPosition,
-      startPosition,
-      false
-    ),
+  changeComponentPosition: (sM, { smId, name, startPosition, endPosition }) => ({
+    redo: sM.changeComponentPosition.bind(sM, smId, name, startPosition, endPosition, false),
+    undo: sM.changeComponentPosition.bind(sM, smId, name, endPosition, startPosition, false),
   }),
   swapComponents: (sM, { smId, name1, name2 }) => ({
     redo: sM.swapComponents.bind(sM, { smId, name1, name2 }, false),

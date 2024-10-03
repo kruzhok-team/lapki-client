@@ -30,8 +30,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const model = modelController.model;
-  const currentSm = model.useData('', 'currentSm');
-  const componentsData = model.useData(currentSm, 'elements.components') as {
+  // TODO: Как понять с какой машиной состояний мы работает в данный момент?
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const componentsData = model.useData(stateMachines, 'elements.components') as {
     [id: string]: Component;
   };
   const controller = editor.controller;

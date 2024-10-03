@@ -11,10 +11,12 @@ import { Component } from './Component';
 export const ComponentsList: React.FC = () => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const currentSm = modelController.model.useData('', 'currentSm');
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const editor = modelController.getCurrentCanvas();
-  const isInitialized = model.useData('', 'canvas.isInitialized', editor.id) as boolean;
-  const components = model.useData(currentSm, 'elements.components') as {
+  const isInitialized = model.useData([''], 'canvas.isInitialized', editor.id) as boolean;
+  const components = model.useData(stateMachines, 'elements.components') as {
     [id: string]: ComponentData;
   };
 

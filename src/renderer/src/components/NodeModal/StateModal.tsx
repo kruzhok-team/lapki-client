@@ -10,7 +10,10 @@ import { useTrigger, useEvents, useCondition } from './hooks';
 
 export const StateModal: React.FC = () => {
   const modelController = useModelContext();
-  const currentSm = modelController.model.useData('', 'currentSm');
+  const headControllerId = modelController.model.useData([], 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
   const editor = modelController.getCurrentCanvas();
 
   const [isOpen, open, close] = useModal(false);
@@ -106,7 +109,7 @@ export const StateModal: React.FC = () => {
     };
 
     modelController.changeStateEvents({
-      smId: currentSm,
+      smId: smId,
       id: state.id,
       eventData: {
         trigger: getTrigger(),

@@ -18,7 +18,7 @@ export const Explorer: React.FC = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const isInitialized = modelController.model.useData(
-    '',
+    [''],
     'canvas.isInitialized',
     editor.id
   ) as boolean;

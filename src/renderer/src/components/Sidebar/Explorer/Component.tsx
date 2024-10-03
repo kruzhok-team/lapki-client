@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { WithHint } from '@renderer/components/UI';
-import { useModelContext } from '@renderer/store/ModelContext';
-import { ComponentProto } from '@renderer/types/platform';
 
 interface ComponentProps {
   name: string;

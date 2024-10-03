@@ -38,17 +38,22 @@ export const Hierarchy: React.FC = () => {
   const controller = useModelContext();
   const model = controller.model;
   const [theme] = useSettings('theme');
-  const smId = controller.model.useData('', 'currentSm');
-  const states = model.useData(smId, 'elements.states') as { [id: string]: State };
-  const initialStates = model.useData(smId, 'elements.initialStates') as {
+  const headControllerId = controller.model.useData([''], 'headControllerId');
+  const stateMachines = Object.keys(controller.controllers[headControllerId].stateMachinesSub);
+  const states = model.useData(stateMachines, 'elements.states') as { [id: string]: State };
+  const initialStates = model.useData(stateMachines, 'elements.initialStates') as {
     [id: string]: InitialState;
   };
-  const finalStates = model.useData(smId, 'elements.finalStates') as { [id: string]: FinalState };
-  const choiceStates = model.useData(smId, 'elements.choiceStates') as {
+  const finalStates = model.useData(stateMachines, 'elements.finalStates') as {
+    [id: string]: FinalState;
+  };
+  const choiceStates = model.useData(stateMachines, 'elements.choiceStates') as {
     [id: string]: ChoiceState;
   };
-  const transitions = model.useData(smId, 'elements.transitions') as { [id: string]: Transition };
-  const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
+  const transitions = model.useData(stateMachines, 'elements.transitions') as {
+    [id: string]: Transition;
+  };
+  const notes = model.useData(stateMachines, 'elements.notes') as { [id: string]: Note };
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -163,8 +168,10 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [smId, choiceStates, finalStates, initialStates, notes, states, transitions]);
+  }, [stateMachines, choiceStates, finalStates, initialStates, notes, states, transitions]);
 
+  // TODO: Пофиксить иерархию, чтобы на ней отображались разные МС
+  const smId = stateMachines[0];
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
   const handleExpandItem = (item: TreeItem<HierarchyItemData>) =>

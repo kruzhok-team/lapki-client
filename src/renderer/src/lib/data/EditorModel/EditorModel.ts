@@ -1,7 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-import { s } from 'vitest/dist/reporters-5f784f42';
-
 import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { EventSelection } from '@renderer/lib/drawable';
 import { stateStyle } from '@renderer/lib/styles';
@@ -56,7 +54,12 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId] = data;
 
-    this.triggerDataUpdate('elements.stateMachines');
+    this.triggerDataUpdate('elements.stateMachinesId');
+  }
+
+  changeHeadControllerId(id: string) {
+    this.data.headControllerId = id;
+    this.triggerDataUpdate('headControllerId');
   }
 
   deleteStateMachine(smId: string) {
@@ -64,7 +67,7 @@ export class EditorModel {
 
     delete this.data.elements.stateMachines[smId];
 
-    this.triggerDataUpdate('elements.stateMachines');
+    this.triggerDataUpdate('elements.stateMachinesId');
   }
 
   init(basename: string | null, name: string, elements: Elements) {
@@ -74,13 +77,9 @@ export class EditorModel {
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = elements;
+    this.data.headControllerId = '';
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
     this.triggerDataUpdate('basename', 'name', 'elements');
-  }
-
-  changeCurrentSm(newValue: string) {
-    this.data.currentSm = newValue;
-    this.triggerDataUpdate('currentSm');
   }
 
   initCanvasData() {
@@ -129,7 +128,7 @@ export class EditorModel {
     sm.name = data.name;
     sm.name = data.name;
 
-    this.triggerDataUpdate('elements.stateMachines');
+    this.triggerDataUpdate('elements.stateMachinesId');
   }
 
   // TODO (L140-beep): разобраться с возвращаемым never
@@ -151,8 +150,7 @@ export class EditorModel {
         return this.data[propertyName];
       }
 
-      if (propertyName === 'elements.stateMachines') {
-        console.log(this.data);
+      if (propertyName === 'elements.stateMachinesId') {
         return this.data['elements'].stateMachines;
       }
       return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
@@ -169,11 +167,12 @@ export class EditorModel {
 
     for (const name of propertyNames) {
       if (!isShallow(name)) {
-        const subName = name.split('.')[1];
-        const prevValue = this.data.elements.stateMachines[this.data.currentSm][subName];
+        // const subName = name.split('.')[1];
+        // Очень не хорошо тут..
+        const prevValue = this.data.elements.stateMachines;
         // Ссылку нужно обновлять только у объектов
         if (typeof prevValue === 'object' && prevValue !== null) {
-          this.data.elements.stateMachines[this.data.currentSm][subName] = {
+          this.data.elements.stateMachines = {
             ...prevValue,
           };
         }
@@ -301,11 +300,6 @@ export class EditorModel {
     this.triggerDataUpdate('elements.states');
 
     return true;
-  }
-
-  changeCurrenstSm(newSmId: string) {
-    this.data.currentSm = newSmId;
-    this.triggerDataUpdate('currentSm');
   }
 
   linkState(smId: string, parentId: string, childId: string) {

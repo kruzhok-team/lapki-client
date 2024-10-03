@@ -10,7 +10,7 @@ import { useModal } from './useModal';
 export const useStateMachines = () => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const currentSm = model.useData('', 'currentSm');
+  // const currentSm = model.useData([''], 'currentSm');
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<StateMachineData>({

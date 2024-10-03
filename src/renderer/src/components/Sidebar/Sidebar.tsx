@@ -19,7 +19,7 @@ import { Loader } from './Loader';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
-import { StateMachinesList } from './StateMachinesTab';
+// import { StateMachinesList } from './StateMachinesTab';
 
 import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
@@ -68,7 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
-  const isEditorDataStale = modelController.model.useData('', 'isStale');
+  const isEditorDataStale = modelController.model.useData([''], 'isStale');
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);
@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setOpenData={setOpenData}
       />,
       <Explorer />,
-      <StateMachinesList />,
+      // <StateMachinesList />,
       <CompilerTab
         openData={openData}
         openCompilerSettings={openCompilerSettings}

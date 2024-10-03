@@ -34,6 +34,8 @@ export class FilesManager {
     elements.stateMachines['G'] = emptyStateMachine();
     elements.stateMachines['G'].platform = platformIdx;
     this.modelController.initData(null, 'Без названия', elements as any);
+
+    return this.modelController.model.data.headControllerId;
     // this.modelController.model.init(null, 'Без названия', elements as any);
   }
 

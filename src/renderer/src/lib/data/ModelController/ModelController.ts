@@ -99,7 +99,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   history = new History(this);
   vacantComponents: { [id: string]: ComponentEntry[] } = {};
   platforms: { [id: string]: PlatformManager } = {};
-  controllers: { [id: string]: { controller: CanvasController; isHead: boolean } } = {};
+  // По умолчанию главным считается "призрачный" канвас.
+  // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
+  controllers: { [id: string]: CanvasController } = {};
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
 
@@ -110,39 +112,44 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     ModelController.instance = this;
   }
 
+  // Создаем пустой контроллер с пустыми данными и назначаем его главным
   emptyController() {
     const editor = new CanvasEditor('', this);
-    const controller = new CanvasController('', editor, { platformName: '' }, this);
+    const controller = new CanvasController('', 'specific', editor, { platformName: '' }, this);
     editor.setController(controller);
     this.controllers = {};
-    this.controllers[''] = { controller, isHead: true };
+    this.controllers[''] = controller;
+    this.headControllerId = '';
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
-    this.model.changeCurrentSm('');
-  }
-
-  setHeadCanvas(headCanvasId: string) {
-    for (const canvasId in this.controllers) {
-      if (canvasId === headCanvasId) {
-        this.controllers[canvasId].isHead = true;
-        continue;
-      }
-      this.controllers[canvasId].isHead = false;
-    }
+    this.model.changeHeadControllerId('');
   }
 
   reset() {
     for (const controllerId in this.controllers) {
       if (this.model.data.canvas[controllerId].isMounted) {
-        const controller = this.controllers[controllerId].controller;
-        controller.unwatch();
-        this.controllers[controllerId].isHead = false;
+        const controller = this.controllers[controllerId];
+        this.unwatch(controller);
       }
     }
     this.emptyController();
   }
 
+  // Берем машины состояний, который обрабатываются главным канвасом
+  getHeadControllerStateMachines() {
+    const stateMachines: { [id: string]: StateMachine } = {};
+    const controller = this.controllers[this.model.data.headControllerId];
+    for (const stateMachineId in controller.stateMachinesSub) {
+      const sm = this.model.data.elements.stateMachines[stateMachineId];
+      if (!sm) continue;
+      stateMachines[stateMachineId] = sm;
+    }
+
+    return stateMachines;
+  }
+
   // TODO: setup SchemeScreenController с другими подписками
+  // Подписываем контроллер на нужные нам данные
   setupDiagramEditorController(smId: string, controller: CanvasController) {
     const sm = this.model.data.elements.stateMachines[smId];
     if (!sm) return;
@@ -159,11 +166,22 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // return controller;
   }
 
+  // Подписываемся на события контроллера
+  // Большинство событий исходит от ModelController, но сигналы, связаные с событиями, отслеживаемыми в Shape,
+  // такие как клик, двойной клик перемещением в определенное место, вызываются в контроллерах
   private watch(controller: CanvasController) {
     controller.on('isMounted', this.setMountStatus);
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
     controller.on('createTransitionFromController', this.onCreateTransitionModal);
+  }
+
+  private unwatch(controller: CanvasController) {
+    controller.off('isMounted', this.setMountStatus);
+    controller.off('linkState', this.linkState);
+    controller.off('selectState', this.selectState);
+    controller.off('createTransitionFromController', this.onCreateTransitionModal);
+    controller.unwatch();
   }
 
   private onCreateTransitionModal = (args: { source: string; target: string }) => {
@@ -194,10 +212,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   initData(basename: string | null, filename: string, elements: Elements) {
     this.reset();
     this.model.init(basename, filename, elements);
-    this.controllers[''].controller.unwatch();
-    this.controllers[''].isHead = false;
+    this.controllers[''].unwatch();
     let headCanvas = '';
-    const currentSm = 'G'; // Если данных нет, у нас по умолчанию создается МС 'G'
     for (const smId in elements.stateMachines) {
       const canvasId = this.createStateMachine(smId, elements.stateMachines[smId]);
       headCanvas = canvasId;
@@ -207,12 +223,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         prevMounted: false,
       };
     }
-    this.controllers[headCanvas].isHead = true;
+    this.model.changeHeadControllerId(headCanvas);
     this.model.makeStale();
     this.history.clear();
     this.model.initCanvasData();
     this.initPlatform();
-    this.model.changeCurrenstSm(currentSm);
   }
 
   loadData() {
@@ -235,7 +250,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   selectComponent(id: string) {
     this.removeSelection();
 
-    // TODO: Откуда брать id машины состояний?
+    // TODO: Откуда брать id машины состояний? UPDATE: Доделать
     this.model.changeComponentSelection(this.getSmId(id, 'components'), id, true);
     this.emit('selectComponent', { id: id, smId: '' });
   }
@@ -436,10 +451,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createStateMachine(smId: string, data: StateMachine) {
     const canvasId = generateId();
-    this.model.changeCurrentSm(smId);
     const editor = new CanvasEditor(canvasId, this);
     const controller = new CanvasController(
       canvasId,
+      'specific',
       editor,
       {
         platformName: data.platform,
@@ -447,7 +462,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this
     );
     editor.setController(controller);
-    this.controllers[canvasId] = { controller, isHead: false };
+    this.controllers[canvasId] = controller;
     this.model.data.canvas[canvasId] = {
       isInitialized: true,
       isMounted: false,
@@ -457,19 +472,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);
 
-    // TODO: Известить о создании машины состояний
+    // TODO: Известить о создании машины состояний?
 
     return canvasId;
-  }
-
-  getCanvasBySmId(smId: string) {
-    for (const [canvasId, controller] of Object.entries(this.controllers)) {
-      if (controller.controller.stateMachinesSub[smId]) {
-        return canvasId;
-      }
-    }
-
-    return null;
   }
 
   editStateMachine(smId: string, data: StateMachineData) {
@@ -478,20 +483,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteStateMachine(smId: string) {
-    const canvasId = this.getCanvasBySmId(smId);
-    if (!canvasId) return;
-    const controller = this.controllers[canvasId].controller;
-    controller.unwatch();
+    const controller = this.controllers[this.model.data.headControllerId];
 
-    this.controllers[canvasId].isHead = false;
-    // TODO: Известить об удалении машины состояний
-
-    delete this.controllers[canvasId];
-    if (this.model.data.currentSm === smId) {
+    this.emit('deleteStateMachine', { id: smId });
+    // Сделать общий канвас канвасом по умолчанию?
+    if (!Object.keys(controller.stateMachinesSub) && controller.type === 'specific') {
+      this.unwatch(controller);
+      delete this.controllers[this.headControllerId];
       const newHeadCanvasId = Object.keys(this.controllers)[0];
-      const canvas = this.controllers[newHeadCanvasId];
-      this.controllers[newHeadCanvasId].isHead = true;
-      this.model.changeCurrentSm(Object.keys(canvas.controller.stateMachinesSub)[0]);
+      this.modal.changeHeadControllerId(newHeadCanvasId);
     }
     this.model.deleteStateMachine(smId);
   }
@@ -793,57 +793,63 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   linkState = (args: LinkStateParams, canUndo = true) => {
     const { parentId, childId, addOnceOff = true, canBeInitial = true } = args;
-    const smId = args.smId ?? this.model.data.currentSm;
-    const parent = this.model.data.elements.stateMachines[smId].states[parentId];
-    const child = this.model.data.elements.stateMachines[smId].states[childId];
-    if (!parent || !child) return;
+    const stateMachines = this.getHeadControllerStateMachines();
+    for (const smId in stateMachines) {
+      // const smId = args.smId ?? this.model.data.currentSm;
+      const parent = this.model.data.elements.stateMachines[smId].states[parentId];
+      const child = this.model.data.elements.stateMachines[smId].states[childId];
+      if (!parent || !child) continue;
 
-    let numberOfConnectedActions = 0;
+      let numberOfConnectedActions = 0;
 
-    // Проверка на то что состояние является, тем на которое есть переход из начального
-    // TODO(bryzZz) Вынести в функцию
-    const stateTransitions: Transition[] = this.getAllByTargetId(smId, childId)[0] ?? [];
-    const transitionFromInitialState = stateTransitions.find(
-      ({ sourceId }) =>
-        this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
-    );
-
-    if (transitionFromInitialState) {
-      this.setInitialState(smId, parentId, canUndo);
-      numberOfConnectedActions += 2;
-    }
-
-    this.model.linkState(smId, parentId, childId);
-    this.changeStatePosition(smId, childId, child.position, { x: 0, y: 0 }, false);
-
-    this.emit('linkState', args);
-
-    // Перелинковка переходов
-    //! Нужно делать до создания перехода из начального состояния
-    this.emit('linkTransitions', { smId: smId, stateId: childId });
-    // Заметка: Если что, можно будет пройтись по канвас контроллерам
-
-    // Если не было начального состояния, им станет новое
-    if (canBeInitial && this.getSiblings(smId, childId, child.parentId, 'states')[0].length === 0) {
-      this.changeStatePosition(
-        smId,
-        childId,
-        child.position,
-        { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
-        false
+      // Проверка на то что состояние является, тем на которое есть переход из начального
+      // TODO(bryzZz) Вынести в функцию
+      const stateTransitions: Transition[] = this.getAllByTargetId(smId, childId)[0] ?? [];
+      const transitionFromInitialState = stateTransitions.find(
+        ({ sourceId }) =>
+          this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
       );
-      this.createInitialStateWithTransition(smId, childId, canUndo);
-      numberOfConnectedActions += 2;
-    }
 
-    if (canUndo) {
-      this.history.do({
-        type: 'linkState',
-        args: { smId, parentId, childId },
-        numberOfConnectedActions,
-      });
-      if (addOnceOff) {
-        this.emit('addDragendStateSig', { smId, stateId: childId });
+      if (transitionFromInitialState) {
+        this.setInitialState(smId, parentId, canUndo);
+        numberOfConnectedActions += 2;
+      }
+
+      this.model.linkState(smId, parentId, childId);
+      this.changeStatePosition(smId, childId, child.position, { x: 0, y: 0 }, false);
+
+      this.emit('linkState', args);
+
+      // Перелинковка переходов
+      //! Нужно делать до создания перехода из начального состояния
+      this.emit('linkTransitions', { smId: smId, stateId: childId });
+      // Заметка: Если что, можно будет пройтись по канвас контроллерам
+
+      // Если не было начального состояния, им станет новое
+      if (
+        canBeInitial &&
+        this.getSiblings(smId, childId, child.parentId, 'states')[0].length === 0
+      ) {
+        this.changeStatePosition(
+          smId,
+          childId,
+          child.position,
+          { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
+          false
+        );
+        this.createInitialStateWithTransition(smId, childId, canUndo);
+        numberOfConnectedActions += 2;
+      }
+
+      if (canUndo) {
+        this.history.do({
+          type: 'linkState',
+          args: { smId, parentId, childId },
+          numberOfConnectedActions,
+        });
+        if (addOnceOff) {
+          this.emit('addDragendStateSig', { smId, stateId: childId });
+        }
       }
     }
   };
@@ -1005,7 +1011,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
-        args: { name, startPosition, endPosition },
+        args: { smId, name, startPosition, endPosition },
       });
     }
   }
@@ -1601,48 +1607,51 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   copySelected = () => {
-    const currentSm = this.model.data.currentSm;
-    const [id, nodeToCopy] =
-      [...Object.entries(this.model.data.elements.stateMachines[currentSm].states)].find(
-        (value) => value[1].selection
-      ) ||
-      [...Object.entries(this.model.data.elements.stateMachines[currentSm].choiceStates)].find(
-        (state) => state[1].selection
-      ) ||
-      [...Object.entries(this.model.data.elements.stateMachines[currentSm].transitions)].find(
-        (transition) => transition[1].selection
-      ) ||
-      [...Object.entries(this.model.data.elements.stateMachines[currentSm].notes)].find(
-        (note) => note[1].selection
-      ) ||
-      [];
+    const stateMachines = this.getHeadControllerStateMachines();
+    for (const smId in stateMachines) {
+      const [id, nodeToCopy] =
+        [...Object.entries(this.model.data.elements.stateMachines[smId].states)].find(
+          (value) => value[1].selection
+        ) ||
+        [...Object.entries(this.model.data.elements.stateMachines[smId].choiceStates)].find(
+          (state) => state[1].selection
+        ) ||
+        [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].find(
+          (transition) => transition[1].selection
+        ) ||
+        [...Object.entries(this.model.data.elements.stateMachines[smId].notes)].find(
+          (note) => note[1].selection
+        ) ||
+        [];
 
-    if (!nodeToCopy || !id) return;
+      if (!nodeToCopy || !id) continue;
 
-    // Тип нужен чтобы отделить ноды при вставке
-    let copyType: CopyType = 'state';
-    if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
-    if (this.isTransition(nodeToCopy)) copyType = 'transition';
-    if (this.isNote(nodeToCopy)) copyType = 'note';
+      // Тип нужен чтобы отделить ноды при вставке
+      let copyType: CopyType = 'state';
+      if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
+      if (this.isTransition(nodeToCopy)) copyType = 'transition';
+      if (this.isNote(nodeToCopy)) copyType = 'note';
 
-    // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
-    if (id !== this.copyData?.data.id) {
-      this.pastePositionOffset = 0;
+      // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
+      if (id !== this.copyData?.data.id) {
+        this.pastePositionOffset = 0;
+      }
+
+      this.copyData = {
+        smId: smId,
+        type: copyType,
+        data: { ...(structuredClone(nodeToCopy) as any), id: id },
+      };
+      break;
     }
-
-    this.copyData = {
-      type: copyType,
-      data: { ...(structuredClone(nodeToCopy) as any), id: id },
-    };
   };
 
   pasteSelected = () => {
     if (!this.copyData) {
-      throw new Error('aaa');
+      throw new Error('No copy data!');
     }
-    const { type, data } = this.copyData;
-    // TODO: откуда брать id машины состояний?
-    const smId = this.model.data.currentSm;
+    const { type, data, smId } = this.copyData;
+
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
       const newId = this.model.createState({
@@ -1770,9 +1779,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   getCurrentCanvas() {
-    const currentController = [...Object.values(this.controllers)].find((value) => value.isHead);
-    if (!currentController) return this.controllers[''].controller.app;
-    return currentController.controller.app;
+    return this.controllers[this.headControllerId].app;
   }
 
   duplicateSelected = () => {
@@ -1782,51 +1789,63 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   selectState = (args: { id: string }) => {
     const { id } = args;
-    const state = this.model.data.elements.stateMachines[this.model.data.currentSm].states[id];
-    if (!state) return;
+    const stateMachines = this.getHeadControllerStateMachines();
+    for (const smId in stateMachines) {
+      const state = this.model.data.elements.stateMachines[smId].states[id];
+      if (!state) continue;
 
-    this.removeSelection();
+      this.removeSelection();
 
-    this.model.changeStateSelection(this.model.data.currentSm, id, true);
+      this.model.changeStateSelection(smId, id, true);
 
-    this.emit('selectState', { smId: this.model.data.currentSm, id: id });
+      this.emit('selectState', { smId, id: id });
+      break;
+    }
   };
 
   selectChoiceState(id: string) {
-    // TODO: Откуда брать id машины состояний?
-    const state =
-      this.model.data.elements.stateMachines[this.model.data.currentSm].choiceStates[id];
-    if (!state) return;
+    const stateMachines = this.getHeadControllerStateMachines();
 
-    this.removeSelection();
+    for (const smId in stateMachines) {
+      const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
+      if (!state) continue;
 
-    this.model.changeChoiceStateSelection('', id, true);
+      this.removeSelection();
 
-    this.emit('selectChoice', { smId: '', id: id });
+      this.model.changeChoiceStateSelection('', id, true);
+
+      this.emit('selectChoice', { smId: '', id: id });
+      break;
+    }
   }
 
   selectTransition(id: string) {
-    const smId = this.model.data.currentSm;
-    const transition = this.model.data.elements.stateMachines[smId].transitions[id];
-    if (!transition) return;
+    const stateMachines = this.getHeadControllerStateMachines();
 
-    this.removeSelection();
+    for (const smId in stateMachines) {
+      const transition = this.model.data.elements.stateMachines[smId].transitions[id];
+      if (!transition) continue;
 
-    this.model.changeTransitionSelection(smId, id, true);
+      this.removeSelection();
 
-    this.emit('selectTransition', { smId: smId, id: id });
+      this.model.changeTransitionSelection(smId, id, true);
+
+      this.emit('selectTransition', { smId: smId, id: id });
+      break;
+    }
   }
 
   selectNote(id: string) {
-    const smId = this.model.data.currentSm;
-    const note = this.model.data.elements.stateMachines[smId].notes[id];
-    if (!note) return;
+    const stateMachines = this.getHeadControllerStateMachines();
 
-    this.removeSelection();
-
-    this.model.changeNoteSelection(smId, id, true);
-
-    this.emit('selectNote', { smId: smId, id: id });
+    for (const smId in stateMachines) {
+      const note = this.model.data.elements.stateMachines[smId].notes[id];
+      if (!note) continue;
+      this.removeSelection();
+      this.model.changeNoteSelection(smId, id, true);
+      this.emit('selectNote', { smId: smId, id: id });
+      break;
+    }
   }
 
   // TODO: Доделать
@@ -1843,26 +1862,30 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   getVacantComponents(): ComponentEntry[] {
     if (!this.platforms) return [];
-    if (!this.model.data.currentSm) return [];
-    const sm = this.model.data.elements.stateMachines[this.model.data.currentSm];
-    const components = sm.components;
-    const vacant: ComponentEntry[] = [];
-    const platform = this.platforms[sm.platform];
-    if (!platform) {
-      throw new Error('aaaaaaa');
+    const stateMachines = this.getHeadControllerStateMachines();
+    for (const smId in stateMachines) {
+      const sm = this.model.data.elements.stateMachines[smId];
+      const components = sm.components;
+      const vacant: ComponentEntry[] = [];
+      const platform = this.platforms[sm.platform];
+      if (!platform) {
+        throw new Error('No platform loaded!');
+      }
+      for (const idx in platform.data.components) {
+        const compo = platform.data.components[idx];
+        if (compo.singletone && components.hasOwnProperty(idx)) continue;
+        vacant.push({
+          idx,
+          name: compo.name ?? idx,
+          img: compo.img ?? 'unknown',
+          description: compo.description ?? '',
+          singletone: compo.singletone ?? false,
+        });
+      }
+      return vacant;
     }
-    for (const idx in platform.data.components) {
-      const compo = platform.data.components[idx];
-      if (compo.singletone && components.hasOwnProperty(idx)) continue;
-      vacant.push({
-        idx,
-        name: compo.name ?? idx,
-        img: compo.img ?? 'unknown',
-        description: compo.description ?? '',
-        singletone: compo.singletone ?? false,
-      });
-    }
-    return vacant;
+
+    return [];
   }
 
   /**
@@ -1901,28 +1924,30 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   createTransitionFromController(args: { source: string; target: string }) {
-    const currentSmId = this.model.data.currentSm;
-    const sm = this.model.data.elements.stateMachines[currentSmId];
-    const sourceType = sm.states[args.source]
-      ? 'states'
-      : sm.choiceStates
-      ? 'choiceStates'
-      : 'finalStates';
+    const stateMachines = this.getHeadControllerStateMachines();
+    for (const smId in stateMachines) {
+      const sm = this.model.data.elements.stateMachines[smId];
+      const sourceType = sm.states[args.source]
+        ? 'states'
+        : sm.choiceStates
+        ? 'choiceStates'
+        : 'finalStates';
 
-    const targetType = sm.states[args.source]
-      ? 'states'
-      : sm.choiceStates
-      ? 'choiceStates'
-      : 'finalStates';
-    const sourceSm = this.getSmId(args.source, sourceType);
-    const targetSm = this.getSmId(args.target, targetType);
+      const targetType = sm.states[args.source]
+        ? 'states'
+        : sm.choiceStates
+        ? 'choiceStates'
+        : 'finalStates';
+      const sourceSm = this.getSmId(args.source, sourceType);
+      const targetSm = this.getSmId(args.target, targetType);
 
-    if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
+      if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
 
-    this.createTransition({
-      smId: sourceSm,
-      sourceId: args.source,
-      targetId: args.target,
-    });
+      this.createTransition({
+        smId: sourceSm,
+        sourceId: args.source,
+        targetId: args.target,
+      });
+    }
   }
 }

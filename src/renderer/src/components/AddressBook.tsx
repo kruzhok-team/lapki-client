@@ -72,7 +72,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         return v;
       }
     });
-    console.log(newBook);
     setAddressBookSetting(newBook);
   };
   /**
@@ -91,6 +90,12 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     onSelect(index);
     addressEnrtyEdit(data);
   };
+  const { handleSubmit: hookHandleSubmit } = useForm();
+  const handleSubmit = hookHandleSubmit(() => {
+    if (selectedEntry == undefined || addressBookSetting == null) return;
+    onSubmit(addressBookSetting[selectedEntry].address);
+    onClose();
+  });
   return (
     <div>
       <Modal
@@ -101,6 +106,9 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           if (!addressBookSetting) return;
           setAddressBookSetting(addressBookSetting);
         }}
+        onSubmit={handleSubmit}
+        submitDisabled={selectedEntry == undefined}
+        submitLabel="Выбрать"
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">

@@ -3,6 +3,8 @@
 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { verify } from 'crypto';
+
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
@@ -34,14 +36,7 @@ export const ManagerMSTab: React.FC = () => {
   useEffect(() => {
     if (serverAddress == '' || addressBookSetting == null) return;
     setAddress(serverAddress);
-    let found = false;
-    for (const addr of addressBookSetting) {
-      if (addr.address == serverAddress) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
+    if (!isDuplicate(serverAddress)) {
       const newRow = {
         name: '',
         address: serverAddress,

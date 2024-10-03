@@ -36,7 +36,12 @@ export const defaultSettings = {
     animations: true,
     grid: true,
   },
-  addressBookMS: [{ name: '', address: '', type: '' }],
+  /**
+   * Записи адресной книги МС-ТЮК.
+   *
+   * Первым элементов является заголовок таблицы, он всегда должен присутствовать.
+   */
+  addressBookMS: [{ name: 'Имя', address: 'Адрес', type: 'Тип' }],
   /**
    * Параметры менеджера МС-ТЮК
    */

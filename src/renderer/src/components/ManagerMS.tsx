@@ -3,8 +3,6 @@
 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { verify } from 'crypto';
-
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';

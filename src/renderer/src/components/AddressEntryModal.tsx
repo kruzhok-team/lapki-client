@@ -24,10 +24,12 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     register,
     formState: { errors, dirtyFields },
     setError,
+    clearErrors,
   } = form;
   const handleSubmit = hookHandleSubmit((submitData) => {
     const sendSubmit = () => {
       onSubmit(submitData);
+      clearErrors();
       onClose();
     };
     if (submitData.address != '' && !dirtyFields.address) {

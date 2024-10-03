@@ -136,7 +136,12 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             >
               <AddIcon />
             </button>
-            <button type="button" className="btn-secondary p-1" onClick={onRemove}>
+            <button
+              type="button"
+              className="btn-secondary p-1"
+              onClick={onRemove}
+              disabled={selectedEntry == undefined}
+            >
               <SubtractIcon />
             </button>
           </div>

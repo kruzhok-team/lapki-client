@@ -57,19 +57,20 @@ export function preloadPlatforms(callback: () => void) {
           const err = unwrapEither(eData);
           platformsErrors.set(url, err);
         } else {
-          const data = unwrapEither(eData);
-          Object.entries(data.platform).forEach(([key, platform]) => {
-            if (platforms.has(key)) {
-              const platformName = platform.name ? ` (${platform.name})` : '';
-              const newErr = `Обнаружен дубликат платформы ${key}${platformName}. `;
-              if (platformsErrors.get(key)) {
-                platformsErrors.set(key, platformsErrors.get(key) + '\n' + newErr);
-              } else {
-                platformsErrors.set(key, newErr);
-              }
+          const platform = unwrapEither(eData);
+          // Object.entries(data).forEach(([platform]) => {
+          if (platforms.has(platform.id)) {
+            const platformName = platform.name ? ` (${platform.name})` : '';
+            const newErr = `Обнаружен дубликат платформы ${platform.id}${platformName}. `;
+            if (platformsErrors.get(platform.id)) {
+              platformsErrors.set(platform.id, platformsErrors.get(platform.id) + '\n' + newErr);
+            } else {
+              platformsErrors.set(platform.id, newErr);
             }
-            platforms.set(key, platform);
-          });
+          }
+          platforms.set(platform.id, platform);
+          // }
+          // );
         }
       });
       platformsLoaded = true;

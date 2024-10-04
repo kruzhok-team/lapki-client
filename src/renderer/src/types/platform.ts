@@ -87,5 +87,5 @@ export type PlatformInfo = {
   hidden: boolean;
 };
 
-// TODO(L140-beep): разобраться с этим
+// TODO(L140-beep): Раньше в одном файле находилось несколько платформ, а JSONCodec проверяет тип Platforms.
 export type Platforms = Platform;

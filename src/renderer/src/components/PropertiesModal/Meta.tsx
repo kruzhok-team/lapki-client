@@ -31,7 +31,7 @@ export const Meta: React.FC<MetaProps> = ({ form }) => {
       <h3 className="mb-1 text-xl">Метаданные</h3>
 
       <div className="mb-2 flex flex-col gap-1">
-        {fields.length === 0 && <p className="text-text-inactive">Метаданных нет</p>}n
+        {fields.length === 0 && <p className="text-text-inactive">Метаданных нет</p>}
 
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-start gap-1">

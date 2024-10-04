@@ -19,7 +19,7 @@ export class Device {
     return this.name;
   }
 
-  disaplySerialName(): string {
+  displaySerialName(): string {
     return this.displayName();
   }
 }
@@ -54,7 +54,7 @@ export class MSDevice extends Device {
   displayName(): string {
     return `${this.name} (${this.portNames[0]})`;
   }
-  disaplySerialName(): string {
-    return `${this.name} (${this.portNames[3]})`
+  displaySerialName(): string {
+    return `${this.name} (${this.portNames[3]})`;
   }
 }

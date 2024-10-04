@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { ReactComponent as CheckIcon } from '@renderer/assets/icons/check.svg';
+import { ReactComponent as CloneIcon } from '@renderer/assets/icons/clone.svg';
 import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
@@ -58,6 +59,11 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) =
       <MenuItem onClick={() => editor.controller.pasteSelected()}>
         <PasteIcon className="size-6 flex-shrink-0" /> Вставить
         <span className="ml-auto">Ctrl+V</span>
+      </MenuItem>
+
+      <MenuItem onClick={() => editor.controller.duplicateSelected()}>
+        <CopyIcon className="size-6 flex-shrink-0" /> Дублировать
+        <span className="ml-auto">Ctrl+D</span>
       </MenuItem>
       <MenuItem className="relative justify-between" closeable={false}>
         Цвет фона

@@ -665,6 +665,9 @@ export class EditorModel {
       id = generateId(Object.keys(this.data.elements.notes)),
       text,
       placeInCenter = false,
+      fontSize,
+      backgroundColor,
+      textColor,
     } = params;
     let position = params.position;
 
@@ -680,6 +683,9 @@ export class EditorModel {
     this.data.elements.notes[id] = {
       text,
       position,
+      fontSize,
+      backgroundColor,
+      textColor,
     };
 
     this.triggerDataUpdate('elements.notes');

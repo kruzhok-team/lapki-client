@@ -1,9 +1,11 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { ReactComponent as CheckIcon } from '@renderer/assets/icons/check.svg';
+import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as FontSizeIcon } from '@renderer/assets/icons/font_size.svg';
+import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ColorInput } from '@renderer/components/UI';
 import { Note } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
@@ -47,6 +49,15 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) =
     <ContextMenu onClose={onClose}>
       <MenuItem onClick={() => editor.controller.notes.emit('change', note)}>
         <EditIcon className="size-6 flex-shrink-0" /> Редактировать
+      </MenuItem>
+      <MenuItem onClick={() => editor.controller.copySelected()}>
+        <CopyIcon className="size-6 flex-shrink-0" /> Копировать
+        <span className="ml-auto">Ctrl+C</span>
+      </MenuItem>
+
+      <MenuItem onClick={() => editor.controller.pasteSelected()}>
+        <PasteIcon className="size-6 flex-shrink-0" /> Вставить
+        <span className="ml-auto">Ctrl+V</span>
       </MenuItem>
       <MenuItem className="relative justify-between" closeable={false}>
         Цвет фона

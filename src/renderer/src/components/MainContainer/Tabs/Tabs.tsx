@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor } from '@renderer/components';
+import { ManagerMSTab } from '@renderer/components/ManagerMS';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { Tab as TabType } from '@renderer/types/tabs';
@@ -46,6 +47,8 @@ export const Tabs: React.FC = () => {
         return <CodeEditor initialValue={item.code} language={item.language} />;
       case 'serialMonitor':
         return <SerialMonitorTab />;
+      case 'managerMS':
+        return <ManagerMSTab />;
       default:
         return undefined;
     }

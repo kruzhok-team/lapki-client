@@ -8,13 +8,15 @@ import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
+import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { Device, FlashResult } from '@renderer/types/FlasherTypes';
+import { FlashResult } from '@renderer/types/FlasherTypes';
 
+import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
+import { ManagerMS } from '../Modules/ManagerMS';
 import {
-  SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
@@ -44,6 +46,12 @@ export const Loader: React.FC<FlasherProps> = ({
     setLog: setSerialLog,
     addDeviceMessage,
   } = useSerialMonitor();
+  const {
+    device: deviceMS,
+    setDevice: setDeviceMS,
+    setLog: setLogMS,
+    setAddress: setAddressMS,
+  } = useManagerMS();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -83,21 +91,15 @@ export const Loader: React.FC<FlasherProps> = ({
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
     }
-    if (
-      serialMonitorDevice &&
-      serialMonitorDevice.deviceID == currentDeviceID &&
-      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
-    ) {
-      /*
-      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
-      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
-      */
-      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
-    }
     if (flasherFile) {
-      Flasher.flash(currentDevice);
+      Flasher.flash(currentDevice, serialMonitorDevice, serialConnectionStatus);
     } else {
-      Flasher.flashCompiler(compilerData!.binary!, currentDevice);
+      Flasher.flashCompiler(
+        compilerData!.binary!,
+        currentDevice,
+        serialMonitorDevice,
+        serialConnectionStatus
+      );
     }
   };
 
@@ -182,12 +184,12 @@ export const Loader: React.FC<FlasherProps> = ({
     openMsgModal(msg);
   };
 
-  // добавление вкладки с сообщением от avrdude
+  // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
   const handleAddAvrdudeTab = () => {
-    closeTab('avrdude');
+    closeTab('Прошивка');
     openTab({
       type: 'code',
-      name: 'avrdude',
+      name: 'Прошивка',
       code: flashResult?.report() ?? '',
       language: 'txt',
     });
@@ -213,6 +215,16 @@ export const Loader: React.FC<FlasherProps> = ({
     });
   };
 
+  const handleAddManagerMSTab = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    setDeviceMS(curDevice as MSDevice);
+    closeTab('Менеджер МС-ТЮК');
+    openTab({
+      type: 'managerMS',
+      name: 'Менеджер МС-ТЮК',
+    });
+  };
+
   useEffect(() => {
     window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
       //console.log('hasAvrdude', has);
@@ -234,6 +246,7 @@ export const Loader: React.FC<FlasherProps> = ({
       setSerialConnectionStatus,
       setSerialLog
     );
+    ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS);
     Flasher.initReader(new FileReader());
   }, []);
 
@@ -270,9 +283,11 @@ export const Loader: React.FC<FlasherProps> = ({
   }, [connectionStatus, setSerialConnectionStatus]);
 
   useEffect(() => {
-    if (!serialMonitorDevice) return;
-    if (!devices.get(serialMonitorDevice.deviceID)) {
+    if (serialMonitorDevice && !devices.get(serialMonitorDevice.deviceID)) {
       SerialMonitor.setDevice(undefined);
+    }
+    if (deviceMS && !devices.get(deviceMS.deviceID)) {
+      setDeviceMS(undefined);
     }
   }, [devices]);
 
@@ -368,6 +383,73 @@ export const Loader: React.FC<FlasherProps> = ({
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
+  const deviceInfoDisplay = (device: Device | undefined) => {
+    if (!device) return;
+    if (device.isMSDevice()) {
+      const MSDevice = device as MSDevice;
+      let portNames = '';
+      for (let i = 0; i < MSDevice.portNames.length; i++) {
+        portNames = portNames + ' ' + MSDevice.portNames[i];
+      }
+      return (
+        <div>
+          <div className="flex items-center">{MSDevice.name}</div>
+          <p>Порты: {portNames}</p>
+        </div>
+      );
+    } else {
+      const ArduinoDevice = device as ArduinoDevice;
+      return (
+        <div>
+          <div className="flex items-center">{ArduinoDevice.name}</div>
+          <p>Серийный номер: {ArduinoDevice.serialID}</p>
+          <p>Порт: {ArduinoDevice.portName}</p>
+          <p>Контроллер: {ArduinoDevice.controller}</p>
+          <p>Программатор: {ArduinoDevice.programmer}</p>
+        </div>
+      );
+    }
+  };
+  const buttonsDisplay = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    if (!curDevice || !curDevice.isMSDevice()) {
+      return (
+        <div>
+          <div className="flex justify-between gap-2">
+            <button
+              className="btn-primary mb-2 w-full"
+              onClick={handleFlash}
+              disabled={flashButtonDisabled()}
+            >
+              Загрузить
+            </button>
+            <button
+              className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
+              onClick={handleFileChoose}
+              disabled={isFlashing || avrdudeBlock}
+            >
+              {flasherFile ? '✖' : '…'}
+            </button>
+          </div>
+          {flasherFile ? (
+            <p className="mb-2 rounded bg-primaryActive text-white">
+              из файла <span className="font-medium">{flasherFile}</span>
+            </p>
+          ) : (
+            ''
+          )}
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
+            Менеджер МС-ТЮК
+          </button>
+        </div>
+      );
+    }
+  };
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -431,45 +513,19 @@ export const Loader: React.FC<FlasherProps> = ({
               )}
               onClick={() => setCurrentDevice(key)}
             >
-              {devices.get(key)?.name + ' (' + devices.get(key)?.portName + ')'}
+              {devices.get(key)?.displayName()}
             </button>
           ))}
         </div>
         <div className="mb-2 h-64 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
           {[...devices.keys()].map((key) => (
             <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
-              <div className="flex items-center">{devices.get(key)?.name}</div>
-              <p>Серийный номер: {devices.get(key)?.serialID}</p>
-              <p>Порт: {devices.get(key)?.portName}</p>
-              <p>Контроллер: {devices.get(key)?.controller}</p>
-              <p>Программатор: {devices.get(key)?.programmer}</p>
+              {deviceInfoDisplay(devices.get(key))}
             </div>
           ))}
         </div>
         {avrdudeCheck()}
-        <div className="flex justify-between gap-2">
-          <button
-            className="btn-primary mb-2 w-full"
-            onClick={handleFlash}
-            disabled={flashButtonDisabled()}
-          >
-            Загрузить
-          </button>
-          <button
-            className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
-            onClick={handleFileChoose}
-            disabled={isFlashing || avrdudeBlock}
-          >
-            {flasherFile ? '✖' : '…'}
-          </button>
-        </div>
-        {flasherFile ? (
-          <p className="mb-2 rounded bg-primaryActive text-white">
-            из файла <span className="font-medium">{flasherFile}</span>
-          </p>
-        ) : (
-          ''
-        )}
+        {buttonsDisplay()}
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}

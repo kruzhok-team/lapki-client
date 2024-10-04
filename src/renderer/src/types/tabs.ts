@@ -17,4 +17,9 @@ export interface SerialMonitorTab {
   name: string;
 }
 
-export type Tab = EditorTab | CodeTab | SerialMonitorTab;
+export interface ManagerMSTab {
+  type: 'managerMS';
+  name: string;
+}
+
+export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

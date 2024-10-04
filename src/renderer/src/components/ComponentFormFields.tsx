@@ -10,8 +10,8 @@ import { ColorInput, Select } from './UI';
 
 interface ComponentFormFieldsProps {
   showMainData: boolean;
-  protoParameters: ComponentProto['parameters'];
-
+  protoParameters: ComponentProto['constructorParameters'];
+  protoInitializationParameters: ComponentProto['initializationParameters'];
   parameters: ComponentData['parameters'];
   setParameters: (data: ComponentData['parameters']) => void;
   name: string;
@@ -24,6 +24,7 @@ interface ComponentFormFieldsProps {
 export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   showMainData,
   protoParameters,
+  protoInitializationParameters,
   parameters,
   name,
   setParameters,
@@ -31,8 +32,9 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   errors,
   setErrors,
 }) => {
+  const allParameters = { ...protoParameters, ...protoInitializationParameters };
   const handleInputChange = (name: string, value: string) => {
-    const type = protoParameters[name]?.type;
+    const type = allParameters[name]?.type;
 
     if (
       !['label', 'labelColor'].includes(name) &&
@@ -65,19 +67,19 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     name = name.replaceAll(' ', '_');
     setName(name);
   };
-  const protoParametersArray = Object.entries(protoParameters);
+  const protoParametersArray = Object.entries(allParameters);
 
   // Первоначальное создание объекта ошибок
   useEffect(() => {
     setErrors(
       Object.fromEntries(
-        Object.entries(protoParameters).map(([idx, param]) => {
+        Object.entries(allParameters).map(([idx, param]) => {
           const name = param.name ?? idx;
           return [name, ''];
         })
       )
     );
-  }, [protoParameters, setErrors]);
+  }, [protoParameters, protoInitializationParameters, setErrors]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -118,7 +120,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
       {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
         const value = parameters[name] ?? '';
-        const type = protoParameters[name].type;
+        const type = allParameters[name].type;
         const error = errors[name];
 
         if (Array.isArray(type)) {

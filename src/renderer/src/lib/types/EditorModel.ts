@@ -75,6 +75,9 @@ export interface CreateNoteParams {
   position: Point;
   text: string;
   placeInCenter?: boolean;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: number;
 }
 
 export type AddComponentParams = Omit<ComponentData, 'order'> & {

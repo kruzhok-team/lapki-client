@@ -9,6 +9,7 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
   CGMLMeta,
+  CGMLNote,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -24,6 +25,7 @@ import {
   Event,
   FinalState,
   ChoiceState,
+  Note,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 import { isString } from '@renderer/utils';
@@ -462,6 +464,42 @@ function getVisualFlag(
   return visual;
 }
 
+function getNotes(rawNotes: {[id: string]: CGMLNote}) {
+  const notes: { [id: string]: Note } = {};
+  for (const noteId in rawNotes) {
+    const rawNote = rawNotes[noteId];
+    const formatNote = rawNote.unsupportedDataNodes.find((value) => value.key === 'dLapkiNoteFormat');
+    const note: Note = rawNote;
+    if (!formatNote) {
+      notes[noteId] = rawNote;
+      continue
+    };
+
+    const parsedLines = formatNote.content.split('\n\n')
+    const parsedParameters = parsedLines.map((value) => value.split('/'))
+
+    for (const [parameterName, parameterValue] of parsedParameters) {
+      switch (parameterName) {
+        case 'fontSize':
+          note.fontSize = +parameterValue;
+          break;
+        case 'bgColor':
+          note.backgroundColor = parameterValue;
+          break;
+        case 'textColor':
+          note.textColor = parameterValue;
+          break;
+        default:
+          break;
+      }
+    }
+
+    notes[noteId] = note;
+  }
+
+  return notes;
+}
+
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
@@ -498,7 +536,7 @@ export function importGraphml(
     elements.meta = rawElements.meta.values;
     elements.initialStates = getInitialStates(sm.initialStates);
     elements.finalStates = getFinals(sm.finals);
-    elements.notes = sm.notes;
+    elements.notes = getNotes(sm.notes);
     const [stateVisual, states] = getStates(sm.states);
     elements.states = states;
     const [transitionVisual, transitions] = getTransitions(sm.transitions);

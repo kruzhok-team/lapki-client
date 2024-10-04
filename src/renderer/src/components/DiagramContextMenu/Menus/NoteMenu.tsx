@@ -62,7 +62,7 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) =
       </MenuItem>
 
       <MenuItem onClick={() => editor.controller.duplicateSelected()}>
-        <CopyIcon className="size-6 flex-shrink-0" /> Дублировать
+        <CloneIcon className="size-6 flex-shrink-0" /> Дублировать
         <span className="ml-auto">Ctrl+D</span>
       </MenuItem>
       <MenuItem className="relative justify-between" closeable={false}>

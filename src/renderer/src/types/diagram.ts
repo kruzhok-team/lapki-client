@@ -88,6 +88,9 @@ export type Note = {
   text: string;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: number;
 };
 
 // Это описание типа схемы которая хранится в json файле

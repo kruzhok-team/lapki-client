@@ -10,7 +10,8 @@ import { useModal } from './useModal';
 export const useStateMachines = () => {
   const modelController = useModelContext();
   const model = modelController.model;
-  // const currentSm = model.useData([''], 'currentSm');
+
+  // const currentSm = model.useData('', 'currentSm');
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<StateMachineData>({
@@ -23,44 +24,41 @@ export const useStateMachines = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddStateMachine = () => {
-    openAdd();
+    // openAdd();
   };
 
   const onRequestEditStateMachine = (idx: string, smId: string) => {
-    const sm = modelController.model.data.elements.stateMachines[smId];
-
-    if (!sm) {
-      console.log(`sm doesnot exist ${smId}`);
-      return;
-    }
-    const smName = sm.name ?? '';
-    const platform = sm.platform;
-    setIdx(idx);
-    setData({
-      name: smName,
-      platform,
-    });
-    openEdit();
+    // const sm = modelController.model.data.elements.stateMachines[smId];
+    // if (!sm) {
+    //   console.log(`sm doesnot exist ${smId}`);
+    //   return;
+    // }
+    // const smName = sm.name ?? '';
+    // const platform = sm.platform;
+    // setIdx(idx);
+    // setData({
+    //   name: smName,
+    //   platform,
+    // });
+    // openEdit();
   };
 
   const onRequestDeleteStateMachine = (idx: string) => {
-    const stateMachine = model.data.elements.stateMachines[idx];
-    if (!stateMachine) return;
-    // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-
-    setIdx(idx);
-    setData({
-      ...stateMachine,
-      name: stateMachine.name ?? '',
-    });
-    openDelete();
+    // const stateMachine = model.data.elements.stateMachines[idx];
+    // if (!stateMachine) return;
+    // // NOTE: systemComponent имеет флаг singletone, что и используется в форме
+    // setIdx(idx);
+    // setData({
+    //   ...stateMachine,
+    //   name: stateMachine.name ?? '',
+    // });
+    // openDelete();
   };
 
   const onAdd = (idx: string) => {
-    const smId = generateId();
-    modelController.createStateMachine(smId, emptyStateMachine());
-
-    onRequestEditStateMachine(idx, smId);
+    // const smId = generateId();
+    // modelController.createStateMachine(smId, emptyStateMachine());
+    // onRequestEditStateMachine(idx, smId);
   };
 
   const onEdit = (idx: string, data: StateMachineData) => {

@@ -22,14 +22,14 @@ interface PropertiesModalProps {
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const name = model.useData([''], 'name');
-  const basename = model.useData([''], 'basename');
-  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const name = model.useData('', 'name');
+  const basename = model.useData('', 'basename');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Передавать в модалки машину состояний
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const currentSm = stateMachines[0];
-  const platform = model.useData(stateMachines, 'elements.platform')[0];
-  const meta: MetaData = model.useData(stateMachines, 'elements.meta')[0];
+  const platform = model.useData(currentSm, 'elements.platform');
+  const meta: MetaData = model.useData(currentSm, 'elements.meta');
   const [properties, setProperties] = useState<[string, string][]>([]);
 
   const metaForm = useForm<MetaFormValues>();

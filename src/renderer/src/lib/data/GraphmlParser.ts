@@ -9,7 +9,6 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
 } from '@kruzhok-team/cyberiadaml-js';
-import { s } from 'vitest/dist/reporters-5f784f42';
 
 import {
   Action,

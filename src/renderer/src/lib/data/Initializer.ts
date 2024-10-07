@@ -29,7 +29,8 @@ export class Initializer {
   constructor(private app: CanvasEditor, private controller: CanvasController) {}
 
   init() {
-    this.resetEntities();
+    // TODO: Вот эта штука почему-то вызывается при смене вкладок
+    // this.resetEntities();
 
     // this.initStates();
     // this.initInitialStates();

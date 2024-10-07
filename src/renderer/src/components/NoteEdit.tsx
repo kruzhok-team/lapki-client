@@ -11,7 +11,7 @@ import { placeCaretAtEnd } from '@renderer/utils';
 export const NoteEdit: React.FC = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const smId = stateMachines[0];
 

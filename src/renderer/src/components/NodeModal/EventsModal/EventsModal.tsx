@@ -31,9 +31,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const editor = modelController.getCurrentCanvas();
   const model = modelController.model;
   // TODO: Как понять с какой машиной состояний мы работает в данный момент?
-  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const componentsData = model.useData(stateMachines, 'elements.components') as {
+  // TODO: Прокинуть сюда машину состояний
+  const componentsData = model.useData(stateMachines[0], 'elements.components') as {
     [id: string]: Component;
   };
   const controller = editor.controller;

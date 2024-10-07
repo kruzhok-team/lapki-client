@@ -16,8 +16,8 @@ export type DiagramContextMenuItem = {
 export const useDiagramContextMenu = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-  const name = modelController.model.useData([''], 'name') as string | null;
-  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const name = modelController.model.useData('', 'name') as string | null;
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Передавать в модалки машину состояний
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const currentSm = stateMachines[0];

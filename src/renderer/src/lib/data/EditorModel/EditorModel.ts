@@ -153,6 +153,7 @@ export class EditorModel {
       if (propertyName === 'elements.stateMachinesId') {
         return this.data['elements'].stateMachines;
       }
+      console.log(smId);
       return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
     };
 
@@ -181,7 +182,7 @@ export class EditorModel {
         this.dataListeners['isStale'].forEach((listener) => listener());
       }
 
-      this.dataListeners[name].forEach((listener) => listener());
+      (this.dataListeners[name] ?? []).forEach((listener) => listener());
     }
   }
 
@@ -197,6 +198,7 @@ export class EditorModel {
   }
 
   createState(args: CreateStateParams) {
+    debugger;
     const {
       name,
       parentId,

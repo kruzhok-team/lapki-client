@@ -63,8 +63,6 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
       title="Создание машины состояний"
       submitLabel="Добавить"
       onSubmit={handleSubmit}
-    >
-
-    </Modal>
+    ></Modal>
   );
 };

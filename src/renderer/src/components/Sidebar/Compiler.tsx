@@ -42,9 +42,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = modelController.model.useData([''], 'name');
+  const name = modelController.model.useData('', 'name');
   const editor = modelController.getCurrentCanvas();
-  const isInitialized = modelController.model.useData([''], 'canvas.isInitialized', editor.id);
+  const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
 
   const handleFlashButton = () => {
     // TODO: индекс должен браться из какой-то переменной

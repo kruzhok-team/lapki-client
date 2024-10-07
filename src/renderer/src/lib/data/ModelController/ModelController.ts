@@ -116,10 +116,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   emptyController() {
     const editor = new CanvasEditor('', this);
     const controller = new CanvasController('', 'specific', editor, { platformName: '' }, this);
+    controller.addStateMachineId('');
     editor.setController(controller);
     this.controllers = {};
     this.controllers[''] = controller;
-    this.headControllerId = '';
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
     this.model.changeHeadControllerId('');
@@ -489,9 +489,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // Сделать общий канвас канвасом по умолчанию?
     if (!Object.keys(controller.stateMachinesSub) && controller.type === 'specific') {
       this.unwatch(controller);
-      delete this.controllers[this.headControllerId];
+      delete this.controllers[this.model.data.headControllerId];
       const newHeadCanvasId = Object.keys(this.controllers)[0];
-      this.modal.changeHeadControllerId(newHeadCanvasId);
+      this.model.changeHeadControllerId(newHeadCanvasId);
     }
     this.model.deleteStateMachine(smId);
   }
@@ -1779,7 +1779,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   getCurrentCanvas() {
-    return this.controllers[this.headControllerId].app;
+    return this.controllers[this.model.data.headControllerId].app;
   }
 
   duplicateSelected = () => {

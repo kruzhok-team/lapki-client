@@ -24,11 +24,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
   const [canvasSettings] = useSettings('canvas');
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData([''], 'headControllerId');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   console.log(headControllerId);
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const smId = stateMachines[0]; // TODO: Как понять в какую именно машину состояний мы добавляем?
-  const isMounted = modelController.model.useData([''], 'canvas.isMounted', editor.id) as boolean;
+  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEventsModalOpen, openEventsModal, closeEventsModal] = useModal(false);
   const [eventsModalData, setEventsModalData] = useState<EventsModalData>();

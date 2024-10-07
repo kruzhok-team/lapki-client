@@ -36,7 +36,7 @@ description/ Включение и выключение лампочки по т
     <node id="cLED1">
         <data key="dNote">formal</data>
         <data key="dName"> CGML_COMPONENT </data>
-        <data key="dData">id/ LED1 
+        <data key="dData">id/ LEDG1 
 
 type/ LED
 
@@ -52,7 +52,7 @@ pin/ 12
     <node id="ctimer1">
         <data key="dNote">formal</data>
         <data key="dName"> CGML_COMPONENT </data>
-        <data key="dData">id/ timer1 
+        <data key="dData">id/ timerG1 
 
 type/ Timer
 
@@ -73,8 +73,8 @@ description/ Программный таймер.
    <node id="diod1">
         <data key="dName">Включен</data>
         <data key="dData">entry/
-LED1.on()
-timer1.start(1000)
+LEDG1.on()
+timerG1.start(1000)
 
         </data>
         <data key="dGeometry">
@@ -85,8 +85,8 @@ timer1.start(1000)
     <node id="diod2">
         <data key="dName">Выключен</data>
         <data key="dData">entry/
-LED1.off()
-timer1.start(1000)
+LEDG1.off()
+timerG1.start(1000)
 
         </data>
         <data key="dGeometry">

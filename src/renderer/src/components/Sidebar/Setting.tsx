@@ -30,7 +30,7 @@ export interface SettingProps {
 export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoaderSettings }) => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-  const isMounted = modelController.model.useData([''], 'canvas.isMounted', editor.id);
+  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id);
   const [theme, setTheme] = useSettings('theme');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
   const { connectionStatus, isFlashing } = useFlasher();

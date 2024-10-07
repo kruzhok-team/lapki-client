@@ -17,8 +17,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const modelController = useModelContext();
   const model = modelController.model;
-  const name = model.useData([''], 'name') as string | null;
-  const isStale = model.useData([''], 'isStale');
+  const name = model.useData('', 'name') as string | null;
+  const isStale = model.useData('', 'isStale');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -75,6 +75,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
+    clearTabs();
     openTabs();
     // openTab({ type: 'scheme', name: 'scheme' });
   };

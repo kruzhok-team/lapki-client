@@ -68,7 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
-  const isEditorDataStale = modelController.model.useData([''], 'isStale');
+  const isEditorDataStale = modelController.model.useData('', 'isStale');
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);

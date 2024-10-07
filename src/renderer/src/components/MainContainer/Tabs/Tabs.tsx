@@ -73,7 +73,12 @@ export const Tabs: React.FC = () => {
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
-            <DiagramEditor editor={modelController.controllers[item.canvasId].app} />
+            <DiagramEditor
+              editor={
+                modelController.controllers[item.canvasId]?.app ??
+                modelController.controllers['']?.app
+              }
+            />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />
           ) : (

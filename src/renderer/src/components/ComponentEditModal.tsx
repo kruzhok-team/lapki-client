@@ -35,7 +35,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const { model } = modelController;
-  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const components = model.useData(stateMachines, 'elements.components');
 

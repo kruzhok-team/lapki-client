@@ -12,7 +12,7 @@ import { useTrigger, useCondition, useEvents } from './hooks';
 
 export const TransitionModal: React.FC = () => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData([], 'headControllerId');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Передавать в модалки машину состояний
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const smId = stateMachines[0];

@@ -9,15 +9,19 @@ interface AddressBookRowProps {
   isSelected: boolean;
   onSelect: () => void;
   onEdit: () => void;
+  onDragStart: () => void;
+  onDrop: () => void;
 }
 export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
-  const { data, onSelect, isSelected, onEdit } = props;
+  const { data, onSelect, isSelected, onEdit, onDragStart, onDrop } = props;
   return (
     <div
       className={twMerge('flex items-start gap-1', isSelected && 'bg-bg-active')}
       draggable
       onClick={onSelect}
       onDoubleClick={onEdit}
+      onDragStart={onDragStart}
+      onDrop={onDrop}
     >
       <label className="flex flex-col">
         <TextInput value={data.name} disabled={true} placeholder="Название" />

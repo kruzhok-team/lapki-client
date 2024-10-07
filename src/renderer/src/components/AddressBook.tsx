@@ -56,6 +56,45 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     setAddressBookSetting(addressBookSetting.toSpliced(selectedEntry, 1));
     setSelectedEntry(undefined);
   };
+  // индекс записи для переноса при начале drag
+  const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
+  /**
+   * замена двух записей при drag&drop
+   * @param index - индекс второй записи, при drop, первая запись берётся из {@link dragIndex}
+   */
+  const onSwapEntries = (index: number) => {
+    if (!addressBookSetting || dragIndex == undefined || dragIndex == 0 || index == 0) {
+      setDragIndex(undefined);
+      return;
+    }
+    const firstEntry = addressBookSetting[dragIndex];
+    const secondEntry = addressBookSetting[index];
+    const newBook = addressBookSetting.map((v, i) => {
+      if (i === dragIndex) {
+        return secondEntry;
+      }
+      if (i === index) {
+        return firstEntry;
+      }
+      return v;
+    });
+    const newIdStorage = idStorage.map((v, i) => {
+      if (i === dragIndex) {
+        return idStorage[index];
+      }
+      if (i === index) {
+        return idStorage[dragIndex];
+      }
+      return v;
+    });
+    setAddressBookSetting(newBook);
+    setIdStorage(newIdStorage);
+    setDragIndex(undefined);
+  };
+  const onDragStart = (index: number) => {
+    if (index == 0) return;
+    setDragIndex(index);
+  };
   /**
    * Открытие модального окна для редактирования существующей записи в адресной книге
    * @param data данные, которые нужно отредактированть
@@ -132,6 +171,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                   data={field}
                   onSelect={() => onSelect(index)}
                   onEdit={() => onEdit(field, index)}
+                  onDragStart={() => onDragStart(index)}
+                  onDrop={() => onSwapEntries(index)}
                 ></AddressBookRow>
               </div>
             ))}

@@ -34,14 +34,7 @@ export const ManagerMSTab: React.FC = () => {
   useEffect(() => {
     if (serverAddress == '' || addressBookSetting == null) return;
     setAddress(serverAddress);
-    let found = false;
-    for (const addr of addressBookSetting) {
-      if (addr.address == serverAddress) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
+    if (!isDuplicate(serverAddress)) {
       const newRow = {
         name: '',
         address: serverAddress,
@@ -89,6 +82,22 @@ export const ManagerMSTab: React.FC = () => {
   };
   const handleClear = () => {
     setLog(() => []);
+  };
+  /**
+   * Проверка на наличие адреса в адресной книге
+   * @param address адрес МС-ТЮК
+   * @returns истина, если адрес уже встречается в адресной книге; undefined, если адресная книга не загрузилась (если она является null)
+   */
+  const isDuplicate = (address: string): boolean | undefined => {
+    if (!addressBookSetting) return undefined;
+    let found = false;
+    for (const addr of addressBookSetting) {
+      if (addr.address == address) {
+        found = true;
+        break;
+      }
+    }
+    return found;
   };
   if (!managerMSSetting) {
     return null;
@@ -155,9 +164,10 @@ export const ManagerMSTab: React.FC = () => {
         setAddressBookSetting={setAddressBookSetting}
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
-        onSelect={(selectedAddress: string) => {
+        onSubmit={(selectedAddress: string) => {
           setAddress(selectedAddress);
         }}
+        isDuplicate={isDuplicate}
       ></AddressBookModal>
     </section>
   );

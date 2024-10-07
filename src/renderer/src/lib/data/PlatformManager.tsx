@@ -44,7 +44,8 @@ export const systemComponent: ComponentProto = {
   },
   variables: {}, // TODO: userVar
   methods: {}, // TODO: userCode
-  parameters: {}, // TODO: userVarList
+  constructorParameters: {}, // TODO: userVarList
+  loopActions: [],
 };
 
 export class PlatformManager {
@@ -167,7 +168,7 @@ export class PlatformManager {
     const query = isName ? this.resolveComponentType(name) : name;
     const icon = this.componentToIcon.get(query);
     if (icon === undefined) {
-      return "stubComponent";
+      return 'stubComponent';
     }
     if (icon && icons.has(icon)) {
       return icon;
@@ -195,7 +196,7 @@ export class PlatformManager {
   getEventIcon(component: string, method: string) {
     const icon = this.eventToIcon.get(`${component}/${method}`);
     if (icon === undefined) {
-      return "stubEvent";
+      return 'stubEvent';
     }
     if (icon && icons.has(icon)) {
       return icon;
@@ -214,7 +215,7 @@ export class PlatformManager {
   getActionIcon(component: string, method: string) {
     const icon = this.actionToIcon.get(`${component}/${method}`);
     if (icon === undefined) {
-      return "stubAction";
+      return 'stubAction';
     }
     if (icon && icons.has(icon)) {
       return icon;

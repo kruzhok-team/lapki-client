@@ -6,7 +6,7 @@ import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { useSidebar } from '@renderer/store/useSidebar';
+import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements } from '@renderer/types/diagram';
@@ -47,8 +47,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
 
   const handleFlashButton = () => {
-    // TODO: индекс должен браться из какой-то переменной
-    changeSidebarTab(3);
+    changeSidebarTab(SidebarIndex.flasher);
   };
 
   const handleSaveBinaryIntoFolder = async () => {

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useForm } from 'react-hook-form';
+
 import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { generateId } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -13,7 +15,7 @@ export const useStateMachines = () => {
 
   // const currentSm = model.useData('', 'currentSm');
 
-  const [idx, setIdx] = useState('');
+  const [idx, setIdx] = useState<string | undefined>(undefined); // индекс текущей машины состояний
   const [data, setData] = useState<StateMachineData>({
     name: '',
     platform: '',
@@ -23,49 +25,51 @@ export const useStateMachines = () => {
   const [isEditOpen, openEdit, editClose] = useModal(false);
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
+  const editForm = useForm<StateMachineData>();
+  const addForm = useForm<StateMachineData>();
+
   const onRequestAddStateMachine = () => {
-    // openAdd();
+    openAdd();
   };
 
-  const onRequestEditStateMachine = (idx: string, smId: string) => {
-    // const sm = modelController.model.data.elements.stateMachines[smId];
-    // if (!sm) {
-    //   console.log(`sm doesnot exist ${smId}`);
-    //   return;
-    // }
-    // const smName = sm.name ?? '';
-    // const platform = sm.platform;
-    // setIdx(idx);
-    // setData({
-    //   name: smName,
-    //   platform,
-    // });
-    // openEdit();
+  const onRequestEditStateMachine = (idx: string) => {
+    const sm = modelController.model.data.elements.stateMachines[idx];
+
+    if (!sm) {
+      console.log(`sm doesnot exist ${idx}`);
+      return;
+    }
+    const smData = { name: sm.name ?? '', platform: sm.platform };
+    setIdx(idx);
+    setData(smData);
+    editForm.reset(smData);
+    openEdit();
   };
 
   const onRequestDeleteStateMachine = (idx: string) => {
-    // const stateMachine = model.data.elements.stateMachines[idx];
-    // if (!stateMachine) return;
-    // // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    // setIdx(idx);
-    // setData({
-    //   ...stateMachine,
-    //   name: stateMachine.name ?? '',
-    // });
-    // openDelete();
+    const stateMachine = model.data.elements.stateMachines[idx];
+    if (!stateMachine) return;
+    const smData = { name: stateMachine.name ?? '', platform: stateMachine.platform };
+    setIdx(idx);
+    setData(smData);
+    openDelete();
   };
 
-  const onAdd = (idx: string) => {
-    // const smId = generateId();
-    // modelController.createStateMachine(smId, emptyStateMachine());
-    // onRequestEditStateMachine(idx, smId);
+  const onAdd = (data: StateMachineData) => {
+    const smId = generateId();
+    // TODO (Roundabout1): нужен метод, который создаст машину состояний из переданных данных
+    modelController.createStateMachine(smId, emptyStateMachine());
+    modelController.editStateMachine(smId, data);
   };
 
-  const onEdit = (idx: string, data: StateMachineData) => {
+  const onEdit = (data: StateMachineData) => {
+    if (!idx) return;
     modelController.editStateMachine(idx, data);
   };
 
-  const onDelete = (idx: string) => {
+  const onDelete = () => {
+    if (!idx) return;
+    // TODO: вызывает краш IDE
     modelController.deleteStateMachine(idx);
 
     editClose();
@@ -81,22 +85,21 @@ export const useStateMachines = () => {
       isOpen: isAddOpen,
       onClose: closeAdd,
       onSubmit: onAdd,
+      addForm,
     },
     editProps: {
       isOpen: isEditOpen,
       onClose: editClose,
-      idx,
-      data,
       onEdit,
-      onDelete: onRequestDeleteStateMachine,
+      onDelete: openDelete,
+      editForm,
     },
     deleteProps: {
       isOpen: isDeleteOpen,
       onClose: deleteClose,
-      idx,
-      data,
-      onEdit,
       onSubmit: onDelete,
+      data: data,
+      idx: idx,
     },
     onRequestAddStateMachine,
     onRequestDeleteStateMachine,

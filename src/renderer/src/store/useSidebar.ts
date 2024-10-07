@@ -1,9 +1,19 @@
 import { create } from 'zustand';
 
+export enum SidebarIndex {
+  menu,
+  explorer,
+  stateMachineList,
+  compiler,
+  flasher,
+  history,
+  settings,
+}
+
 interface SidebarState {
-  activeTab: number;
+  activeTab: SidebarIndex;
   isCollapsed: boolean;
-  changeTab: (value: number) => void;
+  changeTab: (value: SidebarIndex) => void;
   setIsCollapsed: (value: boolean) => void;
 }
 

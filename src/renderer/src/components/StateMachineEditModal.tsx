@@ -1,23 +1,27 @@
-import React, { useLayoutEffect, useState } from 'react';
+import { Controller, UseFormReturn } from 'react-hook-form';
 
-import { Modal } from '@renderer/components/UI';
+import { Modal, Select } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
-import { StateMachineFormFields } from './StateMachineFormFields';
+import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 
-// название ключа ошибки для поля ввода имени, он также нужен для ComponentFormFields
-export const nameError = 'name';
+type optionType = {
+  label: string;
+  value: string;
+};
 
 interface StateMachineEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-
-  idx: string;
-  data: StateMachineData;
-  onEdit: (idx: string, data: StateMachineData) => void;
-  onDelete: (idx: string) => void;
+  onSubmit: (data: StateMachineData) => void;
+  submitLabel: string;
+  sideLabel: string | undefined;
+  onSide: (() => void) | undefined;
+  form: UseFormReturn<StateMachineData>;
+  platformList: optionType[];
 }
 
+// TODO (Roundabout1): наверное стоит перенести этот тип данных в другое место?
 export type StateMachineData = {
   name: string;
   platform: string;
@@ -25,71 +29,78 @@ export type StateMachineData = {
 
 export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   isOpen,
-  idx,
-  data,
   onClose,
-  onEdit,
-  onDelete,
+  onSubmit,
+  submitLabel,
+  sideLabel,
+  onSide,
+  form,
+  platformList,
 }) => {
+  const { handleSubmit: hookHandleSubmit, control, reset } = form;
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
 
-  const [name, setName] = useState('');
-  const [parameters, setParameters] = useState<StateMachineData>({ name: '', platform: '' });
-
-  const [errors, setErrors] = useState({} as Record<string, string>);
-
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
-    setName(idx);
-    setParameters({ ...data });
     editor.focus();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Если есть ошибка то не отправляем форму
-    for (const key in errors) {
-      if (errors[key]) return;
-    }
-
-    const submitData = parameters;
-
-    onEdit(idx, submitData);
+  const handleSubmit = hookHandleSubmit((data) => {
+    onSubmit(data);
+    reset({ name: '', platform: '' });
     onClose();
-  };
+  });
 
   const handleDelete = () => {
-    onDelete(idx);
+    if (onSide == undefined) return;
+    onSide();
     onClose();
   };
-
-  useLayoutEffect(() => {
-    setName(idx);
-  }, [idx]);
-
-  useLayoutEffect(() => {
-    setParameters({ ...data });
-  }, [data]);
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
       onAfterClose={handleAfterClose}
-      title={name}
-      submitLabel="Применить"
+      title="Машина состояний"
+      submitLabel={submitLabel}
       onSubmit={handleSubmit}
-      sideLabel="Удалить"
-      onSide={handleDelete}
+      sideLabel={sideLabel}
+      onSide={handleDelete ?? undefined}
     >
-      <StateMachineFormFields
-        parameters={{ ...data, ...parameters }}
-        setParameters={setParameters}
-        errors={errors}
-        setErrors={setErrors}
-      />
+      <div className="flex flex-col gap-2">
+        <Controller
+          name="name"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <ComponentFormFieldLabel
+              label="Название"
+              placeholder="Введите название..."
+              onChange={onChange}
+              value={value ?? ''}
+            ></ComponentFormFieldLabel>
+          )}
+        />
+        <Controller
+          name="platform"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <ComponentFormFieldLabel label="Платформа">
+              <Select
+                className="w-[250px]"
+                isSearchable={false}
+                placeholder="Выберите платформу..."
+                options={platformList}
+                value={platformList.find((opt) => opt.value === value)}
+                onChange={(opt) => {
+                  onChange(opt?.value);
+                }}
+              />
+            </ComponentFormFieldLabel>
+          )}
+        />
+      </div>
     </Modal>
   );
 };

@@ -412,43 +412,47 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   const buttonsDisplay = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    if (!curDevice || !curDevice.isMSDevice()) {
-      return (
-        <div>
-          <div className="flex justify-between gap-2">
-            <button
-              className="btn-primary mb-2 w-full"
-              onClick={handleFlash}
-              disabled={flashButtonDisabled()}
-            >
-              Загрузить
-            </button>
-            <button
-              className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
-              onClick={handleFileChoose}
-              disabled={isFlashing || avrdudeBlock}
-            >
-              {flasherFile ? '✖' : '…'}
+    if (curDevice) {
+      if (!curDevice.isMSDevice()) {
+        return (
+          <div>
+            {avrdudeCheck()}
+            <div className="flex justify-between gap-2">
+              <button
+                className="btn-primary mb-2 w-full"
+                onClick={handleFlash}
+                disabled={flashButtonDisabled()}
+              >
+                Загрузить
+              </button>
+              <button
+                className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
+                onClick={handleFileChoose}
+                disabled={isFlashing || avrdudeBlock}
+              >
+                {flasherFile ? '✖' : '…'}
+              </button>
+            </div>
+            {flasherFile ? (
+              <p className="mb-2 rounded bg-primaryActive text-white">
+                из файла <span className="font-medium">{flasherFile}</span>
+              </p>
+            ) : (
+              ''
+            )}
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
+              Менеджер МС-ТЮК
             </button>
           </div>
-          {flasherFile ? (
-            <p className="mb-2 rounded bg-primaryActive text-white">
-              из файла <span className="font-medium">{flasherFile}</span>
-            </p>
-          ) : (
-            ''
-          )}
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
-            Менеджер МС-ТЮК
-          </button>
-        </div>
-      );
+        );
+      }
     }
+    return null;
   };
   return (
     <section className="flex h-full flex-col text-center">
@@ -524,7 +528,6 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-        {avrdudeCheck()}
         {buttonsDisplay()}
         <button
           className="btn-primary mb-2 w-full"

@@ -31,6 +31,7 @@ import {
   EventData,
   Meta,
   StateMachine,
+  emptyStateMachine,
 } from '@renderer/types/diagram';
 
 import { Serializer } from './Serializer';
@@ -78,6 +79,7 @@ export class EditorModel {
     this.data.name = name;
     this.data.elements = elements;
     this.data.headControllerId = '';
+    this.data.elements.stateMachines[''] = emptyStateMachine();
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
     this.triggerDataUpdate('basename', 'name', 'elements');
   }

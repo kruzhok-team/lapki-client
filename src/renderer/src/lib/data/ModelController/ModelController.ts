@@ -117,11 +117,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const editor = new CanvasEditor('', this);
     const controller = new CanvasController('', 'specific', editor, { platformName: '' }, this);
     controller.addStateMachineId('');
+    this.model.data.elements.stateMachines[''] = emptyStateMachine();
     editor.setController(controller);
     this.controllers = {};
     this.controllers[''] = controller;
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
-    this.model.data.elements.stateMachines[''] = emptyStateMachine();
     this.model.changeHeadControllerId('');
   }
 
@@ -215,6 +215,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[''].unwatch();
     let headCanvas = '';
     for (const smId in elements.stateMachines) {
+      if (smId === '') continue;
       const canvasId = this.createStateMachine(smId, elements.stateMachines[smId]);
       headCanvas = canvasId;
       this.model.data.canvas[canvasId] = {

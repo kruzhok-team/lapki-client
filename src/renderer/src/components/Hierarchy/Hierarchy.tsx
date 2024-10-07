@@ -170,7 +170,7 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [stateMachines, choiceStates, finalStates, initialStates, notes, states, transitions]);
+  }, [headControllerId, choiceStates, finalStates, initialStates, notes, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);

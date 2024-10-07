@@ -6,6 +6,7 @@ import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { Tab as TabData } from '@renderer/types/tabs';
 
 import { Tab } from './Tab';
 
@@ -31,6 +32,35 @@ export const Tabs: React.FC = () => {
     if (tabName === 'editor' || !dragId) return;
 
     swapTabs(dragId, tabName);
+  };
+
+  const changeHeadController = (items: TabData[], closedTab: TabData) => {
+    const { name } = closedTab;
+    const closedTabIndex = items.findIndex((tab) => tab.name === name);
+    const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
+
+    const newItems = items.filter((tab) => tab.name !== name);
+
+    if (newItems.length === 0) {
+      modelController.model.changeHeadControllerId('');
+      return;
+    }
+
+    // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
+    // TODO: Менять текущий главный канвас при закрытии вкладки
+    if (closedTabIndex === activeTabIndex) {
+      if (closedTabIndex === items.length - 1) {
+        const prevTab = newItems[newItems.length - 1];
+        if (prevTab.type === 'editor') {
+          modelController.model.changeHeadControllerId(prevTab.canvasId);
+        }
+      } else {
+        const prevTab = newItems[closedTabIndex];
+        if (prevTab.type === 'editor') {
+          modelController.model.changeHeadControllerId(prevTab.canvasId);
+        }
+      }
+    }
   };
 
   if (items.length === 0) {
@@ -61,6 +91,7 @@ export const Tabs: React.FC = () => {
               setActiveTab(tab.name);
             }}
             onClose={() => {
+              changeHeadController(items, tab);
               closeTab(tab.name);
             }}
           />

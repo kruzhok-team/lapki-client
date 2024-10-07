@@ -97,6 +97,7 @@ export class FlashResult {
     this.device = device;
     this.result = result;
     this.flashMsg = flashMsg;
+    this.flashMsg = flashMsg;
   }
   /** получить результат прошивки*/
   public report(): string {

@@ -187,7 +187,7 @@ export const useDiagramContextMenu = () => {
             openTab({
               type: 'state',
               name: state.data.name,
-              code: modelController.model.serializer.getState(state.id) ?? '',
+              code: modelController.model.serializer.getState(currentSm, state.id) ?? '',
               language: 'json',
             });
           },
@@ -354,7 +354,8 @@ export const useDiagramContextMenu = () => {
                   openTab({
                     type: 'transition',
                     name: transitionId,
-                    code: modelController.model.serializer.getTransition(transitionId) ?? '',
+                    code:
+                      modelController.model.serializer.getTransition(currentSm, transitionId) ?? '',
                     language: 'json',
                   });
                 },

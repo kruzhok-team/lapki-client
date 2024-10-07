@@ -54,7 +54,7 @@ import { CanvasController, CanvasControllerEvents } from './CanvasController';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { loadPlatform } from '../PlatformLoader';
+import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
 import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 /**
@@ -1868,9 +1868,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = this.model.data.elements.stateMachines[smId];
       const components = sm.components;
       const vacant: ComponentEntry[] = [];
-      const platform = this.platforms[sm.platform];
+      let platform: PlatformManager | undefined = this.platforms[sm.platform];
       if (!platform) {
-        throw new Error('No platform loaded!');
+        if (isPlatformAvailable(sm.platform)) {
+          const platformManager = loadPlatform(sm.platform);
+          if (!platformManager) throw new Error('No platform loaded!');
+          this.platforms[sm.platform] = platformManager;
+          platform = platformManager;
+        } else {
+          throw new Error('No platform loaded!');
+        }
       }
       for (const idx in platform.data.components) {
         const compo = platform.data.components[idx];

@@ -78,7 +78,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [stateMachines, editor, openEventsModal]);
+  }, [headControllerId, stateMachines, editor, openEventsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;

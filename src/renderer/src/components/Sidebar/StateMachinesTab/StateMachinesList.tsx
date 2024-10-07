@@ -19,7 +19,6 @@ export const StateMachinesList: React.FC = () => {
   const elements = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
   };
-  console.log(elements);
   const [selectedSm, setSmSelected] = useState<string | null>(null);
   const {
     addProps,

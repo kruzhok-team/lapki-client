@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { generateId } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useTabs } from '@renderer/store/useTabs';
 import { emptyStateMachine } from '@renderer/types/diagram';
 
 import { useModal } from './useModal';
@@ -14,7 +15,7 @@ export const useStateMachines = () => {
   const model = modelController.model;
 
   // const currentSm = model.useData('', 'currentSm');
-
+  const [openTab, setActiveTab] = useTabs((state) => [state.openTab, state.setActiveTab]);
   const [idx, setIdx] = useState<string | undefined>(undefined); // индекс текущей машины состояний
   const [data, setData] = useState<StateMachineData>({
     name: '',
@@ -58,8 +59,11 @@ export const useStateMachines = () => {
   const onAdd = (data: StateMachineData) => {
     const smId = generateId();
     // TODO (Roundabout1): нужен метод, который создаст машину состояний из переданных данных
-    modelController.createStateMachine(smId, emptyStateMachine());
-    modelController.editStateMachine(smId, data);
+    const sm = { ...emptyStateMachine(), ...data };
+    const canvasId = modelController.createStateMachine(smId, sm);
+    modelController.model.changeHeadControllerId(canvasId);
+    openTab({ type: 'editor', canvasId: canvasId, name: sm.name ?? canvasId });
+    // modelController.editStateMachine(smId, data);
   };
 
   const onEdit = (data: StateMachineData) => {

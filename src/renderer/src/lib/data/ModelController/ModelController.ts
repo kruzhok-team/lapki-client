@@ -1779,7 +1779,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   getCurrentCanvas() {
-    return this.controllers[this.model.data.headControllerId].app;
+    return (this.controllers[this.model.data.headControllerId] ?? this.controllers['']).app;
   }
 
   duplicateSelected = () => {

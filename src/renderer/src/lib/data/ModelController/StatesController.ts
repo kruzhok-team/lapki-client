@@ -86,7 +86,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   get data() {
-    debugger;
     return this.__data;
   }
   /**

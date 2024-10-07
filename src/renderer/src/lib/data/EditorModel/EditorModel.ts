@@ -198,7 +198,6 @@ export class EditorModel {
   }
 
   createState(args: CreateStateParams) {
-    debugger;
     const {
       name,
       parentId,

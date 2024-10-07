@@ -32,9 +32,9 @@ const HistoryItem: React.FC<{ data: Action<any>; labelClassName?: string }> = ({
   data,
   labelClassName,
 }) => {
-  const { type } = data;
-
   const id = useId();
+  if (!data) return;
+  const { type } = data;
 
   return (
     <div className="w-full">

@@ -133,13 +133,16 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   getCapturedNode(args: GetCapturedNodeParams) {
-    const { layer } = args;
+    const { layer, exclude } = args;
+    const isExcluded = (node: Shape) => {
+      return exclude?.find((value) => value['id'] === node.id);
+    };
 
     if (layer !== undefined) {
       for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
         const node = (this.children.layers[layer][i] as Shape)?.getIntersection(args);
 
-        if (node) return node;
+        if (node && !isExcluded(node)) return node;
       }
     } else {
       for (let i = this.children.layers.length - 1; i >= 0; i--) {
@@ -148,7 +151,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
         for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
           const node = (this.children.layers[i][j] as Shape)?.getIntersection?.(args);
 
-          if (node) return node;
+          if (node && !isExcluded(node)) return node;
         }
       }
     }

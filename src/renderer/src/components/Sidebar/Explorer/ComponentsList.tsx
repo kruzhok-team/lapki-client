@@ -60,21 +60,6 @@ export const ComponentsList: React.FC = () => {
             onRequestDeleteComponent={onRequestDeleteComponent}
           />
         ))}
-        {/* {sortedComponents.map((name) => (
-          <Component
-            key={name}
-            name={name}
-            description={editor.controller.platform?.getComponent(name)?.description}
-            icon={editor.controller.platform?.getFullComponentIcon(name)}
-            isSelected={name === selectedComponent}
-            isDragging={name === dragName}
-            onSelect={() => setSelectedComponent(name)}
-            onEdit={() => onRequestEditComponent(name)}
-            onDelete={() => onRequestDeleteComponent(name)}
-            onDragStart={() => setDragName(name)}
-            onDrop={() => onDropComponent(name)}
-          />
-        ))} */}
       </div>
 
       <ComponentAddModal {...addProps} />

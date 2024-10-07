@@ -155,7 +155,6 @@ export class EditorModel {
       if (propertyName === 'elements.stateMachinesId') {
         return this.data['elements'].stateMachines;
       }
-      console.log(smId);
       return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
     };
 
@@ -170,14 +169,17 @@ export class EditorModel {
 
     for (const name of propertyNames) {
       if (!isShallow(name)) {
-        // const subName = name.split('.')[1];
-        // Очень не хорошо тут..
-        const prevValue = this.data.elements.stateMachines;
+        const subName = name.split('.')[1];
+
         // Ссылку нужно обновлять только у объектов
-        if (typeof prevValue === 'object' && prevValue !== null) {
-          this.data.elements.stateMachines = {
-            ...prevValue,
-          };
+        for (const smId in this.data.elements.stateMachines) {
+          const prevValue = this.data.elements.stateMachines[smId][subName];
+          if (typeof prevValue !== 'object') break;
+          if (prevValue !== null) {
+            this.data.elements.stateMachines[smId][subName] = {
+              ...prevValue,
+            };
+          }
         }
 
         this.data.isStale = true;

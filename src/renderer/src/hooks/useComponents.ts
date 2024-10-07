@@ -78,6 +78,7 @@ export const useComponents = () => {
   };
 
   const onAdd = (idx: string, name: string | undefined) => {
+    console.log('hereeee');
     const realName = name ?? idx;
     modelController.createComponent({
       smId: currentSm,

@@ -39,7 +39,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     return Object.entries(components)
       .sort((a, b) => a[1].order - b[1].order)
       .map((c) => c[0]);
-  }, [components]);
+  }, [components]); // не ререндерится
 
   return (
     <div>

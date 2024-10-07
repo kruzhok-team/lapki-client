@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-
 import { twMerge } from 'tailwind-merge';
 
 import { AddressData } from '@renderer/types/FlasherTypes';

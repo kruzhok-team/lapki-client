@@ -6,6 +6,7 @@ import {
   Transition as TransitionData,
   Note as NoteData,
   InitialState as InitialStateData,
+  StateMachine,
 } from '@renderer/types/diagram';
 
 import { Point } from './graphics';
@@ -49,6 +50,7 @@ export interface RenameComponentParams {
 
 export interface DeleteStateMachineParams {
   id: string;
+  stateMachine: StateMachine;
   purge?: boolean;
 }
 
@@ -88,8 +90,9 @@ export interface AddDragendStateSig {
 }
 
 export interface DeleteInitialStateParams {
+  smId: string;
   id: string;
-  targetId: string;
+  targetId?: string;
 }
 
 export const getStatesControllerDefaultData = () => {

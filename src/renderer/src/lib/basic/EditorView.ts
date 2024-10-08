@@ -25,13 +25,17 @@ interface EditorViewEvents {
 export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
   isDirty = true;
 
-  children = new Children();
+  __children = new Children();
 
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
   modelController: ModelController;
   constructor(public app: CanvasEditor, modelController: ModelController) {
     super();
     this.modelController = modelController;
+  }
+
+  get children() {
+    return this.__children;
   }
 
   initEvents() {

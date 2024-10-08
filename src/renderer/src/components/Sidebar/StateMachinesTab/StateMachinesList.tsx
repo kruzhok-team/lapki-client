@@ -33,6 +33,7 @@ export const StateMachinesList: React.FC = () => {
   const platformList = getAvailablePlatforms().map((platform) => {
     return { value: platform.idx, label: platform.name };
   });
+
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -87,7 +88,7 @@ export const StateMachinesList: React.FC = () => {
         sideLabel={undefined}
         platformList={platformList}
       />
-      <StateMachineDeleteModal {...deleteProps} />
+      <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>
   );
 };

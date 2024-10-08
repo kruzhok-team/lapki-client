@@ -74,10 +74,6 @@ type DiagramData =
   | { [name: string]: Component }
   | { [id: string]: Note };
 
-export function getSignalName(smId: string, attribute: CanvasSubscribeAttribute): string {
-  return `${smId}/${attribute}`;
-}
-
 export type CanvasControllerEvents = {
   loadData: null;
   initPlatform: null;
@@ -165,6 +161,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   platform: PlatformManager | null = null;
   initializer: Initializer;
   states: StatesController;
+  inited = false;
   transitions: TransitionsController;
   notes: NotesController;
   components: ComponentsController;
@@ -241,13 +238,16 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   init() {
-    this.initComponents(this.initData.components);
-    this.initializer.initStates(this.initData.states);
-    this.initializer.initChoiceStates(this.initData.choiceStates);
-    this.initializer.initFinalStates(this.initData.finalStates);
-    this.initializer.initNotes(this.initData.notes);
-    this.initializer.initInitialStates(this.initData.initialStates);
-    this.initializer.initTransitions(this.initData.transitions);
+    if (!this.inited) {
+      this.initComponents(this.initData.components);
+      this.initializer.initStates(this.initData.states);
+      this.initializer.initChoiceStates(this.initData.choiceStates);
+      this.initializer.initFinalStates(this.initData.finalStates);
+      this.initializer.initNotes(this.initData.notes);
+      this.initializer.initInitialStates(this.initData.initialStates);
+      this.initializer.initTransitions(this.initData.transitions);
+      this.inited = true;
+    }
   }
 
   private bindHelper<T extends (args: any) => any>(
@@ -820,16 +820,40 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
   };
 
-  deleteStateMAchine(args: DeleteStateMachineParams) {
-    const { id } = args;
+  deleteStateMachine = (args: DeleteStateMachineParams) => {
+    const { id, stateMachine } = args;
     if (!this.stateMachinesSub[id]) return;
 
+    Object.keys(stateMachine.transitions).map((transitionId) => {
+      this.transitions.deleteTransition({ smId: id, id: transitionId });
+    });
+
+    Object.keys(stateMachine.states).map((stateId) => {
+      this.states.deleteState({ smId: id, id: stateId });
+    });
+
+    Object.keys(stateMachine.finalStates).map((stateId) => {
+      this.states.deleteFinalState({ smId: id, id: stateId });
+    });
+
+    Object.keys(stateMachine.choiceStates).map((stateId) => {
+      this.states.deleteChoiceState({ smId: id, id: stateId });
+    });
+
+    Object.keys(stateMachine.initialStates).map((stateId) => {
+      this.states.deleteInitialState({ smId: id, id: stateId });
+    });
+
+    Object.keys(stateMachine.notes).map((noteId) => {
+      this.notes.deleteNote({ smId: id, id: noteId });
+    });
+
     delete this.stateMachinesSub[id];
-  }
+  };
 
   // Отлавливание дефолтных событий для контроллера
   watch() {
-    this.model.on('deleteStateMachine', this.deleteStateMAchine);
+    this.model.on('deleteStateMachine', this.deleteStateMachine);
     this.model.on('loadData', () => this.loadData());
     this.model.on('initEvents', () => this.transitions.initEvents());
     this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));

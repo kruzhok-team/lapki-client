@@ -355,6 +355,7 @@ function serializeComponents(components: { [id: string]: Component }): {
 export function exportCGML(elements: Elements): string {
   const cgmlElements: CGMLElements = createEmptyElements();
   for (const smId in elements.stateMachines) {
+    if (smId === '') continue;
     const sm = elements.stateMachines[smId];
     const platform = getPlatform(sm.platform);
     if (!platform) {

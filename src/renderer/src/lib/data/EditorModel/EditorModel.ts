@@ -64,7 +64,7 @@ export class EditorModel {
   }
 
   deleteStateMachine(smId: string) {
-    if (!this.data.elements[smId]) return;
+    if (!this.data.elements.stateMachines[smId]) return;
 
     delete this.data.elements.stateMachines[smId];
 

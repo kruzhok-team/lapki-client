@@ -34,34 +34,34 @@ export const Tabs: React.FC = () => {
     swapTabs(dragId, tabName);
   };
 
-  const changeHeadController = (items: TabData[], closedTab: TabData) => {
-    const { name } = closedTab;
-    const closedTabIndex = items.findIndex((tab) => tab.name === name);
-    const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
+  // const changeHeadController = (items: TabData[], closedTab: TabData) => {
+  //   const { name } = closedTab;
+  //   const closedTabIndex = items.findIndex((tab) => tab.name === name);
+  //   const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
 
-    const newItems = items.filter((tab) => tab.name !== name);
+  //   const newItems = items.filter((tab) => tab.name !== name);
 
-    if (newItems.length === 0) {
-      modelController.model.changeHeadControllerId('');
-      return;
-    }
+  //   if (newItems.length === 0) {
+  //     modelController.model.changeHeadControllerId('');
+  //     return;
+  //   }
 
-    // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
-    // TODO: Менять текущий главный канвас при закрытии вкладки
-    if (closedTabIndex === activeTabIndex) {
-      if (closedTabIndex === items.length - 1) {
-        const prevTab = newItems[newItems.length - 1];
-        if (prevTab.type === 'editor') {
-          modelController.model.changeHeadControllerId(prevTab.canvasId);
-        }
-      } else {
-        const prevTab = newItems[closedTabIndex];
-        if (prevTab.type === 'editor') {
-          modelController.model.changeHeadControllerId(prevTab.canvasId);
-        }
-      }
-    }
-  };
+  //   // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
+  //   // TODO: Менять текущий главный канвас при закрытии вкладки
+  //   if (closedTabIndex === activeTabIndex) {
+  //     if (closedTabIndex === items.length - 1) {
+  //       const prevTab = newItems[newItems.length - 1];
+  //       if (prevTab.type === 'editor') {
+  //         modelController.model.changeHeadControllerId(prevTab.canvasId);
+  //       }
+  //     } else {
+  //       const prevTab = newItems[closedTabIndex];
+  //       if (prevTab.type === 'editor') {
+  //         modelController.model.changeHeadControllerId(prevTab.canvasId);
+  //       }
+  //     }
+  //   }
+  // };
 
   if (items.length === 0) {
     return <NotInitialized />;
@@ -91,8 +91,7 @@ export const Tabs: React.FC = () => {
               setActiveTab(tab.name);
             }}
             onClose={() => {
-              changeHeadController(items, tab);
-              closeTab(tab.name);
+              closeTab(tab.name, modelController);
             }}
           />
         ))}
@@ -104,7 +103,11 @@ export const Tabs: React.FC = () => {
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
           {item.type === 'editor' ? (
-            <DiagramEditor editor={modelController.controllers[item.canvasId].app} />
+            <DiagramEditor
+              editor={
+                (modelController.controllers[item.canvasId] ?? modelController.controllers['']).app
+              }
+            />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />
           ) : (

@@ -7,6 +7,7 @@ import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
@@ -31,6 +32,7 @@ export const Loader: React.FC<FlasherProps> = ({
   openLoaderSettings,
   openAvrdudeGuideModal,
 }) => {
+  const modelController = useModelContext();
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
@@ -168,7 +170,7 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с сообщением от avrdude
   const handleAddAvrdudeTab = () => {
-    closeTab('avrdude');
+    closeTab('avrdude', modelController);
     openTab({
       type: 'code',
       name: 'avrdude',
@@ -189,7 +191,7 @@ export const Loader: React.FC<FlasherProps> = ({
     ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
-    closeTab('Монитор порта');
+    closeTab('Монитор порта', modelController);
     setSerialMonitorDevice(curDevice);
     openTab({
       type: 'serialMonitor',

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { ModelController } from '@renderer/lib/data/ModelController';
 import { Tab } from '@renderer/types/tabs';
 
 interface TabsState {
@@ -7,7 +8,7 @@ interface TabsState {
   activeTab: string | null;
   setActiveTab: (tabName: string) => void;
   openTab: (tab: Tab) => void;
-  closeTab: (tabName: string) => void;
+  closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
 }
@@ -30,34 +31,44 @@ export const useTabs = create<TabsState>((set) => ({
         activeTab: tab.name,
       };
     }),
-  closeTab: (tabName) =>
+  closeTab: (tabName, modelController: ModelController) =>
     set(({ items, activeTab }) => {
       const closedTabIndex = items.findIndex((tab) => tab.name === tabName);
       const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
       const newItems = items.filter((tab) => tab.name !== tabName);
 
       if (newItems.length === 0) {
+        modelController.model.changeHeadControllerId('');
         return {
           items: newItems,
           activeTab: null,
         };
       }
 
-      let newActiveTab = activeTab;
+      let newActiveTabName = activeTab;
 
       // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
       // TODO: Менять текущий главный канвас при закрытии вкладки
       if (closedTabIndex === activeTabIndex) {
         if (closedTabIndex === items.length - 1) {
-          newActiveTab = newItems[newItems.length - 1].name;
+          newActiveTabName = newItems[newItems.length - 1].name;
         } else {
-          newActiveTab = newItems[closedTabIndex].name;
+          newActiveTabName = newItems[closedTabIndex].name;
+        }
+      }
+
+      if (newActiveTabName) {
+        const newActiveTab = items[items.findIndex((tab) => tab.name === newActiveTabName)];
+        if (newActiveTab.type === 'editor') {
+          modelController.model.changeHeadControllerId(newActiveTab.canvasId);
+        } else {
+          modelController.model.changeHeadControllerId('');
         }
       }
 
       return {
         items: newItems,
-        activeTab: newActiveTab,
+        activeTab: newActiveTabName,
       };
     }),
   swapTabs: (a, b) =>

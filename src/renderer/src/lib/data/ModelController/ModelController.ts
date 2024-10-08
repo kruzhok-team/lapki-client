@@ -484,17 +484,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteStateMachine(smId: string) {
-    const controller = this.controllers[this.model.data.headControllerId];
-
-    this.emit('deleteStateMachine', { id: smId });
+    const sm = { ...this.model.data.elements.stateMachines[smId] };
     // Сделать общий канвас канвасом по умолчанию?
-    if (!Object.keys(controller.stateMachinesSub) && controller.type === 'specific') {
-      this.unwatch(controller);
-      delete this.controllers[this.model.data.headControllerId];
-      const newHeadCanvasId = Object.keys(this.controllers)[0];
-      this.model.changeHeadControllerId(newHeadCanvasId);
-    }
     this.model.deleteStateMachine(smId);
+    this.emit('deleteStateMachine', {
+      id: smId,
+      stateMachine: sm,
+    });
   }
 
   changeInitialStatePosition(

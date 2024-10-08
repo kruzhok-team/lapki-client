@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react';
+
 import Websocket from 'isomorphic-ws';
 
 import { ClientStatus } from './ClientStatus';
@@ -14,8 +16,15 @@ export abstract class ClientWS {
 
   static onStatusChange: (newConnectionStatus: string) => void;
 
-  static setOnStatusChange(onStatusChange: (newConnectionStatus: string) => void): void {
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  static setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>;
+
+  static bind(
+    onStatusChange: (newConnectionStatus: string) => void,
+    setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
+  ): void {
     this.onStatusChange = onStatusChange;
+    this.setSecondsUntilReconnect = setSecondsUntilReconnect;
   }
 
   /**
@@ -50,6 +59,7 @@ export abstract class ClientWS {
     this.port = port;
     this.connection?.close();
     this.onStatusChange(ClientStatus.CONNECTING);
+    this.setSecondsUntilReconnect(null);
 
     let ws: Websocket;
     try {
@@ -88,12 +98,21 @@ export abstract class ClientWS {
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     console.log('Close connection', event);
+    this.setSecondsUntilReconnect(null);
     if (host == this.host && port == this.port) {
       this.onStatusChange(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
       if (this.reconnectTimer && this.reconnectTimer.isAutoReconnect()) {
         this.reconnectTimer.tryToReconnect(() => {
           this.reconnect();
+        });
+        this.reconnectTimer.startInterval((remainingTime: number) => {
+          const seconds: number = Math.round(remainingTime / 1000);
+          if (seconds == 0) {
+            this.setSecondsUntilReconnect(null);
+          } else {
+            this.setSecondsUntilReconnect(Math.round(remainingTime / 1000));
+          }
         });
       }
     }
@@ -109,6 +128,7 @@ export abstract class ClientWS {
     this.initOrResetReconnectTimer();
     //console.log(`Client: connected to ${this.host}:${this.port}!`);
     this.onStatusChange(ClientStatus.CONNECTED);
+    this.setSecondsUntilReconnect(null);
   }
 
   static cancelConnection() {

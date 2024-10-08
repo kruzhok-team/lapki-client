@@ -11,7 +11,7 @@ import {
   EditorDataReturn,
   CreateTransitionParams,
   ChangeTransitionParams,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   AddComponentParams,
   CreateNoteParams,
   Point,
@@ -21,15 +21,7 @@ import {
   SwapComponentsParams,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
-import {
-  Event,
-  Action,
-  Transition as TransitionData,
-  Component,
-  Elements,
-  EventData,
-  Meta,
-} from '@renderer/types/diagram';
+import { Event, Action, Component, Elements, EventData, Meta } from '@renderer/types/diagram';
 
 import { FilesManager } from './FilesManager';
 import { Serializer } from './Serializer';
@@ -59,6 +51,7 @@ export class EditorModel {
     this.data.isMounted = prevMounted;
 
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
+
     this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
 
     if (this.data.isMounted) {
@@ -171,35 +164,13 @@ export class EditorModel {
     return id;
   }
 
-  changeStateEvents(args: ChangeStateEventsParams) {
-    const {
-      id,
-      eventData: { do: actions, trigger, condition },
-      color,
-    } = args;
+  changeState(args: ChangeStateParams) {
+    const { id, events, color } = args;
 
     const state = this.data.elements.states[id];
     if (!state) return false;
 
-    const eventIndex = state.events.findIndex(
-      (value) =>
-        trigger.component === value.trigger.component &&
-        trigger.method === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-    const event = state.events[eventIndex];
-
-    if (event === undefined) {
-      state.events = [...state.events, args.eventData];
-    } else {
-      if (actions.length) {
-        event.condition = condition;
-        event.do = [...actions];
-      } else {
-        state.events.splice(eventIndex, 1);
-      }
-    }
-
+    state.events = events;
     state.color = color;
 
     this.triggerDataUpdate('elements.states');
@@ -450,13 +421,20 @@ export class EditorModel {
     return true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   createEventAction(stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
+    (state.events[eventIdx].do as Action[]).splice(
+      actionIdx ?? state.events[eventIdx].do.length - 1,
+      0,
+      value
+    );
 
     this.triggerDataUpdate('elements.states');
 
@@ -493,13 +471,16 @@ export class EditorModel {
     return true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do[actionIdx as number] = newValue;
+    (state.events[eventIdx].do as Action[])[actionIdx as number] = newValue;
 
     this.triggerDataUpdate('elements.states');
 
@@ -517,13 +498,16 @@ export class EditorModel {
     return true;
   }
 
+  /**
+   * * Не работает на текстовые данные
+   */
   deleteEventAction(stateId: string, event: EventSelection) {
     const state = this.data.elements.states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx as number, 1);
+    (state.events[eventIdx].do as Action[]).splice(actionIdx as number, 1);
 
     this.triggerDataUpdate('elements.states');
 
@@ -543,7 +527,7 @@ export class EditorModel {
   changeTransition(args: ChangeTransitionParams) {
     const { id, label, ...other } = args;
 
-    const transition = this.data.elements.transitions[id] as TransitionData;
+    const transition = this.data.elements.transitions[id];
     if (!transition) return false;
 
     //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
@@ -681,6 +665,9 @@ export class EditorModel {
       id = generateId(Object.keys(this.data.elements.notes)),
       text,
       placeInCenter = false,
+      fontSize,
+      backgroundColor,
+      textColor,
     } = params;
     let position = params.position;
 
@@ -696,6 +683,9 @@ export class EditorModel {
     this.data.elements.notes[id] = {
       text,
       position,
+      fontSize,
+      backgroundColor,
+      textColor,
     };
 
     this.triggerDataUpdate('elements.notes');
@@ -719,6 +709,32 @@ export class EditorModel {
     if (!note) return false;
 
     note.selection = selection;
+    return true;
+  }
+  changeNoteBackgroundColor(id: string, color: string | undefined) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].backgroundColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteTextColor(id: string, color: string | undefined) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].textColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteFontSize(id: string, fontSize: number | undefined) {
+    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.notes[id].fontSize = fontSize;
 
     this.triggerDataUpdate('elements.notes');
 
@@ -751,6 +767,14 @@ export class EditorModel {
     this.data.elements.meta = meta;
 
     this.triggerDataUpdate('elements.meta');
+
+    return true;
+  }
+
+  setTextMode() {
+    this.data.elements.visual = false;
+
+    this.triggerDataUpdate('elements.visual');
 
     return true;
   }

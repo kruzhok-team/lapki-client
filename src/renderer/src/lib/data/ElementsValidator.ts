@@ -6,6 +6,7 @@ import {
   Platform,
   SignalProto,
 } from '@renderer/types/platform';
+import { isString } from '@renderer/utils';
 
 import { getProtoComponent, getProtoMethod, getProtoSignal } from './GraphmlParser';
 
@@ -124,6 +125,9 @@ function validateStates(
     }
     for (const event of state.events) {
       const trigger = event.trigger;
+      if (isString(trigger)) {
+        continue;
+      }
       validateEvent(
         trigger.component,
         trigger.method,
@@ -131,6 +135,9 @@ function validateStates(
         components,
         platformComponents
       );
+      if (isString(event.do)) {
+        continue;
+      }
       for (const action of event.do) {
         validateEvent(action.component, action.method, action.args, components, platformComponents);
       }
@@ -146,6 +153,9 @@ function validateTransitions(
   for (const transition of Object.values(transitions)) {
     if (transition.label?.do !== undefined) {
       for (const action of transition.label.do) {
+        if (isString(action)) {
+          continue;
+        }
         validateEvent(action.component, action.method, action.args, components, platformComponents);
       }
     }
@@ -174,7 +184,11 @@ function validateComponents(
       throw new Error(`Неизвестный тип компонента ${component.type}.`);
     }
     const componentParemeters = new Set(Object.keys(component.parameters));
-    const platformParameters = new Set(Object.keys(platformComponent.parameters));
+    const platformParameters = new Set([
+      ...Object.keys(platformComponent.constructorParameters ?? {}),
+      ...Object.keys(platformComponent.initializationParameters ?? {}),
+    ]);
+
     if (!setIncludes(platformParameters, componentParemeters)) {
       throw new Error(
         `Получены параметры: ${[...componentParemeters].join(', ')}, но ожидались ${[

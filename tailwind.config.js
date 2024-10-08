@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-
 import { colors } from './src/renderer/src/theme';
 
 const plugin = require('tailwindcss/plugin');
@@ -47,8 +46,8 @@ export default {
           '--s-th': 'rgba(162,162,162, 0.7)',
 
           '--g': 'rgba(255,255,255,0.03)',
-          '--d-t-c': '#F2F2F2',
-          '--d-s-c': '#F2F2F2',
+          '--d-n-bg': 'rgba(0,0,0,0.3)',
+          '--d-n-c': '#FFFFFF',
         },
         ':root[data-theme="light"]': {
           '--p': '#0C4BEE',
@@ -78,8 +77,8 @@ export default {
           '--s-th': 'rgba(162,162,162, 0.7)',
 
           '--g': 'rgba(0,0,0,0.08)',
-          '--d-t-c': '#404040',
-          '--d-s-c': '#F2F2F2',
+          '--d-n-bg': 'rgba(255,255,255,0.5)',
+          '--d-n-c': '#000000',
         },
       };
 

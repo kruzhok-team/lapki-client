@@ -199,29 +199,76 @@ function r(name: string) {
 ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///// ЛИНИЯ ОБРЫВА ///
 
 const typeMap: any = {
-  Platforms: o([{ json: 'platform', js: 'platform', typ: m(r('Platform')) }], false),
-  Platform: o(
+  Platforms: o(
     [
+      { json: 'author', js: 'author', typ: '' },
+      { json: 'compile', js: 'compile', typ: true },
+      {
+        json: 'compilingSettings',
+        js: 'compilingSettings',
+        typ: u(undefined, a(r('CompilingSettings'))),
+      },
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
+      { json: 'defaultBuildFiles', js: 'defaultBuildFiles', typ: u(undefined, a('')) },
+      { json: 'defaultIncludeFiles', js: 'defaultIncludeFiles', typ: u(undefined, a('')) },
+      { json: 'delimeter', js: 'delimeter', typ: '' },
       { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'formatVersion', js: 'formatVersion', typ: '' },
       { json: 'hidden', js: 'hidden', typ: u(undefined, true) },
+      { json: 'icon', js: 'icon', typ: '' },
+      { json: 'id', js: 'id', typ: '' },
+      { json: 'language', js: 'language', typ: u(undefined, '') },
+      { json: 'mainFileExtension', js: 'mainFileExtension', typ: u(undefined, '') },
+      { json: 'mainFunction', js: 'mainFunction', typ: u(undefined, true) },
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
       { json: 'standardVersion', js: 'standardVersion', typ: '' },
+      { json: 'staticComponents', js: 'staticComponents', typ: true },
       { json: 'version', js: 'version', typ: '' },
+      { json: 'visual', js: 'visual', typ: true },
+    ],
+    false
+  ),
+  CompilingSettings: o(
+    [
+      { json: 'command', js: 'command', typ: '' },
+      { json: 'flags', js: 'flags', typ: a('') },
     ],
     false
   ),
   ComponentProto: o(
     [
+      { json: 'buildFiles', js: 'buildFiles', typ: u(undefined, a('')) },
+      {
+        json: 'constructorParameters',
+        js: 'constructorParameters',
+        typ: u(undefined, m(r('ParameterProto'))),
+      },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
+      { json: 'importFiles', js: 'importFiles', typ: u(undefined, a('')) },
+      { json: 'initializationFunction', js: 'initializationFunction', typ: u(undefined, '') },
+      {
+        json: 'initializationParameters',
+        js: 'initializationParameters',
+        typ: u(undefined, m(r('ParameterProto'))),
+      },
+      { json: 'loopActions', js: 'loopActions', typ: u(undefined, a('')) },
       { json: 'methods', js: 'methods', typ: m(r('MethodProto')) },
       { json: 'name', js: 'name', typ: u(undefined, '') },
-      { json: 'parameters', js: 'parameters', typ: m(r('ParameterProto')) },
       { json: 'signals', js: 'signals', typ: m(r('SignalProto')) },
       { json: 'singletone', js: 'singletone', typ: u(undefined, true) },
       { json: 'variables', js: 'variables', typ: m(r('VariableProto')) },
+    ],
+    false
+  ),
+  ParameterProto: o(
+    [
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
+      { json: 'name', js: 'name', typ: u(undefined, '') },
+      { json: 'optional', js: 'optional', typ: u(undefined, true) },
+      { json: 'type', js: 'type', typ: u(undefined, u(a(''), '')) },
     ],
     false
   ),
@@ -242,17 +289,9 @@ const typeMap: any = {
     ],
     false
   ),
-  ParameterProto: o(
-    [
-      { json: 'description', js: 'description', typ: u(undefined, '') },
-      { json: 'img', js: 'img', typ: u(undefined, '') },
-      { json: 'name', js: 'name', typ: u(undefined, '') },
-      { json: 'type', js: 'type', typ: u(undefined, u(a(''), '')) },
-    ],
-    false
-  ),
   SignalProto: o(
     [
+      { json: 'checkMethod', js: 'checkMethod', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ArgumentProto'))) },

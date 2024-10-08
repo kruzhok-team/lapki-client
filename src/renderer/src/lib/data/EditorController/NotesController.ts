@@ -78,6 +78,55 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  changeNoteBackgroundColor = (id: string, color: string | undefined, canUndo = true) => {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteBackgroundColor',
+        args: { id, color, prevColor: note.data?.backgroundColor },
+      });
+    }
+
+    this.app.model.changeNoteBackgroundColor(id, color);
+
+    this.view.isDirty = true;
+  };
+
+  changeNoteTextColor = (id: string, color: string | undefined, canUndo = true) => {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteTextColor',
+        args: { id, color, prevColor: note.data?.textColor },
+      });
+    }
+
+    this.app.model.changeNoteTextColor(id, color);
+
+    this.view.isDirty = true;
+  };
+
+  changeNoteFontSize = (id: string, fontSize: number | undefined, canUndo = true) => {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteFontSize',
+        args: { id, fontSize, prevFontSize: note.data?.fontSize },
+      });
+    }
+
+    this.app.model.changeNoteFontSize(id, fontSize);
+    note.prepareText();
+
+    this.view.isDirty = true;
+  };
+
   changeNotePosition(id: string, startPosition: Point, endPosition: Point, canUndo = true) {
     const note = this.items.get(id);
     if (!note) return;

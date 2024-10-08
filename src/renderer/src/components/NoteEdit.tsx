@@ -52,11 +52,11 @@ export const NoteEdit: React.FC = () => {
       const el = ref.current;
       if (!el) return;
 
-      const globalOffset = editor.view.app.mouse.getOffset();
-      const statePos = note.computedPosition;
+      const globalOffset = editor.mouse.getOffset();
+      const notePos = note.computedPosition;
       const position = {
-        x: statePos.x + globalOffset.x,
-        y: statePos.y + globalOffset.y,
+        x: notePos.x + globalOffset.x,
+        y: notePos.y + globalOffset.y,
       };
       const { width } = note.drawBounds;
       const { padding, fontSize, borderRadius } = note.computedStyles;
@@ -73,6 +73,7 @@ export const NoteEdit: React.FC = () => {
         fontSize: fontSize + 'px',
         padding: padding + 'px',
         borderRadius: borderRadius + 'px',
+        backgroundColor: note.data?.backgroundColor,
       });
       el.textContent = note.data.text;
       setTimeout(() => placeCaretAtEnd(el), 0); // А ты думал легко сфокусировать и установить картеку в конец?
@@ -92,7 +93,7 @@ export const NoteEdit: React.FC = () => {
       tabIndex={-1}
       style={style}
       className={twMerge(
-        'fixed overflow-hidden whitespace-pre-wrap border-none bg-bg-secondary text-base leading-none outline outline-1 outline-text-primary',
+        'fixed overflow-hidden whitespace-pre-wrap border-none bg-bg-secondary text-base leading-[1.2] outline outline-1 outline-text-primary',
         !isOpen && 'hidden'
       )}
       placeholder="Придумайте заметку"

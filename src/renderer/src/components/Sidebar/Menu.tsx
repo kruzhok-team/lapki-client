@@ -2,7 +2,7 @@ import React, { Dispatch, useLayoutEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { PropertiesModal } from '@renderer/components';
+import { PropertiesModal, TextModeModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -11,6 +11,7 @@ interface MenuItem {
   text: string;
   onClick: () => void;
   disabled?: boolean;
+  hidden?: boolean;
   className?: string;
 }
 
@@ -31,9 +32,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const isStale = model.useData('isStale');
   const isInitialized = model.useData('isInitialized');
   const isMounted = model.useData('isMounted');
+  const visual = model.useData('elements.visual');
 
-  const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
-    useModal(false);
+  const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
+  const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
 
   const openTab = useTabs((state) => state.openTab);
 
@@ -65,7 +67,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Свойства',
-      onClick: openPropertiesModalOpen,
+      onClick: openPropertiesModal,
       disabled: !isInitialized,
     },
     {
@@ -76,6 +78,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       disabled: !isInitialized || isMounted,
       // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
       className: 'border-t border-border-primary',
+    },
+    {
+      text: 'Перейти в текстовый режим (β)',
+      onClick: () => openTextModeModal(),
+      hidden: !visual || !isInitialized,
     },
     // {
     //   text: 'Примеры',
@@ -108,7 +115,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, className }) => (
+      {items.map(({ text, onClick, disabled = false, hidden = false, className }) => (
         <button
           key={text}
           className={twMerge(
@@ -117,12 +124,14 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           )}
           onClick={onClick}
           disabled={disabled}
+          hidden={hidden}
         >
           {text}
         </button>
       ))}
 
-      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
+      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModal} />
+      <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
     </section>
   );
 };

@@ -1,6 +1,6 @@
 {
   "name": "lapki-ide",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Statemachine-based IDE for cyber-physical systems",
   "main": "./out/main/index.js",
   "author": "Kruzhok Association, Polyus-NT",
@@ -37,7 +37,7 @@
     "@electron-toolkit/utils": "^1.0.2",
     "@floating-ui/react": "^0.26.9",
     "@floating-ui/react-dom": "^2.0.8",
-    "@kruzhok-team/cyberiadaml-js": "^1.1.4",
+    "@kruzhok-team/cyberiadaml-js": "^1.1.5",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-switch": "^1.0.3",
     "@tweenjs/tween.js": "^23.1.1",

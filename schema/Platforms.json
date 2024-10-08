@@ -36,14 +36,66 @@
       ],
       "type": "object"
     },
+    "CompilingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "flags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "command",
+        "flags"
+      ],
+      "type": "object"
+    },
     "ComponentProto": {
       "additionalProperties": false,
       "properties": {
+        "buildFiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "constructorParameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterProto"
+          },
+          "type": "object"
+        },
         "description": {
           "type": "string"
         },
         "img": {
           "type": "string"
+        },
+        "importFiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "initializationFunction": {
+          "type": "string"
+        },
+        "initializationParameters": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ParameterProto"
+          },
+          "type": "object"
+        },
+        "loopActions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "methods": {
           "additionalProperties": {
@@ -53,12 +105,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "parameters": {
-          "additionalProperties": {
-            "$ref": "#/definitions/ParameterProto"
-          },
-          "type": "object"
         },
         "signals": {
           "additionalProperties": {
@@ -79,8 +125,7 @@
       "required": [
         "signals",
         "variables",
-        "methods",
-        "parameters"
+        "methods"
       ],
       "type": "object"
     },
@@ -114,6 +159,9 @@
         "name": {
           "type": "string"
         },
+        "optional": {
+          "type": "boolean"
+        },
         "type": {
           "$ref": "#/definitions/ArgType"
         }
@@ -123,16 +171,61 @@
     "Platform": {
       "additionalProperties": false,
       "properties": {
+        "author": {
+          "type": "string"
+        },
+        "compile": {
+          "type": "boolean"
+        },
+        "compilingSettings": {
+          "items": {
+            "$ref": "#/definitions/CompilingSettings"
+          },
+          "type": "array"
+        },
         "components": {
           "additionalProperties": {
             "$ref": "#/definitions/ComponentProto"
           },
           "type": "object"
         },
+        "defaultBuildFiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "defaultIncludeFiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "delimeter": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
+        "formatVersion": {
+          "type": "string"
+        },
         "hidden": {
+          "type": "boolean"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "mainFileExtension": {
+          "type": "string"
+        },
+        "mainFunction": {
           "type": "boolean"
         },
         "name": {
@@ -147,35 +240,40 @@
         "standardVersion": {
           "type": "string"
         },
+        "staticComponents": {
+          "type": "boolean"
+        },
         "version": {
           "type": "string"
+        },
+        "visual": {
+          "type": "boolean"
         }
       },
       "required": [
-        "version",
+        "id",
+        "compile",
+        "author",
+        "icon",
+        "formatVersion",
         "standardVersion",
+        "staticComponents",
+        "delimeter",
+        "version",
+        "visual",
         "components"
       ],
       "type": "object"
     },
     "Platforms": {
-      "additionalProperties": false,
-      "properties": {
-        "platform": {
-          "additionalProperties": {
-            "$ref": "#/definitions/Platform"
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "platform"
-      ],
-      "type": "object"
+      "$ref": "#/definitions/Platform"
     },
     "SignalProto": {
       "additionalProperties": false,
       "properties": {
+        "checkMethod": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },

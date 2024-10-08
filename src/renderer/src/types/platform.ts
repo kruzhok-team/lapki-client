@@ -12,12 +12,14 @@ export type ParameterProto = {
   img?: string;
   description?: string;
   type?: ArgType;
+  optional?: boolean;
 };
 
 export type SignalProto = {
   img?: string;
   description?: string;
   parameters?: ArgumentProto[];
+  checkMethod?: string;
 };
 
 export type VariableProto = {
@@ -38,17 +40,41 @@ export type ComponentProto = {
   description?: string;
   singletone?: boolean;
   img?: string;
+  buildFiles?: string[];
+  importFiles?: string[];
   signals: { [name: string]: SignalProto };
   variables: { [name: string]: VariableProto };
   methods: { [name: string]: MethodProto };
-  parameters: { [name: string]: ParameterProto };
+  constructorParameters?: { [name: string]: ParameterProto };
+  initializationParameters?: { [name: string]: ParameterProto };
+  initializationFunction?: string;
+  loopActions?: string[];
+};
+
+export type CompilingSettings = {
+  command: string;
+  flags: string[];
 };
 
 export type Platform = {
+  id: string;
   name?: string;
   description?: string;
-  version: string;
+  compile: boolean;
+  author: string;
+  icon: string;
+  formatVersion: string;
   standardVersion: string;
+  staticComponents: boolean;
+  delimeter: string;
+  language?: string;
+  defaultIncludeFiles?: string[];
+  defaultBuildFiles?: string[];
+  compilingSettings?: CompilingSettings[];
+  mainFunction?: boolean;
+  mainFileExtension?: string;
+  version: string;
+  visual: boolean;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };
@@ -61,6 +87,5 @@ export type PlatformInfo = {
   hidden: boolean;
 };
 
-export type Platforms = {
-  platform: { [id: string]: Platform };
-};
+// TODO(L140-beep): Раньше в одном файле находилось несколько платформ, а JSONCodec проверяет тип Platforms.
+export type Platforms = Platform;

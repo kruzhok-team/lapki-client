@@ -8,7 +8,7 @@ import {
 } from '@renderer/lib/types/EditorController';
 import {
   AddComponentParams,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   CreateTransitionParams,
   ChangeTransitionParams,
   CreateNoteParams,
@@ -37,7 +37,11 @@ export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
   deleteState: { id: string; stateData: StateData };
   changeStateName: { id: string; name: string; prevName: string };
-  changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
+  changeState: {
+    args: ChangeStateParams;
+    prevEvents: StateData['events'];
+    prevColor: StateData['color'];
+  };
   changeStatePosition: { id: string; startPosition: Point; endPosition: Point };
   linkState: { parentId: string; childId: string };
   unlinkState: { parentId: string; params: UnlinkStateParams };
@@ -81,6 +85,21 @@ export type PossibleActions = {
   createNote: { id: string; params: CreateNoteParams };
   changeNotePosition: { id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { id: string; text: string; prevText: string };
+  changeNoteBackgroundColor: {
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteTextColor: {
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteFontSize: {
+    id: string;
+    fontSize: number | undefined;
+    prevFontSize: number | undefined;
+  };
   deleteNote: { id: string; prevData: NoteData };
 };
 export type PossibleActionTypes = keyof PossibleActions;
@@ -133,13 +152,14 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.states.changeStateName.bind(sM.states, id, name, false),
     undo: sM.states.changeStateName.bind(sM.states, id, prevName, false),
   }),
-  changeStateEvents: (sM, { args, prevActions }) => ({
-    redo: sM.states.changeStateEvents.bind(sM.states, args, false),
-    undo: sM.states.changeStateEvents.bind(
+  changeState: (sM, { args, prevEvents, prevColor }) => ({
+    redo: sM.states.changeState.bind(sM.states, args, false),
+    undo: sM.states.changeState.bind(
       sM.states,
       {
         ...args,
-        actions: prevActions,
+        events: prevEvents,
+        color: prevColor,
       },
       false
     ),
@@ -346,6 +366,18 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.notes.changeNoteText.bind(sM.notes, id, text, false),
     undo: sM.notes.changeNoteText.bind(sM.notes, id, prevText, false),
   }),
+  changeNoteBackgroundColor: (sM, { id, color, prevColor }) => ({
+    redo: sM.notes.changeNoteBackgroundColor.bind(sM.notes, id, color, false),
+    undo: sM.notes.changeNoteBackgroundColor.bind(sM.notes, id, prevColor, false),
+  }),
+  changeNoteTextColor: (sM, { id, color, prevColor }) => ({
+    redo: sM.notes.changeNoteTextColor.bind(sM.notes, id, color, false),
+    undo: sM.notes.changeNoteTextColor.bind(sM.notes, id, prevColor, false),
+  }),
+  changeNoteFontSize: (sM, { id, fontSize, prevFontSize }) => ({
+    redo: sM.notes.changeNoteFontSize.bind(sM.notes, id, fontSize, false),
+    undo: sM.notes.changeNoteFontSize.bind(sM.notes, id, prevFontSize, false),
+  }),
   changeNotePosition: (sM, { id, startPosition, endPosition }) => ({
     redo: sM.notes.changeNotePosition.bind(sM.notes, id, startPosition, endPosition, false),
     undo: sM.notes.changeNotePosition.bind(sM.notes, id, endPosition, startPosition, false),
@@ -369,11 +401,12 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Изменение имени состояния',
     description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
   }),
-  changeStateEvents: ({ args, prevActions }) => ({
+  changeState: ({ args, prevEvents, prevColor }) => ({
     name: 'Изменение состояния',
-    description: `Id состояния: ${args.id}\nТриггер: ${args.eventData.trigger.component}\nМетод: ${
-      args.eventData.trigger.method
-    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.eventData.do)}`,
+    description: `Id состояния: ${args.id}\nБыло: ${JSON.stringify({
+      events: prevEvents,
+      color: prevColor,
+    })}\nСтало: ${JSON.stringify({ events: args.events, color: args.color })}`,
   }),
   linkState: (args) => ({
     name: 'Присоединение состояния',
@@ -496,6 +529,18 @@ export const actionDescriptions: ActionDescriptions = {
   changeNoteText: (args) => ({
     name: 'Изменение текста заметки',
     description: `ID: ${args.id}\nБыло: "${args.prevText}"\nСтало: "${args.text}"`,
+  }),
+  changeNoteBackgroundColor: (args) => ({
+    name: 'Изменение цвета заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteTextColor: (args) => ({
+    name: 'Изменение цвета текста заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteFontSize: (args) => ({
+    name: 'Изменение размера шрифта заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
   }),
   changeNotePosition: (args) => ({
     name: 'Перемещение заметки',

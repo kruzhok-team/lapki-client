@@ -26,6 +26,7 @@ const colorNames = {
   'scrollbar-thumb': '--s-th',
 
   grid: '--g',
+
   'default-transition-color': '--d-t-c',
   'default-state-color': '--d-s-c',
 } as const;
@@ -55,6 +56,9 @@ export default {
         titleBg: '#525252',
         eventColor: '#FFF',
         selectedBorderColor: '#FFF',
+      },
+      transition: {
+        color: '#FFF',
       },
     },
   },

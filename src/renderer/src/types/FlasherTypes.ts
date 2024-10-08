@@ -52,7 +52,9 @@ export type FlasherType =
   | 'ms-get-address'
   | 'ms-ping-result'
   | 'ms-address'
-  | 'ms-device';
+  | 'ms-device'
+  | 'ms-reset'
+  | 'ms-reset-result';
 export type FlasherPayload =
   | string
   | Device
@@ -67,7 +69,7 @@ export type FlasherPayload =
   | SerialChangeBaud
   | MSBinStart
   | MSGetAddress
-  | MSPing;
+  | MSAddressAction;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -94,6 +96,7 @@ export class FlashResult {
   ) {
     this.device = device;
     this.result = result;
+    this.flashMsg = flashMsg;
     this.flashMsg = flashMsg;
   }
   /** получить результат прошивки*/
@@ -148,9 +151,10 @@ export type MSBinStart = {
   deviceID: string;
   fileSize: number;
   address: string;
+  verification: boolean;
 };
 
-export type MSPing = {
+export type MSAddressAction = {
   deviceID: string;
   address: string;
 };
@@ -159,7 +163,9 @@ export type MSGetAddress = {
   deviceID: string;
 };
 
-export type MSPingResult = {
-  deviceID: string;
-  code: number;
+// адрес и ассоциированные с ним данные (для МС-ТЮК)
+export type AddressData = {
+  name: string;
+  address: string;
+  type: string;
 };

@@ -17,8 +17,18 @@ export const defaultSettings = {
   },
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {
+    /**
+     * скорость передачи данных
+     */
     baudRate: 9600,
-    lineBreak: 'LF' as 'LF' | 'CR' | 'CR&LF' | 'Без',
+    /**
+     * символ переноса строки в конце сообщения от клиента на устройство
+     */
+    lineBreak: 'LF' as 'LF' | 'CR' | 'CRLF' | 'EMPTY',
+    /**
+     * Если true, то будет автоматическая прокрутка окна с логами
+     */
+    autoScroll: true,
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',
@@ -26,9 +36,30 @@ export const defaultSettings = {
     animations: true,
     grid: true,
   },
+  /**
+   * Записи адресной книги МС-ТЮК.
+   *
+   * Первым элементов является заголовок таблицы, он всегда должен присутствовать.
+   */
+  addressBookMS: [{ name: 'Имя', address: 'Адрес', type: 'Тип' }],
+  /**
+   * Параметры менеджера МС-ТЮК
+   */
+  managerMS: {
+    /**
+     * Параметр, отправляемый загрузчику при запросе прошивки.
+     * Если true, то загрузчик потратит дополнительное время на проверку прошивки.
+     */
+    verification: false,
+    /**
+     * Если true, то будет автоматическая прокрутка окна с логами
+     */
+    autoScroll: true,
+  },
 };
 
 export type Settings = typeof defaultSettings;
+export type SettingsKey = keyof Settings;
 
 export const initSettings = (webContents: WebContents) => {
   for (const key in defaultSettings) {
@@ -40,27 +71,29 @@ export const initSettings = (webContents: WebContents) => {
   ipcMain.handle('settings:get', (_event, key) => {
     return settings.get(key);
   });
-  ipcMain.handle('settings:set', async (_event, key: string, value) => {
+  ipcMain.handle('settings:set', async (_event, key: SettingsKey, value) => {
     await settingsChange(webContents, key, value);
   });
-  ipcMain.handle('settings:reset', async (_event, key: string) => {
+  ipcMain.handle('settings:reset', async (_event, key: SettingsKey) => {
     await settingsChange(webContents, key, defaultSettings[key]);
   });
   ipcMain.handle('settings:fullReset', async (_event) => {
     for (const key in defaultSettings) {
-      await settingsChange(webContents, key, defaultSettings[key]);
+      if ((key as SettingsKey) != 'addressBookMS') {
+        await settingsChange(webContents, key as SettingsKey, defaultSettings[key]);
+      }
     }
   });
 };
 
 // изменение настройки и отправка сообщения через webContents
-async function settingsChange(webContents: WebContents, key: string, value) {
+async function settingsChange(webContents: WebContents, key: SettingsKey, value) {
   await settings.set(key, value);
 
   settingsChangeSend(webContents, key, value);
 }
 
 // отправка сообщения об изменение настроек через webContents
-export function settingsChangeSend(webContents: WebContents, key: string, value) {
+export function settingsChangeSend(webContents: WebContents, key: SettingsKey, value) {
   webContents.send(`settings:change:${key}`, value);
 }

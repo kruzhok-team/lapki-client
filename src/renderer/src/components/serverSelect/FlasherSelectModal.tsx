@@ -1,8 +1,9 @@
 import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
-import { Select, Modal, TextField } from '@renderer/components/UI';
+import { Select, Modal, TextField, Checkbox } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 
 const options = [
@@ -20,6 +21,8 @@ export interface FlasherSelectModalFormValues {
   host: string;
   port: number;
   type: 'local' | 'remote';
+  avrdudePath: string;
+  avrdudeSystemPath: boolean;
 }
 
 export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
@@ -39,6 +42,8 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
 
   const isSecondaryFieldsDisabled = watch('type') === 'local';
 
+  const isChecked = watch('avrdudeSystemPath') == true;
+
   const handleSubmit = hookHandleSubmit((data) => {
     onSubmit(data);
     onClose();
@@ -54,14 +59,20 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     setValue('type', flasherSetting.type);
     setValue('host', flasherSetting.host ?? '');
     setValue('port', Number(flasherSetting.port ?? ''));
+    setValue('avrdudePath', flasherSetting.avrdudePath);
+    setValue('avrdudeSystemPath', flasherSetting.avrdudeSystemPath);
   }, [setValue, flasherSetting]);
+
+  const handleReboot = async () => {
+    // TODO: проверка на то, что монитор порта закрыт и прошивка не идёт
+    await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
+  };
 
   return (
     <Modal
       {...props}
       onRequestClose={onClose}
-      title={'Укажите адрес загрузчика'}
-      submitLabel="Подключиться"
+      title={'Настройки загрузчика'}
       onSubmit={handleSubmit}
     >
       <div className="flex items-center">
@@ -87,11 +98,13 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
                   options={options}
                   isSearchable={false}
                 />
+                <div>{currentServerLabel}</div>
               </div>
             );
           }}
         />
       </div>
+      <br></br>
       <div className="mb-2 flex gap-2">
         <TextField
           maxLength={80}
@@ -118,8 +131,28 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={isSecondaryFieldsDisabled}
         />
       </div>
-
-      <div>{currentServerLabel}</div>
+      <br></br>
+      <div className={twMerge(!isSecondaryFieldsDisabled && 'hidden')}>
+        <div className="mb-2 flex gap-2">
+          <TextField
+            maxLength={200}
+            className="disabled:opacity-50"
+            label="Путь к avrdude:"
+            {...register('avrdudePath')}
+            placeholder="Напишите путь к avrdude"
+            disabled={isChecked}
+          />
+          <Checkbox
+            checked={isChecked}
+            onCheckedChange={() => setValue('avrdudeSystemPath', !isChecked)}
+            className="mr-2 mt-[9px]"
+          />
+          Использовать системный путь
+        </div>
+        <button className="btn-primary" onClick={handleReboot}>
+          Перезапустить <br></br>загрузчик
+        </button>
+      </div>
     </Modal>
   );
 };

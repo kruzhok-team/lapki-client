@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useTabs } from '@renderer/store/useTabs';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { Component } from './Component';
@@ -73,6 +74,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           icon={editor.controller.platform?.getFullComponentIcon(name)}
           isSelected={name === selectedComponent}
           isDragging={name === dragName}
+          onCallContextMenu={() => onRequestEditComponent(name)}
           onSelect={() => setSelectedComponent(name)}
           onEdit={() => onRequestEditComponent(name)}
           onDelete={() => onRequestDeleteComponent(name)}

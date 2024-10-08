@@ -12,6 +12,7 @@ interface ComponentProps {
   description: string | undefined;
   onSelect: () => void;
   onEdit: () => void;
+  onCallContextMenu: () => void; // TODO: Сделать контекстное меню для машин состояний
   onDelete: () => void;
   onDragStart: () => void;
   onDrop: () => void;
@@ -27,6 +28,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
     onDelete,
     onDragStart,
     onDrop,
+    onCallContextMenu,
     description,
     icon,
   } = props;
@@ -34,6 +36,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
   const [dragOver, setDragOver] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    console.log('HEREEEEEEEEEEEEEEEEEEEE', e.key);
     if (e.key !== 'Delete') return;
 
     onDelete();
@@ -72,7 +75,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           onClick={onSelect}
           onAuxClick={onDelete}
           onDoubleClick={onEdit}
-          onContextMenu={onEdit}
+          onContextMenu={onCallContextMenu}
           onKeyDown={handleKeyDown}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}

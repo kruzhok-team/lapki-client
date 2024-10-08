@@ -44,7 +44,7 @@ export const StateMachineDeleteModal: React.FC<StateMachineDeleteModalProps> = (
       onSubmit={handleSubmit}
     >
       <p>
-        Вы действительно хотите удалить машину состояний {`${idx ?? 'ХУЙ СОСИ'}`}
+        Вы действительно хотите удалить машину состояний
         <span className="px-1 font-bold">{`${data.name ?? idx} (${
           data.platform == '' ? 'неизвестная платформа' : data.platform
         })`}</span>

@@ -5,6 +5,7 @@ import { StateMachineEditModal } from '@renderer/components/StateMachineEditModa
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useTabs } from '@renderer/store/useTabs';
 import { StateMachine } from '@renderer/types/diagram';
 
 import { StateMachineDeleteModal } from './StateMachineDeleteModal';
@@ -13,6 +14,17 @@ import { Component } from '../Explorer/Component';
 
 export const StateMachinesList: React.FC = () => {
   const modelController = useModelContext();
+
+  const openTab = useTabs((state) => state.openTab);
+
+  const onCallContextMenu = (name: string, sM: StateMachine) => {
+    for (const controllerId in modelController.controllers) {
+      const controller = modelController.controllers[controllerId];
+      if (!controller.stateMachinesSub[name] || !(controller.type === 'specific')) continue;
+
+      openTab({ type: 'editor', name: sM.name ?? name, canvasId: controller.id });
+    }
+  };
 
   const editor = modelController.getCurrentCanvas();
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
@@ -60,6 +72,7 @@ export const StateMachinesList: React.FC = () => {
               onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}
               onDelete={() => onRequestDeleteStateMachine(id)}
+              onCallContextMenu={() => onCallContextMenu(id, sm)}
               // TODO: Доделать свап машин состояний
               onDragStart={() => console.log('setDragState')}
               onDrop={() => console.log('onDrop')}

@@ -44,7 +44,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       setError('address', { message: 'Длина адреса должна быть равна 16' });
       return;
     }
-    const re: RegExp = /[0-9A-Fa-f]{6}/g;
+    const re: RegExp = /[0-9A-Fa-f]{16}/g;
     if (!re.test(submitData.address)) {
       setError('address', { message: 'Адрес не является корректным шестнадцатеричным числом' });
       return;

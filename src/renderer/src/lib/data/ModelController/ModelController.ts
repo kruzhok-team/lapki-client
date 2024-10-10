@@ -157,16 +157,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return stateMachines;
   }
 
-  setupSchemeScreenEditorController(smIds: string[], controller: CanvasController) {
-    for (const smId of smIds) {
-      const sm = this.model.data.elements.stateMachines[smId];
+  setupSchemeScreenEditorController(
+    smIds: { [id: string]: StateMachine },
+    controller: CanvasController
+  ) {
+    for (const smId in smIds) {
+      const sm = smIds[smId];
 
       if (!sm) return;
       const smToSubscribe = {};
       smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
+      controller.subscribe(smId, 'stateMachine', {});
       controller.subscribe(smId, 'component', sm.components);
-      controller.subscribe(smId, 'stateMachine', smToSubscribe);
       controller.watch();
     }
   }
@@ -261,41 +264,44 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
     this.model.changeHeadControllerId(headCanvas);
     this.model.makeStale();
-
+    this.createSchemeScreenController(elements.stateMachines);
     this.history.clear();
     this.model.initCanvasData();
     this.initPlatform();
   }
 
-  // createSchemeScreenController(stateMachines: { [id: string]: StateMachine }) {
-  //   const schemeScreenId = generateId();
-  //   const canvasId = generateId();
-  //   const editor = new CanvasEditor(canvasId, this);
-  //   const platforms = Object.values(stateMachines).map((sm) => sm.platform);
-  //   const schemeScreenEditor = new CanvasController(
-  //     schemeScreenId,
-  //     'scheme',
-  //     editor,
-  //     {
-  //       platformNames: platforms,
-  //     },
-  //     this
-  //   );
-  //   editor.setController(controller);
-  //   this.controllers[canvasId] = controller;
-  //   this.model.data.canvas[canvasId] = {
-  //     isInitialized: true,
-  //     isMounted: false,
-  //     prevMounted: false,
-  //   };
-  //   this.model.createStateMachine(smId, data);
-  //   this.watch(controller);
-  //   this.setupDiagramEditorController(smId, controller);
+  createSchemeScreenController(stateMachines: { [id: string]: StateMachine }) {
+    const schemeScreenId = generateId();
+    const editor = new CanvasEditor(schemeScreenId, this);
+    const platforms: { [id: string]: string } = {};
 
-  //   this.emit('createStateMachine', { smId, name: data.name, platform: data.platform });
+    for (const smId in stateMachines) {
+      if (smId === '') continue;
+      const sm = stateMachines[smId];
+      platforms[smId] = sm.platform;
+    }
 
-  //   return canvasId;
-  // }
+    const schemeScreenController = new CanvasController(
+      schemeScreenId,
+      'scheme',
+      editor,
+      {
+        platformNames: platforms,
+      },
+      this
+    );
+    editor.setController(schemeScreenController);
+    this.controllers[schemeScreenId] = schemeScreenController;
+    this.model.data.canvas[schemeScreenId] = {
+      isInitialized: true,
+      isMounted: false,
+      prevMounted: false,
+    };
+    this.watch(schemeScreenController);
+    this.setupSchemeScreenEditorController(stateMachines, schemeScreenController);
+    this.schemeEditorId = schemeScreenId;
+    return schemeScreenId;
+  }
 
   loadData() {
     this.emit('loadData', null);
@@ -539,7 +545,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);
 
-    this.emit('createStateMachine', { smId, name: data.name, platform: data.platform });
+    this.emit('createStateMachine', {
+      smId,
+      name: data.name,
+      platform: data.platform,
+      position: data.position,
+    });
 
     return canvasId;
   }
@@ -1065,11 +1076,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     endPosition: Point,
     _canUndo = true
   ) {
-    this.emit('changeComponentPosition', {
-      id: name,
-      startPosition: startPosition,
-      endPosition: endPosition,
-    });
     this.model.changeComponentPosition(smId, name, endPosition);
     if (_canUndo) {
       this.history.do({
@@ -1077,6 +1083,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { smId, name, startPosition, endPosition },
       });
     }
+    this.emit('changeComponentPosition', {
+      id: name,
+      startPosition: startPosition,
+      endPosition: endPosition,
+    });
   }
 
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
@@ -1198,6 +1209,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       finalStates: {},
       choiceStates: {},
       notes: {},
+      position: { x: 0, y: 0 },
     };
 
     for (const objectType of StateTypes) {

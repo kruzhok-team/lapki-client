@@ -117,8 +117,9 @@ export interface ChangeStateEventsParams {
 
 export type CreateStateMachineParams = {
   smId: string;
-  name: string | undefined;
   platform: string;
+  position: Point;
+  name?: string;
   label?: string;
 };
 

@@ -250,20 +250,19 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   init() {
     if (!this.inited) {
       for (const smId in this.initData) {
-        this.initComponents(smId, this.initData[smId].components);
         // TODO: отрефакторить так, чтобы мы инициализировали только то, на что подписаны
-        if (this.type === 'scheme') {
-          this.initializer.initComponents(smId, this.initData[smId].components);
-        } else {
-          this.initializer.initStates(smId, this.initData[smId].states);
-          this.initializer.initChoiceStates(this.initData[smId].choiceStates);
-          this.initializer.initFinalStates(this.initData[smId].finalStates);
-          this.initializer.initNotes(this.initData[smId].notes);
-          this.initializer.initInitialStates(this.initData[smId].initialStates);
-          this.initializer.initTransitions(smId, this.initData[smId].transitions);
-          this.inited = true;
-        }
+        this.initializer.initComponents(smId, this.initData[smId].components);
+        this.initializer.initStates(smId, this.initData[smId].states);
+        this.initializer.initChoiceStates(smId, this.initData[smId].choiceStates);
+        this.initializer.initFinalStates(smId, this.initData[smId].finalStates);
+        this.initializer.initNotes(this.initData[smId].notes);
+        this.initializer.initInitialStates(this.initData[smId].initialStates);
+        this.initializer.initTransitions(smId, this.initData[smId].transitions);
       }
+      if (this.type === 'scheme') {
+        this.initializer.initStateMachines(this.initData);
+      }
+      this.inited = true;
     }
   }
 
@@ -378,17 +377,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   changeScale = (value: number) => {
     this.scale = value;
   };
-
-  initComponents(smId: string, components: { [id: string]: Component }) {
-    if (!this.platform[smId]) return;
-    for (const [id, componentData] of Object.entries(components)) {
-      this.platform[smId].nameToVisual.set(id, {
-        component: componentData.type,
-        label: componentData.parameters['label'],
-        color: componentData.parameters['labelColor'],
-      });
-    }
-  }
 
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
     if (!this.stateMachinesSub[smId] || !this.model) {
@@ -617,16 +605,18 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'deleteStateMachine',
           this.bindHelper('stateMachine', 'deleteStateMachine', this.deleteStateMachine)
         );
-        this.initData = { ...this.initData, ...(initData as { [id: string]: StateMachine }) };
+        if (!this.initData[smId]) {
+          this.initData[smId] = emptyStateMachine();
+        }
         break;
       default:
         throw new Error('Unknown attribute');
     }
   }
 
-  createStateMachine(args: CreateStateMachineParams) {
+  createStateMachine = (args: CreateStateMachineParams) => {
     this.stateMachines.createStateMachine(args);
-  }
+  };
 
   private addDragendState = (args: AddDragendStateSig) => {
     const { stateId } = args;
@@ -797,8 +787,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!this.platform[args.smId]) {
       return;
     }
-
-    this.components.editComponent(args);
+    if (this.type === 'scheme') {
+      this.components.editComponent(args);
+    }
     this.platform[args.smId].nameToVisual.set(args.id, {
       component: args.type,
       label: args.parameters['label'],
@@ -811,8 +802,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       return;
     }
 
-    // this.components.deleteComponent(args);
-    // this.stateMachines.deleteComponent(args.smId, args.id);
+    if (this.type === 'scheme') {
+      this.components.deleteComponent(args);
+      this.stateMachines.deleteComponent(args.smId, args.id);
+    }
     this.platform[args.smId].nameToVisual.delete(args.id);
   }
 
@@ -828,7 +821,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     if (this.type !== 'scheme') return;
 
-    this.components.createComponent(args);
+    const component = this.components.createComponent(args);
+
+    if (!component) return;
+
+    this.stateMachines.addComponent(args.smId, component);
     // const component = this.components.createComponent(args);
     // if (!component) {
     // return;
@@ -840,7 +837,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     for (const smId in this.canvasData.platformNames) {
       const platformName = this.canvasData.platformNames[smId];
-      console.log(smId, platformName);
+
       if (isPlatformAvailable(platformName)) {
         const platform = loadPlatform(platformName);
         if (typeof platform === 'undefined') {

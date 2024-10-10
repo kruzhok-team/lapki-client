@@ -41,16 +41,22 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   createComponent = (args: CreateComponentParams) => {
-    const icon = this.controller[args.smId].platform?.getComponentIcon(args.type);
-    if (!icon) {
-      return;
-    }
+    const platform = this.controller.platform[args.smId];
+    if (!platform) return;
+    const icon = platform.getComponentIcon(args.type);
+    if (!icon) return;
     const markedIcon: MarkedIconData = {
       icon: icon,
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     };
-    const component = new DrawableComponent(this.app, args.name, args.position, markedIcon);
+    const component = new DrawableComponent(
+      this.app,
+      args.name,
+      args.smId,
+      args.position,
+      markedIcon
+    );
     this.items.set(args.name, component);
     this.watch(component);
 
@@ -137,7 +143,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     component: DrawableComponent,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.changeComponentPosition(component.id, e.dragStartPosition);
+    // debugger;
+    this.changeComponentPosition(component.id, e.dragEndPosition);
   };
 
   watch(component: DrawableComponent) {

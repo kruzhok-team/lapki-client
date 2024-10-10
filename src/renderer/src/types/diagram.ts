@@ -109,6 +109,7 @@ export type Component = {
 
 export type StateMachine = {
   name?: string;
+  position: Point;
   states: { [id: string]: State };
   initialStates: { [id: string]: InitialState };
   finalStates: { [id: string]: FinalState };
@@ -140,6 +141,7 @@ export function emptyStateMachine(): StateMachine {
     platform: '',
     compilerSettings: null,
     meta: {},
+    position: { x: 0, y: 0 },
   };
 }
 

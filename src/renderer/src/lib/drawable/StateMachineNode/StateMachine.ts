@@ -28,7 +28,7 @@ export class DrawableStateMachine extends Shape {
       height: 100,
     };
     this.children.add(
-      new DrawableComponent(app, id, { x: 0, y: 0 }, { ...icon, label: undefined }, this),
+      new DrawableComponent(app, id, this.id, { x: 0, y: 0 }, { ...icon, label: undefined }, this),
       Layer.Components
     );
   }

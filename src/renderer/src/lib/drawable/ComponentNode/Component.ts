@@ -14,14 +14,17 @@ export class DrawableComponent extends Shape {
   icon: MarkedIconData;
   __position: Point;
   __dimensions: Dimensions;
+  smId: string;
   constructor(
     app: CanvasEditor,
     id: string,
+    smId: string,
     position: Point,
     icon: MarkedIconData,
     parent?: Shape
   ) {
     super(app, id, parent);
+    this.smId = smId;
     this.icon = icon;
     this.__position = position;
     this.__dimensions = {

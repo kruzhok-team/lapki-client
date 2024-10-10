@@ -42,20 +42,18 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
   createStateMachine = (args: CreateStateMachineParams) => {
     const markedSmIcon: MarkedIconData = {
       icon: 'stateMachine',
-      label: 'Машина состояний',
+      label: args.name ?? args.smId,
     };
     const sm = new DrawableStateMachine(this.app, args.smId, markedSmIcon);
     this.items.set(args.smId, sm);
-    this.app.view.children.add(sm, Layer.Machines);
-    this.app.view.isDirty = true;
+    this.view.children.add(sm, Layer.Machines);
+    this.view.isDirty = true;
     return sm;
   };
 
   addComponent = (smId: string, component: DrawableComponent) => {
     const sm = this.getStateMachineById(smId);
-    if (!sm) {
-      return;
-    }
+    if (!sm) return;
     component.parent = sm;
     sm.children.add(component, Layer.Components);
 

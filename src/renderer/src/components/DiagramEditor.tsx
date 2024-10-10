@@ -39,10 +39,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   }>();
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || controller.id === '') return;
     editor.mount(containerRef.current);
 
     const handleDblclick = (position: Point) => {
+      if (controller.type == 'scheme') return;
       modelController.createState({
         smId: smId,
         name: 'Состояние',
@@ -59,6 +60,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
       event: Event;
       isEditingEvent: boolean;
     }) => {
+      if (controller.type == 'scheme') return;
       const { state, eventSelection, event, isEditingEvent } = data;
 
       setEventsModalParentData({ state, eventSelection });

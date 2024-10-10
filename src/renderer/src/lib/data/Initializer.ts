@@ -17,6 +17,7 @@ import {
   ChoiceState as DataChoiceState,
   FinalState as DataFinalState,
   Component,
+  StateMachine,
 } from '@renderer/types/diagram';
 
 import { CanvasController } from './ModelController/CanvasController';
@@ -125,10 +126,10 @@ export class Initializer {
     }
   }
 
-  initFinalStates(finals: { [id: string]: DataFinalState }) {
+  initFinalStates(smId: string, finals: { [id: string]: DataFinalState }) {
     for (const id in finals) {
       const final = finals[id];
-      this.createFinalStateView(id, final);
+      this.createFinalStateView(smId, id, final);
     }
 
     for (const id in finals) {
@@ -140,10 +141,10 @@ export class Initializer {
     }
   }
 
-  initChoiceStates(choices: { [id: string]: DataChoiceState }) {
+  initChoiceStates(smId: string, choices: { [id: string]: DataChoiceState }) {
     for (const id in choices) {
       const choice = choices[id];
-      this.createChoiceStateView(id, choice);
+      this.createChoiceStateView(smId, id, choice);
     }
 
     for (const id in choices) {
@@ -172,28 +173,40 @@ export class Initializer {
     }
   }
 
-  // private initStateMachines() {
-  //   this.controller.stateMachines.createStateMachine({
-  //     id: 'G',
-  //     components: [],
-  //     position: {
-  //       x: 0,
-  //       y: 0,
-  //     },
-  //   });
-  //   // this.initComponents('G');
-  //   const sm = this.controller.stateMachines.getStateMachineById('G');
-  //   if (sm) {
-  //     sm.dimensions = {
-  //       width: sm.computedDimensions.width,
-  //       height: sm.computedDimensions.height,
-  //     };
-  //   }
-  // }
+  initStateMachines(stateMachines: { [id: string]: StateMachine }) {
+    for (const smId in stateMachines) {
+      if (smId === '') continue;
+      const dataSm = stateMachines[smId];
+      this.controller.stateMachines.createStateMachine({
+        smId,
+        ...dataSm,
+      });
+      for (const componentId in dataSm.components) {
+        const component = dataSm.components[componentId];
+        const drawableComponent = this.controller.components.createComponent({
+          smId,
+          name: componentId,
+          ...component,
+        });
+
+        if (!drawableComponent) continue;
+
+        this.controller.stateMachines.addComponent(smId, drawableComponent);
+      }
+      // this.initComponents('G');
+      // const sm = this.controller.stateMachines.getStateMachineById('G');
+      // if (sm) {
+      //   sm.dimensions = {
+      //     width: sm.computedDimensions.width,
+      //     height: sm.computedDimensions.height,
+      //   };
+      // }
+    }
+  }
 
   // Флаг нужен, чтобы повторно не добавлять
   initComponents(smId: string, components: { [id: string]: Component }) {
-    if (!this.platform) return;
+    if (!this.platform[smId]) return;
     for (const name in components) {
       const component = components[name];
       // this.createComponentView(sm, name);
@@ -327,8 +340,8 @@ export class Initializer {
     parent.children.add(child, Layer.InitialStates);
   }
 
-  private createFinalStateView(id: string, finalStateData: DataFinalState) {
-    const state = new FinalState(this.app, id, finalStateData);
+  private createFinalStateView(smId: string, id: string, finalStateData: DataFinalState) {
+    const state = new FinalState(this.app, id, smId, finalStateData);
     this.states.data.finalStates.set(state.id, state);
     this.states.watch(state);
     this.app.view.children.add(state, Layer.FinalStates);
@@ -345,8 +358,8 @@ export class Initializer {
     parent.children.add(child, Layer.FinalStates);
   }
 
-  private createChoiceStateView(id: string, choiceStateData: DataChoiceState) {
-    const state = new ChoiceState(this.app, id, choiceStateData);
+  private createChoiceStateView(smId: string, id: string, choiceStateData: DataChoiceState) {
+    const state = new ChoiceState(this.app, id, smId, choiceStateData);
     this.states.data.choiceStates.set(state.id, state);
     this.states.watch(state);
     this.app.view.children.add(state, Layer.ChoiceStates);

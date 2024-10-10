@@ -26,6 +26,7 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
+  const [openTab] = useTabs((state) => [state.openTab]);
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const isStale = modelController.model.useData('', 'isStale');
@@ -80,8 +81,16 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Открыть экран',
       onClick: () => {
+        const schemeEditorId = modelController.schemeEditorId;
+        if (!schemeEditorId) return;
+        const controller = modelController.controllers[schemeEditorId];
+        if (!controller) return;
         // TODO: Схемотехнический экран
-        // openTab({ type: 'editor', name: 'Схемотехнический экран' });
+        openTab({
+          type: 'editor',
+          canvasId: schemeEditorId,
+          name: 'Схемотехнический экран',
+        });
       },
       disabled: !isInitialized,
     },

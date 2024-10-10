@@ -27,7 +27,7 @@ export const StateMachineFormFields: React.FC<StateMachineFormFields> = ({
   useEffect(() => {
     setErrors(
       Object.fromEntries(
-        Object.entries(parameters).map(([idx, param]) => {
+        Object.entries(parameters).map(([idx]) => {
           const name = idx;
           return [name, ''];
         })
@@ -39,7 +39,7 @@ export const StateMachineFormFields: React.FC<StateMachineFormFields> = ({
     <div className="flex flex-col gap-2">
       <h3 className="mb-1 text-xl">Параметры:</h3>
 
-      {protoParametersArray.map(([idx, param]) => {
+      {protoParametersArray.map(([idx]) => {
         const name = idx;
         const value = parameters[name] ?? '';
         const error = errors[name];

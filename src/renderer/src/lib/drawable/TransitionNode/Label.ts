@@ -16,7 +16,7 @@ export class Label implements Drawable {
 
     const platform = this.app.controller.platform;
 
-    if (!platform) return;
+    if (!platform[this.parent.smId]) return;
 
     const { x, y, width, height } = this.parent.drawBounds;
     const eventMargin = picto.eventMargin;
@@ -47,7 +47,7 @@ export class Label implements Drawable {
     if (label.trigger && label.trigger.component !== '' && label.trigger.method !== '') {
       const trigger = label.trigger;
       ctx.beginPath();
-      platform.drawEvent(ctx, trigger, x + p, y + p);
+      platform[this.parent.smId].drawEvent(ctx, trigger, x + p, y + p);
       ctx.closePath();
     } else {
       picto.drawPicto(ctx, x + p, y + p, {
@@ -65,7 +65,7 @@ export class Label implements Drawable {
         const aX =
           px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.controller.scale;
         const aY = py + (ay * yDx) / this.app.controller.scale;
-        platform.drawCondition(ctx, label.condition, aX, aY, opacity);
+        platform[this.parent.smId].drawCondition(ctx, label.condition, aX, aY, opacity);
       }
       ctx.closePath();
     }
@@ -78,7 +78,7 @@ export class Label implements Drawable {
         const aX =
           px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.controller.scale;
         const aY = py + (ay * yDx) / this.app.controller.scale;
-        platform.drawAction(ctx, data, aX, aY, opacity);
+        platform[this.parent.smId].drawAction(ctx, data, aX, aY, opacity);
       });
       ctx.closePath();
     }

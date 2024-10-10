@@ -10,13 +10,15 @@ import { Transition } from '@renderer/types/diagram';
 import { Events, Condition, ColorField, Trigger } from './components';
 import { useTrigger, useCondition, useEvents } from './hooks';
 
-export const TransitionModal: React.FC = () => {
+interface TransitionModalProps {
+  smId: string;
+}
+
+export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Передавать в модалки машину состояний
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const smId = stateMachines[0];
-  const sm = modelController.model.data.elements.stateMachines[smId];
+  // const sm = modelController.model.data.elements.stateMachines[smId];
+  const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);
   const [transition, setTransition] = useState<Transition | null>(null);
@@ -35,11 +37,11 @@ export const TransitionModal: React.FC = () => {
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
   const showTrigger = useMemo(() => {
     if (newTransition) {
-      return !sm.choiceStates[newTransition.sourceId];
+      return !choiceStates[newTransition.sourceId];
     }
 
     if (transition) {
-      return !sm.choiceStates[transition.sourceId];
+      return !choiceStates[transition.sourceId];
     }
 
     return true;
@@ -143,8 +145,6 @@ export const TransitionModal: React.FC = () => {
           do: getEvents(),
         } as any, // Из-за position
       });
-
-      close();
     }
 
     // Если создаем новое
@@ -178,13 +178,15 @@ export const TransitionModal: React.FC = () => {
   };
 
   useEffect(() => {
-    const handleCreateTransition = (data: { sourceId: string; targetId: string }) => {
+    const handleCreateTransition = (data: { smId: string; sourceId: string; targetId: string }) => {
+      if (data.smId !== smId) return;
       setNewTransition(data);
       events.setEvents([]);
       open();
     };
 
     const handleChangeTransition = (args: ChangeTransitionParams) => {
+      if (args.smId !== smId) return;
       const { id, label, color } = args;
       if (label?.trigger) {
         trigger.setSelectedComponent(label.trigger.component);
@@ -205,11 +207,11 @@ export const TransitionModal: React.FC = () => {
       open();
     };
     modelController.on('openCreateTransitionModal', handleCreateTransition);
-    modelController.on('changeTransition', handleChangeTransition);
+    modelController.on('openChangeTransitionModal', handleChangeTransition);
 
     return () => {
       modelController.off('openCreateTransitionModal', handleCreateTransition);
-      modelController.off('changeTransition', handleChangeTransition);
+      modelController.off('openChangeTransitionModal', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

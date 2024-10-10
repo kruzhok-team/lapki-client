@@ -2,19 +2,20 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Events, ColorField, Trigger, Condition } from './components';
 import { useTrigger, useEvents, useCondition } from './hooks';
 
-export const StateModal: React.FC = () => {
+interface StateModalProps {
+  smId: string;
+  editorController: CanvasController;
+}
+
+export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const smId = stateMachines[0];
-  const editor = modelController.getCurrentCanvas();
 
   const [isOpen, open, close] = useModal(false);
 
@@ -156,10 +157,10 @@ export const StateModal: React.FC = () => {
       open();
     };
 
-    editor.controller.states.on('changeState', handler);
+    editorController.states.on('changeState', handler);
 
     return () => {
-      editor.controller.states.off('changeState', handler);
+      editorController.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

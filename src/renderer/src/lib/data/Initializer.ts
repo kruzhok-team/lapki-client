@@ -96,9 +96,9 @@ export class Initializer {
    *
    * Это нужно потому что в схемы могут идти сначала дети а потом родители
    */
-  initStates(states: { [id: string]: DataState }) {
+  initStates(smId: string, states: { [id: string]: DataState }) {
     for (const id in states) {
-      this.createStateView(id, states[id]);
+      this.createStateView(smId, id, states[id]);
     }
 
     for (const id in states) {
@@ -155,10 +155,10 @@ export class Initializer {
     }
   }
 
-  initTransitions(transitions: { [id: string]: DataTransition }) {
+  initTransitions(smId: string, transitions: { [id: string]: DataTransition }) {
     for (const id in transitions) {
       const transition = transitions[id];
-      this.createTransitionView(id, transition);
+      this.createTransitionView(smId, id, transition);
     }
 
     // Инициализация призрачного перехода
@@ -192,13 +192,13 @@ export class Initializer {
   // }
 
   // Флаг нужен, чтобы повторно не добавлять
-  initComponents(components: { [id: string]: Component }) {
+  initComponents(smId: string, components: { [id: string]: Component }) {
     if (!this.platform) return;
     for (const name in components) {
       const component = components[name];
       // this.createComponentView(sm, name);
       // }
-      this.platform.nameToVisual.set(name, {
+      this.platform[smId].nameToVisual.set(name, {
         component: component.type,
         label: component.parameters['label'],
         color: component.parameters['labelColor'],
@@ -236,8 +236,8 @@ export class Initializer {
   // }
 
   // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
-  private createStateView(id: string, dataState: DataState) {
-    const state = new State(this.app, id, dataState);
+  private createStateView(smId: string, id: string, dataState: DataState) {
+    const state = new State(this.app, id, smId, dataState);
     this.states.data.states.set(state.id, state);
     this.states.watch(state);
     this.app.view.children.add(state, Layer.States);
@@ -295,8 +295,8 @@ export class Initializer {
     parent.children.add(child, Layer.States);
   }
 
-  private createTransitionView(id: string, transitionData: DataTransition) {
-    const transition = new Transition(this.app, id, transitionData);
+  private createTransitionView(smId: string, id: string, transitionData: DataTransition) {
+    const transition = new Transition(this.app, id, smId, transitionData);
     this.transitions.set(id, transition);
     this.transitions.linkTransition(id);
     this.transitions.watchTransition(transition);

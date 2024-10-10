@@ -37,8 +37,6 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
     useModal(false);
 
-  const openTab = useTabs((state) => state.openTab);
-
   const items: MenuItem[] = [
     {
       text: 'Создать...',
@@ -70,19 +68,20 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: openPropertiesModalOpen,
       disabled: !isInitialized,
     },
-    {
-      text: 'Открыть редактор',
-      onClick: () => {
-        // openTab({ type: 'editor', name: 'editor' });
-      },
-      disabled: !isInitialized,
-      // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
-      className: 'border-t border-border-primary',
-    },
+    // {
+    //   text: 'Открыть редактор',
+    //   onClick: () => {
+    //     // openTab({ type: 'editor', name: 'editor' });
+    //   },
+    //   disabled: !isInitialized,
+    //   // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
+    //   className: 'border-t border-border-primary',
+    // },
     {
       text: 'Открыть экран',
       onClick: () => {
-        openTab({ type: 'scheme', name: 'scheme' });
+        // TODO: Схемотехнический экран
+        // openTab({ type: 'editor', name: 'Схемотехнический экран' });
       },
       disabled: !isInitialized,
     },

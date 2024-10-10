@@ -88,7 +88,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   createTransition = (params: CreateTransitionParams) => {
-    const { sourceId, targetId } = params;
+    const { sourceId, targetId, smId } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
     const target =
@@ -99,7 +99,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (!source || !target || !params.id) return;
 
     // Создание модельки
-    const transition = new Transition(this.app, params.id, { ...params });
+    const transition = new Transition(this.app, params.id, smId, { ...params });
 
     this.items.set(params.id, transition);
     this.view.children.add(transition, Layer.Transitions);
@@ -183,7 +183,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionDoubleClick = (transition: Transition) => {
-    this.emit('changeTransition', transition.id);
+    this.controller.emit('openChangeTransitionModalFromController', {
+      smId: transition.smId,
+      id: transition.id,
+    });
   };
 
   handleContextMenu = (transitionId: string, e: { event: MyMouseEvent }) => {
@@ -222,8 +225,9 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
     else if (state !== this.ghost?.source) {
       this.controller.emit('createTransitionFromController', {
-        source: this.ghost?.source.id,
-        target: state.id,
+        smId: state.smId,
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
       });
     }
     this.ghost?.clear();
@@ -291,8 +295,9 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       });
     } else {
       this.controller.emit('createTransitionFromController', {
-        source: this.ghost.source.id,
-        target: state.id,
+        sourceId: this.ghost.source.id,
+        smId: state.smId,
+        targetId: state.id,
       });
     }
 

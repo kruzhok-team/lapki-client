@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import { useModelContext } from '@renderer/store/ModelContext';
-import { useTabs } from '@renderer/store/useTabs';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { Component } from './Component';
@@ -40,7 +39,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     return Object.entries(components)
       .sort((a, b) => a[1].order - b[1].order)
       .map((c) => c[0]);
-  }, [components]); // не ререндерится
+  }, [components]);
 
   return (
     <div>
@@ -70,8 +69,16 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         <Component
           key={name}
           name={name}
-          description={editor.controller.platform?.getComponent(name)?.description}
-          icon={editor.controller.platform?.getFullComponentIcon(name)}
+          description={
+            editor.controller.platform[smId] !== undefined
+              ? editor.controller.platform[smId].getComponent(name)?.description
+              : undefined
+          }
+          icon={
+            editor.controller.platform[smId] !== undefined
+              ? editor.controller.platform[smId].getFullComponentIcon(name)
+              : undefined
+          }
           isSelected={name === selectedComponent}
           isDragging={name === dragName}
           onCallContextMenu={() => onRequestEditComponent(name)}

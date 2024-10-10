@@ -46,8 +46,7 @@ export type EditorDataPropertyName =
   | keyof EditorData
   | 'elements.stateMachinesId'
   | `elements.${keyof StateMachine}`
-  | `canvas.${keyof EditorStatus}`
-  | `currentSm`;
+  | `canvas.${keyof EditorStatus}`;
 export type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']
     ? EditorData['elements'][V]
@@ -117,9 +116,9 @@ export interface ChangeStateEventsParams {
 }
 
 export type CreateStateMachineParams = {
-  id: string;
-  components: ComponentData[];
-  position: Point;
+  smId: string;
+  name: string | undefined;
+  platform: string;
   label?: string;
 };
 

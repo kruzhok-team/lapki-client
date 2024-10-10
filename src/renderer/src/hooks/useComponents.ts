@@ -45,11 +45,11 @@ export const useComponents = () => {
   const onRequestEditComponent = (idx: string) => {
     const controller = editor.controller;
 
-    if (!controller.platform) return;
+    if (!controller.platform[currentSm]) return;
 
     const component = components[idx];
     if (typeof component === 'undefined') return;
-    const proto = controller?.platform.data.components[component.type];
+    const proto = controller?.platform[currentSm].data.components[component.type];
     if (typeof proto === 'undefined') {
       console.error('non-existing %s %s', idx, component.type);
       return;
@@ -64,12 +64,13 @@ export const useComponents = () => {
   const onRequestDeleteComponent = (idx: string) => {
     const controller = editor.controller;
 
-    if (!controller.platform) return;
+    if (!controller.platform[currentSm]) return;
 
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    const proto = controller?.platform.data.components[component.type] ?? systemComponent;
+    const proto =
+      controller?.platform[currentSm].data.components[component.type] ?? systemComponent;
 
     setIdx(idx);
     setData(component);

@@ -8,9 +8,11 @@ import { FinalState as FinalStateData } from '@renderer/types/diagram';
  */
 export class FinalState extends Shape {
   data: FinalStateData;
-  constructor(app: CanvasEditor, id: string, data: FinalStateData, parent?: Shape) {
+  smId: string;
+  constructor(app: CanvasEditor, id: string, smId: string, data: FinalStateData, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
+    this.smId = smId;
   }
 
   get position() {

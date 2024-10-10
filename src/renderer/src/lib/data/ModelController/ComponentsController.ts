@@ -41,7 +41,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   createComponent = (args: CreateComponentParams) => {
-    const icon = this.controller.platform?.getComponentIcon(args.type);
+    const icon = this.controller[args.smId].platform?.getComponentIcon(args.type);
     if (!icon) {
       return;
     }

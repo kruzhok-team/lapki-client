@@ -74,7 +74,8 @@ import { ComponentEntry, PlatformManager } from '../PlatformManager';
 // TODO Образовалось массивное болото, что не есть хорошо, надо додумать чем заменить переборы этих массивов.
 
 type ModelControllerEvents = CanvasControllerEvents & {
-  openCreateTransitionModal;
+  openCreateTransitionModal: { smId: string; sourceId: string; targetId: string };
+  openChangeTransitionModal: ChangeTransitionParams;
 };
 
 const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;
@@ -95,6 +96,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.emit('changeScale', scale);
     }
   );
+  schemeEditorId: string | null = null;
   files = new FilesManager(this);
   history = new History(this);
   vacantComponents: { [id: string]: ComponentEntry[] } = {};
@@ -115,7 +117,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Создаем пустой контроллер с пустыми данными и назначаем его главным
   emptyController() {
     const editor = new CanvasEditor('', this);
-    const controller = new CanvasController('', 'specific', editor, { platformName: '' }, this);
+    const controller = new CanvasController(
+      '',
+      'specific',
+      editor,
+      { platformNames: { '': '' } },
+      this
+    );
     controller.addStateMachineId('');
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
     editor.setController(controller);
@@ -123,6 +131,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[''] = controller;
     this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.model.changeHeadControllerId('');
+    this.schemeEditorId = null;
   }
 
   reset() {
@@ -148,7 +157,20 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return stateMachines;
   }
 
-  // TODO: setup SchemeScreenController с другими подписками
+  setupSchemeScreenEditorController(smIds: string[], controller: CanvasController) {
+    for (const smId of smIds) {
+      const sm = this.model.data.elements.stateMachines[smId];
+
+      if (!sm) return;
+      const smToSubscribe = {};
+      smToSubscribe[smId] = emptyStateMachine();
+      controller.addStateMachineId(smId);
+      controller.subscribe(smId, 'component', sm.components);
+      controller.subscribe(smId, 'stateMachine', smToSubscribe);
+      controller.watch();
+    }
+  }
+
   // Подписываем контроллер на нужные нам данные
   setupDiagramEditorController(smId: string, controller: CanvasController) {
     const sm = this.model.data.elements.stateMachines[smId];
@@ -174,18 +196,31 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
     controller.on('createTransitionFromController', this.onCreateTransitionModal);
+    controller.on('openChangeTransitionModalFromController', this.openChangeTransitionModal);
   }
+
+  private openChangeTransitionModal = (args: { smId: string; id: string }) => {
+    const { smId, id } = args;
+    const transition = this.model.data.elements.stateMachines[smId].transitions[id];
+    if (!transition) return;
+    this.emit('openChangeTransitionModal', { ...args, ...transition });
+  };
 
   private unwatch(controller: CanvasController) {
     controller.off('isMounted', this.setMountStatus);
     controller.off('linkState', this.linkState);
     controller.off('selectState', this.selectState);
     controller.off('createTransitionFromController', this.onCreateTransitionModal);
+    controller.off('openChangeTransitionModalFromController', this.openChangeTransitionModal);
     controller.unwatch();
   }
 
-  private onCreateTransitionModal = (args: { source: string; target: string }) => {
-    this.emit('openCreateTransitionModal', { sourceId: args.source, targetId: args.target });
+  private onCreateTransitionModal = (args: {
+    smId: string;
+    sourceId: string;
+    targetId: string;
+  }) => {
+    this.emit('openCreateTransitionModal', args);
   };
 
   private setMountStatus = (args: SetMountedStatusParams) => {
@@ -226,10 +261,41 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
     this.model.changeHeadControllerId(headCanvas);
     this.model.makeStale();
+
     this.history.clear();
     this.model.initCanvasData();
     this.initPlatform();
   }
+
+  // createSchemeScreenController(stateMachines: { [id: string]: StateMachine }) {
+  //   const schemeScreenId = generateId();
+  //   const canvasId = generateId();
+  //   const editor = new CanvasEditor(canvasId, this);
+  //   const platforms = Object.values(stateMachines).map((sm) => sm.platform);
+  //   const schemeScreenEditor = new CanvasController(
+  //     schemeScreenId,
+  //     'scheme',
+  //     editor,
+  //     {
+  //       platformNames: platforms,
+  //     },
+  //     this
+  //   );
+  //   editor.setController(controller);
+  //   this.controllers[canvasId] = controller;
+  //   this.model.data.canvas[canvasId] = {
+  //     isInitialized: true,
+  //     isMounted: false,
+  //     prevMounted: false,
+  //   };
+  //   this.model.createStateMachine(smId, data);
+  //   this.watch(controller);
+  //   this.setupDiagramEditorController(smId, controller);
+
+  //   this.emit('createStateMachine', { smId, name: data.name, platform: data.platform });
+
+  //   return canvasId;
+  // }
 
   loadData() {
     this.emit('loadData', null);
@@ -280,13 +346,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   changeTransition(args: ChangeTransitionParams, canUndo = true) {
-    const transition = this.model.data.elements.stateMachines[args.smId][args.id];
+    const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;
 
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
-        args: { args, prevData: structuredClone(transition.data) },
+        args: { args, prevData: structuredClone(transition) },
       });
     }
 
@@ -458,7 +524,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       'specific',
       editor,
       {
-        platformName: data.platform,
+        platformNames: { [smId]: data.platform },
       },
       this
     );
@@ -473,7 +539,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);
 
-    // TODO: Известить о создании машины состояний?
+    this.emit('createStateMachine', { smId, name: data.name, platform: data.platform });
 
     return canvasId;
   }
@@ -1652,8 +1718,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
       const newId = this.model.createState({
-        smId,
         ...structuredClone(data),
+        smId,
         linkByPoint: false,
         id: undefined,
         position: {
@@ -1662,8 +1728,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         },
       });
       this.emit('createState', {
-        smId,
         ...structuredClone(data),
+        smId,
         linkByPoint: false,
         id: newId,
         position: {

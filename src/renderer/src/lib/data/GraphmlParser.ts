@@ -444,13 +444,12 @@ export function importGraphml(
   try {
     //Вот тут схема не отдает уже позицию компонентов.
     const rawElements: CGMLElements = parseCGML(expression);
-    const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
     const elements: Elements = emptyElements();
     if (!isPlatformAvailable(rawElements.platform)) {
       throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
     }
-    const platform: Platform | undefined = getPlatform(rawElements.platform);
     // TODO: добавить в платформу флаг для статических компонентов
+    const platform: Platform | undefined = getPlatform(rawElements.platform);
     if (platform === undefined) {
       throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
     }

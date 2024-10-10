@@ -13,9 +13,11 @@ export class Transition extends Shape {
   label!: Label;
   arrow!: ArrowsWithLabel | ArrowsWithoutLabel;
   data: DataTransition;
-  constructor(protected app: CanvasEditor, public id: string, data: DataTransition) {
+  smId: string;
+  constructor(protected app: CanvasEditor, public id: string, smId: string, data: DataTransition) {
     super(app, id);
     this.data = data;
+    this.smId = smId;
     this.label = new Label(this, this.app);
     this.arrow = this.data.label
       ? new ArrowsWithLabel(this, this.app)

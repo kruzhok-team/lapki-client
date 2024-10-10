@@ -156,11 +156,11 @@ export class Events {
           picto.drawCursor(ctx, eX, eY);
         }
       }
-      platform.drawEvent(ctx, events.trigger, eX, eY);
+      platform[this.parent.smId].drawEvent(ctx, events.trigger, eX, eY);
 
       if (events.condition) {
         ctx.beginPath();
-        platform.drawCondition(
+        platform[this.parent.smId].drawCondition(
           ctx,
           events.condition,
           eX + (picto.eventWidth + 5) / picto.scale,
@@ -179,7 +179,7 @@ export class Events {
             picto.drawCursor(ctx, aX, aY);
           }
         }
-        platform.drawAction(ctx, act, aX, aY);
+        platform[this.parent.smId].drawAction(ctx, act, aX, aY);
       });
 
       eventRow +=

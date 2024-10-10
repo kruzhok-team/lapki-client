@@ -134,10 +134,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   }
 
   createState = (args: CreateStateParams) => {
-    const { id } = args;
+    const { id, smId } = args;
 
     if (!id) return;
-    const state = new State(this.app, id, { ...args }); // Создание вьюшки
+    const state = new State(this.app, id, smId, { ...args }); // Создание вьюшки
 
     this.data.states.set(state.id, state);
 
@@ -283,9 +283,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   createFinalState = (params: CreateFinalStateParams) => {
-    const { id } = params;
+    const { id, smId } = params;
     if (!id) return;
-    const state = new FinalState(this.app, id, { ...params });
+    const state = new FinalState(this.app, id, smId, { ...params });
 
     this.data.finalStates.set(id, state);
 
@@ -331,10 +331,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   createChoiceState = (params: CreateChoiceStateParams) => {
-    const { id } = params;
+    const { id, smId } = params;
     if (!id) return;
 
-    const state = new ChoiceState(this.app, id, { ...params });
+    const state = new ChoiceState(this.app, id, smId, { ...params });
 
     this.data.choiceStates.set(id, state);
 

@@ -78,6 +78,7 @@ export class DrawableComponent extends Shape {
 
   private drawBody(ctx: CanvasRenderingContext2D) {
     const platform = this.app.controller.platform;
+    // TODO: Переделать платформу
     if (!platform || !this.icon) return;
 
     const { x, y, width, height } = this.drawBounds;

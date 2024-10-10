@@ -11,21 +11,22 @@ import {
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Event } from '@renderer/types/diagram';
 interface DiagramEditorProps {
   editor: CanvasEditor;
+  controller: CanvasController;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
   const editor = props.editor;
-
+  const controller = props.controller;
   const [canvasSettings] = useSettings('canvas');
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const stateMachines = Object.keys(controller.stateMachinesSub);
   const smId = stateMachines[0]; // TODO: Как понять в какую именно машину состояний мы добавляем?
   const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,7 +79,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [headControllerId, stateMachines, editor, openEventsModal]);
+  }, [stateMachines, editor, openEventsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;
@@ -98,6 +99,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
     closeEventsModal();
   };
+  // TODO: Прокинуть smId в другие модалки
 
   return (
     <>
@@ -108,8 +110,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
           <StateNameEdit />
           <NoteEdit />
 
-          <StateModal />
-          <TransitionModal />
+          <StateModal smId={smId} editorController={controller} />
+          <TransitionModal smId={smId} />
 
           <EventsModal
             initialData={eventsModalData}

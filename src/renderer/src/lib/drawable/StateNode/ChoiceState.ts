@@ -13,9 +13,11 @@ export class ChoiceState extends Shape {
   isSelected = false;
   edgeHandlers!: EdgeHandlers;
   data: DataChoiceState;
-  constructor(app: CanvasEditor, id: string, data: DataChoiceState, parent?: Shape) {
+  smId: string;
+  constructor(app: CanvasEditor, id: string, smId: string, data: DataChoiceState, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
+    this.smId = smId;
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 

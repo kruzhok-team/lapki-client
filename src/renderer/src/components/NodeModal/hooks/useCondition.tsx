@@ -42,13 +42,21 @@ export const useCondition = () => {
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = controller.platform!.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId].getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -59,13 +67,21 @@ export const useCondition = () => {
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = controller.platform!.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId]!.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId]!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -75,13 +91,13 @@ export const useCondition = () => {
   }, [componentsData, controller]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam1 || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableVariables'];
-    const getImg = controller.platform['getVariableIconUrl'];
+    if (!selectedComponentParam1 || !controller.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableVariables'];
+    const getImg = controller.platform[smId]['getVariableIconUrl'];
 
     // Тут call потому что контекст теряется
     return getAll
-      .call(controller.platform, selectedComponentParam1)
+      .call(controller.platform[smId], selectedComponentParam1)
       .map(({ name, description }) => {
         return {
           value: name,
@@ -89,7 +105,7 @@ export const useCondition = () => {
           hint: description,
           icon: (
             <img
-              src={getImg.call(controller.platform, selectedComponentParam1, name, true)}
+              src={getImg.call(controller.platform[smId], selectedComponentParam1, name, true)}
               className="mr-1 h-7 w-7 object-contain"
             />
           ),
@@ -98,13 +114,13 @@ export const useCondition = () => {
   }, [controller, selectedComponentParam1]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam2 || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableVariables'];
-    const getImg = controller.platform['getVariableIconUrl'];
+    if (!selectedComponentParam2 || !controller.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableVariables'];
+    const getImg = controller.platform[smId]['getVariableIconUrl'];
 
     // Тут call потому что контекст теряется
     return getAll
-      .call(controller.platform, selectedComponentParam2)
+      .call(controller.platform[smId], selectedComponentParam2)
       .map(({ name, description }) => {
         return {
           value: name,
@@ -112,7 +128,7 @@ export const useCondition = () => {
           hint: description,
           icon: (
             <img
-              src={getImg.call(controller.platform, selectedComponentParam2, name, true)}
+              src={getImg.call(controller.platform[smId], selectedComponentParam2, name, true)}
               className="mr-1 h-7 w-7 object-contain"
             />
           ),

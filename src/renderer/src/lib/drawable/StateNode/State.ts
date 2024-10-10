@@ -16,9 +16,10 @@ export class State extends Shape {
   eventBox!: Events;
   edgeHandlers!: EdgeHandlers;
   data: DataState;
-  constructor(app: CanvasEditor, id: string, data: DataState, parent?: Shape) {
+  smId: string;
+  constructor(app: CanvasEditor, id: string, smId: string, data: DataState, parent?: Shape) {
     super(app, id, parent);
-
+    this.smId = smId;
     this.data = data;
     this.eventBox = new Events(this.app as CanvasEditor, this);
     this.updateEventBox();

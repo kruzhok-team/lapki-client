@@ -14,7 +14,8 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Передавать в модалки машину состояний
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const componentsData = modelController.model.useData(stateMachines[0], 'elements.components') as {
+  const smId = stateMachines[0];
+  const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
   const editor = modelController.getCurrentCanvas();
@@ -26,17 +27,25 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const componentOptions: SelectOption[] = useMemo(() => {
     // Почему-то эта функция может вызываться раньше инициаилзации платформы
     // из-за чего возникают ошибки
-    if (!controller.platform) {
+    if (!controller.platform[smId]) {
       return [];
     }
     const getComponentOption = (id: string) => {
-      const proto = controller.platform!.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId]?.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -52,24 +61,26 @@ export const useTrigger = (addSystemComponents: boolean) => {
   }, [componentsData, addSystemComponents, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableEvents'];
-    const getImg = controller.platform['getEventIconUrl'];
+    if (!selectedComponent || !controller.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableEvents'];
+    const getImg = controller.platform[smId]['getEventIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-        ),
-      };
-    });
+    return getAll
+      .call(controller.platform[smId], selectedComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
   }, [controller, selectedComponent]);
 
   const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {

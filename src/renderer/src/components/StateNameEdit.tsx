@@ -19,7 +19,7 @@ export const StateNameEdit: React.FC = () => {
   const editor = modelController.getCurrentCanvas();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = modelController.controllers[headControllerId];
-  const currentSmId = modelController.model.useData(stateMachines[0], 'currentSm');
+  const currentSmId = stateMachines[0];
   const [isOpen, open, close] = useModal(false);
   const [stateId, setStateId] = useState<string | null>(null);
   const [initialName, setInitialName] = useState<string | null>(null);

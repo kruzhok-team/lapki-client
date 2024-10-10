@@ -34,7 +34,8 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   // TODO: Прокинуть сюда машину состояний
-  const componentsData = model.useData(stateMachines[0], 'elements.components') as {
+  const smId = stateMachines[0];
+  const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
   const controller = editor.controller;
@@ -47,16 +48,24 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    if (!controller.platform) return [];
+    if (!controller.platform[smId]) return [];
 
     const getComponentOption = (id: string) => {
-      const proto = controller.platform!.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId].getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -72,30 +81,33 @@ export const EventsModal: React.FC<EventsModalProps> = ({
   }, [componentsData, isEditingEvent, controller]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent || !controller.platform) return [];
+    if (!selectedComponent || !controller.platform[smId]) return [];
     const getAll =
-      controller.platform[isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
-    const getImg = controller.platform[isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
+      controller.platform[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
+    const getImg =
+      controller.platform[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 h-7 w-7 object-contain"
-          />
-        ),
-      };
-    });
+    return getAll
+      .call(controller.platform[smId], selectedComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
   }, [isEditingEvent, controller, selectedComponent]);
 
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
-    if (!componentName || !method || !controller.platform) return;
+    if (!componentName || !method || !controller.platform[smId]) return;
 
     let parameters: ArgList = {};
 
@@ -106,7 +118,7 @@ export const EventsModal: React.FC<EventsModalProps> = ({
       }
     }
 
-    const componentProto = controller.platform.getComponent(componentName);
+    const componentProto = controller.platform[smId].getComponent(componentName);
     const componentProtoPath = isEditingEvent ? 'signals' : 'methods';
     const argumentProto = componentProto?.[componentProtoPath][method]?.parameters ?? [];
 
@@ -166,10 +178,10 @@ export const EventsModal: React.FC<EventsModalProps> = ({
     }
 
     const init = (event: Event, path: 'signals' | 'methods') => {
-      if (!controller.platform) return;
+      if (!controller.platform[smId]) return;
 
       const { component, method, args = {} } = event;
-      const componentProto = controller.platform.getComponent(component);
+      const componentProto = controller.platform[smId].getComponent(component);
       const argumentProto = componentProto?.[path][method]?.parameters ?? [];
 
       setSelectedComponent(component);

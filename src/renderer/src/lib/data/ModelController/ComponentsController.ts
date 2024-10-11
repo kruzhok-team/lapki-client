@@ -123,11 +123,11 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   };
 
   handleMouseDown = (component: DrawableComponent) => {
-    this.controller.selectComponent({ smId: '', id: component.id });
+    this.controller.selectComponent({ smId: component.smId, id: component.id });
   };
 
   handleDoubleClick = (component: DrawableComponent) => {
-    this.emit('change', component);
+    // this.emit('change', component);
   };
 
   handleContextMenu = (component: DrawableComponent, e: { event: MyMouseEvent }) => {

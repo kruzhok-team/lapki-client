@@ -12,7 +12,9 @@ export const ComponentsList: React.FC = () => {
   const model = modelController.model;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Передавать в модалки машину состояний
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const stateMachines = Object.keys(
+    modelController.controllers[headControllerId].useData('stateMachinesSub')
+  );
   const editor = modelController.getCurrentCanvas();
   const isInitialized = model.useData('', 'canvas.isInitialized', editor.id) as boolean;
 

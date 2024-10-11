@@ -545,6 +545,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);
 
+    if (this.schemeEditorId) {
+      const schemeController = this.controllers[this.schemeEditorId];
+      this.setupSchemeScreenEditorController(
+        { [smId]: this.model.data.elements.stateMachines[smId] },
+        schemeController
+      );
+    }
     this.emit('createStateMachine', {
       smId,
       name: data.name,

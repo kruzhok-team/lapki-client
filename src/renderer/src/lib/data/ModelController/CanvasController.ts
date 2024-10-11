@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
@@ -10,6 +12,7 @@ import {
   ChangeStateEventsParams,
   ChangeStateNameParams,
   ChangeTransitionParams,
+  ControllerDataPropertyName,
   CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
@@ -24,6 +27,7 @@ import {
   DeleteEventParams,
   DeleteStateMachineParams,
   EditComponentParams,
+  emptyControllerListeners,
   Layer,
   LinkStateParams,
   LinkTransitionParams,
@@ -163,6 +167,8 @@ export type CanvasData = {
 export type CanvasControllerType = 'specific' | 'scheme' | 'common';
 
 export class CanvasController extends EventEmitter<CanvasControllerEvents> {
+  // TODO: Сделать класс Subscriable
+  dataListeners = emptyControllerListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   app: CanvasEditor;
   __platform: { [id: string]: PlatformManager } = {};
   initializer: Initializer;
@@ -210,6 +216,38 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     return this.app.view;
   }
 
+  private subscribeToData =
+    (propertyName: ControllerDataPropertyName) => (listener: () => void) => {
+      if (!this.dataListeners[propertyName]) {
+        this.dataListeners[propertyName] = [];
+      }
+      this.dataListeners[propertyName].push(listener);
+
+      return () => {
+        this.dataListeners[propertyName] = this.dataListeners[propertyName].filter(
+          (l) => l !== listener
+        );
+      };
+    };
+
+  useData<T extends ControllerDataPropertyName>(propertyName: T): any {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useSyncExternalStore(this.subscribeToData(propertyName), () => this[propertyName]);
+  }
+
+  triggerDataUpdate<T extends ControllerDataPropertyName>(...propertyNames: T[]) {
+    for (const name of propertyNames) {
+      // Ссылку нужно обновлять только у объектов
+      const prevValue = this[name];
+      if (typeof prevValue === 'object' && prevValue !== null) {
+        this[name] = {
+          ...prevValue,
+        };
+      }
+      (this.dataListeners[name] ?? []).forEach((listener) => listener());
+    }
+  }
+
   setOffset(value: { x: number; y: number }) {
     this.offset = value;
   }
@@ -219,6 +257,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       return;
     }
     this.stateMachinesSub[smId] = [];
+    this.triggerDataUpdate('stateMachinesSub');
   }
 
   // Функция для любой обработки Drawable
@@ -531,26 +570,28 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         };
         break;
       case 'component':
-        this.model.on(
-          'createComponent',
-          this.bindHelper('component', 'createComponent', this.createComponent)
-        );
-        this.model.on(
-          'deleteComponent',
-          this.bindHelper('component', 'deleteComponent', this.deleteComponent)
-        );
-        this.model.on(
-          'editComponent',
-          this.bindHelper('component', 'editComponent', this.editComponent)
-        );
-        this.model.on(
-          'renameComponent',
-          this.bindHelper('component', 'renameComponent', this.renameComponent)
-        );
-        this.model.on(
-          'selectComponent',
-          this.bindHelper('component', 'selectComponent', this.selectComponent)
-        );
+        if (!this.binded['createComponent']) {
+          this.model.on(
+            'createComponent',
+            this.bindHelper('component', 'createComponent', this.createComponent)
+          );
+          this.model.on(
+            'deleteComponent',
+            this.bindHelper('component', 'deleteComponent', this.deleteComponent)
+          );
+          this.model.on(
+            'editComponent',
+            this.bindHelper('component', 'editComponent', this.editComponent)
+          );
+          this.model.on(
+            'renameComponent',
+            this.bindHelper('component', 'renameComponent', this.renameComponent)
+          );
+          this.model.on(
+            'selectComponent',
+            this.bindHelper('component', 'selectComponent', this.selectComponent)
+          );
+        }
         this.initData[smId].components = {
           ...(initData as { [id: string]: Component }),
         };
@@ -597,14 +638,16 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         };
         break;
       case 'stateMachine':
-        this.model.on(
-          'createStateMachine',
-          this.bindHelper('stateMachine', 'createStateMachine', this.createStateMachine)
-        );
-        this.model.on(
-          'deleteStateMachine',
-          this.bindHelper('stateMachine', 'deleteStateMachine', this.deleteStateMachine)
-        );
+        if (!this.binded['createStateMachine']) {
+          this.model.on(
+            'createStateMachine',
+            this.bindHelper('stateMachine', 'createStateMachine', this.createStateMachine)
+          );
+          this.model.on(
+            'deleteStateMachine',
+            this.bindHelper('stateMachine', 'deleteStateMachine', this.deleteStateMachine)
+          );
+        }
         if (!this.initData[smId]) {
           this.initData[smId] = emptyStateMachine();
         }
@@ -615,6 +658,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   createStateMachine = (args: CreateStateMachineParams) => {
+    const { smId, platform } = args;
+
+    if (isPlatformAvailable(platform)) {
+      const platformManager = loadPlatform(platform);
+      if (typeof platformManager === 'undefined') {
+        throw Error("couldn't init platform " + platform);
+      }
+      this.platform[smId] = platformManager;
+    }
     this.stateMachines.createStateMachine(args);
   };
 
@@ -826,11 +878,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!component) return;
 
     this.stateMachines.addComponent(args.smId, component);
-    // const component = this.components.createComponent(args);
-    // if (!component) {
-    // return;
-    // }
-    // TODO: Добавление компонентов в StateMachine
   };
 
   initPlatform = () => {
@@ -886,7 +933,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       this.notes.deleteNote({ smId: id, id: noteId });
     });
 
+    this.stateMachines.deleteStateMachine(args);
+
     delete this.stateMachinesSub[id];
+
+    this.triggerDataUpdate('stateMachinesSub');
   };
 
   // Отлавливание дефолтных событий для контроллера
@@ -953,6 +1004,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.app.controller.components.forEach((component) => {
       component.setIsSelected(false);
+    });
+
+    this.app.controller.stateMachines.forEach((stateMachine) => {
+      stateMachine.setIsSelected(false);
     });
 
     this.view.isDirty = true;

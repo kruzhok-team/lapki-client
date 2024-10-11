@@ -18,6 +18,18 @@ export interface SelectDrawable {
   smId?: string;
 }
 
+export const emptyControllerData = () => ({
+  stateMachinesSub: {},
+});
+
+export type ControllerDataPropertyName = 'stateMachinesSub';
+
+export type ControllerDataListeners = { [key in ControllerDataPropertyName]: (() => void)[] };
+
+export const emptyControllerListeners = Object.fromEntries([
+  ...Object.entries(emptyControllerData()).map(([k]) => [k, []]),
+]) as any as ControllerDataListeners;
+
 export interface EditComponentParams {
   smId: string;
   id: string;

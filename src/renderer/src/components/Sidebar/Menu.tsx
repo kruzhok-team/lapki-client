@@ -91,6 +91,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           canvasId: schemeEditorId,
           name: 'Схемотехнический экран',
         });
+        modelController.model.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
     },

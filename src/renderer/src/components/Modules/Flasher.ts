@@ -14,6 +14,7 @@ import {
   FlasherPayload,
   FlasherType,
   MSPingResult,
+  SettingUpdate,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -214,7 +215,7 @@ export class Flasher extends ClientWS {
   ): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
-        Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
+        Flasher.binary = new Blob([bin.fileContent as unknown as Uint8Array]);
         return;
       }
     });
@@ -556,6 +557,13 @@ export class Flasher extends ClientWS {
             ManagerMS.setAddress('');
             break;
           }
+        }
+        break;
+      }
+      case 'setting-update': {
+        const payload = response.payload as SettingUpdate;
+        switch (payload.code) {
+          case 0:
         }
       }
     }

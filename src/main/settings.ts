@@ -14,8 +14,9 @@ export const defaultSettings = {
     port: 0,
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
     type: 'local' as 'local' | 'remote',
-    avrdudePath: '',
+    avrdudePath: 'avrdude',
     avrdudeSystemPath: true,
+    configPath: '',
   },
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {

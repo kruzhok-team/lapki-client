@@ -76,37 +76,30 @@ export class ModuleManager {
         switch (module) {
           case 'lapki-flasher': {
             const port = await findFreePort();
-            await settings.set('flasher.localPort', port);
+            settings.setSync('flasher.localPort', port);
             defaultSettings.flasher.localPort = Number(port);
             /*
-            параметры локального загрузчика:
-              -address string
-                  адресс для подключения (default "localhost:8080")
-              -fileSize int
-                  максимальный размер файла, загружаемого на сервер (в байтах) (default 2097152)
-              -listCooldown int
-                  минимальное время (в секундах), через которое клиент может снова запросить список устройств, игнорируется, если количество клиентов меньше чем 2 (default 2)      
-              -msgSize int
-                  максмальный размер одного сообщения, передаваемого через веб-сокеты (в байтах) (default 1024)
-              -thread int
-                  максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
-              -updateList int
-                  количество секунд между автоматическими обновлениями (default 15)
-              -verbose
-                  выводить в консоль подробную информацию
-              -alwaysUpdate
-                  всегда искать устройства и обновлять их список, даже когда ни один клиент не подключён (в основном требуется для тестирования)
-              -stub
-                  количество ненастоящих, симулируемых устройств, которые будут восприниматься как настоящие, применяется для тестирования, при значении 0 или меньше фальшивые устройства не добавляются (по-умолчанию 0)
-              -avrdudePath 
-                  путь к avrdude (по-умолчанию avrdude, то есть будет использоваться системный путь)
-              -configPath 
-                  путь к файлу конфигурации avrdude (по-умолчанию '', то есть пустая строка)
+            параметры локального загрузчика (https://github.com/kruzhok-team/lapki-flasher/blob/main/README.md#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%B0%D0%B8%D0%B2%D0%B0%D0%B5%D0%BC%D1%8B%D0%B5-%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D1%8B):
+              -address
+                  адресс для подключения
+              -listCooldown
+                  минимальное время (в секундах), через которое клиент может снова запросить список устройств, игнорируется, если количество клиентов меньше чем 2      
+              -updateList
+                  количество секунд между автоматическими обновлениями
+              -local
+                  локальный режим, ограничивает кол-во клиентов до одного и даёт права администратора для совершения особых действий по-умолчанию
             */
             const flasherArgs: string[] = [
               '-updateList=1',
               '-listCooldown=0',
               `-address=localhost:${port}`,
+              '-local',
+              `-advrdudePath=${
+                settings.getSync('flasher.avrdudePath') ?? defaultSettings.flasher.avrdudePath
+              }`,
+              `-configPath=${
+                settings.getSync('flasher.configPath') ?? defaultSettings.flasher.configPath
+              }`,
             ];
             const avrdudeSystemPath = await settings.get('flasher.avrdudeSystemPath');
             const avrdudeFolderPath = await settings.get('flasher.avrdudePath');

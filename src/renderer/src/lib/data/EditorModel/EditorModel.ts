@@ -769,6 +769,9 @@ export class EditorModel {
       id = generateId(Object.keys(this.data.elements.stateMachines[smId].notes)),
       text,
       placeInCenter = false,
+      fontSize,
+      backgroundColor,
+      textColor,
     } = params;
     let position = params.position;
 
@@ -784,6 +787,9 @@ export class EditorModel {
     this.data.elements.stateMachines[smId].notes[id] = {
       text,
       position,
+      fontSize,
+      backgroundColor,
+      textColor,
     };
 
     this.triggerDataUpdate('elements.notes');
@@ -807,6 +813,32 @@ export class EditorModel {
     if (!note) return false;
 
     note.selection = selection;
+    return true;
+  }
+  changeNoteBackgroundColor(smId: string, id: string, color: string | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].backgroundColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteTextColor(smId: string, id: string, color: string | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].textColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteFontSize(smId: string, id: string, fontSize: number | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].fontSize = fontSize;
 
     this.triggerDataUpdate('elements.notes');
 

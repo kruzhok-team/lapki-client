@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
@@ -52,7 +53,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
-    if (proto.singletone) {
+    if (proto.singletone || (platform && platform.staticComponents)) {
       return true;
     }
 
@@ -165,7 +166,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     >
       <ComponentFormFields
         showMainData={!proto.singletone}
-        protoParameters={proto.parameters}
+        protoParameters={proto.constructorParameters}
+        protoInitializationParameters={proto.initializationParameters}
         name={name}
         setName={setName}
         parameters={parameters}

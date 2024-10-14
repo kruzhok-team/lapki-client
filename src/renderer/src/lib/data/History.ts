@@ -100,10 +100,25 @@ export type PossibleActions = {
   createNote: { smId: string; id: string; params: CreateNoteParams };
   changeNotePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { smId: string; id: string; text: string; prevText: string };
+  // changeNoteBackgroundColor: {
+  //   smId: string;
+  //   id: string;
+  //   color: string | undefined;
+  //   prevColor: string | undefined;
+  // };
+  // changeNoteTextColor: {
+  //   smId: string;
+  //   id: string;
+  //   color: string | undefined;
+  //   prevColor: string | undefined;
+  // };
+  // changeNoteFontSize: {
+  //   smId: string;
+  //   id: string;
+  //   fontSize: number | undefined;
+  //   prevFontSize: number | undefined;
+  // };
   deleteNote: { smId: string; id: string; prevData: NoteData };
-
-  // TODO (L140-beep): Переделать удаление с DrawableStateMachine на StateMachine при реализации мультидока.
-  // deleteStateMachine: { args: DeleteStateMachineParams; prevStateMachine: DrawableStateMachine };
 };
 export type PossibleActionTypes = keyof PossibleActions;
 export type Action<T extends PossibleActionTypes> = {
@@ -424,6 +439,22 @@ export const actionFunctions: ActionFunctions = {
       { smId, id, startPosition: endPosition, endPosition: startPosition },
       false
     ),
+    //   changeNoteBackgroundColor: (sM, { id, color, prevColor }) => ({
+    //     redo: sM.changeNoteBackgroundColor.bind(sM, id, color, false),
+    //     undo: sM.changeNoteBackgroundColor.bind(sM, id, prevColor, false),
+    //   }),
+    //   changeNoteTextColor: (sM, { id, color, prevColor }) => ({
+    //     redo: sM.changeNoteTextColor.bind(sM, id, color, false),
+    //     undo: sM.changeNoteTextColor.bind(sM, id, prevColor, false),
+    //   }),
+    //   changeNoteFontSize: (sM, { id, fontSize, prevFontSize }) => ({
+    //     redo: sM.notes.changeNoteFontSize.bind(sM.notes, id, fontSize, false),
+    //     undo: sM.notes.changeNoteFontSize.bind(sM.notes, id, prevFontSize, false),
+    //   }),
+    //   changeNotePosition: (sM, { id, startPosition, endPosition }) => ({
+    //     redo: sM.notes.changeNotePosition.bind(sM.notes, id, startPosition, endPosition, false),
+    //     undo: sM.notes.changeNotePosition.bind(sM.notes, id, endPosition, startPosition, false),
+    // >>>>>>> main
   }),
   deleteNote: (sM, { smId, id, prevData }) => ({
     redo: sM.deleteNote.bind(sM, { smId, id }, false),
@@ -582,6 +613,18 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Изменение текста заметки',
     description: `ID: ${args.id}\nБыло: "${args.prevText}"\nСтало: "${args.text}"`,
   }),
+  // changeNoteBackgroundColor: (args) => ({
+  //   name: 'Изменение цвета заметки',
+  //   description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  // }),
+  // changeNoteTextColor: (args) => ({
+  //   name: 'Изменение цвета текста заметки',
+  //   description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  // }),
+  // changeNoteFontSize: (args) => ({
+  //   name: 'Изменение размера шрифта заметки',
+  //   description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
+  // }),
   changeNotePosition: (args) => ({
     name: 'Перемещение заметки',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(

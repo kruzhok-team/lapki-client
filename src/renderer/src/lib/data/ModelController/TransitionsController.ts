@@ -163,6 +163,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     transition.label.update();
 
+    transition.label.update();
+
     this.view.isDirty = true;
   };
 

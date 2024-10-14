@@ -6,11 +6,6 @@ export interface EditorTab {
   name: string;
 }
 
-export interface ScreenTab {
-  type: 'scheme';
-  name: 'scheme';
-}
-
 export interface CodeTab {
   type: 'code' | 'transition' | 'state';
   name: string;
@@ -23,4 +18,9 @@ export interface SerialMonitorTab {
   name: string;
 }
 
-export type Tab = EditorTab | CodeTab | ScreenTab | SerialMonitorTab;
+export interface ManagerMSTab {
+  type: 'managerMS';
+  name: string;
+}
+
+export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

@@ -36,7 +36,6 @@ export const Component: React.FC<ComponentProps> = (props) => {
   const [dragOver, setDragOver] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    console.log('HEREEEEEEEEEEEEEEEEEEEE', e.key);
     if (e.key !== 'Delete') return;
 
     onDelete();

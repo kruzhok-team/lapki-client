@@ -64,14 +64,63 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  changeNotePosition = (args: ChangePosition) => {
+  changeNoteBackgroundColor = (id: string, color: string | undefined) => {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeNoteBackgroundColor',
+    //     args: { id, color, prevColor: note.data?.backgroundColor },
+    //   });
+    // }
+
+    // this.app.model.changeNoteBackgroundColor(id, color);
+
+    this.view.isDirty = true;
+  };
+
+  changeNoteTextColor = (id: string, color: string | undefined) => {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeNoteTextColor',
+    //     args: { id, color, prevColor: note.data?.textColor },
+    //   });
+    // }
+
+    // this.app.model.changeNoteTextColor(id, color);
+
+    this.view.isDirty = true;
+  };
+
+  changeNoteFontSize = (id: string, fontSize: number | undefined) => {
+    const note = this.items.get(id);
+    if (!note) return;
+
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeNoteFontSize',
+    //     args: { id, fontSize, prevFontSize: note.data?.fontSize },
+    //   });
+    // }
+
+    // this.app.model.changeNoteFontSize(id, fontSize);
+    note.prepareText();
+
+    this.view.isDirty = true;
+  };
+
+  changeNotePosition(args: { id: string; endPosition: Point }) {
     const note = this.items.get(args.id);
     if (!note) return;
 
     note.position = args.endPosition;
 
     this.view.isDirty = true;
-  };
+  }
 
   deleteNote = (args: DeleteDrawableParams) => {
     const { id } = args;
@@ -122,7 +171,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   };
 
   handleDragEnd = (note: Note, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
-    this.changeNotePosition({ smId: '', id: note.id, endPosition: e.dragEndPosition });
+    this.changeNotePosition({ id: note.id, endPosition: e.dragEndPosition });
   };
 
   watch(note: Note) {

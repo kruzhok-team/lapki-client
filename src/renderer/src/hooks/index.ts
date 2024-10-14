@@ -1,5 +1,4 @@
 export * from './useClickOutside';
-export * from './useDiagramContextMenu';
 export * from './useComponents';
 export * from './useErrorModal';
 export * from './useFileOperations';

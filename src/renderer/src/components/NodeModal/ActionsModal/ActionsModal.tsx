@@ -4,7 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Event, Action, ArgList, Component } from '@renderer/types/diagram';
+import { Event, ArgList, Component } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { ActionsModalParameters } from './ActionsModalParameters';

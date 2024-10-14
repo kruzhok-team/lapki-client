@@ -184,7 +184,11 @@ function validateComponents(
       throw new Error(`Неизвестный тип компонента ${component.type}.`);
     }
     const componentParemeters = new Set(Object.keys(component.parameters));
-    const platformParameters = new Set(Object.keys(platformComponent.parameters));
+    const platformParameters = new Set([
+      ...Object.keys(platformComponent.constructorParameters ?? {}),
+      ...Object.keys(platformComponent.initializationParameters ?? {}),
+    ]);
+
     if (!setIncludes(platformParameters, componentParemeters)) {
       throw new Error(
         `Получены параметры: ${[...componentParemeters].join(', ')}, но ожидались ${[

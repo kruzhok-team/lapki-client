@@ -64,6 +64,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
       if (controller.type == 'scheme') return;
       const { state, eventSelection, event, isEditingEvent } = data;
 
+      setActionsModalParentData({ state, eventSelection });
       setActionsModalData({ action: event, isEditingEvent });
       openActionsModal();
     };

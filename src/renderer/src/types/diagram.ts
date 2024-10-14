@@ -83,6 +83,9 @@ export type Note = {
   text: string;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: number;
 };
 
 //Получаем тип со всеми машинами состояний

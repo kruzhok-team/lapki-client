@@ -77,6 +77,15 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     return stdout;
   };
 
+  const commandsResultToStr = (compilerCommands: CompileCommandResult[]): string => {
+    let stdout = '';
+    compilerCommands.forEach((element) => {
+      stdout += `${element.command}\nreturn_code: ${element.return_code}\nstdout: ${element.stdout}\n stderr: ${element.stderr}\n\n`;
+    });
+
+    return stdout;
+  };
+
   const handleAddStdoutTab = () => {
     openTab({
       type: 'code',

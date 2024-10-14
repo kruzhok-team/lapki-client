@@ -2,7 +2,7 @@ import React, { Dispatch, useLayoutEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { PropertiesModal } from '@renderer/components';
+import { PropertiesModal, TextModeModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -11,6 +11,7 @@ interface MenuItem {
   text: string;
   onClick: () => void;
   disabled?: boolean;
+  hidden?: boolean;
   className?: string;
 }
 
@@ -35,8 +36,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     'canvas.isInitialized',
     editor.id
   ) as string;
-  const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
-    useModal(false);
+  const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
+  const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
+  // TODO: visual
+  // const visual = model.useData('elements.visual');
 
   const items: MenuItem[] = [
     {
@@ -66,7 +69,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Свойства',
-      onClick: openPropertiesModalOpen,
+      onClick: openPropertiesModal,
       disabled: !isInitialized,
     },
     // {
@@ -94,6 +97,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         modelController.model.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
+    },
+    {
+      text: 'Перейти в текстовый режим (β)',
+      onClick: () => openTextModeModal(),
+      hidden: !visual || !isInitialized,
     },
     // {
     //   text: 'Примеры',
@@ -126,7 +134,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, className }) => (
+      {items.map(({ text, onClick, disabled = false, hidden = false, className }) => (
         <button
           key={text}
           className={twMerge(
@@ -135,12 +143,14 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           )}
           onClick={onClick}
           disabled={disabled}
+          hidden={hidden}
         >
           {text}
         </button>
       ))}
 
-      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
+      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModal} />
+      <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
     </section>
   );
 };

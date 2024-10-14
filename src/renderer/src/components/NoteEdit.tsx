@@ -56,11 +56,11 @@ export const NoteEdit: React.FC = () => {
       const el = ref.current;
       if (!el) return;
 
-      const globalOffset = editor.view.app.mouse.getOffset();
-      const statePos = note.computedPosition;
+      const globalOffset = editor.mouse.getOffset();
+      const notePos = note.computedPosition;
       const position = {
-        x: statePos.x + globalOffset.x,
-        y: statePos.y + globalOffset.y,
+        x: notePos.x + globalOffset.x,
+        y: notePos.y + globalOffset.y,
       };
       const { width } = note.drawBounds;
       const { padding, fontSize, borderRadius } = note.computedStyles;

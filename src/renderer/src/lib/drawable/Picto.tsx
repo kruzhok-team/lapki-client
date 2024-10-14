@@ -59,6 +59,9 @@ const basePicto: BasePicto = {
   pen: Pen,
   system: resolveImg('common/system.svg'),
   variable: resolveImg('common/variable.svg'),
+  stubComponent: resolveImg('common/stubComponent.svg'),
+  stubEvent: resolveImg('common/stubEvent.svg'),
+  stubAction: resolveImg('common/stubAction.svg'),
   condition: resolveImg('common/condition.svg'),
 
   'op/notEquals': resolveImg('bearloga/compare_not_equal.svg'),
@@ -203,7 +206,7 @@ export class Picto {
   getMarkedIcon(data: MarkedIconData, className?: string) {
     const icon = icons.get(data.icon);
     return (
-      <div className={twMerge('relative h-8 w-8 shrink-0', className)}>
+      <div className={twMerge('relative size-8 shrink-0', className)}>
         <img className="h-full w-full object-contain" src={icon?.src ?? UnknownIcon} />
         {data.label && (
           <p

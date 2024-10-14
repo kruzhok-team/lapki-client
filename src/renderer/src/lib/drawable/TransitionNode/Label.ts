@@ -1,22 +1,80 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { serializeTransitionActions } from '@renderer/lib/data/GraphmlBuilder';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { Transition, picto } from '@renderer/lib/drawable';
 import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import { Drawable } from '@renderer/lib/types';
+import { drawText, prepareText } from '@renderer/lib/utils/text';
+import theme from '@renderer/theme';
 
 /**
  * Условие перехода между состояниями.
  * Выполняет отрисовку основного блока событий и действия при переходе:
  */
 export class Label implements Drawable {
-  constructor(private parent: Transition, protected app: CanvasEditor) {}
+  textData = {
+    height: 100,
+    textArray: [] as string[],
+  };
+
+  constructor(private parent: Transition, protected app: CanvasEditor) {
+    // TODO: visual
+    if (!this.app.model.data.elements.visual) {
+      this.update();
+    }
+  }
+
+  update() {
+    const platform = getPlatform(this.app.controller.platform[this.parent.smId].name);
+
+    if (!this.parent.data.label || this.app.controller.visual || !platform) return;
+
+    const text = serializeTransitionActions(
+      this.parent.data.label,
+      platform,
+      this.app.controller.model.model.data.elements.stateMachines[this.parent.smId].components
+    );
+
+    this.textData = prepareText(text, 250 - 2 * 15, {
+      fontFamily: 'Fira Sans',
+      fontSize: 16,
+      lineHeight: 1.2,
+    });
+  }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const label = this.parent.data.label;
-    if (!label) return;
+    if (!this.parent.data.label) return;
 
+    this.drawBody(ctx);
+    // TODO: visual
+    if (!this.app.model.data.elements.visual) {
+      this.drawTextVariant(ctx);
+    } else {
+      this.drawImageVariant(ctx);
+    }
+  }
+
+  private drawBody(ctx: CanvasRenderingContext2D) {
+    if (!this.parent.data.label) return;
+
+    const { x, y, width, height } = this.parent.drawBounds;
+
+    // TODO(bryzZz) Это должно переехать в тему
+    ctx.fillStyle = 'rgb(23, 23, 23)';
+
+    ctx.beginPath();
+
+    ctx.roundRect(x, y, width, height, 8 / this.app.controller.scale);
+
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  private drawImageVariant(ctx: CanvasRenderingContext2D) {
+    const label = this.parent.data?.label;
     const platform = this.app.controller.platform;
 
-    if (!platform[this.parent.smId]) return;
+    if (!label || !platform[this.parent.smId]) return;
 
     const { x, y, width, height } = this.parent.drawBounds;
     const eventMargin = picto.eventMargin;
@@ -44,7 +102,12 @@ export class Label implements Drawable {
 
     ctx.fillStyle = transitionStyle.bgColor;
 
-    if (label.trigger && label.trigger.component !== '' && label.trigger.method !== '') {
+    if (
+      label.trigger &&
+      typeof label.trigger !== 'string' &&
+      label.trigger.component !== '' &&
+      label.trigger.method !== ''
+    ) {
       const trigger = label.trigger;
       ctx.beginPath();
       platform[this.parent.smId].drawEvent(ctx, trigger, x + p, y + p);
@@ -56,7 +119,7 @@ export class Label implements Drawable {
     }
 
     //Здесь начинается прорисовка действий и условий для связей
-    if (label.condition) {
+    if (label.condition && typeof label.condition !== 'string') {
       //TODO: Требуется допиливание прорисовки условий
       ctx.beginPath();
       if (label.condition) {
@@ -70,7 +133,7 @@ export class Label implements Drawable {
       ctx.closePath();
     }
 
-    if (label.do) {
+    if (label.do && typeof label.do !== 'string') {
       ctx.beginPath();
       label.do?.forEach((data, actIdx) => {
         const ax = 1 + (actIdx % eventRowLength);
@@ -82,5 +145,25 @@ export class Label implements Drawable {
       });
       ctx.closePath();
     }
+  }
+
+  private drawTextVariant(ctx: CanvasRenderingContext2D) {
+    const { x, y } = this.parent.drawBounds;
+    const p = 15 / this.app.controller.scale;
+    const fontSize = 16 / this.app.controller.scale;
+
+    drawText(ctx, this.textData.textArray, {
+      x: x + p,
+      y: y + p,
+      textAlign: 'left',
+      color: theme.colors.diagram.transition.color,
+      font: {
+        fontSize,
+        fontFamily: 'Fira Sans',
+        lineHeight: 1.2,
+      },
+    });
+
+    ctx.closePath();
   }
 }

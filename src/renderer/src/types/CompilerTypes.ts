@@ -35,10 +35,17 @@ export type CompilerComponent = {
   position: Point;
   parameters: { [key: string]: string };
 };
+
+export type CompileCommandResult = {
+  command: string;
+  return_code: string;
+  stdout: string;
+  stderr: string;
+};
+
 export type CompilerResult = {
   result: string;
-  stdout?: string;
-  stderr?: string;
+  commands: CompileCommandResult[];
   binary?: Array<Binary>;
   source?: Array<SourceFile>;
   // платформа для которой была осуществлена компиляция

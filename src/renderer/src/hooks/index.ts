@@ -3,6 +3,7 @@ export * from './useDiagramContextMenu';
 export * from './useComponents';
 export * from './useErrorModal';
 export * from './useFileOperations';
+export * from './useWheel';
 export * from './useSettings';
 export * from './useFetch';
 export * from './useModal';

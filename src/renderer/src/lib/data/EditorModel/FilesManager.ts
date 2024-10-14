@@ -8,7 +8,7 @@ import { TemplatesList } from '@renderer/types/templates';
 
 import { importGraphml } from '../GraphmlParser';
 import { ModelController } from '../ModelController';
-import { isPlatformAvailable } from '../PlatformLoader';
+import { getPlatform, isPlatformAvailable } from '../PlatformLoader';
 
 type FileError = {
   name: string;
@@ -26,7 +26,9 @@ export class FilesManager {
   }
 
   newFile(platformIdx: string) {
-    if (!isPlatformAvailable(platformIdx)) {
+    const platform = getPlatform(platformIdx);
+
+    if (!platform) {
       throw Error('unknown platform ' + platformIdx);
     }
     this.modelController.reset();

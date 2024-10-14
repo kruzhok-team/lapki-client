@@ -12,8 +12,8 @@ import {
   EditorDataReturn,
   CreateTransitionParams,
   ChangeTransitionParams,
-  ChangeStateEventsParams,
   CreateComponentParams,
+  ChangeStateParams,
   CreateNoteParams,
   Point,
   CreateInitialStateParams,
@@ -237,36 +237,13 @@ export class EditorModel {
     return id;
   }
 
-  changeStateEvents(args: ChangeStateEventsParams) {
-    const {
-      id,
-      eventData: { do: actions, trigger, condition },
-      color,
-      smId,
-    } = args;
+  changeState(args: ChangeStateParams) {
+    const { smId, id, events, color } = args;
 
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
-    const eventIndex = state.events.findIndex(
-      (value) =>
-        trigger.component === value.trigger.component &&
-        trigger.method === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-    const event = state.events[eventIndex];
-
-    if (event === undefined) {
-      state.events = [...state.events, args.eventData];
-    } else {
-      if (actions.length) {
-        event.condition = condition;
-        event.do = [...actions];
-      } else {
-        state.events.splice(eventIndex, 1);
-      }
-    }
-
+    state.events = events;
     state.color = color;
 
     this.triggerDataUpdate('elements.states');
@@ -535,7 +512,11 @@ export class EditorModel {
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
+    (state.events[eventIdx].do as Action[]).splice(
+      actionIdx ?? state.events[eventIdx].do.length - 1,
+      0,
+      value
+    );
 
     this.triggerDataUpdate('elements.states');
 
@@ -568,7 +549,7 @@ export class EditorModel {
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do[actionIdx as number] = newValue;
+    (state.events[eventIdx].do as Action[])[actionIdx as number] = newValue;
 
     this.triggerDataUpdate('elements.states');
 
@@ -592,7 +573,7 @@ export class EditorModel {
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx as number, 1);
+    (state.events[eventIdx].do as Action[]).splice(actionIdx as number, 1);
 
     this.triggerDataUpdate('elements.states');
 
@@ -858,6 +839,14 @@ export class EditorModel {
     this.data.elements.stateMachines[smId].meta = meta;
 
     this.triggerDataUpdate('elements.meta');
+
+    return true;
+  }
+
+  setTextMode(smId: string) {
+    this.data.elements.stateMachines[smId].visual = false;
+
+    this.triggerDataUpdate('elements.visual');
 
     return true;
   }

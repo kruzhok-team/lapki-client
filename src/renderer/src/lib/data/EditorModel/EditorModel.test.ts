@@ -128,13 +128,15 @@ describe('states', () => {
       const res = em.changeStateEvents({
         smId: 'G',
         id: '0',
-        eventData: {
-          trigger: {
-            component: '',
-            method: '',
+        events: [
+          {
+            trigger: {
+              component: '',
+              method: '',
+            },
+            do: [],
           },
-          do: [],
-        },
+        ],
         color: '#FFFFFF',
       });
 

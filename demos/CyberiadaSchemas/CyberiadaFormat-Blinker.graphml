@@ -30,7 +30,6 @@ name/ Arduino Blinker
 author/ Lapki IDE TEAM
 
 description/ Включение и выключение лампочки по таймеру
-
         </data>
     </node>
     <node id="cLED1">

@@ -72,6 +72,7 @@ export type CreateStateParams = StateData & {
   linkByPoint?: boolean;
   canBeInitial?: boolean;
 };
+export type ChangeStateParams = Pick<StateData, 'events' | 'color'> & { smId: string; id: string };
 
 export type CreateInitialStateParams = InitialStateData & { smId: string; id?: string };
 export type CreateFinalStateParams = FinalStateData & {

@@ -8,7 +8,7 @@ import { useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
@@ -39,6 +39,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
     CompilerNoDataStatus.DEFAULT
   );
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
@@ -66,20 +68,20 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     await modelController.files.saveIntoFolder(compilerData!.source!);
   };
 
+  const commandsResultToStr = (compilerCommands: CompileCommandResult[]): string => {
+    let stdout = '';
+    compilerCommands.forEach((element) => {
+      stdout += `${element.command}\nreturn_code: ${element.return_code}\nstdout: ${element.stdout}\n stderr: ${element.stderr}\n\n`;
+    });
+
+    return stdout;
+  };
+
   const handleAddStdoutTab = () => {
     openTab({
       type: 'code',
-      name: 'stdout',
-      code: compilerData!.stdout ?? '',
-      language: 'txt',
-    });
-  };
-
-  const handleAddStderrTab = () => {
-    openTab({
-      type: 'code',
-      name: 'stderr',
-      code: compilerData!.stderr ?? '',
+      name: 'compilerLog',
+      code: commandsResultToStr(compilerData!.commands),
       language: 'txt',
     });
   };
@@ -111,40 +113,41 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
     const { host, port } = compilerSetting;
 
-    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setCompilerNoDataStatus);
+    Compiler.bindReact(
+      setCompilerData,
+      setCompilerStatus,
+      setImportData,
+      setCompilerNoDataStatus,
+      setSecondsUntilReconnect
+    );
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
   const button = [
     {
-      name: 'Показать stderr',
-      handler: handleAddStderrTab,
-      disabled: compilerData?.stderr === undefined,
-    },
-    {
-      name: 'Показать stdout',
+      name: 'Показать журнал компиляции',
       handler: handleAddStdoutTab,
-      disabled: compilerData?.stdout === undefined,
+      disabled: compilerData?.commands.length === 0 || compilerData?.commands === undefined,
     },
     {
       name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
-      disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
+      disabled: compilerData?.binary === undefined || compilerData.binary.length === 0,
     },
     {
       name: 'Сохранить код',
       handler: handleSaveSourceIntoFolder,
-      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
+      disabled: compilerData?.source == undefined || compilerData?.source.length === 0,
     },
     {
       name: 'Показать код',
       handler: handleShowSource,
-      disabled: compilerData?.source == undefined || compilerData?.source.length == 0,
+      disabled: compilerData?.source == undefined || compilerData?.source.length === 0,
     },
     {
       name: 'Прошить...',
       handler: handleFlashButton,
-      disabled: compilerData?.binary === undefined || compilerData.binary.length == 0,
+      disabled: compilerData?.binary === undefined || compilerData.binary.length === 0,
     },
   ];
   const processing =
@@ -152,6 +155,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
   const disabled =
     processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
+  const showReconnectTime = () => {
+    if (secondsUntilReconnect == null) return;
+    return <p>До подключения: {secondsUntilReconnect} сек.</p>;
+  };
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -186,7 +193,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             {compilerStatus}
           </span>
         </p>
-
+        {showReconnectTime()}
         <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
           Результат компиляции: {compilerData ? compilerData.result : compilerNoDataStatus}
         </div>

@@ -109,6 +109,8 @@ function actualizeElements(oldElements: CompilerElements): Elements {
     parameters: oldElements.parameters,
     stateMachines: {
       G: {
+        visual: true,
+        position: { x: 0, y: 0 },
         platform: oldElements.platform,
         components: actualizeComponents(oldElements.components),
         states: actualizeStates(oldElements.states),
@@ -146,9 +148,10 @@ export class Compiler extends ClientWS {
     setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>,
     setCompilerStatus: Dispatch<SetStateAction<string>>,
     setImportData: Dispatch<SetStateAction<Elements | undefined>>,
-    setCompilerNoDataStatus: Dispatch<SetStateAction<string>>
+    setCompilerNoDataStatus: Dispatch<SetStateAction<string>>,
+    setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
   ): void {
-    this.setOnStatusChange(setCompilerStatus);
+    super.bind(setCompilerStatus, setSecondsUntilReconnect);
     this.setCompilerData = setCompilerData;
     this.setImportData = setImportData;
     this.setCompilerNoDataStatus = setCompilerNoDataStatus;
@@ -257,8 +260,7 @@ export class Compiler extends ClientWS {
         }
         this.setCompilerData({
           result: data.result,
-          stdout: data.stdout,
-          stderr: data.stderr,
+          commands: data.commands,
           binary: this.binary,
           source: this.getSourceFiles(data.source),
           platform: this.platform,
@@ -273,6 +275,7 @@ export class Compiler extends ClientWS {
         data = JSON.parse(msg.data as string) as SourceFile;
         this.setCompilerData({
           result: 'OK',
+          commands: [],
           binary: [],
           //В данный момент название файла, которое приходит от компилятора
           //Выглядит так: Robot_время.

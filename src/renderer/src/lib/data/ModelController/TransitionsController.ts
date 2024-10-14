@@ -87,8 +87,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     return [...this.items.values()].find(({ source }) => source.id === sourceId);
   }
 
-  createTransition = (params: CreateTransitionParams) => {
-    const { sourceId, targetId, smId } = params;
+  updateAll() {
+    this.forEach((transition) => {
+      transition.label.update();
+    });
+  }
+
+  createTransition(params: CreateTransitionParams) {
+    const { smId, sourceId, targetId, label } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
     const target =
@@ -97,6 +103,13 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.controller.transitions.get(targetId);
 
     if (!source || !target || !params.id) return;
+
+    if (label && !label.position) {
+      label.position = {
+        x: (source.position.x + target.position.x) / 2,
+        y: (source.position.y + target.position.y) / 2,
+      };
+    }
 
     // Создание модельки
     const transition = new Transition(this.app, params.id, smId, { ...params });
@@ -107,7 +120,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.watchTransition(transition);
 
     this.view.isDirty = true;
-  };
+  }
 
   linkTransition = (id: string) => {
     const transition = this.items.get(id);
@@ -147,6 +160,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.position = args.endPosition;
+
+    transition.label.update();
 
     this.view.isDirty = true;
   };

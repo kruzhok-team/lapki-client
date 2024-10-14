@@ -15,6 +15,8 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 import {
+  SERIAL_MONITOR_CONNECTED,
+  SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
@@ -40,6 +42,7 @@ export const Loader: React.FC<FlasherProps> = ({
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     setConnectionStatus: setSerialConnectionStatus,
+    connectionStatus: serialConnectionStatus,
     setLog: setSerialLog,
     addDeviceMessage,
   } = useSerialMonitor();
@@ -58,6 +61,8 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   const [flashResult, setFlashResult] = useState<FlashResult>();
+  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
+  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
 
   const closeMsgModal = () => setIsMsgModalOpen(false);
 
@@ -79,6 +84,17 @@ export const Loader: React.FC<FlasherProps> = ({
     if (currentDevice == null || currentDevice == undefined) {
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
+    }
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == currentDeviceID &&
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     if (flasherFile) {
       Flasher.flash(currentDevice);
@@ -211,7 +227,8 @@ export const Loader: React.FC<FlasherProps> = ({
       setFlasherFile,
       setIsFlashing,
       setFlasherError,
-      setFlashResult
+      setFlashResult,
+      setSecondsUntilReconnect
     );
     SerialMonitor.bindReact(
       addDeviceMessage,
@@ -271,7 +288,7 @@ export const Loader: React.FC<FlasherProps> = ({
       if (flasherIsLocal) {
         return 'Перезапустить';
       } else {
-        return 'Переподключиться';
+        return 'Подключиться';
       }
     }
   };
@@ -329,6 +346,11 @@ export const Loader: React.FC<FlasherProps> = ({
     } else {
       return true;
     }
+    // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
+    // чтобы гарантированно избежать ситуации одноремнной прошивки и подключения к порту
+    if (serialConnectionStatus == SERIAL_MONITOR_CONNECTING) {
+      return true;
+    }
     return false;
   };
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
@@ -343,6 +365,10 @@ export const Loader: React.FC<FlasherProps> = ({
         Программа avrdude не найдена!
       </button>
     );
+  };
+  const showReconnectTime = () => {
+    if (secondsUntilReconnect == null) return;
+    return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
   return (
     <section className="flex h-full flex-col text-center">
@@ -383,6 +409,7 @@ export const Loader: React.FC<FlasherProps> = ({
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
           <p>{connectionStatus}</p>
+          {showReconnectTime()}
           <br></br>
           <button
             className="btn-primary mb-2 w-full"

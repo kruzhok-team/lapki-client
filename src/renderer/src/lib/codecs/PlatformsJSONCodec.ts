@@ -209,6 +209,7 @@ const typeMap: any = {
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
       { json: 'standardVersion', js: 'standardVersion', typ: '' },
       { json: 'version', js: 'version', typ: '' },
+      { json: 'visual', js: 'visual', typ: true },
     ],
     false
   ),

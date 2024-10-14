@@ -1,6 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Events, EdgeHandlers, icons } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
+import { stateStyle } from '@renderer/lib/styles';
 import { drawCircle } from '@renderer/lib/utils';
 import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
@@ -45,15 +46,12 @@ export class State extends Shape {
   }
 
   updateEventBox() {
-    this.eventBox.recalculate();
-    // console.log(['State.updateEventBox', this.id, this.bounds, this.eventBox.bounds]);
-    const calcHeight = this.titleHeight + this.eventBox.bounds.height + this.eventBox.bounds.y;
+    this.eventBox.update();
+
     this.dimensions = {
-      height: calcHeight,
-      width: Math.max(this.dimensions.width, this.eventBox.bounds.width + this.eventBox.bounds.x),
+      width: this.dimensions.width,
+      height: Math.max(stateStyle.height, this.eventBox.dimensions.height + this.titleHeight),
     };
-    // this.bounds.height = Math.max(this.bounds.height, calcHeight);
-    // console.log(['/State.updateEventBox', this.id, this.bounds]);
   }
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

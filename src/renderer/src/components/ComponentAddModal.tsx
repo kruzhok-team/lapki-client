@@ -103,7 +103,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
             >
               <img
                 className="h-8 w-8 object-contain"
-                src={icons.get(entry.img ?? 'unknown')?.src ?? UnknownIcon}
+                src={icons.get(entry.img || 'stubComponent')?.src ?? UnknownIcon}
               />
               <p className="line-clamp-1">{entry.name}</p>
             </div>

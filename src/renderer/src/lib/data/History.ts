@@ -9,6 +9,7 @@ import {
 import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangeStateEventsParams,
+  ChangeStateParams,
   CreateTransitionParams,
   ChangeTransitionParams,
   CreateNoteParams,
@@ -163,7 +164,8 @@ export const actionFunctions: ActionFunctions = {
       sM,
       {
         ...args,
-        actions: prevActions,
+        events: prevActions,
+        color: undefined,
       },
       false
     ),
@@ -442,12 +444,6 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Изменение имени состояния',
     description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
   }),
-  changeStateEvents: ({ args, prevActions }) => ({
-    name: 'Изменение состояния',
-    description: `Id состояния: ${args.id}\nТриггер: ${args.eventData.trigger.component}\nМетод: ${
-      args.eventData.trigger.method
-    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.eventData.do)}`,
-  }),
   linkState: (args) => ({
     name: 'Присоединение состояния',
     description: `Id: "${args.childId}"\nId родителя: "${args.parentId}"`,
@@ -461,6 +457,13 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Было: "${JSON.stringify(
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
+  }),
+  changeStateEvents: ({ args, prevActions }) => ({
+    name: 'Изменение состояния',
+    description: `Id состояния: ${args.id}\nТриггер: ${args.eventData.trigger}, Действия: ${
+      args.eventData.do
+    }
+    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.eventData.do)}`,
   }),
   // deleteStateMachine: (args) => ({
   // name: 'Удаление машины состояний',

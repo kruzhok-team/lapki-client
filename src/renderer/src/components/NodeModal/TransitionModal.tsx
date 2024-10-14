@@ -7,8 +7,8 @@ import { ChangeTransitionParams } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Transition } from '@renderer/types/diagram';
 
-import { Events, Condition, ColorField, Trigger } from './components';
-import { useTrigger, useCondition, useEvents } from './hooks';
+import { Actions, Condition, ColorField, Trigger } from './components';
+import { useTrigger, useCondition, useActions } from './hooks';
 
 interface TransitionModalProps {
   smId: string;
@@ -16,6 +16,8 @@ interface TransitionModalProps {
 
 export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   const modelController = useModelContext();
+  // TODO: visual
+  // const visual = editor.model.useData('elements.visual');
   // TODO: Передавать в модалки машину состояний
   // const sm = modelController.model.data.elements.stateMachines[smId];
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
@@ -31,7 +33,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   // Данные формы
   const trigger = useTrigger(false);
   const condition = useCondition();
-  const events = useEvents();
+  const actions = useActions();
   const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
@@ -62,9 +64,14 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
       return;
     }
 
-    const { selectedComponent, selectedMethod } = trigger;
+    const { selectedComponent, selectedMethod, tabValue } = trigger;
+    const triggerText = trigger.text.trim();
 
-    if (showTrigger && (!selectedComponent || !selectedMethod)) {
+    if (
+      showTrigger &&
+      ((tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+        (tabValue === 1 && !triggerText))
+    ) {
       return;
     }
 
@@ -93,42 +100,53 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
     const getCondition = () => {
       if (!show) return undefined;
 
-      // Тут много as string потому что проверка на null в checkForErrors
-      return {
-        type: conditionOperator as string,
-        value: [
-          {
-            type: isParamOneInput1 ? 'component' : 'value',
-            value: isParamOneInput1
-              ? {
-                  component: selectedComponentParam1 as string,
-                  method: selectedMethodParam1 as string,
-                  args: {},
-                }
-              : (argsParam1 as string),
-          },
-          {
-            type: isParamOneInput2 ? 'component' : 'value',
-            value: isParamOneInput2
-              ? {
-                  component: selectedComponentParam2 as string,
-                  method: selectedMethodParam2 as string,
-                  args: {},
-                }
-              : (argsParam2 as string),
-          },
-        ],
-      };
+      if (condition.tabValue === 0) {
+        // Тут много as string потому что проверка на null в checkForErrors
+        return {
+          type: conditionOperator as string,
+          value: [
+            {
+              type: isParamOneInput1 ? 'component' : 'value',
+              value: isParamOneInput1
+                ? {
+                    component: selectedComponentParam1 as string,
+                    method: selectedMethodParam1 as string,
+                    args: {},
+                  }
+                : (argsParam1 as string),
+            },
+            {
+              type: isParamOneInput2 ? 'component' : 'value',
+              value: isParamOneInput2
+                ? {
+                    component: selectedComponentParam2 as string,
+                    method: selectedMethodParam2 as string,
+                    args: {},
+                  }
+                : (argsParam2 as string),
+            },
+          ],
+        };
+      }
+
+      return condition.text.trim() || undefined;
     };
 
     const getTrigger = () => {
       if (!showTrigger) return undefined;
 
-      return { component: selectedComponent as string, method: selectedMethod as string };
+      if (tabValue === 0)
+        return { component: selectedComponent as string, method: selectedMethod as string };
+
+      return triggerText;
     };
 
-    const getEvents = () => {
-      return events.events;
+    const getActions = () => {
+      if (actions.tabValue === 0) {
+        return actions.actions;
+      }
+
+      return actions.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
     };
 
     // Если редактируем состояние
@@ -142,8 +160,8 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: getEvents(),
-        } as any, // Из-за position
+          do: getActions(),
+        } as any, // Из-за position,
       });
     }
 
@@ -157,8 +175,8 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
         label: {
           trigger: getTrigger(),
           condition: getCondition(),
-          do: getEvents(),
-        } as any, // Из-за position
+          do: getActions(),
+        } as any, // Из-за position,
       });
     }
     close();
@@ -168,7 +186,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   const handleAfterClose = () => {
     trigger.clear();
     condition.clear();
-    events.clear();
+    actions.clear();
     setColor(undefined);
 
     setTransition(null);
@@ -177,33 +195,27 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
     setIsInitialTransition(false);
   };
 
+  // Подстановка начальных значений
   useEffect(() => {
     const handleCreateTransition = (data: { smId: string; sourceId: string; targetId: string }) => {
       if (data.smId !== smId) return;
       setNewTransition(data);
-      events.setEvents([]);
+      actions.parse([]);
       open();
     };
 
     const handleChangeTransition = (args: ChangeTransitionParams) => {
       if (args.smId !== smId) return;
-      const { id, label, color } = args;
-      if (label?.trigger) {
-        trigger.setSelectedComponent(label.trigger.component);
-        trigger.setSelectedMethod(label.trigger.method);
-      }
 
-      condition.parseCondition(label?.condition);
-
-      if (label?.do) {
-        events.setEvents(label.do);
-      }
+      trigger.parse(args.label?.trigger);
+      condition.parse(args.label?.condition);
+      actions.parse(args.label?.do);
 
       setColor(color);
 
       setTransition({ ...args });
-      setTransitionId(id);
-      setIsInitialTransition(label == undefined);
+      setTransitionId(transitionId);
+      setIsInitialTransition(args.label == undefined);
       open();
     };
     modelController.on('openCreateTransitionModal', handleCreateTransition);
@@ -214,7 +226,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
       modelController.off('openChangeTransitionModal', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
   return (
     <>
@@ -228,7 +240,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
         <div className="flex flex-col gap-4">
           {!isInitialTransition && showTrigger && <Trigger {...trigger} />}
           {!isInitialTransition && <Condition {...condition} />}
-          {!isInitialTransition && <Events {...events} />}
+          {!isInitialTransition && <Actions {...actions} />}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

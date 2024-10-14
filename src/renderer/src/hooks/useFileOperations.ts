@@ -100,11 +100,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     modelController.files.newFile(idx);
     // schemeModel?.files.newFile(idx);
     clearTabs();
-    openTab({
-      type: 'editor',
-      name: 'editor',
-      canvasId: modelController.model.data.headControllerId,
-    });
+    openTabs();
   };
 
   const handleSaveAsFile = async () => {
@@ -153,8 +149,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       const result = await modelController.files.import(setOpenData);
       if (result) {
         clearTabs();
-        // TODO: Откуда брать CanvasId?
-        openTab({ type: 'editor', name: 'editor', canvasId: '' });
+        openTabs();
       }
     }
   };

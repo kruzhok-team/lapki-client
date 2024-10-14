@@ -1,4 +1,5 @@
 import { Controller, UseFormReturn } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
 import { Modal, Select } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -19,6 +20,8 @@ interface StateMachineEditModalProps {
   onSide: (() => void) | undefined;
   form: UseFormReturn<StateMachineData>;
   platformList: optionType[];
+  isDuplicateName: (name: string) => boolean;
+  selectPlatformDisabled: boolean;
 }
 
 // TODO (Roundabout1): наверное стоит перенести этот тип данных в другое место?
@@ -36,8 +39,16 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   onSide,
   form,
   platformList,
+  isDuplicateName,
+  selectPlatformDisabled: selectorDisable,
 }) => {
-  const { handleSubmit: hookHandleSubmit, control, reset } = form;
+  const {
+    handleSubmit: hookHandleSubmit,
+    control,
+    reset,
+    setError,
+    formState: { errors },
+  } = form;
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
 
@@ -47,8 +58,16 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   };
 
   const handleSubmit = hookHandleSubmit((data) => {
+    if (isDuplicateName(data.name)) {
+      setError('name', { message: 'Имя не должно повторять имена или ID других машин состояний' });
+      return;
+    }
+    if (!data.platform) {
+      setError('platform', { message: 'Выберите платформу' });
+      return;
+    }
     onSubmit(data);
-    reset({ name: '', platform: '' });
+    reset({ name: undefined, platform: undefined });
     onClose();
   });
 
@@ -79,6 +98,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
               placeholder="Введите название..."
               onChange={onChange}
               value={value ?? ''}
+              error={errors.name?.message}
             ></ComponentFormFieldLabel>
           )}
         />
@@ -86,9 +106,9 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
           name="platform"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <ComponentFormFieldLabel label="Платформа">
+            <ComponentFormFieldLabel label="Платформа" error={errors.platform?.message}>
               <Select
-                className="w-[250px]"
+                className={twMerge('w-[250px]', selectorDisable && 'opacity-60')}
                 isSearchable={false}
                 placeholder="Выберите платформу..."
                 options={platformList}
@@ -96,6 +116,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
                 onChange={(opt) => {
                   onChange(opt?.value);
                 }}
+                isDisabled={selectorDisable}
               />
             </ComponentFormFieldLabel>
           )}

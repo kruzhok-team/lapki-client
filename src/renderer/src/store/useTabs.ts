@@ -11,6 +11,7 @@ interface TabsState {
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
+  renameTab: (oldName: string, newName: string) => void;
 }
 
 export const useTabs = create<TabsState>((set) => ({
@@ -89,4 +90,17 @@ export const useTabs = create<TabsState>((set) => ({
       items: [],
       activeTab: null,
     })),
+  renameTab: (oldName, newName) =>
+    set(({ items, activeTab }) => {
+      const newItems = [...items];
+      const index = newItems.findIndex(({ name }) => name === oldName);
+      newItems[index].name = newName;
+
+      const newActiveTab = oldName == activeTab ? newName : activeTab;
+
+      return {
+        items: newItems,
+        activeTab: newActiveTab,
+      };
+    }),
 }));

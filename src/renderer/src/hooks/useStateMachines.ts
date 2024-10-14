@@ -15,16 +15,14 @@ export const useStateMachines = () => {
   const model = modelController.model;
 
   // const currentSm = model.useData('', 'currentSm');
-  const [items, openTab, closeTab] = useTabs((state) => [
+  const [items, openTab, closeTab, renameTab] = useTabs((state) => [
     state.items,
     state.openTab,
     state.closeTab,
+    state.renameTab,
   ]);
   const [idx, setIdx] = useState<string | undefined>(undefined); // индекс текущей машины состояний
-  const [data, setData] = useState<StateMachineData>({
-    name: '',
-    platform: '',
-  });
+  const [data, setData] = useState<StateMachineData | undefined>(undefined);
 
   const [isAddOpen, openAdd, closeAdd] = useModal(false);
   const [isEditOpen, openEdit, editClose] = useModal(false);
@@ -34,6 +32,8 @@ export const useStateMachines = () => {
   const addForm = useForm<StateMachineData>();
 
   const onRequestAddStateMachine = () => {
+    setIdx(undefined);
+    setData(undefined);
     openAdd();
   };
 
@@ -51,25 +51,21 @@ export const useStateMachines = () => {
     openEdit();
   };
 
-  const onRequestDeleteStateMachine = (idx: string) => {
-    const stateMachine = model.data.elements.stateMachines[idx];
-    if (!stateMachine) return;
-    const smData = { name: stateMachine.name ?? '', platform: stateMachine.platform };
-    setIdx(idx);
-    setData(smData);
-    openDelete();
-  };
-
   const onAdd = (data: StateMachineData) => {
     const smId = generateId();
     const sm = { ...emptyStateMachine(), ...data };
     const canvasId = modelController.createStateMachine(smId, sm);
     modelController.model.changeHeadControllerId(canvasId);
-    openTab({ type: 'editor', canvasId: canvasId, name: sm.name ?? canvasId });
+    openTab({ type: 'editor', canvasId: canvasId, name: sm.name ? sm.name : smId });
   };
 
   const onEdit = (data: StateMachineData) => {
     if (!idx) return;
+    const sm = modelController.model.data.elements.stateMachines[idx];
+    const smName = sm.name ?? '';
+    if (data.name != smName) {
+      renameTab(smName ? smName : idx, data.name ? data.name : idx);
+    }
     modelController.editStateMachine(idx, data);
   };
 
@@ -90,6 +86,24 @@ export const useStateMachines = () => {
     modelController.deleteStateMachine(idx);
 
     editClose();
+  };
+
+  /**
+   * Использовать только после вызова {@link onRequestEditStateMachine} или {@link onRequestAddStateMachine}.
+   * @param name имя машины состояний.
+   * @returns true, если имя дублирует имя другой машины состояний или её ID;
+   * false, если имя отсутствует, или оно не дублирует другие имена или ID.
+   */
+  const isDuplicateName = (name: string) => {
+    if (!name) return false;
+    const machines = [...Object.entries(modelController.model.data.elements.stateMachines)];
+    for (const [id, value] of machines) {
+      if (id == idx) continue;
+      if ((value.name && value.name == name) || name == id) {
+        return true;
+      }
+    }
+    return false;
   };
 
   // TODO: swap state machines
@@ -119,7 +133,7 @@ export const useStateMachines = () => {
       idx: idx,
     },
     onRequestAddStateMachine,
-    onRequestDeleteStateMachine,
     onRequestEditStateMachine,
+    isDuplicateName,
   };
 };

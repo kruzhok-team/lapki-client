@@ -7,7 +7,7 @@ import { Modal } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 interface StateMachineDeleteModalProps {
-  data: StateMachineData;
+  data: StateMachineData | undefined;
   idx: string | undefined;
   isOpen: boolean;
   onClose: () => void;
@@ -34,6 +34,10 @@ export const StateMachineDeleteModal: React.FC<StateMachineDeleteModalProps> = (
     onSubmit();
     onClose();
   });
+  // если одна их этих переменных undefined, то значит, что-то пошло не так
+  if (data == undefined || idx == undefined) {
+    return;
+  }
   return (
     <Modal
       {...props}

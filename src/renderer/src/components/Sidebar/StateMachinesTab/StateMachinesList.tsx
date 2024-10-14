@@ -22,7 +22,7 @@ export const StateMachinesList: React.FC = () => {
       const controller = modelController.controllers[controllerId];
       if (!controller.stateMachinesSub[name] || !(controller.type === 'specific')) continue;
 
-      openTab({ type: 'editor', name: sM.name ?? name, canvasId: controller.id });
+      openTab({ type: 'editor', name: sM.name ? sM.name : name, canvasId: controller.id });
     }
   };
 
@@ -39,9 +39,9 @@ export const StateMachinesList: React.FC = () => {
     // onSwapStateMachines
     onRequestAddStateMachine,
     onRequestEditStateMachine,
-    onRequestDeleteStateMachine,
+    isDuplicateName,
   } = useStateMachines();
-  // TODO (Roundabout1): этот массив используется для теста, нужно будет доставать его из другого места
+
   const platformList = getAvailablePlatforms().map((platform) => {
     return { value: platform.idx, label: platform.name };
   });
@@ -71,7 +71,7 @@ export const StateMachinesList: React.FC = () => {
               isSelected={id === selectedSm}
               onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}
-              onDelete={() => onRequestDeleteStateMachine(id)}
+              onDelete={() => undefined}
               onCallContextMenu={() => onCallContextMenu(id, sm)}
               // TODO: Доделать свап машин состояний
               onDragStart={() => console.log('setDragState')}
@@ -90,6 +90,8 @@ export const StateMachinesList: React.FC = () => {
         onSide={editProps.onDelete}
         sideLabel="Удалить"
         platformList={platformList}
+        isDuplicateName={isDuplicateName}
+        selectPlatformDisabled={true}
       />
       <StateMachineEditModal
         form={addProps.addForm}
@@ -100,6 +102,8 @@ export const StateMachinesList: React.FC = () => {
         onSide={undefined}
         sideLabel={undefined}
         platformList={platformList}
+        isDuplicateName={isDuplicateName}
+        selectPlatformDisabled={false}
       />
       <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>

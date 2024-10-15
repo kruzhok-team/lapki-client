@@ -50,4 +50,10 @@ export class ManagerMS {
       address: address,
     });
   }
+  static getMetaData(deviceID: string, address: string) {
+    Flasher.send('ms-get-meta-data', {
+      deviceID: deviceID,
+      address: address,
+    });
+  }
 }

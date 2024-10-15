@@ -54,7 +54,8 @@ export type FlasherType =
   | 'ms-address'
   | 'ms-device'
   | 'ms-reset'
-  | 'ms-reset-result';
+  | 'ms-reset-result'
+  | 'ms-get-meta-data';
 export type FlasherPayload =
   | string
   | Device

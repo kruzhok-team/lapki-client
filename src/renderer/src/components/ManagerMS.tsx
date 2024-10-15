@@ -74,6 +74,11 @@ export const ManagerMSTab: React.FC = () => {
     ManagerMS.reset(device.deviceID, address);
     ManagerMS.addLog('Отправлен запрос на сброс устройства.');
   };
+  const handleGetMetaData = () => {
+    if (!device) return;
+    ManagerMS.getMetaData(device.deviceID, address);
+    ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
+  };
   const handleCurrentDeviceDisplay = () => {
     if (device === undefined) {
       return 'Устройство отсутствует.';
@@ -118,6 +123,9 @@ export const ManagerMSTab: React.FC = () => {
         </button>
         <button className="btn-primary mr-4" onClick={handleReset} disabled={address == ''}>
           Сброс
+        </button>
+        <button className="btn-primary mr-4" onClick={handleGetMetaData} disabled={address == ''}>
+          Получить метаданные
         </button>
       </div>
       <div className="m-2 flex">

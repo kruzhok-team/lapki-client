@@ -75,7 +75,6 @@ export type Platform = {
   mainFileExtension?: string;
   version: string;
   visual: boolean;
-  delimeter: string;
   staticActionDelimeter: string;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };

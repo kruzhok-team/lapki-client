@@ -248,7 +248,7 @@ export const Loader: React.FC<FlasherProps> = ({
 
   useEffect(() => {
     if (!flasherSetting) return;
-    const { host, port, localPort, type, avrdudeSystemPath } = flasherSetting;
+    const { host, port, localPort, type } = flasherSetting;
     if (type === 'local' && port !== localPort) {
       setFlasherSetting({ ...flasherSetting, port: localPort }).then(() => {
         Flasher.connect(host, localPort);
@@ -256,13 +256,9 @@ export const Loader: React.FC<FlasherProps> = ({
     } else {
       Flasher.connect(host, port);
     }
-    if (avrdudeSystemPath) {
-      window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
-        setHasAvrdude(has);
-      });
-    } else {
-      setHasAvrdude(true);
-    }
+    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+      setHasAvrdude(has);
+    });
   }, [flasherSetting, setFlasherSetting]);
 
   useEffect(() => {

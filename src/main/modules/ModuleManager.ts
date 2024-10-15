@@ -3,7 +3,6 @@ import settings from 'electron-settings';
 import fixPath from 'fix-path';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { existsSync } from 'fs';
 import path from 'path';
 
 import { findFreePort } from './freePortFinder';
@@ -88,42 +87,23 @@ export class ModuleManager {
                   количество секунд между автоматическими обновлениями
               -local
                   локальный режим, ограничивает кол-во клиентов до одного и даёт права администратора для совершения особых действий по-умолчанию
+              -avrdudePath
+                  путь к программе avrdude, необходима для прошивки arduino-подобных устройств, по-умолчанию используется системный путь ('avrdude').
+              -configPath
+                  путь к файлу конфигурации avrdude, если не указать, то будет использоваться тот файл, что находится в одной папке с avrdude.
             */
             const flasherArgs: string[] = [
               '-updateList=1',
               '-listCooldown=0',
               `-address=localhost:${port}`,
               '-local',
-              `-advrdudePath=${
+              `-avrdudePath=${
                 settings.getSync('flasher.avrdudePath') ?? defaultSettings.flasher.avrdudePath
               }`,
               `-configPath=${
                 settings.getSync('flasher.configPath') ?? defaultSettings.flasher.configPath
               }`,
             ];
-            const avrdudeSystemPath = await settings.get('flasher.avrdudeSystemPath');
-            const avrdudeFolderPath = await settings.get('flasher.avrdudePath');
-            if (avrdudeSystemPath == false && avrdudeFolderPath) {
-              let avrdudePath = '';
-              let configPath = '';
-              switch (platform) {
-                case 'darwin':
-                case 'linux':
-                  avrdudePath = `${avrdudeFolderPath}/avrdude`;
-                  configPath = `${avrdudeFolderPath}/avrdude.conf`;
-                  break;
-                case 'win32':
-                  avrdudePath = `${avrdudeFolderPath}\\avrdude.exe`;
-                  configPath = `${avrdudeFolderPath}\\avrdude.conf`;
-                  break;
-              }
-              if (existsSync(avrdudePath)) {
-                flasherArgs.push(`-avrdudePath=${avrdudePath}`);
-              }
-              if (existsSync(configPath)) {
-                flasherArgs.push(`-configPath=${configPath}`);
-              }
-            }
             chprocess = spawn(modulePath, flasherArgs);
             break;
           }

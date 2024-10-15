@@ -259,8 +259,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.changeNoteFontSize(smId, id, fontSize);
 
+    this.emit('changeNoteFontSize', args);
     // TODO: History
-    // TODO: emit
   }
 
   changeNoteTextColor(args: ChangeNoteTextColorParams) {
@@ -271,8 +271,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.changeNoteTextColor(smId, id, textColor);
 
+    this.emit('changeNoteTextColor', args);
     // TODO: History
-    // TODO: emit
   }
 
   changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
@@ -283,7 +283,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
 
-    // TODO: emit('changeNoteBackgroundColor', args)
+    this.emit('changeNoteBackgroundColor', args);
     // TODO: History
   }
 

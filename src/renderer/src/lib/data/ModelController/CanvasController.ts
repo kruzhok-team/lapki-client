@@ -6,7 +6,10 @@ import {
   AddDragendStateSig,
   ChangeComponentPosition,
   ChangeEventParams,
+  ChangeNoteBackgroundColorParams,
+  ChangeNoteFontSizeParams,
   ChangeNoteText,
+  ChangeNoteTextColorParams,
   ChangePosition,
   ChangeSelectionParams,
   ChangeStateNameParams,
@@ -113,13 +116,15 @@ export type CanvasControllerEvents = {
   renameComponent: RenameComponentParams;
   changeComponentPosition: ChangeComponentPosition;
   changeChoicePosition: ChangePosition;
-
   createEvent: CreateEventParams;
   createEventAction: CreateEventActionParams;
   changeEvent: ChangeEventParams;
   changeEventAction: ChangeEventParams;
   deleteEvent: DeleteEventParams;
 
+  changeNoteFontSize: ChangeNoteFontSizeParams;
+  changeNoteTextColor: ChangeNoteTextColorParams;
+  changeNoteBackgroundColor: ChangeNoteBackgroundColorParams;
   changeNoteText: ChangeNoteText;
   changeNotePosition: ChangePosition;
   selectNote: SelectDrawable;
@@ -371,6 +376,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('selectNote', this.binded['selectNote']);
             this.model.off('changeNoteText', this.binded['changeNoteText']);
             this.model.off('changeNotePosition', this.binded['changeNotePosition']);
+            this.model.off('changeNoteFontSize', this.binded['changeNoteFontSize']);
+            this.model.off('changeNoteTextColor', this.binded['changeNoteTextColor']);
+            this.model.off('changeNoteBackgroundColor', this.binded['changeNoteBackgroundColor']);
             // this.initializer.initNotes(initData as { [id: string]: Note });
             break;
           case 'component':
@@ -567,6 +575,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeNotePosition',
           this.bindHelper('note', 'changeNotePosition', this.notes.changeNotePosition)
         );
+        this.model.on(
+          'changeNoteFontSize',
+          this.bindHelper('note', 'changeNoteFontSize', this.notes.changeNoteFontSize)
+        );
+        this.model.on(
+          'changeNoteTextColor',
+          this.bindHelper('note', 'changeNoteTextColor', this.notes.changeNoteTextColor)
+        );
+        this.model.on('changeNoteBackgroundColor', this.notes.changeNoteBackgroundColor);
         this.initData[smId].notes = {
           ...(initData as { [id: string]: Note }),
         };

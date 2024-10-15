@@ -4,7 +4,10 @@ import { Note } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import {
+  ChangeNoteBackgroundColorParams,
+  ChangeNoteFontSizeParams,
   ChangeNoteText,
+  ChangeNoteTextColorParams,
   ChangePosition,
   CreateNoteParams,
   DeleteDrawableParams,
@@ -64,10 +67,11 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  changeNoteBackgroundColor = (id: string, color: string | undefined) => {
-    const note = this.items.get(id);
+  changeNoteBackgroundColor = (args: ChangeNoteBackgroundColorParams) => {
+    const note = this.items.get(args.id);
     if (!note) return;
 
+    note.data.backgroundColor = args.backgroundColor;
     // if (canUndo) {
     //   this.history.do({
     //     type: 'changeNoteBackgroundColor',
@@ -75,15 +79,14 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     //   });
     // }
 
-    // this.app.model.changeNoteBackgroundColor(id, color);
-
     this.view.isDirty = true;
   };
 
-  changeNoteTextColor = (id: string, color: string | undefined) => {
-    const note = this.items.get(id);
+  changeNoteTextColor = (args: ChangeNoteTextColorParams) => {
+    const note = this.items.get(args.id);
     if (!note) return;
 
+    note.data.textColor = args.textColor;
     // if (canUndo) {
     //   this.history.do({
     //     type: 'changeNoteTextColor',
@@ -91,15 +94,14 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     //   });
     // }
 
-    // this.app.model.changeNoteTextColor(id, color);
-
     this.view.isDirty = true;
   };
 
-  changeNoteFontSize = (id: string, fontSize: number | undefined) => {
-    const note = this.items.get(id);
+  changeNoteFontSize = (args: ChangeNoteFontSizeParams) => {
+    const note = this.items.get(args.id);
     if (!note) return;
 
+    note.data.fontSize = args.fontSize;
     // if (canUndo) {
     //   this.history.do({
     //     type: 'changeNoteFontSize',

@@ -11,12 +11,12 @@ interface TextModeModalProps {
   Окно, ожидающее подтверждение пользователя о том, что он хочет перейти в текстовый режим
 */
 export const TextModeModal: React.FC<TextModeModalProps> = ({ onClose, ...props }) => {
-  // const { controller } = useModelContext();
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   // TODO: Исправить
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    controller.setTextMode();
+    modelController.setTextMode(modelController.controllers[headControllerId]);
 
     onClose();
   };

@@ -16,8 +16,7 @@ interface StateModalProps {
 
 export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }) => {
   const modelController = useModelContext();
-  // TODO useData(elements.visual)
-
+  const visual = editorController.useData('visual');
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
@@ -144,10 +143,10 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }
       return [...state.data.events, currentEvent];
     };
 
-    modelController.changeStateEvents({
+    modelController.changeState({
       smId: smId,
       id: state.id,
-      eventData: getEvents()[0],
+      events: getEvents(),
       color,
     });
 
@@ -190,7 +189,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }
   // Синхронизвация trigger и condition с event
   useLayoutEffect(() => {
     if (!state) return;
-
     const eventIndex = state.data.events.findIndex((value) => {
       if (trigger.tabValue === 1) {
         return value.trigger === trigger.text;
@@ -209,13 +207,13 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }
     if (eventIndex === -1) {
       setCurrentEventIndex(undefined);
       parseCondition(undefined);
-      parseEvents(undefined);
+      parseEvents(smId, undefined);
     } else {
       const event = state.data.events[eventIndex];
 
       setCurrentEventIndex(eventIndex);
       parseCondition(event.condition);
-      parseEvents(event.do);
+      parseEvents(smId, event.do);
     }
   }, [
     parseCondition,

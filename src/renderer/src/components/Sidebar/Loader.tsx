@@ -96,7 +96,7 @@ export const Loader: React.FC<FlasherProps> = ({
     if (
       serialMonitorDevice &&
       serialMonitorDevice.deviceID == currentDeviceID &&
-      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTING //SERIAL_MONITOR_CONNECTED
     ) {
       /*
       см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
@@ -200,7 +200,7 @@ export const Loader: React.FC<FlasherProps> = ({
   // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
   const handleAddAvrdudeTab = () => {
     closeTab('Прошивка', modelController);
-    openTab({
+    openTab(modelController, {
       type: 'code',
       name: 'Прошивка',
       code: flashResult?.report() ?? '',
@@ -222,7 +222,7 @@ export const Loader: React.FC<FlasherProps> = ({
     }
     closeTab('Монитор порта', modelController);
     setSerialMonitorDevice(curDevice);
-    openTab({
+    openTab(modelController, {
       type: 'serialMonitor',
       name: 'Монитор порта',
     });
@@ -232,7 +232,7 @@ export const Loader: React.FC<FlasherProps> = ({
     const curDevice = devices.get(currentDeviceID ?? '');
     setDeviceMS(curDevice as MSDevice);
     closeTab('Менеджер МС-ТЮК', modelController);
-    openTab({
+    openTab(modelController, {
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
     });

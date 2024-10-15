@@ -7,7 +7,7 @@ interface TabsState {
   items: Tab[];
   activeTab: string | null;
   setActiveTab: (tabName: string) => void;
-  openTab: (tab: Tab) => void;
+  openTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
@@ -20,11 +20,15 @@ export const useTabs = create<TabsState>((set) => ({
   setActiveTab: (activeTab) => {
     set({ activeTab });
   },
-  openTab: (tab) =>
+  openTab: (modelController, tab) =>
     set(({ items }) => {
       // Если пытаемся открыть одну и ту же вкладку
       if (items.find(({ name }) => name === tab.name)) {
         return { activeTab: tab.name };
+      }
+
+      if (tab.type === 'editor') {
+        modelController.model.changeHeadControllerId(tab.canvasId);
       }
 
       return {

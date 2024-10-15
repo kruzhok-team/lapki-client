@@ -21,5 +21,5 @@ createRoot(document.getElementById('root') as HTMLElement).render(
   <WhoopsieScreen>
     <App />
   </WhoopsieScreen>
-  // </StrictMode>
+  // </StrictMode>/
 );

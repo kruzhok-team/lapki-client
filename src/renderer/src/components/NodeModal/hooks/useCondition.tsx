@@ -21,10 +21,8 @@ export const useCondition = () => {
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  // TODO: visual
-  // const visual = model.useData('elements.visual');
-  const editor = modelController.getCurrentCanvas();
-  const controller = editor.controller;
+  const visual = modelController.controllers[headControllerId].useData('visual');
+  const controller = modelController.controllers[headControllerId];
 
   const [errors, setErrors] = useState({} as Record<string, string>);
 

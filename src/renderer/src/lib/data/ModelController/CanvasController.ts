@@ -242,6 +242,13 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     return useSyncExternalStore(this.subscribeToData(propertyName), () => this[propertyName]);
   }
 
+  setTextMode() {
+    this.visual = false;
+    this.states.updateAll();
+    this.transitions.updateAll();
+    this.triggerDataUpdate('visual');
+  }
+
   triggerDataUpdate<T extends ControllerDataPropertyName>(...propertyNames: T[]) {
     for (const name of propertyNames) {
       // Ссылку нужно обновлять только у объектов

@@ -29,6 +29,7 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [openTab] = useTabs((state) => [state.openTab]);
   const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   const editor = modelController.getCurrentCanvas();
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData(
@@ -39,7 +40,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   // TODO: visual
-  // const visual = model.useData('elements.visual');
+  const visual = modelController.controllers[headControllerId].useData('visual');
 
   const items: MenuItem[] = [
     {
@@ -88,8 +89,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         if (!schemeEditorId) return;
         const controller = modelController.controllers[schemeEditorId];
         if (!controller) return;
-        // TODO: Схемотехнический экран
-        openTab({
+        openTab(modelController, {
           type: 'editor',
           canvasId: schemeEditorId,
           name: 'Схемотехнический экран',

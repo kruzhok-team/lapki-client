@@ -18,8 +18,7 @@ export class Label implements Drawable {
   };
 
   constructor(private parent: Transition, protected app: CanvasEditor) {
-    // TODO: visual
-    if (!this.app.model.data.elements.visual) {
+    if (!this.app.controller.visual) {
       this.update();
     }
   }
@@ -46,8 +45,7 @@ export class Label implements Drawable {
     if (!this.parent.data.label) return;
 
     this.drawBody(ctx);
-    // TODO: visual
-    if (!this.app.model.data.elements.visual) {
+    if (!this.app.controller.visual) {
       this.drawTextVariant(ctx);
     } else {
       this.drawImageVariant(ctx);

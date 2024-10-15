@@ -24,7 +24,8 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   ...props
 }) => {
   const modal = useModelContext();
-  const editor = modal.getCurrentCanvas();
+  const headControllerId = modal.model.useData('', 'headControllerId');
+  const editor = modal.controllers[headControllerId].app;
 
   const handleAfterClose = () => {
     editor.focus();

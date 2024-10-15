@@ -46,7 +46,10 @@ type BasePictoKey =
   | 'onExit'
   | 'onExitAlt'
   | 'stateMachine'
-  | 'condition';
+  | 'condition'
+  | 'stubComponent'
+  | 'stubEvent'
+  | 'stubAction';
 
 type BasePicto = {
   [key in BasePictoKey]: string;

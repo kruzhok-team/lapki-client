@@ -16,8 +16,8 @@ import { useModelContext } from '@renderer/store/ModelContext';
 
 export const StateNameEdit: React.FC = () => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
   const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.controllers[headControllerId].app;
   const stateMachines = modelController.controllers[headControllerId];
   const currentSmId = stateMachines[0];
   const [isOpen, open, close] = useModal(false);

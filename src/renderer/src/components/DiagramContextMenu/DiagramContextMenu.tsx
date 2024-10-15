@@ -17,6 +17,7 @@ import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.sv
 import { useModal } from '@renderer/hooks';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
 // import {  } from '@renderer/lib/constants'
+import { ModelController } from '@renderer/lib/data/ModelController';
 import {
   Note,
   ChoiceState,
@@ -149,7 +150,7 @@ export const DiagramContextMenu: React.FC = () => {
               modelController.createState({
                 smId: currentSm,
                 events: [],
-                dimensions: { width: 100, height: 50 }, // TODO (L140-beep): уточнить
+                dimensions: { width: 450, height: 100 }, // TODO (L140-beep): уточнить
                 name: 'Состояние',
                 position: canvasPos,
                 placeInCenter: true,
@@ -162,7 +163,7 @@ export const DiagramContextMenu: React.FC = () => {
             onClick={() =>
               modelController.createFinalState({
                 smId: currentSm,
-                dimensions: { width: 100, height: 50 },
+                dimensions: { width: 450, height: 100 },
                 position: canvasPos,
                 placeInCenter: true,
               })
@@ -174,7 +175,7 @@ export const DiagramContextMenu: React.FC = () => {
             onClick={() =>
               modelController.createChoiceState({
                 smId: currentSm,
-                dimensions: { width: 100, height: 50 },
+                dimensions: { width: 450, height: 100 },
                 position: canvasPos,
                 placeInCenter: true,
               })
@@ -198,7 +199,7 @@ export const DiagramContextMenu: React.FC = () => {
           </MenuItem>
           <MenuItem
             onClick={() =>
-              openTab({
+              openTab(modelController, {
                 type: 'code',
                 name: modelController.model.data.name ?? 'Безымянная',
                 code: modelController.model.serializer.getAll('JSON'),
@@ -261,7 +262,7 @@ export const DiagramContextMenu: React.FC = () => {
 
           <MenuItem
             onClick={() =>
-              openTab({
+              openTab(modelController, {
                 type: 'state',
                 name: state.data.name,
                 code: modelController.model.serializer.getState(currentSm, state.id) ?? '',
@@ -407,7 +408,7 @@ export const DiagramContextMenu: React.FC = () => {
 
           <MenuItem
             onClick={() =>
-              openTab({
+              openTab(modelController, {
                 type: 'transition',
                 name: transition.id,
                 code:

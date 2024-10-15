@@ -49,7 +49,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
         smId: smId,
         name: 'Состояние',
         events: [],
-        dimensions: { width: 100, height: 50 }, // TODO (L140-beep): перепроверить
+        dimensions: { width: 450, height: 100 }, // TODO (L140-beep): перепроверить
         position,
         placeInCenter: true,
       });

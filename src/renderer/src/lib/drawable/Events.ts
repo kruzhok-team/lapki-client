@@ -49,7 +49,7 @@ export class Events {
     if (!this.app.controller.visual) {
       const text = serializeStateActions(
         this.parent.data.events,
-        getPlatform(this.app.controller.platform[this.parent.smId].name)!,
+        this.app.controller.platform[this.parent.smId].data,
         this.app.controller.model.model.data.elements.stateMachines[this.parent.smId].components
       );
 
@@ -156,7 +156,7 @@ export class Events {
 
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
-    const platform = this.app.controller.platform;
+    const platform = this.app.controller.platform[this.parent.smId];
     if (!platform) return;
     const { x, y, width } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / this.app.controller.scale;
@@ -185,12 +185,12 @@ export class Events {
       }
 
       if (typeof events.trigger !== 'string') {
-        platform[this.parent.smId].drawEvent(ctx, events.trigger, eX, eY);
+        platform.drawEvent(ctx, events.trigger, eX, eY);
       }
 
       if (events.condition && typeof events.condition !== 'string') {
         ctx.beginPath();
-        platform[this.parent.smId].drawCondition(
+        platform.drawCondition(
           ctx,
           events.condition,
           eX + (picto.eventWidth + 5) / picto.scale,
@@ -210,7 +210,7 @@ export class Events {
               picto.drawCursor(ctx, aX, aY);
             }
           }
-          platform[this.parent.smId].drawAction(ctx, act, aX, aY);
+          platform.drawAction(ctx, act, aX, aY);
         });
       }
 

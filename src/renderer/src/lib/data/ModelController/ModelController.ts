@@ -167,15 +167,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   ) {
     for (const smId in smIds) {
       const sm = smIds[smId];
-
+      if (smId === '') continue;
       if (!sm) return;
       const smToSubscribe = {};
       smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
       controller.subscribe(smId, 'stateMachine', {});
       controller.subscribe(smId, 'component', sm.components);
-      controller.watch();
     }
+    controller.watch();
   }
 
   // Подписываем контроллер на нужные нам данные
@@ -1937,6 +1937,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       this.emit('selectChoice', { smId: '', id: id });
       break;
+    }
+  }
+
+  setTextMode(canvasController: CanvasController) {
+    if (canvasController.id === '') return;
+
+    const stateMachines = Object.keys(canvasController.stateMachinesSub);
+    canvasController.setTextMode();
+    for (const stateMachine of stateMachines) {
+      this.model.setTextMode(stateMachine);
     }
   }
 

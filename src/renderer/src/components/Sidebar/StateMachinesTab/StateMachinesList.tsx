@@ -22,7 +22,11 @@ export const StateMachinesList: React.FC = () => {
       const controller = modelController.controllers[controllerId];
       if (!controller.stateMachinesSub[name] || !(controller.type === 'specific')) continue;
 
-      openTab({ type: 'editor', name: sM.name ? sM.name : name, canvasId: controller.id });
+      openTab(modelController, {
+        type: 'editor',
+        name: sM.name ? sM.name : name,
+        canvasId: controller.id,
+      });
     }
   };
 

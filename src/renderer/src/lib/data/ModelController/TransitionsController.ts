@@ -91,9 +91,10 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.forEach((transition) => {
       transition.label.update();
     });
+    this.view.isDirty = true;
   }
 
-  createTransition(params: CreateTransitionParams) {
+  createTransition = (params: CreateTransitionParams) => {
     const { smId, sourceId, targetId, label } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
@@ -120,7 +121,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.watchTransition(transition);
 
     this.view.isDirty = true;
-  }
+  };
 
   linkTransition = (id: string) => {
     const transition = this.items.get(id);
@@ -153,6 +154,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.data = { ...args };
+    transition.label.update();
     this.view.isDirty = true;
   };
 
@@ -160,8 +162,6 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.position = args.endPosition;
-
-    transition.label.update();
 
     transition.label.update();
 

@@ -65,7 +65,7 @@ export class Transition extends Shape {
       return { width: 0, height: 0 };
     }
 
-    if (!this.app.model.data.elements.visual) {
+    if (!this.app.controller.visual) {
       return {
         width: 250,
         height: Math.max(70, this.label.textData.height + 15 * 2),

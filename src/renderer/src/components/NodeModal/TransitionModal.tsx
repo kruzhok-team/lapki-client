@@ -16,8 +16,8 @@ interface TransitionModalProps {
 
 export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   const modelController = useModelContext();
-  // TODO: visual
-  // const visual = editor.model.useData('elements.visual');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const visual = modelController.controllers[headControllerId].useData('visual');
   // TODO: Передавать в модалки машину состояний
   // const sm = modelController.model.data.elements.stateMachines[smId];
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
@@ -58,6 +58,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
         sourceId: transition.sourceId,
         targetId: transition.targetId,
         color,
+        label: transition.label,
       });
 
       close();
@@ -190,6 +191,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
     setColor(undefined);
 
     setTransition(null);
+
     setTransitionId(null);
     setNewTransition(null);
     setIsInitialTransition(false);
@@ -200,7 +202,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
     const handleCreateTransition = (data: { smId: string; sourceId: string; targetId: string }) => {
       if (data.smId !== smId) return;
       setNewTransition(data);
-      actions.parse([]);
+      actions.parse(data.smId, []);
       open();
     };
 
@@ -209,12 +211,12 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
 
       trigger.parse(args.label?.trigger);
       condition.parse(args.label?.condition);
-      actions.parse(args.label?.do);
+      actions.parse(args.smId, args.label?.do);
 
       setColor(color);
 
       setTransition({ ...args });
-      setTransitionId(transitionId);
+      setTransitionId(args.id);
       setIsInitialTransition(args.label == undefined);
       open();
     };

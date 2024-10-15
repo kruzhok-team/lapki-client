@@ -4,7 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Event, ArgList, Component } from '@renderer/types/diagram';
+import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { ActionsModalParameters } from './ActionsModalParameters';
@@ -30,10 +30,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const model = modelController.model;
-  // const visual = model.useData('elements.visual');
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   // TODO: Прокинуть сюда машину состояний
+  const visual = modelController.controllers[headControllerId].useData('visual');
   const smId = stateMachines[0];
   const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
@@ -88,19 +88,21 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       controller.platform[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 size-7 object-contain"
-          />
-        ),
-      };
-    });
+    return getAll
+      .call(controller.platform[smId], selectedComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
+              className="mr-1 size-7 object-contain"
+            />
+          ),
+        };
+      });
   }, [selectedComponent, controller.platform, isEditingEvent, visual]);
 
   // Функция обновления параметров при смене метода в селекте

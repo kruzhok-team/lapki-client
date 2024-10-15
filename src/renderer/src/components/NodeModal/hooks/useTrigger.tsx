@@ -19,11 +19,10 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  const editor = modelController.getCurrentCanvas();
-  const controller = editor.controller;
 
-  // TODO: visual
-  // const visual = model.useData('elements.visual');
+  const controller = modelController.controllers[headControllerId];
+
+  const visual = modelController.controllers[headControllerId].useData('visual');
 
   const [tabValue, setTabValue] = useState(0);
 

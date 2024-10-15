@@ -15,7 +15,7 @@ interface NotesControllerEvents {
   change: Note;
   mouseUpOnNote: Note;
   startNewTransitionNote: Note;
-  contextMenu: { noteId: string; position: Point };
+  contextMenu: { note: Note; position: Point };
 }
 
 /**
@@ -165,7 +165,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.controller.selectNote({ smId: '', id: noteId });
 
     this.emit('contextMenu', {
-      noteId,
+      note: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };

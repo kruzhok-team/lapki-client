@@ -2,9 +2,9 @@ import { useCallback, useState } from 'react';
 
 import { ActionsModalData } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
-import { Action } from '@renderer/types/diagram';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { useEditorContext } from '@renderer/store/EditorContext';
+import { Action } from '@renderer/types/diagram';
 
 export const useActions = () => {
   const { controller, model } = useEditorContext();

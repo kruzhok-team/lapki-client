@@ -95,25 +95,40 @@ export type CreateChoiceStateParams = ChoiceStateData & {
 export type CreateTransitionParams = TransitionData & { smId: string; id?: string };
 export type ChangeTransitionParams = TransitionData & { smId: string; id: string };
 export type ChangeComponent = ComponentData & { smId: string; id: string };
+
 export interface CreateNoteParams {
   smId: string;
   id?: string;
   position: Point;
   text: string;
   placeInCenter?: boolean;
+  backgroundColor?: string;
+  textColor?: string;
+  fontSize?: number;
+}
+
+export interface ChangeNoteFontSizeParams {
+  smId: string;
+  id: string;
+  fontSize?: number;
+}
+
+export interface ChangeNoteTextColorParams {
+  smId: string;
+  id: string;
+  textColor?: string;
+}
+
+export interface ChangeNoteBackgroundColorParams {
+  smId: string;
+  id: string;
+  backgroundColor?: string;
 }
 
 export interface ChangeNoteText {
   smId: string;
   id: string;
   text: string;
-}
-
-export interface ChangeStateEventsParams {
-  smId: string;
-  id: string;
-  eventData: StateData['events'][number];
-  color?: string;
 }
 
 export type CreateStateMachineParams = {

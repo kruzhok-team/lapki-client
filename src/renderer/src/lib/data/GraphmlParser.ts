@@ -26,7 +26,6 @@ import {
   ChoiceState,
   emptyElements,
   emptyStateMachine,
-  Note,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 import { isString } from '@renderer/utils';

@@ -23,7 +23,7 @@ import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangeEventParams,
   ChangePosition,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   CreateChoiceStateParams,
   CreateEventActionParams,
   CreateEventParams,
@@ -49,8 +49,8 @@ interface StatesControllerEvents {
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
-  finalStateContextMenu: { stateId: string; position: Point };
-  choiceStateContextMenu: { stateId: string; position: Point };
+  finalStateContextMenu: { state: FinalState; position: Point };
+  choiceStateContextMenu: { state: ChoiceState; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -144,38 +144,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.children.add(state, Layer.States);
 
     this.watch(state);
-
-    this.view.isDirty = true;
-  };
-
-  changeStateEvents = (args: ChangeStateEventsParams) => {
-    const {
-      id,
-      eventData: { do: actions, trigger, condition },
-    } = args;
-    const state = this.data.states.get(id);
-    if (!state) return;
-
-    const eventIndex = state.data.events.findIndex(
-      (value) =>
-        trigger.component === value.trigger.component &&
-        trigger.method === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-
-    const event = state.data.events[eventIndex];
-
-    if (event === undefined) {
-      state.data.events = [...state.data.events, args.eventData];
-    } else {
-      if (actions.length) {
-        event.condition = condition;
-        event.do = [...actions];
-      } else {
-        state.data.events.splice(eventIndex, 1);
-      }
-    }
-    state.updateEventBox();
 
     this.view.isDirty = true;
   };
@@ -400,6 +368,19 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  changeState(args: ChangeStateParams) {
+    const { id, events } = args;
+
+    const state = this.data.states.get(id);
+    if (!state) return;
+
+    state.data.events = events;
+
+    state.updateEventBox();
+
+    this.view.isDirty = true;
+  }
+
   // Редактирование события в состояниях
   changeEvent = (args: ChangeEventParams) => {
     const state = this.data.states.get(args.stateId);
@@ -483,7 +464,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
             : eventData.do[eventSelection.actionIdx];
         const isEditingEvent = eventSelection.actionIdx === null;
 
-        this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
+        this.emit('changeEvent', { state, eventSelection, event: event as Event, isEditingEvent });
       }
     }
   };
@@ -578,7 +559,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const item = this.data.finalStates.get(stateId);
     if (!item) return;
     this.emit('finalStateContextMenu', {
-      stateId,
+      state: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -599,7 +580,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (!item) return;
     this.controller.selectChoice({ smId: '', id: stateId });
     this.emit('choiceStateContextMenu', {
-      stateId,
+      state: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };

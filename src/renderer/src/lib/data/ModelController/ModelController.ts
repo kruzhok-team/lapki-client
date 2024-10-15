@@ -21,9 +21,12 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import {
   ChangeEventParams,
+  ChangeNoteBackgroundColorParams,
+  ChangeNoteFontSizeParams,
   ChangeNoteText,
+  ChangeNoteTextColorParams,
   ChangePosition,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   ChangeTransitionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -48,6 +51,7 @@ import {
   State,
   FinalState,
   emptyStateMachine,
+  Action,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -245,6 +249,42 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       }
     }
     this.emit('initPlatform', null);
+  }
+
+  changeNoteFontSize(args: ChangeNoteFontSizeParams) {
+    const { id, smId, fontSize } = args;
+    const sm = this.model.data.elements.stateMachines[smId];
+    const note = sm.notes[id];
+    if (!note) return;
+
+    this.model.changeNoteFontSize(smId, id, fontSize);
+
+    // TODO: History
+    // TODO: emit
+  }
+
+  changeNoteTextColor(args: ChangeNoteTextColorParams) {
+    const { id, smId, textColor } = args;
+    const sm = this.model.data.elements.stateMachines[smId];
+    const note = sm.notes[id];
+    if (!note) return;
+
+    this.model.changeNoteTextColor(smId, id, textColor);
+
+    // TODO: History
+    // TODO: emit
+  }
+
+  changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
+    const { id, smId, backgroundColor } = args;
+    const sm = this.model.data.elements.stateMachines[smId];
+    const note = sm.notes[id];
+    if (!note) return;
+
+    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
+
+    // TODO: emit('changeNoteBackgroundColor', args)
+    // TODO: History
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
@@ -988,29 +1028,25 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { smId, id, eventData } = args;
+  changeState(args: ChangeStateParams, canUndo = true) {
+    const { smId, id } = args;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
     if (canUndo) {
-      const prevEvent = state.events.find(
-        (value) =>
-          eventData.trigger.component === value.trigger.component &&
-          eventData.trigger.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      const prevActions = structuredClone(prevEvent?.do ?? []);
+      // TODO: Что делать тут?
+      const prevEvents = state.events;
+      const prevColor = state.color;
+      // const prevActions = structuredClone(prevEvent ?? []);
 
       this.history.do({
-        type: 'changeStateEvents',
-        args: { args, prevActions },
+        type: 'changeState',
+        args: { args, prevEvents, prevColor },
       });
     }
 
-    this.model.changeStateEvents(args);
-    this.emit('changeStateEvents', args);
+    this.model.changeState(args);
+    this.emit('changeState', args);
   }
 
   changeStateName = (smId: string, id: string, name: string, canUndo = true) => {
@@ -1208,9 +1244,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   getEachObjectByParentId(
     smId: string,
     parentId: string
-  ): Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'> {
+  ): Omit<StateMachine, 'visual' | 'transitions' | 'components' | 'platform' | 'meta'> {
     const sm = this.model.data.elements.stateMachines[smId];
-    const objects: Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'> = {
+    const objects: Omit<
+      StateMachine,
+      'visual' | 'transitions' | 'components' | 'platform' | 'meta'
+    > = {
       states: {},
       initialStates: {},
       finalStates: {},
@@ -1297,7 +1336,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private getChildren(
-    objects: Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'>
+    objects: Omit<StateMachine, 'visual' | 'transitions' | 'components' | 'platform' | 'meta'>
   ): [string, StateType] | undefined {
     for (const stateType of StateTypes) {
       if ([Object.values(objects[stateType])].length !== 0) {
@@ -1632,7 +1671,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEventAction',
-          args: { smId, stateId, event, newValue, prevValue },
+          args: { smId, stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -1643,7 +1682,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEvent',
-          args: { smId, stateId, event, newValue, prevValue },
+          args: { smId, stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     }
@@ -1671,7 +1710,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { smId, stateId, event, prevValue },
+          args: { smId, stateId, event, prevValue: prevValue as Action },
         });
       }
     } else {

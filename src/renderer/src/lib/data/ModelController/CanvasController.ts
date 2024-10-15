@@ -9,8 +9,8 @@ import {
   ChangeNoteText,
   ChangePosition,
   ChangeSelectionParams,
-  ChangeStateEventsParams,
   ChangeStateNameParams,
+  ChangeStateParams,
   ChangeTransitionParams,
   ControllerDataPropertyName,
   CreateChoiceStateParams,
@@ -132,6 +132,7 @@ export type CanvasControllerEvents = {
   isMounted: SetMountedStatusParams;
   changeScale: number;
   changeStateSelection: ChangeSelectionParams;
+  changeState: ChangeStateParams;
 
   changeChoiceSelection: ChangeSelectionParams;
   changeComponentSelection: ChangeSelectionParams;
@@ -145,13 +146,13 @@ export type CanvasControllerEvents = {
   linkFinalState: LinkStateParams;
   linkChoiceState: LinkStateParams;
   unlinkState: UnlinkStateParams;
-  changeStateEvents: ChangeStateEventsParams;
   changeStateName: ChangeStateNameParams;
   changeFinalStatePosition: ChangePosition;
   deleteEventAction: DeleteEventParams;
   deleteStateMachine: DeleteStateMachineParams;
   createStateMachine: CreateStateMachineParams;
   openChangeTransitionModalFromController: { smId: string; id: string };
+  setTextMode: boolean;
 };
 
 export type CanvasData = {
@@ -188,6 +189,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   binded = {}; // Функции обработчики
   model: ModelController;
   type: CanvasControllerType;
+  visual = true;
   constructor(
     id: string,
     type: CanvasControllerType,
@@ -332,7 +334,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('addDragendStateSig', this.binded['addDragendStateSig']);
             this.model.off('linkState', this.binded['linkState']);
             this.model.off('unlinkState', this.binded['unlinkState']);
-            this.model.off('changeStateEvents', this.binded['changeStateEvents']);
+            this.model.off('changeState', this.binded['changeState']);
             this.model.off('changeStateName', this.binded['changeStateName']);
             this.model.off('changeStatePosition', this.binded['changeStatePosition']);
             this.model.off('createEvent', this.binded['createEvent']);
@@ -451,8 +453,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.bindHelper('state', 'unlinkState', this.states.unlinkState)
         );
         this.model.on(
-          'changeStateEvents',
-          this.bindHelper('state', 'changeStateEvents', this.states.changeStateEvents)
+          'changeState',
+          this.bindHelper('state', 'changeState', this.states.changeState)
         );
         this.model.on(
           'changeStateName',
@@ -692,41 +694,54 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.platform[smId].nameToVisual.set(newName, visualCompo);
     this.platform[smId].nameToVisual.delete(id);
 
-    // А сейчас будет занимательное путешествие по схеме с заменой всего
-    this.states.forEachState((state) => {
-      for (const ev of state.eventBox.data) {
-        // заменяем в триггере
-        if (ev.trigger.component == id) {
-          ev.trigger.component = newName;
+    if (this.visual) {
+      // А сейчас будет занимательное путешествие по схеме с заменой всего
+      this.states.forEachState((state) => {
+        for (const ev of state.eventBox.data) {
+          if (typeof ev.trigger !== 'string')
+            if (ev.trigger.component == id) {
+              // заменяем в триггере
+              ev.trigger.component = newName;
+              for (const act of ev.do) {
+                if (typeof act !== 'string') {
+                  // заменяем в действии
+                  if (act.component == id) {
+                    act.component = newName;
+                  }
+                }
+              }
+            }
         }
-        for (const act of ev.do) {
-          // заменяем в действии
-          if (act.component == id) {
-            act.component = newName;
+      });
+
+      this.transitions.forEach((transition) => {
+        if (!transition.data.label) return;
+
+        if (
+          typeof transition.data.label.trigger !== 'string' &&
+          transition.data.label.trigger?.component === id
+        ) {
+          transition.data.label.trigger.component = newName;
+        }
+
+        if (transition.data.label.do) {
+          for (const act of transition.data.label.do) {
+            if (typeof act !== 'string') {
+              if (act.component === id) {
+                act.component = newName;
+              }
+            }
           }
         }
-      }
-    });
 
-    this.transitions.forEach((transition) => {
-      if (!transition.data.label) return;
-
-      if (transition.data.label.trigger?.component === id) {
-        transition.data.label.trigger.component = newName;
-      }
-
-      if (transition.data.label.do) {
-        for (const act of transition.data.label.do) {
-          if (act.component === id) {
-            act.component = newName;
-          }
+        if (
+          typeof transition.data.label.condition !== 'string' &&
+          transition.data.label.condition
+        ) {
+          this.renameCondition(transition.data.label.condition, id, newName);
         }
-      }
-
-      if (transition.data.label.condition) {
-        this.renameCondition(transition.data.label.condition, id, newName);
-      }
-    });
+      });
+    }
 
     this.app.view.isDirty = true;
   };

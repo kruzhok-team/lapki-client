@@ -22,7 +22,7 @@ import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
   changeTransition: string;
-  transitionContextMenu: { transitionId: string; position: Point };
+  transitionContextMenu: { transition: Transition; position: Point };
 }
 
 /**
@@ -215,7 +215,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (item.source instanceof InitialState) return;
 
     this.emit('transitionContextMenu', {
-      transitionId,
+      transition: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };

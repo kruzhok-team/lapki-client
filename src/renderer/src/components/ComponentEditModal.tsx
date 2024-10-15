@@ -38,9 +38,11 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const { model } = modelController;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const components = model.useData(stateMachines[0], 'elements.components');
-
+  const smId = stateMachines[0];
+  const components = model.useData(smId, 'elements.components');
   const [name, setName] = useState('');
+  const platformId = model.useData(smId, 'elements.platform');
+  const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
   const [errors, setErrors] = useState({} as Record<string, string>);

@@ -2,8 +2,8 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { serializeTransitionActions } from '@renderer/lib/data/GraphmlBuilder';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { Transition, picto } from '@renderer/lib/drawable';
-import { Drawable } from '@renderer/lib/types';
 import { stateStyle, transitionStyle } from '@renderer/lib/styles';
+import { Drawable } from '@renderer/lib/types';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import theme from '@renderer/theme';
 

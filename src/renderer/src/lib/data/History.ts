@@ -8,7 +8,6 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
-  ChangeStateEventsParams,
   ChangeStateParams,
   CreateTransitionParams,
   ChangeTransitionParams,
@@ -39,7 +38,11 @@ export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
   deleteState: { smId: string; id: string; stateData: StateData };
   changeStateName: { smId: string; id: string; name: string; prevName: string };
-  changeStateEvents: { args: ChangeStateEventsParams; prevActions: EventAction[] };
+  changeState: {
+    args: ChangeStateParams;
+    prevEvents: StateData['events'];
+    prevColor: StateData['color'];
+  };
   changeStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
   linkState: { smId: string; parentId: string; childId: string };
   unlinkState: { smId: string; parentId: string; params: UnlinkStateParams };
@@ -173,18 +176,19 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.changeStateName.bind(sM, smId, id, prevName, false),
   }),
 
-  changeStateEvents: (sM, { args, prevActions }) => ({
-    redo: sM.changeStateEvents.bind(sM, args, false),
-    undo: sM.changeStateEvents.bind(
+  changeState: (sM, { args, prevEvents, prevColor }) => ({
+    redo: sM.changeState.bind(sM, args, false),
+    undo: sM.changeState.bind(
       sM,
       {
         ...args,
-        events: prevActions,
-        color: undefined,
+        events: prevEvents,
+        color: prevColor,
       },
       false
     ),
   }),
+
   linkState: (sM, { smId, parentId, childId }) => ({
     redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
     undo: sM.unlinkState.bind(sM, { smId, id: childId, canUndo: false }),
@@ -489,13 +493,6 @@ export const actionDescriptions: ActionDescriptions = {
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
-  changeStateEvents: ({ args, prevActions }) => ({
-    name: 'Изменение состояния',
-    description: `Id состояния: ${args.id}\nТриггер: ${args.eventData.trigger}, Действия: ${
-      args.eventData.do
-    }
-    }\nБыло: ${JSON.stringify(prevActions)}\nСтало: ${JSON.stringify(args.eventData.do)}`,
-  }),
   // deleteStateMachine: (args) => ({
   // name: 'Удаление машины состояний',
   // description: `Id: ${args.args.id}`,
@@ -503,6 +500,13 @@ export const actionDescriptions: ActionDescriptions = {
   createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,
+  }),
+  changeState: ({ args, prevEvents, prevColor }) => ({
+    name: 'Изменение состояния',
+    description: `Id состояния: ${args.id}\nБыло: ${JSON.stringify({
+      events: prevEvents,
+      color: prevColor,
+    })}\nСтало: ${JSON.stringify({ events: args.events, color: args.color })}`,
   }),
   deleteInitialState: () => ({
     name: 'Удаление начального состояния',

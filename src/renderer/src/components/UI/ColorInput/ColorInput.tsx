@@ -98,6 +98,11 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
             ref={refs.setFloating}
             style={floatingStyles}
             {...getFloatingProps()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleClose();
+              }
+            }}
           >
             <FloatingArrow
               className="fill-bg-secondary"

@@ -102,7 +102,7 @@ export const SerialMonitorTab: React.FC = () => {
     if (device === undefined) {
       return 'Устройство отсутствует';
     }
-    return `${device?.name} (${device?.portName})`;
+    return device.displaySerialName();
   };
 
   const handleConnectionButton = () => {

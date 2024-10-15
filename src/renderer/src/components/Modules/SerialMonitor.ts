@@ -1,5 +1,4 @@
-import { Device } from '@renderer/types/FlasherTypes';
-
+import { Device } from './Device';
 import { Flasher } from './Flasher';
 
 export const SERIAL_MONITOR_CONNECTING = 'Идет подключение...';

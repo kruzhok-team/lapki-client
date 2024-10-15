@@ -2,18 +2,21 @@ import { Dispatch, SetStateAction } from 'react';
 
 import Websocket from 'isomorphic-ws';
 
+import { Device, ArduinoDevice, MSDevice } from '@renderer/components/Modules/Device';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
-  Device,
   FlashUpdatePort,
   FlasherMessage,
   UpdateDelete,
   FlashResult,
-  SerialStatus,
+  DeviceCommentCode,
   SerialRead,
   FlasherPayload,
+  FlasherType,
+  MSPingResult,
 } from '@renderer/types/FlasherTypes';
 
+import { ManagerMS } from './ManagerMS';
 import {
   SerialMonitor,
   SERIAL_MONITOR_CONNECTED,
@@ -96,6 +99,9 @@ export class Flasher extends ClientWS {
       newValue.set(device.deviceID, device);
       return newValue;
     });
+    if (isNew) {
+      this.setFlasherLog('Добавлено устройство!');
+    }
     return isNew;
   }
 
@@ -107,10 +113,15 @@ export class Flasher extends ClientWS {
     });
   }
 
+  // обновление порта (только для ArduinoDevice)
+  /**
+   * обновление порта (сообщение приходит только для {@link ArduinoDevice})
+   * @param port сообщение от сервера об обновлении порта
+   */
   static updatePort(port: FlashUpdatePort): void {
     this.setFlasherDevices((oldValue) => {
       const newValue = new Map(oldValue);
-      const device = newValue.get(port.deviceID)!;
+      const device = newValue.get(port.deviceID)! as ArduinoDevice;
       device.portName = port.portName;
       newValue.set(port.deviceID, device);
 
@@ -174,24 +185,52 @@ export class Flasher extends ClientWS {
     }
   }
 
-  static flashCompiler(binaries: Array<Binary>, device: Device): void {
+  static flashPreparation(
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == device.deviceID &&
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
+    this.currentFlashingDevice = device;
+    this.refresh();
+    this.setFlasherLog('Идет загрузка...');
+  }
+
+  static flashCompiler(
+    binaries: Array<Binary>,
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
         Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
         return;
       }
     });
-    this.flash(device);
+    this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 
-  static flash(device: Device) {
-    this.currentFlashingDevice = device;
-    this.refresh();
+  static flash(
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    this.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
     this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
     });
-    this.setFlasherLog('Идет загрузка...');
   }
 
   // получение адреса в виде строки
@@ -243,11 +282,13 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'device': {
-        if (this.addDevice(response.payload as Device)) {
-          this.setFlasherLog('Добавлено устройство!');
-        } else {
-          this.setFlasherLog('Состояние об устройстве синхронизировано.');
-        }
+        const device = new ArduinoDevice(response.payload as ArduinoDevice);
+        this.addDevice(device);
+        break;
+      }
+      case 'ms-device': {
+        const device = new MSDevice(response.payload as MSDevice);
+        this.addDevice(device);
         break;
       }
       case 'device-update-delete': {
@@ -322,7 +363,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'serial-connection-status': {
-        const serialStatus = response.payload as SerialStatus;
+        const serialStatus = response.payload as DeviceCommentCode;
         switch (serialStatus.code) {
           case 0:
             SerialMonitor.addLog('Открыт монитор порта!');
@@ -416,7 +457,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'serial-sent-status': {
-        const serialStatus = response.payload as SerialStatus;
+        const serialStatus = response.payload as DeviceCommentCode;
         switch (serialStatus.code) {
           case 0:
             SerialMonitor.addLog('Сообщение доставлено на устройство.');
@@ -476,10 +517,51 @@ export class Flasher extends ClientWS {
             undefined
           );
         }
+        break;
+      case 'ms-ping-result':
+        {
+          const pingResult = response.payload as MSPingResult;
+          switch (pingResult.code) {
+            case 0:
+              ManagerMS.addLog('Получен ответ устройства на пинг');
+              break;
+            case 1:
+              ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
+              break;
+            case 2:
+              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг.');
+              break;
+          }
+        }
+        break;
+      case 'ms-address': {
+        const getAddressStatus = response.payload as DeviceCommentCode;
+        switch (getAddressStatus.code) {
+          case 0:
+            ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
+            ManagerMS.setAddress(getAddressStatus.comment);
+            break;
+          case 1:
+            ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
+            ManagerMS.setAddress('');
+            break;
+          case 2: {
+            const errorText = getAddressStatus.comment;
+            const errorLog = 'Возникла ошибка при попытке узнать адрес';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${getAddressStatus.comment}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            ManagerMS.setAddress('');
+            break;
+          }
+        }
+      }
     }
   }
 
-  static send(type: string, payload: FlasherPayload) {
+  static send(type: FlasherType, payload: FlasherPayload) {
     const request = {
       type: type,
       payload: payload,

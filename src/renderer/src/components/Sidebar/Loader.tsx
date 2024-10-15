@@ -253,12 +253,13 @@ export const Loader: React.FC<FlasherProps> = ({
   useEffect(() => {
     if (!flasherSetting) return;
     const { host, port, localPort, type } = flasherSetting;
+    const autoReconnect = type === 'remote';
     if (type === 'local' && port !== localPort) {
       setFlasherSetting({ ...flasherSetting, port: localPort }).then(() => {
-        Flasher.connect(host, localPort);
+        Flasher.connect(host, localPort, autoReconnect);
       });
     } else {
-      Flasher.connect(host, port);
+      Flasher.connect(host, port, autoReconnect);
     }
   }, [flasherSetting, setFlasherSetting]);
 

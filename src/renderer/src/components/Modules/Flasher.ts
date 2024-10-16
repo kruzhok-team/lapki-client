@@ -13,7 +13,6 @@ import {
   SerialRead,
   FlasherPayload,
   FlasherType,
-  MetaData,
   MetaDataID,
 } from '@renderer/types/FlasherTypes';
 

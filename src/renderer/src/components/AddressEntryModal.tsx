@@ -64,7 +64,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       submitLabel={submitLabel}
     >
       <div className="flex items-start gap-1">
-        <label className="flex flex-col">
+        <label className="flex w-full flex-col">
           <TextInput placeholder="Название" {...register('name')} />
         </label>
 
@@ -79,7 +79,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
           <p className="text-sm text-error">{errors.address?.message}</p>
         </label>
 
-        <label className="flex flex-col">
+        <label className="flex w-full flex-col">
           <TextInput
             placeholder="Тип"
             className="w-full max-w-full"

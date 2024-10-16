@@ -126,9 +126,9 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.controller.selectComponent({ smId: component.smId, id: component.id });
   };
 
-  handleDoubleClick = (component: DrawableComponent) => {
-    // this.emit('change', component);
-  };
+  // handleDoubleClick = (component: DrawableComponent) => {
+  //   // this.emit('change', component);
+  // };
 
   handleContextMenu = (component: DrawableComponent, e: { event: MyMouseEvent }) => {
     this.controller.selectComponent({ smId: '', id: component.id });
@@ -149,7 +149,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
   watch(component: DrawableComponent) {
     component.on('mousedown', this.handleMouseDown.bind(this, component));
-    component.on('dblclick', this.handleDoubleClick.bind(this, component));
+    // component.on('dblclick', this.handleDoubleClick.bind(this, component));
     component.on('mouseup', this.handleMouseUpOnComponent.bind(this, component));
     component.on('contextmenu', this.handleContextMenu.bind(this, component));
     component.on('dragend', this.handleDragEnd.bind(this, component));
@@ -157,7 +157,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
   unwatch(component: DrawableComponent) {
     component.off('mousedown', this.handleMouseDown.bind(this, component));
-    component.off('dblclick', this.handleDoubleClick.bind(this, component));
+    // component.off('dblclick', this.handleDoubleClick.bind(this, component));
     component.off('mouseup', this.handleMouseUpOnComponent.bind(this, component));
     component.off('contextmenu', this.handleContextMenu.bind(this, component));
     component.off('dragend', this.handleDragEnd.bind(this, component));

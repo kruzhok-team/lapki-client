@@ -8,7 +8,6 @@ import {
   ChangeNoteFontSizeParams,
   ChangeNoteText,
   ChangeNoteTextColorParams,
-  ChangePosition,
   CreateNoteParams,
   DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';

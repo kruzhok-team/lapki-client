@@ -17,9 +17,9 @@ import { WhoopsieScreen } from './components/WhoopsieScreen';
 */
 
 createRoot(document.getElementById('root') as HTMLElement).render(
-  // <StrictMode>
-  <WhoopsieScreen>
-    <App />
-  </WhoopsieScreen>
-  // </StrictMode>/
+  <StrictMode>
+    <WhoopsieScreen>
+      <App />
+    </WhoopsieScreen>
+  </StrictMode>
 );

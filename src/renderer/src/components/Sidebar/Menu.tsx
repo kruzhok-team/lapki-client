@@ -29,7 +29,7 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [openTab] = useTabs((state) => [state.openTab]);
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
+  // const headControllerId = modelController.model.useData('', 'headControllerId');
   const editor = modelController.getCurrentCanvas();
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData(
@@ -38,9 +38,9 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     editor.id
   ) as string;
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
-  const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
+  const [isTextModeModalOpen, closeTextModeModal] = useModal(false);
   // TODO: visual
-  const visual = modelController.controllers[headControllerId].useData('visual');
+  // const visual = modelController.controllers[headControllerId].useData('visual');
 
   const items: MenuItem[] = [
     {
@@ -98,11 +98,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       },
       disabled: !isInitialized,
     },
-    {
-      text: 'Перейти в текстовый режим (β)',
-      onClick: () => openTextModeModal(),
-      hidden: !visual || !isInitialized,
-    },
+    // {
+    //   text: 'Перейти в текстовый режим (β)',
+    //   onClick: () => openTextModeModal(),
+    //   hidden: !visual || !isInitialized,
+    // },
     // {
     //   text: 'Примеры',
     //   TODO: модальное окно с выбором примера

@@ -54,41 +54,41 @@ export class Initializer {
   private get notes() {
     return this.app.controller.notes;
   }
-  private get components() {
-    return this.app.controller.components;
-  }
+  // private get components() {
+  //   return this.app.controller.components;
+  // }
   private get platform() {
     return this.controller.platform;
   }
 
-  private resetEntities() {
-    // this.controller.stateMachines.deleteStateMachine(
-    //   {
-    //     id: 'G',
-    //   },
-    //   false
-    // );
-    this.app.view.children.clear();
-    this.transitions.forEach((value) => {
-      this.transitions.unwatchTransition(value);
-    });
-    this.states.forEach((value) => {
-      this.states.unwatch(value);
-    });
-    this.notes.forEach((value) => {
-      this.notes.unwatch(value);
-    });
+  // private resetEntities() {
+  //   // this.controller.stateMachines.deleteStateMachine(
+  //   //   {
+  //   //     id: 'G',
+  //   //   },
+  //   //   false
+  //   // );
+  //   this.app.view.children.clear();
+  //   this.transitions.forEach((value) => {
+  //     this.transitions.unwatchTransition(value);
+  //   });
+  //   this.states.forEach((value) => {
+  //     this.states.unwatch(value);
+  //   });
+  //   this.notes.forEach((value) => {
+  //     this.notes.unwatch(value);
+  //   });
 
-    this.states.clear();
-    this.transitions.clear();
-    this.notes.clear();
+  //   this.states.clear();
+  //   this.transitions.clear();
+  //   this.notes.clear();
 
-    this.components.forEach((value) => {
-      this.components.unwatch(value);
-    });
+  //   this.components.forEach((value) => {
+  //     this.components.unwatch(value);
+  //   });
 
-    this.components.clear();
-  }
+  //   this.components.clear();
+  // }
 
   /**
    * Первичная инициализация вьюшек состояний из схемы,

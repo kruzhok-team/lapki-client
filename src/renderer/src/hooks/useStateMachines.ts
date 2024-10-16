@@ -55,7 +55,11 @@ export const useStateMachines = () => {
     const sm = { ...emptyStateMachine(), ...data };
     const canvasId = modelController.createStateMachine(smId, sm);
     modelController.model.changeHeadControllerId(canvasId);
-    openTab({ type: 'editor', canvasId: canvasId, name: sm.name ? sm.name : smId });
+    openTab(modelController, {
+      type: 'editor',
+      canvasId: canvasId,
+      name: sm.name ? sm.name : smId,
+    });
   };
 
   const onEdit = (data: StateMachineData) => {

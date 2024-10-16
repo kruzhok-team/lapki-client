@@ -6,7 +6,6 @@ import theme from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { serializeStateActions } from '../data/GraphmlBuilder';
-import { getPlatform } from '../data/PlatformLoader';
 
 export type EventSelection = {
   eventIdx: number;

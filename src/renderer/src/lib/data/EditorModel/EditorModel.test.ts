@@ -6,8 +6,10 @@ import { emptyElements } from '../../../types/diagram';
 
 const em = new EditorModel(
   () => 42,
-  () => 42
+  () => 42,
+  (scale: number) => 12
 );
+
 em.init('basename', 'name', emptyElements());
 
 describe('states', () => {
@@ -22,6 +24,8 @@ describe('states', () => {
         name: 'state',
         position: { x: 100, y: 150 },
         id: '0',
+        events: [],
+        dimensions: { width: 450, height: 100 },
         color: '#FFFFFF',
       });
 
@@ -29,6 +33,7 @@ describe('states', () => {
         name: 'state',
         bounds: { x: 100, y: 150, width: 450, height: 100 },
         events: [],
+        dimensions: { width: 450, height: 100 },
         parent: undefined,
         color: '#FFFFFF',
       });
@@ -40,6 +45,8 @@ describe('states', () => {
         name: 'state',
         position: { x: 100, y: 150 },
         placeInCenter: true,
+        events: [],
+        dimensions: { width: 450, height: 100 },
         id: '0',
         color: '#FFFFFF',
       });
@@ -48,6 +55,7 @@ describe('states', () => {
         name: 'state',
         bounds: { x: -125, y: 100, width: 450, height: 100 },
         events: [],
+        dimensions: { width: 450, height: 100 },
         parent: undefined,
         color: '#FFFFFF',
       });
@@ -57,7 +65,14 @@ describe('states', () => {
       const count = 10;
 
       for (let i = 0; i < count; i++) {
-        em.createState({ smId: 'G', name: 'state', position: { x: 0, y: 0 }, color: '#FFFFFF' });
+        em.createState({
+          events: [],
+          dimensions: { width: 450, height: 100 },
+          smId: 'G',
+          name: 'state',
+          position: { x: 0, y: 0 },
+          color: '#FFFFFF',
+        });
       }
 
       const ids = Object.keys(em.data.elements.stateMachines['G'].states);
@@ -67,6 +82,8 @@ describe('states', () => {
 
     test('with parentId', () => {
       em.createState({
+        events: [],
+        dimensions: { width: 450, height: 100 },
         smId: 'G',
         name: 'state',
         position: { x: 0, y: 0 },
@@ -83,6 +100,7 @@ describe('states', () => {
 
     test('with events', () => {
       em.createState({
+        dimensions: { width: 450, height: 100 },
         smId: 'G',
         name: 'state',
         position: { x: 0, y: 0 },
@@ -125,7 +143,7 @@ describe('states', () => {
     });
 
     test('no state found', () => {
-      const res = em.changeStateEvents({
+      const res = em.changeState({
         smId: 'G',
         id: '0',
         events: [

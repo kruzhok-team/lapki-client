@@ -16,8 +16,6 @@ import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useModal } from '@renderer/hooks';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
-// import {  } from '@renderer/lib/constants'
-import { ModelController } from '@renderer/lib/data/ModelController';
 import {
   Note,
   ChoiceState,

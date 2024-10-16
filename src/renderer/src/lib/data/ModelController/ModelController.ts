@@ -350,7 +350,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private getSmId(id: string, element: `${keyof StateMachine}`) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
-      if (sm[element] === undefined || sm[element] === null) {
+      if (!sm[element]) {
         throw new Error('Never is reached');
       }
       if (sm[element][id]) {
@@ -360,6 +360,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     throw new Error('Never is reached');
   }
 
+  // TODO: Думаю, из-за этого не очень хорошо компоненты выделяются
   selectComponent(id: string) {
     this.removeSelection();
 
@@ -368,7 +369,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('selectComponent', { id: id, smId: '' });
   }
 
-  createComponent(args: CreateComponentParams, canUndo = true) {
+  createComponent(args: CreateComponentParams) {
     this.model.createComponent(args);
     this.emit('createComponent', args);
     // if (canUndo) {

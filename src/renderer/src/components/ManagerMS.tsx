@@ -34,7 +34,11 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
     }
   }, [log, managerMSSetting]);
   useEffect(() => {
-    setAddress('');
+    if (device) {
+      setAddress(device.address ?? '');
+    } else {
+      setAddress('');
+    }
   }, [device]);
   useEffect(() => {
     if (serverAddress == '' || addressBookSetting == null) return;

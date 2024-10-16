@@ -55,7 +55,9 @@ export type FlasherType =
   | 'ms-device'
   | 'ms-reset'
   | 'ms-reset-result'
-  | 'ms-get-meta-data';
+  | 'ms-get-meta-data'
+  | 'ms-meta-data'
+  | 'ms-meta-data-error';
 export type FlasherPayload =
   | string
   | Device
@@ -70,7 +72,8 @@ export type FlasherPayload =
   | SerialChangeBaud
   | MSBinStart
   | MSGetAddress
-  | MSAddressAction;
+  | MSAddressAction
+  | MetaData;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -170,3 +173,21 @@ export type AddressData = {
   address: string;
   type: string;
 };
+
+// метаданные МС-ТЮК
+export interface MetaData {
+  RefBlHw: string; // Описывает физическое окружение контроллера (плату)
+  RefBlFw: string; // Указывает на версию прошивки загрузчика
+  RefBlUserCode: string; //
+  RefBlChip: string; // Указывает на контроллер, здесь то, что нужно для компиляции прошивки
+  RefBlProtocol: string; // Описывает возможности протокола загрузчика
+  RefCgHw: string; // Указывает на аппаратное исполнение
+  RefCgFw: string; // Указывает на версию прошивки кибергена
+  RefCgProtocol: string; // Указывает на возможности протокола кибергена
+  type: string; // тип устройства (определяется по RefBlHw)
+}
+
+// метаданные с deviceID
+export interface MetaDataID extends MetaData {
+  deviceID: string;
+}

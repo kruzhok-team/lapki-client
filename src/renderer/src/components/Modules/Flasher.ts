@@ -13,6 +13,8 @@ import {
   SerialRead,
   FlasherPayload,
   FlasherType,
+  MetaData,
+  MetaDataID,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -24,14 +26,13 @@ import {
 import { ClientWS } from './Websocket/ClientWS';
 
 export class Flasher extends ClientWS {
-  static devices: Map<string, Device>;
-
   // Переменные, связанные с отправкой бинарных данных
   static reader: FileReader;
   static binary: Blob;
   static currentBlob: Blob;
   static filePos: number = 0;
   static blobSize: number = 1024;
+
   private static currentFlashingDevice: Device | undefined = undefined;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
@@ -642,6 +643,52 @@ export class Flasher extends ClientWS {
           }
         }
         break;
+      }
+      case 'ms-meta-data': {
+        // тип MetaData не содержит ID устройства, который присылается вместе с метаданными,
+        // для того, чтобы получить метаданные вместе с ID, нужно использовать MetaDataID.
+        // На данный момент, ID устройства не применяется,
+        // но возможно он, пригодится в будущем, поэтому сервер его отсылает
+        const meta = response.payload as MetaData;
+        ManagerMS.addLog(`Получены метаданные.`);
+        ManagerMS.setMeta(meta);
+        break;
+      }
+      case 'ms-meta-data-error': {
+        const result = response.payload as DeviceCommentCode;
+        const comment = result.comment;
+        switch (result.code) {
+          case 1: {
+            const text = 'Не удалось получить метаданные из-за ошибки';
+            if (comment) {
+              ManagerMS.addLog(`${text}. Текст ошибки: ${comment}`);
+            } else {
+              ManagerMS.addLog(`${text}.`);
+            }
+            break;
+          }
+          case 2:
+            ManagerMS.addLog('Не удалось получить метаданные, так как устройство не найдено.');
+            break;
+          case 3:
+            ManagerMS.addLog(
+              'Не удалось получить метаданные, так как запрашиваемое устройство не является МС-ТЮК'
+            );
+            break;
+          case 4: {
+            const text = 'Не удалось получить метаданные из-за ошибки обработки JSON-сообщения';
+            if (comment) {
+              ManagerMS.addLog(`${text}. Текст ошибки: ${comment}`);
+            } else {
+              ManagerMS.addLog(`${text}.`);
+            }
+            break;
+          }
+          default:
+            ManagerMS.addLog(
+              `Не удалось получить метаданные из-за незизвестной ошибки с кодом ${result.code}. ${comment}`
+            );
+        }
       }
     }
   }

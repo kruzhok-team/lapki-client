@@ -51,6 +51,7 @@ export const Loader: React.FC<FlasherProps> = ({
     setDevice: setDeviceMS,
     setLog: setLogMS,
     setAddress: setAddressMS,
+    setMeta: setMetaMS,
   } = useManagerMS();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -246,7 +247,7 @@ export const Loader: React.FC<FlasherProps> = ({
       setSerialConnectionStatus,
       setSerialLog
     );
-    ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS);
+    ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS, setMetaMS);
     Flasher.initReader(new FileReader());
   }, []);
 

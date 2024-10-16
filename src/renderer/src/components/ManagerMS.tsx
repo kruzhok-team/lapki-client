@@ -14,7 +14,7 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log, setLog, address: serverAddress } = useManagerMS();
+  const { device, log, setLog, address: serverAddress, meta } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
   const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
@@ -43,6 +43,10 @@ export const ManagerMSTab: React.FC = () => {
       setAddressBookSetting([...addressBookSetting, newRow]);
     }
   }, [serverAddress]);
+  useEffect(() => {
+    if (!meta) return;
+    console.log(meta.type, meta.RefBlHw);
+  }, [meta]);
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);

@@ -25,6 +25,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     formState: { errors, dirtyFields },
     setError,
     clearErrors,
+    getValues,
   } = form;
   const handleSubmit = hookHandleSubmit((submitData) => {
     const sendSubmit = () => {
@@ -55,6 +56,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     }
     sendSubmit();
   });
+  const meta = getValues('meta');
   return (
     <Modal
       title="Адрес устройства"
@@ -88,6 +90,37 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
           />
         </label>
       </div>
+      <br></br>
+      {meta && (
+        <div className="mb-2 flex flex-col gap-1">
+          <h3 className="mb-1 text-xl">Метаданные</h3>
+          <div>
+            <b>{'bootloader REF_HW'}:</b> {meta.RefBlHw}
+          </div>
+          <div>
+            <b>{'bootloader REF_FW'}:</b> {meta.RefBlFw}
+          </div>
+          <div>
+            <b>{'bootloader REF_CHIP'}:</b> {meta.RefBlChip}
+          </div>
+          <div>
+            <b>{'bootloader REF_PROTOCOL'}:</b> {meta.RefBlProtocol}
+          </div>
+          <div>
+            <b>{'bootloader USER_CODE'}:</b> {meta.RefBlUserCode}
+          </div>
+          <div>
+            <b>{'cybergene REF_FW'}:</b> {meta.RefCgFw}
+          </div>
+          <div>
+            <b>{'cybergene REF_HW'}:</b> {meta.RefCgHw}
+          </div>
+          <div>
+            <b>{'cybergene REF_PROTOCOL'}:</b> {meta.RefCgProtocol}
+          </div>
+        </div>
+      )}
+      {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>}
     </Modal>
   );
 };

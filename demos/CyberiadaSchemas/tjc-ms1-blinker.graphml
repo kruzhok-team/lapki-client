@@ -25,7 +25,7 @@
 
 standardVersion/ 1.0
 
-name/ Arduino Blinker
+name/ МС-ТЮК мигалочница
 
 author/ Lapki IDE TEAM
 
@@ -43,7 +43,7 @@ name/ Светодиод
 
 description/ Встроенный в плату светодиод, чтобы им мигать
 
-pin/ 12
+pin/ 1
 
         </data>
     </node>

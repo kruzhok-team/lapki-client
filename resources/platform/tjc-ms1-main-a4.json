@@ -1,6 +1,6 @@
 {
   "name": "МС-ТЮК-1: Центральная плата",
-  "id": "tjc-ms1-main",
+  "id": "tjc-ms1-main-a4",
   "description": "Платформа для программирования центральной платы МС-ТЮК-1.",
   "icon": "",
   "staticComponents": false,

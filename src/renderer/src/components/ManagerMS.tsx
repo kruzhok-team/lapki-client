@@ -48,6 +48,16 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
         name: '',
         address: serverAddress,
         type: '',
+        meta: {
+          RefBlHw: '',
+          RefBlFw: '',
+          RefBlUserCode: '',
+          RefBlChip: '',
+          RefBlProtocol: '',
+          RefCgHw: '',
+          RefCgFw: '',
+          RefCgProtocol: '',
+        },
       };
       setAddressBookSetting([...addressBookSetting, newRow]);
     }
@@ -77,7 +87,21 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
     ManagerMS.addLog(`Получены метаданные для устройства ${dev.displayName()}: ${metaStr}`);
     const newBook = addressBookSetting.map((entry) => {
       if (entry.address === dev.address) {
-        return { name: entry.name, address: entry.address, type: meta.type };
+        return {
+          name: entry.name,
+          address: entry.address,
+          type: meta.type,
+          meta: {
+            RefBlHw: meta.RefBlHw,
+            RefBlFw: meta.RefBlFw,
+            RefBlUserCode: meta.RefBlUserCode,
+            RefBlChip: meta.RefBlChip,
+            RefBlProtocol: meta.RefBlProtocol,
+            RefCgHw: meta.RefCgHw,
+            RefCgFw: meta.RefCgFw,
+            RefCgProtocol: meta.RefCgProtocol,
+          },
+        };
       } else {
         return entry;
       }

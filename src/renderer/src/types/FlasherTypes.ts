@@ -167,15 +167,7 @@ export type MSGetAddress = {
   deviceID: string;
 };
 
-// адрес и ассоциированные с ним данные (для МС-ТЮК)
-export type AddressData = {
-  name: string;
-  address: string;
-  type: string;
-};
-
-// метаданные МС-ТЮК
-export interface MetaData {
+export type MetaData = {
   RefBlHw: string; // Описывает физическое окружение контроллера (плату)
   RefBlFw: string; // Указывает на версию прошивки загрузчика
   RefBlUserCode: string; //
@@ -184,10 +176,18 @@ export interface MetaData {
   RefCgHw: string; // Указывает на аппаратное исполнение
   RefCgFw: string; // Указывает на версию прошивки кибергена
   RefCgProtocol: string; // Указывает на возможности протокола кибергена
-  type: string; // тип устройства (определяется по RefBlHw)
-}
+};
+
+// адрес и ассоциированные с ним данные (для МС-ТЮК)
+export type AddressData = {
+  name: string;
+  address: string;
+  type: string;
+  meta: MetaData;
+};
 
 // метаданные с deviceID
 export interface MetaDataID extends MetaData {
   deviceID: string;
+  type: string; // тип устройства (определяется по RefBlHw)
 }

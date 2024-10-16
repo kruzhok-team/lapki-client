@@ -9,7 +9,7 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { AddressBookModal } from './AddressBook';
-import { Device } from './Modules/Device';
+import { Device, MSDevice } from './Modules/Device';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
@@ -49,8 +49,12 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
     }
   }, [serverAddress]);
   useEffect(() => {
-    if (!meta) return;
-    const dev = devices.get(meta.deviceID);
+    if (!address || !device) return;
+    device.address = address;
+  }, [address]);
+  useEffect(() => {
+    if (!meta || !addressBookSetting) return;
+    const dev = devices.get(meta.deviceID) as MSDevice;
     const metaStr = `
 - bootloader REF_HW: ${meta.RefBlChip} (${meta.type})
 - bootloader REF_FW: ${meta.RefBlFw}
@@ -62,11 +66,19 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
     `;
     if (!dev) {
       ManagerMS.addLog(
-        `Получены метаданные, но не удаётся определить для какого устройства, возможно оно больше не подключено: ${metaStr}`
+        `Получены метаданные, но не удаётся определить для какого устройства, возможно оно больше не подключено:${metaStr}`
       );
       return;
     }
     ManagerMS.addLog(`Получены метаданные для устройства ${dev.displayName()}: ${metaStr}`);
+    const newBook = addressBookSetting.map((entry) => {
+      if (entry.address === dev.address) {
+        return { name: entry.name, address: entry.address, type: meta.type };
+      } else {
+        return entry;
+      }
+    });
+    setAddressBookSetting(newBook);
   }, [meta]);
   const handleGetAddress = () => {
     if (!device) return;

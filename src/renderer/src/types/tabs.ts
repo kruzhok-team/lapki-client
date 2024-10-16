@@ -1,3 +1,5 @@
+import { Device } from '@renderer/components/Modules/Device';
+
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
@@ -20,6 +22,7 @@ export interface SerialMonitorTab {
 export interface ManagerMSTab {
   type: 'managerMS';
   name: string;
+  devices: Map<string, Device>;
 }
 
 export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

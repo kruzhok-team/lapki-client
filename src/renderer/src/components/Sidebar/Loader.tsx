@@ -223,6 +223,7 @@ export const Loader: React.FC<FlasherProps> = ({
     openTab({
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
+      devices: devices,
     });
   };
 

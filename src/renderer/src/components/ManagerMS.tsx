@@ -9,11 +9,16 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { AddressBookModal } from './AddressBook';
+import { Device } from './Modules/Device';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
 
-export const ManagerMSTab: React.FC = () => {
+export interface ManagerMSProps {
+  devices: Map<string, Device>;
+}
+
+export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
   const { device, log, setLog, address: serverAddress, meta } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
@@ -45,7 +50,23 @@ export const ManagerMSTab: React.FC = () => {
   }, [serverAddress]);
   useEffect(() => {
     if (!meta) return;
-    console.log(meta.type, meta.RefBlHw);
+    const dev = devices.get(meta.deviceID);
+    const metaStr = `
+- bootloader REF_HW: ${meta.RefBlChip} (${meta.type})
+- bootloader REF_FW: ${meta.RefBlFw}
+- bootloader REF_CHIP: ${meta.RefBlChip}
+- booloader REF_PROTOCOL: ${meta.RefBlProtocol}
+- cybergene REF_FW: ${meta.RefCgFw}
+- cybergene REF_HW: ${meta.RefCgHw}
+- cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
+    `;
+    if (!dev) {
+      ManagerMS.addLog(
+        `Получены метаданные, но не удаётся определить для какого устройства, возможно оно больше не подключено: ${metaStr}`
+      );
+      return;
+    }
+    ManagerMS.addLog(`Получены метаданные для устройства ${dev.displayName()}: ${metaStr}`);
   }, [meta]);
   const handleGetAddress = () => {
     if (!device) return;

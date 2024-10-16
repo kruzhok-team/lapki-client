@@ -48,7 +48,7 @@ export const Tabs: React.FC = () => {
       case 'serialMonitor':
         return <SerialMonitorTab />;
       case 'managerMS':
-        return <ManagerMSTab />;
+        return <ManagerMSTab devices={item.devices} />;
       default:
         return undefined;
     }

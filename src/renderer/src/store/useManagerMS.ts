@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { MSDevice } from '@renderer/components/Modules/Device';
-import { MetaData } from '@renderer/types/FlasherTypes';
+import { MetaDataID } from '@renderer/types/FlasherTypes';
 
 interface ManagerMSState {
   device: MSDevice | undefined;
@@ -10,8 +10,8 @@ interface ManagerMSState {
   setLog: (update: (prevMessages: string[]) => string[]) => void;
   address: string;
   setAddress: (curAddress: string) => void;
-  meta: MetaData | undefined;
-  setMeta: (curMeta: MetaData | undefined) => void;
+  meta: MetaDataID | undefined;
+  setMeta: (curMeta: MetaDataID | undefined) => void;
 }
 
 export const useManagerMS = create<ManagerMSState>((set) => ({

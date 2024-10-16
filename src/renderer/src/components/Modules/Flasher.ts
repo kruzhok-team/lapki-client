@@ -645,12 +645,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'ms-meta-data': {
-        // тип MetaData не содержит ID устройства, который присылается вместе с метаданными,
-        // для того, чтобы получить метаданные вместе с ID, нужно использовать MetaDataID.
-        // На данный момент, ID устройства не применяется,
-        // но возможно он, пригодится в будущем, поэтому сервер его отсылает
-        const meta = response.payload as MetaData;
-        ManagerMS.addLog(`Получены метаданные.`);
+        const meta = response.payload as MetaDataID;
         ManagerMS.setMeta(meta);
         break;
       }

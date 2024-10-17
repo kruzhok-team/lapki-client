@@ -183,7 +183,7 @@ export type AddressData = {
   name: string;
   address: string;
   type: string;
-  meta: MetaData;
+  meta: MetaData | undefined;
 };
 
 // метаданные с deviceID

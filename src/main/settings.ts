@@ -1,6 +1,19 @@
 import { ipcMain, WebContents } from 'electron';
 import settings from 'electron-settings';
 
+type MetaType =
+  | {
+      RefBlHw: string; // Описывает физическое окружение контроллера (плату)
+      RefBlFw: string; // Указывает на версию прошивки загрузчика
+      RefBlUserCode: string; //
+      RefBlChip: string; // Указывает на контроллер, здесь то, что нужно для компиляции прошивки
+      RefBlProtocol: string; // Описывает возможности протокола загрузчика
+      RefCgHw: string; // Указывает на аппаратное исполнение
+      RefCgFw: string; // Указывает на версию прошивки кибергена
+      RefCgProtocol: string; // Указывает на возможности протокола кибергена
+    }
+  | undefined;
+
 export const defaultSettings = {
   doc: {
     host: 'https://lapki-doc.polyus-nt.ru/v/0.2.1/',
@@ -46,16 +59,7 @@ export const defaultSettings = {
       name: 'Имя',
       address: 'Адрес',
       type: 'Тип',
-      meta: {
-        RefBlHw: '', // Описывает физическое окружение контроллера (плату)
-        RefBlFw: '', // Указывает на версию прошивки загрузчика
-        RefBlUserCode: '', //
-        RefBlChip: '', // Указывает на контроллер, здесь то, что нужно для компиляции прошивки
-        RefBlProtocol: '', // Описывает возможности протокола загрузчика
-        RefCgHw: '', // Указывает на аппаратное исполнение
-        RefCgFw: '', // Указывает на версию прошивки кибергена
-        RefCgProtocol: '', // Указывает на возможности протокола кибергена
-      },
+      meta: undefined as MetaType,
     },
   ],
   /**

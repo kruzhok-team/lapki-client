@@ -48,16 +48,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
         name: '',
         address: serverAddress,
         type: '',
-        meta: {
-          RefBlHw: '',
-          RefBlFw: '',
-          RefBlUserCode: '',
-          RefBlChip: '',
-          RefBlProtocol: '',
-          RefCgHw: '',
-          RefCgFw: '',
-          RefCgProtocol: '',
-        },
+        meta: undefined,
       };
       setAddressBookSetting([...addressBookSetting, newRow]);
     }

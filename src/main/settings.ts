@@ -93,7 +93,7 @@ export const initSettings = (webContents: WebContents) => {
   ipcMain.handle('settings:reset', async (_event, key: SettingsKey) => {
     await settingsChange(webContents, key, defaultSettings[key]);
   });
-  ipcMain.handle('settings:fullReset', async (_event) => {
+  ipcMain.handle('settings:fullReset', async () => {
     for (const key in defaultSettings) {
       if ((key as SettingsKey) != 'addressBookMS') {
         await settingsChange(webContents, key as SettingsKey, defaultSettings[key]);

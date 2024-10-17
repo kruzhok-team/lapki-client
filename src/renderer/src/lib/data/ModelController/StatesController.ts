@@ -301,7 +301,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   createChoiceState = (params: CreateChoiceStateParams) => {
     const { id, smId } = params;
     if (!id) return;
-
     const state = new ChoiceState(this.app, id, smId, { ...params });
 
     this.data.choiceStates.set(id, state);

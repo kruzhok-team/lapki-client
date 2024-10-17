@@ -38,7 +38,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       if (controller.type === 'scheme') continue;
       const stateMachines = Object.keys(controller.stateMachinesSub);
       const smId = stateMachines.length ? stateMachines[0] : canvasId;
-      // debugger;
       openTab(modelController, { type: 'editor', name: smId, canvasId });
     }
   };

@@ -667,7 +667,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
-    // debugger;
     const transitionWithId = this.getBySourceId(smId, initialStateId);
     if (!transitionWithId) return;
 
@@ -1243,18 +1242,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   getEachObjectByParentId(
     smId: string,
     parentId: string
-  ): Omit<StateMachine, 'visual' | 'transitions' | 'components' | 'platform' | 'meta'> {
+  ): Omit<
+    StateMachine,
+    'visual' | 'transitions' | 'components' | 'platform' | 'meta' | 'position' | 'compilerSettings'
+  > {
     const sm = this.model.data.elements.stateMachines[smId];
     const objects: Omit<
       StateMachine,
-      'visual' | 'transitions' | 'components' | 'platform' | 'meta'
+      | 'visual'
+      | 'transitions'
+      | 'components'
+      | 'platform'
+      | 'meta'
+      | 'position'
+      | 'compilerSettings'
     > = {
       states: {},
       initialStates: {},
       finalStates: {},
       choiceStates: {},
       notes: {},
-      position: { x: 0, y: 0 },
     };
 
     for (const objectType of StateTypes) {
@@ -1275,13 +1282,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if ([...Object.values(children)].length === 0) return 0;
 
     const bottomChildData = this.getChildren(children);
-    if (!bottomChildData) throw Error('No bottom child!');
+    if (!bottomChildData || !bottomChildData[0]) return 0;
     let bottomChildId = bottomChildData[0];
     let bottomChildType = bottomChildData[1];
-    let bottomChild = children[bottomChildType][bottomChildType];
+    let bottomChild = children[bottomChildType][bottomChildId];
     let bottomChildContainerHeight = 0;
     let result = 0;
-
     for (const childType of StateTypes) {
       for (const childId in children[childType]) {
         const child = children[childType][childId];
@@ -1335,7 +1341,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private getChildren(
-    objects: Omit<StateMachine, 'visual' | 'transitions' | 'components' | 'platform' | 'meta'>
+    objects: Omit<
+      StateMachine,
+      | 'visual'
+      | 'transitions'
+      | 'components'
+      | 'platform'
+      | 'meta'
+      | 'position'
+      | 'CompilerSettings'
+    >
   ): [string, StateType] | undefined {
     for (const stateType of StateTypes) {
       if ([Object.values(objects[stateType])].length !== 0) {
@@ -1354,8 +1369,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let width = state.dimensions.width / this.model.data.scale;
 
     const children = this.getEachObjectByParentId(smId, stateId);
-
-    if (stateType === 'states' && [...Object.values(children)].length !== 0) {
+    const notEmptyChildrens = Object.values(children).filter(
+      (value) => Object.values(value).length !== 0
+    );
+    if (stateType === 'states' && notEmptyChildrens.length !== 0) {
       const rightChildren = this.getChildren(children);
       if (!rightChildren) throw Error('NO RIGHT CHILDREN');
       let rightChildrenId = rightChildren[0];
@@ -1441,8 +1458,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, position, linkByPoint = true } = params;
 
     const id = this.model.createChoiceState(params);
-
-    this.emit('createChoice', params);
+    this.emit('createChoice', { ...params, id: id });
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
 
     if (parentId) {
@@ -1537,7 +1553,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.model.deleteFinalState(smId, id);
       return;
     }
-    this.emit('createFinal', params);
+    this.emit('createFinal', {...params, id });
 
     if (gotParent && parentId) {
       this.linkFinalState(smId, id, parentId);

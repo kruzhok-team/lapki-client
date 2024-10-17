@@ -24,7 +24,7 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       onDrop={onDrop}
     >
       <label className="flex w-full flex-col">
-        <TextInput value={data.name} disabled={true} placeholder="Название" />
+        <TextInput value={data.name ?? ''} disabled={true} placeholder="Название" />
       </label>
 
       <label className="flex w-full flex-col">
@@ -33,7 +33,7 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
 
       <label className="flex w-full flex-col">
         <TextInput
-          value={data.type}
+          value={data.type ?? ''}
           placeholder="Тип"
           className="w-full max-w-full"
           disabled={true}

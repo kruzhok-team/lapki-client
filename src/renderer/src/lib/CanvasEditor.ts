@@ -145,10 +145,10 @@ export class CanvasEditor {
     this._keyboard = null;
     this._render = null;
 
-    this.controller.isMounted = true;
+    this.controller.isMounted = false;
     this.controller.emit('isMounted', {
       canvasId: this.controller.id,
-      status: true,
+      status: false,
     });
   }
 

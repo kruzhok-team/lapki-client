@@ -583,7 +583,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.createStateMachine(smId, data);
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);
-
     if (this.schemeEditorId) {
       const schemeController = this.controllers[this.schemeEditorId];
       this.setupSchemeScreenEditorController(
@@ -1553,7 +1552,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.model.deleteFinalState(smId, id);
       return;
     }
-    this.emit('createFinal', {...params, id });
+    this.emit('createFinal', { ...params, id });
 
     if (gotParent && parentId) {
       this.linkFinalState(smId, id, parentId);

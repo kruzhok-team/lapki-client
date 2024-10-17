@@ -183,6 +183,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.on('dragend', this.handleDragEnd.bind(this, note));
 
     note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
+    note.edgeHandlers.bindEvents();
   }
 
   unwatch(note: Note) {

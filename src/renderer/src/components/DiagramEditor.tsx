@@ -49,7 +49,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
         smId: smId,
         name: 'Состояние',
         events: [],
-        dimensions: { width: 450, height: 100 }, // TODO (L140-beep): перепроверить
+        dimensions: { width: 450, height: 100 },
         position,
         placeInCenter: true,
       });
@@ -82,7 +82,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [stateMachines, editor, openActionsModal]);
+  }, [editor, openActionsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;

@@ -317,6 +317,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       }
       this.inited = true;
     }
+    this.rewatchEdgeHandlers();
   }
 
   private bindHelper<T extends (args: any) => any>(
@@ -680,6 +681,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         break;
       default:
         throw new Error('Unknown attribute');
+    }
+  }
+
+  rewatchEdgeHandlers() {
+    for (const state of this.states.data.states.values()) {
+      state.edgeHandlers.bindEvents();
     }
   }
 

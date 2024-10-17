@@ -22,6 +22,9 @@ export class EdgeHandlers {
   constructor(app: CanvasEditor, shape: Shape) {
     this.app = app;
     this.shape = shape;
+  }
+
+  bindEvents() {
     this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 

@@ -73,7 +73,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   });
 
   const handleDelete = () => {
-    if (onSide == undefined) return;
+    if (onSide === undefined) return;
     onSide();
     onClose();
   };

@@ -442,23 +442,7 @@ export const actionFunctions: ActionFunctions = {
       sM,
       { smId, id, startPosition: endPosition, endPosition: startPosition },
       false
-    ),
-    //   changeNoteBackgroundColor: (sM, { id, color, prevColor }) => ({
-    //     redo: sM.changeNoteBackgroundColor.bind(sM, id, color, false),
-    //     undo: sM.changeNoteBackgroundColor.bind(sM, id, prevColor, false),
-    //   }),
-    //   changeNoteTextColor: (sM, { id, color, prevColor }) => ({
-    //     redo: sM.changeNoteTextColor.bind(sM, id, color, false),
-    //     undo: sM.changeNoteTextColor.bind(sM, id, prevColor, false),
-    //   }),
-    //   changeNoteFontSize: (sM, { id, fontSize, prevFontSize }) => ({
-    //     redo: sM.notes.changeNoteFontSize.bind(sM.notes, id, fontSize, false),
-    //     undo: sM.notes.changeNoteFontSize.bind(sM.notes, id, prevFontSize, false),
-    //   }),
-    //   changeNotePosition: (sM, { id, startPosition, endPosition }) => ({
-    //     redo: sM.notes.changeNotePosition.bind(sM.notes, id, startPosition, endPosition, false),
-    //     undo: sM.notes.changeNotePosition.bind(sM.notes, id, endPosition, startPosition, false),
-    // >>>>>>> main
+    )
   }),
   deleteNote: (sM, { smId, id, prevData }) => ({
     redo: sM.deleteNote.bind(sM, { smId, id }, false),

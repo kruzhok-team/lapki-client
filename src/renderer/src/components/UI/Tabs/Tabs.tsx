@@ -17,9 +17,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, value, onChange, className }) 
             'border-b-2 border-transparent px-6 py-1 hover:bg-bg-hover',
             value === i && 'border-primary'
           )}
-          onClick={() => {
-            onChange(i);
-          }}
+          onClick={() => onChange(i)}
           type="button"
         >
           {tab}

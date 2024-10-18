@@ -32,13 +32,14 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   // Открыть вкладки на каждый контроллер
   const openTabs = () => {
-    for (const canvasId in modelController.controllers) {
-      if (canvasId === '') continue;
-      const controller = modelController.controllers[canvasId];
-      if (controller.type === 'scheme') continue;
+    for (const controllerId in modelController.controllers) {
+      if (controllerId === '') continue;
+      const controller = modelController.controllers[controllerId];
+      if (controller.type === 'scheme') continue; // Схемотехнический экран открываем только по кнопке в меню
       const stateMachines = Object.keys(controller.stateMachinesSub);
-      const smId = stateMachines.length ? stateMachines[0] : canvasId;
-      openTab(modelController, { type: 'editor', name: smId, canvasId });
+      const smId = stateMachines[0] ?? controllerId;
+      // ID контроллера равен ID канваса.
+      openTab(modelController, { type: 'editor', name: smId, canvasId: controllerId });
     }
   };
 

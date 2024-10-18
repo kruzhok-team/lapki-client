@@ -117,8 +117,8 @@ const HistoryWithEditor: React.FC = () => {
 
 export const History: React.FC = () => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
-  const isInitialized = modelController.model.data.canvas[editor.id].isInitialized;
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const isInitialized = modelController.model.useData('', 'canvas.isInitialized', headControllerId);
 
   return (
     <section className="flex flex-col">

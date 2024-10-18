@@ -36,6 +36,7 @@ export const useTabs = create<TabsState>((set) => ({
         activeTab: tab.name,
       };
     }),
+  // Передаем ModelController, чтобы он сам разобрался с тем, какой Controller в итоге будет главный
   closeTab: (tabName, modelController: ModelController) =>
     set(({ items, activeTab }) => {
       const closedTabIndex = items.findIndex((tab) => tab.name === tabName);

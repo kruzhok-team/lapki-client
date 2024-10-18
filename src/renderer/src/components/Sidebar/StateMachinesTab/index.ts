@@ -1,1 +1,2 @@
-// export * from './StateMachinesList';
+export * from './StateMachineDeleteModal';
+export * from './StateMachinesList';

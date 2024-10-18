@@ -8,8 +8,8 @@ interface ComponentProps {
   name: string;
   isSelected: boolean;
   isDragging: boolean;
-  icon: React.ReactNode | undefined;
-  description: string | undefined;
+  icon?: React.ReactNode;
+  description?: string;
   onSelect: () => void;
   onEdit: () => void;
   onCallContextMenu: () => void; // TODO: Сделать контекстное меню для машин состояний

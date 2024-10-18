@@ -13,7 +13,7 @@ interface TextModeModalProps {
 export const TextModeModal: React.FC<TextModeModalProps> = ({ onClose, ...props }) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Исправить
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     modelController.setTextMode(modelController.controllers[headControllerId]);

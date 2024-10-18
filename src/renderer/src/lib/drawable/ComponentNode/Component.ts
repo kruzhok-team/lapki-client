@@ -11,23 +11,20 @@ const fontSizeMark = 32;
  */
 export class DrawableComponent extends Shape {
   isSelected = false;
-  icon: MarkedIconData;
-  __position: Point;
-  __dimensions: Dimensions;
-  smId: string;
+  dimensions: Dimensions;
   constructor(
     app: CanvasEditor,
     id: string,
-    smId: string,
-    position: Point,
-    icon: MarkedIconData,
+    public smId: string,
+    public position: Point,
+    public icon: MarkedIconData,
     parent?: Shape
   ) {
     super(app, id, parent);
     this.smId = smId;
     this.icon = icon;
-    this.__position = position;
-    this.__dimensions = {
+    this.position = position;
+    this.dimensions = {
       width: 90,
       height: 50,
     };
@@ -52,23 +49,6 @@ export class DrawableComponent extends Shape {
         y: 0,
       },
     };
-  }
-
-  get position() {
-    return this.__position;
-  }
-  set position(value) {
-    this.__position = value;
-    if (this.data) {
-      this.data.position = value;
-    }
-  }
-
-  get dimensions() {
-    return this.__dimensions;
-  }
-  set dimensions(_value) {
-    this.__dimensions = _value;
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {

@@ -84,12 +84,12 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   const handleFlash = async () => {
-    if (currentDeviceID == null || currentDeviceID == undefined) {
+    if (currentDeviceID === null || currentDeviceID === undefined) {
       console.log('Не удаётся начать прошивку, currentDeviceID =', currentDeviceID);
       return;
     }
     const currentDevice = devices.get(currentDeviceID);
-    if (currentDevice == null || currentDevice == undefined) {
+    if (currentDevice === null || currentDevice === undefined) {
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
     }
@@ -345,7 +345,7 @@ export const Loader: React.FC<FlasherProps> = ({
       return false;
     }
     // проверка на соответствие платформы схемы и типа устройства
-    if (!(compilerData?.binary === undefined || compilerData.binary.length == 0)) {
+    if (!(compilerData?.binary === undefined || compilerData.binary.length === 0)) {
       let platform = compilerData?.platform;
       if (platform === undefined) {
         return;

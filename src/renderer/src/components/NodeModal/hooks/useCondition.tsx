@@ -279,7 +279,7 @@ export const useCondition = () => {
       ) {
         setIsParamOneInput2(false);
         setArgsParam2(param2.value);
-      } else if (param2.type == 'component') {
+      } else if (param2.type === 'component') {
         const compoName = (param2.value as VariableData).component;
         const methodName = (param2.value as VariableData).method;
         setIsParamOneInput2(true);

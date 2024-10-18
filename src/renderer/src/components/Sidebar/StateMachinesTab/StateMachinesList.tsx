@@ -24,7 +24,7 @@ export const StateMachinesList: React.FC = () => {
 
       openTab(modelController, {
         type: 'editor',
-        name: sM.name ? sM.name : name,
+        name: sM.name ?? name,
         canvasId: controller.id,
       });
     }
@@ -70,8 +70,6 @@ export const StateMachinesList: React.FC = () => {
             <Component
               key={id}
               name={sm.name || id}
-              icon={undefined}
-              description={undefined}
               isSelected={id === selectedSm}
               onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}

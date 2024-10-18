@@ -14,16 +14,16 @@ const style = theme.colors.diagram.state;
 export class DrawableStateMachine extends Shape {
   isSelected = false;
   icon: MarkedIconData;
-  __position: Point;
-  __dimensions: Dimensions;
+  position: Point;
+  dimensions: Dimensions;
   constructor(app: CanvasEditor, id: string, icon: MarkedIconData, parent?: Shape) {
     super(app, id, parent);
     this.icon = icon;
-    this.__position = {
+    this.position = {
       x: 0,
       y: 0,
     };
-    this.__dimensions = {
+    this.dimensions = {
       width: 150,
       height: 100,
     };
@@ -90,20 +90,6 @@ export class DrawableStateMachine extends Shape {
       borderRadius: 6 / scale,
       color: getColor('border-primary'),
     };
-  }
-
-  get position() {
-    return this.__position;
-  }
-  set position(value) {
-    this.__position = value;
-  }
-
-  get dimensions() {
-    return this.__dimensions;
-  }
-  set dimensions(_value) {
-    this.__dimensions = _value;
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {

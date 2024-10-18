@@ -11,8 +11,6 @@ import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { clamp } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 
-import { ModelController } from '../data/ModelController';
-
 /**
  * Контейнер с машиной состояний, в котором происходит отрисовка,
  * управление камерой, обработка событий и сериализация.
@@ -28,10 +26,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   __children = new Children();
 
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
-  modelController: ModelController;
-  constructor(public app: CanvasEditor, modelController: ModelController) {
+  constructor(public app: CanvasEditor) {
     super();
-    this.modelController = modelController;
   }
 
   get children() {
@@ -43,17 +39,16 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     //* Это на будущее
     // this.app.canvas.element.addEventListener('dragover', (e) => e.preventDefault());
     // this.app.canvas.element.addEventListener('drop', this.handleDrop);
-
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
-    this.app.keyboard.on('delete', this.modelController.deleteSelected);
-    this.app.keyboard.on('ctrlz', this.modelController.history.undo);
-    this.app.keyboard.on('ctrly', this.modelController.history.redo);
-    this.app.keyboard.on('ctrlc', this.modelController.copySelected);
-    this.app.keyboard.on('ctrlv', this.modelController.pasteSelected);
-    this.app.keyboard.on('ctrld', this.modelController.duplicateSelected);
-    this.app.keyboard.on('ctrls', this.modelController.files.save);
-    this.app.keyboard.on('ctrlshifta', this.modelController.files.saveAs);
+    this.app.keyboard.on('delete', this.app.controller.model.deleteSelected);
+    this.app.keyboard.on('ctrlz', this.app.controller.model.history.undo);
+    this.app.keyboard.on('ctrly', this.app.controller.model.history.redo);
+    this.app.keyboard.on('ctrlc', this.app.controller.model.copySelected);
+    this.app.keyboard.on('ctrlv', this.app.controller.model.pasteSelected);
+    this.app.keyboard.on('ctrld', this.app.controller.model.duplicateSelected);
+    this.app.keyboard.on('ctrls', this.app.controller.model.files.save);
+    this.app.keyboard.on('ctrlshifta', this.app.controller.model.files.saveAs);
 
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -67,14 +62,14 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   removeEvents() {
     this.app.keyboard.off('spacedown', this.handleSpaceDown);
     this.app.keyboard.off('spaceup', this.handleSpaceUp);
-    this.app.keyboard.off('delete', this.modelController.deleteSelected);
-    this.app.keyboard.off('ctrlz', this.modelController.history.undo);
-    this.app.keyboard.off('ctrly', this.modelController.history.redo);
-    this.app.keyboard.off('ctrlc', this.modelController.copySelected);
-    this.app.keyboard.off('ctrlv', this.modelController.pasteSelected);
-    this.app.keyboard.off('ctrld', this.modelController.duplicateSelected);
-    this.app.keyboard.off('ctrls', this.modelController.files.save);
-    this.app.keyboard.off('ctrlshifta', this.modelController.files.saveAs);
+    this.app.keyboard.off('delete', this.app.controller.model.deleteSelected);
+    this.app.keyboard.off('ctrlz', this.app.controller.model.history.undo);
+    this.app.keyboard.off('ctrly', this.app.controller.model.history.redo);
+    this.app.keyboard.off('ctrlc', this.app.controller.model.copySelected);
+    this.app.keyboard.off('ctrlv', this.app.controller.model.pasteSelected);
+    this.app.keyboard.off('ctrld', this.app.controller.model.duplicateSelected);
+    this.app.keyboard.off('ctrls', this.app.controller.model.files.save);
+    this.app.keyboard.off('ctrlshifta', this.app.controller.model.files.saveAs);
 
     this.app.mouse.off('mousedown', this.handleMouseDown);
     this.app.mouse.off('mouseup', this.handleMouseUp);
@@ -109,8 +104,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
 
-    const scale = this.modelController.model.data.scale;
-    const offset = this.modelController.model.data.offset;
+    const scale = this.app.controller.model.model.data.scale;
+    const offset = this.app.controller.model.model.data.offset;
 
     let size = 30;
     const top = (offset.y % size) / scale;
@@ -164,7 +159,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   setScale(value: number) {
-    this.modelController.model.setScale(value);
+    this.app.controller.model.model.setScale(value);
     picto.scale = value;
 
     this.isDirty = true;

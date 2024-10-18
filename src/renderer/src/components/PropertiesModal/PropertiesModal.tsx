@@ -36,7 +36,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   const onAfterOpen = async () => {
     metaForm.setValue(
       'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // Почему линтер ругается?
+      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO: Почему линтер ругается?
     );
     metaForm.clearErrors();
 

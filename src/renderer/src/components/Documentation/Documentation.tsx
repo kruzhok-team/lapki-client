@@ -35,8 +35,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
     url && `${url}/index.json?nocache=true`
   );
 
-  // const [tab] = useTabs((state) => [state.activeTab]);
-
   const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 

@@ -84,7 +84,6 @@ export const NoteEdit: React.FC = () => {
       open();
     };
 
-    // TODO (L140-beep): А работает ли?
     editor.controller.notes.on('change', handler);
 
     return () => {

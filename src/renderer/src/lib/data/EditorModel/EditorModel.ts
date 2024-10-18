@@ -206,7 +206,7 @@ export class EditorModel {
       name,
       parentId,
       id = generateId(this.getNodeIds()),
-      events = args.events || [],
+      events = args.events,
       placeInCenter = false,
       color,
       smId,

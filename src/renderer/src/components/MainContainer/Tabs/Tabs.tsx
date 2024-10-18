@@ -42,7 +42,6 @@ export const Tabs: React.FC = () => {
   const selectTab = (item: TabType) => {
     switch (item.type) {
       case 'editor':
-        // TODO: ДОДЕЛАТЬ
         return (
           <DiagramEditor
             controller={modelController.controllers[item.canvasId]}

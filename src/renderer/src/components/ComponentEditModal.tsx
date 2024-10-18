@@ -64,7 +64,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       return false;
     }
 
-    if (name == '') {
+    if (name === '') {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
       return false;
     }
@@ -90,13 +90,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       }
     }
     for (const word of reservedWordsC) {
-      if (word == name) {
+      if (word === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
         return false;
       }
     }
     for (const word of frameworkWords) {
-      if (word == name) {
+      if (word === name) {
         setErrors((p) => ({
           ...p,
           [nameError]: `Название является недопустимым. Выберите другое`,
@@ -106,7 +106,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     }
     // проверка на то, что название не является типом данных
     for (const key in validators) {
-      if (key == name) {
+      if (key === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
         return false;
       }
@@ -114,7 +114,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     // проверка на то, что название не совпадает с названием класса компонентов
     const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
     for (const component of vacantComponents) {
-      if (component.name == name) {
+      if (component.name === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));
         return false;
       }

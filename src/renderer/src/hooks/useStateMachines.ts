@@ -58,7 +58,7 @@ export const useStateMachines = () => {
     openTab(modelController, {
       type: 'editor',
       canvasId: canvasId,
-      name: sm.name ? sm.name : smId,
+      name: sm.name ?? smId,
     });
   };
 
@@ -66,8 +66,8 @@ export const useStateMachines = () => {
     if (!idx) return;
     const sm = modelController.model.data.elements.stateMachines[idx];
     const smName = sm.name ?? '';
-    if (data.name != smName) {
-      renameTab(smName ? smName : idx, data.name ? data.name : idx);
+    if (data.name !== smName) {
+      renameTab(smName ?? idx, data.name ?? idx);
     }
     modelController.editStateMachine(idx, data);
   };
@@ -99,7 +99,7 @@ export const useStateMachines = () => {
    */
   const isDuplicateName = (name: string) => {
     if (!name) return false;
-    const machines = [...Object.entries(modelController.model.data.elements.stateMachines)];
+    const machines = Object.entries(modelController.model.data.elements.stateMachines);
     for (const [id, value] of machines) {
       if (id == idx) continue;
       if ((value.name && value.name == name) || name == id) {

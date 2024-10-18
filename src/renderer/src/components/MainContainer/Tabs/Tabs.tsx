@@ -42,6 +42,9 @@ export const Tabs: React.FC = () => {
   const selectTab = (item: TabType) => {
     switch (item.type) {
       case 'editor':
+        // Вкладки удаляются только после удаления контроллеров.
+        // И до удаления вкладок вызывается ререндер, вызывающий эту функцию
+        if (!modelController.controllers[item.canvasId]) return undefined;
         return (
           <DiagramEditor
             controller={modelController.controllers[item.canvasId]}

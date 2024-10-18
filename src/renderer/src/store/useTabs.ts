@@ -91,10 +91,12 @@ export const useTabs = create<TabsState>((set) => ({
       };
     }),
   clearTabs: () =>
-    set(() => ({
-      items: [],
-      activeTab: null,
-    })),
+    set(() => {
+      return {
+        items: [],
+        activeTab: null,
+      };
+    }),
   renameTab: (oldName, newName) =>
     set(({ items, activeTab }) => {
       const newItems = [...items];

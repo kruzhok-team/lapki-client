@@ -485,7 +485,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private getSiblings(
     smId: string,
     stateId: string | undefined,
-    parentId: string | undefined,
+    parentId: string | undefined | null,
     stateType: StatesControllerDataStateType = 'states'
   ): [(State | ChoiceState | InitialState)[], string[]] {
     const siblings: (State | ChoiceState | InitialState)[] = [];
@@ -813,7 +813,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       // учитываем вложенность, нужно поместить состояние
       // в максимально дочернее
       if (!this.model.data.elements.stateMachines[smId].states[possibleParentId]) continue;
-      const children = this.getEachByParentId(smId, possibleParentId);
+      let children = this.getEachByParentId(smId, possibleParentId);
       let searchPending = true;
       while (searchPending) {
         searchPending = false;
@@ -823,12 +823,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           if (!this.isUnderMouse(smId, id, position, true)) continue;
 
           possibleParent = child;
+          possibleParentId = id;
           searchPending = true;
+          children = this.getEachByParentId(smId, possibleParentId);
           break;
         }
       }
+      return [possibleParentId, possibleParent];
     }
-
     return [possibleParentId, possibleParent];
   }
 
@@ -1173,7 +1175,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private getEachByParentId(smId: string, parentId: string) {
-    return [...Object.entries(this.model.data.elements.stateMachines[smId].states)].filter(
+    return Object.entries(this.model.data.elements.stateMachines[smId].states).filter(
       (state) => state[1].parentId === parentId
     );
   }
@@ -1281,7 +1283,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if ([...Object.values(children)].length === 0) return 0;
 
     const bottomChildData = this.getChildren(children);
-    if (!bottomChildData || !bottomChildData[0]) return 0;
+    if (!bottomChildData || !bottomChildData[0] || !bottomChildData[1]) return 0;
     let bottomChildId = bottomChildData[0];
     let bottomChildType = bottomChildData[1];
     let bottomChild = children[bottomChildType][bottomChildId];
@@ -1373,7 +1375,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     if (stateType === 'states' && notEmptyChildrens.length !== 0) {
       const rightChildren = this.getChildren(children);
-      if (!rightChildren) throw Error('NO RIGHT CHILDREN');
+      if (!rightChildren || !rightChildren[0]) return 0;
       let rightChildrenId = rightChildren[0];
       let rightChildrenType = rightChildren[1];
       for (const childrenType in Object.keys(children)) {
@@ -1537,35 +1539,41 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createFinalState(params: CreateFinalStateParams, canUndo = true) {
     const { smId, parentId, linkByPoint = true } = params;
-
+    let computedParentId: string | undefined = undefined;
     // Проверка на то что в скоупе уже есть конечное состояние
     // Страшно, очень страшно
-    const gotParent = parentId
-      ? this.model.data.elements.stateMachines[smId].states[parentId]
-      : null;
-    const computedParent = linkByPoint ? this.getPossibleParentState(smId, params.position) : null;
-
+    let parent = parentId ? this.model.data.elements.stateMachines[smId].states[parentId] : null;
+    if (!parent) {
+      const possibleParent = linkByPoint
+        ? this.getPossibleParentState(smId, params.position)
+        : null;
+      if (possibleParent && possibleParent[0]) {
+        computedParentId = possibleParent[0];
+        parent = possibleParent[1];
+      }
+    }
+    const siblings = this.getSiblings(
+      smId,
+      params.id,
+      parentId ?? computedParentId,
+      'finalStates'
+    )[0];
+    if (siblings.length) return;
     const id = this.model.createFinalState(params);
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
-    const siblings = this.getSiblings(smId, id, parentId, 'finalStates')[0];
-    if (siblings.length) {
-      this.model.deleteFinalState(smId, id);
-      return;
-    }
     this.emit('createFinal', { ...params, id });
 
-    if (gotParent && parentId) {
+    if (parentId) {
       this.linkFinalState(smId, id, parentId);
-    } else if (linkByPoint && computedParent) {
-      const [parentId, parentItem] = computedParent;
-      if (!parentId || !parentId || !parentItem) return;
-      const parentCompoundPosition = this.compoundStatePosition(smId, parentId, 'states');
+    } else if (linkByPoint && parent && computedParentId) {
+      // const [parentId, parentItem] = computedParent;
+      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
       const newPosition = {
         x: state.position.x - parentCompoundPosition.x,
-        y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
+        y: state.position.y - parentCompoundPosition.y - parent.dimensions.height,
       };
 
-      this.linkFinalState(smId, id, parentId);
+      this.linkFinalState(smId, id, computedParentId);
       this.changeFinalStatePosition({ smId, id, endPosition: newPosition }, false);
     }
 

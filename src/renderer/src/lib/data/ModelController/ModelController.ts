@@ -120,7 +120,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   // Создаем пустой контроллер с пустыми данными и назначаем его главным
   emptyController() {
-    const editor = new CanvasEditor('', this);
+    const editor = new CanvasEditor('');
     const controller = new CanvasController(
       '',
       'specific',
@@ -312,7 +312,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createSchemeScreenController(stateMachines: { [id: string]: StateMachine }) {
     const schemeScreenId = generateId();
-    const editor = new CanvasEditor(schemeScreenId, this);
+    const editor = new CanvasEditor(schemeScreenId);
     const platforms: { [id: string]: string } = {};
 
     for (const smId in stateMachines) {
@@ -563,7 +563,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createStateMachine(smId: string, data: StateMachine) {
     const canvasId = generateId();
-    const editor = new CanvasEditor(canvasId, this);
+    const editor = new CanvasEditor(canvasId);
     const controller = new CanvasController(
       canvasId,
       'specific',

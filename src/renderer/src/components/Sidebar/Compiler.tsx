@@ -49,7 +49,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
 
   const handleFlashButton = () => {
-    changeSidebarTab(SidebarIndex.flasher);
+    changeSidebarTab(SidebarIndex.Flasher);
   };
 
   const handleSaveBinaryIntoFolder = async () => {

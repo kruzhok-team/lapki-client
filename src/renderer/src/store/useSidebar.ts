@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 
 export enum SidebarIndex {
-  menu,
-  explorer,
-  stateMachineList,
-  compiler,
-  flasher,
-  history,
-  settings,
+  Menu,
+  Explorer,
+  StateMachineList,
+  Compiler,
+  Flasher,
+  History,
+  Settings,
 }
 
 interface SidebarState {

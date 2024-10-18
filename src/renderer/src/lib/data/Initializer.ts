@@ -1,6 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import {
-  State,
   Note,
   Transition,
   InitialState,
@@ -54,41 +53,9 @@ export class Initializer {
   private get notes() {
     return this.app.controller.notes;
   }
-  // private get components() {
-  //   return this.app.controller.components;
-  // }
   private get platform() {
     return this.controller.platform;
   }
-
-  // private resetEntities() {
-  //   // this.controller.stateMachines.deleteStateMachine(
-  //   //   {
-  //   //     id: 'G',
-  //   //   },
-  //   //   false
-  //   // );
-  //   this.app.view.children.clear();
-  //   this.transitions.forEach((value) => {
-  //     this.transitions.unwatchTransition(value);
-  //   });
-  //   this.states.forEach((value) => {
-  //     this.states.unwatch(value);
-  //   });
-  //   this.notes.forEach((value) => {
-  //     this.notes.unwatch(value);
-  //   });
-
-  //   this.states.clear();
-  //   this.transitions.clear();
-  //   this.notes.clear();
-
-  //   this.components.forEach((value) => {
-  //     this.components.unwatch(value);
-  //   });
-
-  //   this.components.clear();
-  // }
 
   /**
    * Первичная инициализация вьюшек состояний из схемы,
@@ -193,14 +160,6 @@ export class Initializer {
 
         this.controller.stateMachines.addComponent(smId, drawableComponent);
       }
-      // this.initComponents('G');
-      // const sm = this.controller.stateMachines.getStateMachineById('G');
-      // if (sm) {
-      //   sm.dimensions = {
-      //     width: sm.computedDimensions.width,
-      //     height: sm.computedDimensions.height,
-      //   };
-      // }
     }
   }
 
@@ -218,84 +177,6 @@ export class Initializer {
       });
     }
   }
-
-  // private createComponentView(sm: string, id: string) {
-  //   const icon = this.controller.platform?.getComponentIcon(id, true);
-  //   if (!icon) {
-  //     return;
-  //   }
-  //   const modelComponent = this.controller.model.data.elements.components[id];
-  //   const markedIcon: MarkedIconData = {
-  //     icon: icon,
-  //     label: modelComponent.parameters['label'],
-  //     color: modelComponent.parameters['labelColor'],
-  //   };
-  //   const smDrawable = this.controller.stateMachines.getStateMachineById(sm);
-  //   const component = new DrawableComponent(
-  //     this.appScheme,
-  //     id,
-  //     modelComponent.position,
-  //     markedIcon,
-  //     smDrawable
-  //   );
-  //   if (!smDrawable) {
-  //     return;
-  //   }
-  //   this.components.set(id, component);
-  //   this.components.watch(component);
-  //   if (smDrawable.children) {
-  //     smDrawable.children.add(component, Layer.Components);
-  //   }
-  // }
-
-  // Тут все методы которые кончаются на View нужны для первичной инициализации проекта
-  private createStateView(smId: string, id: string, dataState: DataState) {
-    const state = new State(this.app, id, smId, dataState);
-    this.states.data.states.set(state.id, state);
-    this.states.watch(state);
-    this.app.view.children.add(state, Layer.States);
-  }
-
-  // watch() {
-  //   this.watchStates();
-  //   this.watchNotes();
-  //   this.watchTransitions();
-  // }
-
-  // private watchTransitions() {
-  //   for (const transition of this.transitions.items.values()) {
-  //     this.transitions.watchTransition(transition);
-  //   }
-  // }
-
-  // private watchNotes() {
-  //   for (const note of this.notes.items.values()) {
-  //     this.notes.watch(note);
-  //   }
-  // }
-
-  // private watchStates() {
-  //   for (const stateId in this.states.data.states) {
-  //     const state = this.states.data.states.get(stateId);
-  //     if (!state) continue;
-  //     this.states.watch(state);
-  //   }
-  //   for (const stateId in this.states.data.finalStates) {
-  //     const state = this.states.data.finalStates.get(stateId);
-  //     if (!state) continue;
-  //     this.states.watch(state);
-  //   }
-  //   for (const stateId in this.states.data.choiceStates) {
-  //     const state = this.states.data.choiceStates.get(stateId);
-  //     if (!state) continue;
-  //     this.states.watch(state);
-  //   }
-  //   for (const stateId in this.states.data.initialStates) {
-  //     const state = this.states.data.initialStates.get(stateId);
-  //     if (!state) continue;
-  //     this.states.watch(state);
-  //   }
-  // }
 
   private linkStateView(parentId: string, childId: string) {
     const parent = this.states.get(parentId);

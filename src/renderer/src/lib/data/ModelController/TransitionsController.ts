@@ -197,6 +197,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleConditionClick = (transition: Transition) => {
     this.controller.selectTransition({ smId: '', id: transition.id });
+    this.controller.emit('selectTransition', { smId: transition.smId, id: transition.id });
   };
 
   handleConditionDoubleClick = (transition: Transition) => {

@@ -134,9 +134,9 @@ export class Initializer {
     this.app.view.children.add(this.transitions.ghost, Layer.GhostTransition);
   }
 
-  initNotes(notes: { [id: string]: DataNote }) {
+  initNotes(smId: string, notes: { [id: string]: DataNote }) {
     for (const id in notes) {
-      this.createNoteView(id, notes[id]);
+      this.createNoteView(smId, id, notes[id]);
     }
   }
 
@@ -196,8 +196,8 @@ export class Initializer {
     this.transitions.watchTransition(transition);
   }
 
-  private createNoteView(id: string, noteData: DataNote) {
-    const note = new Note(this.app, id, noteData);
+  private createNoteView(smId: string, id: string, noteData: DataNote) {
+    const note = new Note(this.app, smId, id, noteData);
     this.notes.set(id, note);
     this.app.view.children.add(note, Layer.Notes);
     this.notes.watch(note);

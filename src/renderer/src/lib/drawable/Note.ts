@@ -19,10 +19,12 @@ export class Note extends Shape {
   isSelected = false;
   edgeHandlers!: EdgeHandlers;
   data: DataNote;
+  smId: string;
 
-  constructor(app: CanvasEditor, id: string, data: DataNote, parent?: Shape) {
+  constructor(app: CanvasEditor, smId: string, id: string, data: DataNote, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
+    this.smId = smId;
     this.prepareText();
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }

@@ -45,9 +45,9 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   forEach = this.items.forEach.bind(this.items);
 
   createNote = (params: CreateNoteParams) => {
-    const { id } = params;
+    const { id, smId } = params;
     if (!id) return;
-    const note = new Note(this.app, id, { ...params });
+    const note = new Note(this.app, smId, id, { ...params });
 
     this.items.set(id, note);
     this.watch(note);
@@ -154,6 +154,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
 
   handleMouseDown = (note: Note) => {
     this.controller.selectNote({ smId: '', id: note.id });
+    this.controller.emit('selectNote', { smId: note.smId, id: note.id });
   };
 
   handleDoubleClick = (note: Note) => {

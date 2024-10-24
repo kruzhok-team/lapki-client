@@ -15,6 +15,7 @@ import {
   CopyType,
   EditComponentParams,
   LinkStateParams,
+  SelectDrawable,
   SetMountedStatusParams,
   StatesControllerDataStateType,
   UnlinkStateParams,
@@ -202,6 +203,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('isMounted', this.setMountStatus);
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
+    controller.on('selectNote', this.selectNote);
+    controller.on('selectChoice', this.selectChoiceState);
+    controller.on('selectTransition', this.selectTransition);
     controller.on('createTransitionFromController', this.onCreateTransitionModal);
     controller.on('openChangeTransitionModalFromController', this.openChangeTransitionModal);
   }
@@ -217,6 +221,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('isMounted', this.setMountStatus);
     controller.off('linkState', this.linkState);
     controller.off('selectState', this.selectState);
+    controller.off('selectNote', this.selectNote);
+    controller.off('selectTransition', this.selectTransition);
+    controller.off('selectChoice', this.selectChoiceState);
     controller.off('createTransitionFromController', this.onCreateTransitionModal);
     controller.off('openChangeTransitionModalFromController', this.openChangeTransitionModal);
     controller.unwatch();
@@ -726,7 +733,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteNote(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
-    const note = this.model.data.elements.stateMachines[smId].notes[smId];
+    const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
 
     let numberOfConnectedActions = 0;
@@ -1605,13 +1612,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         }
       });
 
-      Object.keys(sm.choiceStates).forEach((key) => {
-        const state = sm.choiceStates[key];
-        if (state.selection) {
-          this.deleteChoiceState({ smId: smId, id: key });
-        }
-      });
-
       Object.keys(sm.transitions).forEach((key) => {
         const transition = sm.transitions[key];
         if (transition.selection) {
@@ -1930,37 +1930,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.pasteSelected();
   };
 
-  selectState = (args: { id: string }) => {
-    const { id } = args;
-    const stateMachines = this.getHeadControllerStateMachines();
-    for (const smId in stateMachines) {
-      const state = this.model.data.elements.stateMachines[smId].states[id];
-      if (!state) continue;
+  selectState = (args: SelectDrawable) => {
+    const { id, smId } = args;
+    const state = this.model.data.elements.stateMachines[smId].states[id];
+    if (!state) return;
 
-      this.removeSelection();
+    this.removeSelection();
 
-      this.model.changeStateSelection(smId, id, true);
-
-      this.emit('selectState', { smId, id: id });
-      break;
-    }
+    this.model.changeStateSelection(smId, id, true);
   };
 
-  selectChoiceState(id: string) {
-    const stateMachines = this.getHeadControllerStateMachines();
+  selectChoiceState = (args: SelectDrawable) => {
+    const { id, smId } = args;
 
-    for (const smId in stateMachines) {
-      const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
-      if (!state) continue;
+    const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
+    if (!state) return;
 
-      this.removeSelection();
+    this.removeSelection();
 
-      this.model.changeChoiceStateSelection('', id, true);
+    this.model.changeChoiceStateSelection(smId, id, true);
 
-      this.emit('selectChoice', { smId: '', id: id });
-      break;
-    }
-  }
+    // this.emit('selectChoice', { smId: '', id: id });
+  };
 
   setTextMode(canvasController: CanvasController) {
     if (canvasController.id === '') return;
@@ -1972,34 +1963,27 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   }
 
-  selectTransition(id: string) {
-    const stateMachines = this.getHeadControllerStateMachines();
+  selectTransition = (args: SelectDrawable) => {
+    const { id, smId } = args;
 
-    for (const smId in stateMachines) {
-      const transition = this.model.data.elements.stateMachines[smId].transitions[id];
-      if (!transition) continue;
+    const transition = this.model.data.elements.stateMachines[smId].transitions[id];
+    if (!transition) return;
 
-      this.removeSelection();
+    this.removeSelection();
 
-      this.model.changeTransitionSelection(smId, id, true);
+    this.model.changeTransitionSelection(smId, id, true);
 
-      this.emit('selectTransition', { smId: smId, id: id });
-      break;
-    }
-  }
+    // this.emit('selectTransition', { smId: smId, id: id });
+  };
 
-  selectNote(id: string) {
-    const stateMachines = this.getHeadControllerStateMachines();
-
-    for (const smId in stateMachines) {
-      const note = this.model.data.elements.stateMachines[smId].notes[id];
-      if (!note) continue;
-      this.removeSelection();
-      this.model.changeNoteSelection(smId, id, true);
-      this.emit('selectNote', { smId: smId, id: id });
-      break;
-    }
-  }
+  selectNote = (args: SelectDrawable) => {
+    const { smId, id } = args;
+    const note = this.model.data.elements.stateMachines[smId].notes[id];
+    if (!note) return;
+    this.removeSelection();
+    this.model.changeNoteSelection(smId, id, true);
+    // this.emit('selectNote', { smId: smId, id: id });
+  };
 
   // TODO: Доделать
   // selectStateMachine(id: string) {

@@ -309,7 +309,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.initializer.initStates(smId, this.initData[smId].states);
         this.initializer.initChoiceStates(smId, this.initData[smId].choiceStates);
         this.initializer.initFinalStates(smId, this.initData[smId].finalStates);
-        this.initializer.initNotes(this.initData[smId].notes);
+        this.initializer.initNotes(smId, this.initData[smId].notes);
         this.initializer.initInitialStates(this.initData[smId].initialStates);
         this.initializer.initTransitions(smId, this.initData[smId].transitions);
       }

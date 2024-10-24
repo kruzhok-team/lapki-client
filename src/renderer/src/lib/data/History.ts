@@ -290,7 +290,7 @@ export const actionFunctions: ActionFunctions = {
   }),
 
   createTransition: (sM, { smId, id, params }) => ({
-    redo: sM.createTransition.bind(sM, { ...params, id }, false),
+    redo: sM.createTransition.bind(sM, { ...params, smId, id }, false, false),
     undo: sM.deleteTransition.bind(sM, { smId, id }, false),
   }),
 
@@ -299,10 +299,11 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.createTransition.bind(
       sM,
       {
-        smId,
-        id,
         ...prevData,
+        id,
+        smId,
       },
+      false,
       false
     ),
   }),

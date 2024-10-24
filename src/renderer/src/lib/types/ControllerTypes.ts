@@ -22,7 +22,7 @@ export const emptyControllerData = () => ({
   stateMachinesSub: {},
 });
 
-export type ControllerDataPropertyName = 'stateMachinesSub' | 'visual';
+export type ControllerDataPropertyName = 'stateMachinesSub' | 'visual' | 'platform';
 
 export type ControllerDataListeners = { [key in ControllerDataPropertyName]: (() => void)[] };
 

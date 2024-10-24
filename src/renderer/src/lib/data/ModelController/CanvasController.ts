@@ -173,10 +173,10 @@ export type CanvasData = {
 export type CanvasControllerType = 'specific' | 'scheme' | 'common';
 
 export class CanvasController extends EventEmitter<CanvasControllerEvents> {
-  // TODO: Сделать класс Subscriable
+  // TODO: Сделать класс Subscribable
   dataListeners = emptyControllerListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   app: CanvasEditor;
-  __platform: { [id: string]: PlatformManager } = {};
+  platform: { [id: string]: PlatformManager } = {};
   initializer: Initializer;
   states: StatesController;
   inited = false;
@@ -297,10 +297,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     return callback(parameters);
   }
 
-  get platform() {
-    return this.__platform;
-  }
-
   init() {
     if (!this.inited) {
       for (const smId in this.initData) {
@@ -313,6 +309,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.initializer.initInitialStates(this.initData[smId].initialStates);
         this.initializer.initTransitions(smId, this.initData[smId].transitions);
       }
+      this.triggerDataUpdate('platform');
       if (this.type === 'scheme') {
         this.initializer.initStateMachines(this.initData);
       }
@@ -343,7 +340,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     return this.binded[bindName];
   }
 
-  // TODO(L140-beep): ПОФИКСИТЬ СОБЫТИЯ ТАК, ЧТОБЫ БЫЛО КАК В SUBSCRIBE
   unwatch() {
     const attributes = Object.values(this.stateMachinesSub);
     for (const attributeSet of attributes) {
@@ -708,6 +704,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         throw Error("couldn't init platform " + platform);
       }
       this.platform[smId] = platformManager;
+      this.triggerDataUpdate('platform');
     }
     this.stateMachines.createStateMachine(args);
   };
@@ -782,7 +779,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         }
       });
     }
-
+    this.triggerDataUpdate('platform');
     this.app.view.isDirty = true;
   };
 
@@ -902,6 +899,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     });
+    this.triggerDataUpdate('platform');
   };
 
   private deleteComponent(args: DeleteDrawableParams) {
@@ -914,6 +912,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       this.stateMachines.deleteComponent(args.smId, args.id);
     }
     this.platform[args.smId].nameToVisual.delete(args.id);
+    this.triggerDataUpdate('platform');
   }
 
   createComponent = (args: CreateComponentParams) => {
@@ -925,6 +924,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     });
+    this.triggerDataUpdate('platform');
 
     if (this.type !== 'scheme') return;
 
@@ -948,6 +948,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.platform[smId] = platform;
       }
     }
+    this.triggerDataUpdate('platform');
     //! Инициализировать компоненты нужно сразу после загрузки платформы
     // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
     // this.initializer.initComponents('', true);

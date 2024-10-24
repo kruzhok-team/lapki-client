@@ -71,7 +71,7 @@ interface StatesControllerEvents {
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
 
-  __data = getStatesControllerDefaultData();
+  data = getStatesControllerDefaultData();
 
   constructor(private app: CanvasEditor) {
     super();
@@ -85,9 +85,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return this.app.controller;
   }
 
-  get data() {
-    return this.__data;
-  }
   /**
    * ! По всем видам состояний
    */

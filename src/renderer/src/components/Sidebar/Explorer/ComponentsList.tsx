@@ -15,7 +15,8 @@ export const ComponentsList: React.FC = () => {
   const stateMachines = Object.keys(
     modelController.controllers[headControllerId].useData('stateMachinesSub')
   );
-  const editor = modelController.getCurrentCanvas();
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
   const isInitialized = model.useData('', 'canvas.isInitialized', editor.id) as boolean;
 
   const {
@@ -52,6 +53,7 @@ export const ComponentsList: React.FC = () => {
       <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
         {stateMachines.map((smId: string) => (
           <StateMachineComponentList
+            controller={controller}
             dragName={dragName}
             smId={smId}
             selectedComponent={selectedComponent}

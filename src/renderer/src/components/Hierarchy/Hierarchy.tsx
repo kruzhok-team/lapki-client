@@ -205,7 +205,7 @@ export const Hierarchy: React.FC = () => {
   };
 
   const onFocus = (item: TreeItem) => () => {
-    controller.selectState({ id: item.index.toString() });
+    controller.selectState({ smId, id: item.index.toString() });
     controller.selectNote(item.index.toString());
     controller.selectTransition(item.index.toString());
   };

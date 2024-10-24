@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
 
-import { c } from 'vitest/dist/reporters-5f784f42';
-
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';

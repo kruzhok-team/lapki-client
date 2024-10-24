@@ -39,6 +39,7 @@ type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
 type DragInfo = {
   parentId: string;
   childId: string;
+  smId: string;
 } | null;
 
 interface StatesControllerEvents {
@@ -525,8 +526,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.dragInfo = null;
 
-    if (possibleParent) {
+    if (possibleParent instanceof State) {
       this.dragInfo = {
+        smId: possibleParent.smId,
         parentId: possibleParent.id,
         childId: state.id,
       };
@@ -541,6 +543,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         childId: this.dragInfo.childId,
       });
       this.app.controller.emit('linkState', {
+        smId: this.dragInfo.smId,
         childId: this.dragInfo.childId,
         parentId: this.dragInfo.parentId,
       });

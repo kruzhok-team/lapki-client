@@ -47,8 +47,8 @@ export type PossibleActions = {
   linkState: { smId: string; parentId: string; childId: string };
   unlinkState: { smId: string; parentId: string; params: UnlinkStateParams };
 
-  createInitialState: { smId: string; id: string };
-  deleteInitialState: { smId: string; id: string };
+  createInitialState: { smId: string; targetId: string; id: string };
+  deleteInitialState: { smId: string; targetId: string; id: string };
   changeInitialStatePosition: {
     smId: string;
     id: string;
@@ -194,22 +194,21 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.unlinkState.bind(sM, { smId, id: childId, canUndo: false }),
   }),
   unlinkState: (sM, { smId, parentId, params }) => ({
-    redo: sM.unlinkState.bind(sM, { ...params, canUndo: false }),
-    undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id }, false),
+    redo: sM.unlinkState.bind(sM, { ...params, parentId, childId: params.id }),
+    undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id, canBeInitial: false }, false),
   }),
   changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeStatePosition.bind(sM, smId, id, startPosition, endPosition, false),
     undo: sM.changeStatePosition.bind(sM, smId, id, endPosition, startPosition, false),
   }),
 
-  // TODO (L140-beep): Разобраться с targetId.
   createInitialState: (sM, args) => ({
-    redo: sM.createInitialState.bind(sM, { ...args, targetId: '' }, false),
-    undo: sM.deleteInitialState.bind(sM, args, false),
+    redo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    undo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
   }),
   deleteInitialState: (sM, args) => ({
-    redo: sM.deleteInitialState.bind(sM, args, false),
-    undo: sM.createInitialState.bind(sM, { ...args, targetId: '' }, false),
+    redo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    undo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
   }),
   changeInitialStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeInitialStatePosition.bind(sM, smId, id, startPosition, endPosition, false),
@@ -442,7 +441,7 @@ export const actionFunctions: ActionFunctions = {
       sM,
       { smId, id, startPosition: endPosition, endPosition: startPosition },
       false
-    )
+    ),
   }),
   deleteNote: (sM, { smId, id, prevData }) => ({
     redo: sM.deleteNote.bind(sM, { smId, id }, false),

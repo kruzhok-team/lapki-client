@@ -13,6 +13,7 @@ interface KeyboardEvents {
   shiftdown: KeyboardEvent;
   shiftup: KeyboardEvent;
   delete: KeyboardEvent;
+  ctrlp: KeyboardEvent;
   ctrlz: KeyboardEvent;
   ctrly: KeyboardEvent;
   ctrlc: KeyboardEvent;
@@ -79,6 +80,10 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
     }
 
     if (e.ctrlKey) {
+      if (e.code === 'KeyP') {
+        this.emit('ctrlp', e);
+        return;
+      }
       if (e.code === 'KeyZ') {
         this.emit('ctrlz', e);
         return;

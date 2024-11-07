@@ -403,6 +403,7 @@ function serializeComponents(components: { [id: string]: Component }): {
 
 export function exportCGML(elements: Elements): string {
   const cgmlElements: CGMLElements = createEmptyElements();
+  cgmlElements.format = 'Cyberiada-GraphML-1.0';
   for (const smId in elements.stateMachines) {
     if (smId === '') continue;
     const sm = elements.stateMachines[smId];
@@ -410,17 +411,18 @@ export function exportCGML(elements: Elements): string {
     if (!platform) {
       throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
     }
-    cgmlElements.meta = exportMeta(sm.visual, sm.meta, platform);
-    cgmlElements.format = 'Cyberiada-GraphML-1.0';
-    cgmlElements.platform = sm.platform;
     cgmlElements.stateMachines[smId] = {
-      components: sm.platform.startsWith('Arduino') ? serializeComponents(sm.components) : {},
+      standardVersion: '1.0',
+      components: !platform.staticComponents ? serializeComponents(sm.components) : {},
       states: serializeStates(sm.states, platform, sm.components),
       transitions: serializeTransitions(sm.transitions, platform, sm.components),
       notes: serializeNotes(sm.notes),
       initialStates: serializeVertex(sm.initialStates, 'initial'),
       finals: serializeVertex(sm.finalStates, 'final'),
       choices: serializeVertex(sm.choiceStates, 'choice'),
+      meta: exportMeta(sm.visual, sm.meta, platform),
+      platform: sm.platform,
+      name: sm.name,
       terminates: {},
       unknownVertexes: {},
     };

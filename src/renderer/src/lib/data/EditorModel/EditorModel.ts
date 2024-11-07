@@ -51,7 +51,7 @@ export class EditorModel {
   ) {}
 
   createStateMachine(smId: string, data: StateMachine) {
-    if (this.data.elements[smId]) return;
+    if (this.data.elements.stateMachines[smId]) return;
 
     this.data.elements.stateMachines[smId] = data;
 

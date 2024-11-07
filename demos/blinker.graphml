@@ -127,7 +127,7 @@ timerG1.start(1000)
 
 <graph id="A" edgedefault="directed">
     <data key="dStateMachine"/>
-    <!-- <node id="coreMeta">
+    <node id="coreMeta">
         <data key="dNote">formal</data>
         <data key="dName">CGML_META</data>
         <data key="dData">platform/ ArduinoUno
@@ -141,7 +141,7 @@ author/ Lapki IDE TEAM
 description/ Включение и выключение лампочки по таймеру
 
         </data>
-    </node> -->
+    </node>
     <node id="cLEDA1">
         <data key="dNote">formal</data>
         <data key="dName"> CGML_COMPONENT </data>

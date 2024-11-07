@@ -158,7 +158,7 @@ export class Compiler extends ClientWS {
     this.setCompilerNoDataStatus = setCompilerNoDataStatus;
   }
 
-  static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарникип
+  static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарники
   static source: { [id: string]: SourceFile[] } = {}; // id машины состояний - файлы
   // платформа на которой произвелась последняя компиляция;
   static platform: string | undefined = undefined;
@@ -260,7 +260,6 @@ export class Compiler extends ClientWS {
     switch (this.mode) {
       case 'compile':
         data = JSON.parse(msg.data as string) as CompilerRequest;
-        debugger;
         for (const stateMachineId in data.state_machines) {
           const sm = data.state_machines[stateMachineId];
           compilerResult.state_machines[stateMachineId] = sm;

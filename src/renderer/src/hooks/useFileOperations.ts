@@ -39,7 +39,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       const stateMachines = Object.keys(controller.stateMachinesSub);
       const smId = stateMachines[0] ?? controllerId;
       // ID контроллера равен ID канваса.
-      openTab(modelController, { type: 'editor', name: smId, canvasId: controllerId });
+      openTab(modelController, {
+        type: 'editor',
+        name: modelController.model.data.elements.stateMachines[smId].name ?? smId,
+        canvasId: controllerId,
+      });
     }
   };
 

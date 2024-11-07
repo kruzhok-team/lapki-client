@@ -502,27 +502,26 @@ export function importGraphml(
   openImportError: (error: string) => void
 ): Elements | undefined {
   try {
-    //Вот тут схема не отдает уже позицию компонентов.
     const rawElements: CGMLElements = parseCGML(expression);
     const elements: Elements = emptyElements();
-    if (!isPlatformAvailable(rawElements.platform)) {
-      throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
-    }
-
-    // TODO: добавить в платформу флаг для статических компонентов
-    const platform: Platform | undefined = getPlatform(rawElements.platform);
-    if (platform === undefined) {
-      throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
-    }
+    const platforms: { [id: string]: Platform } = {};
+    console.log(rawElements);
     for (const smId in rawElements.stateMachines) {
       const rawSm = rawElements.stateMachines[smId];
+      if (!isPlatformAvailable(rawSm.platform)) {
+        throw new Error(`Неизвестная платформа ${rawSm.platform}.`);
+      }
+      const platform: Platform | undefined = getPlatform(rawSm.platform);
+      if (platform === undefined) {
+        throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
+      }
       const sm = emptyStateMachine();
-      if (rawElements.platform.startsWith('Bearloga')) {
+      if (platform.staticComponents) {
         sm.components = getAllComponent(platform.components);
       } else {
         sm.components = getComponents(rawSm.components);
       }
-      sm.meta = rawElements.meta.values;
+      sm.meta = rawSm.meta.values;
       sm.initialStates = getInitialStates(rawSm.initialStates);
       sm.finalStates = getFinals(rawSm.finals);
       sm.notes = rawSm.notes;
@@ -531,18 +530,19 @@ export function importGraphml(
       const [transitionVisual, transitions] = getTransitions(rawSm.transitions);
       sm.transitions = transitions;
       sm.states = labelStateParameters(sm.states, platform.components, sm.components);
-      sm.platform = rawElements.platform;
+      sm.platform = rawSm.platform;
       sm.choiceStates = getChoices(rawSm.choices);
       sm.transitions = labelTransitionParameters(
         sm.transitions,
         platform.components,
         sm.components
       );
-      sm.visual = getVisualFlag(rawElements.meta, platform.visual, stateVisual && transitionVisual);
+      sm.name = rawSm.name;
+      console.log(sm.name);
+      sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
       elements.stateMachines[smId] = sm;
+      platforms[rawSm.platform] = platform;
     }
-    const platforms: { [id: string]: Platform } = {};
-    platforms[rawElements.platform] = platform;
     validateElements(elements, platforms);
     return elements;
   } catch (error) {

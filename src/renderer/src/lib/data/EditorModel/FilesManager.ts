@@ -42,7 +42,7 @@ export class FilesManager {
   }
 
   compile() {
-    Compiler.compile(this.data.elements);
+    Compiler.compile(this.data.elements, 'CGML');
   }
 
   isPlatformsAvailable(importData: Elements) {
@@ -100,7 +100,8 @@ export class FilesManager {
   ): Promise<boolean> {
     const openData = await window.api.fileHandlers.openFile('Cyberiada');
     if (openData[0]) {
-      Compiler.compile(openData[3]);
+      console.log(openData);
+      Compiler.compile(openData[3], 'BearlogaImport', openData[2]?.split('_')[0]);
       setOpenData(openData);
       return true;
     }

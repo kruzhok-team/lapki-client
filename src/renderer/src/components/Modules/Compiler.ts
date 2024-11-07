@@ -18,22 +18,107 @@ import {
   CompilerState,
   CompilerComponent,
   CompilerRequest,
+  CompilerEvent,
+  CompilerAction,
 } from '@renderer/types/CompilerTypes';
-import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+import {
+  Action,
+  Component,
+  Condition,
+  Elements,
+  Event,
+  InitialState,
+  State,
+  StateMachine,
+  Transition,
+} from '@renderer/types/diagram';
 
 import { CompilerStatus, CompilerNoDataStatus } from './Websocket/ClientStatus';
 import { ClientWS } from './Websocket/ClientWS';
 import { ComplierTimeoutTimer } from './Websocket/ReconnectTimer';
 
-function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
+function downgradeInitialState(
+  transitions: { [id: string]: Transition },
+  id: string,
+  initialState: InitialState
+): CompilerInitialState {
+  const target = Object.values(transitions).find((transition) => transition.sourceId === id);
+  if (!target) throw Error('Отсутствует переход из начального состояния!');
+  return {
+    target: target.targetId,
+    position: initialState.position,
+  };
+}
+
+function downgradeTransitions(transitions: { [id: string]: Transition }): CompilerTransition[] {
+  const downgradedTransitions: CompilerTransition[] = [];
+
+  for (const transition of Object.values(transitions)) {
+    if (!transition.label || !transition.label.trigger) continue;
+    downgradedTransitions.push({
+      source: transition.sourceId,
+      target: transition.targetId,
+      color: transition.color ?? '#FFFFFF',
+      // TODO: Переводить в объект Condition если у нас включен текстовый режим
+      condition: (transition.label?.condition as Condition) ?? null,
+      trigger: transition.label.trigger as Event,
+      do: (transition.label.do as Action[]) ?? [],
+      position: transition.label.position,
+    });
+  }
+  return downgradedTransitions;
+}
+
+function downgradeStates(states: { [id: string]: State }): { [id: string]: CompilerState } {
+  const downgradedStates: { [id: string]: CompilerState } = {};
+  for (const stateId in states) {
+    const state = states[stateId];
+    downgradedStates[stateId] = {
+      name: state.name,
+      bounds: {
+        ...state.dimensions,
+        ...state.position,
+      },
+      events: state.events as CompilerAction[],
+      parent: state.parentId,
+    };
+  }
+
+  return downgradedStates;
+}
+
+// Даунгрейд МС до уровня Берлоги и старой версии компилятора
+export function downgradeStateMachine(sm: StateMachine): CompilerElements {
+  const initialState = Object.entries(sm.initialStates).find(
+    (value) => value[1].parentId === undefined
+  );
+  if (!initialState) throw Error('Отсутствует начальное состояние!');
+  const downgradedInitialState = downgradeInitialState(
+    sm.transitions,
+    initialState[0],
+    initialState[1]
+  );
+  const downgradedTransitions = downgradeTransitions(sm.transitions);
+  const downgradedStates = downgradeStates(sm.states);
+
+  return {
+    states: downgradedStates,
+    transitions: downgradedTransitions,
+    initialState: downgradedInitialState,
+    platform: sm.platform,
+    components: sm.components,
+    parameters: {},
+  };
+}
+
+function actualizeTransitions(oldTransitions: CompilerTransition[]): {
   [key: string]: Transition;
 } {
   const newTransitions: {
     [key: string]: Transition;
   } = {};
-  for (const transitionId in oldTransitions) {
-    const oldTransition = oldTransitions[transitionId];
-    newTransitions[transitionId] = {
+  for (const oldTransition of oldTransitions) {
+    newTransitions[generateId()] = {
       sourceId: oldTransition.source,
       targetId: oldTransition.target,
       color: oldTransition.color,
@@ -135,8 +220,9 @@ export class Compiler extends ClientWS {
   static setImportData: Dispatch<SetStateAction<Elements | undefined>>;
   static setCompilerNoDataStatus: Dispatch<SetStateAction<string>>;
   static mode: string;
-
   static filename: string;
+
+  static bearlogaSmId: string = 'G';
 
   static timeoutTimer = new ComplierTimeoutTimer();
 
@@ -181,7 +267,7 @@ export class Compiler extends ClientWS {
   static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>> {
     const newArray = Object.assign([], binaries) as Binary[];
     for (const bin of newArray) {
-      const blob = new Blob([bin.fileContent as Uint8Array]);
+      const blob = new Blob([bin.fileContent as unknown as Uint8Array]);
       bin.fileContent = Buffer.from(await blob.arrayBuffer());
     }
 
@@ -201,35 +287,37 @@ export class Compiler extends ClientWS {
     return result;
   }
 
-  static async compile(data: Elements | string) {
+  static async compile(
+    data: Elements | string | StateMachine,
+    mode: 'BearlogaImport' | 'BearlogaExport' | 'CGML',
+    subPlatform?: string,
+    bearlogaSmId?: string
+  ) {
     this.setCompilerData(undefined);
     this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {
         // TODO (L140-beep): Понять, что с этим делать
-        // switch (mainPlatform) {
-        //   case 'BearlogaDefendImport':
-        //     ws.send('berlogaImport');
-        //     ws.send(data as string);
-        //     ws.send(subPlatform);
-        //     this.mode = 'import';
-        //     break;
-        //   case 'BearlogaDefend':
-        //     ws.send('berlogaExport');
-        //     ws.send(JSON.stringify(data));
-        //     if (subPlatform !== undefined) {
-        //       ws.send(subPlatform);
-        //     } else {
-        //       ws.send('Robot');
-        //     }
-        //     this.mode = 'export';
-        //     break;
-        //   default:
-        ws.send('cgml');
-        this.mode = 'compile';
-        ws.send(exportCGML(data as Elements));
-        // break;
-        // }
+        switch (mode) {
+          case 'BearlogaImport':
+            ws.send('berlogaImport');
+            ws.send(data as string);
+            ws.send(subPlatform ?? 'Robot');
+            this.mode = 'import';
+            break;
+          case 'BearlogaExport':
+            ws.send('berlogaExport');
+            this.bearlogaSmId = bearlogaSmId!;
+            ws.send(JSON.stringify(downgradeStateMachine(data as StateMachine)));
+            ws.send(subPlatform ?? 'Robot');
+            this.mode = 'export';
+            break;
+          case 'CGML':
+            ws.send('cgml');
+            this.mode = 'compile';
+            ws.send(exportCGML(data as Elements));
+            break;
+        }
 
         this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
@@ -252,7 +340,9 @@ export class Compiler extends ClientWS {
     this.onStatusChange(CompilerStatus.CONNECTED);
     this.timeoutTimer.clear();
     let data: CompilerRequest;
-    let elements;
+    let elements: Elements;
+    let compilerElements: { source: any[] }; // импорт берлоги
+    let exportRequest: SourceFile;
     const compilerResult: CompilerResult = {
       result: 'OK',
       state_machines: {},
@@ -272,25 +362,32 @@ export class Compiler extends ClientWS {
         break;
       // TODO: Вернуть Берлогу
       case 'import':
-        data = JSON.parse(msg.data as string) as CompilerElements;
-        elements = actualizeElements(data.source[0].fileContent);
+        console.log(msg.data);
+        compilerElements = JSON.parse(msg.data as string);
+        elements = actualizeElements(compilerElements.source[0].fileContent);
         this.setImportData(elements);
         break;
       case 'export':
-        data = JSON.parse(msg.data as string) as SourceFile;
+        exportRequest = JSON.parse(msg.data as string) as SourceFile;
         this.setCompilerData({
           result: 'OK',
-          commands: [],
-          binary: [],
-          //В данный момент название файла, которое приходит от компилятора
-          //Выглядит так: Robot_время.
-          source: [
-            {
-              filename: data.filename,
-              extension: data.extension,
-              fileContent: data.fileContent,
+          state_machines: {
+            [this.bearlogaSmId]: {
+              result: 'OK',
+              name: this.bearlogaSmId,
+              commands: [],
+              binary: [],
+              //В данный момент название файла, которое приходит от компилятора
+              //Выглядит так: Robot_время.
+              source: [
+                {
+                  filename: exportRequest.filename,
+                  extension: exportRequest.extension,
+                  fileContent: exportRequest.fileContent,
+                },
+              ],
             },
-          ],
+          },
         });
         break;
       default:

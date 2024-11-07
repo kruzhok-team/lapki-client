@@ -9,7 +9,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
-import { Elements } from '@renderer/types/diagram';
+import { Elements, StateMachine } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
 import { CompilerStatus, CompilerNoDataStatus } from '../Modules/Websocket/ClientStatus';
@@ -39,10 +39,15 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
     CompilerNoDataStatus.DEFAULT
   );
-  // TODO: Брать id машины состояний из формы
-  console.log(compilerData);
+  const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [id: string]: StateMachine;
+  };
+  const bearlogaSmId = Object.keys(stateMachines).find((smId) =>
+    stateMachines[smId].platform.startsWith('Bearloga')
+  );
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
+  // TODO: Сделать селектор?
   const smId = Object.keys(controller.stateMachinesSub)[0];
   const sm = compilerData?.state_machines[smId];
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
@@ -62,6 +67,17 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     if (!sm) return;
     const preparedData = await Compiler.prepareToSave(compilerData!.state_machines[smId].binary!);
     modelController.files.saveIntoFolder(preparedData);
+  };
+
+  const handleExportBearloga = async () => {
+    if (!name || !bearlogaSmId) return;
+    Compiler.filename = name;
+    Compiler.compile(
+      stateMachines[bearlogaSmId],
+      'BearlogaExport',
+      stateMachines[bearlogaSmId].platform.split('-')[1],
+      bearlogaSmId
+    );
   };
 
   const handleCompile = async () => {
@@ -132,47 +148,43 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     );
     Compiler.connect(host, port);
   }, [compilerSetting]);
-
-  const button =
-    sm !== undefined
-      ? [
-          {
-            name: 'Показать журнал компиляции',
-            handler: handleAddStdoutTab,
-            disabled:
-              compilerData?.state_machines[smId].commands.length === 0 ||
-              compilerData?.state_machines[smId].commands === undefined,
-          },
-          {
-            name: 'Сохранить результат',
-            handler: handleSaveBinaryIntoFolder,
-            disabled:
-              compilerData?.state_machines[smId].binary === undefined ||
-              compilerData.state_machines[smId].binary.length === 0,
-          },
-          {
-            name: 'Сохранить код',
-            handler: handleSaveSourceIntoFolder,
-            disabled:
-              compilerData?.state_machines[smId].source == undefined ||
-              compilerData?.state_machines[smId].source.length === 0,
-          },
-          {
-            name: 'Показать код',
-            handler: handleShowSource,
-            disabled:
-              compilerData?.state_machines[smId].source == undefined ||
-              compilerData?.state_machines[smId].source.length === 0,
-          },
-          {
-            name: 'Прошить...',
-            handler: handleFlashButton,
-            disabled:
-              compilerData?.state_machines[smId].binary === undefined ||
-              compilerData.state_machines[smId].binary.length === 0,
-          },
-        ]
-      : [];
+  const button = [
+    {
+      name: 'Показать журнал компиляции',
+      handler: handleAddStdoutTab,
+      disabled:
+        compilerData?.state_machines[smId].commands.length === 0 ||
+        compilerData?.state_machines[smId].commands === undefined,
+    },
+    {
+      name: 'Сохранить результат',
+      handler: handleSaveBinaryIntoFolder,
+      disabled:
+        compilerData?.state_machines[smId].binary === undefined ||
+        compilerData.state_machines[smId].binary.length === 0,
+    },
+    {
+      name: 'Сохранить код',
+      handler: handleSaveSourceIntoFolder,
+      disabled:
+        compilerData?.state_machines[smId].source == undefined ||
+        compilerData?.state_machines[smId].source.length === 0,
+    },
+    {
+      name: 'Показать код',
+      handler: handleShowSource,
+      disabled:
+        compilerData?.state_machines[smId].source == undefined ||
+        compilerData?.state_machines[smId].source.length === 0,
+    },
+    {
+      name: 'Прошить...',
+      handler: handleFlashButton,
+      disabled:
+        compilerData?.state_machines[smId].binary === undefined ||
+        compilerData.state_machines[smId].binary.length === 0,
+    },
+  ];
   const processing =
     compilerStatus == CompilerStatus.COMPILATION || compilerStatus == CompilerStatus.CONNECTING;
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
@@ -199,12 +211,22 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-
           <button className="btn-primary px-2" onClick={openCompilerSettings}>
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
 
+        {bearlogaSmId !== undefined ? (
+          <div className="mb-2 flex rounded">
+            <button
+              disabled={disabled}
+              className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
+              onClick={handleExportBearloga}
+            >
+              Экспорт в Берлогу
+            </button>
+          </div>
+        ) : undefined}
         <p>
           Статус:{' '}
           <span

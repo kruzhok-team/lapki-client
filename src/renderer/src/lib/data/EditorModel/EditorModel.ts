@@ -172,13 +172,19 @@ export class EditorModel {
         const subName = name.split('.')[1];
 
         // Ссылку нужно обновлять только у объектов
-        for (const smId in this.data.elements.stateMachines) {
-          const prevValue = this.data.elements.stateMachines[smId][subName];
-          if (typeof prevValue !== 'object') break;
-          if (prevValue !== null) {
-            this.data.elements.stateMachines[smId][subName] = {
-              ...prevValue,
-            };
+        if (name === 'elements.stateMachinesId') {
+          this.data.elements.stateMachines = {
+            ...this.data.elements.stateMachines,
+          };
+        } else {
+          for (const smId in this.data.elements.stateMachines) {
+            const prevValue = this.data.elements.stateMachines[smId][subName];
+            if (typeof prevValue !== 'object') break;
+            if (prevValue !== null) {
+              this.data.elements.stateMachines[smId][subName] = {
+                ...prevValue,
+              };
+            }
           }
         }
 

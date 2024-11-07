@@ -214,7 +214,7 @@ export class Flasher extends ClientWS {
   ): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
-        Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
+        Flasher.binary = new Blob([bin.fileContent as unknown as Uint8Array]);
         return;
       }
     });

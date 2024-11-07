@@ -43,13 +43,33 @@ export type CompileCommandResult = {
   stderr: string;
 };
 
+type CompileStatus = 'OK' | 'NOTOK';
+
+export type CompileStateMachineResult = {
+  result: CompileStatus;
+  name: string;
+  commands: CompileCommandResult[];
+  binary: Binary[];
+  source: SourceFile[];
+};
+
+// То, чем мы пользуемся в IDE
 export type CompilerResult = {
   result: string;
-  commands: CompileCommandResult[];
-  binary?: Array<Binary>;
-  source?: Array<SourceFile>;
-  // платформа для которой была осуществлена компиляция
-  platform?: string;
+  state_machines: { [id: string]: CompileStateMachineResult };
+};
+
+type EncodedBinary = Binary & {
+  filecontent: string;
+};
+
+// То, что приходит с компилятора
+export type CompilerRequestStateMachine = CompileStateMachineResult & {
+  binary: EncodedBinary[];
+};
+
+export type CompilerRequest = CompilerResult & {
+  state_machines: { [id: string]: CompilerRequestStateMachine };
 };
 
 export type CompilerEvent = {

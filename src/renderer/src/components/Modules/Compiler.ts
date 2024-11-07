@@ -17,6 +17,7 @@ import {
   CompilerElements,
   CompilerState,
   CompilerComponent,
+  CompilerRequest,
 } from '@renderer/types/CompilerTypes';
 import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
@@ -157,21 +158,24 @@ export class Compiler extends ClientWS {
     this.setCompilerNoDataStatus = setCompilerNoDataStatus;
   }
 
-  static binary: Array<Binary> | undefined = undefined;
-  static source: Array<SourceFile> | undefined = undefined;
+  static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарникип
+  static source: { [id: string]: SourceFile[] } = {}; // id машины состояний - файлы
   // платформа на которой произвелась последняя компиляция;
   static platform: string | undefined = undefined;
 
   static decodeBinaries(binaries: Array<any>) {
+    const decodedBinaries: Binary[] = [];
     binaries.map((binary) => {
       console.log(base64StringToBlob(binary.fileContent!));
       console.log(binary.filename, binary.extension);
-      this.binary?.push({
+      decodedBinaries.push({
         filename: binary.filename,
         extension: binary.extension,
         fileContent: base64StringToBlob(binary.fileContent!),
       } as Binary);
     });
+
+    return decodedBinaries;
   }
 
   static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>> {
@@ -247,25 +251,27 @@ export class Compiler extends ClientWS {
   static messageHandler(msg: Websocket.MessageEvent) {
     this.onStatusChange(CompilerStatus.CONNECTED);
     this.timeoutTimer.clear();
-    let data;
+    let data: CompilerRequest;
     let elements;
+    const compilerResult: CompilerResult = {
+      result: 'OK',
+      state_machines: {},
+    };
     switch (this.mode) {
       case 'compile':
-        data = JSON.parse(msg.data as string);
-        if (data.binary.length > 0) {
-          this.binary = [];
-          this.decodeBinaries(data.binary);
-        } else {
-          this.binary = undefined;
+        data = JSON.parse(msg.data as string) as CompilerRequest;
+        debugger;
+        for (const stateMachineId in data.state_machines) {
+          const sm = data.state_machines[stateMachineId];
+          compilerResult.state_machines[stateMachineId] = sm;
+          const decodedBinaries = this.decodeBinaries(sm.binary);
+          this.binary[stateMachineId] = decodedBinaries;
+          this.source[stateMachineId] = sm.source;
+          compilerResult.state_machines[stateMachineId].binary = decodedBinaries;
         }
-        this.setCompilerData({
-          result: data.result,
-          commands: data.commands,
-          binary: this.binary,
-          source: this.getSourceFiles(data.source),
-          platform: this.platform,
-        } as CompilerResult);
+        this.setCompilerData(compilerResult);
         break;
+      // TODO: Вернуть Берлогу
       case 'import':
         data = JSON.parse(msg.data as string) as CompilerElements;
         elements = actualizeElements(data.source[0].fileContent);

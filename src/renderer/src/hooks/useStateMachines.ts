@@ -67,7 +67,7 @@ export const useStateMachines = () => {
     const sm = modelController.model.data.elements.stateMachines[idx];
     const smName = sm.name ?? '';
     if (data.name !== smName) {
-      renameTab(smName ?? idx, data.name ?? idx);
+      renameTab(smName ? smName : idx, data.name ? data.name : idx);
     }
     modelController.editStateMachine(idx, data);
   };

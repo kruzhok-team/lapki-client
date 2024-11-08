@@ -224,6 +224,7 @@ export const Loader: React.FC<FlasherProps> = ({
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
       devices: devices,
+      compilerData: compilerData,
     });
   };
 

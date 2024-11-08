@@ -1,5 +1,7 @@
 import { Device } from '@renderer/components/Modules/Device';
 
+import { CompilerResult } from './CompilerTypes';
+
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
@@ -23,6 +25,7 @@ export interface ManagerMSTab {
   type: 'managerMS';
   name: string;
   devices: Map<string, Device>;
+  compilerData: CompilerResult | undefined;
 }
 
 export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

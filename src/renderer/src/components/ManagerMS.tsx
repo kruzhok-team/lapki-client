@@ -7,18 +7,20 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { Device, MSDevice } from './Modules/Device';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
-import { Switch } from './UI';
+import { Select, SelectOption, Switch } from './UI';
 
 export interface ManagerMSProps {
   devices: Map<string, Device>;
+  compilerData: CompilerResult | undefined;
 }
 
-export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
+export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }) => {
   const { device, log, setLog, address: serverAddress, meta } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
@@ -27,6 +29,14 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
   const [address, setAddress] = useState<string>('');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
+
+  const BinaryOption = {
+    compiler: { label: 'Компилятор', value: 'compiler', hint: 'Загрузить прошивку из компилятора' },
+    file: { label: 'Файл', value: 'file', hint: 'Загрузить прошивку из файла' },
+  };
+  //type BinOptionType = (typeof BinaryOption)[keyof typeof BinaryOption];
+  const binaryOptions = [BinaryOption.compiler, BinaryOption.file];
+  const [binOption, setBinOption] = useState<SelectOption | null>(null);
   // При изменении log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
     if (managerMSSetting?.autoScroll && logContainerRef.current) {
@@ -106,19 +116,28 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
   const handleOpenAddressBook = () => {
     openAddressBook();
   };
-  const handleSendBin = () => {
-    if (!device) return;
-    Flasher.setFile().then((isOpen: boolean) => {
-      if (isOpen) {
-        ManagerMS.binStart(
-          device,
-          address,
-          managerMSSetting?.verification,
-          serialMonitorDevice,
-          serialConnectionStatus
-        );
-      }
-    });
+  const handleSendBin = async () => {
+    if (!device || !binOption) return;
+    switch (binOption.value) {
+      case BinaryOption.compiler.value:
+        if (!compilerData?.binary) return;
+        Flasher.setBinary(compilerData.binary);
+        break;
+      case BinaryOption.file.value:
+        await Flasher.setFile().then((isOpen: boolean) => {
+          if (!isOpen) return;
+        });
+        break;
+      default:
+        return;
+    }
+    ManagerMS.binStart(
+      device,
+      address,
+      managerMSSetting?.verification,
+      serialMonitorDevice,
+      serialConnectionStatus
+    );
   };
   const handlePing = () => {
     if (!device) return;
@@ -185,9 +204,27 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices }) => {
         </button>
       </div>
       <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={handleSendBin} disabled={address == ''}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleSendBin}
+          disabled={
+            address === '' ||
+            (binOption?.value === BinaryOption.compiler.value &&
+              (!compilerData?.binary || compilerData.binary.length === 0))
+          }
+        >
           Отправить bin...
         </button>
+        <Select
+          className="mr-4 w-56"
+          isSearchable={false}
+          placeholder="Выберите прошивку..."
+          options={binaryOptions}
+          value={binOption}
+          onChange={(opt) => setBinOption(opt)}
+          //isDisabled={currentDeviceID == undefined}
+          //noOptionsMessage={() => 'Нет подходящих машин состояний'}
+        />
         <div className="mr-4 flex w-40 items-center justify-between">
           <Switch
             checked={managerMSSetting.verification}

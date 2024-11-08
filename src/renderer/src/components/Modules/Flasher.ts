@@ -159,7 +159,7 @@ export class Flasher extends ClientWS {
     this.filePos = 0;
   }
 
-  static async setBinary(binaries: Array<Binary>) {
+  static setBinary(binaries: Array<Binary>) {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
         Flasher.binary = bin.fileContent as Blob;
@@ -222,12 +222,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    binaries.map((bin) => {
-      if (bin.extension.endsWith('ino.hex')) {
-        Flasher.binary = new Blob([bin.fileContent as unknown as Uint8Array]);
-        return;
-      }
-    });
+    this.setBinary(binaries);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 

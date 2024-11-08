@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { useSettings } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
@@ -33,7 +33,14 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
 }) => {
   const modelController = useModelContext();
-
+  const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
+    useErrorModal();
+  const { initImportData } = useFileOperations({
+    openLoadError,
+    openSaveError,
+    openCreateSchemeModal: () => undefined,
+    openImportError,
+  });
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
@@ -129,7 +136,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      modelController.files.initImportData(importData, openData!);
+      initImportData(importData, openData);
       setImportData(undefined);
     }
   }, [importData]);

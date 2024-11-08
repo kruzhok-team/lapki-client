@@ -362,7 +362,6 @@ export class Compiler extends ClientWS {
         break;
       // TODO: Вернуть Берлогу
       case 'import':
-        console.log(msg.data);
         compilerElements = JSON.parse(msg.data as string);
         elements = actualizeElements(compilerElements.source[0].fileContent);
         this.setImportData(elements);

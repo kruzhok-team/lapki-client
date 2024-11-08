@@ -209,6 +209,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
           onClick={handleSendBin}
           disabled={
             address === '' ||
+            !binOption ||
             (binOption?.value === BinaryOption.compiler.value &&
               (!compilerData?.binary || compilerData.binary.length === 0))
           }

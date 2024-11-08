@@ -118,26 +118,31 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   };
   const handleSendBin = async () => {
     if (!device || !binOption) return;
+    let isOk = false;
     switch (binOption.value) {
       case BinaryOption.compiler.value:
-        if (!compilerData?.binary) return;
-        Flasher.setBinary(compilerData.binary);
+        if (compilerData?.binary) {
+          Flasher.setBinary(compilerData.binary);
+          isOk = true;
+        }
         break;
       case BinaryOption.file.value:
         await Flasher.setFile().then((isOpen: boolean) => {
-          if (!isOpen) return;
+          isOk = isOpen;
         });
         break;
       default:
         return;
     }
-    ManagerMS.binStart(
-      device,
-      address,
-      managerMSSetting?.verification,
-      serialMonitorDevice,
-      serialConnectionStatus
-    );
+    if (isOk) {
+      ManagerMS.binStart(
+        device,
+        address,
+        managerMSSetting?.verification,
+        serialMonitorDevice,
+        serialConnectionStatus
+      );
+    }
   };
   const handlePing = () => {
     if (!device) return;

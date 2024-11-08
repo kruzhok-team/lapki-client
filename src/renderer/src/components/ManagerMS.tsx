@@ -5,9 +5,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { StateMachine } from '@renderer/types/diagram';
 
 import { AddressBookModal } from './AddressBook';
 import { Device, MSDevice } from './Modules/Device';
@@ -30,13 +32,12 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  const BinaryOption = {
-    compiler: { label: 'Компилятор', value: 'compiler', hint: 'Загрузить прошивку из компилятора' },
-    file: { label: 'Файл', value: 'file', hint: 'Загрузить прошивку из файла' },
+  const modelController = useModelContext();
+  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [ID: string]: StateMachine;
   };
-  //type BinOptionType = (typeof BinaryOption)[keyof typeof BinaryOption];
-  const binaryOptions = [BinaryOption.compiler, BinaryOption.file];
   const [binOption, setBinOption] = useState<SelectOption | null>(null);
+  const fileOption = 'file';
   // При изменении log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
     if (managerMSSetting?.autoScroll && logContainerRef.current) {
@@ -118,31 +119,25 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   };
   const handleSendBin = async () => {
     if (!device || !binOption) return;
-    let isOk = false;
-    switch (binOption.value) {
-      case BinaryOption.compiler.value:
-        if (compilerData?.binary) {
-          Flasher.setBinary(compilerData.binary);
-          isOk = true;
-        }
-        break;
-      case BinaryOption.file.value:
-        await Flasher.setFile().then((isOpen: boolean) => {
-          isOk = isOpen;
-        });
-        break;
-      default:
-        return;
+    if (binOption.value == fileOption) {
+      let isOk = false;
+      await Flasher.setFile().then((isOpen: boolean) => {
+        isOk = isOpen;
+      });
+      if (!isOk) return;
+    } else {
+      if (!compilerData) return;
+      const binData = compilerData.state_machines[binOption.value].binary;
+      if (!binData || binData.length === 0) return;
+      Flasher.setBinary(binData);
     }
-    if (isOk) {
-      ManagerMS.binStart(
-        device,
-        address,
-        managerMSSetting?.verification,
-        serialMonitorDevice,
-        serialConnectionStatus
-      );
-    }
+    ManagerMS.binStart(
+      device,
+      address,
+      managerMSSetting?.verification,
+      serialMonitorDevice,
+      serialConnectionStatus
+    );
   };
   const handlePing = () => {
     if (!device) return;
@@ -184,6 +179,34 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     }
     return found;
   };
+  const isFlashDisabled = () => {
+    if (address === '') {
+      return true;
+    }
+    if (!binOption) {
+      return true;
+    }
+    if (binOption.value != fileOption) {
+      if (!compilerData) {
+        return true;
+      }
+      const binData = compilerData.state_machines[binOption.value].binary;
+      if (!binData || binData.length === 0) {
+        return true;
+      }
+    }
+    return false;
+  };
+  const getBinaryOptions = () => {
+    const options = [{ label: 'Файл', value: fileOption, hint: 'Загрузить прошивку из файла' }];
+    return options.concat(
+      [...Object.entries(stateMachinesId)]
+        .filter(([, sm]) => sm.platform.toLowerCase().startsWith('tjc-ms1'))
+        .map(([id, sm]) => {
+          return { value: id, label: sm.name ?? id, hint: 'Загрузить прошивку из компилятора' };
+        })
+    );
+  };
   if (!managerMSSetting) {
     return null;
   }
@@ -209,23 +232,14 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         </button>
       </div>
       <div className="m-2 flex">
-        <button
-          className="btn-primary mr-4"
-          onClick={handleSendBin}
-          disabled={
-            address === '' ||
-            !binOption ||
-            (binOption?.value === BinaryOption.compiler.value &&
-              (!compilerData?.binary || compilerData.binary.length === 0))
-          }
-        >
+        <button className="btn-primary mr-4" onClick={handleSendBin} disabled={isFlashDisabled()}>
           Отправить bin...
         </button>
         <Select
           className="mr-4 w-56"
           isSearchable={false}
           placeholder="Выберите прошивку..."
-          options={binaryOptions}
+          options={getBinaryOptions()}
           value={binOption}
           onChange={(opt) => setBinOption(opt)}
           //isDisabled={currentDeviceID == undefined}

@@ -40,6 +40,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
   };
 
   createStateMachine = (args: CreateStateMachineParams) => {
+    if (this.items.get(args.smId)) return;
     const markedSmIcon: MarkedIconData = {
       icon: 'stateMachine',
       label: args.name ?? args.smId,

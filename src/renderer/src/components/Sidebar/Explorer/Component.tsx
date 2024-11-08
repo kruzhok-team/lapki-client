@@ -3,27 +3,37 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { WithHint } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
 
 interface ComponentProps {
   name: string;
   isSelected: boolean;
   isDragging: boolean;
+  icon?: React.ReactNode;
+  description?: string;
   onSelect: () => void;
   onEdit: () => void;
+  onCallContextMenu: () => void; // TODO: Сделать контекстное меню для машин состояний
   onDelete: () => void;
   onDragStart: () => void;
   onDrop: () => void;
 }
 
 export const Component: React.FC<ComponentProps> = (props) => {
-  const { name, isSelected, isDragging, onSelect, onEdit, onDelete, onDragStart, onDrop } = props;
-
-  const { controller } = useEditorContext();
+  const {
+    name,
+    isSelected,
+    isDragging,
+    onSelect,
+    onEdit,
+    onDelete,
+    onDragStart,
+    onDrop,
+    onCallContextMenu,
+    description,
+    icon,
+  } = props;
 
   const [dragOver, setDragOver] = useState(false);
-
-  const proto = controller.platform?.getComponent(name);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key !== 'Delete') return;
@@ -53,7 +63,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
   };
 
   return (
-    <WithHint key={name} hint={proto?.description ?? ''} placement="right">
+    <WithHint key={name} hint={description ?? ''} placement="right">
       {(props) => (
         <button
           type="button"
@@ -64,7 +74,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           onClick={onSelect}
           onAuxClick={onDelete}
           onDoubleClick={onEdit}
-          onContextMenu={onEdit}
+          onContextMenu={onCallContextMenu}
           onKeyDown={handleKeyDown}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -73,7 +83,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {controller.platform?.getFullComponentIcon(name)}
+          {icon}
           <p className="ml-2 line-clamp-1">{name}</p>
         </button>
       )}

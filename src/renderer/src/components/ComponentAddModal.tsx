@@ -7,7 +7,8 @@ import { ScrollableList } from '@renderer/components/ScrollableList';
 import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Component } from '@renderer/types/diagram';
 
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
@@ -26,9 +27,14 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   vacantComponents,
   ...props
 }) => {
-  const editor = useEditorContext();
-  const { model } = editor;
-  const components = model.useData('elements.components');
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const editor = modelController.getCurrentCanvas();
+  // TODO: Прокинуть сюда машину состояний
+  const components = modelController.model.useData(stateMachines[0], 'elements.components') as {
+    [id: string]: Component;
+  };
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 

@@ -2,19 +2,21 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Actions, ColorField, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
 
-/**
- * Модальное окно редактирования состояния
- */
-export const StateModal: React.FC = () => {
-  const editor = useEditorContext();
-  const visual = editor.model.useData('elements.visual');
+interface StateModalProps {
+  smId: string;
+  editorController: CanvasController;
+}
 
+export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }) => {
+  const modelController = useModelContext();
+  const visual = editorController.useData('visual');
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
@@ -141,7 +143,8 @@ export const StateModal: React.FC = () => {
       return [...state.data.events, currentEvent];
     };
 
-    editor.controller.states.changeState({
+    modelController.changeState({
+      smId: smId,
       id: state.id,
       events: getEvents(),
       color,
@@ -175,10 +178,10 @@ export const StateModal: React.FC = () => {
       open();
     };
 
-    editor.controller.states.on('changeState', handler);
+    editorController.states.on('changeState', handler);
 
     return () => {
-      editor.controller.states.off('changeState', handler);
+      editorController.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
@@ -186,7 +189,6 @@ export const StateModal: React.FC = () => {
   // Синхронизвация trigger и condition с event
   useLayoutEffect(() => {
     if (!state) return;
-
     const eventIndex = state.data.events.findIndex((value) => {
       if (trigger.tabValue === 1) {
         return value.trigger === trigger.text;
@@ -205,13 +207,13 @@ export const StateModal: React.FC = () => {
     if (eventIndex === -1) {
       setCurrentEventIndex(undefined);
       parseCondition(undefined);
-      parseEvents(undefined);
+      parseEvents(smId, undefined);
     } else {
       const event = state.data.events[eventIndex];
 
       setCurrentEventIndex(eventIndex);
       parseCondition(event.condition);
-      parseEvents(event.do);
+      parseEvents(smId, event.do);
     }
   }, [
     parseCondition,

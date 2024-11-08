@@ -5,8 +5,8 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useSettings } from '@renderer/hooks';
-import { useEditorContext } from '@renderer/store/EditorContext';
-import { useSidebar } from '@renderer/store/useSidebar';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements } from '@renderer/types/diagram';
@@ -32,40 +32,48 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   compilerStatus,
   setCompilerStatus,
 }) => {
-  const { model } = useEditorContext();
+  const modelController = useModelContext();
 
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
   const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
     CompilerNoDataStatus.DEFAULT
   );
+  // TODO: Брать id машины состояний из формы
+  console.log(compilerData);
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const smId = Object.keys(controller.stateMachinesSub)[0];
+  const sm = compilerData?.state_machines[smId];
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
-  const name = model.useData('name');
-  const isInitialized = model.useData('isInitialized');
+  const name = modelController.model.useData('', 'name');
+  const editor = modelController.getCurrentCanvas();
+  const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
 
   const handleFlashButton = () => {
-    // TODO: индекс должен браться из какой-то переменной
-    changeSidebarTab(3);
+    changeSidebarTab(SidebarIndex.Flasher);
   };
 
   const handleSaveBinaryIntoFolder = async () => {
-    const preparedData = await Compiler.prepareToSave(compilerData!.binary!);
-    model.files.saveIntoFolder(preparedData);
+    if (!sm) return;
+    const preparedData = await Compiler.prepareToSave(compilerData!.state_machines[smId].binary!);
+    modelController.files.saveIntoFolder(preparedData);
   };
 
   const handleCompile = async () => {
     if (!name) return;
 
     Compiler.filename = name;
-    model.files.compile();
+    modelController.files.compile();
   };
 
   const handleSaveSourceIntoFolder = async () => {
-    await model.files.saveIntoFolder(compilerData!.source!);
+    if (!smId) return;
+    await modelController.files.saveIntoFolder(compilerData!.state_machines[smId].source!);
   };
 
   const commandsResultToStr = (compilerCommands: CompileCommandResult[]): string => {
@@ -78,17 +86,19 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   const handleAddStdoutTab = () => {
-    openTab({
+    if (!smId) return;
+    openTab(modelController, {
       type: 'code',
       name: 'compilerLog',
-      code: commandsResultToStr(compilerData!.commands),
+      code: commandsResultToStr(compilerData!.state_machines[smId].commands),
       language: 'txt',
     });
   };
 
   const handleShowSource = () => {
-    compilerData!.source!.forEach((element) => {
-      openTab({
+    if (!sm) return;
+    compilerData!.state_machines[smId].source!.forEach((element) => {
+      openTab(modelController, {
         type: 'code',
         name: `${element.filename}.${element.extension}`,
         code: element.fileContent,
@@ -103,7 +113,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (importData && openData) {
-      model.files.initImportData(importData, openData!);
+      modelController.files.initImportData(importData, openData!);
       setImportData(undefined);
     }
   }, [importData]);
@@ -123,33 +133,46 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
-  const button = [
-    {
-      name: 'Показать журнал компиляции',
-      handler: handleAddStdoutTab,
-      disabled: compilerData?.commands.length === 0 || compilerData?.commands === undefined,
-    },
-    {
-      name: 'Сохранить результат',
-      handler: handleSaveBinaryIntoFolder,
-      disabled: compilerData?.binary === undefined || compilerData.binary.length === 0,
-    },
-    {
-      name: 'Сохранить код',
-      handler: handleSaveSourceIntoFolder,
-      disabled: compilerData?.source == undefined || compilerData?.source.length === 0,
-    },
-    {
-      name: 'Показать код',
-      handler: handleShowSource,
-      disabled: compilerData?.source == undefined || compilerData?.source.length === 0,
-    },
-    {
-      name: 'Прошить...',
-      handler: handleFlashButton,
-      disabled: compilerData?.binary === undefined || compilerData.binary.length === 0,
-    },
-  ];
+  const button =
+    sm !== undefined
+      ? [
+          {
+            name: 'Показать журнал компиляции',
+            handler: handleAddStdoutTab,
+            disabled:
+              compilerData?.state_machines[smId].commands.length === 0 ||
+              compilerData?.state_machines[smId].commands === undefined,
+          },
+          {
+            name: 'Сохранить результат',
+            handler: handleSaveBinaryIntoFolder,
+            disabled:
+              compilerData?.state_machines[smId].binary === undefined ||
+              compilerData.state_machines[smId].binary.length === 0,
+          },
+          {
+            name: 'Сохранить код',
+            handler: handleSaveSourceIntoFolder,
+            disabled:
+              compilerData?.state_machines[smId].source == undefined ||
+              compilerData?.state_machines[smId].source.length === 0,
+          },
+          {
+            name: 'Показать код',
+            handler: handleShowSource,
+            disabled:
+              compilerData?.state_machines[smId].source == undefined ||
+              compilerData?.state_machines[smId].source.length === 0,
+          },
+          {
+            name: 'Прошить...',
+            handler: handleFlashButton,
+            disabled:
+              compilerData?.state_machines[smId].binary === undefined ||
+              compilerData.state_machines[smId].binary.length === 0,
+          },
+        ]
+      : [];
   const processing =
     compilerStatus == CompilerStatus.COMPILATION || compilerStatus == CompilerStatus.CONNECTING;
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;

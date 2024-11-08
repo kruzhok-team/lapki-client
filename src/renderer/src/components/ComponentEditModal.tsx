@@ -3,7 +3,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { Modal } from '@renderer/components/UI';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 import { frameworkWords, reservedWordsC, validators } from '@renderer/utils';
@@ -20,7 +20,7 @@ interface ComponentEditModalProps {
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (idx: string, data: Omit<ComponentData, 'order'>, newName?: string) => void;
+  onEdit: (idx: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
   onDelete: (idx: string) => void;
 }
 
@@ -33,13 +33,16 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const editor = useEditorContext();
-  const { model } = editor;
-  const platformName = model.useData('elements.platform');
-  const platform = getPlatform(platformName);
-  const components = model.useData('elements.components');
-
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  const { model } = modelController;
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
+  const components = model.useData(smId, 'elements.components');
   const [name, setName] = useState('');
+  const platformId = model.useData(smId, 'elements.platform');
+  const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
   const [errors, setErrors] = useState({} as Record<string, string>);
@@ -61,7 +64,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       return false;
     }
 
-    if (name == '') {
+    if (name === '') {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
       return false;
     }
@@ -87,13 +90,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       }
     }
     for (const word of reservedWordsC) {
-      if (word == name) {
+      if (word === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
         return false;
       }
     }
     for (const word of frameworkWords) {
-      if (word == name) {
+      if (word === name) {
         setErrors((p) => ({
           ...p,
           [nameError]: `Название является недопустимым. Выберите другое`,
@@ -103,16 +106,15 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     }
     // проверка на то, что название не является типом данных
     for (const key in validators) {
-      if (key == name) {
+      if (key === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
         return false;
       }
     }
     // проверка на то, что название не совпадает с названием класса компонентов
-    const controller = editor.controller;
-    const vacantComponents = controller?.getVacantComponents() as ComponentEntry[];
+    const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
     for (const component of vacantComponents) {
-      if (component.name == name) {
+      if (component.name === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));
         return false;
       }

@@ -2,9 +2,9 @@ import * as TWEEN from '@tweenjs/tween.js';
 
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
-import { EditorController } from '@renderer/lib/data/EditorController';
-import { EditorModel } from '@renderer/lib/data/EditorModel';
 import { preloadPicto } from '@renderer/lib/drawable';
+
+import { CanvasController } from './data/ModelController/CanvasController';
 
 interface CanvasEditorSettings {
   animations: boolean;
@@ -24,18 +24,18 @@ export class CanvasEditor {
 
   private rendererUnsubscribe: (() => void) | null | false = null;
 
-  //! Порядок создания важен, так как контроллер при инициализации использует представление
-  model = new EditorModel(
-    () => {
-      this.controller.initPlatform();
-    },
-    () => {
-      this.controller.loadData();
-      this.controller.history.clear();
-    }
-  );
-  view = new EditorView(this);
-  controller = new EditorController(this);
+  id: string;
+  view: EditorView;
+  constructor(id: string) {
+    this.view = new EditorView(this);
+    this.id = id;
+  }
+
+  controller!: CanvasController;
+
+  setController(controller: CanvasController) {
+    this.controller = controller;
+  }
 
   settings: CanvasEditorSettings = {
     animations: true,
@@ -107,18 +107,22 @@ export class CanvasEditor {
       this.view.isDirty = false;
     });
 
-    this.model.data.isMounted = true;
-    this.model.triggerDataUpdate('isMounted');
+    this.controller.emit('isMounted', {
+      canvasId: this.controller.id,
+      status: true,
+    });
 
     this.controller.loadData();
     this.view.initEvents();
     this.controller.transitions.initEvents();
+    this.controller.initializer.init();
+    this.controller.init();
   }
 
   setSettings(settings: CanvasEditorSettings) {
     this.settings = settings;
 
-    if (this.model.data.isMounted) {
+    if (this.controller.isMounted) {
       this.view.isDirty = true;
     }
   }
@@ -140,8 +144,12 @@ export class CanvasEditor {
     this._keyboard = null;
     this._render = null;
 
-    this.model.data.isMounted = false;
-    this.model.triggerDataUpdate('isMounted');
+    this.controller.isMounted = false;
+    this.controller.needToRewatchEdgeHandlers = true;
+    this.controller.emit('isMounted', {
+      canvasId: this.controller.id,
+      status: false,
+    });
   }
 
   focus() {

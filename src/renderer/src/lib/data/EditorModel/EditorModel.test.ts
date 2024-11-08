@@ -6,23 +6,34 @@ import { emptyElements } from '../../../types/diagram';
 
 const em = new EditorModel(
   () => 42,
-  () => 42
+  () => 42,
+  () => 12
 );
+
 em.init('basename', 'name', emptyElements());
 
 describe('states', () => {
   describe('create', () => {
     beforeEach(() => {
-      em.data.elements.states = {};
+      em.data.elements.stateMachines['G'].states = {};
     });
 
     test('basic', () => {
-      em.createState({ name: 'state', position: { x: 100, y: 150 }, id: '0', color: '#FFFFFF' });
+      em.createState({
+        smId: 'G',
+        name: 'state',
+        position: { x: 100, y: 150 },
+        id: '0',
+        events: [],
+        dimensions: { width: 450, height: 100 },
+        color: '#FFFFFF',
+      });
 
-      expect(em.data.elements.states).toHaveProperty('0', {
+      expect(em.data.elements.stateMachines['G'].states).toHaveProperty('0', {
         name: 'state',
         bounds: { x: 100, y: 150, width: 450, height: 100 },
         events: [],
+        dimensions: { width: 450, height: 100 },
         parent: undefined,
         color: '#FFFFFF',
       });
@@ -30,17 +41,21 @@ describe('states', () => {
 
     test('in center', () => {
       em.createState({
+        smId: 'G',
         name: 'state',
         position: { x: 100, y: 150 },
         placeInCenter: true,
+        events: [],
+        dimensions: { width: 450, height: 100 },
         id: '0',
         color: '#FFFFFF',
       });
 
-      expect(em.data.elements.states).toHaveProperty('0', {
+      expect(em.data.elements.stateMachines['G'].states).toHaveProperty('0', {
         name: 'state',
         bounds: { x: -125, y: 100, width: 450, height: 100 },
         events: [],
+        dimensions: { width: 450, height: 100 },
         parent: undefined,
         color: '#FFFFFF',
       });
@@ -50,16 +65,26 @@ describe('states', () => {
       const count = 10;
 
       for (let i = 0; i < count; i++) {
-        em.createState({ name: 'state', position: { x: 0, y: 0 }, color: '#FFFFFF' });
+        em.createState({
+          events: [],
+          dimensions: { width: 450, height: 100 },
+          smId: 'G',
+          name: 'state',
+          position: { x: 0, y: 0 },
+          color: '#FFFFFF',
+        });
       }
 
-      const ids = Object.keys(em.data.elements.states);
+      const ids = Object.keys(em.data.elements.stateMachines['G'].states);
 
       expect(ids, 'Все айди должны быть уникальными').toHaveLength(count);
     });
 
     test('with parentId', () => {
       em.createState({
+        events: [],
+        dimensions: { width: 450, height: 100 },
+        smId: 'G',
         name: 'state',
         position: { x: 0, y: 0 },
         id: '0',
@@ -67,11 +92,16 @@ describe('states', () => {
         color: '#FFFFFF',
       });
 
-      expect(em.data.elements.states).toHaveProperty('0', expect.objectContaining({ parent: '1' }));
+      expect(em.data.elements.stateMachines['G'].states).toHaveProperty(
+        '0',
+        expect.objectContaining({ parent: '1' })
+      );
     });
 
     test('with events', () => {
       em.createState({
+        dimensions: { width: 450, height: 100 },
+        smId: 'G',
         name: 'state',
         position: { x: 0, y: 0 },
         id: '0',
@@ -90,7 +120,7 @@ describe('states', () => {
         color: '#FFFFFF',
       });
 
-      const state = em.data.elements.states['0'];
+      const state = em.data.elements.stateMachines['G'].states['0'];
 
       expect(state.events).toEqual([
         {
@@ -109,11 +139,12 @@ describe('states', () => {
 
   describe('change events', () => {
     beforeEach(() => {
-      em.data.elements.states = {};
+      em.data.elements.stateMachines['G'].states = {};
     });
 
     test('no state found', () => {
       const res = em.changeState({
+        smId: 'G',
         id: '0',
         events: [
           {

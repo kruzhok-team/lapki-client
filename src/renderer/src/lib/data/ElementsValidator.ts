@@ -199,8 +199,12 @@ function validateComponents(
   }
 }
 
-export function validateElements(elements: Elements, platform: Platform) {
-  validateComponents(platform.components, elements.components);
-  validateStates(elements.states, elements.components, platform.components);
-  validateTransitions(elements.transitions, elements.components, platform.components);
+export function validateElements(elements: Elements, platforms: { [id: string]: Platform }) {
+  for (const smId in elements.stateMachines) {
+    const sm = elements.stateMachines[smId];
+    const platform = platforms[sm.platform];
+    validateComponents(platform.components, sm.components);
+    validateStates(sm.states, sm.components, platform.components);
+    validateTransitions(sm.transitions, sm.components, platform.components);
+  }
 }

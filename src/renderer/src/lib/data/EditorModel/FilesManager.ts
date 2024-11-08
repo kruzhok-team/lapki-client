@@ -2,13 +2,12 @@ import { Dispatch } from 'react';
 
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
-import { Elements, emptyElements } from '@renderer/types/diagram';
+import { Elements, emptyElements, emptyStateMachine } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { TemplatesList } from '@renderer/types/templates';
 
-import { EditorModel } from './EditorModel';
-
 import { importGraphml } from '../GraphmlParser';
+import { ModelController } from '../ModelController';
 import { getPlatform, isPlatformAvailable } from '../PlatformLoader';
 
 type FileError = {
@@ -17,10 +16,13 @@ type FileError = {
 };
 
 export class FilesManager {
-  constructor(private editorManager: EditorModel) {}
+  constructor(private modelController: ModelController) {}
 
   private get data() {
-    return this.editorManager.data;
+    return this.modelController.model.data;
+  }
+  private get controller() {
+    return this.modelController;
   }
 
   newFile(platformIdx: string) {
@@ -29,28 +31,43 @@ export class FilesManager {
     if (!platform) {
       throw Error('unknown platform ' + platformIdx);
     }
-
+    this.modelController.reset();
     const elements = emptyElements();
-    elements.platform = platformIdx;
-    elements.visual = platform.visual;
-    this.editorManager.init(null, 'Без названия', elements);
+    elements.stateMachines['G'] = emptyStateMachine();
+    elements.stateMachines['G'].platform = platformIdx;
+    this.modelController.initData(null, 'Без названия', elements as any);
+
+    return this.modelController.model.data.headControllerId;
+    // this.modelController.model.init(null, 'Без названия', elements as any);
   }
 
   compile() {
-    Compiler.compile(this.data.elements.platform, this.data.elements);
+    Compiler.compile(this.data.elements);
+  }
+
+  isPlatformsAvailable(importData: Elements) {
+    for (const smId in importData.stateMachines) {
+      const sm = importData.stateMachines[smId];
+      if (!isPlatformAvailable(sm.platform)) {
+        return [false, sm.platform];
+      }
+    }
+
+    return [true, null];
   }
 
   // Теперь называется так, потому что данные не парсятся
   initImportData(importData: Elements, openData: [boolean, string | null, string | null, string]) {
     if (openData[0]) {
       try {
-        if (!isPlatformAvailable(importData.platform)) {
+        const checkResult = this.isPlatformsAvailable(importData);
+        if (!checkResult[0]) {
           return makeLeft({
             name: openData[1]!,
-            content: `Незнакомая платформа "${importData.platform}".`,
+            content: `Незнакомая платформа "${checkResult[1]}".`,
           });
         }
-        this.editorManager.init(
+        this.modelController.initData(
           openData[1]!.replace('.graphml', '.json'),
           openData[2]!.replace('.graphml', '.json'),
           importData
@@ -83,7 +100,7 @@ export class FilesManager {
   ): Promise<boolean> {
     const openData = await window.api.fileHandlers.openFile('Cyberiada');
     if (openData[0]) {
-      Compiler.compile(`BearlogaDefendImport-${openData[2]?.split('.')[0]}`, openData[3]);
+      Compiler.compile(openData[3]);
       setOpenData(openData);
       return true;
     }
@@ -102,15 +119,16 @@ export class FilesManager {
         if (data == undefined) {
           return makeLeft(null);
         }
-        if (!isPlatformAvailable(data.platform)) {
+
+        const checkResult = this.isPlatformsAvailable(data);
+        if (!checkResult[0]) {
           return makeLeft({
             name: openData[1]!,
-            content: `Незнакомая платформа "${data.platform}".`,
+            content: `Незнакомая платформа "${checkResult[2]}".`,
           });
         }
-
-        this.editorManager.init(openData[1] ?? '', openData[2] ?? '', data);
-
+        this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data);
+        // this.modelController.components.fromElementsComponents(data.components);
         return makeRight(null);
       } catch (e) {
         let errText = 'unknown error';
@@ -134,16 +152,18 @@ export class FilesManager {
   }
 
   save = async (): Promise<Either<FileError | null, null>> => {
-    if (!this.data.isInitialized) return makeLeft(null);
+    const canvas = this.controller.getCurrentCanvas();
+    const isInitialized = this.data.canvas[canvas.id].isInitialized;
+    if (!isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
     }
     const saveData = await window.api.fileHandlers.saveFile(
       this.data.basename,
-      this.editorManager.serializer.getAll('Cyberiada')
+      this.modelController.model.serializer.getAll('Cyberiada')
     );
     if (saveData[0]) {
-      this.editorManager.triggerSave(saveData[1], saveData[2]);
+      this.modelController.model.triggerSave(saveData[1], saveData[2]);
       return makeRight(null);
     } else {
       return makeLeft({
@@ -154,11 +174,13 @@ export class FilesManager {
   };
 
   saveAs = async (): Promise<Either<FileError | null, null>> => {
-    if (!this.data.isInitialized) return makeLeft(null);
-    const data = this.editorManager.serializer.getAll('Cyberiada');
+    const canvas = this.controller.getCurrentCanvas();
+    const isInitialized = this.data.canvas[canvas.id].isInitialized;
+    if (!isInitialized) return makeLeft(null);
+    const data = this.modelController.model.serializer.getAll('Cyberiada');
     const saveData = await window.api.fileHandlers.saveAsFile(this.data.basename as string, data);
     if (saveData[0]) {
-      this.editorManager.triggerSave(saveData[1], saveData[2]);
+      this.modelController.model.triggerSave(saveData[1], saveData[2]);
       return makeRight(null);
     } else if (saveData[1]) {
       return makeLeft({
@@ -185,9 +207,10 @@ export class FilesManager {
     );
 
     const data = importGraphml(templateData, openImportError);
-    if (!data) return;
-
-    this.editorManager.init(null, 'Без названия', data);
-    this.editorManager.makeStale();
+    if (data == undefined) {
+      return;
+    }
+    this.modelController.initData(null, 'Без названия', data);
+    // this.modelController.model.init(null, 'Без названия', data);
   }
 }

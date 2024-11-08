@@ -112,10 +112,10 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleConnectionButton = () => {
-    if (device == undefined || monitorSetting == null) {
+    if (device === undefined || monitorSetting === null) {
       return;
     }
-    if (connectionStatus == SERIAL_MONITOR_CONNECTED) {
+    if (connectionStatus === SERIAL_MONITOR_CONNECTED) {
       SerialMonitor.closeMonitor(device?.deviceID);
     } else {
       SerialMonitor.openMonitor(device, Number(monitorSetting.baudRate));
@@ -208,13 +208,13 @@ export const SerialMonitorTab: React.FC = () => {
               onChange={(option) => {
                 if (option) {
                   settingBaudRate(Number(option.value));
-                  if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
+                  if (device && connectionStatus === SERIAL_MONITOR_CONNECTED) {
                     SerialMonitor.changeBaud(device?.deviceID, Number(option.value));
                   }
                 }
               }}
               options={baudRateAll}
-              isDisabled={connectionStatus == SERIAL_MONITOR_CONNECTING}
+              isDisabled={connectionStatus === SERIAL_MONITOR_CONNECTING}
             />
           </div>
           <div>
@@ -222,11 +222,11 @@ export const SerialMonitorTab: React.FC = () => {
               className="btn-primary"
               onClick={handleConnectionButton}
               disabled={
-                connectionStatus == SERIAL_MONITOR_NO_SERVER_CONNECTION ||
-                connectionStatus == SERIAL_MONITOR_CONNECTING
+                connectionStatus === SERIAL_MONITOR_NO_SERVER_CONNECTION ||
+                connectionStatus === SERIAL_MONITOR_CONNECTING
               }
             >
-              {connectionStatus == SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
+              {connectionStatus === SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
             </button>
           </div>
         </div>

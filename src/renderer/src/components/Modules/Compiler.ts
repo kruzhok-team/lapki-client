@@ -17,6 +17,7 @@ import {
   CompilerElements,
   CompilerState,
   CompilerComponent,
+  CompilerRequest,
 } from '@renderer/types/CompilerTypes';
 import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
 
@@ -79,6 +80,7 @@ function actualizeInitialState(
   };
   const initial: InitialState = {
     position: oldInitial.position,
+    dimensions: { width: 50, height: 50 },
   };
   return [{ [initialId]: initial }, { [transitionId]: transition }];
 }
@@ -105,20 +107,25 @@ function actualizeComponents(oldComponents: { [id: string]: CompilerComponent })
 function actualizeElements(oldElements: CompilerElements): Elements {
   const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
   return {
-    visual: true,
-    platform: oldElements.platform,
     parameters: oldElements.parameters,
-    components: actualizeComponents(oldElements.components),
-    states: actualizeStates(oldElements.states),
-    finalStates: {},
-    choiceStates: {},
-    notes: {},
-    transitions: {
-      ...actualizeTransitions(oldElements.transitions),
-      ...initialTransition,
+    stateMachines: {
+      G: {
+        visual: true,
+        position: { x: 0, y: 0 },
+        platform: oldElements.platform,
+        components: actualizeComponents(oldElements.components),
+        states: actualizeStates(oldElements.states),
+        finalStates: {},
+        choiceStates: {},
+        notes: {},
+        transitions: {
+          ...actualizeTransitions(oldElements.transitions),
+          ...initialTransition,
+        },
+        initialStates: initials,
+        meta: {},
+      },
     },
-    initialStates: initials,
-    meta: {},
   };
 }
 
@@ -151,21 +158,24 @@ export class Compiler extends ClientWS {
     this.setCompilerNoDataStatus = setCompilerNoDataStatus;
   }
 
-  static binary: Array<Binary> | undefined = undefined;
-  static source: Array<SourceFile> | undefined = undefined;
+  static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарники
+  static source: { [id: string]: SourceFile[] } = {}; // id машины состояний - файлы
   // платформа на которой произвелась последняя компиляция;
   static platform: string | undefined = undefined;
 
   static decodeBinaries(binaries: Array<any>) {
+    const decodedBinaries: Binary[] = [];
     binaries.map((binary) => {
       console.log(base64StringToBlob(binary.fileContent!));
       console.log(binary.filename, binary.extension);
-      this.binary?.push({
+      decodedBinaries.push({
         filename: binary.filename,
         extension: binary.extension,
         fileContent: base64StringToBlob(binary.fileContent!),
       } as Binary);
     });
+
+    return decodedBinaries;
   }
 
   static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>> {
@@ -191,36 +201,35 @@ export class Compiler extends ClientWS {
     return result;
   }
 
-  static async compile(platform: string, data: Elements | string) {
+  static async compile(data: Elements | string) {
     this.setCompilerData(undefined);
     this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
-    this.platform = platform;
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {
-        const [mainPlatform, subPlatform] = platform.split('-');
-        switch (mainPlatform) {
-          case 'BearlogaDefendImport':
-            ws.send('berlogaImport');
-            ws.send(data as string);
-            ws.send(subPlatform);
-            this.mode = 'import';
-            break;
-          case 'BearlogaDefend':
-            ws.send('berlogaExport');
-            ws.send(JSON.stringify(data));
-            if (subPlatform !== undefined) {
-              ws.send(subPlatform);
-            } else {
-              ws.send('Robot');
-            }
-            this.mode = 'export';
-            break;
-          default:
-            ws.send('cgml');
-            this.mode = 'compile';
-            ws.send(exportCGML(data as Elements));
-            break;
-        }
+        // TODO (L140-beep): Понять, что с этим делать
+        // switch (mainPlatform) {
+        //   case 'BearlogaDefendImport':
+        //     ws.send('berlogaImport');
+        //     ws.send(data as string);
+        //     ws.send(subPlatform);
+        //     this.mode = 'import';
+        //     break;
+        //   case 'BearlogaDefend':
+        //     ws.send('berlogaExport');
+        //     ws.send(JSON.stringify(data));
+        //     if (subPlatform !== undefined) {
+        //       ws.send(subPlatform);
+        //     } else {
+        //       ws.send('Robot');
+        //     }
+        //     this.mode = 'export';
+        //     break;
+        //   default:
+        ws.send('cgml');
+        this.mode = 'compile';
+        ws.send(exportCGML(data as Elements));
+        // break;
+        // }
 
         this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
@@ -242,25 +251,26 @@ export class Compiler extends ClientWS {
   static messageHandler(msg: Websocket.MessageEvent) {
     this.onStatusChange(CompilerStatus.CONNECTED);
     this.timeoutTimer.clear();
-    let data;
+    let data: CompilerRequest;
     let elements;
+    const compilerResult: CompilerResult = {
+      result: 'OK',
+      state_machines: {},
+    };
     switch (this.mode) {
       case 'compile':
-        data = JSON.parse(msg.data as string);
-        if (data.binary.length > 0) {
-          this.binary = [];
-          this.decodeBinaries(data.binary);
-        } else {
-          this.binary = undefined;
+        data = JSON.parse(msg.data as string) as CompilerRequest;
+        for (const stateMachineId in data.state_machines) {
+          const sm = data.state_machines[stateMachineId];
+          compilerResult.state_machines[stateMachineId] = sm;
+          const decodedBinaries = this.decodeBinaries(sm.binary);
+          this.binary[stateMachineId] = decodedBinaries;
+          this.source[stateMachineId] = sm.source;
+          compilerResult.state_machines[stateMachineId].binary = decodedBinaries;
         }
-        this.setCompilerData({
-          result: data.result,
-          commands: data.commands,
-          binary: this.binary,
-          source: this.getSourceFiles(data.source),
-          platform: this.platform,
-        } as CompilerResult);
+        this.setCompilerData(compilerResult);
         break;
+      // TODO: Вернуть Берлогу
       case 'import':
         data = JSON.parse(msg.data as string) as CompilerElements;
         elements = actualizeElements(data.source[0].fileContent);

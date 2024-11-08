@@ -26,15 +26,15 @@ SOFTWARE.
 import React, { ReactNode } from 'react';
 
 function camelCase(s, delimiter) {
-  let a = s.split(delimiter);
+  const a = s.split(delimiter);
   return delimiter + a[1].slice(0, 1).toUpperCase() + a[1].slice(1, a[1].length);
 }
 
 function getProps(el) {
   let props = {};
 
-  let events = {};
-  for (let k in el) {
+  const events = {};
+  for (const k in el) {
     if (/^on/.test(k) && el[k]) {
       events[camelCase(k, 'on')] = el[k];
     }
@@ -52,11 +52,11 @@ function getProps(el) {
 }
 
 function getChildren(elements) {
-  let children: ReactNode[] = [];
+  const children: ReactNode[] = [];
   if (!elements) return children;
   for (let i = 0; i < elements.length; i++) {
-    let el = elements[i];
-    let props = { ...getProps(el) };
+    const el = elements[i];
+    const props = { ...getProps(el) };
 
     if (el.childNodes.length) {
       children.push(
@@ -87,7 +87,7 @@ function getChildren(elements) {
 
 export const convert = function (domElement) {
   if (!domElement) return null;
-  let props = { ...getProps(domElement) };
+  const props = { ...getProps(domElement) };
   return React.createElement(
     domElement.tagName.toLowerCase(),
     Object.keys(props).length === 0 ? null : props,

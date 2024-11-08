@@ -10,7 +10,7 @@ import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ColorInput } from '@renderer/components/UI';
 import { Note } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ContextMenu, MenuItem, SubMenu, SubMenuContainer } from '../ContextMenu';
 
@@ -23,20 +23,24 @@ interface NoteMenuProps {
 const fontSizes = [12, 14, 16, 18, 20, 22];
 
 export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) => {
-  const editor = useEditorContext();
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
 
   const [bgColor, setBgColor] = useState<string | undefined>(undefined);
   const [textColor, setTextColor] = useState<string | undefined>(undefined);
 
   const handleBgColorPickerClose = () => {
     if (note.data?.backgroundColor !== bgColor) {
-      editor.controller.notes.changeNoteBackgroundColor(note.id, bgColor);
+      modelController.changeNoteBackgroundColor({ smId, id: note.id, backgroundColor: bgColor });
     }
   };
 
   const handleTextColorPickerClose = () => {
     if (note.data?.textColor !== textColor) {
-      editor.controller.notes.changeNoteTextColor(note.id, textColor);
+      modelController.changeNoteTextColor({ smId, id: note.id, textColor });
     }
   };
 
@@ -51,17 +55,17 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) =
       <MenuItem onClick={() => editor.controller.notes.emit('change', note)}>
         <EditIcon className="size-6 flex-shrink-0" /> Редактировать
       </MenuItem>
-      <MenuItem onClick={() => editor.controller.copySelected()}>
+      <MenuItem onClick={() => modelController.copySelected()}>
         <CopyIcon className="size-6 flex-shrink-0" /> Копировать
         <span className="ml-auto">Ctrl+C</span>
       </MenuItem>
 
-      <MenuItem onClick={() => editor.controller.pasteSelected()}>
+      <MenuItem onClick={() => modelController.pasteSelected()}>
         <PasteIcon className="size-6 flex-shrink-0" /> Вставить
         <span className="ml-auto">Ctrl+V</span>
       </MenuItem>
 
-      <MenuItem onClick={() => editor.controller.duplicateSelected()}>
+      <MenuItem onClick={() => modelController.duplicateSelected()}>
         <CloneIcon className="size-6 flex-shrink-0" /> Дублировать
         <span className="ml-auto">Ctrl+D</span>
       </MenuItem>
@@ -93,7 +97,9 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) =
           {fontSizes.map((size) => (
             <MenuItem
               key={size}
-              onClick={() => editor.controller.notes.changeNoteFontSize(note.id, size)}
+              onClick={() =>
+                modelController.changeNoteFontSize({ smId, id: note.id, fontSize: size })
+              }
             >
               {size}px
               {(note.data?.fontSize ?? 16) === size && (
@@ -105,7 +111,7 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) =
       </SubMenuContainer>
       <MenuItem
         className="enabled:hover:bg-error"
-        onClick={() => editor.controller.notes.deleteNote(note.id)}
+        onClick={() => modelController.deleteNote({ smId, id: note.id })}
       >
         <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
         <span className="ml-auto">Del</span>

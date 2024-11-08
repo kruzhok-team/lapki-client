@@ -7,8 +7,8 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useDoc } from '@renderer/store/useDoc';
-import { useTabs } from '@renderer/store/useTabs';
 import { File } from '@renderer/types/documentation';
 
 import { Navigation } from './components/Navigation';
@@ -26,14 +26,14 @@ interface DocumentationProps {
 }
 
 export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false }) => {
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
   const [doc] = useSettings('doc');
   const url = doc?.host ?? '';
 
   const { data, isLoading, error, refetch } = useFetch<{ body: File }>(
     url && `${url}/index.json?nocache=true`
   );
-
-  const [tab] = useTabs((state) => [state.activeTab]);
 
   const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
@@ -187,7 +187,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
             <Question height={40} width={40} />
           </button>
         ) : (
-          tab === 'editor' && <EditorSettings toggle={onDocumentationToggle} />
+          <EditorSettings toggle={onDocumentationToggle} canvas={editor} />
         )}
         <div className="h-full">{renderContent()}</div>
       </Resizable>

@@ -9,7 +9,6 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
   CGMLMeta,
-  CGMLNote,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -25,13 +24,16 @@ import {
   Event,
   FinalState,
   ChoiceState,
-  Note,
+  emptyElements,
+  emptyStateMachine,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 import { isString } from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
+
+import { Point } from '../types';
 
 const systemComponentAlias = {
   entry: { component: 'System', method: 'onEnter' },
@@ -171,6 +173,7 @@ function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]
           }
         : { x: -1, y: -1 },
       parentId: final.parent,
+      dimensions: { width: 100, height: 50 },
     };
   }
   return finalStates;
@@ -188,6 +191,7 @@ function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }):
     initialStates[initialId] = {
       position: rawInitial.position,
       parentId: rawInitial.parent,
+      dimensions: { width: 100, height: 50 },
     };
   }
   return initialStates;
@@ -205,6 +209,7 @@ function getChoices(rawChoices: { [id: string]: CGMLVertex }): {
     choices[choiceId] = {
       position: rawChoice.position,
       parentId: rawChoice.parent,
+      dimensions: { width: 100, height: 50 },
     };
   }
   return choices;
@@ -311,6 +316,29 @@ function getTransitions(
   return [visual, transitions];
 }
 
+function getComponentPosition(rawComponent: CGMLComponent): Point {
+  const node = rawComponent.unsupportedDataNodes.find(
+    (value) => value.key == 'dLapkiSchemePosition'
+  );
+  if (!node) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+  if (!node.point) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+
+  return {
+    x: +node.point[0].x,
+    y: +node.point[0].y,
+  };
+}
+
 function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   [id: string]: Component;
 } {
@@ -322,6 +350,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     }
     components[rawComponent.id] = {
       type: rawComponent.type,
+      position: getComponentPosition(rawComponent),
       parameters: rawComponent.parameters,
       order: rawComponent.order,
     };
@@ -438,6 +467,10 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
   for (const id in platformComponents) {
     components[id] = {
       type: id,
+      position: {
+        x: 0,
+        y: 0,
+      }, // TODO (L140-beep): что-то нужно с этим придумать
       parameters: {},
       order: 0,
     };
@@ -464,102 +497,53 @@ function getVisualFlag(
   return visual;
 }
 
-function getNotes(rawNotes: {[id: string]: CGMLNote}) {
-  const notes: { [id: string]: Note } = {};
-  for (const noteId in rawNotes) {
-    const rawNote = rawNotes[noteId];
-    const formatNote = rawNote.unsupportedDataNodes.find((value) => value.key === 'dLapkiNoteFormat');
-    const note: Note = rawNote;
-    if (!formatNote) {
-      notes[noteId] = rawNote;
-      continue
-    };
-
-    const parsedLines = formatNote.content.split('\n\n')
-    const parsedParameters = parsedLines.map((value) => value.split('/'))
-
-    for (const [parameterName, parameterValue] of parsedParameters) {
-      switch (parameterName) {
-        case 'fontSize':
-          note.fontSize = +parameterValue;
-          break;
-        case 'bgColor':
-          note.backgroundColor = parameterValue;
-          break;
-        case 'textColor':
-          note.textColor = parameterValue;
-          break;
-        default:
-          break;
-      }
-    }
-
-    notes[noteId] = note;
-  }
-
-  return notes;
-}
-
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void
 ): Elements | undefined {
   try {
     const rawElements: CGMLElements = parseCGML(expression);
-    const sm = rawElements.stateMachines[Object.keys(rawElements.stateMachines)[0]];
-    const elements: Elements = {
-      states: {},
-      transitions: {},
-      notes: {},
-      finalStates: {},
-      initialStates: {},
-      choiceStates: {},
-      components: {},
-      platform: rawElements.platform,
-      meta: {},
-      visual: false,
-    };
-    if (!isPlatformAvailable(rawElements.platform)) {
-      throw new Error(`Неизвестная платформа ${rawElements.platform}.`);
+    const elements: Elements = emptyElements();
+    const platforms: { [id: string]: Platform } = {};
+    console.log(rawElements);
+    for (const smId in rawElements.stateMachines) {
+      const rawSm = rawElements.stateMachines[smId];
+      if (!isPlatformAvailable(rawSm.platform)) {
+        throw new Error(`Неизвестная платформа ${rawSm.platform}.`);
+      }
+      const platform: Platform | undefined = getPlatform(rawSm.platform);
+      if (platform === undefined) {
+        throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
+      }
+      const sm = emptyStateMachine();
+      if (platform.staticComponents) {
+        sm.components = getAllComponent(platform.components);
+      } else {
+        sm.components = getComponents(rawSm.components);
+      }
+      sm.meta = rawSm.meta.values;
+      sm.initialStates = getInitialStates(rawSm.initialStates);
+      sm.finalStates = getFinals(rawSm.finals);
+      sm.notes = rawSm.notes;
+      const [stateVisual, states] = getStates(rawSm.states);
+      sm.states = states;
+      const [transitionVisual, transitions] = getTransitions(rawSm.transitions);
+      sm.transitions = transitions;
+      sm.states = labelStateParameters(sm.states, platform.components, sm.components);
+      sm.platform = rawSm.platform;
+      sm.choiceStates = getChoices(rawSm.choices);
+      sm.transitions = labelTransitionParameters(
+        sm.transitions,
+        platform.components,
+        sm.components
+      );
+      sm.name = rawSm.name;
+      console.log(sm.name);
+      sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
+      elements.stateMachines[smId] = sm;
+      platforms[rawSm.platform] = platform;
     }
-
-    // TODO: добавить в платформу флаг для статических компонентов
-    const platform: Platform | undefined = getPlatform(elements.platform);
-    if (platform === undefined) {
-      throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
-    }
-    if (elements.platform.startsWith('Bearloga')) {
-      elements.components = getAllComponent(platform.components);
-    } else {
-      elements.components = getComponents(sm.components);
-    }
-    elements.meta = rawElements.meta.values;
-    elements.initialStates = getInitialStates(sm.initialStates);
-    elements.finalStates = getFinals(sm.finals);
-    elements.notes = getNotes(sm.notes);
-    const [stateVisual, states] = getStates(sm.states);
-    elements.states = states;
-    const [transitionVisual, transitions] = getTransitions(sm.transitions);
-    elements.transitions = transitions;
-    elements.states = labelStateParameters(
-      elements.states,
-      platform.components,
-      elements.components
-    );
-
-    elements.choiceStates = getChoices(sm.choices);
-    elements.transitions = labelTransitionParameters(
-      elements.transitions,
-      platform.components,
-      elements.components
-    );
-    elements.visual = getVisualFlag(
-      rawElements.meta,
-      platform.visual,
-      stateVisual && transitionVisual
-    );
-
-    validateElements(elements, platform);
+    validateElements(elements, platforms);
     return elements;
   } catch (error) {
     console.error(error);

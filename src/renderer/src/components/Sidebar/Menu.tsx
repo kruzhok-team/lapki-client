@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { PropertiesModal, TextModeModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
 interface MenuItem {
@@ -27,17 +27,20 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const { model } = useEditorContext();
-
-  const isStale = model.useData('isStale');
-  const isInitialized = model.useData('isInitialized');
-  const isMounted = model.useData('isMounted');
-  const visual = model.useData('elements.visual');
-
+  const [openTab] = useTabs((state) => [state.openTab]);
+  const modelController = useModelContext();
+  // const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.getCurrentCanvas();
+  const isStale = modelController.model.useData('', 'isStale');
+  const isInitialized = modelController.model.useData(
+    '',
+    'canvas.isInitialized',
+    editor.id
+  ) as string;
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
-  const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
-
-  const openTab = useTabs((state) => state.openTab);
+  const [isTextModeModalOpen, closeTextModeModal] = useModal(false);
+  // TODO: visual
+  // const visual = modelController.controllers[headControllerId].useData('visual');
 
   const items: MenuItem[] = [
     {
@@ -70,20 +73,36 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: openPropertiesModal,
       disabled: !isInitialized,
     },
+    // {
+    //   text: 'Открыть редактор',
+    //   onClick: () => {
+    //     // openTab({ type: 'editor', name: 'editor' });
+    //   },
+    //   disabled: !isInitialized,
+    //   // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
+    //   className: 'border-t border-border-primary',
+    // },
     {
-      text: 'Открыть редактор',
+      text: 'Открыть экран',
       onClick: () => {
-        openTab({ type: 'editor', name: 'editor' });
+        const schemeEditorId = modelController.schemeEditorId;
+        if (!schemeEditorId) return;
+        const controller = modelController.controllers[schemeEditorId];
+        if (!controller) return;
+        openTab(modelController, {
+          type: 'editor',
+          canvasId: schemeEditorId,
+          name: 'Схемотехнический экран',
+        });
+        modelController.model.changeHeadControllerId(schemeEditorId);
       },
-      disabled: !isInitialized || isMounted,
-      // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы
-      className: 'border-t border-border-primary',
+      disabled: !isInitialized,
     },
-    {
-      text: 'Перейти в текстовый режим (β)',
-      onClick: () => openTextModeModal(),
-      hidden: !visual || !isInitialized,
-    },
+    // {
+    //   text: 'Перейти в текстовый режим (β)',
+    //   onClick: () => openTextModeModal(),
+    //   hidden: !visual || !isInitialized,
+    // },
     // {
     //   text: 'Примеры',
     //   TODO: модальное окно с выбором примера

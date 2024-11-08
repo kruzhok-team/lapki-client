@@ -16,7 +16,6 @@ import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useModal } from '@renderer/hooks';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
-// import {  } from '@renderer/lib/constants'
 import {
   Note,
   ChoiceState,
@@ -26,7 +25,7 @@ import {
   Transition,
 } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { getVirtualElement } from '@renderer/utils';
 
@@ -43,9 +42,14 @@ type MenuVariant =
   | { type: 'note'; note: Note; position: Point };
 
 export const DiagramContextMenu: React.FC = () => {
-  const editor = useEditorContext();
-
+  const modelController = useModelContext();
+  const editor = modelController.getCurrentCanvas();
   const openTab = useTabs((state) => state.openTab);
+
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const currentSm = stateMachines[0];
 
   const [isOpen, open, close] = useModal(false);
   const [menuVariant, setMenuVariant] = useState<MenuVariant | null>(null);
@@ -135,13 +139,16 @@ export const DiagramContextMenu: React.FC = () => {
 
       return (
         <ContextMenu onClose={close}>
-          <MenuItem onClick={() => editor.controller.pasteSelected()}>
+          <MenuItem onClick={() => modelController.pasteSelected()}>
             <PasteIcon className="size-6 flex-shrink-0" /> Вставить
             <span className="ml-auto">Ctrl+V</span>
           </MenuItem>
           <MenuItem
             onClick={() =>
-              editor.controller.states.createState({
+              modelController.createState({
+                smId: currentSm,
+                events: [],
+                dimensions: { width: 450, height: 100 }, // TODO (L140-beep): уточнить
                 name: 'Состояние',
                 position: canvasPos,
                 placeInCenter: true,
@@ -152,7 +159,9 @@ export const DiagramContextMenu: React.FC = () => {
           </MenuItem>
           <MenuItem
             onClick={() =>
-              editor.controller.states.createFinalState({
+              modelController.createFinalState({
+                smId: currentSm,
+                dimensions: { width: 450, height: 100 },
                 position: canvasPos,
                 placeInCenter: true,
               })
@@ -162,7 +171,9 @@ export const DiagramContextMenu: React.FC = () => {
           </MenuItem>
           <MenuItem
             onClick={() =>
-              editor.controller.states.createChoiceState({
+              modelController.createChoiceState({
+                smId: currentSm,
+                dimensions: { width: 450, height: 100 },
                 position: canvasPos,
                 placeInCenter: true,
               })
@@ -172,23 +183,24 @@ export const DiagramContextMenu: React.FC = () => {
           </MenuItem>
           <MenuItem
             onClick={() => {
-              const note = editor.controller.notes.createNote({
+              modelController.createNote({
+                smId: currentSm,
                 position: canvasPos,
                 placeInCenter: true,
                 text: '',
               });
 
-              editor.controller.notes.emit('change', note);
+              // editor.controller.notes.emit('change', note);
             }}
           >
             <NoteIcon className="size-6 flex-shrink-0" /> Вставить заметку
           </MenuItem>
           <MenuItem
             onClick={() =>
-              openTab({
+              openTab(modelController, {
                 type: 'code',
-                name: editor.model.data.name ?? 'Безымянная',
-                code: editor.model.serializer.getAll('JSON'),
+                name: modelController.model.data.name ?? 'Безымянная',
+                code: modelController.model.serializer.getAll('JSON'),
                 language: 'json',
               })
             }
@@ -207,12 +219,12 @@ export const DiagramContextMenu: React.FC = () => {
 
       return (
         <ContextMenu onClose={close}>
-          <MenuItem onClick={() => editor.controller.copySelected()}>
+          <MenuItem onClick={() => modelController.copySelected()}>
             <CopyIcon className="size-6 flex-shrink-0" /> Копировать
             <span className="ml-auto">Ctrl+C</span>
           </MenuItem>
 
-          <MenuItem onClick={() => editor.controller.pasteSelected()}>
+          <MenuItem onClick={() => modelController.pasteSelected()}>
             <PasteIcon className="size-6 flex-shrink-0" /> Вставить
             <span className="ml-auto">Ctrl+V</span>
           </MenuItem>
@@ -224,13 +236,16 @@ export const DiagramContextMenu: React.FC = () => {
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
-              <MenuItem onClick={() => editor.controller.states.setInitialState(state.id)}>
+              <MenuItem onClick={() => modelController.setInitialState(currentSm, state.id)}>
                 <InitialIcon className="size-6 flex-shrink-0" />
                 Назначить начальным
               </MenuItem>
               <MenuItem
                 onClick={() =>
-                  editor.controller.states.createState({
+                  modelController.createState({
+                    smId: currentSm,
+                    dimensions: { width: 100, height: 50 },
+                    events: [],
                     name: 'Состояние',
                     position: editor.view.windowToWorldCoords(position),
                     parentId: state.id,
@@ -245,10 +260,10 @@ export const DiagramContextMenu: React.FC = () => {
 
           <MenuItem
             onClick={() =>
-              openTab({
+              openTab(modelController, {
                 type: 'state',
                 name: state.data.name,
-                code: editor.model.serializer.getState(state.id) ?? '',
+                code: modelController.model.serializer.getState(currentSm, state.id) ?? '',
                 language: 'json',
               })
             }
@@ -258,7 +273,7 @@ export const DiagramContextMenu: React.FC = () => {
 
           <MenuItem
             className="enabled:hover:bg-error"
-            onClick={() => editor.controller.states.deleteState(state.id)}
+            onClick={() => modelController.deleteState({ smId: currentSm, id: state.id })}
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
             <span className="ml-auto">Del</span>
@@ -273,7 +288,7 @@ export const DiagramContextMenu: React.FC = () => {
         <ContextMenu onClose={close}>
           <MenuItem
             className="enabled:hover:bg-error"
-            onClick={() => editor.controller.states.deleteFinalState(state.id)}
+            onClick={() => modelController.deleteFinalState({ smId: currentSm, id: state.id })}
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
             <span className="ml-auto">Del</span>
@@ -289,7 +304,7 @@ export const DiagramContextMenu: React.FC = () => {
         <ContextMenu onClose={close}>
           <MenuItem
             className="enabled:hover:bg-error"
-            onClick={() => editor.controller.states.deleteChoiceState(state.id)}
+            onClick={() => modelController.deleteChoiceState({ smId: currentSm, id: state.id })}
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
             <span className="ml-auto">Del</span>
@@ -305,7 +320,13 @@ export const DiagramContextMenu: React.FC = () => {
         <ContextMenu onClose={close}>
           <MenuItem
             className="enabled:hover:bg-error"
-            onClick={() => editor.controller.states.deleteEvent(state.id, event)}
+            onClick={() =>
+              modelController.deleteEvent({
+                smId: currentSm,
+                stateId: state.id,
+                event: event,
+              })
+            }
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
             <span className="ml-auto">Del</span>
@@ -326,7 +347,7 @@ export const DiagramContextMenu: React.FC = () => {
 
       return (
         <ContextMenu onClose={close}>
-          <MenuItem onClick={() => editor.controller.copySelected()}>
+          <MenuItem onClick={() => modelController.copySelected()}>
             <CopyIcon className="size-6 flex-shrink-0" /> Копировать
             <span className="ml-auto">Ctrl+C</span>
           </MenuItem>
@@ -342,10 +363,11 @@ export const DiagramContextMenu: React.FC = () => {
                 <MenuItem
                   key={id}
                   onClick={() =>
-                    editor.controller.transitions.changeTransition({
+                    modelController.changeTransition({
                       ...transition.data,
+                      smId: currentSm,
                       id: transition.id,
-                      sourceId: id,
+                      sourceId: state.id,
                     })
                   }
                 >
@@ -367,10 +389,11 @@ export const DiagramContextMenu: React.FC = () => {
                 <MenuItem
                   key={id}
                   onClick={() =>
-                    editor.controller.transitions.changeTransition({
+                    modelController.changeTransition({
                       ...transition.data,
+                      smId: currentSm,
                       id: transition.id,
-                      targetId: id,
+                      targetId: state.id,
                     })
                   }
                 >
@@ -383,10 +406,11 @@ export const DiagramContextMenu: React.FC = () => {
 
           <MenuItem
             onClick={() =>
-              openTab({
+              openTab(modelController, {
                 type: 'transition',
                 name: transition.id,
-                code: editor.model.serializer.getTransition(transition.id) ?? '',
+                code:
+                  modelController.model.serializer.getTransition(currentSm, transition.id) ?? '',
                 language: 'json',
               })
             }
@@ -396,7 +420,12 @@ export const DiagramContextMenu: React.FC = () => {
 
           <MenuItem
             className="enabled:hover:bg-error"
-            onClick={() => editor.controller.transitions.deleteTransition(transition.id)}
+            onClick={() =>
+              modelController.deleteTransition({
+                smId: currentSm,
+                id: transition.id,
+              })
+            }
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
             <span className="ml-auto">Del</span>

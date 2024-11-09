@@ -80,7 +80,6 @@ export class DrawableComponent extends Shape {
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
-    debugger;
     const { x, y, width, height } = this.drawBounds;
     const { borderRadius } = this.computedStyles;
 

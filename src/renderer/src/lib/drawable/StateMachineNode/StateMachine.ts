@@ -105,7 +105,7 @@ export class DrawableStateMachine extends Shape {
   private drawChildrenBorder(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
     ctx.lineWidth = 5;
-
+    ctx.strokeStyle = style.bodyBg;
     ctx.beginPath();
 
     ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [

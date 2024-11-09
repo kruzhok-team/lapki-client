@@ -93,9 +93,9 @@ export class DrawableStateMachine extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    if (this.isSelected) {
-      this.drawSelection(ctx);
-    }
+    // if (this.isSelected) {
+    //   this.drawSelection(ctx);
+    // }
     if (!this.children.isEmpty) {
       this.drawChildrenBorder(ctx);
     }

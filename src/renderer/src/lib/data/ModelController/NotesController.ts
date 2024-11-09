@@ -1,7 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { Note } from '@renderer/lib/drawable';
-import { Layer } from '@renderer/lib/types';
+import { ChangeSelectionParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangeNoteBackgroundColorParams,
@@ -146,6 +146,12 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
 
   handleStartNewTransition = (note: Note) => {
     this.emit('startNewTransitionNote', note);
+  };
+
+  changeNoteSelection = (args: ChangeSelectionParams) => {
+    const note = this.items.get(args.id);
+    if (!note) return;
+    note.setIsSelected(args.value);
   };
 
   handleMouseUpOnNote = (note: Note) => {

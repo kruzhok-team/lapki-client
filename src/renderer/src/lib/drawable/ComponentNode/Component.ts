@@ -60,7 +60,7 @@ export class DrawableComponent extends Shape {
   }
 
   private drawBody(ctx: CanvasRenderingContext2D) {
-    const platform = this.app.controller.platform;
+    const platform = this.app.controller.platform[this.smId];
     // TODO: Переделать платформу
     if (!platform || !this.icon) return;
 
@@ -80,6 +80,7 @@ export class DrawableComponent extends Shape {
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
+    debugger;
     const { x, y, width, height } = this.drawBounds;
     const { borderRadius } = this.computedStyles;
 

@@ -18,12 +18,14 @@ interface StateMachineEvents {
  * Обрабатывает события, связанные с ними.
  */
 export class StateMachineController extends EventEmitter<StateMachineEvents> {
-  items: Map<string, DrawableStateMachine> = new Map();
+  __items: Map<string, DrawableStateMachine> = new Map();
 
   constructor(private app: CanvasEditor) {
     super();
   }
-
+  get items() {
+    return this.__items;
+  }
   private get view() {
     return this.app.view;
   }

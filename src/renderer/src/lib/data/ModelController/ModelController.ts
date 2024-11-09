@@ -208,6 +208,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('selectTransition', this.selectTransition);
     controller.on('createTransitionFromController', this.onCreateTransitionModal);
     controller.on('openChangeTransitionModalFromController', this.openChangeTransitionModal);
+    controller.on('selectComponent', this.selectComponent);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -366,13 +367,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   // TODO: Думаю, из-за этого не очень хорошо компоненты выделяются
-  selectComponent(id: string) {
-    this.removeSelection();
+  selectComponent = (args: SelectDrawable) => {
+    this.removeSelection([args.id]);
 
-    // TODO: Откуда брать id машины состояний? UPDATE: Доделать
-    this.model.changeComponentSelection(this.getSmId(id, 'components'), id, true);
-    this.emit('selectComponent', { id: id, smId: '' });
-  }
+    this.model.changeComponentSelection(args.smId, args.id, true);
+    this.emit('changeComponentSelection', { ...args, value: true });
+    // this.emit('selectComponent', args);
+  };
 
   createComponent(args: CreateComponentParams) {
     this.model.createComponent(args);
@@ -2047,29 +2048,44 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
    * @privateRemarks
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
-  removeSelection() {
+  removeSelection(exclude: string[] = []) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
 
-      Object.keys(sm.choiceStates).forEach((id) => {
-        this.model.changeChoiceStateSelection(smId, id, false);
-      });
+      Object.keys(sm.choiceStates)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeChoiceStateSelection(smId, id, false);
+          this.emit('changeChoiceSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.states).forEach((id) => {
-        this.model.changeStateSelection(smId, id, false);
-      });
+      Object.keys(sm.states)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeStateSelection(smId, id, false);
+          this.emit('changeStateSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.transitions).forEach((id) => {
-        this.model.changeTransitionSelection(smId, id, false);
-      });
+      Object.keys(sm.transitions)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeTransitionSelection(smId, id, false);
+          this.emit('changeTransitionSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.notes).forEach((id) => {
-        this.model.changeNoteSelection(smId, id, false);
-      });
+      Object.keys(sm.notes)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeNoteSelection(smId, id, false);
+          this.emit('changeNoteSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.components).forEach((id) => {
-        this.model.changeNoteSelection(smId, id, false);
-      });
+      Object.keys(sm.components)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeComponentSelection(smId, id, false);
+          this.emit('changeComponentSelection', { smId, id, value: false });
+        });
     }
   }
 

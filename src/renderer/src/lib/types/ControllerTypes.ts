@@ -45,6 +45,7 @@ export interface ChangeComponentPosition {
 }
 
 export interface ChangeSelectionParams {
+  smId: string;
   id: string;
   value: boolean;
 }

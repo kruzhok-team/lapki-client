@@ -827,7 +827,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       // учитываем вложенность, нужно поместить состояние
       // в максимально дочернее
       if (!this.model.data.elements.stateMachines[smId].states[possibleParentId]) continue;
-      let children = this.getEachByParentId(smId, possibleParentId);
+      let children = this.getStatesByParentId(smId, possibleParentId);
       let searchPending = true;
       while (searchPending) {
         searchPending = false;
@@ -839,7 +839,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           possibleParent = child;
           possibleParentId = id;
           searchPending = true;
-          children = this.getEachByParentId(smId, possibleParentId);
+          children = this.getStatesByParentId(smId, possibleParentId);
           break;
         }
       }
@@ -1188,8 +1188,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  private getEachByParentId(smId: string, parentId: string) {
+  private getStatesByParentId(smId: string, parentId: string) {
     return Object.entries(this.model.data.elements.stateMachines[smId].states).filter(
+      (state) => state[1].parentId === parentId
+    );
+  }
+
+  private getInitialStatesByParentId(smId: string, parentId: string) {
+    return Object.entries(this.model.data.elements.stateMachines[smId].initialStates).filter(
       (state) => state[1].parentId === parentId
     );
   }
@@ -1229,7 +1235,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
-    const nestedStates = this.getEachByParentId(smId, id);
+    const nestedStates = this.getStatesByParentId(smId, id);
     // Ищем дочерние состояния и отвязываем их от текущего
     nestedStates.forEach((childState) => {
       // Если есть родительское, перепривязываем к нему
@@ -1241,6 +1247,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       numberOfConnectedActions += 1;
     });
+
+    const initialStates = this.getInitialStatesByParentId(smId, id);
+    initialStates.forEach((childInitial) => {
+      this.deleteInitialStateWithTransition(smId, childInitial[0]);
+      numberOfConnectedActions += 2;
+    });
+
+    // TODO: unlink choiceState, finalState, notes
 
     if (canUndo) {
       this.history.do({

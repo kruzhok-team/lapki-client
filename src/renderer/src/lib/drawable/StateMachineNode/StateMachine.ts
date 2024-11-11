@@ -119,18 +119,18 @@ export class DrawableStateMachine extends Shape {
     ctx.closePath();
   }
 
-  private drawSelection(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.drawBounds;
-    const { borderRadius } = this.computedStyles;
+  // private drawSelection(ctx: CanvasRenderingContext2D) {
+  //   const { x, y, width, height } = this.drawBounds;
+  //   const { borderRadius } = this.computedStyles;
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#FFF';
+  //   ctx.lineWidth = 2;
+  //   ctx.strokeStyle = '#FFF';
 
-    ctx.roundRect(x, y, width, height, borderRadius);
-    ctx.stroke();
-  }
+  //   ctx.roundRect(x, y, width, height, borderRadius);
+  //   ctx.stroke();
+  // }
 
-  setIsSelected(value: boolean) {
-    this.isSelected = value;
-  }
+  // setIsSelected(value: boolean) {
+  //   this.isSelected = value;
+  // }
 }

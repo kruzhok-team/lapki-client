@@ -1,12 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
-import {
-  ChangeSelectionParams,
-  EditComponentParams,
-  Layer,
-  SelectDrawable,
-} from '@renderer/lib/types';
+import { ChangeSelectionParams, EditComponentParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateComponentParams, DeleteDrawableParams } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';

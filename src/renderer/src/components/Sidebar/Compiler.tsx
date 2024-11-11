@@ -33,8 +33,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
 }) => {
   const modelController = useModelContext();
-  const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
-    useErrorModal();
+  const { openLoadError, openSaveError, openImportError } = useErrorModal();
   const { initImportData } = useFileOperations({
     openLoadError,
     openSaveError,

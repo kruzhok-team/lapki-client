@@ -18,7 +18,6 @@ import {
   CompilerState,
   CompilerComponent,
   CompilerRequest,
-  CompilerEvent,
   CompilerAction,
 } from '@renderer/types/CompilerTypes';
 import {

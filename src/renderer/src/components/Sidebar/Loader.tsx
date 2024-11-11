@@ -390,9 +390,9 @@ export const Loader: React.FC<FlasherProps> = ({
     if (!device) return;
     if (device.isMSDevice()) {
       const MSDevice = device as MSDevice;
-      let portNames = '';
-      for (let i = 0; i < MSDevice.portNames.length; i++) {
-        portNames = portNames + ' ' + MSDevice.portNames[i];
+      let portNames = MSDevice.portNames[0];
+      for (let i = 1; i < MSDevice.portNames.length; i++) {
+        portNames = portNames + '; ' + MSDevice.portNames[i];
       }
       return (
         <div>

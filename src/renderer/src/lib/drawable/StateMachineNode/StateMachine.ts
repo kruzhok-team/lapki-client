@@ -130,7 +130,7 @@ export class DrawableStateMachine extends Shape {
   //   ctx.stroke();
   // }
 
-  // setIsSelected(value: boolean) {
-  //   this.isSelected = value;
-  // }
+  setIsSelected(value: boolean) {
+    this.isSelected = value;
+  }
 }

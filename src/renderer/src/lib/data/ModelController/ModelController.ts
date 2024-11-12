@@ -235,7 +235,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     sourceId: string;
     targetId: string;
   }) => {
-    this.emit('openCreateTransitionModal', args);
+    if (this.model.data.elements.stateMachines[args.smId].notes[args.sourceId]) {
+      this.createTransition({ ...args });
+    } else {
+      this.emit('openCreateTransitionModal', args);
+    }
   };
 
   private setMountStatus = (args: SetMountedStatusParams) => {
@@ -1965,7 +1969,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
-    this.removeSelection();
+    this.removeSelection([id]);
 
     this.model.changeStateSelection(smId, id, true);
   };
@@ -1976,7 +1980,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return;
 
-    this.removeSelection();
+    this.removeSelection([id]);
 
     this.model.changeChoiceStateSelection(smId, id, true);
 
@@ -1999,7 +2003,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
 
-    this.removeSelection();
+    this.removeSelection([id]);
 
     this.model.changeTransitionSelection(smId, id, true);
 
@@ -2010,7 +2014,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, id } = args;
     const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
-    this.removeSelection();
+    this.removeSelection([id]);
     this.model.changeNoteSelection(smId, id, true);
     // this.emit('selectNote', { smId: smId, id: id });
   };

@@ -197,7 +197,7 @@ export const actionFunctions: ActionFunctions = {
 
   linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId }) => ({
     redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
-    undo: sM.linkState.bind(sM, { smId, parentId: prevParentId, childId, canUndo: false }, false),
+    undo: sM.linkState.bind(sM, { smId, parentId: prevParentId, childId }, false),
   }),
 
   linkState: (sM, { smId, parentId, childId }) => ({

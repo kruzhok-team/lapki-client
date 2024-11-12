@@ -700,8 +700,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   rewatchEdgeHandlers() {
+    // TODO(L140-beep): Вот с этим надо что-то делать, иначе плодиться будет только так
     for (const state of this.states.data.states.values()) {
       state.edgeHandlers.bindEvents();
+    }
+    for (const note of this.notes.items.values()) {
+      note.edgeHandlers.bindEvents();
     }
   }
 

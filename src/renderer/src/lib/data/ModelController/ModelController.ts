@@ -1209,6 +1209,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
+  private getChoicesByParentId(smId: string, parentId: string) {
+    return Object.entries(this.model.data.elements.stateMachines[smId].choiceStates).filter(
+      (state) => state[1].parentId === parentId
+    );
+  }
+
+  private getFinalsByParentId(smId: string, parentId: string) {
+    return Object.entries(this.model.data.elements.stateMachines[smId].finalStates).filter(
+      (state) => state[1].parentId === parentId
+    );
+  }
+
   private getInitialStatesByParentId(smId: string, parentId: string) {
     return Object.entries(this.model.data.elements.stateMachines[smId].initialStates).filter(
       (state) => state[1].parentId === parentId
@@ -1234,6 +1246,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.deleteInitialStateWithTransition(smId, childInitial[0], canUndo);
       numberOfConnectedActions += 1;
     });
+    const choiceStates = this.getChoicesByParentId(smId, id);
+    choiceStates.forEach((childChoice) => {
+      this.deleteChoiceState({ smId: smId, id: childChoice[0] }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    const finalStates = this.getFinalsByParentId(smId, id);
+    finalStates.forEach((childFinal) => {
+      this.deleteFinalState({ smId: smId, id: childFinal[0] }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
     const nestedStates = this.getStatesByParentId(smId, id);
     // Ищем дочерние состояния и отвязываем их от текущего
     nestedStates.forEach((childState) => {
@@ -1489,7 +1513,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private linkChoiceState(smId: string, stateId: string, parentId: string) {
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.choiceStates[stateId];
-    const parent = sm.choiceStates[parentId];
+    const parent = sm.states[parentId];
     if (!state || !parent) return;
 
     this.model.linkChoiceState(smId, stateId, parentId);
@@ -1498,7 +1522,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
     const { smId, parentId, position, linkByPoint = true } = params;
-
     const id = this.model.createChoiceState(params);
     this.emit('createChoice', { ...params, id: id });
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];

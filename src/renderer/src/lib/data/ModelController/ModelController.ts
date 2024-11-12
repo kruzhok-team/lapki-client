@@ -1207,13 +1207,32 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parentId = state.parentId;
     let numberOfConnectedActions = 0;
 
-    // Проверка на то что состояние является, тем на которое есть переход из начального
+    // Проверка на то что состояние является тем на которое есть переход из начального
     const stateTransitions: Transition[] = this.getAllByTargetId(smId, id)[0] ?? [];
     const transitionFromInitialState = stateTransitions.find(
       ({ sourceId }) =>
         this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
     );
 
+    const initialStates = this.getInitialStatesByParentId(smId, id);
+    initialStates.forEach((childInitial) => {
+      this.deleteInitialStateWithTransition(smId, childInitial[0], canUndo);
+      numberOfConnectedActions += 2;
+    });
+    const nestedStates = this.getStatesByParentId(smId, id);
+    // Ищем дочерние состояния и отвязываем их от текущего
+    nestedStates.forEach((childState) => {
+      // Если есть родительское, перепривязываем к нему
+      if (state.parentId) {
+        this.linkState({ smId, parentId: state.parentId, childId: childState[0] }, canUndo);
+      } else {
+        this.unlinkState({ smId, id: childState[0], canUndo });
+      }
+
+      numberOfConnectedActions += 1;
+    });
+
+    // TODO: unlink choiceState, finalState, notes
     if (transitionFromInitialState) {
       // Перемещаем начальное состояние, на первое найденное в родителе
       const newState = [
@@ -1234,27 +1253,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.deleteTransition({ smId, id: transition[0] }, canUndo);
       numberOfConnectedActions += 1;
     });
-
-    const nestedStates = this.getStatesByParentId(smId, id);
-    // Ищем дочерние состояния и отвязываем их от текущего
-    nestedStates.forEach((childState) => {
-      // Если есть родительское, перепривязываем к нему
-      if (state.parentId) {
-        this.linkState({ smId, parentId: state.parentId, childId: childState[0] }, canUndo);
-      } else {
-        this.unlinkState({ smId, id: childState[0], canUndo });
-      }
-
-      numberOfConnectedActions += 1;
-    });
-
-    const initialStates = this.getInitialStatesByParentId(smId, id);
-    initialStates.forEach((childInitial) => {
-      this.deleteInitialStateWithTransition(smId, childInitial[0]);
-      numberOfConnectedActions += 2;
-    });
-
-    // TODO: unlink choiceState, finalState, notes
 
     if (canUndo) {
       this.history.do({

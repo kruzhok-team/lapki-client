@@ -402,13 +402,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;
 
+    this.model.changeTransition(args);
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
         args: { args, prevData: structuredClone(transition) },
       });
     }
-
     this.emit('changeTransition', args);
   }
 
@@ -679,7 +679,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!transitionWithId) return;
 
     this.deleteInitialState({ smId, id: initialStateId }, canUndo);
-    this.deleteTransition({ smId, id: transitionWithId[0] }, canUndo);
+    this.deleteTransition({ smId, id: transitionWithId[0] }, false);
   }
 
   deleteInitialState(args: DeleteDrawableParams, canUndo = true) {
@@ -688,17 +688,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = sm.initialStates[id];
     if (!state) return;
 
-    const targetId = Object.keys(sm.transitions).find(
+    const transitionId = Object.keys(sm.transitions).find(
       (transitionId) => sm.transitions[transitionId].sourceId == id
     );
-    if (!targetId) return;
+    if (!transitionId) return;
     this.model.deleteInitialState(smId, id); // Удаляем модель
     if (canUndo) {
       this.history.do({
         type: 'deleteInitialState',
         args: {
           ...args,
-          targetId: targetId,
+          targetId: sm.transitions[transitionId].targetId,
         },
       });
     }
@@ -929,6 +929,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
+    const prevParentId = child.parentId;
     if (!parent || !child) return;
 
     let numberOfConnectedActions = 0;
@@ -969,15 +970,24 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     if (canUndo) {
-      this.history.do({
-        type: 'linkState',
-        args: { smId, parentId, childId },
-        numberOfConnectedActions,
-      });
+      if (!prevParentId) {
+        this.history.do({
+          type: 'linkState',
+          args: { smId, parentId, childId },
+          numberOfConnectedActions,
+        });
+      } else {
+        this.history.do({
+          type: 'linkStateToAnotherParent',
+          args: { smId, parentId, prevParentId, childId },
+          numberOfConnectedActions,
+        });
+      }
       if (addOnceOff) {
         this.emit('addDragendStateSig', { smId, stateId: childId });
       }
     }
+
     return numberOfConnectedActions;
   };
 
@@ -985,7 +995,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id: prevId, targetId, smId } = params;
     const target = this.model.data.elements.stateMachines[smId].states[targetId];
     if (!target) return;
-
+    const siblings = this.getSiblings(smId, prevId, target.parentId, 'initialStates')[1];
+    if (siblings.length) return;
     const position = {
       x: target.position.x - INITIAL_STATE_OFFSET,
       y: target.position.y - INITIAL_STATE_OFFSET,
@@ -1217,7 +1228,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const initialStates = this.getInitialStatesByParentId(smId, id);
     initialStates.forEach((childInitial) => {
       this.deleteInitialStateWithTransition(smId, childInitial[0], canUndo);
-      numberOfConnectedActions += 2;
+      numberOfConnectedActions += 1;
     });
     const nestedStates = this.getStatesByParentId(smId, id);
     // Ищем дочерние состояния и отвязываем их от текущего
@@ -1245,7 +1256,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
       }
 
-      numberOfConnectedActions += 2;
+      numberOfConnectedActions += 1;
     }
     // Удаляем зависимые переходы
     const dependetTransitions = this.getEachByStateId(smId, id);

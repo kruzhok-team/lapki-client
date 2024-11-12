@@ -45,6 +45,12 @@ export type PossibleActions = {
   };
   changeStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
   linkState: { smId: string; parentId: string; childId: string };
+  linkStateToAnotherParent: {
+    smId: string;
+    prevParentId: string;
+    parentId: string;
+    childId: string;
+  };
   unlinkState: { smId: string; parentId: string; params: UnlinkStateParams };
 
   createInitialState: { smId: string; targetId: string; id: string };
@@ -189,12 +195,17 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
 
+  linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId }) => ({
+    redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
+    undo: sM.linkState.bind(sM, { smId, parentId: prevParentId, childId, canUndo: false }, false),
+  }),
+
   linkState: (sM, { smId, parentId, childId }) => ({
     redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
     undo: sM.unlinkState.bind(sM, { smId, id: childId, canUndo: false }),
   }),
   unlinkState: (sM, { smId, parentId, params }) => ({
-    redo: sM.unlinkState.bind(sM, { ...params, parentId, childId: params.id }),
+    redo: sM.unlinkState.bind(sM, { ...params, parentId, childId: params.id, canUndo: false }),
     undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id, canBeInitial: false }, false),
   }),
   changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
@@ -462,6 +473,10 @@ export const actionDescriptions: ActionDescriptions = {
   changeStateName: (args) => ({
     name: 'Изменение имени состояния',
     description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
+  }),
+  linkStateToAnotherParent: (args) => ({
+    name: 'Присоединение состояния',
+    description: `Было "${args.parentId}"\nСтало: "${args.prevParentId}"`,
   }),
   linkState: (args) => ({
     name: 'Присоединение состояния',

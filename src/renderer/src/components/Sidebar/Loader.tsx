@@ -407,7 +407,7 @@ export const Loader: React.FC<FlasherProps> = ({
       });
   };
   const getSelectMachineStateOption = () => {
-    const emptyValue = { value: '', label: '' };
+    const emptyValue = null;
     if (currentDeviceID == undefined) return emptyValue;
     const smId = deviceStateMachine.get(currentDeviceID);
     if (smId == undefined) return emptyValue;

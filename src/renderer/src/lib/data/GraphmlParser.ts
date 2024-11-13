@@ -505,7 +505,6 @@ export function importGraphml(
     const rawElements: CGMLElements = parseCGML(expression);
     const elements: Elements = emptyElements();
     const platforms: { [id: string]: Platform } = {};
-    console.log(rawElements);
     for (const smId in rawElements.stateMachines) {
       const rawSm = rawElements.stateMachines[smId];
       if (!isPlatformAvailable(rawSm.platform)) {
@@ -538,7 +537,7 @@ export function importGraphml(
         sm.components
       );
       sm.name = rawSm.name;
-      console.log(sm.name);
+      sm.position = rawSm.position ?? { x: 0, y: 0 };
       sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
       elements.stateMachines[smId] = sm;
       platforms[rawSm.platform] = platform;

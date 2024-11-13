@@ -1,3 +1,5 @@
+import { s } from 'vitest/dist/reporters-5f784f42';
+
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
@@ -47,7 +49,8 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
       icon: 'stateMachine',
       label: args.name ?? args.smId,
     };
-    const sm = new DrawableStateMachine(this.app, args.smId, markedSmIcon);
+    const sm = new DrawableStateMachine(this.app, args.smId, markedSmIcon, args.position);
+    this.watch(sm);
     this.items.set(args.smId, sm);
     this.view.children.add(sm, Layer.Machines);
     this.view.isDirty = true;
@@ -91,6 +94,34 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     this.view.isDirty = true;
   };
 
+  changeStateMachinePosition(id: string, position: Point) {
+    const item = this.items.get(id);
+    if (!item) return;
+
+    item.position = position;
+    this.view.isDirty = true;
+  }
+
+  handleDragEnd = (
+    sm: DrawableStateMachine,
+    e: { dragStartPosition: Point; dragEndPosition: Point }
+  ) => {
+    this.changeStateMachinePosition(sm.id, e.dragEndPosition);
+    this.app.controller.emit('changeStateMachinePosition', {
+      smId: sm.id,
+      id: sm.id,
+      endPosition: e.dragEndPosition,
+    });
+  };
+
+  watch(sm: DrawableStateMachine) {
+    sm.on('dragend', this.handleDragEnd.bind(this, sm));
+  }
+
+  unwatch(sm: DrawableStateMachine) {
+    sm.off('dragend', this.handleDragEnd.bind(this, sm));
+  }
+
   deleteStateMachine = (args: DeleteStateMachineParams) => {
     const sm = this.items.get(args.id);
     if (!sm) return;
@@ -107,6 +138,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
 
     sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);
+    this.unwatch(sm);
     this.items.delete(args.id);
 
     this.view.isDirty = true;

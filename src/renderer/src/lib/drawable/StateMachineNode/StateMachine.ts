@@ -16,13 +16,16 @@ export class DrawableStateMachine extends Shape {
   icon: MarkedIconData;
   position: Point;
   dimensions: Dimensions;
-  constructor(app: CanvasEditor, id: string, icon: MarkedIconData, parent?: Shape) {
+  constructor(
+    app: CanvasEditor,
+    id: string,
+    icon: MarkedIconData,
+    position: Point,
+    parent?: Shape
+  ) {
     super(app, id, parent);
     this.icon = icon;
-    this.position = {
-      x: 0,
-      y: 0,
-    };
+    this.position = position;
     this.dimensions = {
       width: 150,
       height: 100,

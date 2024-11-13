@@ -173,7 +173,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const smToSubscribe = {};
       smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
-      controller.subscribe(smId, 'stateMachine', {});
+      controller.subscribe(smId, 'stateMachine', { [smId]: smIds[smId] });
       controller.subscribe(smId, 'component', sm.components);
     }
     controller.watch();
@@ -214,6 +214,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeFinalStatePosition', this.changeFinalStatePosition);
     controller.on('changeChoicePosition', this.changeChoiceStatePosition);
     controller.on('changeComponentPosition', this.changeComponentPosition);
+    controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -237,6 +238,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('changeFinalStatePosition', this.changeFinalStatePosition);
     controller.off('changeChoicePosition', this.changeChoiceStatePosition);
     controller.off('changeComponentPosition', this.changeComponentPosition);
+    controller.off('changeStateMachinePosition', this.changeStateMachinePosition);
     controller.unwatch();
   }
 
@@ -424,6 +426,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
     this.emit('changeTransition', args);
   }
+  // TODO: Добавить в историю!
+  changeStateMachinePosition = (args: ChangePosition) => {
+    const { id, endPosition } = args;
+    this.model.changeStateMachinePosition(id, endPosition);
+  };
 
   changeTransitionPosition(args: ChangePosition, canUndo = true) {
     const { smId, id, startPosition, endPosition } = args;

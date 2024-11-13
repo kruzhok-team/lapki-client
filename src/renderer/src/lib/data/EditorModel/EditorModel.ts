@@ -632,6 +632,14 @@ export class EditorModel {
     return true;
   }
 
+  changeStateMachinePosition(id: string, position: Point) {
+    const sm = this.data.elements.stateMachines[id];
+    if (!sm) return false;
+    sm.position = position;
+
+    return true;
+  }
+
   changeTransitionPosition(smId: string, id: string, position: Point) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;

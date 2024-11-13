@@ -160,6 +160,7 @@ export type CanvasControllerEvents = {
   openChangeTransitionModalFromController: { smId: string; id: string };
   setTextMode: boolean;
   editStateMachine: EditStateMachine;
+  changeStateMachinePosition: ChangePosition;
 };
 
 export type CanvasData = {
@@ -687,8 +688,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.bindHelper('stateMachine', 'editStateMachine', this.stateMachines.editStateMachine)
           );
         }
-        if (!this.initData[smId]) {
-          this.initData[smId] = emptyStateMachine();
+        if (initData[smId] && (initData[smId] as StateMachine).position) {
+          this.initData[smId].position = (initData[smId] as StateMachine).position;
         }
         break;
       default:

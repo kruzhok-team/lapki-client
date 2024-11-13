@@ -423,6 +423,11 @@ export function exportCGML(elements: Elements): string {
       meta: exportMeta(sm.visual, sm.meta, platform),
       platform: sm.platform,
       name: sm.name,
+      position: sm.position,
+      dimensions: {
+        width: 450,
+        height: 100,
+      },
       terminates: {},
       unknownVertexes: {},
     };

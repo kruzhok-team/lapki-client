@@ -38,7 +38,6 @@ import {
   RenameComponentParams,
   SelectDrawable,
   SetMountedStatusParams,
-  StateMachineData,
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {

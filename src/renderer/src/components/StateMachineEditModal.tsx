@@ -2,6 +2,7 @@ import { Controller, UseFormReturn } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { Modal, Select } from '@renderer/components/UI';
+import { StateMachineData } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';

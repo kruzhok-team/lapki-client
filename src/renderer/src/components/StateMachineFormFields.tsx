@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
-import { StateMachineData } from './StateMachineEditModal';
+import { StateMachineData } from '@renderer/lib/types';
 
 interface StateMachineFormFields {
   parameters: StateMachineData;

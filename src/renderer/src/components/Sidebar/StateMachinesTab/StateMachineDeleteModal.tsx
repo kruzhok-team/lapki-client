@@ -2,8 +2,8 @@ import React from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { Modal } from '@renderer/components/UI';
+import { StateMachineData } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 interface StateMachineDeleteModalProps {

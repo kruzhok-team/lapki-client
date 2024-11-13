@@ -193,6 +193,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
     controller.watch();
+
+    if (!sm.visual) {
+      controller.setTextMode();
+    }
     // return controller;
   }
 

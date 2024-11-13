@@ -527,18 +527,21 @@ export function importGraphml(
       const [stateVisual, states] = getStates(rawSm.states);
       sm.states = states;
       const [transitionVisual, transitions] = getTransitions(rawSm.transitions);
+      sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
       sm.transitions = transitions;
-      sm.states = labelStateParameters(sm.states, platform.components, sm.components);
+
+      if (sm.visual) {
+        sm.states = labelStateParameters(sm.states, platform.components, sm.components);
+        sm.transitions = labelTransitionParameters(
+          sm.transitions,
+          platform.components,
+          sm.components
+        );
+      }
       sm.platform = rawSm.platform;
       sm.choiceStates = getChoices(rawSm.choices);
-      sm.transitions = labelTransitionParameters(
-        sm.transitions,
-        platform.components,
-        sm.components
-      );
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };
-      sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
       elements.stateMachines[smId] = sm;
       platforms[rawSm.platform] = platform;
     }

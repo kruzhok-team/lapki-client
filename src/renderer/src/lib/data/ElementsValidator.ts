@@ -202,6 +202,7 @@ function validateComponents(
 export function validateElements(elements: Elements, platforms: { [id: string]: Platform }) {
   for (const smId in elements.stateMachines) {
     const sm = elements.stateMachines[smId];
+    if (!sm.visual) continue;
     const platform = platforms[sm.platform];
     validateComponents(platform.components, sm.components);
     validateStates(sm.states, sm.components, platform.components);

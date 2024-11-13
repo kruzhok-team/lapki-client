@@ -740,8 +740,8 @@ export class EditorModel {
     return true;
   }
 
-  changeComponentPosition(name: string, smId: string, position: Point) {
-    const component = this.data.elements.stateMachines[smId].components[name];
+  changeComponentPosition(smId: string, id: string, position: Point) {
+    const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
 
     component.position = position;

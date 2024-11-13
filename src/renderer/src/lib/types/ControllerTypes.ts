@@ -39,6 +39,7 @@ export interface EditComponentParams {
 }
 
 export interface ChangeComponentPosition {
+  smId: string;
   id: string;
   startPosition: Point;
   endPosition: Point;

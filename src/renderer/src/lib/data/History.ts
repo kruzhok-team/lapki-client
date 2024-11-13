@@ -423,8 +423,16 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
   changeComponentPosition: (sM, { smId, name, startPosition, endPosition }) => ({
-    redo: sM.changeComponentPosition.bind(sM, smId, name, startPosition, endPosition, false),
-    undo: sM.changeComponentPosition.bind(sM, smId, name, endPosition, startPosition, false),
+    redo: sM.changeComponentPosition.bind(
+      sM,
+      { smId, id: name, startPosition, endPosition },
+      false
+    ),
+    undo: sM.changeComponentPosition.bind(
+      sM,
+      { smId, id: name, endPosition, startPosition },
+      false
+    ),
   }),
   swapComponents: (sM, { smId, name1, name2 }) => ({
     redo: sM.swapComponents.bind(sM, { smId, name1, name2 }, false),

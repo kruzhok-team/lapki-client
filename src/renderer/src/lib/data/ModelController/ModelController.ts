@@ -213,6 +213,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeInitialPosition', this.changeInitialStatePosition);
     controller.on('changeFinalStatePosition', this.changeFinalStatePosition);
     controller.on('changeChoicePosition', this.changeChoiceStatePosition);
+    controller.on('changeComponentPosition', this.changeComponentPosition);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -235,6 +236,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('changeInitialPosition', this.changeInitialStatePosition);
     controller.off('changeFinalStatePosition', this.changeFinalStatePosition);
     controller.off('changeChoicePosition', this.changeChoiceStatePosition);
+    controller.off('changeComponentPosition', this.changeComponentPosition);
     controller.unwatch();
   }
 
@@ -1157,26 +1159,22 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('editComponent', args);
   }
 
-  changeComponentPosition(
-    smId: string,
-    name: string,
-    startPosition: Point,
-    endPosition: Point,
-    _canUndo = true
-  ) {
-    this.model.changeComponentPosition(smId, name, endPosition);
+  changeComponentPosition = (args: ChangePosition, _canUndo = true) => {
+    const { smId, id, startPosition = { x: 0, y: 0 }, endPosition } = args;
+    this.model.changeComponentPosition(smId, id, endPosition);
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
-        args: { smId, name, startPosition, endPosition },
+        args: { smId, name: id, startPosition: startPosition, endPosition },
       });
     }
     this.emit('changeComponentPosition', {
-      id: name,
+      smId,
+      id: id,
       startPosition: startPosition,
       endPosition: endPosition,
     });
-  }
+  };
 
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;

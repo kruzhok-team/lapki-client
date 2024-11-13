@@ -942,7 +942,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   linkState = (args: LinkStateParams, canUndo = true) => {
-    const { smId, parentId, childId, endPosition, addOnceOff = true, canBeInitial = true } = args;
+    const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
     const prevParentId = child.parentId;
@@ -965,7 +965,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.linkState(smId, parentId, childId);
     this.changeStatePosition(
-      { smId, id: childId, startPosition: child.position, endPosition },
+      { smId, id: childId, startPosition: child.position, endPosition: { x: 0, y: 0 } },
       false
     );
 
@@ -1121,10 +1121,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     if (parentId) {
-      this.linkState(
-        { smId, parentId, childId: newStateId, canBeInitial, endPosition: args.position },
-        canUndo
-      );
+      this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
       // this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
     }
@@ -1283,10 +1280,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     nestedStates.forEach((childState) => {
       // Если есть родительское, перепривязываем к нему
       if (state.parentId) {
-        this.linkState(
-          { smId, parentId: state.parentId, childId: childState[0], endPosition: state.position },
-          canUndo
-        );
+        this.linkState({ smId, parentId: state.parentId, childId: childState[0] }, canUndo);
       } else {
         this.unlinkState({ smId, id: childState[0], canUndo });
       }
@@ -1503,7 +1497,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.linkFinalState(smId, stateId, parentId);
 
-    this.emit('linkFinalState', { smId, childId: stateId, parentId, endPosition: state.position });
+    this.emit('linkFinalState', { smId, childId: stateId, parentId });
   }
 
   deleteFinalState(args: DeleteDrawableParams, canUndo = true) {
@@ -1540,7 +1534,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!state || !parent) return;
 
     this.model.linkChoiceState(smId, stateId, parentId);
-    this.emit('linkChoiceState', { smId, childId: stateId, parentId, endPosition: state.position });
+    this.emit('linkChoiceState', { smId, childId: stateId, parentId });
   }
 
   createChoiceState(params: CreateChoiceStateParams, canUndo = true) {

@@ -70,7 +70,7 @@ export interface DeleteStateMachineParams {
 export interface LinkStateParams {
   parentId: string;
   childId: string;
-
+  endPosition: Point;
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   smId: string;
   addOnceOff?: boolean;

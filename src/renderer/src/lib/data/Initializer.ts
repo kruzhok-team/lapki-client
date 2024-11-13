@@ -78,10 +78,10 @@ export class Initializer {
     }
   }
 
-  initInitialStates(states: { [id: string]: DataInitialState }) {
+  initInitialStates(smId: string, states: { [id: string]: DataInitialState }) {
     for (const id in states) {
       const state = states[id];
-      this.createInitialStateView(id, state);
+      this.createInitialStateView(smId, id, state);
     }
 
     for (const id in states) {
@@ -203,8 +203,8 @@ export class Initializer {
     this.notes.watch(note);
   }
 
-  private createInitialStateView(id: string, initialStateData: DataInitialState) {
-    const state = new InitialState(this.app, id, initialStateData);
+  private createInitialStateView(smId: string, id: string, initialStateData: DataInitialState) {
+    const state = new InitialState(this.app, id, smId, initialStateData);
     this.states.data.initialStates.set(state.id, state);
     this.states.watch(state);
     this.app.view.children.add(state, Layer.InitialStates);

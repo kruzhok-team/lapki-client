@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
+import { StateMachineData } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';

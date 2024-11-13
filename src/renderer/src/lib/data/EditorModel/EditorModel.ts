@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { EventSelection } from '@renderer/lib/drawable';
 import { stateStyle } from '@renderer/lib/styles';
 import {
@@ -20,6 +19,7 @@ import {
   CreateFinalStateParams,
   CreateChoiceStateParams,
   SwapComponentsParams,
+  StateMachineData,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {

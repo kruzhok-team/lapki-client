@@ -24,12 +24,6 @@ interface StateMachineEditModalProps {
   selectPlatformDisabled: boolean;
 }
 
-// TODO (Roundabout1): наверное стоит перенести этот тип данных в другое место?
-export type StateMachineData = {
-  name: string;
-  platform: string;
-};
-
 export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   isOpen,
   onClose,

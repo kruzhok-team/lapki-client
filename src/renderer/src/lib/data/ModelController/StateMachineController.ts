@@ -2,7 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
-import { DeleteStateMachineParams, Layer } from '@renderer/lib/types';
+import { DeleteStateMachineParams, EditStateMachine, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateStateMachineParams } from '@renderer/lib/types/ModelTypes';
 
@@ -81,6 +81,15 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     const machineLayer = this.view.children.getLayer(Layer.Machines);
     return machineLayer.find((value) => value['id'] === sm) as DrawableStateMachine | undefined;
   }
+
+  editStateMachine = (args: EditStateMachine) => {
+    const { id, name } = args;
+    const item = this.items.get(id);
+    if (!item) return;
+
+    item.icon.label = name;
+    this.view.isDirty = true;
+  };
 
   deleteStateMachine = (args: DeleteStateMachineParams) => {
     const sm = this.items.get(args.id);

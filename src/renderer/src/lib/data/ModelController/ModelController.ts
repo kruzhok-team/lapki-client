@@ -1,6 +1,5 @@
 import { Point } from 'electron';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
@@ -39,6 +38,7 @@ import {
   CreateTransitionParams,
   DeleteDrawableParams,
   DeleteEventParams,
+  StateMachineData,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
 import { generateId, isPointInRectangle } from '@renderer/lib/utils';
@@ -625,7 +625,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   editStateMachine(smId: string, data: StateMachineData) {
     this.model.editStateMachine(smId, data);
-    // TODO: emit('editStateMachine', data)
+    this.emit('editStateMachine', { id: smId, ...data });
   }
 
   deleteStateMachine(smId: string) {

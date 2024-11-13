@@ -30,6 +30,7 @@ import {
   DeleteEventParams,
   DeleteStateMachineParams,
   EditComponentParams,
+  EditStateMachine,
   emptyControllerListeners,
   Layer,
   LinkStateParams,
@@ -37,6 +38,7 @@ import {
   RenameComponentParams,
   SelectDrawable,
   SetMountedStatusParams,
+  StateMachineData,
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
@@ -158,6 +160,7 @@ export type CanvasControllerEvents = {
   createStateMachine: CreateStateMachineParams;
   openChangeTransitionModalFromController: { smId: string; id: string };
   setTextMode: boolean;
+  editStateMachine: EditStateMachine;
 };
 
 export type CanvasData = {
@@ -165,7 +168,7 @@ export type CanvasData = {
 };
 
 // Это разделение нужно при удалении машин состояний.
-// scheme и common все равно контроллерам, если связанные с ними машины состояний удалят
+// scheme и common все равно, если связанные с ними машины состояний удалят
 // А specific становится не нужным, если его машину состояний удалят
 // specific - канвас для работы с определенной машиной состояний
 // scheme - схемотехнический экран
@@ -284,11 +287,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   ) {
     const smId = parameters['smId'];
     if (smId) {
-      // сюда не попадаем
       if (!this.stateMachinesSub[smId]) {
         return () => null;
       }
-      // сюда тоже
       if (!this.stateMachinesSub[smId].includes(attribute)) {
         return () => null;
       }
@@ -360,20 +361,17 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeEvent', this.binded['changeEvent']);
             this.model.off('changeEventAction', this.binded['changeEventAction']);
             this.model.off('deleteEventAction', this.binded['deleteEventAction']);
-            // this.initializer.initStates(initData as { [id: string]: State });
             break;
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);
             this.model.off('changeInitialPosition', this.binded['changeInitialPosition']);
             this.model.off('deleteInitialState', this.binded['deleteInitialState']);
-            // this.initializer.initInitialStates(initData as { [id: string]: InitialState });
             break;
           case 'final':
             this.model.off('createFinal', this.binded['createFinal']);
             this.model.off('deleteFinal', this.binded['deleteFinal']);
             this.model.off('changeFinalStatePosition', this.binded['changeFinalStatePosition']);
             this.model.off('linkFinalState', this.binded['linkFinalState']);
-            // this.initializer.initFinalStates(initData as { [id: string]: FinalState });
             break;
           case 'choice':
             this.model.off('createChoice', this.binded['createChoice']);
@@ -381,7 +379,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('selectState', this.binded['selectState']);
             this.model.off('linkChoiceState', this.binded['linkChoiceState']);
             this.model.off('changeChoicePosition', this.binded['changeChoicePosition']);
-            // this.initializer.initChoiceStates(initData as { [id: string]: ChoiceState });
             break;
           case 'note':
             this.model.off('createNote', this.binded['createNote']);
@@ -392,7 +389,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeNoteFontSize', this.binded['changeNoteFontSize']);
             this.model.off('changeNoteTextColor', this.binded['changeNoteTextColor']);
             this.model.off('changeNoteBackgroundColor', this.binded['changeNoteBackgroundColor']);
-            // this.initializer.initNotes(initData as { [id: string]: Note });
             break;
           case 'component':
             this.model.off('createComponent', this.binded['createComponent']);
@@ -401,8 +397,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('renameComponent', this.binded['renameComponent']);
             this.model.off('selectComponent', this.binded['selectComponent']);
             this.model.off('changeComponentSelection', this.binded['changeComponentSelection']);
-            // this.initializer.initNotes(initData as { [id: string]: Note });
-            // this.initComponents(initData as { [id: string]: Component });
             break;
           case 'transition':
             this.model.off('createTransition', this.binded['createTransition']);
@@ -415,11 +409,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeTransitionPosition', this.binded['changeTransitionPosition']);
             this.model.off('selectTransition', this.binded['selectTransition']);
             this.model.off('linkTransitions', this.binded['linkTransitions']);
-            // this.initializer.initTransitions(initData as { [id: string]: Transition });
             break;
           case 'stateMachine':
             this.model.off('createStateMachine', this.binded['createStateMachine']);
             this.model.off('deleteStateMachine', this.binded['deleteStateMachine']);
+            this.model.off('editStateMachine', this.binded['editStateMachine']);
             break;
           default:
             throw new Error('Unknown attribute');
@@ -688,6 +682,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.model.on(
             'deleteStateMachine',
             this.bindHelper('stateMachine', 'deleteStateMachine', this.deleteStateMachine)
+          );
+          this.model.on(
+            'editStateMachine',
+            this.bindHelper('stateMachine', 'editStateMachine', this.stateMachines.editStateMachine)
           );
         }
         if (!this.initData[smId]) {

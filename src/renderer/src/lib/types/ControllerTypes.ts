@@ -67,6 +67,12 @@ export interface DeleteStateMachineParams {
   purge?: boolean;
 }
 
+export interface EditStateMachine {
+  id: string;
+  name: string;
+  platform: string;
+}
+
 export interface LinkStateParams {
   parentId: string;
   childId: string;

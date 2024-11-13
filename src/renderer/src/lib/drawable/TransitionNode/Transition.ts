@@ -57,7 +57,6 @@ export class Transition extends Shape {
     if (!this.data.label) {
       throw new Error(`Transition with id ${this.id} does not have label`);
     }
-
     this.data.label.position = value;
   }
 

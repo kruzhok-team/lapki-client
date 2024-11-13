@@ -130,7 +130,7 @@ export class EditorModel {
     sm.name = data.name;
     sm.platform = data.platform;
 
-    this.triggerDataUpdate('elements.stateMachinesId');
+    this.triggerDataUpdate('elements.name');
   }
 
   // TODO (L140-beep): разобраться с возвращаемым never

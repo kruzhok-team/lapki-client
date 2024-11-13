@@ -1,5 +1,3 @@
-import { s } from 'vitest/dist/reporters-5f784f42';
-
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';

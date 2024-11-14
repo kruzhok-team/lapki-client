@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { Component, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
+import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useEditorContext } from '@renderer/store/EditorContext';
 import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
@@ -31,6 +32,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   componentOptions,
 }) => {
   const { controller } = useEditorContext();
+  const Component = 'label';
 
   const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
     if (type && typeof type === 'string' && validators[type]) {
@@ -115,7 +117,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
-
         return (
           <div className="flex items-start" key={name}>
             <Checkbox
@@ -125,6 +126,20 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             />
             {isChecked ? (
               <div className="flex w-full gap-2" key={name}>
+                <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
+                  <div className="flex min-w-28 items-center gap-1">
+                    <span>{label}</span>
+                    {hint && (
+                      <WithHint hint={hint}>
+                        {(props) => (
+                          <div className="shrink-0" {...props}>
+                            <QuestionMark className="h-5 w-5" />
+                          </div>
+                        )}
+                      </WithHint>
+                    )}
+                  </div>
+                </Component>
                 <Select
                   containerClassName="w-full"
                   options={filteredComponentOptions}
@@ -144,6 +159,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   isSearchable={false}
                   //error={errors.selectedMethodParam1 || ''}
                 />
+                <p className="pl-[120px] text-sm text-error">{error}</p>
               </div>
             ) : (
               <ComponentFormFieldLabel

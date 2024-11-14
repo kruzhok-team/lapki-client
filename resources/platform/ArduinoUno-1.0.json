@@ -1,7 +1,7 @@
 {
   "name": "Arduino Uno",
   "id": "ArduinoUno",
-  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!", 
+  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!",
   "icon": "путь/до/иконки",
   "staticComponents": false,
   "version": "1.0",
@@ -44,7 +44,7 @@
         "buttonMode": {
           "type": "uint8_t",
           "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
-          "optional": true            
+          "optional": true
         }
       },
       "variables": {
@@ -142,7 +142,7 @@
           "parameters": [
             {
               "name": "interval",
-              "type": "unsigned long",
+              "type": "Matrix7x5",
               "description": "Интервал срабатывания."
             }
           ],

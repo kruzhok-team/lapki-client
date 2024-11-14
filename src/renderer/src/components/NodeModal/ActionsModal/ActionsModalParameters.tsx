@@ -3,8 +3,11 @@ import React from 'react';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Select } from '@renderer/components/UI';
 import { ArgList } from '@renderer/types/diagram';
+import { Matrix } from '@renderer/types/MatrixWidget';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
+
+import { MatrixWidget } from './MatrixWidget';
 
 interface ActionsModalParametersProps {
   protoParameters: ArgumentProto[];
@@ -35,6 +38,28 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
+  const onChange = (raw: number, height: number, value: number) => {
+    console.log('aaa');
+  }
+
+  const parseMatrixType = (type: string, value: string): Matrix => {
+    const rawSize = type.split('Matrix')[1];
+    const [width, height] = rawSize.split('x').map((value) => Number(value));
+    const emptyValues: number[][] = [];
+    for (let raw = 0; raw != height; raw++) {
+      emptyValues.push([]);
+      for (let col = 0; col != width; col++) {
+        emptyValues[raw].push(0);
+      }
+    }
+    console.log(emptyValues);
+    return {
+      width,
+      height,
+      values: emptyValues, // TODO: Если есть значение парсить его и вставлять
+    };
+  };
+
   if (protoParameters.length === 0) {
     return null;
     // return <div className="flex text-text-inactive">Параметров нет</div>;
@@ -63,6 +88,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               />
             </ComponentFormFieldLabel>
           );
+        }
+
+        if (type.startsWith('Matrix')) {
+          const matrix = parseMatrixType(type, value);
+          return <MatrixWidget {...matrix} />;
         }
 
         return (

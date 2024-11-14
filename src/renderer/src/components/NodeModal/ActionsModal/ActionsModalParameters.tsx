@@ -33,13 +33,13 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   const { controller } = useEditorContext();
 
   const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
-    // if (type && typeof type === 'string' && validators[type]) {
-    //   if (!validators[type](value)) {
-    //     setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
-    //   } else {
-    //     setErrors((p) => ({ ...p, [name]: '' }));
-    //   }
-    // }
+    if (type && typeof type === 'string' && validators[type]) {
+      if (!validators[type](value)) {
+        setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
+      } else {
+        setErrors((p) => ({ ...p, [name]: '' }));
+      }
+    }
 
     parameters[name] = value;
     setParameters({ ...parameters });
@@ -73,24 +73,16 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       });
   }, [controller.platform, selectedParameterComponent]);
 
-  const handleComponentChange = (
-    name: string,
-    type: ArgType | undefined,
-    value: SingleValue<SelectOption>
-  ) => {
+  const handleComponentChange = (name: string, value: SingleValue<SelectOption>) => {
     setSelectedParameterComponent(value?.value ?? null);
     setSelectedMethod(null);
-    handleInputChange(name, type, '');
+    handleInputChange(name, undefined, '');
   };
 
-  const handleMethodChange = (
-    name: string,
-    type: ArgType | undefined,
-    value: SingleValue<SelectOption>
-  ) => {
+  const handleMethodChange = (name: string, value: SingleValue<SelectOption>) => {
     setSelectedMethod(value?.value ?? null);
     if (value) {
-      handleInputChange(name, type, `${selectedParameterComponent}.${value?.value}`);
+      handleInputChange(name, undefined, `${selectedParameterComponent}.${value?.value}`);
     }
   };
 
@@ -136,7 +128,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <Select
                   containerClassName="w-full"
                   options={filteredComponentOptions}
-                  onChange={(opt) => handleComponentChange(name, type, opt)}
+                  onChange={(opt) => handleComponentChange(name, opt)}
                   value={
                     filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
                     null
@@ -147,7 +139,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <Select
                   containerClassName="w-full"
                   options={methodOptions}
-                  onChange={(opt) => handleMethodChange(name, type, opt)}
+                  onChange={(opt) => handleMethodChange(name, opt)}
                   value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
                   isSearchable={false}
                   //error={errors.selectedMethodParam1 || ''}

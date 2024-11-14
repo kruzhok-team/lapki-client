@@ -47,17 +47,16 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
-  const [selectedParameterComponent, setSelectedParameterComponent] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-  const [isChecked, setIsChecked] = useState(false);
+  //const [selectedParameterComponent, setSelectedParameterComponent] = useState<string | null>(null);
+  //const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [isChecked, setIsChecked] = useState<boolean | null>(null);
 
   const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
-  const methodOptions: SelectOption[] = useMemo(() => {
+  const methodOptionsSearch = (selectedParameterComponent: string | null) => {
     if (!selectedParameterComponent || !controller.platform) return [];
     const getAll = controller.platform['getAvailableVariables'];
     const getImg = controller.platform['getVariableIconUrl'];
 
-    // Тут call потому что контекст теряется
     return getAll
       .call(controller.platform, selectedParameterComponent)
       .map(({ name, description }) => {
@@ -73,19 +72,29 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           ),
         };
       });
-  }, [controller.platform, selectedParameterComponent]);
-
-  const handleComponentChange = (name: string, value: SingleValue<SelectOption>) => {
-    setSelectedParameterComponent(value?.value ?? null);
-    setSelectedMethod(null);
-    handleInputChange(name, undefined, '');
   };
 
-  const handleMethodChange = (name: string, value: SingleValue<SelectOption>) => {
-    setSelectedMethod(value?.value ?? null);
-    if (value) {
-      handleInputChange(name, undefined, `${selectedParameterComponent}.${value?.value}`);
+  const isAttribute = (parameter: string) => {
+    if (parameter.includes('"') || !isNaN(Number(parameter))) {
+      return false;
     }
+    const splitParameter = parameter.split('.');
+    if (splitParameter.length != 2) {
+      return false;
+    }
+    const component = splitParameter[0];
+    const method = splitParameter[1];
+    for (const opt of componentOptions) {
+      if (opt.value == component) {
+        return true;
+      }
+    }
+    for (const opt of methodOptionsSearch(splitParameter[0])) {
+      if (opt.value == method) {
+        return true;
+      }
+    }
+    return false;
   };
 
   if (protoParameters.length === 0) {
@@ -103,7 +112,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         const hint =
           description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
         const label = name + ':';
-
         if (Array.isArray(type)) {
           const options = type.map((value) => ({ label: value, value }));
           return (
@@ -117,14 +125,24 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
+
+        // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
+        const currentChecked = isChecked ?? isAttribute(value);
+        const valueSplit = value.split('.');
+        const selectedParameterComponent = currentChecked ? valueSplit[0] : null;
+        const selectedParameterMethod = currentChecked ? valueSplit[1] : null;
+        const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
           <div className="flex items-start" key={name}>
             <Checkbox
-              checked={!isChecked}
-              onCheckedChange={(v) => setIsChecked(!v)}
+              checked={currentChecked}
+              onCheckedChange={() => {
+                setIsChecked(!currentChecked);
+                handleInputChange(name, type, '');
+              }}
               className="mr-2 mt-[9px]"
             />
-            {isChecked ? (
+            {currentChecked ? (
               <div className="flex w-full gap-2" key={name}>
                 <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                   <div className="flex min-w-28 items-center gap-1">
@@ -143,7 +161,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <Select
                   containerClassName="w-full"
                   options={filteredComponentOptions}
-                  onChange={(opt) => handleComponentChange(name, opt)}
+                  onChange={(opt) => handleInputChange(name, undefined, opt?.value ?? '')}
                   value={
                     filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
                     null
@@ -154,8 +172,14 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <Select
                   containerClassName="w-full"
                   options={methodOptions}
-                  onChange={(opt) => handleMethodChange(name, opt)}
-                  value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
+                  onChange={(opt) =>
+                    handleInputChange(
+                      name,
+                      undefined,
+                      `${selectedParameterComponent}.${opt?.value ?? ''}`
+                    )
+                  }
+                  value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
                   isSearchable={false}
                   //error={errors.selectedMethodParam1 || ''}
                 />

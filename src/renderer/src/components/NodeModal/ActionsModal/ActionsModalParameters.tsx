@@ -1,6 +1,4 @@
-import React, { Component, useMemo, useState } from 'react';
-
-import { SingleValue } from 'react-select';
+import React, { useState } from 'react';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
@@ -9,7 +7,6 @@ import { useEditorContext } from '@renderer/store/EditorContext';
 import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
-
 interface ActionsModalParametersProps {
   protoParameters: ArgumentProto[];
   parameters: ArgList;

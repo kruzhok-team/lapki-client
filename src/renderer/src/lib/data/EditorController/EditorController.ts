@@ -10,7 +10,7 @@ import {
   RemoveComponentParams,
 } from '@renderer/lib/types/EditorController';
 import { AddComponentParams, SwapComponentsParams } from '@renderer/lib/types/EditorModel';
-import { Condition, Variable } from '@renderer/types/diagram';
+import { ArgList, Condition, Variable } from '@renderer/types/diagram';
 
 import { Initializer } from './Initializer';
 import { NotesController } from './NotesController';
@@ -106,7 +106,6 @@ export class EditorController {
 
   editComponent(args: EditComponentParams, canUndo = true) {
     const { name, parameters, newName } = args;
-
     if (!this.platform) return;
 
     const prevComponent = structuredClone(this.app.model.data.elements.components[name]);
@@ -119,7 +118,6 @@ export class EditorController {
       label: component.parameters['label'],
       color: component.parameters['labelColor'],
     });
-
     if (newName) {
       this.renameComponent(name, newName);
     }
@@ -196,8 +194,12 @@ export class EditorController {
         }
         for (const act of ev.do) {
           // заменяем в действии
-          if (typeof act !== 'string' && act.component == name) {
-            act.component = newName;
+          if (typeof act !== 'string') {
+            if (act.component == name) {
+              act.component = newName;
+              continue;
+            }
+            this.renameParameters(act.args, name, newName);
           }
         }
       }
@@ -215,8 +217,12 @@ export class EditorController {
 
       if (transition.data.label.do) {
         for (const act of transition.data.label.do) {
-          if (typeof act !== 'string' && act.component === name) {
-            act.component = newName;
+          if (typeof act !== 'string') {
+            if (act.component === name) {
+              act.component = newName;
+              continue;
+            }
+            this.renameParameters(act.args, name, newName);
           }
         }
       }
@@ -227,6 +233,26 @@ export class EditorController {
     });
 
     this.view.isDirty = true;
+  }
+
+  renameParameters(args: ArgList | undefined, oldName: string, newName: string) {
+    if (!args) return;
+    for (const [index, arg] of Object.entries(args)) {
+      if (arg.includes('"') || !isNaN(Number(arg))) {
+        continue;
+      }
+      const splitParameter = arg.split('.');
+      if (splitParameter.length != 2) {
+        continue;
+      }
+      const component = splitParameter[0];
+      const method = splitParameter[1];
+      if (component == oldName) {
+        args[index] = `${newName}.${method}`;
+      } else {
+        continue;
+      }
+    }
   }
 
   renameCondition(ac: Condition, oldName: string, newName: string) {

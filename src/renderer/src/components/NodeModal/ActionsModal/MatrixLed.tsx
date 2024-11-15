@@ -7,11 +7,18 @@ interface MatrixLedProps {
   onChange: (rawIndex: number, colIndex: number, newValue: number) => void;
 }
 
-export const MatrixLed: React.FC<MatrixLedProps> = ({ initValue }) => {
+export const MatrixLed: React.FC<MatrixLedProps> = ({
+  colIndex,
+  rawIndex,
+  initValue,
+  onChange,
+}) => {
   const [value, setValue] = useState<number>(initValue);
   const handleClick = (e: React.MouseEvent) => {
+    const newValue = value === 0 ? 1 : 0;
     setValue(value === 0 ? 1 : 0);
     e.stopPropagation();
+    onChange(rawIndex, colIndex, newValue);
   };
   return (
     <div

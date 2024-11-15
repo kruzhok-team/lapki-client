@@ -38,25 +38,77 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
-  const onChange = (raw: number, height: number, value: number) => {
-    console.log('aaa');
-  }
+  const onChange = (
+    parameter: string,
+    width: number,
+    height: number,
+    raw: number,
+    col: number,
+    value: number
+  ) => {
+    const matrix = parseMatrixFromString(parameters[parameter], width, height);
+    matrix[raw][col] = value;
+    parameters[parameter] = buildMatrix({
+      values: matrix,
+      height,
+      width,
+    });
+    setParameters({
+      ...parameters,
+    });
+  };
 
-  const parseMatrixType = (type: string, value: string): Matrix => {
-    const rawSize = type.split('Matrix')[1];
-    const [width, height] = rawSize.split('x').map((value) => Number(value));
-    const emptyValues: number[][] = [];
-    for (let raw = 0; raw != height; raw++) {
-      emptyValues.push([]);
-      for (let col = 0; col != width; col++) {
-        emptyValues[raw].push(0);
+  const buildMatrix = (matrix: Matrix) => {
+    let strMatrix = '{';
+    for (let raw = 0; raw != matrix.height; raw += 1) {
+      for (let col = 0; col != matrix.width; col += 1) {
+        strMatrix += Number(matrix.values[raw][col]).toString() + ', ';
       }
     }
-    console.log(emptyValues);
+    strMatrix = strMatrix.slice(0, strMatrix.length - 2) + '}';
+
+    return strMatrix;
+  };
+
+  const parseMatrixFromString = (values: string, width: number, height: number): number[][] => {
+    const matrixValues: number[][] = [];
+    const parsedValues = values
+      .slice(1, values.length - 1)
+      .split(',')
+      .map((str) => str.trim());
+    for (let raw = 0; raw != height; raw += 1) {
+      matrixValues.push(
+        parsedValues.slice(raw * width, (raw + 1) * width).map((value) => Number(value))
+      );
+    }
+    return matrixValues;
+  };
+  const initMatrix = (parameter: string, type: string, value: string): Matrix => {
+    const rawSize = type.split('Matrix')[1];
+    const [width, height] = rawSize.split('x').map((value) => Number(value));
+    if (!parameters[parameter]) {
+      const emptyValues: number[][] = [];
+      for (let raw = 0; raw != height; raw++) {
+        emptyValues.push([]);
+        for (let col = 0; col != width; col++) {
+          emptyValues[raw].push(0);
+        }
+      }
+      parameters[parameter] = buildMatrix({
+        values: emptyValues,
+        width: width,
+        height: height,
+      });
+      return {
+        width,
+        height,
+        values: emptyValues, // TODO: Если есть значение парсить его и вставлять
+      };
+    }
     return {
       width,
       height,
-      values: emptyValues, // TODO: Если есть значение парсить его и вставлять
+      values: parseMatrixFromString(parameters[parameter], width, height), // TODO: Если есть значение парсить его и вставлять
     };
   };
 
@@ -89,10 +141,23 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
-
         if (type.startsWith('Matrix')) {
-          const matrix = parseMatrixType(type, value);
-          return <MatrixWidget {...matrix} />;
+          const matrix = initMatrix(name, type, value);
+          return (
+            <ComponentFormFieldLabel
+              key={name}
+              label={label}
+              hint={hint}
+              error={error}
+              value={value}
+              name={name}
+            >
+              <MatrixWidget
+                {...matrix}
+                onChange={onChange.bind(this, name, matrix.width, matrix.height)}
+              />
+            </ComponentFormFieldLabel>
+          );
         }
 
         return (

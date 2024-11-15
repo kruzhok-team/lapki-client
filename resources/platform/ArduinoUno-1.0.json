@@ -142,7 +142,7 @@
           "parameters": [
             {
               "name": "interval",
-              "type": "Matrix7x5",
+              "type": "Matrix4x2",
               "description": "Интервал срабатывания."
             }
           ],

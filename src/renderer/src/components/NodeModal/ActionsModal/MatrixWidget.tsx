@@ -9,7 +9,7 @@ interface MatrixWidgetProps {
   onChange: (rawIndex: number, colIndex: number, newValue: number) => void;
 }
 
-export const MatrixWidget: React.FC<MatrixWidgetProps> = ({ onChange, width, height, values }) => {
+export const MatrixWidget: React.FC<MatrixWidgetProps> = ({ onChange, values }) => {
   return (
     <div className="flex flex-col">
       {values.map((raw, rawIndex) => {

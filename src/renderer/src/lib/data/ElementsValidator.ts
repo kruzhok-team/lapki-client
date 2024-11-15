@@ -88,30 +88,31 @@ function validateArgs(
   method: MethodProto | SignalProto,
   args: ArgList | undefined
 ) {
-  const methodArgs: ArgumentProto[] | undefined = method.parameters;
-  if (methodArgs === undefined) {
-    if (args !== undefined && Object.keys(args).length != 0) {
-      throw new Error(
-        `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
-          Object.keys(args).length
-        }`
-      );
-    }
-  } else {
-    if (args === undefined) {
-      throw new Error(
-        `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${methodArgs.length}`
-      );
-    }
-    const argNames = Object.keys(args);
-    for (const argIdx in methodArgs) {
-      if (argNames[argIdx] !== methodArgs[argIdx].name) {
-        throw new Error(
-          `Неправильный аргумент ${argNames[argIdx]}, ожидался ${methodArgs[argIdx].name}`
-        );
-      }
-    }
-  }
+  // console.log(args);
+  // const methodArgs: ArgumentProto[] | undefined = method.parameters;
+  // if (methodArgs === undefined) {
+  //   if (args !== undefined && Object.keys(args).length != 0) {
+  //     throw new Error(
+  //       `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
+  //         Object.keys(args).length
+  //       }`
+  //     );
+  //   }
+  // } else {
+  //   if (args === undefined) {
+  //     throw new Error(
+  //       `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${methodArgs.length}`
+  //     );
+  //   }
+  //   const argNames = Object.keys(args);
+  //   for (const argIdx in methodArgs) {
+  //     if (argNames[argIdx] !== methodArgs[argIdx].name) {
+  //       throw new Error(
+  //         `Неправильный аргумент ${argNames[argIdx]}, ожидался ${methodArgs[argIdx].name}`
+  //       );
+  //     }
+  //   }
+  // }
 }
 
 function validateStates(

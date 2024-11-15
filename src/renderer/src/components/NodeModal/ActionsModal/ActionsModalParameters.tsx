@@ -83,7 +83,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     }
     return matrixValues;
   };
-  const initMatrix = (parameter: string, type: string, value: string): Matrix => {
+  const initMatrix = (parameter: string, type: string): Matrix => {
     const rowSize = type.split('Matrix')[1];
     const [width, height] = rowSize.split('x').map((value) => Number(value));
     if (!parameters[parameter]) {
@@ -142,7 +142,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           );
         }
         if (type.startsWith('Matrix')) {
-          const matrix = initMatrix(name, type, value);
+          const matrix = initMatrix(name, type);
           return (
             <ComponentFormFieldLabel
               as="div"

@@ -3,7 +3,7 @@ import { Point } from '@renderer/lib/types';
 import { Action, ArgList, Condition, Event } from './diagram';
 
 export type CompilerElements = {
-  transitions: { [id: string]: CompilerTransition };
+  transitions: CompilerTransition[];
   initialState: CompilerInitialState;
   components: { [id: string]: CompilerComponent };
   platform: string;

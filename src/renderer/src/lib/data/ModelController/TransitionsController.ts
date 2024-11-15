@@ -234,7 +234,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     // TODO (L140-beep): И что с этим делать?
     if (this.ghost.source instanceof Note) {
       this.createTransition({
-        smId: '',
+        smId: this.ghost.source.smId,
+        sourceId: this.ghost?.source.id,
+        targetId: state.id,
+      });
+      this.controller.emit('createTransitionFromController', {
+        smId: state.smId,
         sourceId: this.ghost?.source.id,
         targetId: state.id,
       });
@@ -258,7 +263,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note && transition.data.label) {
       this.createTransition({
-        smId: '',
+        smId: this.ghost.source.smId,
         sourceId: this.ghost?.source.id,
         targetId: transition.id,
       });
@@ -277,7 +282,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.ghost.source !== note
     ) {
       this.createTransition({
-        smId: '',
+        smId: note.smId,
         sourceId: this.ghost?.source.id,
         targetId: note.id,
       });
@@ -292,7 +297,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note) {
       this.createTransition({
-        smId: '',
+        smId: this.ghost.source.smId,
         sourceId: this.ghost?.source.id,
         targetId: state.id,
       });
@@ -307,7 +312,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
     if (this.ghost.source instanceof Note) {
       this.createTransition({
-        smId: '',
+        smId: this.ghost.source.smId,
         sourceId: this.ghost?.source.id,
         targetId: state.id,
       });
@@ -334,7 +339,11 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     transition: Transition,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.changeTransitionPosition({ smId: '', id: transition.id, endPosition: e.dragEndPosition });
+    this.changeTransitionPosition({
+      smId: transition.smId,
+      id: transition.id,
+      endPosition: e.dragEndPosition,
+    });
   };
 
   watchTransition(transition: Transition) {

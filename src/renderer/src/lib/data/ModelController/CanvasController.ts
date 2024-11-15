@@ -400,6 +400,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('editComponent', this.binded['editComponent']);
             this.model.off('renameComponent', this.binded['renameComponent']);
             this.model.off('selectComponent', this.binded['selectComponent']);
+            this.model.off('changeComponentSelection', this.binded['changeComponentSelection']);
             // this.initializer.initNotes(initData as { [id: string]: Note });
             // this.initComponents(initData as { [id: string]: Component });
             break;
@@ -600,6 +601,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.initData[smId].notes = {
           ...(initData as { [id: string]: Note }),
         };
+        this.model.on('changeNoteSelection', this.notes.changeNoteSelection);
         break;
       case 'component':
         if (!this.binded['createComponent']) {
@@ -622,6 +624,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.model.on(
             'selectComponent',
             this.bindHelper('component', 'selectComponent', this.selectComponent)
+          );
+          this.model.on(
+            'changeComponentSelection',
+            this.bindHelper(
+              'component',
+              'changeComponentSelection',
+              this.components.changeComponentSelection
+            )
           );
         }
         this.initData[smId].components = {
@@ -690,8 +700,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   rewatchEdgeHandlers() {
+    // TODO(L140-beep): Вот с этим надо что-то делать, иначе плодиться будет только так
     for (const state of this.states.data.states.values()) {
       state.edgeHandlers.bindEvents();
+    }
+    for (const note of this.notes.items.values()) {
+      note.edgeHandlers.bindEvents();
     }
   }
 
@@ -864,6 +878,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
     this.removeSelection();
     component.setIsSelected(true);
+    this.emit('selectComponent', { id: component.id, smId: component.smId });
   };
 
   private renameCondition(ac: Condition, oldName: string, newName: string) {

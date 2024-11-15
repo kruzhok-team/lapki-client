@@ -208,6 +208,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('selectTransition', this.selectTransition);
     controller.on('createTransitionFromController', this.onCreateTransitionModal);
     controller.on('openChangeTransitionModalFromController', this.openChangeTransitionModal);
+    controller.on('selectComponent', this.selectComponent);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -234,7 +235,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     sourceId: string;
     targetId: string;
   }) => {
-    this.emit('openCreateTransitionModal', args);
+    if (this.model.data.elements.stateMachines[args.smId].notes[args.sourceId]) {
+      this.createTransition({ ...args });
+    } else {
+      this.emit('openCreateTransitionModal', args);
+    }
   };
 
   private setMountStatus = (args: SetMountedStatusParams) => {
@@ -366,13 +371,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   // TODO: Думаю, из-за этого не очень хорошо компоненты выделяются
-  selectComponent(id: string) {
-    this.removeSelection();
+  selectComponent = (args: SelectDrawable) => {
+    this.removeSelection([args.id]);
 
-    // TODO: Откуда брать id машины состояний? UPDATE: Доделать
-    this.model.changeComponentSelection(this.getSmId(id, 'components'), id, true);
-    this.emit('selectComponent', { id: id, smId: '' });
-  }
+    this.model.changeComponentSelection(args.smId, args.id, true);
+    this.emit('changeComponentSelection', { ...args, value: true });
+    // this.emit('selectComponent', args);
+  };
 
   createComponent(args: CreateComponentParams) {
     this.model.createComponent(args);
@@ -401,13 +406,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;
 
+    this.model.changeTransition(args);
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
         args: { args, prevData: structuredClone(transition) },
       });
     }
-
     this.emit('changeTransition', args);
   }
 
@@ -678,7 +683,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!transitionWithId) return;
 
     this.deleteInitialState({ smId, id: initialStateId }, canUndo);
-    this.deleteTransition({ smId, id: transitionWithId[0] }, canUndo);
+    this.deleteTransition({ smId, id: transitionWithId[0] }, false);
   }
 
   deleteInitialState(args: DeleteDrawableParams, canUndo = true) {
@@ -687,17 +692,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = sm.initialStates[id];
     if (!state) return;
 
-    const targetId = Object.keys(sm.transitions).find(
+    const transitionId = Object.keys(sm.transitions).find(
       (transitionId) => sm.transitions[transitionId].sourceId == id
     );
-    if (!targetId) return;
+    if (!transitionId) return;
     this.model.deleteInitialState(smId, id); // Удаляем модель
     if (canUndo) {
       this.history.do({
         type: 'deleteInitialState',
         args: {
           ...args,
-          targetId: targetId,
+          targetId: sm.transitions[transitionId].targetId,
         },
       });
     }
@@ -826,7 +831,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       // учитываем вложенность, нужно поместить состояние
       // в максимально дочернее
       if (!this.model.data.elements.stateMachines[smId].states[possibleParentId]) continue;
-      let children = this.getEachByParentId(smId, possibleParentId);
+      let children = this.getStatesByParentId(smId, possibleParentId);
       let searchPending = true;
       while (searchPending) {
         searchPending = false;
@@ -838,7 +843,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           possibleParent = child;
           possibleParentId = id;
           searchPending = true;
-          children = this.getEachByParentId(smId, possibleParentId);
+          children = this.getStatesByParentId(smId, possibleParentId);
           break;
         }
       }
@@ -928,6 +933,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
+    const prevParentId = child.parentId;
     if (!parent || !child) return;
 
     let numberOfConnectedActions = 0;
@@ -968,15 +974,24 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     if (canUndo) {
-      this.history.do({
-        type: 'linkState',
-        args: { smId, parentId, childId },
-        numberOfConnectedActions,
-      });
+      if (!prevParentId) {
+        this.history.do({
+          type: 'linkState',
+          args: { smId, parentId, childId },
+          numberOfConnectedActions,
+        });
+      } else {
+        this.history.do({
+          type: 'linkStateToAnotherParent',
+          args: { smId, parentId, prevParentId, childId },
+          numberOfConnectedActions,
+        });
+      }
       if (addOnceOff) {
         this.emit('addDragendStateSig', { smId, stateId: childId });
       }
     }
+
     return numberOfConnectedActions;
   };
 
@@ -984,7 +999,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id: prevId, targetId, smId } = params;
     const target = this.model.data.elements.stateMachines[smId].states[targetId];
     if (!target) return;
-
+    const siblings = this.getSiblings(smId, prevId, target.parentId, 'initialStates')[1];
+    if (siblings.length) return;
     const position = {
       x: target.position.x - INITIAL_STATE_OFFSET,
       y: target.position.y - INITIAL_STATE_OFFSET,
@@ -1187,8 +1203,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  private getEachByParentId(smId: string, parentId: string) {
+  private getStatesByParentId(smId: string, parentId: string) {
     return Object.entries(this.model.data.elements.stateMachines[smId].states).filter(
+      (state) => state[1].parentId === parentId
+    );
+  }
+
+  private getInitialStatesByParentId(smId: string, parentId: string) {
+    return Object.entries(this.model.data.elements.stateMachines[smId].initialStates).filter(
       (state) => state[1].parentId === parentId
     );
   }
@@ -1200,13 +1222,32 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parentId = state.parentId;
     let numberOfConnectedActions = 0;
 
-    // Проверка на то что состояние является, тем на которое есть переход из начального
+    // Проверка на то что состояние является тем на которое есть переход из начального
     const stateTransitions: Transition[] = this.getAllByTargetId(smId, id)[0] ?? [];
     const transitionFromInitialState = stateTransitions.find(
       ({ sourceId }) =>
         this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
     );
 
+    const initialStates = this.getInitialStatesByParentId(smId, id);
+    initialStates.forEach((childInitial) => {
+      this.deleteInitialStateWithTransition(smId, childInitial[0], canUndo);
+      numberOfConnectedActions += 1;
+    });
+    const nestedStates = this.getStatesByParentId(smId, id);
+    // Ищем дочерние состояния и отвязываем их от текущего
+    nestedStates.forEach((childState) => {
+      // Если есть родительское, перепривязываем к нему
+      if (state.parentId) {
+        this.linkState({ smId, parentId: state.parentId, childId: childState[0] }, canUndo);
+      } else {
+        this.unlinkState({ smId, id: childState[0], canUndo });
+      }
+
+      numberOfConnectedActions += 1;
+    });
+
+    // TODO: unlink choiceState, finalState, notes
     if (transitionFromInitialState) {
       // Перемещаем начальное состояние, на первое найденное в родителе
       const newState = [
@@ -1219,25 +1260,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
       }
 
-      numberOfConnectedActions += 2;
+      numberOfConnectedActions += 1;
     }
     // Удаляем зависимые переходы
     const dependetTransitions = this.getEachByStateId(smId, id);
     dependetTransitions.forEach((transition) => {
       this.deleteTransition({ smId, id: transition[0] }, canUndo);
-      numberOfConnectedActions += 1;
-    });
-
-    const nestedStates = this.getEachByParentId(smId, id);
-    // Ищем дочерние состояния и отвязываем их от текущего
-    nestedStates.forEach((childState) => {
-      // Если есть родительское, перепривязываем к нему
-      if (state.parentId) {
-        this.linkState({ smId, parentId: state.parentId, childId: childState[0] }, canUndo);
-      } else {
-        this.unlinkState({ smId, id: childState[0], canUndo });
-      }
-
       numberOfConnectedActions += 1;
     });
 
@@ -1941,7 +1969,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
-    this.removeSelection();
+    this.removeSelection([id]);
 
     this.model.changeStateSelection(smId, id, true);
   };
@@ -1952,7 +1980,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return;
 
-    this.removeSelection();
+    this.removeSelection([id]);
 
     this.model.changeChoiceStateSelection(smId, id, true);
 
@@ -1975,7 +2003,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
 
-    this.removeSelection();
+    this.removeSelection([id]);
 
     this.model.changeTransitionSelection(smId, id, true);
 
@@ -1986,7 +2014,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, id } = args;
     const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
-    this.removeSelection();
+    this.removeSelection([id]);
     this.model.changeNoteSelection(smId, id, true);
     // this.emit('selectNote', { smId: smId, id: id });
   };
@@ -2047,29 +2075,44 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
    * @privateRemarks
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
-  removeSelection() {
+  removeSelection(exclude: string[] = []) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
 
-      Object.keys(sm.choiceStates).forEach((id) => {
-        this.model.changeChoiceStateSelection(smId, id, false);
-      });
+      Object.keys(sm.choiceStates)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeChoiceStateSelection(smId, id, false);
+          this.emit('changeChoiceSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.states).forEach((id) => {
-        this.model.changeStateSelection(smId, id, false);
-      });
+      Object.keys(sm.states)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeStateSelection(smId, id, false);
+          this.emit('changeStateSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.transitions).forEach((id) => {
-        this.model.changeTransitionSelection(smId, id, false);
-      });
+      Object.keys(sm.transitions)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeTransitionSelection(smId, id, false);
+          this.emit('changeTransitionSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.notes).forEach((id) => {
-        this.model.changeNoteSelection(smId, id, false);
-      });
+      Object.keys(sm.notes)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeNoteSelection(smId, id, false);
+          this.emit('changeNoteSelection', { smId, id, value: false });
+        });
 
-      Object.keys(sm.components).forEach((id) => {
-        this.model.changeNoteSelection(smId, id, false);
-      });
+      Object.keys(sm.components)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeComponentSelection(smId, id, false);
+          this.emit('changeComponentSelection', { smId, id, value: false });
+        });
     }
   }
 

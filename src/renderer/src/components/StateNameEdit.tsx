@@ -18,7 +18,7 @@ export const StateNameEdit: React.FC = () => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const editor = modelController.controllers[headControllerId].app;
-  const stateMachines = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const currentSmId = stateMachines[0];
   const [isOpen, open, close] = useModal(false);
   const [stateId, setStateId] = useState<string | null>(null);

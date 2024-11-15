@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Dispatch } from 'react';
 import { SaveModalData } from '@renderer/components';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
 interface useFileOperationsArgs {
@@ -160,6 +161,17 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
+  const initImportData = (
+    importData: Elements,
+    openData: [boolean, string | null, string | null, string]
+  ) => {
+    const result = modelController.files.initImportData(importData, openData);
+    if (result) {
+      clearTabs();
+      openTabs();
+    }
+  };
+
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
@@ -196,6 +208,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       onRequestSaveAsFile: handleSaveAsFile,
       onRequestImportFile: handleImportFile,
     },
+    initImportData,
     performNewFile,
     handleOpenFromTemplate,
   };

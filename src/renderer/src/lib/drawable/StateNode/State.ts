@@ -2,7 +2,6 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Events, EdgeHandlers, icons } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { stateStyle } from '@renderer/lib/styles';
-import { drawCircle } from '@renderer/lib/utils';
 import { drawText } from '@renderer/lib/utils/text';
 import theme, { getColor } from '@renderer/theme';
 import { State as DataState } from '@renderer/types/diagram';
@@ -71,9 +70,6 @@ export class State extends Shape {
 
     if (this.app.controller.states.dragInfo?.parentId === this.id) {
       this.drawHighlight(ctx);
-    }
-    if (this.parent) {
-      drawCircle(ctx, { position: this.compoundPosition, radius: 3, fillStyle: '#00FF00' });
     }
   }
 

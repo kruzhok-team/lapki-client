@@ -164,6 +164,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     null
                   }
                   isSearchable={false}
+                  noOptionsMessage={() => 'Нет подходящих компонентов'}
                   //error={errors.selectedComponentParam1 || ''}
                 />
                 <Select
@@ -178,6 +179,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   }
                   value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
                   isSearchable={false}
+                  noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   //error={errors.selectedMethodParam1 || ''}
                 />
                 <p className="pl-[120px] text-sm text-error">{error}</p>

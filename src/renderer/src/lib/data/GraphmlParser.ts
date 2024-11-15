@@ -114,12 +114,17 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   }
   const getAction = (delimeter: string, reserveDelimeter: string) => {
     const trimed = unproccessedAction.trim();
-    const firstSplit = trimed.split(delimeter);
-    if (firstSplit.length > 1) {
-      return firstSplit;
+    const bracketPos = trimed.indexOf('(');
+    const beforeBracket = trimed.slice(0, bracketPos);
+    const firstDelimeter = beforeBracket.indexOf(delimeter);
+    if (firstDelimeter != -1) {
+      return [trimed.slice(0, firstDelimeter), trimed.slice(firstDelimeter + delimeter.length)];
     }
-    const secondSplit = trimed.split(reserveDelimeter);
-    return secondSplit;
+    const secondDelimeter = beforeBracket.indexOf(reserveDelimeter);
+    return [
+      trimed.slice(0, secondDelimeter),
+      trimed.slice(secondDelimeter + reserveDelimeter.length),
+    ];
   };
   let [componentName, action] = getAction('.', '::');
 
@@ -464,19 +469,21 @@ function getVisualFlag(
   return visual;
 }
 
-function getNotes(rawNotes: {[id: string]: CGMLNote}) {
+function getNotes(rawNotes: { [id: string]: CGMLNote }) {
   const notes: { [id: string]: Note } = {};
   for (const noteId in rawNotes) {
     const rawNote = rawNotes[noteId];
-    const formatNote = rawNote.unsupportedDataNodes.find((value) => value.key === 'dLapkiNoteFormat');
+    const formatNote = rawNote.unsupportedDataNodes.find(
+      (value) => value.key === 'dLapkiNoteFormat'
+    );
     const note: Note = rawNote;
     if (!formatNote) {
       notes[noteId] = rawNote;
-      continue
-    };
+      continue;
+    }
 
-    const parsedLines = formatNote.content.split('\n\n')
-    const parsedParameters = parsedLines.map((value) => value.split('/'))
+    const parsedLines = formatNote.content.split('\n\n');
+    const parsedParameters = parsedLines.map((value) => value.split('/'));
 
     for (const [parameterName, parameterValue] of parsedParameters) {
       switch (parameterName) {

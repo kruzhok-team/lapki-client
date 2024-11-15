@@ -6,17 +6,17 @@ interface MatrixWidgetProps {
   width: number;
   height: number;
   values: number[][];
-  onChange: (rawIndex: number, colIndex: number, newValue: number) => void;
+  onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
 export const MatrixWidget: React.FC<MatrixWidgetProps> = ({ onChange, values }) => {
   return (
     <div className="flex flex-col">
-      {values.map((raw, rawIndex) => {
+      {values.map((row, rowIndex) => {
         return (
-          <div className="flex-raw flex">
-            {raw.map((col, colIndex) => {
-              return <MatrixLed {...{ onChange, rawIndex, colIndex, initValue: col }} />;
+          <div className="flex flex-row">
+            {row.map((col, colIndex) => {
+              return <MatrixLed {...{ onChange, rowIndex, colIndex, initValue: col }} />;
             })}
           </div>
         );

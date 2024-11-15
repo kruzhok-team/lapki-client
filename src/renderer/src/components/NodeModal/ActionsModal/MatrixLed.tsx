@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 
 interface MatrixLedProps {
-  rawIndex: number;
+  rowIndex: number;
   colIndex: number;
   initValue: number;
-  onChange: (rawIndex: number, colIndex: number, newValue: number) => void;
+  onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
 export const MatrixLed: React.FC<MatrixLedProps> = ({
   colIndex,
-  rawIndex,
+  rowIndex,
   initValue,
   onChange,
 }) => {
@@ -18,7 +18,7 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
     const newValue = value === 0 ? 1 : 0;
     setValue(value === 0 ? 1 : 0);
     e.stopPropagation();
-    onChange(rawIndex, colIndex, newValue);
+    onChange(rowIndex, colIndex, newValue);
   };
   return (
     <div

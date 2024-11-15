@@ -42,12 +42,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     parameter: string,
     width: number,
     height: number,
-    raw: number,
+    row: number,
     col: number,
     value: number
   ) => {
     const matrix = parseMatrixFromString(parameters[parameter], width, height);
-    matrix[raw][col] = value;
+    matrix[row][col] = value;
     parameters[parameter] = buildMatrix({
       values: matrix,
       height,
@@ -60,9 +60,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   const buildMatrix = (matrix: Matrix) => {
     let strMatrix = '{';
-    for (let raw = 0; raw != matrix.height; raw += 1) {
+    for (let row = 0; row != matrix.height; row += 1) {
       for (let col = 0; col != matrix.width; col += 1) {
-        strMatrix += Number(matrix.values[raw][col]).toString() + ', ';
+        strMatrix += Number(matrix.values[row][col]).toString() + ', ';
       }
     }
     strMatrix = strMatrix.slice(0, strMatrix.length - 2) + '}';
@@ -76,22 +76,22 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       .slice(1, values.length - 1)
       .split(',')
       .map((str) => str.trim());
-    for (let raw = 0; raw != height; raw += 1) {
+    for (let row = 0; row != height; row += 1) {
       matrixValues.push(
-        parsedValues.slice(raw * width, (raw + 1) * width).map((value) => Number(value))
+        parsedValues.slice(row * width, (row + 1) * width).map((value) => Number(value))
       );
     }
     return matrixValues;
   };
   const initMatrix = (parameter: string, type: string, value: string): Matrix => {
-    const rawSize = type.split('Matrix')[1];
-    const [width, height] = rawSize.split('x').map((value) => Number(value));
+    const rowSize = type.split('Matrix')[1];
+    const [width, height] = rowSize.split('x').map((value) => Number(value));
     if (!parameters[parameter]) {
       const emptyValues: number[][] = [];
-      for (let raw = 0; raw != height; raw++) {
+      for (let row = 0; row != height; row++) {
         emptyValues.push([]);
         for (let col = 0; col != width; col++) {
-          emptyValues[raw].push(0);
+          emptyValues[row].push(0);
         }
       }
       parameters[parameter] = buildMatrix({
@@ -102,13 +102,13 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       return {
         width,
         height,
-        values: emptyValues, // TODO: Если есть значение парсить его и вставлять
+        values: emptyValues,
       };
     }
     return {
       width,
       height,
-      values: parseMatrixFromString(parameters[parameter], width, height), // TODO: Если есть значение парсить его и вставлять
+      values: parseMatrixFromString(parameters[parameter], width, height),
     };
   };
 
@@ -145,6 +145,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           const matrix = initMatrix(name, type, value);
           return (
             <ComponentFormFieldLabel
+              as="div"
               key={name}
               label={label}
               hint={hint}

@@ -18,8 +18,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const visual = modelController.controllers[headControllerId].useData('visual');
-  // TODO: Передавать в модалки машину состояний
-  // const sm = modelController.model.data.elements.stateMachines[smId];
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);

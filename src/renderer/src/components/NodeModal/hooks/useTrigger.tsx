@@ -13,7 +13,7 @@ import { Component, Event } from '@renderer/types/diagram';
 export const useTrigger = (addSystemComponents: boolean) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const smId = stateMachines[0];
   const componentsData = modelController.model.useData(smId, 'elements.components') as {

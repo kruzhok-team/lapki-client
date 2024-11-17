@@ -96,9 +96,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     () => {
       this.loadData();
       this.history.clear();
-    },
-    (scale: number) => {
-      this.emit('changeScale', scale);
     }
   );
   schemeEditorId: string | null = null;
@@ -267,6 +264,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.triggerDataUpdate('canvas.isMounted');
   };
 
+  changeScale(diff: number, replace = false) {
+    this.model.setScale(replace ? diff : this.model.data.scale + diff);
+    const controller = this.controllers[this.model.data.headControllerId];
+    controller.view.changeScale(diff, replace);
+    this.emit('changeScale', replace ? diff : this.model.data.scale + diff);
+  }
+
   initPlatform() {
     //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
     for (const smId in this.model.data.elements.stateMachines) {
@@ -288,7 +292,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeNoteFontSize(smId, id, fontSize);
 
     this.emit('changeNoteFontSize', args);
-    // TODO: History
+    // TODO (L140-beep): History
   }
 
   changeNoteTextColor(args: ChangeNoteTextColorParams) {
@@ -300,7 +304,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeNoteTextColor(smId, id, textColor);
 
     this.emit('changeNoteTextColor', args);
-    // TODO: History
+    // TODO (L140-beep): History
   }
 
   changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
@@ -375,7 +379,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('loadData', null);
   }
 
-  private getSmId(id: string, element: `${keyof StateMachine}`) {
+  private getSmIdByElementId(id: string, element: `${keyof StateMachine}`) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       const elements = sm[element];
@@ -644,6 +648,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   deleteStateMachine(smId: string) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
     // Сделать общий канвас канвасом по умолчанию?
+    const specificCanvas = Object.values(this.controllers).find(
+      (controller) => controller.stateMachinesSub[smId] && controller.type === 'specific'
+    );
+
+    if (!specificCanvas) throw new Error('No controller for specific canvas!');
+
+    this.unwatch(specificCanvas);
+    delete this.controllers[specificCanvas.id];
+
+    if (Object.values(this.controllers).length === 1) {
+      this.model.changeHeadControllerId('');
+    }
+
     this.model.deleteStateMachine(smId);
     this.emit('deleteStateMachine', {
       id: smId,
@@ -2004,10 +2021,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return null;
   };
 
-  getCurrentCanvas() {
-    return (this.controllers[this.model.data.headControllerId] ?? this.controllers['']).app;
-  }
-
   duplicateSelected = () => {
     this.copySelected();
     this.pasteSelected();
@@ -2180,8 +2193,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         : sm.choiceStates
         ? 'choiceStates'
         : 'finalStates';
-      const sourceSm = this.getSmId(args.source, sourceType);
-      const targetSm = this.getSmId(args.target, targetType);
+      const sourceSm = this.getSmIdByElementId(args.source, sourceType);
+      const targetSm = this.getSmIdByElementId(args.target, targetType);
 
       if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
 

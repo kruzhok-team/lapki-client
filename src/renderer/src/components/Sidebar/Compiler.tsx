@@ -60,7 +60,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const changeSidebarTab = useSidebar((state) => state.changeTab);
 
   const name = modelController.model.useData('', 'name');
-  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.controllers[headControllerId].app;
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
 
   const handleFlashButton = () => {

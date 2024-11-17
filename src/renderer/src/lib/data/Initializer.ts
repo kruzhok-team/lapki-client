@@ -29,18 +29,6 @@ export class Initializer {
   constructor(private app: CanvasEditor, private controller: CanvasController) {}
 
   init() {
-    // TODO: Вот эта штука почему-то вызывается при смене вкладок
-    // this.resetEntities();
-
-    // this.initStates();
-    // this.initInitialStates();
-    // this.initFinalStates();
-    // this.initChoiceStates();
-    // this.initTransitions();
-    // this.initNotes();
-    // this.initComponents('G');
-    // this.initStateMachines();
-    this.app.view.viewCentering();
     this.app.view.viewCentering();
   }
 
@@ -168,8 +156,6 @@ export class Initializer {
     if (!this.platform[smId]) return;
     for (const name in components) {
       const component = components[name];
-      // this.createComponentView(sm, name);
-      // }
       this.platform[smId].nameToVisual.set(name, {
         component: component.type,
         label: component.parameters['label'],

@@ -14,7 +14,7 @@ const groupByNumberOfConnectedActions = (stack: Stack) => {
     const numberOfConnectedActions = stack[i].numberOfConnectedActions;
     if (numberOfConnectedActions) {
       const block: Action<any>[] = [];
-      for (let j = 0; j < numberOfConnectedActions; j++) {
+      for (let j = 0; j < numberOfConnectedActions + 1; j++) {
         block.push(stack[i]);
         i--;
       }

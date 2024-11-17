@@ -30,7 +30,9 @@ export const StateMachinesList: React.FC = () => {
     }
   };
 
-  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
   const elements = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
@@ -41,6 +43,7 @@ export const StateMachinesList: React.FC = () => {
     editProps,
     deleteProps,
     // onSwapStateMachines
+    onRequestDeleteStateMachine,
     onRequestAddStateMachine,
     onRequestEditStateMachine,
     isDuplicateName,
@@ -73,9 +76,9 @@ export const StateMachinesList: React.FC = () => {
               isSelected={id === selectedSm}
               onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}
-              onDelete={() => undefined}
+              onDelete={() => onRequestDeleteStateMachine(id)}
               onCallContextMenu={() => onCallContextMenu(id, sm)}
-              // TODO: Доделать свап машин состояний
+              // TODO (L140-beep): Доделать свап машин состояний
               onDragStart={() => console.log('setDragState')}
               onDrop={() => console.log('onDrop')}
               isDragging={id === ''}

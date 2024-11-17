@@ -301,7 +301,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   init() {
     if (!this.inited) {
       for (const smId in this.initData) {
-        // TODO: отрефакторить так, чтобы мы инициализировали только то, на что подписаны
+        // TODO (L140-beep): отрефакторить так, чтобы мы инициализировали только то, на что подписаны
         this.initializer.initComponents(smId, this.initData[smId].components);
         this.initializer.initStates(smId, this.initData[smId].states);
         this.initializer.initChoiceStates(smId, this.initData[smId].choiceStates);
@@ -964,11 +964,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.triggerDataUpdate('platform');
     //! Инициализировать компоненты нужно сразу после загрузки платформы
     // Их инициализация не создает отдельными сущности на холсте а перерабатывает данные в удобные структуры
-    // this.initializer.initComponents('', true);
   };
 
   loadData = () => {
-    // this.initializer.init();
     if (this.app) {
       this.app.view.isDirty = true;
     }

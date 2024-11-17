@@ -12,10 +12,10 @@ interface StateMachineEvents {
   contextMenu: { component: DrawableStateMachine; position: Point };
 }
 
-// TODO: Доделать
 /**
  * Контроллер {@link DrawableStateMachine|машин состояний}.
  * Обрабатывает события, связанные с ними.
+  TODO(L140-beep): Доделать выделение, удаление через хоткеи
  */
 export class StateMachineController extends EventEmitter<StateMachineEvents> {
   __items: Map<string, DrawableStateMachine> = new Map();
@@ -112,7 +112,14 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     });
   };
 
+  // handleMouseDown(sm: DrawableStateMachine) {
+  //   const item = this.items.get(sm.id);
+  //   if (!item) return;
+  //   this.controller.emit('selectNote', { smId: note.smId, id: note.id });
+  // }
+
   watch(sm: DrawableStateMachine) {
+    // sm.on('mousedown', this.handleMouseDown.bind(this, sm));
     sm.on('dragend', this.handleDragEnd.bind(this, sm));
   }
 

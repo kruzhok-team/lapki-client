@@ -9,11 +9,11 @@ import { useModal } from './useModal';
 export const useComponents = () => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const editor = modelController.getCurrentCanvas();
-
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const stateMachines = Object.keys(controller.stateMachinesSub);
   const currentSm = stateMachines[0];
   const components = model.useData(stateMachines[0], 'elements.components') as {
     [id: string]: ComponentData;
@@ -79,7 +79,6 @@ export const useComponents = () => {
   };
 
   const onAdd = (idx: string, name: string | undefined) => {
-    console.log('hereeee');
     const realName = name ?? idx;
     modelController.createComponent({
       smId: currentSm,

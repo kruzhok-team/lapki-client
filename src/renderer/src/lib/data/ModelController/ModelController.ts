@@ -717,6 +717,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
+  getAllBySourceId(smId: string, sourceId: string) {
+    return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].filter(
+      (transition) => transition[1].sourceId === sourceId
+    );
+  }
+
   deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
     const transitionWithId = this.getBySourceId(smId, initialStateId);
     if (!transitionWithId) return;
@@ -789,11 +795,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
-    dependetTransitionsIds.forEach((transitionId) => {
-      this.deleteTransition({ smId, id: transitionId }, canUndo);
-      numberOfConnectedActions += 1;
-    });
+    const dependetTransitionsEntries = this.getAllBySourceId(smId, id);
+    if (dependetTransitionsEntries.length !== 0) {
+      dependetTransitionsEntries.forEach((transitionId) => {
+        this.deleteTransition({ smId, id: transitionId[0] }, canUndo);
+        numberOfConnectedActions += 1;
+      });
+    }
 
     if (canUndo) {
       this.history.do({

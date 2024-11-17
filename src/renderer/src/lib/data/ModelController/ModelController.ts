@@ -975,8 +975,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
-    const prevParentId = child.parentId;
     if (!parent || !child) return;
+    const prevParentId = child.parentId;
 
     let numberOfConnectedActions = 0;
 
@@ -1153,7 +1153,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (parentId) {
       this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
-      // this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
+      this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
     }
 
     if (canUndo) {
@@ -1573,18 +1573,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.linkChoiceState(smId, id, parentId);
     } else if (linkByPoint) {
       const [computedParentId, parentItem] = this.getPossibleParentState(smId, position);
-      if (!computedParentId || !parentItem) return;
-      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
-      if (parentItem) {
-        const newPosition = {
-          x: state.position.x - parentCompoundPosition.x,
-          y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
-        };
-        this.linkChoiceState(smId, id, computedParentId);
-        this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
+      if (computedParentId && parentItem) {
+        const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
+        if (parentItem) {
+          const newPosition = {
+            x: state.position.x - parentCompoundPosition.x,
+            y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
+          };
+          this.linkChoiceState(smId, id, computedParentId);
+          this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
+        }
       }
     }
-
     if (canUndo) {
       this.history.do({
         type: 'createChoiceState',
@@ -1897,8 +1897,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-      const newId = this.model.createState({
-        ...structuredClone(data),
+      this.createState({
+        ...structuredClone({ ...data, id: undefined }),
         smId,
         linkByPoint: false,
         id: undefined,
@@ -1907,36 +1907,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           y: data.position.y + this.pastePositionOffset,
         },
       });
-      this.emit('createState', {
-        ...structuredClone(data),
-        smId,
-        linkByPoint: false,
-        id: newId,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
+
+      return;
     }
 
     if (type === 'choiceState') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const newId = this.model.createChoiceState({
+      this.createChoiceState({
         ...data,
         smId,
         id: undefined,
-        linkByPoint: false,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      this.emit('createChoice', {
-        ...data,
-        smId,
-        id: newId,
         linkByPoint: false,
         position: {
           x: data.position.x + this.pastePositionOffset,
@@ -1950,20 +1931,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (type === 'note') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const newId = this.model.createNote({
+      this.createNote({
         ...data,
         smId,
         id: undefined,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      this.emit('createNote', {
-        ...data,
-        smId,
-        id: newId,
         position: {
           x: data.position.x + this.pastePositionOffset,
           y: data.position.y + this.pastePositionOffset,
@@ -1990,17 +1961,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         };
       };
 
-      const newId = this.model.createTransition({
+      this.createTransition({
         ...data,
         smId,
         id: undefined,
-        label: getLabel(),
-      });
-
-      this.emit('createTransition', {
-        ...data,
-        smId: '',
-        id: newId,
         label: getLabel(),
       });
     }

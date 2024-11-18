@@ -8,7 +8,7 @@
   "standardVersion": "1.0",
   "formatVersion": "1.0",
   "language": "C++",
-  "author": "Vladislav Syzikh",
+  "author": "Vladislav Sizykh",
   "visual": true,
   "compile": true,
   "mainFileExtension": "cpp",
@@ -40,7 +40,7 @@
   ],
   "mainFunction": true,
   "delimeter": ";",
-  "defaultIncludeFiles": ["stm32g030xx.h", "system.c"],
+  "defaultIncludeFiles": ["stm32g030xx.h", "system.c", "UART.hpp", "Pins.hpp", "macros.hpp"],
   "defaultBuildFiles": [
     "tjc-ms1-b2cc4e728f9bf8f6-usercode.ld",
     "system.c",
@@ -50,16 +50,120 @@
     "core_cmInstr.h",
     "cmsis_gcc.h",
     "core_cmFunc.h",
-    "system_stm32g0xx.h"
+    "system_stm32g0xx.h",
+    "UART.hpp",
+    "Pins.hpp",
+    "macros.hpp"
   ],
   "components": {
+    "SimpleBus": {
+      "description": "Компонент для базового взаимодействия с общей шиной данных на основе простого протокола. Шина является полудуплексной – отправку в конкретный момент времени может осуществлять только один участник.",
+      "img": "arduino/serial.svg",
+      "signals": {
+        "packetReceived": {
+          "img": "arduino/byteReceived.svg",
+          "description": "Получен байт.",
+          "checkMethod": "packetReceived"
+        }
+      },
+      "constructorParameters": {
+        "baudrate": {
+          "type": "uint32_t",
+          "description": "Частота работы."
+        }
+      },
+      "variables": {
+        "myAddress": {
+          "img": "common/value.svg",
+          "type": "uint8_t",
+          "description": "Адрес устройства."
+        },
+        "lastData": {
+          "img": "common/value.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный символ."
+        }
+      },
+      "methods": {
+        "setAddress": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "address",
+              "type": "byte",
+              "description": "Новое значение для адреса."
+            }
+          ],
+          "description": "Назначить новый адрес для получения пакетов."
+        },
+        "sendPacket": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "address",
+              "type": "byte",
+              "description": "Адрес устройства-получателя."
+            },
+            {
+              "name": "data",
+              "type": "byte",
+              "description": "Байт данных (сообщение)."
+            }
+          ],
+          "description": "Отправляет символ по адресу."
+        }
+      },
+      "buildFiles": ["SimpleBus.hpp"],
+      "importFiles": ["SimpleBus.hpp"],
+      "singletone": false
+    },
+    "DataBus": {
+      "description": "Компонент для низкоуровневого взаимодействия с общей шиной данных. Шина является полудуплексной – отправку в конкретный момент времени может отсуществлять только один участник.",
+      "img": "arduino/serial.svg",
+      "signals": {
+        "isByteReceived": {
+          "img": "arduino/byteReceived.svg",
+          "description": "Получен байт.",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "constructorParameters": {
+        "baudrate": {
+          "type": "uint32_t",
+          "description": "Частота работы."
+        }
+      },
+      "variables": {
+        "lastByte": {
+          "img": "common/value.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }
+      },
+      "methods": {
+        "sendByte": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "byte",
+              "description": "Байт данных (сообщение)."
+            }
+          ],
+          "description": "Отправить байт в шину."
+        }
+      },
+      "buildFiles": ["DataBus.hpp"],
+      "importFiles": ["DataBus.hpp"],
+      "singletone": false
+    },
     "LED": {
       "description": "Компонент для взаимодействия со светодиодом",
       "img": "arduino/led.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
-          "type": "uint8_t",
+          "type": [1, 2, 3],
           "description": "Пин, к которому подключен светодиод"
         }
       },

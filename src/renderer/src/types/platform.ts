@@ -1,4 +1,4 @@
-export type ArgType = string | string[];
+export type ArgType = string | string[] | number[];
 
 export type ArgumentProto = {
   name: string;

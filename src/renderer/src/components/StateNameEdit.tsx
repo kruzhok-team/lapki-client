@@ -12,11 +12,14 @@ import { twMerge } from 'tailwind-merge';
 import { WithHint } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks';
 import { State } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export const StateNameEdit: React.FC = () => {
-  const editor = useEditorContext();
-
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.controllers[headControllerId].app;
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const currentSmId = stateMachines[0];
   const [isOpen, open, close] = useModal(false);
   const [stateId, setStateId] = useState<string | null>(null);
   const [initialName, setInitialName] = useState<string | null>(null);
@@ -28,12 +31,12 @@ export const StateNameEdit: React.FC = () => {
     const value = (el?.value ?? '').trim();
 
     if (stateId !== null && initialName !== value)
-      editor.controller.states.changeStateName(stateId, value);
+      modelController.changeStateName(currentSmId, stateId, value);
 
     setStateId(null);
     setInitialName(null);
     close();
-  }, [close, editor.controller.states, initialName, stateId]);
+  }, [close, modelController.model, initialName, stateId]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return handleSubmit();
@@ -78,7 +81,6 @@ export const StateNameEdit: React.FC = () => {
       setTimeout(() => el.focus(), 0);
       open();
     };
-
     editor.controller.states.on('changeStateName', handler);
 
     return () => {

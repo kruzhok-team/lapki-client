@@ -7,120 +7,14 @@ import { toast } from 'sonner';
 import { Buffer } from 'buffer';
 
 import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
-import { generateId } from '@renderer/lib/utils';
-import {
-  CompilerResult,
-  Binary,
-  SourceFile,
-  CompilerTransition,
-  CompilerInitialState,
-  CompilerElements,
-  CompilerState,
-  CompilerComponent,
-} from '@renderer/types/CompilerTypes';
-import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+import { CompilerResult, Binary, SourceFile, CompilerRequest } from '@renderer/types/CompilerTypes';
+import { Elements, StateMachine } from '@renderer/types/diagram';
 
+import { actualizeElements } from './ActualizeResponse';
+import { downgradeStateMachine } from './DowngradeResponse';
 import { CompilerStatus, CompilerNoDataStatus } from './Websocket/ClientStatus';
 import { ClientWS } from './Websocket/ClientWS';
 import { ComplierTimeoutTimer } from './Websocket/ReconnectTimer';
-
-function actualizeTransitions(oldTransitions: { [key: string]: CompilerTransition }): {
-  [key: string]: Transition;
-} {
-  const newTransitions: {
-    [key: string]: Transition;
-  } = {};
-  for (const transitionId in oldTransitions) {
-    const oldTransition = oldTransitions[transitionId];
-    newTransitions[transitionId] = {
-      sourceId: oldTransition.source,
-      targetId: oldTransition.target,
-      color: oldTransition.color,
-      label: {
-        trigger: oldTransition.trigger,
-        position: oldTransition.position,
-        condition: oldTransition.condition,
-        do: oldTransition.do,
-      },
-    };
-  }
-  return newTransitions;
-}
-
-function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: string]: State } {
-  const states: { [id: string]: State } = {};
-  for (const oldStateId in oldStates) {
-    const oldState = oldStates[oldStateId];
-    states[oldStateId] = {
-      dimensions: {
-        width: oldState.bounds.width,
-        height: oldState.bounds.height,
-      },
-      position: {
-        x: oldState.bounds.x,
-        y: oldState.bounds.y,
-      },
-      name: oldState.name,
-      parentId: oldState.parent,
-      events: oldState.events,
-    };
-  }
-  return states;
-}
-
-function actualizeInitialState(
-  oldInitial: CompilerInitialState
-): [{ [id: string]: InitialState }, { [id: string]: Transition }] {
-  const initialId = generateId();
-  const transitionId = generateId();
-  const transition: Transition = {
-    sourceId: initialId,
-    targetId: oldInitial.target,
-  };
-  const initial: InitialState = {
-    position: oldInitial.position,
-  };
-  return [{ [initialId]: initial }, { [transitionId]: transition }];
-}
-
-function actualizeComponents(oldComponents: { [id: string]: CompilerComponent }): {
-  [id: string]: Component;
-} {
-  const components: {
-    [id: string]: Component;
-  } = {};
-  let orderComponent = 0;
-  for (const oldComponentId in oldComponents) {
-    const oldComponent = oldComponents[oldComponentId];
-    components[oldComponentId] = {
-      ...oldComponent,
-      order: orderComponent,
-    };
-    orderComponent += 1;
-  }
-
-  return components;
-}
-
-function actualizeElements(oldElements: CompilerElements): Elements {
-  const [initials, initialTransition] = actualizeInitialState(oldElements.initialState);
-  return {
-    visual: true,
-    platform: oldElements.platform,
-    parameters: oldElements.parameters,
-    components: actualizeComponents(oldElements.components),
-    states: actualizeStates(oldElements.states),
-    finalStates: {},
-    choiceStates: {},
-    notes: {},
-    transitions: {
-      ...actualizeTransitions(oldElements.transitions),
-      ...initialTransition,
-    },
-    initialStates: initials,
-    meta: {},
-  };
-}
 
 export class Compiler extends ClientWS {
   static setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>;
@@ -128,8 +22,9 @@ export class Compiler extends ClientWS {
   static setImportData: Dispatch<SetStateAction<Elements | undefined>>;
   static setCompilerNoDataStatus: Dispatch<SetStateAction<string>>;
   static mode: string;
-
   static filename: string;
+
+  static bearlogaSmId: string = 'G';
 
   static timeoutTimer = new ComplierTimeoutTimer();
 
@@ -151,27 +46,30 @@ export class Compiler extends ClientWS {
     this.setCompilerNoDataStatus = setCompilerNoDataStatus;
   }
 
-  static binary: Array<Binary> | undefined = undefined;
-  static source: Array<SourceFile> | undefined = undefined;
+  static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарники
+  static source: { [id: string]: SourceFile[] } = {}; // id машины состояний - файлы
   // платформа на которой произвелась последняя компиляция;
   static platform: string | undefined = undefined;
 
   static decodeBinaries(binaries: Array<any>) {
+    const decodedBinaries: Binary[] = [];
     binaries.map((binary) => {
       console.log(base64StringToBlob(binary.fileContent!));
       console.log(binary.filename, binary.extension);
-      this.binary?.push({
+      decodedBinaries.push({
         filename: binary.filename,
         extension: binary.extension,
         fileContent: base64StringToBlob(binary.fileContent!),
       } as Binary);
     });
+
+    return decodedBinaries;
   }
 
   static async prepareToSave(binaries: Array<Binary>): Promise<Array<Binary>> {
     const newArray = Object.assign([], binaries) as Binary[];
     for (const bin of newArray) {
-      const blob = new Blob([bin.fileContent as Uint8Array]);
+      const blob = new Blob([bin.fileContent as unknown as Uint8Array]);
       bin.fileContent = Buffer.from(await blob.arrayBuffer());
     }
 
@@ -191,31 +89,32 @@ export class Compiler extends ClientWS {
     return result;
   }
 
-  static async compile(platform: string, data: Elements | string) {
+  static async compile(
+    data: Elements | string | StateMachine,
+    mode: 'BearlogaImport' | 'BearlogaExport' | 'CGML',
+    subPlatform?: string,
+    bearlogaSmId?: string
+  ) {
     this.setCompilerData(undefined);
     this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
-    this.platform = platform;
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {
-        const [mainPlatform, subPlatform] = platform.split('-');
-        switch (mainPlatform) {
-          case 'BearlogaDefendImport':
+        // TODO (L140-beep): Понять, что с этим делать
+        switch (mode) {
+          case 'BearlogaImport':
             ws.send('berlogaImport');
             ws.send(data as string);
-            ws.send(subPlatform);
+            ws.send(subPlatform ?? 'Robot');
             this.mode = 'import';
             break;
-          case 'BearlogaDefend':
+          case 'BearlogaExport':
             ws.send('berlogaExport');
-            ws.send(JSON.stringify(data));
-            if (subPlatform !== undefined) {
-              ws.send(subPlatform);
-            } else {
-              ws.send('Robot');
-            }
+            this.bearlogaSmId = bearlogaSmId!;
+            ws.send(JSON.stringify(downgradeStateMachine(data as StateMachine)));
+            ws.send(subPlatform ?? 'Robot');
             this.mode = 'export';
             break;
-          default:
+          case 'CGML':
             ws.send('cgml');
             this.mode = 'compile';
             ws.send(exportCGML(data as Elements));
@@ -242,45 +141,53 @@ export class Compiler extends ClientWS {
   static messageHandler(msg: Websocket.MessageEvent) {
     this.onStatusChange(CompilerStatus.CONNECTED);
     this.timeoutTimer.clear();
-    let data;
-    let elements;
+    let data: CompilerRequest;
+    let elements: Elements;
+    let compilerElements: { source: any[] }; // импорт берлоги
+    let exportRequest: SourceFile;
+    const compilerResult: CompilerResult = {
+      result: 'OK',
+      state_machines: {},
+    };
     switch (this.mode) {
       case 'compile':
-        data = JSON.parse(msg.data as string);
-        if (data.binary.length > 0) {
-          this.binary = [];
-          this.decodeBinaries(data.binary);
-        } else {
-          this.binary = undefined;
+        data = JSON.parse(msg.data as string) as CompilerRequest;
+        for (const stateMachineId in data.state_machines) {
+          const sm = data.state_machines[stateMachineId];
+          compilerResult.state_machines[stateMachineId] = sm;
+          const decodedBinaries = this.decodeBinaries(sm.binary);
+          this.binary[stateMachineId] = decodedBinaries;
+          this.source[stateMachineId] = sm.source;
+          compilerResult.state_machines[stateMachineId].binary = decodedBinaries;
         }
-        this.setCompilerData({
-          result: data.result,
-          commands: data.commands,
-          binary: this.binary,
-          source: this.getSourceFiles(data.source),
-          platform: this.platform,
-        } as CompilerResult);
+        this.setCompilerData(compilerResult);
         break;
       case 'import':
-        data = JSON.parse(msg.data as string) as CompilerElements;
-        elements = actualizeElements(data.source[0].fileContent);
+        compilerElements = JSON.parse(msg.data as string);
+        elements = actualizeElements(compilerElements.source[0].fileContent);
         this.setImportData(elements);
         break;
       case 'export':
-        data = JSON.parse(msg.data as string) as SourceFile;
+        exportRequest = JSON.parse(msg.data as string) as SourceFile;
         this.setCompilerData({
           result: 'OK',
-          commands: [],
-          binary: [],
-          //В данный момент название файла, которое приходит от компилятора
-          //Выглядит так: Robot_время.
-          source: [
-            {
-              filename: data.filename,
-              extension: data.extension,
-              fileContent: data.fileContent,
+          state_machines: {
+            [this.bearlogaSmId]: {
+              result: 'OK',
+              name: this.bearlogaSmId,
+              commands: [],
+              binary: [],
+              //В данный момент название файла, которое приходит от компилятора
+              //Выглядит так: Robot_время.
+              source: [
+                {
+                  filename: exportRequest.filename,
+                  extension: exportRequest.extension,
+                  fileContent: exportRequest.fileContent,
+                },
+              ],
             },
-          ],
+          },
         });
         break;
       default:

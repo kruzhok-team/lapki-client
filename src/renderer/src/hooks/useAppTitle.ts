@@ -1,16 +1,14 @@
 import { useEffect } from 'react';
 
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 export const useAppTitle = () => {
-  const { model } = useEditorContext();
-
-  const name = model.useData('name');
-  const platformName = model.useData('elements.platform');
+  const modelController = useModelContext();
+  const name = modelController.model.useData('', 'name');
 
   useEffect(() => {
-    if (!name || !platformName) return;
+    if (!name) return;
 
-    document.title = `${name} [${platformName}] – Lapki IDE`;
-  }, [name, platformName]);
+    document.title = `${name} – Lapki IDE`;
+  }, [name]);
 };

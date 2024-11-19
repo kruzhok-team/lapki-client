@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 interface TextModeModalProps {
   isOpen: boolean;
@@ -11,12 +11,12 @@ interface TextModeModalProps {
   Окно, ожидающее подтверждение пользователя о том, что он хочет перейти в текстовый режим
 */
 export const TextModeModal: React.FC<TextModeModalProps> = ({ onClose, ...props }) => {
-  const { controller } = useEditorContext();
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    controller.setTextMode();
+    modelController.setTextMode(modelController.controllers[headControllerId]);
 
     onClose();
   };

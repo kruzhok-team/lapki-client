@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
@@ -17,6 +17,9 @@ interface ActionsModalParametersProps {
 
   selectedComponent: string | null;
   componentOptions: SelectOption[];
+
+  smId: string;
+  controller: CanvasController;
 }
 
 export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
@@ -27,8 +30,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   setErrors,
   selectedComponent,
   componentOptions,
+  smId,
+  controller,
 }) => {
-  const { controller } = useEditorContext();
   const Component = 'label';
 
   const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
@@ -44,18 +48,16 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
-  //const [selectedParameterComponent, setSelectedParameterComponent] = useState<string | null>(null);
-  //const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [isChecked, setIsChecked] = useState<boolean | null>(null);
 
   const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
   const methodOptionsSearch = (selectedParameterComponent: string | null) => {
-    if (!selectedParameterComponent || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableVariables'];
-    const getImg = controller.platform['getVariableIconUrl'];
+    if (!selectedParameterComponent || !controller?.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableVariables'];
+    const getImg = controller.platform[smId]['getVariableIconUrl'];
 
     return getAll
-      .call(controller.platform, selectedParameterComponent)
+      .call(controller.platform[smId], selectedParameterComponent)
       .map(({ name, description }) => {
         return {
           value: name,
@@ -63,7 +65,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           hint: description,
           icon: (
             <img
-              src={getImg.call(controller.platform, selectedParameterComponent, name, true)}
+              src={getImg.call(controller.platform[smId], selectedParameterComponent, name, true)}
               className="mr-1 h-7 w-7 object-contain"
             />
           ),

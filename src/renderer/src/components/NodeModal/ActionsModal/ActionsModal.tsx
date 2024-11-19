@@ -238,6 +238,8 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         setErrors={setErrors}
         selectedComponent={selectedComponent}
         componentOptions={componentOptions}
+        controller={controller}
+        smId={smId}
       />
     </Modal>
   );

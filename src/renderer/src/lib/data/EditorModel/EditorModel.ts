@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { EventSelection } from '@renderer/lib/drawable';
 import { stateStyle } from '@renderer/lib/styles';
 import {
@@ -20,6 +19,7 @@ import {
   CreateFinalStateParams,
   CreateChoiceStateParams,
   SwapComponentsParams,
+  StateMachineData,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
 import {
@@ -44,11 +44,7 @@ export class EditorModel {
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   serializer = new Serializer(this);
 
-  constructor(
-    private initPlatform: () => void,
-    private resetEditor: () => void,
-    private scaleEmitter: (scale: number) => void
-  ) {}
+  constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
   createStateMachine(smId: string, data: StateMachine) {
     if (this.data.elements.stateMachines[smId]) return;
@@ -130,7 +126,7 @@ export class EditorModel {
     sm.name = data.name;
     sm.platform = data.platform;
 
-    this.triggerDataUpdate('elements.stateMachinesId');
+    this.triggerDataUpdate('elements.name');
   }
 
   // TODO (L140-beep): разобраться с возвращаемым never
@@ -632,6 +628,14 @@ export class EditorModel {
     return true;
   }
 
+  changeStateMachinePosition(id: string, position: Point) {
+    const sm = this.data.elements.stateMachines[id];
+    if (!sm) return false;
+    sm.position = position;
+
+    return true;
+  }
+
   changeTransitionPosition(smId: string, id: string, position: Point) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
@@ -740,8 +744,8 @@ export class EditorModel {
     return true;
   }
 
-  changeComponentPosition(name: string, smId: string, position: Point) {
-    const component = this.data.elements.stateMachines[smId].components[name];
+  changeComponentPosition(smId: string, id: string, position: Point) {
+    const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
 
     component.position = position;
@@ -765,7 +769,6 @@ export class EditorModel {
   setScale(value: number) {
     this.data.scale = value;
     this.triggerDataUpdate('scale');
-    this.scaleEmitter(value);
     return true;
   }
 

@@ -363,10 +363,36 @@ function serializeNotes(notes: { [id: string]: Note }): { [id: string]: CGMLNote
       text: note.text,
       position: note.position,
       type: 'informal',
-      unsupportedDataNodes: [],
+      unsupportedDataNodes: [...getNoteFormatNode(note)],
     };
   }
   return cgmlNotes;
+}
+
+function getNoteFormatNode(note: Note): CGMLDataNode[] {
+  let content = '';
+
+  if (note.backgroundColor) {
+    content += `bgColor/ ${note.backgroundColor}\n\n`;
+  }
+  if (note.fontSize) {
+    content += `fontSize/ ${note.fontSize}\n\n`;
+  }
+
+  if (note.textColor) {
+    content += `textColor/ ${note.fontSize}\n\n`;
+  }
+
+  if (!content) return [];
+
+  return [
+    {
+      key: 'dLapkiNoteFormat',
+      content: content,
+      rect: undefined,
+      point: undefined,
+    },
+  ];
 }
 
 function getPointNode(position: Point): CGMLDataNode {
@@ -423,6 +449,11 @@ export function exportCGML(elements: Elements): string {
       meta: exportMeta(sm.visual, sm.meta, platform),
       platform: sm.platform,
       name: sm.name,
+      position: sm.position,
+      dimensions: {
+        width: 450,
+        height: 100,
+      },
       terminates: {},
       unknownVertexes: {},
     };

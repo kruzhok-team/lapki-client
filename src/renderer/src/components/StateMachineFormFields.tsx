@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 
+import { StateMachineData } from '@renderer/lib/types';
+
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
-import { StateMachineData } from './StateMachineEditModal';
 
 interface StateMachineFormFields {
   parameters: StateMachineData;
@@ -11,6 +12,7 @@ interface StateMachineFormFields {
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
 
+// Форма для изменения параметров МС.
 export const StateMachineFormFields: React.FC<StateMachineFormFields> = ({
   parameters,
   setParameters,
@@ -47,8 +49,8 @@ export const StateMachineFormFields: React.FC<StateMachineFormFields> = ({
         return (
           <ComponentFormFieldLabel
             key={idx}
-            label={name + ':'}
-            hint={'Название машины состояний.' + 'string'}
+            label={name + ':\n'}
+            hint={'Название машины состояний: ' + `${name}`}
             error={error}
             value={value}
             name={name}

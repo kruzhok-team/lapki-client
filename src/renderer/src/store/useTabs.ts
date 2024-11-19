@@ -54,7 +54,6 @@ export const useTabs = create<TabsState>((set) => ({
       let newActiveTabName = activeTab;
 
       // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
-      // TODO: Менять текущий главный канвас при закрытии вкладки
       if (closedTabIndex === activeTabIndex) {
         if (closedTabIndex === items.length - 1) {
           newActiveTabName = newItems[newItems.length - 1].name;

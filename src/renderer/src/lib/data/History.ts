@@ -209,8 +209,8 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id, canBeInitial: false }, false),
   }),
   changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
-    redo: sM.changeStatePosition.bind(sM, smId, id, startPosition, endPosition, false),
-    undo: sM.changeStatePosition.bind(sM, smId, id, endPosition, startPosition, false),
+    redo: sM.changeStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
+    undo: sM.changeStatePosition.bind(sM, { smId, id, endPosition, startPosition }, false),
   }),
 
   createInitialState: (sM, args) => ({
@@ -222,8 +222,8 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
   }),
   changeInitialStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
-    redo: sM.changeInitialStatePosition.bind(sM, smId, id, startPosition, endPosition, false),
-    undo: sM.changeInitialStatePosition.bind(sM, smId, id, endPosition, startPosition, false),
+    redo: sM.changeInitialStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
+    undo: sM.changeInitialStatePosition.bind(sM, { smId, id, endPosition, startPosition }, false),
   }),
 
   createFinalState: (sM, args) => ({
@@ -423,8 +423,16 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
   changeComponentPosition: (sM, { smId, name, startPosition, endPosition }) => ({
-    redo: sM.changeComponentPosition.bind(sM, smId, name, startPosition, endPosition, false),
-    undo: sM.changeComponentPosition.bind(sM, smId, name, endPosition, startPosition, false),
+    redo: sM.changeComponentPosition.bind(
+      sM,
+      { smId, id: name, startPosition, endPosition },
+      false
+    ),
+    undo: sM.changeComponentPosition.bind(
+      sM,
+      { smId, id: name, endPosition, startPosition },
+      false
+    ),
   }),
   swapComponents: (sM, { smId, name1, name2 }) => ({
     redo: sM.swapComponents.bind(sM, { smId, name1, name2 }, false),

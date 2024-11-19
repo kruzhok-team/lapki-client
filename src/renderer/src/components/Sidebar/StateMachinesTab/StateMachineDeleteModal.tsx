@@ -2,8 +2,8 @@ import React from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { Modal } from '@renderer/components/UI';
+import { StateMachineData } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 interface StateMachineDeleteModalProps {
@@ -22,8 +22,10 @@ export const StateMachineDeleteModal: React.FC<StateMachineDeleteModalProps> = (
   onSubmit,
   ...props
 }) => {
-  const modal = useModelContext();
-  const editor = modal.getCurrentCanvas();
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
 
   const handleAfterClose = () => {
     editor.focus();
@@ -55,10 +57,7 @@ export const StateMachineDeleteModal: React.FC<StateMachineDeleteModalProps> = (
         ?
       </p>
       <br />
-      <p className="italic">
-        Здесь можно написать дополнительную информацию о том, что произойдёт при удалении. Если этот
-        текст не нужен, то его надо удалить.
-      </p>
+      <p className="italic">Внимание! Удаление машины состояний нельзя отменить!</p>
     </Modal>
   );
 };

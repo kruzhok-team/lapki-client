@@ -12,7 +12,7 @@ interface ComponentProps {
   description?: string;
   onSelect: () => void;
   onEdit: () => void;
-  onCallContextMenu: () => void; // TODO: Сделать контекстное меню для машин состояний
+  onCallContextMenu: () => void; // TODO (L140-beep): Сделать контекстное меню для машин состояний
   onDelete: () => void;
   onDragStart: () => void;
   onDrop: () => void;
@@ -83,7 +83,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {icon}
+          {icon ?? ''}
           <p className="ml-2 line-clamp-1">{name}</p>
         </button>
       )}

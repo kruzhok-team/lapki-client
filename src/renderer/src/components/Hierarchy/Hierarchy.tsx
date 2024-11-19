@@ -35,12 +35,12 @@ export interface HierarchyItemData {
 }
 
 export const Hierarchy: React.FC = () => {
-  const controller = useModelContext();
-  const model = controller.model;
+  const modelController = useModelContext();
+  const model = modelController.model;
   const [theme] = useSettings('theme');
-  const headControllerId = controller.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(controller.controllers[headControllerId].stateMachinesSub);
-  // TODO: Пофиксить иерархию, чтобы на ней отображались разные МС
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  // TODO(L140-beep): реализовать отображение нескольких МС, когда появится общий канвас
   const smId = stateMachines[0];
   const states = model.useData(smId, 'elements.states') as { [id: string]: State };
   const initialStates = model.useData(smId, 'elements.initialStates') as {
@@ -181,7 +181,7 @@ export const Hierarchy: React.FC = () => {
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
   const handleRename = (item: TreeItem, name: string) => {
-    controller.changeStateName(smId, item.index.toString(), name);
+    modelController.changeStateName(smId, item.index.toString(), name);
   };
 
   const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
@@ -189,25 +189,26 @@ export const Hierarchy: React.FC = () => {
       const childId = value.index.toString();
 
       if (target.targetType === 'root') {
-        return controller.unlinkState({ smId: smId, id: childId });
+        return modelController.unlinkState({ smId: smId, id: childId });
       }
 
       const parent = target.parentItem.toString();
 
       if (parent === 'root') {
-        return controller.unlinkState({ smId: smId, id: childId });
+        return modelController.unlinkState({ smId: smId, id: childId });
       }
 
       if (parent === childId) return;
 
-      return controller.linkState({ smId: smId, parentId: parent, childId });
+      return modelController.linkState({ smId: smId, parentId: parent, childId });
     });
   };
 
   const onFocus = (item: TreeItem) => () => {
-    controller.selectState({ smId, id: item.index.toString() });
-    controller.selectNote({ smId, id: item.index.toString() });
-    controller.selectTransition({ smId, id: item.index.toString() });
+    modelController.selectState({ smId, id: item.index.toString() });
+    modelController.selectNote({ smId, id: item.index.toString() });
+    modelController.selectTransition({ smId, id: item.index.toString() });
+    modelController.selectChoiceState({ smId, id: item.index.toString() });
   };
 
   const onClick =
@@ -240,10 +241,11 @@ export const Hierarchy: React.FC = () => {
       nativeEvent: e.nativeEvent,
     };
 
-    const sm = controller.model.data.elements.stateMachines[smId];
+    const sm = modelController.model.data.elements.stateMachines[smId];
     const itemId = item.index.toString();
     const state = sm.states[itemId];
-    const canvasController = controller.getCurrentCanvas().controller;
+    const headControllerId = model.useData('', 'headControllerId');
+    const canvasController = modelController.controllers[headControllerId];
     if (state !== undefined) {
       return canvasController.states.handleContextMenu(itemId, { event: mouse });
     }

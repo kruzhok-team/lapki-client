@@ -17,6 +17,11 @@ import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.sv
 import { useModal } from '@renderer/hooks';
 import { useClickOutside } from '@renderer/hooks/useClickOutside';
 import {
+  CHOICE_STATE_DIMENSIONS,
+  DEFAULT_STATE_DIMENSIONS,
+  FINAL_STATE_DIMENSIONS,
+} from '@renderer/lib/constants';
+import {
   Note,
   ChoiceState,
   EventSelection,
@@ -43,12 +48,13 @@ type MenuVariant =
 
 export const DiagramContextMenu: React.FC = () => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  const editor = controller.app;
   const openTab = useTabs((state) => state.openTab);
 
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const currentSm = stateMachines[0];
 
   const [isOpen, open, close] = useModal(false);
@@ -148,7 +154,7 @@ export const DiagramContextMenu: React.FC = () => {
               modelController.createState({
                 smId: currentSm,
                 events: [],
-                dimensions: { width: 450, height: 100 }, // TODO (L140-beep): уточнить
+                dimensions: DEFAULT_STATE_DIMENSIONS,
                 name: 'Состояние',
                 position: canvasPos,
                 placeInCenter: true,
@@ -161,7 +167,7 @@ export const DiagramContextMenu: React.FC = () => {
             onClick={() =>
               modelController.createFinalState({
                 smId: currentSm,
-                dimensions: { width: 450, height: 100 },
+                dimensions: FINAL_STATE_DIMENSIONS,
                 position: canvasPos,
                 placeInCenter: true,
               })
@@ -173,7 +179,7 @@ export const DiagramContextMenu: React.FC = () => {
             onClick={() =>
               modelController.createChoiceState({
                 smId: currentSm,
-                dimensions: { width: 450, height: 100 },
+                dimensions: CHOICE_STATE_DIMENSIONS,
                 position: canvasPos,
                 placeInCenter: true,
               })

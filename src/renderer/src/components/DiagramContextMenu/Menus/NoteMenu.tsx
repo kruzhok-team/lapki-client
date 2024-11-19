@@ -24,9 +24,11 @@ const fontSizes = [12, 14, 16, 18, 20, 22];
 
 export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const smId = stateMachines[0];
 
   const [bgColor, setBgColor] = useState<string | undefined>(undefined);

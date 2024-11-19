@@ -25,7 +25,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   const name = model.useData('', 'name');
   const basename = model.useData('', 'basename');
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const currentSm = stateMachines[0];
   const platform = model.useData(currentSm, 'elements.platform');
@@ -36,7 +36,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   const onAfterOpen = async () => {
     metaForm.setValue(
       'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO: Почему линтер ругается?
+      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
     );
     metaForm.clearErrors();
 
@@ -45,6 +45,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
       ['Платформа', getPlatform(platform)?.name ?? 'отсутствует'],
     ];
     if (basename) {
+      // (chekoopa): На будущее: кажется тонким местом, где может быть подвисание/вылет.
       const stat = await window.api.fileHandlers.getMetadata(basename);
       propertiesValues.push(['Путь к файлу', basename]);
       propertiesValues.push(['Дата и время последнего изменения файла', dateFormat(stat['mtime'])]);

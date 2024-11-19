@@ -2,7 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
-import { DeleteStateMachineParams, Layer } from '@renderer/lib/types';
+import { DeleteStateMachineParams, EditStateMachine, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateStateMachineParams } from '@renderer/lib/types/ModelTypes';
 
@@ -12,10 +12,10 @@ interface StateMachineEvents {
   contextMenu: { component: DrawableStateMachine; position: Point };
 }
 
-// TODO: Доделать
 /**
  * Контроллер {@link DrawableStateMachine|машин состояний}.
  * Обрабатывает события, связанные с ними.
+  TODO(L140-beep): Доделать выделение, удаление через хоткеи
  */
 export class StateMachineController extends EventEmitter<StateMachineEvents> {
   __items: Map<string, DrawableStateMachine> = new Map();
@@ -47,7 +47,8 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
       icon: 'stateMachine',
       label: args.name ?? args.smId,
     };
-    const sm = new DrawableStateMachine(this.app, args.smId, markedSmIcon);
+    const sm = new DrawableStateMachine(this.app, args.smId, markedSmIcon, args.position);
+    this.watch(sm);
     this.items.set(args.smId, sm);
     this.view.children.add(sm, Layer.Machines);
     this.view.isDirty = true;
@@ -82,6 +83,50 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     return machineLayer.find((value) => value['id'] === sm) as DrawableStateMachine | undefined;
   }
 
+  editStateMachine = (args: EditStateMachine) => {
+    const { id, name } = args;
+    const item = this.items.get(id);
+    if (!item) return;
+
+    item.icon.label = name;
+    this.view.isDirty = true;
+  };
+
+  changeStateMachinePosition(id: string, position: Point) {
+    const item = this.items.get(id);
+    if (!item) return;
+
+    item.position = position;
+    this.view.isDirty = true;
+  }
+
+  handleDragEnd = (
+    sm: DrawableStateMachine,
+    e: { dragStartPosition: Point; dragEndPosition: Point }
+  ) => {
+    this.changeStateMachinePosition(sm.id, e.dragEndPosition);
+    this.app.controller.emit('changeStateMachinePosition', {
+      smId: sm.id,
+      id: sm.id,
+      endPosition: e.dragEndPosition,
+    });
+  };
+
+  // handleMouseDown(sm: DrawableStateMachine) {
+  //   const item = this.items.get(sm.id);
+  //   if (!item) return;
+  //   this.controller.emit('selectNote', { smId: note.smId, id: note.id });
+  // }
+
+  watch(sm: DrawableStateMachine) {
+    // sm.on('mousedown', this.handleMouseDown.bind(this, sm));
+    sm.on('dragend', this.handleDragEnd.bind(this, sm));
+  }
+
+  unwatch(sm: DrawableStateMachine) {
+    sm.off('dragend', this.handleDragEnd.bind(this, sm));
+  }
+
   deleteStateMachine = (args: DeleteStateMachineParams) => {
     const sm = this.items.get(args.id);
     if (!sm) return;
@@ -98,6 +143,7 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
 
     sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);
+    this.unwatch(sm);
     this.items.delete(args.id);
 
     this.view.isDirty = true;

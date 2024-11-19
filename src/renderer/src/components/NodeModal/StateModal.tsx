@@ -14,6 +14,9 @@ interface StateModalProps {
   editorController: CanvasController;
 }
 
+/**
+ * Модальное окно редактирования состояния
+ */
 export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }) => {
   const modelController = useModelContext();
   const visual = editorController.useData('visual');

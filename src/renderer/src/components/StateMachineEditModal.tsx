@@ -2,6 +2,7 @@ import { Controller, UseFormReturn } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { Modal, Select } from '@renderer/components/UI';
+import { StateMachineData } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
@@ -23,12 +24,6 @@ interface StateMachineEditModalProps {
   isDuplicateName: (name: string) => boolean;
   selectPlatformDisabled: boolean;
 }
-
-// TODO (Roundabout1): наверное стоит перенести этот тип данных в другое место?
-export type StateMachineData = {
-  name: string;
-  platform: string;
-};
 
 export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   isOpen,

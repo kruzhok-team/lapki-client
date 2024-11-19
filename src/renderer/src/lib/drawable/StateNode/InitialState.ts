@@ -10,8 +10,10 @@ import { InitialState as DataInitialState } from '@renderer/types/diagram';
  */
 export class InitialState extends Shape {
   data: DataInitialState;
-  constructor(app: CanvasEditor, id: string, data: DataInitialState, parent?: Shape) {
+  smId: string;
+  constructor(app: CanvasEditor, id: string, smId: string, data: DataInitialState, parent?: Shape) {
     super(app, id, parent);
+    this.smId = smId;
     this.data = data;
   }
 

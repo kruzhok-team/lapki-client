@@ -14,7 +14,7 @@ import { Component, Condition, Variable as VariableData } from '@renderer/types/
 export const useCondition = () => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   const smId = stateMachines[0];
 

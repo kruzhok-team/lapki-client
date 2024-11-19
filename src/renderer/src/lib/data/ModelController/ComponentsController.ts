@@ -151,6 +151,12 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
     this.changeComponentPosition(component.id, e.dragEndPosition);
+    this.app.controller.emit('changeComponentPosition', {
+      smId: component.smId,
+      id: component.id,
+      startPosition: e.dragStartPosition,
+      endPosition: e.dragEndPosition,
+    });
   };
 
   watch(component: DrawableComponent) {

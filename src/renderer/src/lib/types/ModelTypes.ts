@@ -15,6 +15,11 @@ import {
 
 import { EventSelection } from '../drawable';
 
+export type StateMachineData = {
+  name: string;
+  platform: string;
+};
+
 export const emptyEditorData = () => ({
   canvas: {} as { [id: string]: EditorStatus },
   basename: null as string | null,

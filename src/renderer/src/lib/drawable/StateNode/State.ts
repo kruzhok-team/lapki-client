@@ -76,7 +76,6 @@ export class State extends Shape {
   //Прорисовка блока состояния
   private drawBody(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
-
     ctx.fillStyle = style.bodyBg;
 
     ctx.beginPath();

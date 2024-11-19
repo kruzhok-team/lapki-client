@@ -39,6 +39,7 @@ export interface EditComponentParams {
 }
 
 export interface ChangeComponentPosition {
+  smId: string;
   id: string;
   startPosition: Point;
   endPosition: Point;
@@ -67,10 +68,15 @@ export interface DeleteStateMachineParams {
   purge?: boolean;
 }
 
+export interface EditStateMachine {
+  id: string;
+  name: string;
+  platform: string;
+}
+
 export interface LinkStateParams {
   parentId: string;
   childId: string;
-
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   smId: string;
   addOnceOff?: boolean;

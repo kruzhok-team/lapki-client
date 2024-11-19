@@ -153,7 +153,20 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   changeTransition = (args: ChangeTransitionParams) => {
     const transition = this.items.get(args.id);
     if (!transition) return;
-    transition.data = { ...args };
+    // Аргументы не предполагают наличие позиции, поэтому
+    // нужно сохранять прошлую позицию
+    if (args.label) {
+      const label = {
+        ...args.label,
+        position: transition.data.label?.position ?? { x: 0, y: 0 },
+      };
+      transition.data = {
+        ...args,
+        label: label,
+      };
+    } else {
+      transition.data = { ...args };
+    }
     transition.label.update();
     this.view.isDirty = true;
   };

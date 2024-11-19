@@ -45,6 +45,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         name: modelController.model.data.elements.stateMachines[smId].name ?? smId,
         canvasId: controllerId,
       });
+      // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
+      // И в будущем сделать открытие всех машин опцией. Но это в будущем.
+      break;
     }
   };
 
@@ -84,7 +87,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
     clearTabs();
     openTabs();
-    // openTab({ type: 'scheme', name: 'scheme' });
   };
 
   //Создание нового файла
@@ -105,7 +107,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const performNewFile = (idx: string) => {
     modelController.files.newFile(idx);
-    // schemeModel?.files.newFile(idx);
     clearTabs();
     openTabs();
   };

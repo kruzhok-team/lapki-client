@@ -20,8 +20,6 @@ import { Loader } from './Loader';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
-// import { StateMachinesList } from './StateMachinesTab';
-
 import { StateMachinesList } from './StateMachinesTab/StateMachinesList';
 
 import { AvrdudeGuideModal } from '../AvrdudeGuide';
@@ -59,7 +57,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   openImportError,
 }) => {
   const modelController = useModelContext();
-  // const { controller } = useEditorContext();
 
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');

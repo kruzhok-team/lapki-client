@@ -29,8 +29,9 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [openTab] = useTabs((state) => [state.openTab]);
   const modelController = useModelContext();
-  // const headControllerId = modelController.model.useData('', 'headControllerId');
-  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData(
     '',
@@ -38,9 +39,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     editor.id
   ) as string;
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
-  const [isTextModeModalOpen, closeTextModeModal] = useModal(false);
-  // TODO: visual
-  // const visual = modelController.controllers[headControllerId].useData('visual');
+  const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
+  const visual = modelController.controllers[headControllerId].useData('visual');
 
   const items: MenuItem[] = [
     {
@@ -83,7 +83,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   className: 'border-t border-border-primary',
     // },
     {
-      text: 'Открыть экран',
+      text: 'Открыть схемоэкран',
       onClick: () => {
         const schemeEditorId = modelController.schemeEditorId;
         if (!schemeEditorId) return;
@@ -98,11 +98,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       },
       disabled: !isInitialized,
     },
-    // {
-    //   text: 'Перейти в текстовый режим (β)',
-    //   onClick: () => openTextModeModal(),
-    //   hidden: !visual || !isInitialized,
-    // },
+    {
+      text: 'Перейти в текстовый режим (β)',
+      onClick: () => openTextModeModal(),
+      hidden: !visual || !isInitialized,
+    },
     // {
     //   text: 'Примеры',
     //   TODO: модальное окно с выбором примера

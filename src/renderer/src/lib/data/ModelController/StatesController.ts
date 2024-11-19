@@ -207,12 +207,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   createInitialState = (params: CreateInitialStateControllerParams) => {
-    const { id, targetId } = params;
+    const { smId, id, targetId } = params;
 
     const target = this.data.states.get(targetId);
     if (!target || !id) return;
 
-    const state = new InitialState(this.app, id, { ...params });
+    const state = new InitialState(this.app, id, smId, { ...params });
 
     this.data.initialStates.set(id, state);
 
@@ -548,23 +548,48 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         parentId: this.dragInfo.parentId,
       });
       this.dragInfo = null;
+    } else {
+      this.changeStatePosition({ smId: state.smId, id: state.id, endPosition: e.dragEndPosition });
+      this.app.controller.emit('changeStatePosition', {
+        smId: state.smId,
+        id: state.id,
+        endPosition: e.dragEndPosition,
+      });
     }
-
-    this.changeStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
   };
 
   handleInitialStateDragEnd = (
     state: InitialState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.changeInitialStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
+    this.changeInitialStatePosition({
+      smId: state.smId,
+      id: state.id,
+      endPosition: e.dragEndPosition,
+    });
+    this.app.controller.emit('changeInitialPosition', {
+      smId: state.smId,
+      id: state.id,
+      startPosition: e.dragStartPosition,
+      endPosition: e.dragEndPosition,
+    });
   };
 
   handleFinalStateDragEnd = (
-    state: InitialState,
+    state: FinalState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.changeFinalStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
+    this.changeFinalStatePosition({
+      smId: state.smId,
+      id: state.id,
+      endPosition: e.dragEndPosition,
+    });
+    this.app.controller.emit('changeFinalStatePosition', {
+      smId: state.smId,
+      id: state.id,
+      startPosition: e.dragStartPosition,
+      endPosition: e.dragEndPosition,
+    });
   };
 
   handleFinalStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
@@ -577,7 +602,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleChoiceStateMouseDown = (state: ChoiceState) => {
-    this.controller.selectChoice({ smId: '', id: state.id });
+    this.controller.selectChoice({ smId: state.smId, id: state.id });
     this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
   };
 
@@ -585,13 +610,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state: ChoiceState,
     e: { dragStartPosition: Point; dragEndPosition: Point }
   ) => {
-    this.changeChoiceStatePosition({ smId: '', id: state.id, endPosition: e.dragEndPosition });
+    this.changeChoiceStatePosition({
+      smId: state.smId,
+      id: state.id,
+      startPosition: e.dragStartPosition,
+      endPosition: e.dragEndPosition,
+    });
   };
 
   handleChoiceStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const item = this.data.choiceStates.get(stateId);
     if (!item) return;
-    this.controller.selectChoice({ smId: '', id: stateId });
+    this.controller.selectChoice({ smId: item.smId, id: stateId });
     this.emit('choiceStateContextMenu', {
       state: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },

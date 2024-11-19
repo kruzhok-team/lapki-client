@@ -34,10 +34,11 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onDelete,
 }) => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
   const { model } = modelController;
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  const editor = controller.app;
   const smId = stateMachines[0];
   const components = model.useData(smId, 'elements.components');
   const [name, setName] = useState('');

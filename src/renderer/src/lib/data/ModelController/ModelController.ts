@@ -1,6 +1,5 @@
 import { Point } from 'electron';
 
-import { StateMachineData } from '@renderer/components/StateMachineEditModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import {
@@ -39,6 +38,7 @@ import {
   CreateTransitionParams,
   DeleteDrawableParams,
   DeleteEventParams,
+  StateMachineData,
   SwapComponentsParams,
 } from '@renderer/lib/types/ModelTypes';
 import { generateId, isPointInRectangle } from '@renderer/lib/utils';
@@ -96,9 +96,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     () => {
       this.loadData();
       this.history.clear();
-    },
-    (scale: number) => {
-      this.emit('changeScale', scale);
     }
   );
   schemeEditorId: string | null = null;
@@ -173,7 +170,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const smToSubscribe = {};
       smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
-      controller.subscribe(smId, 'stateMachine', {});
+      controller.subscribe(smId, 'stateMachine', { [smId]: smIds[smId] });
       controller.subscribe(smId, 'component', sm.components);
     }
     controller.watch();
@@ -193,6 +190,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
     controller.watch();
+
+    if (!sm.visual) {
+      controller.setTextMode();
+    }
     // return controller;
   }
 
@@ -209,6 +210,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('createTransitionFromController', this.onCreateTransitionModal);
     controller.on('openChangeTransitionModalFromController', this.openChangeTransitionModal);
     controller.on('selectComponent', this.selectComponent);
+    controller.on('changeStatePosition', this.changeStatePosition);
+    controller.on('changeInitialPosition', this.changeInitialStatePosition);
+    controller.on('changeFinalStatePosition', this.changeFinalStatePosition);
+    controller.on('changeChoicePosition', this.changeChoiceStatePosition);
+    controller.on('changeComponentPosition', this.changeComponentPosition);
+    controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -227,6 +234,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('selectChoice', this.selectChoiceState);
     controller.off('createTransitionFromController', this.onCreateTransitionModal);
     controller.off('openChangeTransitionModalFromController', this.openChangeTransitionModal);
+    controller.off('changeStatePosition', this.changeStatePosition);
+    controller.off('changeInitialPosition', this.changeInitialStatePosition);
+    controller.off('changeFinalStatePosition', this.changeFinalStatePosition);
+    controller.off('changeChoicePosition', this.changeChoiceStatePosition);
+    controller.off('changeComponentPosition', this.changeComponentPosition);
+    controller.off('changeStateMachinePosition', this.changeStateMachinePosition);
     controller.unwatch();
   }
 
@@ -251,6 +264,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.triggerDataUpdate('canvas.isMounted');
   };
 
+  changeScale(diff: number, replace = false) {
+    this.model.setScale(replace ? diff : this.model.data.scale + diff);
+    const controller = this.controllers[this.model.data.headControllerId];
+    controller.view.changeScale(diff, replace);
+    this.emit('changeScale', replace ? diff : this.model.data.scale + diff);
+  }
+
   initPlatform() {
     //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
     for (const smId in this.model.data.elements.stateMachines) {
@@ -272,7 +292,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeNoteFontSize(smId, id, fontSize);
 
     this.emit('changeNoteFontSize', args);
-    // TODO: History
+    // TODO (L140-beep): History
   }
 
   changeNoteTextColor(args: ChangeNoteTextColorParams) {
@@ -284,7 +304,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeNoteTextColor(smId, id, textColor);
 
     this.emit('changeNoteTextColor', args);
-    // TODO: History
+    // TODO (L140-beep): History
   }
 
   changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
@@ -359,7 +379,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('loadData', null);
   }
 
-  private getSmId(id: string, element: `${keyof StateMachine}`) {
+  private getSmIdByElementId(id: string, element: `${keyof StateMachine}`) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       const elements = sm[element];
@@ -367,10 +387,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         return smId;
       }
     }
-    throw new Error('Never is reached');
+    throw new Error('Элемента нет ни в одной машине состояний!');
   }
 
-  // TODO: Думаю, из-за этого не очень хорошо компоненты выделяются
   selectComponent = (args: SelectDrawable) => {
     this.removeSelection([args.id]);
 
@@ -415,6 +434,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
     this.emit('changeTransition', args);
   }
+  // TODO: Добавить в историю!
+  changeStateMachinePosition = (args: ChangePosition) => {
+    const { id, endPosition } = args;
+    this.model.changeStateMachinePosition(id, endPosition);
+  };
 
   changeTransitionPosition(args: ChangePosition, canUndo = true) {
     const { smId, id, startPosition, endPosition } = args;
@@ -571,7 +595,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       targetId: stateId,
     });
 
-    this.changeInitialStatePosition(smId, id, initialState.position, position, canUndo);
+    this.changeInitialStatePosition(
+      { smId, id, startPosition: initialState.position, endPosition: position },
+      canUndo
+    );
   }
 
   createStateMachine(smId: string, data: StateMachine) {
@@ -615,12 +642,25 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   editStateMachine(smId: string, data: StateMachineData) {
     this.model.editStateMachine(smId, data);
-    // TODO: emit('editStateMachine', data)
+    this.emit('editStateMachine', { id: smId, ...data });
   }
 
   deleteStateMachine(smId: string) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
     // Сделать общий канвас канвасом по умолчанию?
+    const specificCanvas = Object.values(this.controllers).find(
+      (controller) => controller.stateMachinesSub[smId] && controller.type === 'specific'
+    );
+
+    if (!specificCanvas) throw new Error('No controller for specific canvas!');
+
+    this.unwatch(specificCanvas);
+    delete this.controllers[specificCanvas.id];
+
+    if (Object.values(this.controllers).length === 1) {
+      this.model.changeHeadControllerId('');
+    }
+
     this.model.deleteStateMachine(smId);
     this.emit('deleteStateMachine', {
       id: smId,
@@ -628,13 +668,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
   }
 
-  changeInitialStatePosition(
-    smId: string,
-    id: string,
-    startPosition: Point,
-    endPosition: Point,
-    canUndo = true
-  ) {
+  changeInitialStatePosition = (args: ChangePosition, canUndo = true) => {
+    const { smId, id, startPosition, endPosition } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.initialStates[id];
     if (!state) return;
@@ -642,21 +677,21 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeInitialStatePosition',
-        args: { smId, id, startPosition, endPosition },
+        args: { smId, id, startPosition: startPosition ?? state.position, endPosition },
       });
     }
 
     this.model.changeInitialStatePosition(smId, id, endPosition);
-    this.emit('changeInitialPosition', { smId, id, startPosition, endPosition });
-  }
+    this.emit('changeInitialPosition', {
+      smId,
+      id,
+      startPosition: startPosition ?? state.position,
+      endPosition,
+    });
+  };
 
-  changeStatePosition(
-    smId: string,
-    id: string,
-    startPosition: Point,
-    endPosition: Point,
-    canUndo = true
-  ) {
+  changeStatePosition = (args: ChangePosition, canUndo = true) => {
+    const { smId, id, startPosition, endPosition } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.states[id];
     if (!state) return;
@@ -664,16 +699,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'changeStatePosition',
-        args: { smId, id, startPosition, endPosition },
+        args: { smId, id, startPosition: startPosition ?? state.position, endPosition },
       });
     }
-
     this.model.changeStatePosition(smId, id, endPosition);
-    this.emit('changeStatePosition', { smId, id, startPosition, endPosition });
-  }
+    this.emit('changeStatePosition', {
+      smId,
+      id,
+      startPosition: startPosition ?? state.position,
+      endPosition,
+    });
+  };
 
   getBySourceId(smId: string, sourceId: string) {
     return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].find(
+      (transition) => transition[1].sourceId === sourceId
+    );
+  }
+
+  getAllBySourceId(smId: string, sourceId: string) {
+    return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].filter(
       (transition) => transition[1].sourceId === sourceId
     );
   }
@@ -750,11 +795,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
-    dependetTransitionsIds.forEach((transitionId) => {
-      this.deleteTransition({ smId, id: transitionId }, canUndo);
-      numberOfConnectedActions += 1;
-    });
+    const dependetTransitionsEntries = this.getAllBySourceId(smId, id);
+    if (dependetTransitionsEntries.length !== 0) {
+      dependetTransitionsEntries.forEach((transitionId) => {
+        this.deleteTransition({ smId, id: transitionId[0] }, canUndo);
+        numberOfConnectedActions += 1;
+      });
+    }
 
     if (canUndo) {
       this.history.do({
@@ -904,7 +951,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newPosition = { ...this.compoundStatePosition(smId, id, 'states') }; // ??
-    this.changeStatePosition(smId, id, state.position, newPosition, canUndo);
+    this.changeStatePosition(
+      { smId, id, startPosition: state.position, endPosition: newPosition },
+      canUndo
+    );
     numberOfConnectedActions += 1;
 
     this.model.unlinkState(smId, id);
@@ -933,8 +983,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
-    const prevParentId = child.parentId;
     if (!parent || !child) return;
+    const prevParentId = child.parentId;
 
     let numberOfConnectedActions = 0;
 
@@ -952,7 +1002,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     this.model.linkState(smId, parentId, childId);
-    this.changeStatePosition(smId, childId, child.position, { x: 0, y: 0 }, false);
+    this.changeStatePosition(
+      { smId, id: childId, startPosition: child.position, endPosition: { x: 0, y: 0 } },
+      false
+    );
 
     this.emit('linkState', args);
 
@@ -963,10 +1016,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // Если не было начального состояния, им станет новое
     if (canBeInitial && this.getSiblings(smId, childId, child.parentId, 'states')[0].length === 0) {
       this.changeStatePosition(
-        smId,
-        childId,
-        child.position,
-        { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
+        {
+          smId,
+          id: childId,
+          startPosition: child.position,
+          endPosition: { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
+        },
         false
       );
       this.createInitialStateWithTransition(smId, childId, canUndo);
@@ -1106,7 +1161,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (parentId) {
       this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
-      // this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
+      this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
     }
 
     if (canUndo) {
@@ -1140,26 +1195,22 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('editComponent', args);
   }
 
-  changeComponentPosition(
-    smId: string,
-    name: string,
-    startPosition: Point,
-    endPosition: Point,
-    _canUndo = true
-  ) {
-    this.model.changeComponentPosition(smId, name, endPosition);
+  changeComponentPosition = (args: ChangePosition, _canUndo = true) => {
+    const { smId, id, startPosition = { x: 0, y: 0 }, endPosition } = args;
+    this.model.changeComponentPosition(smId, id, endPosition);
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
-        args: { smId, name, startPosition, endPosition },
+        args: { smId, name: id, startPosition: startPosition, endPosition },
       });
     }
     this.emit('changeComponentPosition', {
-      id: name,
+      smId,
+      id: id,
       startPosition: startPosition,
       endPosition: endPosition,
     });
-  }
+  };
 
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
@@ -1209,6 +1260,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
+  private getChoicesByParentId(smId: string, parentId: string) {
+    return Object.entries(this.model.data.elements.stateMachines[smId].choiceStates).filter(
+      (state) => state[1].parentId === parentId
+    );
+  }
+
+  private getFinalsByParentId(smId: string, parentId: string) {
+    return Object.entries(this.model.data.elements.stateMachines[smId].finalStates).filter(
+      (state) => state[1].parentId === parentId
+    );
+  }
+
   private getInitialStatesByParentId(smId: string, parentId: string) {
     return Object.entries(this.model.data.elements.stateMachines[smId].initialStates).filter(
       (state) => state[1].parentId === parentId
@@ -1234,6 +1297,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.deleteInitialStateWithTransition(smId, childInitial[0], canUndo);
       numberOfConnectedActions += 1;
     });
+    const choiceStates = this.getChoicesByParentId(smId, id);
+    choiceStates.forEach((childChoice) => {
+      this.deleteChoiceState({ smId: smId, id: childChoice[0] }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    const finalStates = this.getFinalsByParentId(smId, id);
+    finalStates.forEach((childFinal) => {
+      this.deleteFinalState({ smId: smId, id: childFinal[0] }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
     const nestedStates = this.getStatesByParentId(smId, id);
     // Ищем дочерние состояния и отвязываем их от текущего
     nestedStates.forEach((childState) => {
@@ -1489,7 +1564,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private linkChoiceState(smId: string, stateId: string, parentId: string) {
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.choiceStates[stateId];
-    const parent = sm.choiceStates[parentId];
+    const parent = sm.states[parentId];
     if (!state || !parent) return;
 
     this.model.linkChoiceState(smId, stateId, parentId);
@@ -1498,7 +1573,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
     const { smId, parentId, position, linkByPoint = true } = params;
-
     const id = this.model.createChoiceState(params);
     this.emit('createChoice', { ...params, id: id });
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
@@ -1507,18 +1581,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.linkChoiceState(smId, id, parentId);
     } else if (linkByPoint) {
       const [computedParentId, parentItem] = this.getPossibleParentState(smId, position);
-      if (!computedParentId || !parentItem) return;
-      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
-      if (parentItem) {
-        const newPosition = {
-          x: state.position.x - parentCompoundPosition.x,
-          y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
-        };
-        this.linkChoiceState(smId, id, computedParentId);
-        this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
+      if (computedParentId && parentItem) {
+        const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
+        if (parentItem) {
+          const newPosition = {
+            x: state.position.x - parentCompoundPosition.x,
+            y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
+          };
+          this.linkChoiceState(smId, id, computedParentId);
+          this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
+        }
       }
     }
-
     if (canUndo) {
       this.history.do({
         type: 'createChoiceState',
@@ -1566,7 +1640,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   }
 
-  changeChoiceStatePosition(args: ChangePosition, canUndo = true) {
+  changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);
     this.emit('changeChoicePosition', args);
     const { startPosition } = args;
@@ -1576,7 +1650,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { ...args, startPosition: startPosition },
       });
     }
-  }
+  };
 
   createFinalState(params: CreateFinalStateParams, canUndo = true) {
     const { smId, parentId, linkByPoint = true } = params;
@@ -1831,8 +1905,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-      const newId = this.model.createState({
-        ...structuredClone(data),
+      this.createState({
+        ...structuredClone({ ...data, id: undefined }),
         smId,
         linkByPoint: false,
         id: undefined,
@@ -1841,36 +1915,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           y: data.position.y + this.pastePositionOffset,
         },
       });
-      this.emit('createState', {
-        ...structuredClone(data),
-        smId,
-        linkByPoint: false,
-        id: newId,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
+
+      return;
     }
 
     if (type === 'choiceState') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const newId = this.model.createChoiceState({
+      this.createChoiceState({
         ...data,
         smId,
         id: undefined,
-        linkByPoint: false,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      this.emit('createChoice', {
-        ...data,
-        smId,
-        id: newId,
         linkByPoint: false,
         position: {
           x: data.position.x + this.pastePositionOffset,
@@ -1884,20 +1939,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (type === 'note') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const newId = this.model.createNote({
+      this.createNote({
         ...data,
         smId,
         id: undefined,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      this.emit('createNote', {
-        ...data,
-        smId,
-        id: newId,
         position: {
           x: data.position.x + this.pastePositionOffset,
           y: data.position.y + this.pastePositionOffset,
@@ -1924,17 +1969,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         };
       };
 
-      const newId = this.model.createTransition({
+      this.createTransition({
         ...data,
         smId,
         id: undefined,
-        label: getLabel(),
-      });
-
-      this.emit('createTransition', {
-        ...data,
-        smId: '',
-        id: newId,
         label: getLabel(),
       });
     }
@@ -1954,10 +1992,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // }
     return null;
   };
-
-  getCurrentCanvas() {
-    return (this.controllers[this.model.data.headControllerId] ?? this.controllers['']).app;
-  }
 
   duplicateSelected = () => {
     this.copySelected();
@@ -2131,8 +2165,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         : sm.choiceStates
         ? 'choiceStates'
         : 'finalStates';
-      const sourceSm = this.getSmId(args.source, sourceType);
-      const targetSm = this.getSmId(args.target, targetType);
+      const sourceSm = this.getSmIdByElementId(args.source, sourceType);
+      const targetSm = this.getSmIdByElementId(args.target, targetType);
 
       if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
 

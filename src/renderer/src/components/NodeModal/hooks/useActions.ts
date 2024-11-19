@@ -11,7 +11,7 @@ export const useActions = () => {
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const stateMachines = Object.keys(controller.stateMachinesSub);
-  // TODO: решить проблему с машинами состояний
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const smId = stateMachines[0];
   const componentsData = modelController.model.useData(smId, 'elements.components');
   const visual = controller.useData('visual');

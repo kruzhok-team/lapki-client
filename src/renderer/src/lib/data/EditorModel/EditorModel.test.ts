@@ -6,8 +6,7 @@ import { emptyElements } from '../../../types/diagram';
 
 const em = new EditorModel(
   () => 42,
-  () => 42,
-  () => 12
+  () => 42
 );
 
 em.init('basename', 'name', emptyElements());

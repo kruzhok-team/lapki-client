@@ -75,7 +75,7 @@ export const Tabs: React.FC = () => {
             key={tab.name}
             isActive={activeTab === tab.name}
             isDragging={dragId === tab.name}
-            draggable={tab.type !== 'editor'}
+            draggable={true}
             type={tab.type}
             name={tab.name}
             showName={true}

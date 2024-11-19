@@ -43,7 +43,7 @@ export const StateMachinesList: React.FC = () => {
     editProps,
     deleteProps,
     // onSwapStateMachines
-    onRequestDeleteStateMachine,
+    // onRequestDeleteStateMachine,
     onRequestAddStateMachine,
     onRequestEditStateMachine,
     isDuplicateName,

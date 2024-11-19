@@ -1,5 +1,5 @@
 export * from './drawable';
 export * from './graphics';
-export * from './EditorModel';
-export * from './EditorController';
+export * from './ControllerTypes';
+export * from './ModelTypes';
 export * from './mouse';

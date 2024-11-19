@@ -2,14 +2,19 @@ import { useCallback, useState } from 'react';
 
 import { ActionsModalData } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
-import { Action } from '@renderer/types/diagram';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Action } from '@renderer/types/diagram';
 
 export const useActions = () => {
-  const { controller, model } = useEditorContext();
-  const componentsData = model.useData('elements.components');
-  const visual = model.useData('elements.visual');
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const smId = stateMachines[0];
+  const componentsData = modelController.model.useData(smId, 'elements.components');
+  const visual = controller.useData('visual');
 
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
   const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
@@ -70,22 +75,25 @@ export const useActions = () => {
   };
 
   const parse = useCallback(
-    (actionsToParse: Action[] | string | undefined) => {
+    (parseSmId: string, actionsToParse: Action[] | string | undefined) => {
       clear();
 
       if (!actionsToParse) return;
 
       if (typeof actionsToParse !== 'string') {
         setTabValue(0);
-        if (!visual && controller.platform)
-          setText(serializeActions(actionsToParse, componentsData, controller.platform.data)); // для перехода в текст
+        if (!visual && controller.platform[parseSmId]) {
+          setText(
+            serializeActions(actionsToParse, componentsData, controller.platform[parseSmId].data)
+          ); // для перехода в текст
+        }
         return setActions(actionsToParse);
       }
 
       setTabValue(1);
       setText(actionsToParse);
     },
-    [visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
+    [headControllerId, visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
   );
 
   return {

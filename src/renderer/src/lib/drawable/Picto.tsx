@@ -28,7 +28,34 @@ export function resolveImg(p: string): string {
   return imgBaseDir + p;
 }
 
-const basePicto = {
+type BasePictoKey =
+  | 'EdgeHandle'
+  | 'InitialIcon'
+  | 'unknown'
+  | 'pen'
+  | 'system'
+  | 'variable'
+  | 'op/notEquals'
+  | 'op/equals'
+  | 'op/less'
+  | 'op/greater'
+  | 'op/greaterOrEqual'
+  | 'op/lessOrEqual'
+  | 'onEnter'
+  | 'onEnterAlt'
+  | 'onExit'
+  | 'onExitAlt'
+  | 'stateMachine'
+  | 'condition'
+  | 'stubComponent'
+  | 'stubEvent'
+  | 'stubAction';
+
+type BasePicto = {
+  [key in BasePictoKey]: string;
+};
+
+const basePicto: BasePicto = {
   EdgeHandle: EdgeHandle,
   InitialIcon: InitialIcon,
   unknown: UnknownIcon,
@@ -53,6 +80,7 @@ const basePicto = {
   onExit: resolveImg('common/onExitAlt.svg'),
   onEnterAlt: resolveImg('common/onEnter.svg'),
   onExitAlt: resolveImg('common/onExit.svg'),
+  stateMachine: resolveImg('common/statemachine.svg'),
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {
@@ -104,8 +132,14 @@ export class Picto {
    * @param ctx Контекст canvas, в котором рисуем
    * @param iconData Название значка или контейнер с данными для метки
    * @param bounds Координаты и размер рамки
+   * @param fontSize Размер шрифта метки, по умолчанию равен 13
    */
-  drawImage(ctx: CanvasRenderingContext2D, iconData: string | MarkedIconData, bounds: Rectangle) {
+  drawImage(
+    ctx: CanvasRenderingContext2D,
+    iconData: string | MarkedIconData,
+    bounds: Rectangle,
+    fontSize: number = 13
+  ) {
     // console.log([iconName, icons.has(iconName)]);
     const isMarked = typeof iconData !== 'string';
     const iconName = isMarked ? iconData.icon : iconData;
@@ -121,47 +155,47 @@ export class Picto {
     });
     ctx.closePath();
 
-    if (!isMarked || !iconData.label) return;
+    if (isMarked && iconData['label']) {
+      const { x, y, width, height } = bounds;
+      // Координаты правого нижнего угла картинки
+      const tX = x + (width + 6) / this.scale;
+      const tY = y + (height + 3) / this.scale;
+      // Отступы внутри метки
+      const pX = 1 / this.scale;
+      const pY = 0.5 / this.scale;
+      const font = `500 ${fontSize / this.scale}px/0 Fira Mono`;
+      const textWidth = getTextWidth(iconData.label, font);
+      const textHeight = fontSize / this.scale;
+      const labelWidth = textWidth + pX * 2 + 3;
+      const labelHeight = textHeight + pY * 2 + 3;
 
-    const { x, y, width, height } = bounds;
-    // Координаты правого нижнего угла картинки
-    const tX = x + (width + 6) / this.scale;
-    const tY = y + (height + 3) / this.scale;
-    // Отступы внутри метки
-    const pX = 1 / this.scale;
-    const pY = 0.5 / this.scale;
-    const font = `500 ${13 / this.scale}px/0 Fira Mono`;
-    const textWidth = getTextWidth(iconData.label, font);
-    const textHeight = 13 / this.scale;
-    const labelWidth = textWidth + pX * 2;
-    const labelHeight = textHeight + pY * 2;
+      // Отрисовка заднего фона метки
+      // Рисуется в правом нижнем углу картинки, ширина и высота зависит от текста
+      ctx.beginPath();
+      const prevFillStyle = ctx.fillStyle;
+      ctx.fillStyle = theme.colors.diagram.state.bodyBg;
+      ctx.roundRect(tX - labelWidth, tY - labelHeight, labelWidth, labelHeight, 2 / this.scale);
+      ctx.fill();
 
-    // Отрисовка заднего фона метки
-    // Рисуется в правом нижнем углу картинки, ширина и высота зависит от текста
-    ctx.beginPath();
-    const prevFillStyle = ctx.fillStyle;
-    ctx.fillStyle = theme.colors.diagram.state.bodyBg;
-    ctx.roundRect(tX - labelWidth, tY - labelHeight, labelWidth, labelHeight, 2 / this.scale);
-    ctx.fill();
+      ctx.fillStyle = prevFillStyle;
+      ctx.closePath();
 
-    ctx.fillStyle = prevFillStyle;
-    ctx.closePath();
-
-    // Отрисовка текста метки
-    ctx.beginPath();
-    drawText(ctx, iconData.label, {
-      x: tX - textWidth / 2 - pX,
-      y: tY - textHeight - pY,
-      font: {
-        fontFamily: 'Fira Mono',
-        fontSize: 13 / this.scale,
-        lineHeight: 1,
-        fontWeight: 500,
-      },
-      textAlign: 'center',
-      color: iconData.color ?? '#FFFFFF',
-    });
-    ctx.closePath();
+      // Отрисовка текста метки
+      ctx.beginPath();
+      drawText(ctx, iconData.label, {
+        x: tX - textWidth / 2 - pX,
+        y: tY - textHeight - pY,
+        font: {
+          fontFamily: 'Fira Mono',
+          fontSize: fontSize / this.scale,
+          lineHeight: 1,
+          fontWeight: 500,
+        },
+        textAlign: 'center',
+        color: iconData.color ?? '#FFFFFF',
+      });
+      ctx.closePath();
+    }
   }
 
   /**
@@ -222,6 +256,10 @@ export class Picto {
     ctx.fill();
     ctx.stroke();
     ctx.restore();
+  }
+
+  getBasePicto(iconId: BasePictoKey): string {
+    return basePicto[iconId];
   }
 
   drawBorder(

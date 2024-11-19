@@ -23,15 +23,15 @@ import {
   preparePreloadImages,
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
-  const editor = useEditorContext();
-
-  const isMounted = editor.model.useData('isMounted');
-
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.controllers[headControllerId].app;
+  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
@@ -44,7 +44,6 @@ export const MainContainer: React.FC = () => {
   });
 
   useAppTitle();
-
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       operations.onRequestOpenFile(acceptedFiles[0].path);

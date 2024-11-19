@@ -5,4 +5,5 @@ export * from './GhostTransition';
 export * from './Note';
 export * from './Picto';
 export * from './Shape';
+export * from './ComponentNode';
 export * from './TransitionNode';

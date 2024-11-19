@@ -9,6 +9,7 @@ import {
   CGMLTransitionAction,
   CGMLVertex,
   CGMLMeta,
+  CGMLNote,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import {
@@ -26,6 +27,7 @@ import {
   ChoiceState,
   emptyElements,
   emptyStateMachine,
+  Note,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 import { isString } from '@renderer/utils';
@@ -453,6 +455,44 @@ function labelStateParameters(
   return labeledStates;
 }
 
+function getNotes(rawNotes: { [id: string]: CGMLNote }) {
+  const notes: { [id: string]: Note } = {};
+  for (const noteId in rawNotes) {
+    const rawNote = rawNotes[noteId];
+    const formatNote = rawNote.unsupportedDataNodes.find(
+      (value) => value.key === 'dLapkiNoteFormat'
+    );
+    const note: Note = rawNote;
+    if (!formatNote) {
+      notes[noteId] = rawNote;
+      continue;
+    }
+
+    const parsedLines = formatNote.content.split('\n\n');
+    const parsedParameters = parsedLines.map((value) => value.split('/'));
+
+    for (const [parameterName, parameterValue] of parsedParameters) {
+      switch (parameterName) {
+        case 'fontSize':
+          note.fontSize = +parameterValue;
+          break;
+        case 'bgColor':
+          note.backgroundColor = parameterValue;
+          break;
+        case 'textColor':
+          note.textColor = parameterValue;
+          break;
+        default:
+          break;
+      }
+    }
+
+    notes[noteId] = note;
+  }
+
+  return notes;
+}
+
 function labelTransitionParameters(
   transitions: Record<string, Transition>,
   platformComponents: { [name: string]: ComponentProto },
@@ -499,7 +539,8 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
       position: {
         x: 0,
         y: 0,
-      }, // TODO (L140-beep): что-то нужно с этим придумать
+      }, // TODO (L140-beep): что-то нужно придумать с тем,
+      // что у нас, если платформа статическая, то все компоненты создаются в нулевых координатах
       parameters: {},
       order: 0,
     };
@@ -552,7 +593,7 @@ export function importGraphml(
       sm.meta = rawSm.meta.values;
       sm.initialStates = getInitialStates(rawSm.initialStates);
       sm.finalStates = getFinals(rawSm.finals);
-      sm.notes = rawSm.notes;
+      sm.notes = getNotes(rawSm.notes);
       const [stateVisual, states] = getStates(rawSm.states);
       sm.states = states;
       const [transitionVisual, transitions] = getTransitions(rawSm.transitions);

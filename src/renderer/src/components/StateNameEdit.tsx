@@ -81,7 +81,6 @@ export const StateNameEdit: React.FC = () => {
       setTimeout(() => el.focus(), 0);
       open();
     };
-    // TODO (L140-beep): работает ли?
     editor.controller.states.on('changeStateName', handler);
 
     return () => {

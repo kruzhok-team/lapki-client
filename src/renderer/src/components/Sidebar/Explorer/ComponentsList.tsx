@@ -11,7 +11,7 @@ export const ComponentsList: React.FC = () => {
   const modelController = useModelContext();
   const model = modelController.model;
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO: Передавать в модалки машину состояний
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const stateMachines = Object.keys(
     modelController.controllers[headControllerId].useData('stateMachinesSub')
   );
@@ -43,7 +43,7 @@ export const ComponentsList: React.FC = () => {
       <button
         type="button"
         className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-        disabled={!isInitialized}
+        disabled={!isInitialized || headControllerId === ''}
         onClick={onRequestAddComponent}
       >
         <AddIcon className="shrink-0" />

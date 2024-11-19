@@ -29,9 +29,10 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
 }) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const editor = modelController.getCurrentCanvas();
-  // TODO: Прокинуть сюда машину состояний
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  const editor = controller.app;
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const components = modelController.model.useData(stateMachines[0], 'elements.components') as {
     [id: string]: Component;
   };

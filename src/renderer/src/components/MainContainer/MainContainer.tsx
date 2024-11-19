@@ -29,7 +29,8 @@ import { Tabs } from './Tabs';
 
 export const MainContainer: React.FC = () => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.controllers[headControllerId].app;
   const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
 

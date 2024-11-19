@@ -28,17 +28,16 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   onClose,
 }) => {
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
   const model = modelController.model;
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  // TODO: Прокинуть сюда машину состояний
-  const visual = modelController.controllers[headControllerId].useData('visual');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const visual = controller.useData('visual');
   const smId = stateMachines[0];
   const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  const controller = editor.controller;
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

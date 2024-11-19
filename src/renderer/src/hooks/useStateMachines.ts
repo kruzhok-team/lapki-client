@@ -13,7 +13,6 @@ import { useModal } from './useModal';
 export const useStateMachines = () => {
   const modelController = useModelContext();
 
-  // const currentSm = model.useData('', 'currentSm');
   const [items, openTab, closeTab, renameTab] = useTabs((state) => [
     state.items,
     state.openTab,
@@ -50,6 +49,18 @@ export const useStateMachines = () => {
     openEdit();
   };
 
+  const onRequestDeleteStateMachine = (idx: string) => {
+    const sm = modelController.model.data.elements.stateMachines[idx];
+
+    if (!sm) return;
+
+    const smData = { name: sm.name ?? '', platform: sm.platform };
+    setIdx(idx);
+    setData(smData);
+    editForm.reset(smData);
+    openDelete();
+  };
+
   const onAdd = (data: StateMachineData) => {
     const smId = generateId();
     const sm = { ...emptyStateMachine(), ...data };
@@ -75,7 +86,6 @@ export const useStateMachines = () => {
   const onDelete = () => {
     if (!idx) return;
 
-    // TODO: вызывает краш IDE
     for (const tab of items) {
       if (!(tab.type === 'editor')) continue;
 
@@ -109,7 +119,7 @@ export const useStateMachines = () => {
     return false;
   };
 
-  // TODO: swap state machines
+  // TODO (L140-beep): swap state machines
   // const onSwapComponents = (name1: string, name2: string) => {
   //   modelController.swapComponents({ smId: currentSm, name1, name2 });
   // };
@@ -135,6 +145,7 @@ export const useStateMachines = () => {
       data: data,
       idx: idx,
     },
+    onRequestDeleteStateMachine,
     onRequestAddStateMachine,
     onRequestEditStateMachine,
     isDuplicateName,

@@ -44,11 +44,7 @@ export class EditorModel {
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   serializer = new Serializer(this);
 
-  constructor(
-    private initPlatform: () => void,
-    private resetEditor: () => void,
-    private scaleEmitter: (scale: number) => void
-  ) {}
+  constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
   createStateMachine(smId: string, data: StateMachine) {
     if (this.data.elements.stateMachines[smId]) return;
@@ -773,7 +769,6 @@ export class EditorModel {
   setScale(value: number) {
     this.data.scale = value;
     this.triggerDataUpdate('scale');
-    this.scaleEmitter(value);
     return true;
   }
 

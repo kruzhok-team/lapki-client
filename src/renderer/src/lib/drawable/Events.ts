@@ -44,7 +44,7 @@ export class Events {
   }
 
   update() {
-    // TODO: Откуда брать components по-нормальному?
+    // TODO(L140-beep): Откуда брать components по-нормальному?
     if (!this.app.controller.visual) {
       const text = serializeStateActions(
         this.parent.data.events,

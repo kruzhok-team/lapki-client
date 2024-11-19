@@ -47,27 +47,6 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   return (
     <div>
       <div>{smName ?? smId}</div>
-      {/* <Panel
-        id="panel2"
-        ref={hierarchyPanelRef}
-        collapsible
-        collapsedSize={2.5}
-        onCollapse={forceUpdate}
-        onExpand={forceUpdate}
-        className="px-4"
-      >
-        <button className="mb-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
-          <ArrowIcon
-            className={twMerge(
-              'rotate-0 transition-transform',
-              hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
-            )}
-          />
-          <h3 className="font-semibold">Иерархия состояний</h3>
-        </button>
-
-        {isInitialized ? <Hierarchy /> : 'Недоступно до открытия схемы'}
-      </Panel> */}
       {sortedComponents.map((name) => (
         <Component
           key={name}

@@ -96,9 +96,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     () => {
       this.loadData();
       this.history.clear();
-    },
-    (scale: number) => {
-      this.emit('changeScale', scale);
     }
   );
   schemeEditorId: string | null = null;
@@ -267,6 +264,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.triggerDataUpdate('canvas.isMounted');
   };
 
+  changeScale(diff: number, replace = false) {
+    this.model.setScale(replace ? diff : this.model.data.scale + diff);
+    const controller = this.controllers[this.model.data.headControllerId];
+    controller.view.changeScale(diff, replace);
+    this.emit('changeScale', replace ? diff : this.model.data.scale + diff);
+  }
+
   initPlatform() {
     //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
     for (const smId in this.model.data.elements.stateMachines) {
@@ -288,7 +292,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeNoteFontSize(smId, id, fontSize);
 
     this.emit('changeNoteFontSize', args);
-    // TODO: History
+    // TODO (L140-beep): History
   }
 
   changeNoteTextColor(args: ChangeNoteTextColorParams) {
@@ -300,7 +304,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeNoteTextColor(smId, id, textColor);
 
     this.emit('changeNoteTextColor', args);
-    // TODO: History
+    // TODO (L140-beep): History
   }
 
   changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
@@ -375,7 +379,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('loadData', null);
   }
 
-  private getSmId(id: string, element: `${keyof StateMachine}`) {
+  private getSmIdByElementId(id: string, element: `${keyof StateMachine}`) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       const elements = sm[element];
@@ -644,6 +648,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   deleteStateMachine(smId: string) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
     // Сделать общий канвас канвасом по умолчанию?
+    const specificCanvas = Object.values(this.controllers).find(
+      (controller) => controller.stateMachinesSub[smId] && controller.type === 'specific'
+    );
+
+    if (!specificCanvas) throw new Error('No controller for specific canvas!');
+
+    this.unwatch(specificCanvas);
+    delete this.controllers[specificCanvas.id];
+
+    if (Object.values(this.controllers).length === 1) {
+      this.model.changeHeadControllerId('');
+    }
+
     this.model.deleteStateMachine(smId);
     this.emit('deleteStateMachine', {
       id: smId,
@@ -696,6 +713,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   getBySourceId(smId: string, sourceId: string) {
     return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].find(
+      (transition) => transition[1].sourceId === sourceId
+    );
+  }
+
+  getAllBySourceId(smId: string, sourceId: string) {
+    return [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].filter(
       (transition) => transition[1].sourceId === sourceId
     );
   }
@@ -772,11 +795,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
-    dependetTransitionsIds.forEach((transitionId) => {
-      this.deleteTransition({ smId, id: transitionId }, canUndo);
-      numberOfConnectedActions += 1;
-    });
+    const dependetTransitionsEntries = this.getAllBySourceId(smId, id);
+    if (dependetTransitionsEntries.length !== 0) {
+      dependetTransitionsEntries.forEach((transitionId) => {
+        this.deleteTransition({ smId, id: transitionId[0] }, canUndo);
+        numberOfConnectedActions += 1;
+      });
+    }
 
     if (canUndo) {
       this.history.do({
@@ -958,8 +983,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
-    const prevParentId = child.parentId;
     if (!parent || !child) return;
+    const prevParentId = child.parentId;
 
     let numberOfConnectedActions = 0;
 
@@ -1136,7 +1161,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (parentId) {
       this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
       numberOfConnectedActions += 1;
-      // this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
+      this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
     }
 
     if (canUndo) {
@@ -1556,18 +1581,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.linkChoiceState(smId, id, parentId);
     } else if (linkByPoint) {
       const [computedParentId, parentItem] = this.getPossibleParentState(smId, position);
-      if (!computedParentId || !parentItem) return;
-      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
-      if (parentItem) {
-        const newPosition = {
-          x: state.position.x - parentCompoundPosition.x,
-          y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
-        };
-        this.linkChoiceState(smId, id, computedParentId);
-        this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
+      if (computedParentId && parentItem) {
+        const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
+        if (parentItem) {
+          const newPosition = {
+            x: state.position.x - parentCompoundPosition.x,
+            y: state.position.y - parentCompoundPosition.y - parentItem.dimensions.height,
+          };
+          this.linkChoiceState(smId, id, computedParentId);
+          this.changeChoiceStatePosition({ smId, id, endPosition: newPosition });
+        }
       }
     }
-
     if (canUndo) {
       this.history.do({
         type: 'createChoiceState',
@@ -1880,8 +1905,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-      const newId = this.model.createState({
-        ...structuredClone(data),
+      this.createState({
+        ...structuredClone({ ...data, id: undefined }),
         smId,
         linkByPoint: false,
         id: undefined,
@@ -1890,36 +1915,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           y: data.position.y + this.pastePositionOffset,
         },
       });
-      this.emit('createState', {
-        ...structuredClone(data),
-        smId,
-        linkByPoint: false,
-        id: newId,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
+
+      return;
     }
 
     if (type === 'choiceState') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const newId = this.model.createChoiceState({
+      this.createChoiceState({
         ...data,
         smId,
         id: undefined,
-        linkByPoint: false,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      this.emit('createChoice', {
-        ...data,
-        smId,
-        id: newId,
         linkByPoint: false,
         position: {
           x: data.position.x + this.pastePositionOffset,
@@ -1933,20 +1939,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (type === 'note') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-      const newId = this.model.createNote({
+      this.createNote({
         ...data,
         smId,
         id: undefined,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      this.emit('createNote', {
-        ...data,
-        smId,
-        id: newId,
         position: {
           x: data.position.x + this.pastePositionOffset,
           y: data.position.y + this.pastePositionOffset,
@@ -1973,17 +1969,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         };
       };
 
-      const newId = this.model.createTransition({
+      this.createTransition({
         ...data,
         smId,
         id: undefined,
-        label: getLabel(),
-      });
-
-      this.emit('createTransition', {
-        ...data,
-        smId: '',
-        id: newId,
         label: getLabel(),
       });
     }
@@ -2003,10 +1992,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // }
     return null;
   };
-
-  getCurrentCanvas() {
-    return (this.controllers[this.model.data.headControllerId] ?? this.controllers['']).app;
-  }
 
   duplicateSelected = () => {
     this.copySelected();
@@ -2180,8 +2165,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         : sm.choiceStates
         ? 'choiceStates'
         : 'finalStates';
-      const sourceSm = this.getSmId(args.source, sourceType);
-      const targetSm = this.getSmId(args.target, targetType);
+      const sourceSm = this.getSmIdByElementId(args.source, sourceType);
+      const targetSm = this.getSmIdByElementId(args.target, targetType);
 
       if (sourceSm !== targetSm) throw Error('Машины состояний не сходятся!!');
 

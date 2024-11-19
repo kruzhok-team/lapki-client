@@ -446,9 +446,9 @@ export const Loader: React.FC<FlasherProps> = ({
     if (!device) return;
     if (device.isMSDevice()) {
       const MSDevice = device as MSDevice;
-      let portNames = '';
-      for (let i = 0; i < MSDevice.portNames.length; i++) {
-        portNames = portNames + ' ' + MSDevice.portNames[i];
+      let portNames = MSDevice.portNames[0];
+      for (let i = 1; i < MSDevice.portNames.length; i++) {
+        portNames = portNames + '; ' + MSDevice.portNames[i];
       }
       return (
         <div>
@@ -598,6 +598,16 @@ export const Loader: React.FC<FlasherProps> = ({
           ))}
         </div>
         {buttonsDisplay()}
+        <Select
+          className="mb-2"
+          isSearchable={false}
+          placeholder="Выберите машину состояний..."
+          options={stateMachineOptions()}
+          value={getSelectMachineStateOption()}
+          onChange={(opt) => onSelectMachineState(opt?.value)}
+          isDisabled={currentDeviceID == undefined}
+          noOptionsMessage={() => 'Нет подходящих машин состояний'}
+        />
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}

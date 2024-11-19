@@ -17,15 +17,12 @@ export const getTextWidth = (text: string, font: string): number => {
 
   const cache = textMap.get(font)!;
 
-  const previousTextBaseline = measureCtx.textBaseline;
   const previousFont = measureCtx.font;
 
-  measureCtx.textBaseline = 'bottom';
   measureCtx.font = font;
 
   const width = measureCtx.measureText(text).width;
 
-  measureCtx.textBaseline = previousTextBaseline;
   measureCtx.font = previousFont;
 
   cache.set(text, width);

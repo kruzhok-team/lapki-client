@@ -6,7 +6,6 @@ import theme from '@renderer/theme';
 
 import { CanvasEditor } from '../CanvasEditor';
 import { serializeStateActions } from '../data/GraphmlBuilder';
-import { getPlatform } from '../data/PlatformLoader';
 
 export type EventSelection = {
   eventIdx: number;
@@ -45,11 +44,12 @@ export class Events {
   }
 
   update() {
-    if (!this.app.model.data.elements.visual) {
+    // TODO(L140-beep): Откуда брать components по-нормальному?
+    if (!this.app.controller.visual) {
       const text = serializeStateActions(
         this.parent.data.events,
-        getPlatform(this.app.model.data.elements.platform)!,
-        this.app.model.data.elements.components
+        this.app.controller.platform[this.parent.smId].data,
+        this.app.controller.model.model.data.elements.stateMachines[this.parent.smId].components
       );
 
       //TODO(bryzZz) изменение параметров текста (общее для редактора)
@@ -79,12 +79,12 @@ export class Events {
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.app.model.data.scale;
+    const titleHeight = this.parent.titleHeight / this.app.controller.scale;
 
     const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
 
-    const px = 15 / this.app.model.data.scale;
-    const py = 10 / this.app.model.data.scale;
+    const px = 15 / this.app.controller.scale;
+    const py = 10 / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -101,7 +101,7 @@ export class Events {
       const event = this.data[eventIdx];
       const triggerRect = {
         x: baseX,
-        y: baseY + (eventRow * yDx) / this.app.model.data.scale,
+        y: baseY + (eventRow * yDx) / this.app.controller.scale,
         width: pW,
         height: pH,
       };
@@ -117,7 +117,7 @@ export class Events {
         const ay = eventRow + Math.floor(actionIdx / eventRowLength);
         const actRect = {
           x: baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale,
-          y: baseY + (ay * yDx) / this.app.model.data.scale,
+          y: baseY + (ay * yDx) / this.app.controller.scale,
           width: pW,
           height: pH,
         };
@@ -146,7 +146,7 @@ export class Events {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (!this.app.model.data.elements.visual) {
+    if (!this.app.controller.visual) {
       return this.drawTextEvents(ctx);
     }
 
@@ -155,19 +155,18 @@ export class Events {
 
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
-    const platform = this.app.controller.platform;
+    const platform = this.app.controller.platform[this.parent.smId];
     if (!platform) return;
-
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.app.model.data.scale;
+    const titleHeight = this.parent.titleHeight / this.app.controller.scale;
 
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.app.model.data.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.app.controller.scale - 30) / (picto.eventWidth + 5)) - 1
     );
 
-    const px = 15 / this.app.model.data.scale;
-    const py = 10 / this.app.model.data.scale;
+    const px = 15 / this.app.controller.scale;
+    const py = 10 / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = picto.eventHeight + 10;
@@ -177,7 +176,7 @@ export class Events {
 
     this.data.map((events, eventIdx) => {
       const eX = baseX;
-      const eY = baseY + (eventRow * yDx) / this.app.model.data.scale;
+      const eY = baseY + (eventRow * yDx) / this.app.controller.scale;
       if (typeof this.selection !== 'undefined') {
         if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
           picto.drawCursor(ctx, eX, eY);
@@ -204,7 +203,7 @@ export class Events {
           const ax = 1 + (actIdx % eventRowLength);
           const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
           const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
-          const aY = baseY + (ay * yDx) / this.app.model.data.scale;
+          const aY = baseY + (ay * yDx) / this.app.controller.scale;
           if (typeof this.selection !== 'undefined') {
             if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
               picto.drawCursor(ctx, aX, aY);
@@ -222,7 +221,7 @@ export class Events {
   }
 
   private drawTextEvents(ctx: CanvasRenderingContext2D) {
-    const scale = this.app.model.data.scale;
+    const scale = this.app.controller.scale;
     const { x, y } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / scale;
     const px = 15 / scale;

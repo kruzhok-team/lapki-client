@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, Dispatch } from 'react';
 
 import { SaveModalData } from '@renderer/components';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
 interface useFileOperationsArgs {
@@ -15,13 +16,10 @@ interface useFileOperationsArgs {
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
 
-  const editor = useEditorContext();
-  const model = editor.model;
-  // (Roundabout1) Константы были заменены на прямое обращение к полям model, потому что, иначе будет отсутствовать синхронизация, то есть
-  // эти константы будут выдавать неактуальные значения (точно известно, что isStale не актуален, насчёт name - неизвестно).
-  // Не понятно насколько надёжно это решение.
-  //const isStale = model.useData('isStale');
-  //const name = model.useData('name');
+  const modelController = useModelContext();
+  const model = modelController.model;
+  const name = model.useData('', 'name') as string | null;
+  const isStale = model.useData('', 'isStale');
 
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
@@ -33,11 +31,31 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     setIsOpen(false);
   };
 
+  // Открыть вкладки на каждый контроллер
+  const openTabs = () => {
+    for (const controllerId in modelController.controllers) {
+      if (controllerId === '') continue;
+      const controller = modelController.controllers[controllerId];
+      if (controller.type === 'scheme') continue; // Схемотехнический экран открываем только по кнопке в меню
+      const stateMachines = Object.keys(controller.stateMachinesSub);
+      const smId = stateMachines[0] ?? controllerId;
+      // ID контроллера равен ID канваса.
+      openTab(modelController, {
+        type: 'editor',
+        name: modelController.model.data.elements.stateMachines[smId].name ?? smId,
+        canvasId: controllerId,
+      });
+      // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
+      // И в будущем сделать открытие всех машин опцией. Но это в будущем.
+      break;
+    }
+  };
+
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
-    if (model.data.isStale) {
+    if (isStale) {
       setData({
-        shownName: model.data.name,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
         onConfirm: performOpenFile,
         onSave: handleSaveFile,
@@ -50,7 +68,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performOpenFile = async (path?: string) => {
-    const result = await model?.files.open(openImportError, path);
+    const result = await modelController.files.open(openImportError, path);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -61,22 +79,21 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
     if (result && isRight(result)) {
       clearTabs();
-      openTab({ type: 'editor', name: 'editor' });
+      openTabs();
     }
   };
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
-    await model.files.createFromTemplate(type, name, openImportError);
-
+    await modelController.files.createFromTemplate(type, name, openImportError);
     clearTabs();
-    openTab({ type: 'editor', name: 'editor' });
+    openTabs();
   };
 
   //Создание нового файла
   const handleNewFile = async () => {
-    if (model.data.isStale) {
+    if (isStale) {
       setData({
-        shownName: model.data.name,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как создать новый?',
         onConfirm: openCreateSchemeModal,
         onSave: handleSaveFile,
@@ -89,13 +106,13 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (idx: string) => {
-    model?.files.newFile(idx);
+    modelController.files.newFile(idx);
     clearTabs();
-    openTab({ type: 'editor', name: 'editor' });
+    openTabs();
   };
 
   const handleSaveAsFile = async () => {
-    const result = await model?.files.saveAs();
+    const result = await modelController.files.saveAs();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
@@ -105,7 +122,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const handleSaveFile = useCallback(async () => {
-    const result = await model?.files.save();
+    const result = await modelController.files.save();
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
       if (cause) {
@@ -119,9 +136,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const handleImportFile = async (
     setOpenData: Dispatch<[boolean, string | null, string | null, string]>
   ) => {
-    if (model.data.isStale) {
+    if (isStale) {
       setData({
-        shownName: model.data.name,
+        shownName: name,
         question: 'Хотите сохранить файл перед тем, как импортировать новый?',
         onConfirm: performImportFile,
         onSave: handleSaveFile,
@@ -137,20 +154,31 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     setOpenData?: Dispatch<[boolean, string | null, string | null, string]>
   ) => {
     if (setOpenData) {
-      const result = await model?.files.import(setOpenData);
+      const result = await modelController.files.import(setOpenData);
       if (result) {
         clearTabs();
-        openTab({ type: 'editor', name: 'editor' });
+        openTabs();
       }
+    }
+  };
+
+  const initImportData = (
+    importData: Elements,
+    openData: [boolean, string | null, string | null, string]
+  ) => {
+    const result = modelController.files.initImportData(importData, openData);
+    if (result) {
+      clearTabs();
+      openTabs();
     }
   };
 
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
-      if (model.data.isStale) {
+      if (isStale) {
         setData({
-          shownName: model.data.name,
+          shownName: name,
           question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
           //При нажатии на любую из кнопок, он должен закрывать редактор
           onConfirm: () => {
@@ -181,6 +209,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       onRequestSaveAsFile: handleSaveAsFile,
       onRequestImportFile: handleImportFile,
     },
+    initImportData,
     performNewFile,
     handleOpenFromTemplate,
   };

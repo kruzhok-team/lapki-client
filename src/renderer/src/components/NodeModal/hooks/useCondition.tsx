@@ -3,22 +3,30 @@ import { useCallback, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
-import { operatorSet } from '@renderer/lib/data/PlatformManager';
-import { useEditorContext } from '@renderer/store/EditorContext';
-import { Condition, Variable as VariableData } from '@renderer/types/diagram';
 import { serializeCondition } from '@renderer/lib/data/GraphmlBuilder';
+import { operatorSet } from '@renderer/lib/data/PlatformManager';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики условия формы
  */
 export const useCondition = () => {
-  const { controller, model } = useEditorContext();
-  const componentsData = model.useData('elements.components');
-  const visual = model.useData('elements.visual');
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
 
-  const [tabValue, setTabValue] = useState(0);
+  const componentsData = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
+  const visual = modelController.controllers[headControllerId].useData('visual');
+  const controller = modelController.controllers[headControllerId];
 
   const [errors, setErrors] = useState({} as Record<string, string>);
+
+  const [tabValue, setTabValue] = useState(0);
 
   const [conditionOperator, setConditionOperator] = useState<string | null>(null);
 
@@ -39,13 +47,21 @@ export const useCondition = () => {
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = controller.platform?.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId].getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -56,13 +72,21 @@ export const useCondition = () => {
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
-      const proto = controller.platform?.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId]!.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId]!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -72,13 +96,13 @@ export const useCondition = () => {
   }, [componentsData, controller.platform, visual]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam1 || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableVariables'];
-    const getImg = controller.platform['getVariableIconUrl'];
+    if (!selectedComponentParam1 || !controller.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableVariables'];
+    const getImg = controller.platform[smId]['getVariableIconUrl'];
 
     // Тут call потому что контекст теряется
     return getAll
-      .call(controller.platform, selectedComponentParam1)
+      .call(controller.platform[smId], selectedComponentParam1)
       .map(({ name, description }) => {
         return {
           value: name,
@@ -86,7 +110,7 @@ export const useCondition = () => {
           hint: description,
           icon: (
             <img
-              src={getImg.call(controller.platform, selectedComponentParam1, name, true)}
+              src={getImg.call(controller.platform[smId], selectedComponentParam1, name, true)}
               className="mr-1 h-7 w-7 object-contain"
             />
           ),
@@ -95,13 +119,13 @@ export const useCondition = () => {
   }, [controller.platform, selectedComponentParam1, visual]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam2 || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableVariables'];
-    const getImg = controller.platform['getVariableIconUrl'];
+    if (!selectedComponentParam2 || !controller.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableVariables'];
+    const getImg = controller.platform[smId]['getVariableIconUrl'];
 
     // Тут call потому что контекст теряется
     return getAll
-      .call(controller.platform, selectedComponentParam2)
+      .call(controller.platform[smId], selectedComponentParam2)
       .map(({ name, description }) => {
         return {
           value: name,
@@ -109,7 +133,7 @@ export const useCondition = () => {
           hint: description,
           icon: (
             <img
-              src={getImg.call(controller.platform, selectedComponentParam2, name, true)}
+              src={getImg.call(controller.platform[smId], selectedComponentParam2, name, true)}
               className="mr-1 h-7 w-7 object-contain"
             />
           ),
@@ -217,7 +241,7 @@ export const useCondition = () => {
         return undefined;
       }
 
-      if (!visual) setText(serializeCondition(c, controller.platform.data, componentsData)); // для перехода в текст
+      if (!visual) setText(serializeCondition(c, controller.platform[smId].data, componentsData)); // для перехода в текст
 
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
@@ -255,7 +279,7 @@ export const useCondition = () => {
       ) {
         setIsParamOneInput2(false);
         setArgsParam2(param2.value);
-      } else if (param2.type == 'component') {
+      } else if (param2.type === 'component') {
         const compoName = (param2.value as VariableData).component;
         const methodName = (param2.value as VariableData).method;
         setIsParamOneInput2(true);

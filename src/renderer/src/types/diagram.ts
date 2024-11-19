@@ -31,6 +31,7 @@ export type EventData = {
 
 interface BaseState {
   parentId?: string;
+  dimensions: Dimensions;
   position: Point;
 }
 
@@ -77,12 +78,6 @@ export interface Transition {
   selection?: boolean;
 }
 
-export type Component = {
-  type: string;
-  parameters: { [key: string]: string };
-  order: number;
-};
-
 export type Note = {
   position: Point;
   text: string;
@@ -93,8 +88,31 @@ export type Note = {
   fontSize?: number;
 };
 
-// Это описание типа схемы которая хранится в json файле
-export type Elements = {
+//Получаем тип со всеми машинами состояний
+export type StateMachines = {
+  stateMachines: { [id: string]: Machine };
+};
+
+//Добавляем id для машины состояний, а также прилегающие к ней элементы, плюс выделение
+export type Machine = {
+  elements: Elements;
+  meta: Meta;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
+};
+
+export type Component = {
+  type: string;
+  position: Point;
+  parameters: { [key: string]: string };
+  order: number;
+  //TODO: В дальнейшем планируется убрать
+  selection?: boolean;
+};
+
+export type StateMachine = {
+  name?: string;
+  position: Point;
   states: { [id: string]: State };
   initialStates: { [id: string]: InitialState };
   finalStates: { [id: string]: FinalState };
@@ -110,7 +128,13 @@ export type Elements = {
   meta: Meta;
 };
 
-export function emptyElements(): Elements {
+// Это описание типа схемы которая хранится в json файле
+export type Elements = {
+  stateMachines: { [id: string]: StateMachine };
+  parameters?: { [key: string]: string };
+};
+
+export function emptyStateMachine(): StateMachine {
   return {
     states: {},
     initialStates: {},
@@ -119,11 +143,18 @@ export function emptyElements(): Elements {
     transitions: {},
     components: {},
     notes: {},
-
     platform: '',
     visual: true,
     parameters: {},
     compilerSettings: null,
     meta: {},
+    position: { x: 0, y: 0 },
+  };
+}
+
+export function emptyElements(): Elements {
+  return {
+    stateMachines: {},
+    parameters: {},
   };
 }

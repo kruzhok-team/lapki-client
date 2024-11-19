@@ -42,6 +42,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
   const handleTabChange = (tab: number) => {
+
     onTabChange(tab);
 
     // Фокусировка и установка каретки

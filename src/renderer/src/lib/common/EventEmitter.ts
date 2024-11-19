@@ -12,10 +12,8 @@ export class EventEmitter<
       this.offedOnce.delete(name);
       return;
     }
-
     if (this.handlers.has(name)) {
       const handlers = this.handlers.get(name);
-
       if (handlers) {
         for (const handler of handlers.values()) {
           handler(event);

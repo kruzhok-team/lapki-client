@@ -2,7 +2,7 @@ import React from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Action as ActionData } from '@renderer/types/diagram';
 
 interface ActionProps {
@@ -20,7 +20,10 @@ interface ActionProps {
 export const Action: React.FC<ActionProps> = (props) => {
   const { isSelected, onSelect, onChange, onDragStart, onDrop, data } = props;
 
-  const { controller } = useEditorContext();
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const smId = Object.keys(controller.stateMachinesSub)[0];
 
   return (
     <div
@@ -34,13 +37,13 @@ export const Action: React.FC<ActionProps> = (props) => {
     >
       <div className="flex items-center gap-[2px] overflow-hidden rounded-md bg-border-primary">
         <div className="bg-bg-primary px-4 py-2">
-          {controller.platform?.getFullComponentIcon(data.component)}
+          {controller.platform[smId].getFullComponentIcon(data.component)}
         </div>
 
         <div className="bg-bg-primary px-4 py-2">
           <img
             className="size-8 object-contain"
-            src={controller.platform?.getActionIconUrl(data.component, data.method, true)}
+            src={controller.platform[smId].getActionIconUrl(data.component, data.method, true)}
           />
         </div>
       </div>

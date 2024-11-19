@@ -2,6 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EdgeHandlers, Shape } from '@renderer/lib/drawable';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
+import { Note as DataNote } from '@renderer/types/diagram';
 
 const placeholder = 'Придумайте заметку';
 
@@ -17,16 +18,15 @@ export class Note extends Shape {
   private visible = true;
   isSelected = false;
   edgeHandlers!: EdgeHandlers;
+  data: DataNote;
+  smId: string;
 
-  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+  constructor(app: CanvasEditor, smId: string, id: string, data: DataNote, parent?: Shape) {
     super(app, id, parent);
-
+    this.data = data;
+    this.smId = smId;
     this.prepareText();
-    this.edgeHandlers = new EdgeHandlers(this.app, this);
-  }
-
-  get data() {
-    return this.app.model.data.elements.notes[this.id];
+    this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
   get bounds() {
@@ -52,7 +52,7 @@ export class Note extends Shape {
   }
 
   get computedStyles() {
-    const scale = this.app.model.data.scale;
+    const scale = this.app.controller.scale;
 
     return {
       padding: 10 / scale,

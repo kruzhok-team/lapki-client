@@ -3,6 +3,7 @@ import { ArrowsWithLabel, ArrowsWithoutLabel, Label, Shape } from '@renderer/lib
 import { transitionStyle } from '@renderer/lib/styles';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { isPointOnLine } from '@renderer/lib/utils';
+import { Transition as DataTransition } from '@renderer/types/diagram';
 
 /**
  * Переход между состояниями.
@@ -11,18 +12,17 @@ export class Transition extends Shape {
   isSelected = false;
   label!: Label;
   arrow!: ArrowsWithLabel | ArrowsWithoutLabel;
-
-  constructor(protected app: CanvasEditor, public id: string) {
+  constructor(
+    protected app: CanvasEditor,
+    public id: string,
+    public smId: string,
+    public data: DataTransition
+  ) {
     super(app, id);
-
     this.label = new Label(this, this.app);
     this.arrow = this.data.label
       ? new ArrowsWithLabel(this, this.app)
       : new ArrowsWithoutLabel(this, this.app);
-  }
-
-  get data() {
-    return this.app.model.data.elements.transitions[this.id];
   }
 
   get source() {
@@ -42,7 +42,6 @@ export class Transition extends Shape {
       this.app.controller.states.get(this.data.targetId) ||
       this.app.controller.notes.get(this.data.targetId) ||
       this.app.controller.transitions.get(this.data.targetId);
-
     if (!node) {
       throw new Error(`State with id ${this.data.targetId} does not exist`);
     }
@@ -58,7 +57,6 @@ export class Transition extends Shape {
     if (!this.data.label) {
       throw new Error(`Transition with id ${this.id} does not have label`);
     }
-
     this.data.label.position = value;
   }
 
@@ -67,7 +65,7 @@ export class Transition extends Shape {
       return { width: 0, height: 0 };
     }
 
-    if (!this.app.model.data.elements.visual) {
+    if (!this.app.controller.visual) {
       return {
         width: 250,
         height: Math.max(70, this.label.textData.height + 15 * 2),
@@ -96,7 +94,7 @@ export class Transition extends Shape {
 
     ctx.beginPath();
     ctx.strokeStyle = transitionStyle.bgColor;
-    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.model.data.scale);
+    ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.controller.scale);
     ctx.stroke();
     ctx.closePath();
   }

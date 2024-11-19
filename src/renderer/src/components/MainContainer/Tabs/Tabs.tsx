@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { ManagerMSTab } from '@renderer/components/ManagerMS';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Tab as TabType } from '@renderer/types/tabs';
 
@@ -13,6 +14,7 @@ import { Tab } from './Tab';
 import { NotInitialized } from '../NotInitialized';
 
 export const Tabs: React.FC = () => {
+  const modelController = useModelContext();
   const [items, activeTab, setActiveTab, swapTabs, closeTab] = useTabs((state) => [
     state.items,
     state.activeTab,
@@ -40,7 +42,15 @@ export const Tabs: React.FC = () => {
   const selectTab = (item: TabType) => {
     switch (item.type) {
       case 'editor':
-        return <DiagramEditor />;
+        // Вкладки удаляются только после удаления контроллеров.
+        // И до удаления вкладок вызывается ререндер, вызывающий эту функцию
+        if (!modelController.controllers[item.canvasId]) return undefined;
+        return (
+          <DiagramEditor
+            controller={modelController.controllers[item.canvasId]}
+            editor={modelController.controllers[item.canvasId].app}
+          />
+        );
       case 'transition':
       case 'state':
       case 'code':
@@ -60,19 +70,26 @@ export const Tabs: React.FC = () => {
         className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current"
         tabIndex={-1}
       >
-        {items.map(({ type, name }) => (
+        {items.map((tab) => (
           <Tab
-            key={name}
-            isActive={activeTab === name}
-            isDragging={dragId === name}
-            draggable={type !== 'editor'}
-            type={type}
-            name={name}
-            showName={type !== 'editor'}
-            onDragStart={() => handleDrag(name)}
-            onDrop={() => handleDrop(name)}
-            onMouseDown={() => setActiveTab(name)}
-            onClose={() => closeTab(name)}
+            key={tab.name}
+            isActive={activeTab === tab.name}
+            isDragging={dragId === tab.name}
+            draggable={true}
+            type={tab.type}
+            name={tab.name}
+            showName={true}
+            onDragStart={() => handleDrag(tab.name)}
+            onDrop={() => handleDrop(tab.name)}
+            onMouseDown={() => {
+              if (tab.type === 'editor') {
+                modelController.model.changeHeadControllerId(tab.canvasId);
+              }
+              setActiveTab(tab.name);
+            }}
+            onClose={() => {
+              closeTab(tab.name, modelController);
+            }}
           />
         ))}
       </section>

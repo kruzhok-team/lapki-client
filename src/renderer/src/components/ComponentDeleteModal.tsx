@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
@@ -23,7 +23,9 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   onSubmit,
   ...props
 }) => {
-  const editor = useEditorContext();
+  const modal = useModelContext();
+  const headControllerId = modal.model.useData('', 'headControllerId');
+  const editor = modal.controllers[headControllerId].app;
 
   const handleAfterClose = () => {
     editor.focus();

@@ -30,7 +30,7 @@ export class Canvas extends EventEmitter<CanvasEvents> {
     this.resizeObserver = new ResizeObserver(this.resize);
     this.resizeObserver.observe(app.root);
 
-    this.element.id = 'canvas';
+    this.element.id = app.id;
     this.element.tabIndex = -1;
   }
 

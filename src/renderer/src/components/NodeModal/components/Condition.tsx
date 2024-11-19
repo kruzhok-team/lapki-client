@@ -5,7 +5,7 @@ import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
 import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
 
@@ -86,8 +86,10 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
     errors,
   } = props;
 
-  const editor = useEditorContext();
-  const visual = editor.model.useData('elements.visual');
+  const editor = useModelContext();
+  const headControllerId = editor.model.useData('', 'headControllerId');
+  const controller = editor.controllers[headControllerId];
+  const visual = controller.useData('visual');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 

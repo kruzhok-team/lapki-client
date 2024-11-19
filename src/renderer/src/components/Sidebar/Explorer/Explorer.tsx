@@ -10,13 +10,20 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { Hierarchy } from '@renderer/components/Hierarchy';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentsList } from './ComponentsList';
 
 export const Explorer: React.FC = () => {
-  const editor = useEditorContext();
-  const isInitialized = editor.model.useData('isInitialized');
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const editor = controller.app;
+  const isInitialized = modelController.model.useData(
+    '',
+    'canvas.isInitialized',
+    editor.id
+  ) as boolean;
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);

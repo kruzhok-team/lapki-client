@@ -7,11 +7,13 @@ import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { useSettings } from '@renderer/hooks/useSettings';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { StateMachine } from '@renderer/types/diagram';
 import { FlashResult } from '@renderer/types/FlasherTypes';
 
 import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
@@ -23,6 +25,7 @@ import {
   SerialMonitor,
 } from '../Modules/SerialMonitor';
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
+import { Select } from '../UI/Select';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
@@ -35,6 +38,12 @@ export const Loader: React.FC<FlasherProps> = ({
   openLoaderSettings,
   openAvrdudeGuideModal,
 }) => {
+  const modelController = useModelContext();
+  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [ID: string]: StateMachine;
+  };
+  // ключ: ID устройства; значение: ID машины состояний
+  const [deviceStateMachine, setDeviceStateMachine] = useState<Map<string, string>>(new Map());
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
@@ -82,20 +91,32 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   const handleFlash = async () => {
-    if (currentDeviceID == null || currentDeviceID == undefined) {
+    if (currentDeviceID === null || currentDeviceID === undefined) {
       console.log('Не удаётся начать прошивку, currentDeviceID =', currentDeviceID);
       return;
     }
     const currentDevice = devices.get(currentDeviceID);
-    if (currentDevice == null || currentDevice == undefined) {
+    if (currentDevice === null || currentDevice === undefined) {
       console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
       return;
+    }
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID == currentDeviceID &&
+      serialConnectionStatus == SERIAL_MONITOR_CONNECTING //SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
     if (flasherFile) {
       Flasher.flash(currentDevice, serialMonitorDevice, serialConnectionStatus);
     } else {
       Flasher.flashCompiler(
-        compilerData!.binary!,
+        // проверка на undefined осуществляется в flashButtonDisabled
+        compilerData!.state_machines[deviceStateMachine.get(currentDeviceID)!].binary!,
         currentDevice,
         serialMonitorDevice,
         serialConnectionStatus
@@ -186,8 +207,8 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
   const handleAddAvrdudeTab = () => {
-    closeTab('Прошивка');
-    openTab({
+    closeTab('Прошивка', modelController);
+    openTab(modelController, {
       type: 'code',
       name: 'Прошивка',
       code: flashResult?.report() ?? '',
@@ -207,9 +228,9 @@ export const Loader: React.FC<FlasherProps> = ({
     ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
-    closeTab('Монитор порта');
+    closeTab('Монитор порта', modelController);
     setSerialMonitorDevice(curDevice);
-    openTab({
+    openTab(modelController, {
       type: 'serialMonitor',
       name: 'Монитор порта',
     });
@@ -218,8 +239,8 @@ export const Loader: React.FC<FlasherProps> = ({
   const handleAddManagerMSTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
     setDeviceMS(curDevice as MSDevice);
-    closeTab('Менеджер МС-ТЮК');
-    openTab({
+    closeTab('Менеджер МС-ТЮК', modelController);
+    openTab(modelController, {
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
     });
@@ -332,36 +353,16 @@ export const Loader: React.FC<FlasherProps> = ({
     if (flasherFile) {
       return false;
     }
-    // проверка на соответствие платформы схемы и типа устройства
-    if (!(compilerData?.binary === undefined || compilerData.binary.length == 0)) {
-      let platform = compilerData?.platform;
-      if (platform === undefined) {
-        return;
-      }
-      platform = platform?.toLowerCase();
-      const device = devices.get(currentDeviceID)?.name.toLowerCase();
-      // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
-      // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
-      switch (platform) {
-        case 'arduinomicro':
-          // arduino micro - состоит из двух устройств, прошивку можно загрузить в любое
-          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
-            return true;
-          }
-          break;
-        case 'arduinouno':
-          if (device != 'arduino uno') {
-            return true;
-          }
-          break;
-        default:
-          return true;
-      }
-    } else {
+    const smId = deviceStateMachine.get(currentDeviceID);
+    if (smId === undefined) {
+      return true;
+    }
+    const stateData = compilerData?.state_machines[smId];
+    if (stateData === undefined || stateData.binary.length === 0) {
       return true;
     }
     // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
-    // чтобы гарантированно избежать ситуации одноремнной прошивки и подключения к порту
+    // чтобы гарантированно избежать ситуации одновремнной прошивки и подключения к порту
     if (serialConnectionStatus == SERIAL_MONITOR_CONNECTING) {
       return true;
     }
@@ -380,6 +381,61 @@ export const Loader: React.FC<FlasherProps> = ({
       </button>
     );
   };
+
+  const getDevicePlatform = (device: Device) => {
+    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    const name = device.name.toLocaleLowerCase();
+    switch (name) {
+      case 'arduino micro':
+      case 'arduino micro (bootloader)':
+        return 'ArduinoMicro';
+      case 'arduino uno':
+        return 'ArduinoUno';
+    }
+    return undefined;
+  };
+
+  const stateMachineOptions = () => {
+    if (currentDeviceID == undefined) return undefined;
+    const currentDevice = devices.get(currentDeviceID);
+    if (currentDevice == undefined) return undefined;
+    const platform = getDevicePlatform(currentDevice);
+    return [...Object.entries(stateMachinesId)]
+      .filter(([, sm]) => sm.platform == platform)
+      .map(([id, sm]) => {
+        return { value: id, label: sm.name ?? id };
+      });
+  };
+  const getSelectMachineStateOption = () => {
+    const emptyValue = null;
+    if (currentDeviceID == undefined) return emptyValue;
+    const smId = deviceStateMachine.get(currentDeviceID);
+    if (smId == undefined) return emptyValue;
+    const sm = stateMachinesId[smId];
+    if (!sm) {
+      setDeviceStateMachine((oldValue) => {
+        const newValue = new Map(oldValue);
+        newValue.delete(currentDeviceID);
+        return newValue;
+      });
+      return emptyValue;
+    }
+    return { value: smId, label: sm.name ?? smId };
+  };
+  /**
+   * Изменение выбранной машины состояний для текущего устройства
+   * @param smId ID машины состояний
+   */
+  const onSelectMachineState = (smId: string | undefined) => {
+    if (currentDeviceID == undefined || smId == undefined) return;
+    setDeviceStateMachine((oldValue) => {
+      const newValue = new Map(oldValue);
+      newValue.set(currentDeviceID, smId);
+      return newValue;
+    });
+  };
+
   const showReconnectTime = () => {
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
@@ -527,6 +583,16 @@ export const Loader: React.FC<FlasherProps> = ({
         </div>
         {avrdudeCheck()}
         {buttonsDisplay()}
+        <Select
+          className="mb-2"
+          isSearchable={false}
+          placeholder="Выберите машину состояний..."
+          options={stateMachineOptions()}
+          value={getSelectMachineStateOption()}
+          onChange={(opt) => onSelectMachineState(opt?.value)}
+          isDisabled={currentDeviceID == undefined}
+          noOptionsMessage={() => 'Нет подходящих машин состояний'}
+        />
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}

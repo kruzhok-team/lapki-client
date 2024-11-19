@@ -7,7 +7,7 @@ import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { ActionsModal } from '@renderer/components';
 import { TabPanel, Tabs } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Action } from './Action';
 
@@ -32,8 +32,10 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     onChangeText,
   } = props;
 
-  const editor = useEditorContext();
-  const visual = editor.model.useData('elements.visual');
+  const editor = useModelContext();
+  const headControllerId = editor.model.useData('', 'headControllerId');
+  const controller = editor.controllers[headControllerId];
+  const visual = controller.useData('visual');
 
   const [selectedActionIndex, setSelectedActionIndex] = useState<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);

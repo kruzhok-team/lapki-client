@@ -7,7 +7,8 @@ import { ScrollableList } from '@renderer/components/ScrollableList';
 import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Component } from '@renderer/types/diagram';
 
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
@@ -26,9 +27,15 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   vacantComponents,
   ...props
 }) => {
-  const editor = useEditorContext();
-  const { model } = editor;
-  const components = model.useData('elements.components');
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  const editor = controller.app;
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const components = modelController.model.useData(stateMachines[0], 'elements.components') as {
+    [id: string]: Component;
+  };
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 

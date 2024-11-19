@@ -50,8 +50,8 @@ export abstract class ClientWS {
       // чтобы предовратить повторное соединение
     } else if (
       this.connection &&
-      (this.connection.readyState == this.connection.OPEN ||
-        this.connection.readyState == this.connection.CONNECTING)
+      (this.connection.readyState === this.connection.OPEN ||
+        this.connection.readyState === this.connection.CONNECTING)
     ) {
       return this.connection;
     }
@@ -104,7 +104,7 @@ export abstract class ClientWS {
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     console.log('Close connection', event);
     this.setSecondsUntilReconnect(null);
-    if (host == this.host && port == this.port) {
+    if (host === this.host && port === this.port) {
       this.onStatusChange(ClientStatus.NO_CONNECTION);
       this.connection = undefined;
       if (this.reconnectTimer && this.reconnectTimer.isAutoReconnect()) {
@@ -113,7 +113,7 @@ export abstract class ClientWS {
         });
         this.reconnectTimer.startInterval((remainingTime: number) => {
           const seconds: number = Math.round(remainingTime / 1000);
-          if (seconds == 0) {
+          if (seconds === 0) {
             this.setSecondsUntilReconnect(null);
           } else {
             this.setSecondsUntilReconnect(Math.round(remainingTime / 1000));
@@ -141,7 +141,7 @@ export abstract class ClientWS {
   }
 
   static isEqualAdress(host: string, port: number) {
-    return host == this.host && port == this.port;
+    return host === this.host && port === this.port;
   }
 
   static initOrResetReconnectTimer(autoReconnect: boolean = true) {

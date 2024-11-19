@@ -3,8 +3,8 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
-import { Action, ArgList } from '@renderer/types/diagram';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
 
 import { ActionsModalParameters } from './ActionsModalParameters';
@@ -27,10 +27,17 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { controller, model } = useEditorContext();
-  const componentsData = model.useData('elements.components');
-  const visual = model.useData('elements.visual');
-
+  const modelController = useModelContext();
+  const model = modelController.model;
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachines = Object.keys(controller.stateMachinesSub);
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const visual = controller.useData('visual');
+  const smId = stateMachines[0];
+  const componentsData = model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
   const isEditingEvent = initialData?.isEditingEvent ?? false;
 
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -40,16 +47,24 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    if (!controller.platform) return [];
+    if (!controller.platform[smId]) return [];
 
     const getComponentOption = (id: string) => {
-      const proto = controller.platform!.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId].getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform!.getFullComponentIcon(id, 'mr-1 size-7'),
+        icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -65,30 +80,33 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   }, [controller.platform, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent || !controller.platform) return [];
+    if (!selectedComponent || !controller.platform[smId]) return [];
     const getAll =
-      controller.platform[isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
-    const getImg = controller.platform[isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
+      controller.platform[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
+    const getImg =
+      controller.platform[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 size-7 object-contain"
-          />
-        ),
-      };
-    });
+    return getAll
+      .call(controller.platform[smId], selectedComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
+              className="mr-1 size-7 object-contain"
+            />
+          ),
+        };
+      });
   }, [selectedComponent, controller.platform, isEditingEvent, visual]);
 
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
-    if (!componentName || !method || !controller.platform) return;
+    if (!componentName || !method || !controller.platform[smId]) return;
 
     let parameters: ArgList = {};
 
@@ -99,7 +117,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       }
     }
 
-    const componentProto = controller.platform.getComponent(componentName);
+    const componentProto = controller.platform[smId].getComponent(componentName);
     const componentProtoPath = isEditingEvent ? 'signals' : 'methods';
     const argumentProto = componentProto?.[componentProtoPath][method]?.parameters ?? [];
 
@@ -162,7 +180,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       if (!controller.platform) return;
 
       const { component, method, args = {} } = action;
-      const componentProto = controller.platform.getComponent(component);
+      const componentProto = controller.platform[smId].getComponent(component);
       const argumentProto = componentProto?.[path][method]?.parameters ?? [];
 
       setSelectedComponent(component);

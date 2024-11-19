@@ -2,17 +2,17 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawCircle } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
-
+import { FinalState as FinalStateData } from '@renderer/types/diagram';
 /**
  * Класс для отрисовки конечного состояния
  */
 export class FinalState extends Shape {
-  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+  data: FinalStateData;
+  smId: string;
+  constructor(app: CanvasEditor, id: string, smId: string, data: FinalStateData, parent?: Shape) {
     super(app, id, parent);
-  }
-
-  get data() {
-    return this.app.model.data.elements.finalStates[this.id];
+    this.data = data;
+    this.smId = smId;
   }
 
   get position() {
@@ -36,13 +36,13 @@ export class FinalState extends Shape {
 
     drawCircle(ctx, {
       position,
-      radius: radius - 10 / this.app.model.data.scale,
+      radius: radius - 10 / this.app.controller.scale,
       fillStyle: getColor('primary'),
     });
     drawCircle(ctx, {
       position,
       radius,
-      lineWidth: 3 / this.app.model.data.scale,
+      lineWidth: 3 / this.app.controller.scale,
       strokeStyle: getColor('primary'),
     });
   }

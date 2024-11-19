@@ -2,25 +2,30 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
-import { useEditorContext } from '@renderer/store/EditorContext';
+// import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
+import { ChangeTransitionParams } from '@renderer/lib/types';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Transition } from '@renderer/types/diagram';
 
 import { Actions, Condition, ColorField, Trigger } from './components';
 import { useTrigger, useCondition, useActions } from './hooks';
 
-/**
- * Модальное окно редактирования перехода
- */
-export const TransitionModal: React.FC = () => {
-  const editor = useEditorContext();
-  const visual = editor.model.useData('elements.visual');
+interface TransitionModalProps {
+  smId: string;
+}
 
+export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const visual = modelController.controllers[headControllerId].useData('visual');
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
   const [isOpen, open, close] = useModal(false);
-
+  const [transitionId, setTransitionId] = useState<string | null>(null);
   const [transition, setTransition] = useState<Transition | null>(null);
   const [newTransition, setNewTransition] = useState<{
-    source: State | ChoiceState;
-    target: State | ChoiceState | FinalState;
+    sourceId: string;
+    targetId: string;
   } | null>();
   const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
@@ -33,11 +38,11 @@ export const TransitionModal: React.FC = () => {
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
   const showTrigger = useMemo(() => {
     if (newTransition) {
-      return !(newTransition.source instanceof ChoiceState);
+      return !choiceStates[newTransition.sourceId];
     }
 
     if (transition) {
-      return !(transition.source instanceof ChoiceState);
+      return !choiceStates[transition.sourceId];
     }
 
     return true;
@@ -45,13 +50,14 @@ export const TransitionModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (isInitialTransition && transition) {
-      editor.controller.transitions.changeTransition({
-        id: transition.id,
-        sourceId: transition.source.id,
-        targetId: transition.target.id,
+    if (isInitialTransition && transition && transitionId) {
+      modelController.changeTransition({
+        smId: smId,
+        id: transitionId,
+        sourceId: transition.sourceId,
+        targetId: transition.targetId,
         color,
+        label: transition.label,
       });
 
       close();
@@ -144,11 +150,12 @@ export const TransitionModal: React.FC = () => {
     };
 
     // Если редактируем состояние
-    if (transition) {
-      editor.controller.transitions.changeTransition({
-        id: transition.id,
-        sourceId: transition.source.id,
-        targetId: transition.target.id,
+    if (transition && transitionId) {
+      modelController.changeTransition({
+        smId: smId,
+        id: transitionId,
+        sourceId: transition.sourceId,
+        targetId: transition.targetId,
         color,
         label: {
           trigger: getTrigger(),
@@ -156,15 +163,14 @@ export const TransitionModal: React.FC = () => {
           do: getActions(),
         } as any, // Из-за position,
       });
-
-      close();
     }
 
     // Если создаем новое
     if (newTransition) {
-      editor.controller.transitions.createTransition({
-        sourceId: newTransition.source.id,
-        targetId: newTransition.target.id,
+      modelController.createTransition({
+        smId: smId,
+        sourceId: newTransition.sourceId,
+        targetId: newTransition.targetId,
         color,
         label: {
           trigger: getTrigger(),
@@ -173,7 +179,6 @@ export const TransitionModal: React.FC = () => {
         } as any, // Из-за position,
       });
     }
-
     close();
   };
 
@@ -185,42 +190,41 @@ export const TransitionModal: React.FC = () => {
     setColor(undefined);
 
     setTransition(null);
+
+    setTransitionId(null);
     setNewTransition(null);
     setIsInitialTransition(false);
   };
 
   // Подстановка начальных значений
   useEffect(() => {
-    const handleCreateTransition = (data: {
-      source: State | ChoiceState;
-      target: State | ChoiceState | FinalState;
-    }) => {
+    const handleCreateTransition = (data: { smId: string; sourceId: string; targetId: string }) => {
+      if (data.smId !== smId) return;
       setNewTransition(data);
-      actions.parse([]);
+      actions.parse(data.smId, []);
       open();
     };
 
-    const handleChangeTransition = (target: Transition) => {
-      const { data: initialData } = target;
+    const handleChangeTransition = (args: ChangeTransitionParams) => {
+      if (args.smId !== smId) return;
 
-      trigger.parse(initialData.label?.trigger);
-      condition.parse(initialData.label?.condition);
-      actions.parse(initialData.label?.do);
+      trigger.parse(args.label?.trigger);
+      condition.parse(args.label?.condition);
+      actions.parse(args.smId, args.label?.do);
 
-      setColor(initialData.color);
+      setColor(color);
 
-      setTransition(target);
-
-      setIsInitialTransition(initialData.label == undefined);
+      setTransition({ ...args });
+      setTransitionId(args.id);
+      setIsInitialTransition(args.label == undefined);
       open();
     };
-
-    editor.controller.transitions.on('createTransition', handleCreateTransition);
-    editor.controller.transitions.on('changeTransition', handleChangeTransition);
+    modelController.on('openCreateTransitionModal', handleCreateTransition);
+    modelController.on('openChangeTransitionModal', handleChangeTransition);
 
     return () => {
-      editor.controller.transitions.off('createTransition', handleCreateTransition);
-      editor.controller.transitions.off('changeTransition', handleChangeTransition);
+      modelController.off('openCreateTransitionModal', handleCreateTransition);
+      modelController.off('openChangeTransitionModal', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно

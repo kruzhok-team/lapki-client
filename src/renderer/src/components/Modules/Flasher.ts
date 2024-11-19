@@ -47,7 +47,7 @@ export class Flasher extends ClientWS {
   static initReader(reader): void {
     this.reader = reader;
     this.reader.onloadend = function (evt) {
-      if (evt.target?.readyState == FileReader.DONE) {
+      if (evt.target?.readyState === FileReader.DONE) {
         Flasher.connection?.send(this.result as ArrayBuffer);
         Flasher.filePos += Flasher.currentBlob.size;
       }
@@ -197,8 +197,8 @@ export class Flasher extends ClientWS {
     if (
       device instanceof ArduinoDevice &&
       serialMonitorDevice &&
-      serialMonitorDevice.deviceID == device.deviceID &&
-      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+      serialMonitorDevice.deviceID === device.deviceID &&
+      serialConnectionStatus === SERIAL_MONITOR_CONNECTED
     ) {
       /*
       см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 

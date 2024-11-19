@@ -1,4 +1,3 @@
-import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { CHILDREN_PADDING, LONG_PRESS_TIMEOUT } from '@renderer/lib/constants';
 import { Children } from '@renderer/lib/drawable';
@@ -7,6 +6,8 @@ import { GetCapturedNodeParams, Layer } from '@renderer/lib/types/drawable';
 import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { isPointInRectangle } from '@renderer/lib/utils';
+
+import { CanvasEditor } from '../CanvasEditor';
 
 interface ShapeEvents {
   mousedown: { event: MyMouseEvent };
@@ -74,13 +75,13 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const { x, y } = this.compoundPosition;
 
     return {
-      x: (x + this.app.model.data.offset.x) / this.app.model.data.scale,
-      y: (y + this.app.model.data.offset.y) / this.app.model.data.scale,
+      x: (x + this.app.controller.offset.x) / this.app.controller.scale,
+      y: (y + this.app.controller.offset.y) / this.app.controller.scale,
     };
   }
 
   get computedWidth() {
-    let width = this.dimensions.width / this.app.model.data.scale;
+    let width = this.dimensions.width / this.app.controller.scale;
     if (!this.children.isEmpty) {
       // TODO(bryzZz) Нужно брать данные из модели
       const children = [
@@ -89,6 +90,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         ...this.children.getLayer(Layer.FinalStates),
         ...this.children.getLayer(Layer.ChoiceStates),
         ...this.children.getLayer(Layer.Transitions),
+        ...this.children.getLayer(Layer.Components),
       ] as Shape[];
 
       let rightChildren = children[0] as Shape;
@@ -110,7 +112,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
         cx +
           rightChildren.computedDimensions.width -
           x +
-          CHILDREN_PADDING / this.app.model.data.scale
+          CHILDREN_PADDING / this.app.controller.scale
       );
     }
 
@@ -118,7 +120,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   }
 
   get computedHeight() {
-    return this.dimensions.height / this.app.model.data.scale;
+    return this.dimensions.height / this.app.controller.scale;
   }
 
   get childrenContainerHeight() {
@@ -130,6 +132,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       ...this.children.getLayer(Layer.FinalStates),
       ...this.children.getLayer(Layer.ChoiceStates),
       ...this.children.getLayer(Layer.Transitions),
+      ...this.children.getLayer(Layer.Components),
     ] as Shape[];
 
     let bottomChild = children[0] as Shape;
@@ -151,7 +154,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
 
     result =
       (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
-        this.app.model.data.scale +
+        this.app.controller.scale +
       bottomChild.childrenContainerHeight;
 
     return result;
@@ -211,8 +214,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     }
 
     this.position = {
-      x: this.position.x + e.dx * this.app.model.data.scale,
-      y: this.position.y + e.dy * this.app.model.data.scale,
+      x: this.position.x + e.dx * this.app.controller.scale,
+      y: this.position.y + e.dy * this.app.controller.scale,
     };
 
     if (this.parent) {

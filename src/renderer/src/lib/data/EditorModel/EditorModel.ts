@@ -11,19 +11,29 @@ import {
   EditorDataReturn,
   CreateTransitionParams,
   ChangeTransitionParams,
+  CreateComponentParams,
   ChangeStateParams,
-  AddComponentParams,
   CreateNoteParams,
   Point,
   CreateInitialStateParams,
   CreateFinalStateParams,
   CreateChoiceStateParams,
   SwapComponentsParams,
+  StateMachineData,
 } from '@renderer/lib/types';
 import { generateId } from '@renderer/lib/utils';
-import { Event, Action, Component, Elements, EventData, Meta } from '@renderer/types/diagram';
+import {
+  Event,
+  Action,
+  Transition as TransitionData,
+  Component,
+  Elements,
+  EventData,
+  Meta,
+  StateMachine,
+  emptyStateMachine,
+} from '@renderer/types/diagram';
 
-import { FilesManager } from './FilesManager';
 import { Serializer } from './Serializer';
 
 /**
@@ -32,30 +42,54 @@ import { Serializer } from './Serializer';
 export class EditorModel {
   data = emptyEditorData();
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
-  files = new FilesManager(this);
   serializer = new Serializer(this);
 
   constructor(private initPlatform: () => void, private resetEditor: () => void) {}
 
+  createStateMachine(smId: string, data: StateMachine) {
+    if (this.data.elements.stateMachines[smId]) return;
+
+    this.data.elements.stateMachines[smId] = data;
+
+    this.triggerDataUpdate('elements.stateMachinesId');
+  }
+
+  changeHeadControllerId(id: string) {
+    this.data.headControllerId = id;
+    this.triggerDataUpdate('headControllerId');
+  }
+
+  deleteStateMachine(smId: string) {
+    if (!this.data.elements.stateMachines[smId]) return;
+
+    delete this.data.elements.stateMachines[smId];
+
+    this.triggerDataUpdate('elements.stateMachinesId');
+  }
+
   init(basename: string | null, name: string, elements: Elements) {
-    this.data.isInitialized = false; // Для того чтобы весь интрфейс обновился
-    this.triggerDataUpdate('isInitialized');
-
-    const prevMounted = this.data.isMounted;
-
+    // this.triggerDataUpdate('canvas');
     this.data = emptyEditorData();
+    this.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = elements;
-    this.data.isInitialized = true;
-    this.data.isMounted = prevMounted;
-
+    this.data.headControllerId = '';
+    this.data.elements.stateMachines[''] = emptyStateMachine();
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
+    this.triggerDataUpdate('basename', 'name', 'elements');
+  }
 
-    this.triggerDataUpdate('basename', 'name', 'elements', 'isStale', 'isInitialized');
-
-    if (this.data.isMounted) {
-      this.resetEditor();
+  initCanvasData() {
+    for (const canvasId in this.data.canvas) {
+      const canvas = this.data.canvas[canvasId];
+      const prevMounted = canvas.isMounted;
+      canvas.isInitialized = true;
+      canvas.isMounted = prevMounted;
+      if (canvas.isMounted) {
+        this.resetEditor();
+      }
+      this.triggerDataUpdate('canvas.isInitialized', 'canvas.isMounted');
     }
   }
 
@@ -72,6 +106,9 @@ export class EditorModel {
   }
 
   private subscribe = (propertyName: EditorDataPropertyName) => (listener: () => void) => {
+    if (!this.dataListeners[propertyName]) {
+      this.dataListeners[propertyName] = [];
+    }
     this.dataListeners[propertyName].push(listener);
 
     return () => {
@@ -81,17 +118,40 @@ export class EditorModel {
     };
   };
 
-  useData<T extends EditorDataPropertyName>(propertyName: T): EditorDataReturn<T> {
+  editStateMachine(smId: string, data: StateMachineData) {
+    const sm = this.data.elements.stateMachines[smId];
+
+    if (!sm) return;
+
+    sm.name = data.name;
+    sm.platform = data.platform;
+
+    this.triggerDataUpdate('elements.name');
+  }
+
+  // TODO (L140-beep): разобраться с возвращаемым never
+  // TODO (L140-beep): сделать stateId необязательным
+  useData<T extends EditorDataPropertyName>(
+    smId: string,
+    propertyName: T,
+    canvasId?: string
+  ): EditorDataReturn<T> {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
-      return !propertyName.startsWith('elements.');
+      return !propertyName.startsWith('elements');
     };
 
     const getSnapshot = () => {
       if (isShallow(propertyName)) {
+        if (propertyName.startsWith('canvas') && canvasId !== undefined) {
+          return this.data.canvas[canvasId][propertyName.split('.')[1]];
+        }
         return this.data[propertyName];
       }
 
-      return this.data['elements'][propertyName.split('.')[1]];
+      if (propertyName === 'elements.stateMachinesId') {
+        return this.data['elements'].stateMachines;
+      }
+      return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
     };
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -106,27 +166,41 @@ export class EditorModel {
     for (const name of propertyNames) {
       if (!isShallow(name)) {
         const subName = name.split('.')[1];
-        const prevValue = this.data.elements[subName];
 
         // Ссылку нужно обновлять только у объектов
-        if (typeof prevValue === 'object' && prevValue !== null) {
-          this.data.elements[subName] = {
-            ...prevValue,
+        if (name === 'elements.stateMachinesId') {
+          this.data.elements.stateMachines = {
+            ...this.data.elements.stateMachines,
           };
+        } else {
+          for (const smId in this.data.elements.stateMachines) {
+            const prevValue = this.data.elements.stateMachines[smId][subName];
+            if (typeof prevValue !== 'object') break;
+            if (prevValue !== null) {
+              this.data.elements.stateMachines[smId][subName] = {
+                ...prevValue,
+              };
+            }
+          }
         }
 
         this.data.isStale = true;
         this.dataListeners['isStale'].forEach((listener) => listener());
       }
 
-      this.dataListeners[name].forEach((listener) => listener());
+      (this.dataListeners[name] ?? []).forEach((listener) => listener());
     }
   }
 
   private getNodeIds() {
-    return Object.keys(this.data.elements.states).concat(
-      Object.keys(this.data.elements.initialStates)
-    );
+    const ids: string[] = [];
+    for (const smId in this.data.elements.stateMachines) {
+      const sm = this.data.elements.stateMachines[smId];
+      ids.push(...Object.keys(sm.states));
+      ids.push(...Object.keys(sm.initialStates));
+    }
+
+    return ids;
   }
 
   createState(args: CreateStateParams) {
@@ -134,9 +208,10 @@ export class EditorModel {
       name,
       parentId,
       id = generateId(this.getNodeIds()),
-      events = [],
+      events = args.events,
       placeInCenter = false,
       color,
+      smId,
     } = args;
     let position = args.position;
     const { width, height } = stateStyle;
@@ -150,7 +225,7 @@ export class EditorModel {
 
     position = placeInCenter ? centerPosition() : position;
 
-    this.data.elements.states[id] = {
+    this.data.elements.stateMachines[smId].states[id] = {
       position,
       dimensions: { width, height },
       events: events,
@@ -165,9 +240,9 @@ export class EditorModel {
   }
 
   changeState(args: ChangeStateParams) {
-    const { id, events, color } = args;
+    const { smId, id, events, color } = args;
 
-    const state = this.data.elements.states[id];
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.events = events;
@@ -178,8 +253,8 @@ export class EditorModel {
     return true;
   }
 
-  changeStateName(id: string, name: string) {
-    const state = this.data.elements.states[id];
+  changeStateName(smId: string, id: string, name: string) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.name = name;
@@ -189,8 +264,8 @@ export class EditorModel {
     return true;
   }
 
-  changeStateSelection(id: string, selection: boolean) {
-    const state = this.data.elements.states[id];
+  changeStateSelection(smId: string, id: string, selection: boolean) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.selection = selection;
@@ -200,8 +275,8 @@ export class EditorModel {
     return true;
   }
 
-  changeStatePosition(id: string, position: Point) {
-    const state = this.data.elements.states[id];
+  changeStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
     state.position = position;
@@ -211,9 +286,9 @@ export class EditorModel {
     return true;
   }
 
-  linkState(parentId: string, childId: string) {
-    const parent = this.data.elements.states[parentId];
-    const child = this.data.elements.states[childId];
+  linkState(smId: string, parentId: string, childId: string) {
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
+    const child = this.data.elements.stateMachines[smId].states[childId];
 
     if (!parent || !child) return false;
 
@@ -224,12 +299,12 @@ export class EditorModel {
     return true;
   }
 
-  unlinkState(id: string) {
-    const state = this.data.elements.states[id];
+  unlinkState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].states[id];
 
     if (!state || !state.parentId) return false;
 
-    const parent = this.data.elements.states[state.parentId];
+    const parent = this.data.elements.stateMachines[smId].states[state.parentId];
 
     if (!parent) return false;
 
@@ -240,11 +315,11 @@ export class EditorModel {
     return true;
   }
 
-  deleteState(id: string) {
-    const state = this.data.elements.states[id];
+  deleteState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
-    delete this.data.elements.states[id];
+    delete this.data.elements.stateMachines[smId].states[id];
 
     this.triggerDataUpdate('elements.states');
 
@@ -252,28 +327,28 @@ export class EditorModel {
   }
 
   createInitialState(args: CreateInitialStateParams) {
-    const { id = generateId(this.getNodeIds()), ...other } = args;
+    const { id = generateId(this.getNodeIds()), smId, ...other } = args;
 
-    this.data.elements.initialStates[id] = other;
+    this.data.elements.stateMachines[smId].initialStates[id] = other;
 
     this.triggerDataUpdate('elements.initialStates');
 
     return id;
   }
 
-  deleteInitialState(id: string) {
-    const state = this.data.elements.initialStates[id];
+  deleteInitialState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
 
-    delete this.data.elements.initialStates[id];
+    delete this.data.elements.stateMachines[smId].initialStates[id];
 
     this.triggerDataUpdate('elements.initialStates');
 
     return true;
   }
 
-  changeInitialStatePosition(id: string, position: Point) {
-    const state = this.data.elements.initialStates[id];
+  changeInitialStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
 
     state.position = position;
@@ -284,7 +359,13 @@ export class EditorModel {
   }
 
   createFinalState(args: CreateFinalStateParams) {
-    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
+    const {
+      smId,
+      id = generateId(this.getNodeIds()),
+      placeInCenter = false,
+      position,
+      ...other
+    } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -294,7 +375,7 @@ export class EditorModel {
       };
     };
 
-    this.data.elements.finalStates[id] = {
+    this.data.elements.stateMachines[smId].finalStates[id] = {
       ...other,
       position: placeInCenter ? centerPosition() : position,
     };
@@ -304,19 +385,19 @@ export class EditorModel {
     return id;
   }
 
-  deleteFinalState(id: string) {
-    const state = this.data.elements.finalStates[id];
+  deleteFinalState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].finalStates[id];
     if (!state) return false;
 
-    delete this.data.elements.finalStates[id];
+    delete this.data.elements.stateMachines[smId].finalStates[id];
 
     this.triggerDataUpdate('elements.finalStates');
 
     return true;
   }
 
-  changeFinalStatePosition(id: string, position: Point) {
-    const state = this.data.elements.finalStates[id];
+  changeFinalStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].finalStates[id];
     if (!state) return false;
 
     state.position = position;
@@ -326,9 +407,9 @@ export class EditorModel {
     return true;
   }
 
-  linkFinalState(stateId: string, parentId: string) {
-    const state = this.data.elements.finalStates[stateId];
-    const parent = this.data.elements.states[parentId];
+  linkFinalState(smId: string, stateId: string, parentId: string) {
+    const state = this.data.elements.stateMachines[smId].finalStates[stateId];
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
 
     if (!state || !parent) return false;
 
@@ -340,7 +421,13 @@ export class EditorModel {
   }
 
   createChoiceState(args: CreateChoiceStateParams) {
-    const { id = generateId(this.getNodeIds()), placeInCenter = false, position, ...other } = args;
+    const {
+      smId,
+      id = generateId(this.getNodeIds()),
+      placeInCenter = false,
+      position,
+      ...other
+    } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -350,7 +437,7 @@ export class EditorModel {
       };
     };
 
-    this.data.elements.choiceStates[id] = {
+    this.data.elements.stateMachines[smId].choiceStates[id] = {
       ...other,
       position: placeInCenter ? centerPosition() : position,
     };
@@ -360,19 +447,19 @@ export class EditorModel {
     return id;
   }
 
-  deleteChoiceState(id: string) {
-    const state = this.data.elements.choiceStates[id];
+  deleteChoiceState(smId: string, id: string) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
 
-    delete this.data.elements.choiceStates[id];
+    delete this.data.elements.stateMachines[smId].choiceStates[id];
 
     this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }
 
-  changeChoiceStatePosition(id: string, position: Point) {
-    const state = this.data.elements.choiceStates[id];
+  changeChoiceStatePosition(smId: string, id: string, position: Point) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
 
     state.position = position;
@@ -382,9 +469,9 @@ export class EditorModel {
     return true;
   }
 
-  linkChoiceState(stateId: string, parentId: string) {
-    const state = this.data.elements.choiceStates[stateId];
-    const parent = this.data.elements.states[parentId];
+  linkChoiceState(smId: string, stateId: string, parentId: string) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[stateId];
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
 
     if (!state || !parent) return false;
 
@@ -395,8 +482,8 @@ export class EditorModel {
     return true;
   }
 
-  changeChoiceStateSelection(id: string, selection: boolean) {
-    const state = this.data.elements.choiceStates[id];
+  changeChoiceStateSelection(smId: string, id: string, selection: boolean) {
+    const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
 
     state.selection = selection;
@@ -406,8 +493,8 @@ export class EditorModel {
     return true;
   }
 
-  createEvent(stateId: string, eventData: EventData, eventIdx?: number) {
-    const state = this.data.elements.states[stateId];
+  createEvent(smId: string, stateId: string, eventData: EventData, eventIdx?: number) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     if (eventIdx !== undefined) {
@@ -421,11 +508,8 @@ export class EditorModel {
     return true;
   }
 
-  /**
-   * * Не работает на текстовые данные
-   */
-  createEventAction(stateId: string, event: EventSelection, value: Action) {
-    const state = this.data.elements.states[stateId];
+  createEventAction(smId: string, stateId: string, event: EventSelection, value: Action) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
@@ -441,17 +525,9 @@ export class EditorModel {
     return true;
   }
 
-  changeEvent(stateId: string, eventIdx: number, newValue: Event) {
-    const state = this.data.elements.states[stateId];
+  changeEvent(smId: string, stateId: string, eventIdx: number, newValue: Event) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
-
-    // const event = state.events.find(
-    //   (value, id) =>
-    //     eventIdx !== id &&
-    //     newValue.component === value.trigger.component &&
-    //     newValue.method === value.trigger.method &&
-    //     undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    // );
 
     const event = state.events[eventIdx];
 
@@ -459,23 +535,18 @@ export class EditorModel {
 
     event.trigger = newValue;
 
-    // if (trueTab === undefined) {
-    //   state.events[eventIdx].trigger = newValue;
-    // } else {
-    // event.do = [...event.do, ...state.events[eventIdx].do];
-    // state.events.splice(eventIdx, 1);
-    // }
-
     this.triggerDataUpdate('elements.states');
 
     return true;
   }
 
-  /**
-   * * Не работает на текстовые данные
-   */
-  changeEventAction(stateId: string, event: EventSelection, newValue: Action) {
-    const state = this.data.elements.states[stateId];
+  changeEventAction(
+    smId: string,
+    stateId: string,
+    event: EventSelection,
+    newValue: Event | Action
+  ) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
@@ -487,8 +558,8 @@ export class EditorModel {
     return true;
   }
 
-  deleteEvent(stateId: string, eventIdx: number) {
-    const state = this.data.elements.states[stateId];
+  deleteEvent(smId: string, stateId: string, eventIdx: number) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     state.events.splice(eventIdx, 1);
@@ -498,11 +569,8 @@ export class EditorModel {
     return true;
   }
 
-  /**
-   * * Не работает на текстовые данные
-   */
-  deleteEventAction(stateId: string, event: EventSelection) {
-    const state = this.data.elements.states[stateId];
+  deleteEventAction(smId: string, stateId: string, event: EventSelection) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
@@ -515,9 +583,13 @@ export class EditorModel {
   }
 
   createTransition(args: CreateTransitionParams) {
-    const { id = generateId(Object.keys(this.data.elements.transitions)), ...other } = args;
+    const {
+      smId,
+      id = generateId(Object.keys(this.data.elements.stateMachines[smId].transitions)),
+      ...other
+    } = args;
 
-    this.data.elements.transitions[id] = other;
+    this.data.elements.stateMachines[smId].transitions[id] = other;
 
     this.triggerDataUpdate('elements.transitions');
 
@@ -525,9 +597,9 @@ export class EditorModel {
   }
 
   changeTransition(args: ChangeTransitionParams) {
-    const { id, label, ...other } = args;
+    const { id, smId, label, ...other } = args;
 
-    const transition = this.data.elements.transitions[id];
+    const transition = this.data.elements.stateMachines[smId].transitions[id] as TransitionData;
     if (!transition) return false;
 
     //* Для чего это сделано? ChangeTransitionParams не предполагает что у label будет position и при обновлении данных позиция слетает
@@ -538,7 +610,7 @@ export class EditorModel {
       return { ...(transition.label ?? {}), ...label };
     };
 
-    this.data.elements.transitions[id] = { ...other, label: getNewLabel() };
+    this.data.elements.stateMachines[smId].transitions[id] = { ...other, label: getNewLabel() };
 
     this.triggerDataUpdate('elements.transitions');
 
@@ -546,8 +618,8 @@ export class EditorModel {
   }
 
   //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
-  changeTransitionSelection(id: string, selection: boolean) {
-    const transition = this.data.elements.transitions[id];
+  changeTransitionSelection(smId: string, id: string, selection: boolean) {
+    const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
 
     transition.selection = selection;
@@ -556,8 +628,16 @@ export class EditorModel {
     return true;
   }
 
-  changeTransitionPosition(id: string, position: Point) {
-    const transition = this.data.elements.transitions[id];
+  changeStateMachinePosition(id: string, position: Point) {
+    const sm = this.data.elements.stateMachines[id];
+    if (!sm) return false;
+    sm.position = position;
+
+    return true;
+  }
+
+  changeTransitionPosition(smId: string, id: string, position: Point) {
+    const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
 
     transition.label.position = position;
@@ -567,44 +647,56 @@ export class EditorModel {
     return true;
   }
 
-  deleteTransition(id: string) {
-    const transition = this.data.elements.transitions[id];
+  deleteTransition(smId: string, id: string) {
+    const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return false;
 
-    delete this.data.elements.transitions[id];
+    delete this.data.elements.stateMachines[smId].transitions[id];
 
     this.triggerDataUpdate('elements.transitions');
 
     return true;
   }
 
-  addComponent({ name, type, parameters = {} }: AddComponentParams) {
-    if (this.data.elements.components.hasOwnProperty(name)) {
+  createComponent(args: CreateComponentParams) {
+    const { smId, name, type, placeInCenter = false, position, parameters } = args;
+
+    const centerPosition = () => {
+      const size = 50;
+      return {
+        x: position.x - size / 2,
+        y: position.y - size / 2,
+      };
+    };
+
+    if (this.data.elements.stateMachines[smId].components.hasOwnProperty(name)) {
       console.error(['bad new component', name, type]);
-      return false;
+      return name;
     }
 
     const getOrder = () => {
-      const orders = Object.values(this.data.elements.components).map((c) => c.order);
+      const orders = Object.values(this.data.elements.stateMachines[smId].components).map(
+        (c) => c.order
+      );
 
       if (orders.length === 0) return 0;
 
       return Math.max(...orders) + 1;
     };
 
-    this.data.elements.components[name] = {
+    this.data.elements.stateMachines[smId].components[name] = {
       type,
+      position: placeInCenter ? centerPosition() : position,
       parameters,
       order: getOrder(),
     };
-
     this.triggerDataUpdate('elements.components');
 
-    return true;
+    return name;
   }
 
-  editComponent(name: string, parameters: Component['parameters']) {
-    const component = this.data.elements.components[name];
+  editComponent(smId: string, name: string, parameters: Component['parameters']) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
     component.parameters = parameters;
@@ -614,35 +706,35 @@ export class EditorModel {
     return true;
   }
 
-  renameComponent(name: string, newName: string) {
-    const component = this.data.elements.components[name];
+  changeComponentName(smId: string, name: string, newName: string) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
-    this.data.elements.components[newName] = component;
+    this.data.elements.stateMachines[smId].components[newName] = component;
 
-    delete this.data.elements.components[name];
+    delete this.data.elements.stateMachines[smId].components[name];
 
     this.triggerDataUpdate('elements.components');
 
     return true;
   }
 
-  removeComponent(name: string) {
-    const component = this.data.elements.components[name];
+  deleteComponent(smId: string, name: string) {
+    const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
-    delete this.data.elements.components[name];
+    delete this.data.elements.stateMachines[smId].components[name];
 
     this.triggerDataUpdate('elements.components');
 
     return true;
   }
 
-  swapComponents(args: SwapComponentsParams) {
+  swapComponents(smId: string, args: SwapComponentsParams) {
     const { name1, name2 } = args;
 
-    const component1 = this.data.elements.components[name1];
-    const component2 = this.data.elements.components[name2];
+    const component1 = this.data.elements.stateMachines[smId].components[name1];
+    const component2 = this.data.elements.stateMachines[smId].components[name2];
     if (!component1 || !component2) return false;
 
     [component1.order, component2.order] = [component2.order, component1.order];
@@ -652,17 +744,38 @@ export class EditorModel {
     return true;
   }
 
+  changeComponentPosition(smId: string, id: string, position: Point) {
+    const component = this.data.elements.stateMachines[smId].components[id];
+    if (!component) return false;
+
+    component.position = position;
+
+    this.triggerDataUpdate('elements.components');
+
+    return true;
+  }
+
+  changeComponentSelection(smId: string, name: string, selection: boolean) {
+    const component = this.data.elements.stateMachines[smId].components[name];
+    if (!component) return false;
+
+    component.selection = selection;
+
+    this.triggerDataUpdate('elements.components');
+
+    return true;
+  }
+
   setScale(value: number) {
     this.data.scale = value;
-
     this.triggerDataUpdate('scale');
-
     return true;
   }
 
   createNote(params: CreateNoteParams) {
     const {
-      id = generateId(Object.keys(this.data.elements.notes)),
+      smId,
+      id = generateId(Object.keys(this.data.elements.stateMachines[smId].notes)),
       text,
       placeInCenter = false,
       fontSize,
@@ -680,7 +793,7 @@ export class EditorModel {
 
     position = placeInCenter ? centerPosition() : position;
 
-    this.data.elements.notes[id] = {
+    this.data.elements.stateMachines[smId].notes[id] = {
       text,
       position,
       fontSize,
@@ -693,10 +806,10 @@ export class EditorModel {
     return id;
   }
 
-  changeNoteText(id: string, text: string) {
-    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+  changeNoteText(smId: string, id: string, text: string) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
-    this.data.elements.notes[id].text = text;
+    this.data.elements.stateMachines[smId].notes[id].text = text;
 
     this.triggerDataUpdate('elements.notes');
 
@@ -704,45 +817,45 @@ export class EditorModel {
   }
 
   //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
-  changeNoteSelection(id: string, selection: boolean) {
-    const note = this.data.elements.notes[id];
+  changeNoteSelection(smId: string, id: string, selection: boolean) {
+    const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
 
     note.selection = selection;
     return true;
   }
-  changeNoteBackgroundColor(id: string, color: string | undefined) {
-    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+  changeNoteBackgroundColor(smId: string, id: string, color: string | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
-    this.data.elements.notes[id].backgroundColor = color;
-
-    this.triggerDataUpdate('elements.notes');
-
-    return true;
-  }
-
-  changeNoteTextColor(id: string, color: string | undefined) {
-    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
-
-    this.data.elements.notes[id].textColor = color;
+    this.data.elements.stateMachines[smId].notes[id].backgroundColor = color;
 
     this.triggerDataUpdate('elements.notes');
 
     return true;
   }
 
-  changeNoteFontSize(id: string, fontSize: number | undefined) {
-    if (!this.data.elements.notes.hasOwnProperty(id)) return false;
+  changeNoteTextColor(smId: string, id: string, color: string | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
-    this.data.elements.notes[id].fontSize = fontSize;
+    this.data.elements.stateMachines[smId].notes[id].textColor = color;
 
     this.triggerDataUpdate('elements.notes');
 
     return true;
   }
 
-  changeNotePosition(id: string, position: Point) {
-    const note = this.data.elements.notes[id];
+  changeNoteFontSize(smId: string, id: string, fontSize: number | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].fontSize = fontSize;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNotePosition(smId: string, id: string, position: Point) {
+    const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
 
     note.position = position;
@@ -752,27 +865,27 @@ export class EditorModel {
     return true;
   }
 
-  deleteNote(id: string) {
-    const note = this.data.elements.notes[id];
+  deleteNote(smId: string, id: string) {
+    const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
 
-    delete this.data.elements.notes[id];
+    delete this.data.elements.stateMachines[smId].notes[id];
 
     this.triggerDataUpdate('elements.notes');
 
     return true;
   }
 
-  setMeta(meta: Meta) {
-    this.data.elements.meta = meta;
+  setMeta(smId: string, meta: Meta) {
+    this.data.elements.stateMachines[smId].meta = meta;
 
     this.triggerDataUpdate('elements.meta');
 
     return true;
   }
 
-  setTextMode() {
-    this.data.elements.visual = false;
+  setTextMode(smId: string) {
+    this.data.elements.stateMachines[smId].visual = false;
 
     this.triggerDataUpdate('elements.visual');
 

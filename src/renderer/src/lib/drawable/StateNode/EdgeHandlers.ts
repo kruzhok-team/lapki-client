@@ -22,6 +22,9 @@ export class EdgeHandlers {
   constructor(app: CanvasEditor, shape: Shape) {
     this.app = app;
     this.shape = shape;
+  }
+
+  bindEvents() {
     this.app.mouse.on('mousedown', this.handleMouseDown);
   }
 
@@ -30,7 +33,7 @@ export class EdgeHandlers {
   }
 
   get position(): Point[] {
-    const offset = 4 / this.app.model.data.scale;
+    const offset = 4 / this.app.controller.scale;
     let { x, y, width, height, childrenHeight } = this.shape.drawBounds;
 
     height += childrenHeight ?? 0;
@@ -56,7 +59,7 @@ export class EdgeHandlers {
   }
 
   get size() {
-    return 20 / this.app.model.data.scale;
+    return 20 / this.app.controller.scale;
   }
 
   draw(ctx: CanvasRenderingContext2D) {

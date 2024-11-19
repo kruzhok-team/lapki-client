@@ -4,7 +4,7 @@ import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/r
 import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useTrigger } from '../hooks';
 
@@ -34,12 +34,15 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
     onChangeText,
   } = props;
 
-  const editor = useEditorContext();
-  const visual = editor.model.useData('elements.visual');
+  const editor = useModelContext();
+  const headControllerId = editor.model.useData('', 'headControllerId');
+  const controller = editor.controllers[headControllerId];
+  const visual = controller.useData('visual');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
   const handleTabChange = (tab: number) => {
+
     onTabChange(tab);
 
     // Фокусировка и установка каретки

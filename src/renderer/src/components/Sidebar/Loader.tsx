@@ -598,16 +598,6 @@ export const Loader: React.FC<FlasherProps> = ({
           ))}
         </div>
         {buttonsDisplay()}
-        <Select
-          className="mb-2"
-          isSearchable={false}
-          placeholder="Выберите машину состояний..."
-          options={stateMachineOptions()}
-          value={getSelectMachineStateOption()}
-          onChange={(opt) => onSelectMachineState(opt?.value)}
-          isDisabled={currentDeviceID == undefined}
-          noOptionsMessage={() => 'Нет подходящих машин состояний'}
-        />
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}

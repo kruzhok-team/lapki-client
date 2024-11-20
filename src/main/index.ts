@@ -8,7 +8,7 @@ import { join } from 'path';
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initSettings, settingsChangeSend } from './settings';
+import { initSettings, settingsChangeSend, defaultSettings } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
@@ -128,7 +128,9 @@ app.whenReady().then(() => {
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
 
   ipcMain.handle('hasAvrdude', async () => {
-    const path = await lookpath('avrdude');
+    const path = await lookpath(
+      (settings.getSync('avrdudePath') as string) ?? defaultSettings.flasher.avrdudePath
+    );
     return Boolean(path);
   });
 

@@ -52,7 +52,9 @@ export type FlasherType =
   | 'ms-get-address'
   | 'ms-ping-result'
   | 'ms-address'
-  | 'ms-device';
+  | 'ms-device'
+  | 'setting-change'
+  | 'setting-update';
 export type FlasherPayload =
   | string
   | Device
@@ -67,7 +69,8 @@ export type FlasherPayload =
   | SerialChangeBaud
   | MSBinStart
   | MSGetAddress
-  | MSPing;
+  | MSPing
+  | SettingUpdate;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -162,4 +165,16 @@ export type MSGetAddress = {
 export type MSPingResult = {
   deviceID: string;
   code: number;
+};
+
+export type SettingChange = {
+  ID: string;
+  value: number | string | boolean;
+};
+
+export type SettingUpdate = {
+  ID: string;
+  value: number | string | boolean;
+  code: number;
+  comment: string;
 };

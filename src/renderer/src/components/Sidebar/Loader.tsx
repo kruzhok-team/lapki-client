@@ -247,10 +247,6 @@ export const Loader: React.FC<FlasherProps> = ({
   };
 
   useEffect(() => {
-    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
-      //console.log('hasAvrdude', has);
-      setHasAvrdude(has);
-    });
     Flasher.bindReact(
       setFlasherDevices,
       setFlasherConnectionStatus,
@@ -281,6 +277,9 @@ export const Loader: React.FC<FlasherProps> = ({
     } else {
       Flasher.connect(host, port);
     }
+    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+      setHasAvrdude(has);
+    });
   }, [flasherSetting, setFlasherSetting]);
 
   useEffect(() => {

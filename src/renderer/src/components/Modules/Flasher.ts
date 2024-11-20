@@ -14,6 +14,7 @@ import {
   FlasherPayload,
   FlasherType,
   MSPingResult,
+  SettingUpdate,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -556,6 +557,13 @@ export class Flasher extends ClientWS {
             ManagerMS.setAddress('');
             break;
           }
+        }
+        break;
+      }
+      case 'setting-update': {
+        const payload = response.payload as SettingUpdate;
+        switch (payload.code) {
+          case 0:
         }
       }
     }

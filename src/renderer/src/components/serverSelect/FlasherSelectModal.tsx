@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
 import { Select, Modal, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
@@ -20,6 +21,8 @@ export interface FlasherSelectModalFormValues {
   host: string;
   port: number;
   type: 'local' | 'remote';
+  avrdudePath: string;
+  configPath: string;
 }
 
 export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
@@ -54,14 +57,20 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
     setValue('type', flasherSetting.type);
     setValue('host', flasherSetting.host ?? '');
     setValue('port', Number(flasherSetting.port ?? ''));
+    setValue('avrdudePath', flasherSetting.avrdudePath);
+    setValue('configPath', flasherSetting.configPath);
   }, [setValue, flasherSetting]);
+
+  const handleReboot = async () => {
+    // TODO: проверка на то, что монитор порта закрыт и прошивка не идёт
+    await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
+  };
 
   return (
     <Modal
       {...props}
       onRequestClose={onClose}
-      title={'Укажите адрес загрузчика'}
-      submitLabel="Подключиться"
+      title={'Настройки загрузчика'}
       onSubmit={handleSubmit}
     >
       <div className="flex items-center">
@@ -87,11 +96,13 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
                   options={options}
                   isSearchable={false}
                 />
+                <div>{currentServerLabel}</div>
               </div>
             );
           }}
         />
       </div>
+      <br></br>
       <div className="mb-2 flex gap-2">
         <TextField
           maxLength={80}
@@ -118,8 +129,21 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           disabled={isSecondaryFieldsDisabled}
         />
       </div>
-
-      <div>{currentServerLabel}</div>
+      <br></br>
+      <div className={twMerge(!isSecondaryFieldsDisabled && 'hidden')}>
+        <div className="mb-2 flex gap-2">
+          <TextField
+            maxLength={200}
+            className="disabled:opacity-50"
+            label="Путь к avrdude:"
+            {...register('avrdudePath')}
+            placeholder="Напишите путь к avrdude"
+          />
+        </div>
+        <button className="btn-primary" onClick={handleReboot}>
+          Перезапустить <br></br>загрузчик
+        </button>
+      </div>
     </Modal>
   );
 };

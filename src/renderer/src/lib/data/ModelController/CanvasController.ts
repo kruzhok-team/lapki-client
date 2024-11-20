@@ -940,6 +940,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.platform[args.smId].nameToVisual.delete(args.id);
     this.triggerDataUpdate('platform');
 
+    
+    
     this.view.isDirty = true;
   };
 

@@ -18,7 +18,6 @@ import {
   SwapComponentsParams,
   CreateComponentParams,
   DeleteDrawableParams,
-  CreateStateMachineParams,
 } from '@renderer/lib/types/ModelTypes';
 import { roundPoint } from '@renderer/lib/utils';
 import {
@@ -35,8 +34,6 @@ import {
 } from '@renderer/types/diagram';
 
 import { ModelController } from './ModelController';
-
-// import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };

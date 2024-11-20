@@ -3,20 +3,13 @@ import React, { useState } from 'react';
 interface MatrixLedProps {
   rowIndex: number;
   colIndex: number;
-  initValue: number;
+  value: number;
   onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
-export const MatrixLed: React.FC<MatrixLedProps> = ({
-  colIndex,
-  rowIndex,
-  initValue,
-  onChange,
-}) => {
-  const [value, setValue] = useState<number>(initValue);
+export const MatrixLed: React.FC<MatrixLedProps> = ({ colIndex, rowIndex, value, onChange }) => {
   const handleClick = (e: React.MouseEvent) => {
     const newValue = value === 0 ? 1 : 0;
-    setValue(value === 0 ? 1 : 0);
     e.stopPropagation();
     onChange(rowIndex, colIndex, newValue);
   };

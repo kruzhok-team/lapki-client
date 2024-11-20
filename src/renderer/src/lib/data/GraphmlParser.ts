@@ -30,7 +30,7 @@ import {
   Note,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
-import { isString } from '@renderer/utils';
+import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -392,8 +392,13 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
 function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
-    labeledArgs[element.name] = args[index];
     delete labeledArgs[index];
+    if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
+      const { width, height } = getMatrixDimensions(element.type);
+      labeledArgs[element.name] = parseMatrixFromString(args[index] as string, width, height);
+      return;
+    }
+    labeledArgs[element.name] = args[index];
   });
   return labeledArgs;
 }

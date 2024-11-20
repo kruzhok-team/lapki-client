@@ -2,10 +2,16 @@ import React from 'react';
 
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Select } from '@renderer/components/UI';
+import { Dimensions } from '@renderer/lib/types';
 import { ArgList } from '@renderer/types/diagram';
 import { Matrix } from '@renderer/types/MatrixWidget';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
-import { formatArgType, validators } from '@renderer/utils';
+import {
+  formatArgType,
+  getMatrixDimensions,
+  parseMatrixFromString,
+  validators,
+} from '@renderer/utils';
 
 import { MatrixWidget } from './MatrixWidget';
 
@@ -38,78 +44,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
-  const onChange = (
-    parameter: string,
-    width: number,
-    height: number,
-    row: number,
-    col: number,
-    value: number
-  ) => {
-    const matrix = parseMatrixFromString(parameters[parameter], width, height);
-    matrix[row][col] = value;
-    parameters[parameter] = buildMatrix({
-      values: matrix,
-      height,
-      width,
-    });
+  const onChange = (parameter: string, row: number, col: number, value: number) => {
+    (parameters[parameter] as number[][])[row][col] = value;
     setParameters({
       ...parameters,
     });
-  };
-
-  const buildMatrix = (matrix: Matrix) => {
-    let strMatrix = '{';
-    for (let row = 0; row != matrix.height; row += 1) {
-      for (let col = 0; col != matrix.width; col += 1) {
-        strMatrix += Number(matrix.values[row][col]).toString() + ', ';
-      }
-    }
-    strMatrix = strMatrix.slice(0, strMatrix.length - 2) + '}';
-
-    return strMatrix;
-  };
-
-  const parseMatrixFromString = (values: string, width: number, height: number): number[][] => {
-    const matrixValues: number[][] = [];
-    const parsedValues = values
-      .slice(1, values.length - 1)
-      .split(',')
-      .map((str) => str.trim());
-    for (let row = 0; row != height; row += 1) {
-      matrixValues.push(
-        parsedValues.slice(row * width, (row + 1) * width).map((value) => Number(value))
-      );
-    }
-    return matrixValues;
-  };
-  const initMatrix = (parameter: string, type: string): Matrix => {
-    const rowSize = type.split('Matrix')[1];
-    const [width, height] = rowSize.split('x').map((value) => Number(value));
-    if (!parameters[parameter]) {
-      const emptyValues: number[][] = [];
-      for (let row = 0; row != height; row++) {
-        emptyValues.push([]);
-        for (let col = 0; col != width; col++) {
-          emptyValues[row].push(0);
-        }
-      }
-      parameters[parameter] = buildMatrix({
-        values: emptyValues,
-        width: width,
-        height: height,
-      });
-      return {
-        width,
-        height,
-        values: emptyValues,
-      };
-    }
-    return {
-      width,
-      height,
-      values: parseMatrixFromString(parameters[parameter], width, height),
-    };
   };
 
   if (protoParameters.length === 0) {
@@ -142,23 +81,28 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           );
         }
         if (type.startsWith('Matrix')) {
-          const matrix = initMatrix(name, type);
-          return (
-            <ComponentFormFieldLabel
-              as="div"
-              key={name}
-              label={label}
-              hint={hint}
-              error={error}
-              value={value}
-              name={name}
-            >
-              <MatrixWidget
-                {...matrix}
-                onChange={onChange.bind(this, name, matrix.width, matrix.height)}
-              />
-            </ComponentFormFieldLabel>
-          );
+          const { width, height } = getMatrixDimensions(type);
+          if (Array.isArray(value) && Array.isArray(value[0])) {
+            return (
+              <ComponentFormFieldLabel
+                as="div"
+                key={name}
+                label={label}
+                hint={hint}
+                error={error}
+                name={name}
+              >
+                <MatrixWidget
+                  {...{
+                    width: width,
+                    height: height,
+                    values: parameters[name] as number[][],
+                  }}
+                  onChange={onChange.bind(this, name)}
+                />
+              </ComponentFormFieldLabel>
+            );
+          }
         }
 
         return (
@@ -167,7 +111,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             label={label}
             hint={hint}
             error={error}
-            value={value}
+            value={value as string}
             name={name}
             onChange={(e) => handleInputChange(name, type, e.target.value)}
           />

@@ -1,6 +1,9 @@
+import { build } from 'vite';
+
 import { MarkedIconData, icons, picto } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
+import { buildMatrix } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
 
@@ -279,9 +282,15 @@ export class PlatformManager {
         parameter = '?!';
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
+      } else if (Array.isArray(paramValue) && Array.isArray(paramValue[0])) {
+        parameter = buildMatrix({
+          values: paramValue,
+          width: paramValue.length,
+          height: paramValue[0].length,
+        });
       } else {
         // FIXME
-        console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
+        console.log(['PlatformManager.drawEvent', 'Variable!', ev, paramValue]);
         parameter = '???';
       }
     }
@@ -327,6 +336,12 @@ export class PlatformManager {
         parameter = '?!';
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
+      } else if (Array.isArray(paramValue) && Array.isArray(paramValue[0])) {
+        parameter = buildMatrix({
+          values: paramValue,
+          width: paramValue.length,
+          height: paramValue[0].length,
+        });
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);

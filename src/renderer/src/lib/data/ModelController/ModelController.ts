@@ -283,40 +283,57 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('initPlatform', null);
   }
 
-  changeNoteFontSize(args: ChangeNoteFontSizeParams) {
+  changeNoteFontSize(args: ChangeNoteFontSizeParams, canUndo = true) {
     const { id, smId, fontSize } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const note = sm.notes[id];
     if (!note) return;
 
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteFontSize',
+        args: { smId, id, fontSize, prevFontSize: note.fontSize },
+      });
+    }
+
     this.model.changeNoteFontSize(smId, id, fontSize);
 
     this.emit('changeNoteFontSize', args);
-    // TODO (L140-beep): History
   }
 
-  changeNoteTextColor(args: ChangeNoteTextColorParams) {
+  changeNoteTextColor(args: ChangeNoteTextColorParams, canUndo = true) {
     const { id, smId, textColor } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const note = sm.notes[id];
     if (!note) return;
 
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteTextColor',
+        args: { smId, id, color: textColor, prevColor: note.textColor },
+      });
+    }
+
     this.model.changeNoteTextColor(smId, id, textColor);
 
     this.emit('changeNoteTextColor', args);
-    // TODO (L140-beep): History
   }
 
-  changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
+  changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams, canUndo = true) {
     const { id, smId, backgroundColor } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const note = sm.notes[id];
     if (!note) return;
 
-    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteBackgroundColor',
+        args: { smId, id, color: args.backgroundColor, prevColor: note.backgroundColor },
+      });
+    }
 
+    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
     this.emit('changeNoteBackgroundColor', args);
-    // TODO: History
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {

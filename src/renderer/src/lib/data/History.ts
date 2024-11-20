@@ -111,24 +111,24 @@ export type PossibleActions = {
   createNote: { smId: string; id: string; params: CreateNoteParams };
   changeNotePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { smId: string; id: string; text: string; prevText: string };
-  // changeNoteBackgroundColor: {
-  //   smId: string;
-  //   id: string;
-  //   color: string | undefined;
-  //   prevColor: string | undefined;
-  // };
-  // changeNoteTextColor: {
-  //   smId: string;
-  //   id: string;
-  //   color: string | undefined;
-  //   prevColor: string | undefined;
-  // };
-  // changeNoteFontSize: {
-  //   smId: string;
-  //   id: string;
-  //   fontSize: number | undefined;
-  //   prevFontSize: number | undefined;
-  // };
+  changeNoteBackgroundColor: {
+    smId: string;
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteTextColor: {
+    smId: string;
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteFontSize: {
+    smId: string;
+    id: string;
+    fontSize: number | undefined;
+    prevFontSize: number | undefined;
+  };
   deleteNote: { smId: string; id: string; prevData: NoteData };
 };
 export type PossibleActionTypes = keyof PossibleActions;
@@ -465,6 +465,42 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
+  changeNoteBackgroundColor: (sM, { smId, id, color, prevColor }) => ({
+    redo: sM.changeNoteBackgroundColor.bind(
+      sM,
+      { smId, id, backgroundColor: color, prevColor },
+      false
+    ),
+    undo: sM.changeNoteBackgroundColor.bind(
+      sM,
+      { smId, id, backgroundColor: prevColor, prevColor: color },
+      false
+    ),
+  }),
+  changeNoteTextColor: (sM, { smId, id, color, prevColor }) => ({
+    redo: sM.changeNoteTextColor.bind(
+      sM,
+      { smId, id, textColor: color, prevColor: prevColor },
+      false
+    ),
+    undo: sM.changeNoteTextColor.bind(
+      sM,
+      { smId, id, textColor: prevColor, prevColor: color },
+      false
+    ),
+  }),
+  changeNoteFontSize: (sM, { smId, id, fontSize, prevFontSize }) => ({
+    redo: sM.changeNoteFontSize.bind(
+      sM,
+      { smId, id, fontSize: fontSize, prevColor: prevFontSize },
+      false
+    ),
+    undo: sM.changeNoteFontSize.bind(
+      sM,
+      { smId, id, fontSize: prevFontSize, prevColor: fontSize },
+      false
+    ),
+  }),
   deleteNote: (sM, { smId, id, prevData }) => ({
     redo: sM.deleteNote.bind(sM, { smId, id }, false),
     undo: sM.createNote.bind(sM, { smId, id, ...prevData }, false),
@@ -626,18 +662,18 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Изменение текста заметки',
     description: `ID: ${args.id}\nБыло: "${args.prevText}"\nСтало: "${args.text}"`,
   }),
-  // changeNoteBackgroundColor: (args) => ({
-  //   name: 'Изменение цвета заметки',
-  //   description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
-  // }),
-  // changeNoteTextColor: (args) => ({
-  //   name: 'Изменение цвета текста заметки',
-  //   description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
-  // }),
-  // changeNoteFontSize: (args) => ({
-  //   name: 'Изменение размера шрифта заметки',
-  //   description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
-  // }),
+  changeNoteBackgroundColor: (args) => ({
+    name: 'Изменение цвета заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteTextColor: (args) => ({
+    name: 'Изменение цвета текста заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteFontSize: (args) => ({
+    name: 'Изменение размера шрифта заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
+  }),
   changeNotePosition: (args) => ({
     name: 'Перемещение заметки',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(

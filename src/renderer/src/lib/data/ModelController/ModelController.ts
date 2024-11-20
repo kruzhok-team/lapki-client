@@ -1180,7 +1180,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.model.data.elements.stateMachines[smId].components[id]
     );
     this.model.editComponent(smId, id, parameters);
-
     if (newName) {
       this.renameComponent(smId, id, newName);
     }

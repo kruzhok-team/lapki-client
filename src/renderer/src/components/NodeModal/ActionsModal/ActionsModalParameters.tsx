@@ -8,6 +8,7 @@ import { ModelController } from '@renderer/lib/data/ModelController/ModelControl
 import { ArgList, StateMachine } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
+import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 interface ActionsModalParametersProps {
   protoParameters: ArgumentProto[];
   parameters: ArgList;
@@ -90,20 +91,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           ),
         };
       });
-  };
-
-  const getComponentAttribute = (parameter: string) => {
-    if (parameter.includes('"') || !isNaN(Number(parameter))) {
-      return null;
-    }
-    let splitParameter = parameter.split('.');
-    if (splitParameter.length != 2) {
-      splitParameter = parameter.split('::');
-      if (splitParameter.length != 2) {
-        return null;
-      }
-    }
-    return splitParameter;
   };
 
   if (protoParameters.length === 0) {

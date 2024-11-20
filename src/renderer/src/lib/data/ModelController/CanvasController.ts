@@ -41,6 +41,7 @@ import {
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
+  ArgList,
   ChoiceState,
   Component,
   Condition,
@@ -53,6 +54,7 @@ import {
   Transition,
   Variable,
 } from '@renderer/types/diagram';
+import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ComponentsController } from './ComponentsController';
 import { ModelController } from './ModelController';
@@ -756,9 +758,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           for (const act of ev.do) {
             if (typeof act !== 'string') {
               // заменяем в действии
-              if (act.component == id) {
+              if (act.component === id) {
                 act.component = newName;
+                continue;
               }
+              this.renameParameters(act.args, id, newName);
             }
           }
         }
@@ -779,7 +783,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             if (typeof act !== 'string') {
               if (act.component === id) {
                 act.component = newName;
+                continue;
               }
+              this.renameParameters(act.args, id, newName);
             }
           }
         }
@@ -795,6 +801,17 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.triggerDataUpdate('platform');
     this.app.view.isDirty = true;
+  };
+
+  private renameParameters = (args: ArgList | undefined, oldName: string, newName: string) => {
+    if (!args) return;
+    for (const [index, arg] of Object.entries(args)) {
+      const componentAttribute = getComponentAttribute(arg);
+      console.log('HERE', componentAttribute, oldName, newName);
+      if (componentAttribute !== null && componentAttribute[0] === oldName) {
+        args[index] = `${newName}${componentAttribute[2]}${componentAttribute[1]}`;
+      }
+    }
   };
 
   private deleteSelected = (smId: string) => {

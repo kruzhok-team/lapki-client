@@ -108,10 +108,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   controllers: { [id: string]: CanvasController } = {};
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
-
-  constructor() {
+  private onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void;
+  constructor(onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void) {
     super();
-
+    this.onStateMachineDelete = onStateMachineDelete;
     this.emptyController();
     ModelController.instance = this;
   }
@@ -690,8 +690,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         type: 'deleteStateMachine',
         args: { smId, ...sm },
       });
+    } else {
+      // Значит, что мы удалили через undo и вкладка осталась открытой
+      this.onStateMachineDelete(this, sm.name ?? smId);
     }
-
     this.model.deleteStateMachine(smId);
     this.emit('deleteStateMachine', {
       id: smId,

@@ -4,7 +4,8 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { ArgList } from '@renderer/types/diagram';
+import { ModelController } from '@renderer/lib/data/ModelController/ModelController';
+import { ArgList, StateMachine } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 interface ActionsModalParametersProps {
@@ -19,6 +20,7 @@ interface ActionsModalParametersProps {
   componentOptions: SelectOption[];
 
   smId: string;
+  modelController: ModelController;
   controller: CanvasController;
 }
 
@@ -32,8 +34,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   componentOptions,
   smId,
   controller,
+  modelController,
 }) => {
   const Component = 'label';
+  const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [id: string]: StateMachine;
+  };
 
   const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
     if (type && typeof type === 'string' && validators[type]) {
@@ -51,7 +57,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
     let inputValue = '';
     if (component || attribute) {
-      inputValue = `${component}.${attribute}`;
+      // const platform = controller.
+      const proto = controller.platform[smId].getComponent(component);
+      const platform = stateMachines[smId].platform;
+      console.log(smId, platform);
+      const delimiter = proto?.singletone && !platform.startsWith('Bearloga') ? '::' : '.';
+      inputValue = `${component}${delimiter}${attribute}`;
     }
     handleInputChange(name, undefined, inputValue);
   };

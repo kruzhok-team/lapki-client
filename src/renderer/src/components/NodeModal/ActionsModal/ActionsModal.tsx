@@ -240,6 +240,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         componentOptions={componentOptions}
         controller={controller}
         smId={smId}
+        modelController={modelController}
       />
     </Modal>
   );

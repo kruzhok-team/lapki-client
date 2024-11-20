@@ -48,6 +48,14 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
+  const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
+    let inputValue = '';
+    if (component || attribute) {
+      inputValue = `${component}.${attribute}`;
+    }
+    handleInputChange(name, undefined, inputValue);
+  };
+
   const [isChecked, setIsChecked] = useState<boolean | null>(null);
 
   const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
@@ -73,27 +81,18 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       });
   };
 
-  const isAttribute = (parameter: string) => {
+  const getComponentAttribute = (parameter: string) => {
     if (parameter.includes('"') || !isNaN(Number(parameter))) {
-      return false;
+      return null;
     }
-    const splitParameter = parameter.split('.');
+    let splitParameter = parameter.split('.');
     if (splitParameter.length != 2) {
-      return false;
-    }
-    const component = splitParameter[0];
-    const method = splitParameter[1];
-    for (const opt of componentOptions) {
-      if (opt.value == component) {
-        return true;
+      splitParameter = parameter.split('::');
+      if (splitParameter.length != 2) {
+        return null;
       }
     }
-    for (const opt of methodOptionsSearch(splitParameter[0])) {
-      if (opt.value == method) {
-        return true;
-      }
-    }
-    return false;
+    return splitParameter;
   };
 
   if (protoParameters.length === 0) {
@@ -126,10 +125,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
 
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
-        const currentChecked = isChecked ?? isAttribute(value);
-        const valueSplit = value.split('.');
-        const selectedParameterComponent = currentChecked ? valueSplit[0] : null;
-        const selectedParameterMethod = currentChecked ? valueSplit[1] : null;
+        const componentAttibute = getComponentAttribute(value);
+        const currentChecked = isChecked ?? componentAttibute != null;
+        const selectedParameterComponent =
+          currentChecked && componentAttibute ? componentAttibute[0] : null;
+        const selectedParameterMethod =
+          currentChecked && componentAttibute ? componentAttibute[1] : null;
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
           <div className="flex items-start" key={name}>
@@ -160,7 +161,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <Select
                   containerClassName="w-full"
                   options={filteredComponentOptions}
-                  onChange={(opt) => handleInputChange(name, undefined, opt?.value ?? '')}
+                  onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
                   value={
                     filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
                     null
@@ -173,10 +174,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   containerClassName="w-full"
                   options={methodOptions}
                   onChange={(opt) =>
-                    handleInputChange(
+                    handleComponentAttributeChange(
                       name,
-                      undefined,
-                      `${selectedParameterComponent}.${opt?.value ?? ''}`
+                      selectedParameterComponent ?? '',
+                      opt?.value ?? ''
                     )
                   }
                   value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}

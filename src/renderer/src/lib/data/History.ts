@@ -16,6 +16,8 @@ import {
   CreateFinalStateParams,
   CreateChoiceStateParams,
   SwapComponentsParams,
+  CreateComponentParams,
+  DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';
 import { roundPoint } from '@renderer/lib/utils';
 import {
@@ -100,8 +102,8 @@ export type PossibleActions = {
     prevValue: EventAction;
   };
 
-  // createComponent: { args: CreateComponentParams };
-  // deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
+  createComponent: { args: CreateComponentParams };
+  deleteComponent: { args: DeleteDrawableParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
   changeComponentPosition: { smId: string; name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
@@ -400,14 +402,14 @@ export const actionFunctions: ActionFunctions = {
   //   undo: sM.stateMachines.createStateMachineFromObject.bind(sM.stateMachines, prevStateMachine),
   // }),
 
-  // createComponent: (sM, { args }) => ({
-  //   redo: sM.createComponent.bind(sM, args, false),
-  //   undo: sM.deleteComponent.bind(sM, { name: args.name, sm: 'G', purge: false }, false),
-  // }),
-  // deleteComponent: (sM, { args, prevComponent }) => ({
-  //   redo: sM.deleteComponent.bind(sM, args, false),
-  //   undo: sM.createComponent.bind(sM, { name: args.name, ...prevComponent }, false),
-  // }),
+  createComponent: (sM, { args }) => ({
+    redo: sM.createComponent.bind(sM, args, false),
+    undo: sM.deleteComponent.bind(sM, { id: args.name, smId: args.smId, purge: false }, false),
+  }),
+  deleteComponent: (sM, { args, prevComponent }) => ({
+    redo: sM.deleteComponent.bind(sM, args, false),
+    undo: sM.createComponent.bind(sM, { name: args.id, smId: args.smId, ...prevComponent }, false),
+  }),
   editComponent: (sM, { args, prevComponent }) => ({
     redo: sM.editComponent.bind(sM, args, false),
     undo: sM.editComponent.bind(
@@ -430,7 +432,7 @@ export const actionFunctions: ActionFunctions = {
     ),
     undo: sM.changeComponentPosition.bind(
       sM,
-      { smId, id: name, endPosition, startPosition },
+      { smId, id: name, startPosition: endPosition, endPosition: startPosition },
       false
     ),
   }),
@@ -590,14 +592,14 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(args.event)}`,
   }),
 
-  // createComponent: ({ args }) => ({
-  //   name: 'Добавление компонента',
-  //   description: `Имя: ${args.name}\nТип: ${args.type}`,
-  // }),
-  // deleteComponent: ({ args, prevComponent }) => ({
-  //   name: 'Удаление компонента',
-  //   description: `Имя: ${args.name}\nТип: ${prevComponent.type}`,
-  // }),
+  createComponent: ({ args }) => ({
+    name: 'Добавление компонента',
+    description: `Имя: ${args.name}\nТип: ${args.type}`,
+  }),
+  deleteComponent: ({ args, prevComponent }) => ({
+    name: 'Удаление компонента',
+    description: `Имя: ${args.id}\nТип: ${prevComponent.type}`,
+  }),
   editComponent: ({ args, prevComponent }) => {
     const prev = { prevComponent, name: args.id };
     const newComp = { ...args, type: prevComponent.type };

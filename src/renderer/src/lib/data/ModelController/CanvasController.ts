@@ -397,6 +397,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('renameComponent', this.binded['renameComponent']);
             this.model.off('selectComponent', this.binded['selectComponent']);
             this.model.off('changeComponentSelection', this.binded['changeComponentSelection']);
+            this.model.off('changeComponentPosition', this.binded['changeComponentPosition']);
             break;
           case 'transition':
             this.model.off('createTransition', this.binded['createTransition']);
@@ -628,6 +629,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             )
           );
         }
+        this.model.on(
+          'changeComponentPosition',
+          this.bindHelper(
+            'component',
+            'changeComponentPosition',
+            this.components.changeComponentPosition
+          )
+        );
         this.initData[smId].components = {
           ...(initData as { [id: string]: Component }),
         };
@@ -913,9 +922,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       color: args.parameters['labelColor'],
     });
     this.triggerDataUpdate('platform');
+
+    this.view.isDirty = true;
   };
 
-  private deleteComponent(args: DeleteDrawableParams) {
+  private deleteComponent = (args: DeleteDrawableParams) => {
     if (!this.platform[args.smId]) {
       return;
     }
@@ -926,7 +937,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
     this.platform[args.smId].nameToVisual.delete(args.id);
     this.triggerDataUpdate('platform');
-  }
+
+    this.view.isDirty = true;
+  };
 
   createComponent = (args: CreateComponentParams) => {
     if (!this.platform[args.smId]) {
@@ -938,6 +951,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       color: args.parameters['labelColor'],
     });
     this.triggerDataUpdate('platform');
+
+    this.view.isDirty = true;
 
     if (this.type !== 'scheme') return;
 

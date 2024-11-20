@@ -398,15 +398,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // this.emit('selectComponent', args);
   };
 
-  createComponent(args: CreateComponentParams) {
+  createComponent(args: CreateComponentParams, canUndo = true) {
     this.model.createComponent(args);
     this.emit('createComponent', args);
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'createComponent',
-    //     args: { args },
-    //   });
-    // }
+    if (canUndo) {
+      this.history.do({
+        type: 'createComponent',
+        args: { args },
+      });
+    }
   }
 
   createNote(args: CreateNoteParams, canUndo = true) {
@@ -1197,13 +1197,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   changeComponentPosition = (args: ChangePosition, _canUndo = true) => {
     const { smId, id, startPosition = { x: 0, y: 0 }, endPosition } = args;
-    this.model.changeComponentPosition(smId, id, endPosition);
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
-        args: { smId, name: id, startPosition: startPosition, endPosition },
+        args: { smId, name: id, startPosition, endPosition },
       });
     }
+    this.model.changeComponentPosition(smId, id, endPosition);
     this.emit('changeComponentPosition', {
       smId,
       id: id,
@@ -1215,14 +1215,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
 
-    // const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
+    const prevComponent = structuredClone(
+      this.model.data.elements.stateMachines[smId].components[id]
+    );
     this.model.deleteComponent(smId, id);
 
     if (canUndo) {
-      //   this.history.do({
-      //     type: 'deleteComponent',
-      //     args: { args, prevComponent },
-      //   });
+      this.history.do({
+        type: 'deleteComponent',
+        args: { args, prevComponent },
+      });
     }
 
     this.emit('deleteComponent', args);

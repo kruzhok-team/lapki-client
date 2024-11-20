@@ -18,6 +18,7 @@ import {
   SwapComponentsParams,
   CreateComponentParams,
   DeleteDrawableParams,
+  CreateStateMachineParams,
 } from '@renderer/lib/types/ModelTypes';
 import { roundPoint } from '@renderer/lib/utils';
 import {
@@ -30,6 +31,7 @@ import {
   Event,
   Component,
   EventData,
+  StateMachine,
 } from '@renderer/types/diagram';
 
 import { ModelController } from './ModelController';
@@ -63,6 +65,9 @@ export type PossibleActions = {
     startPosition: Point;
     endPosition: Point;
   };
+
+  createStateMachine: { smId: string } & StateMachine;
+  deleteStateMachine: { smId: string } & StateMachine;
 
   createFinalState: CreateFinalStateParams & { newStateId: string };
   deleteFinalState: { smId: string; id: string; stateData: FinalStateData };
@@ -152,6 +157,14 @@ type ActionDescriptions = {
 };
 
 export const actionFunctions: ActionFunctions = {
+  createStateMachine: (sM, args) => ({
+    redo: sM.createStateMachine.bind(sM, args.smId, { ...args }, false),
+    undo: sM.deleteStateMachine.bind(sM, args.smId, false),
+  }),
+  deleteStateMachine: (sM, args) => ({
+    redo: sM.deleteStateMachine.bind(sM, args.smId, false),
+    undo: sM.createStateMachine.bind(sM, args.smId, { ...args }, false),
+  }),
   createState: (sM, args) => ({
     redo: sM.createState.bind(
       sM,
@@ -508,6 +521,10 @@ export const actionFunctions: ActionFunctions = {
 };
 
 export const actionDescriptions: ActionDescriptions = {
+  createStateMachine: (args) => ({
+    name: 'Создание МС',
+    description: `Имя: ${args.name ?? args.smId}, платформа ${args.platform}`,
+  }),
   createState: (args) => ({
     name: 'Создание состояния',
     description: `Имя: ${args.name}`,
@@ -538,10 +555,10 @@ export const actionDescriptions: ActionDescriptions = {
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
-  // deleteStateMachine: (args) => ({
-  // name: 'Удаление машины состояний',
-  // description: `Id: ${args.args.id}`,
-  // }),
+  deleteStateMachine: (args) => ({
+    name: 'Удаление машины состояний',
+    description: `Id: ${args.name ?? args.smId}`,
+  }),
   createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,

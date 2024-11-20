@@ -167,8 +167,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = smIds[smId];
       if (smId === '') continue;
       if (!sm) return;
-      const smToSubscribe = {};
-      smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
       controller.subscribe(smId, 'stateMachine', { [smId]: smIds[smId] });
       controller.subscribe(smId, 'component', sm.components);
@@ -343,7 +341,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let headCanvas = '';
     for (const smId in elements.stateMachines) {
       if (smId === '') continue;
-      const canvasId = this.createStateMachine(smId, elements.stateMachines[smId]);
+      const canvasId = this.createStateMachine(smId, elements.stateMachines[smId], false);
       headCanvas = canvasId;
       this.model.data.canvas[canvasId] = {
         isInitialized: true,
@@ -618,7 +616,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  createStateMachine(smId: string, data: StateMachine) {
+  createStateMachine(smId: string, data: StateMachine, canUndo = true) {
     const canvasId = generateId();
     const editor = new CanvasEditor(canvasId);
     const controller = new CanvasController(
@@ -654,6 +652,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       position: data.position,
     });
 
+    if (canUndo) {
+      this.history.do({
+        type: 'createStateMachine',
+        args: { smId, ...data },
+      });
+    }
+
     return canvasId;
   }
 
@@ -662,7 +667,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('editStateMachine', { id: smId, ...data });
   }
 
-  deleteStateMachine(smId: string) {
+  deleteStateMachine(smId: string, canUndo = true) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
     // Сделать общий канвас канвасом по умолчанию?
     const specificCanvas = Object.values(this.controllers).find(
@@ -676,6 +681,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (Object.values(this.controllers).length === 1) {
       this.model.changeHeadControllerId('');
+    } else {
+      this.model.changeHeadControllerId(Object.values(this.controllers)[1].id);
+    }
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteStateMachine',
+        args: { smId, ...sm },
+      });
     }
 
     this.model.deleteStateMachine(smId);

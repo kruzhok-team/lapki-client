@@ -151,6 +151,7 @@ export class EditorModel {
       if (propertyName === 'elements.stateMachinesId') {
         return this.data['elements'].stateMachines;
       }
+      if (!this.data['elements'].stateMachines[smId]) return '';
       return this.data['elements'].stateMachines[smId][propertyName.split('.')[1]];
     };
 

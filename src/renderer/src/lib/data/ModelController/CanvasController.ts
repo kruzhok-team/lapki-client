@@ -311,9 +311,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.initializer.initTransitions(smId, this.initData[smId].transitions);
       }
       this.triggerDataUpdate('platform');
-      if (this.type === 'scheme') {
-        this.initializer.initStateMachines(this.initData);
-      }
       this.inited = true;
     }
 
@@ -628,18 +625,21 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
               this.components.changeComponentSelection
             )
           );
-        }
-        this.model.on(
-          'changeComponentPosition',
-          this.bindHelper(
-            'component',
+          this.model.on(
             'changeComponentPosition',
-            this.components.changeComponentPosition
-          )
-        );
+            this.bindHelper(
+              'component',
+              'changeComponentPosition',
+              this.components.changeComponentPosition
+            )
+          );
+        }
         this.initData[smId].components = {
           ...(initData as { [id: string]: Component }),
         };
+        this.initializer.initComponents(smId, {
+          ...(initData as { [id: string]: Component }),
+        });
         break;
       case 'transition':
         this.model.on(
@@ -699,6 +699,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         }
         if (initData[smId] && (initData[smId] as StateMachine).position) {
           this.initData[smId].position = (initData[smId] as StateMachine).position;
+          this.initializer.initStateMachines({ [smId]: initData[smId] as StateMachine });
         }
         break;
       default:
@@ -718,14 +719,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   createStateMachine = (args: CreateStateMachineParams) => {
     const { smId, platform } = args;
-
-    if (isPlatformAvailable(platform)) {
-      const platformManager = loadPlatform(platform);
-      if (typeof platformManager === 'undefined') {
-        throw Error("couldn't init platform " + platform);
+    if (!this.platform[smId]) {
+      if (isPlatformAvailable(platform)) {
+        const platformManager = loadPlatform(platform);
+        if (typeof platformManager === 'undefined') {
+          throw Error("couldn't init platform " + platform);
+        }
+        this.platform[smId] = platformManager;
+        this.triggerDataUpdate('platform');
       }
-      this.platform[smId] = platformManager;
-      this.triggerDataUpdate('platform');
     }
     this.stateMachines.createStateMachine(args);
   };
@@ -963,11 +965,28 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.stateMachines.addComponent(args.smId, component);
   };
 
+  initPlatformBySmId = (smId: string) => {
+    if (this.platform[smId]) return;
+
+    if (!this.initData[smId]) return;
+
+    const platformName = this.initData[smId].platform;
+    if (!platformName) return;
+
+    if (isPlatformAvailable(platformName)) {
+      const platform = loadPlatform(platformName);
+      if (typeof platform === 'undefined') {
+        throw Error("couldn't init platform " + platformName);
+      }
+      this.platform[smId] = platform;
+      // this.triggerDataUpdate('platform');
+    }
+  };
+
   initPlatform = () => {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     for (const smId in this.canvasData.platformNames) {
       const platformName = this.canvasData.platformNames[smId];
-
       if (isPlatformAvailable(platformName)) {
         const platform = loadPlatform(platformName);
         if (typeof platform === 'undefined') {

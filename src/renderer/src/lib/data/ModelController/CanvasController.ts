@@ -175,6 +175,9 @@ export type CanvasData = {
 // common - для работы сразу со всеми машинами состояний
 export type CanvasControllerType = 'specific' | 'scheme' | 'common';
 
+// TODO: Проблема - если после инициализации мы подписываемся на изменение каких-то данных и передаем начальные данные,
+// то они не будут добавлены на канвас, так как передаваемые начальные данные добавляются в initData - данные для инициализации,
+// которую мы уже сделали
 export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   // TODO: Сделать класс Subscribable
   dataListeners = emptyControllerListeners; //! Подписчиков обнулять нельзя, react сам разбирается
@@ -940,8 +943,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.platform[args.smId].nameToVisual.delete(args.id);
     this.triggerDataUpdate('platform');
 
-    
-    
     this.view.isDirty = true;
   };
 

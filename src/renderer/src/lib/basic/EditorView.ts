@@ -155,7 +155,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   setScale(value: number) {
-    this.app.controller.model.model.setScale(value);
+    this.app.controller.model.changeScale(value, true, true);
+    this.app.controller.changeScale(value);
     picto.scale = value;
 
     this.isDirty = true;

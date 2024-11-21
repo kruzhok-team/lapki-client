@@ -767,6 +767,7 @@ export class EditorModel {
   }
 
   setScale(value: number) {
+    debugger;
     this.data.scale = value;
     this.triggerDataUpdate('scale');
     return true;

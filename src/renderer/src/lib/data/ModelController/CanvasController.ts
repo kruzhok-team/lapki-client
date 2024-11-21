@@ -432,7 +432,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   changeScale = (value: number) => {
+    // this.view.changeScale(this.scale - value, false);
+    debugger;
     this.scale = value;
+    this.view.isDirty = true;
   };
 
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
@@ -1017,10 +1020,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.model.on('loadData', () => this.loadData());
     this.model.on('initEvents', () => this.transitions.initEvents());
     this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));
-    this.model.on('changeScale', (value) => {
-      this.scale = value;
-      this.app.view.isDirty = true;
-    });
+    this.model.on('changeScale', (value) => this.changeScale(value));
     this.model.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
   }
 

@@ -28,6 +28,7 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
   };
 
   const handleReset = () => {
+    debugger;
     modelController.changeScale(1, true);
   };
 

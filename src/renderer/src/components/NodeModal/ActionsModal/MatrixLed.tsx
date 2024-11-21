@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 interface MatrixLedProps {
   rowIndex: number;
@@ -13,11 +13,16 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({ colIndex, rowIndex, value,
     e.stopPropagation();
     onChange(rowIndex, colIndex, newValue);
   };
+
   return (
-    <div
-      className={`m-0 border-2 border-black ${value === 0 ? 'bg-gray-400' : 'bg-white'} text-black`}
-    >
-      <button className="h-16 w-16 text-black" type="button" onClick={handleClick}></button>
-    </div>
+    <button
+      className={twMerge(
+        'm-1 h-16 w-16 rounded border border-border-primary',
+        value === 0 && 'bg-bg-secondary',
+        value === 1 && 'bg-bg-active'
+      )}
+      type="button"
+      onClick={handleClick}
+    ></button>
   );
 };

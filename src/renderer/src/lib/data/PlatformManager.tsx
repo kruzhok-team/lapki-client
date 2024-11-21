@@ -288,6 +288,9 @@ export class PlatformManager {
           width: paramValue.length,
           height: paramValue[0].length,
         });
+        if (parameter.length > 10) {
+          parameter = parameter.slice(0, 10) + '...';
+        }
       } else {
         // FIXME
         console.log(['PlatformManager.drawEvent', 'Variable!', ev, paramValue]);
@@ -342,6 +345,9 @@ export class PlatformManager {
           width: paramValue.length,
           height: paramValue[0].length,
         });
+        if (parameter.length > 10) {
+          parameter = parameter.slice(0, 10) + '...';
+        } 
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);

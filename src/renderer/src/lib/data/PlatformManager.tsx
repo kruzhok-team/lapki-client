@@ -1,5 +1,3 @@
-import { build } from 'vite';
-
 import { MarkedIconData, icons, picto } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
@@ -293,7 +291,7 @@ export class PlatformManager {
         }
       } else {
         // FIXME
-        console.log(['PlatformManager.drawEvent', 'Variable!', ev, paramValue]);
+        console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
         parameter = '???';
       }
     }
@@ -347,7 +345,7 @@ export class PlatformManager {
         });
         if (parameter.length > 10) {
           parameter = parameter.slice(0, 10) + '...';
-        } 
+        }
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);

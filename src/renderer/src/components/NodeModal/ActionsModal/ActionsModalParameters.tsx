@@ -2,16 +2,9 @@ import React from 'react';
 
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Select } from '@renderer/components/UI';
-import { Dimensions } from '@renderer/lib/types';
 import { ArgList } from '@renderer/types/diagram';
-import { Matrix } from '@renderer/types/MatrixWidget';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
-import {
-  formatArgType,
-  getMatrixDimensions,
-  parseMatrixFromString,
-  validators,
-} from '@renderer/utils';
+import { formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
 
 import { MatrixWidget } from './MatrixWidget';
 

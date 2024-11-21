@@ -752,15 +752,16 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             if (ev.trigger.component == id) {
               // заменяем в триггере
               ev.trigger.component = newName;
-              for (const act of ev.do) {
-                if (typeof act !== 'string') {
-                  // заменяем в действии
-                  if (act.component == id) {
-                    act.component = newName;
-                  }
-                }
+            }
+
+          for (const act of ev.do) {
+            if (typeof act !== 'string') {
+              // заменяем в действии
+              if (act.component == id) {
+                act.component = newName;
               }
             }
+          }
         }
       });
 
@@ -792,6 +793,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         }
       });
     }
+
     this.triggerDataUpdate('platform');
     this.app.view.isDirty = true;
   };
@@ -913,10 +915,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       label: args.parameters['label'],
       color: args.parameters['labelColor'],
     });
+    this.view.isDirty = true;
     this.triggerDataUpdate('platform');
   };
 
-  private deleteComponent = (args: DeleteDrawableParams) => {
+  deleteComponent = (args: DeleteDrawableParams) => {
     if (!this.platform[args.smId]) {
       return;
     }

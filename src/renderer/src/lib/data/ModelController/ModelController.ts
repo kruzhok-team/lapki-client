@@ -167,8 +167,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = smIds[smId];
       if (smId === '') continue;
       if (!sm) return;
-      const smToSubscribe = {};
-      smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
       controller.subscribe(smId, 'stateMachine', { [smId]: smIds[smId] });
       controller.subscribe(smId, 'component', sm.components);

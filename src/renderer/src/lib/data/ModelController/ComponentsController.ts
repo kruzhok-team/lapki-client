@@ -74,15 +74,20 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
   editComponent = (args: EditComponentParams) => {
     const component = this.items.get(args.id);
-    if (!component) {
-      throw new Error(`Изменение не существующего компонента с идентификатором ${args.id}`);
-    }
+    if (!component) return;
     // const componentData = component.data;
     if (args.newName !== undefined) {
-      this.deleteComponent(args);
+      this.controller.deleteComponent(args);
       // (L140-beep) скорее всего придется потом возиться с переходами
       // на схематехническом экране
-      // this.createComponent({ ...component, ...args });
+      this.controller.createComponent({
+        smId: args.smId,
+        type: args.type,
+        name: args.newName,
+        position: component.position,
+        parameters: args.parameters,
+        order: 0,
+      });
     } else {
       component.icon.label = args.parameters['label'];
       component.icon.color = args.parameters['labelColor'];

@@ -100,9 +100,12 @@ export const useTabs = create<TabsState>((set) => ({
     set(({ items, activeTab }) => {
       const newItems = [...items];
       const index = newItems.findIndex(({ name }) => name === oldName);
-      newItems[index].name = newName;
+      let newActiveTab = activeTab;
+      if (index !== -1) {
+        newItems[index].name = newName;
 
-      const newActiveTab = oldName == activeTab ? newName : activeTab;
+        newActiveTab = oldName == activeTab ? newName : activeTab;
+      }
 
       return {
         items: newItems,

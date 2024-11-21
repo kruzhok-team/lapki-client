@@ -267,6 +267,12 @@ export class Flasher extends ClientWS {
         );
       }
     }
+    if (this.currentFlashingDevice) {
+      this.flashingEnd(
+        'Потеряно соединение с сервером. Статус загрузки прошивки неизвестен.',
+        undefined
+      );
+    }
     super.closeHandler(host, port, event);
   }
 

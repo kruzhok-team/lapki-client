@@ -40,9 +40,13 @@ export abstract class ClientWS {
   /**
    * подключение к заданному хосту и порту, отключается от предыдущего адреса
    */
-  static async connect(host: string, port: number): Promise<Websocket | undefined> {
+  static async connect(
+    host: string,
+    port: number,
+    autoReconnect: boolean = true
+  ): Promise<Websocket | undefined> {
     if (!this.isEqualAdress(host, port)) {
-      this.initOrResetReconnectTimer();
+      this.initOrResetReconnectTimer(autoReconnect);
       // чтобы предовратить повторное соединение
     } else if (
       this.connection &&
@@ -71,6 +75,7 @@ export abstract class ClientWS {
     }
 
     ws.onopen = () => {
+      this.initOrResetReconnectTimer(autoReconnect);
       this.onOpenHandler();
     };
 
@@ -125,7 +130,6 @@ export abstract class ClientWS {
   }
 
   static onOpenHandler() {
-    this.initOrResetReconnectTimer();
     //console.log(`Client: connected to ${this.host}:${this.port}!`);
     this.onStatusChange(ClientStatus.CONNECTED);
     this.setSecondsUntilReconnect(null);
@@ -140,11 +144,12 @@ export abstract class ClientWS {
     return host === this.host && port === this.port;
   }
 
-  static initOrResetReconnectTimer() {
+  static initOrResetReconnectTimer(autoReconnect: boolean = true) {
     if (this.reconnectTimer) {
-      this.reconnectTimer.reset();
+      this.reconnectTimer.reset(autoReconnect);
     } else {
       this.reconnectTimer = new ReconnectTimer();
+      this.reconnectTimer.setAutoReconnect(autoReconnect);
     }
   }
 

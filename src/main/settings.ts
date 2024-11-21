@@ -81,13 +81,15 @@ export const defaultSettings = {
 export type Settings = typeof defaultSettings;
 export type SettingsKey = keyof Settings;
 
-export const initSettings = (webContents: WebContents) => {
+export const initDefaultSettings = () => {
   for (const key in defaultSettings) {
     if (!settings.hasSync(key)) {
       settings.setSync(key, defaultSettings[key]);
     }
   }
+};
 
+export const initSettingsHandlers = (webContents: WebContents) => {
   ipcMain.handle('settings:get', (_event, key) => {
     return settings.get(key);
   });

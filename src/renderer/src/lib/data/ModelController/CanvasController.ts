@@ -915,7 +915,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.triggerDataUpdate('platform');
   };
 
-  private deleteComponent(args: DeleteDrawableParams) {
+  private deleteComponent = (args: DeleteDrawableParams) => {
     if (!this.platform[args.smId]) {
       return;
     }
@@ -926,7 +926,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
     this.platform[args.smId].nameToVisual.delete(args.id);
     this.triggerDataUpdate('platform');
-  }
+  };
 
   createComponent = (args: CreateComponentParams) => {
     if (!this.platform[args.smId]) {

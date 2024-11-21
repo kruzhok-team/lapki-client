@@ -8,7 +8,7 @@ import { join } from 'path';
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initSettings, settingsChangeSend } from './settings';
+import { initDefaultSettings, initSettingsHandlers, settingsChangeSend } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
@@ -92,7 +92,7 @@ function createWindow(): BrowserWindow {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 
-  initSettings(mainWindow.webContents);
+  initSettingsHandlers(mainWindow.webContents);
 
   return mainWindow;
 }
@@ -100,6 +100,7 @@ function createWindow(): BrowserWindow {
 const startFlasher = async () => {
   ModuleManager.startLocalModule('lapki-flasher');
 };
+initDefaultSettings();
 startFlasher();
 
 // Выполняется после инициализации Electron

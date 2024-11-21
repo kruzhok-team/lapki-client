@@ -83,7 +83,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
     if (!flasherSetting) return;
 
-    Flasher.setAutoReconnect(data.type === 'remote');
     setFlasherSetting({ ...flasherSetting, ...data });
   };
 

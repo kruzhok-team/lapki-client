@@ -1,8 +1,9 @@
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
+  canvasId: string;
   type: 'editor';
-  name: 'editor';
+  name: string;
 }
 
 export interface CodeTab {

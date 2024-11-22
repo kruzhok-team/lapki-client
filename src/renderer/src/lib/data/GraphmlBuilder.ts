@@ -38,6 +38,7 @@ import { isString } from '@renderer/utils';
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
 import { ChoiceState } from '../drawable';
+import { Point } from '../types';
 
 function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
   return {
@@ -360,7 +361,7 @@ function serializeNotes(notes: { [id: string]: Note }): { [id: string]: CGMLNote
       text: note.text,
       position: note.position,
       type: 'informal',
-      unsupportedDataNodes: getNoteFormatNode(note),
+      unsupportedDataNodes: [...getNoteFormatNode(note)],
     };
   }
   return cgmlNotes;
@@ -392,6 +393,19 @@ function getNoteFormatNode(note: Note): CGMLDataNode[] {
   ];
 }
 
+function getPointNode(position: Point): CGMLDataNode {
+  return {
+    key: 'dLapkiSchemePosition',
+    content: '',
+    point: [
+      {
+        ...position,
+      },
+    ],
+    rect: undefined,
+  };
+}
+
 function serializeComponents(components: { [id: string]: Component }): {
   [id: string]: CGMLComponent;
 } {
@@ -405,32 +419,43 @@ function serializeComponents(components: { [id: string]: Component }): {
       type: component.type,
       parameters: component.parameters,
       order: component.order,
-      unsupportedDataNodes: [],
+      unsupportedDataNodes: [getPointNode(component.position)],
     };
   }
   return cgmlComponents;
 }
 
 export function exportCGML(elements: Elements): string {
-  const platform = getPlatform(elements.platform);
-  if (!platform) {
-    throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
-  }
   const cgmlElements: CGMLElements = createEmptyElements();
-  cgmlElements.meta = exportMeta(elements.visual, elements.meta, platform);
   cgmlElements.format = 'Cyberiada-GraphML-1.0';
-  cgmlElements.platform = elements.platform;
-  cgmlElements.stateMachines['g'] = {
-    components: platform.staticComponents ? {} : serializeComponents(elements.components),
-    states: serializeStates(elements.states, platform, elements.components),
-    transitions: serializeTransitions(elements.transitions, platform, elements.components),
-    notes: serializeNotes(elements.notes),
-    initialStates: serializeVertex(elements.initialStates, 'initial'),
-    finals: serializeVertex(elements.finalStates, 'final'),
-    choices: serializeVertex(elements.choiceStates, 'choice'),
-    terminates: {},
-    unknownVertexes: {},
-  };
+  for (const smId in elements.stateMachines) {
+    if (smId === '') continue;
+    const sm = elements.stateMachines[smId];
+    const platform = getPlatform(sm.platform);
+    if (!platform) {
+      throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
+    }
+    cgmlElements.stateMachines[smId] = {
+      standardVersion: '1.0',
+      components: !platform.staticComponents ? serializeComponents(sm.components) : {},
+      states: serializeStates(sm.states, platform, sm.components),
+      transitions: serializeTransitions(sm.transitions, platform, sm.components),
+      notes: serializeNotes(sm.notes),
+      initialStates: serializeVertex(sm.initialStates, 'initial'),
+      finals: serializeVertex(sm.finalStates, 'final'),
+      choices: serializeVertex(sm.choiceStates, 'choice'),
+      meta: exportMeta(sm.visual, sm.meta, platform),
+      platform: sm.platform,
+      name: sm.name,
+      position: sm.position,
+      dimensions: {
+        width: 450,
+        height: 100,
+      },
+      terminates: {},
+      unknownVertexes: {},
+    };
+  }
   cgmlElements.keys = getKeys();
   return exportGraphml(cgmlElements);
 }

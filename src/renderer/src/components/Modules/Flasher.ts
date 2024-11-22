@@ -48,7 +48,7 @@ export class Flasher extends ClientWS {
   static initReader(reader): void {
     this.reader = reader;
     this.reader.onloadend = function (evt) {
-      if (evt.target?.readyState == FileReader.DONE) {
+      if (evt.target?.readyState === FileReader.DONE) {
         Flasher.connection?.send(this.result as ArrayBuffer);
         Flasher.filePos += Flasher.currentBlob.size;
       }
@@ -83,7 +83,7 @@ export class Flasher extends ClientWS {
     this.setErrorMessage = setErrorMessage;
     this.setFlashResult = setFlashResult;
   }
-  /*
+  /**
     Добавляет устройство в список устройств
 
     @param {device} устройство для добавления
@@ -113,7 +113,6 @@ export class Flasher extends ClientWS {
     });
   }
 
-  // обновление порта (только для ArduinoDevice)
   /**
    * обновление порта (сообщение приходит только для {@link ArduinoDevice})
    * @param port сообщение от сервера об обновлении порта
@@ -192,8 +191,8 @@ export class Flasher extends ClientWS {
   ) {
     if (
       serialMonitorDevice &&
-      serialMonitorDevice.deviceID == device.deviceID &&
-      serialConnectionStatus == SERIAL_MONITOR_CONNECTED
+      serialMonitorDevice.deviceID === device.deviceID &&
+      serialConnectionStatus === SERIAL_MONITOR_CONNECTED
     ) {
       /*
       см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
@@ -214,7 +213,7 @@ export class Flasher extends ClientWS {
   ): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
-        Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
+        Flasher.binary = new Blob([bin.fileContent as unknown as Uint8Array]);
         return;
       }
     });
@@ -261,6 +260,12 @@ export class Flasher extends ClientWS {
           `Соединение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере.`
         );
       }
+    }
+    if (this.currentFlashingDevice) {
+      this.flashingEnd(
+        'Потеряно соединение с сервером. Статус загрузки прошивки неизвестен.',
+        undefined
+      );
     }
     super.closeHandler(host, port, event);
   }

@@ -3,18 +3,26 @@ import { useCallback, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
-import { useEditorContext } from '@renderer/store/EditorContext';
-import { Event } from '@renderer/types/diagram';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
+import { useModelContext } from '@renderer/store/ModelContext';
+import { Component, Event } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
 export const useTrigger = (addSystemComponents: boolean) => {
-  const { controller, model } = useEditorContext();
+  const modelController = useModelContext();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const smId = stateMachines[0];
+  const componentsData = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
 
-  const componentsData = model.useData('elements.components');
-  const visual = model.useData('elements.visual');
+  const controller = modelController.controllers[headControllerId];
+
+  const visual = modelController.controllers[headControllerId].useData('visual');
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -26,17 +34,25 @@ export const useTrigger = (addSystemComponents: boolean) => {
   const componentOptions: SelectOption[] = useMemo(() => {
     // Почему-то эта функция может вызываться раньше инициаилзации платформы
     // из-за чего возникают ошибки
-    if (!controller.platform) {
+    if (!controller.platform[smId]) {
       return [];
     }
     const getComponentOption = (id: string) => {
-      const proto = controller.platform?.getComponent(id);
+      if (!controller.platform[smId]) {
+        return {
+          value: id,
+          label: id,
+          hint: undefined,
+          icon: undefined,
+        };
+      }
+      const proto = controller.platform[smId]?.getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform?.getFullComponentIcon(id, 'mr-1 size-7'),
+        icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -52,25 +68,27 @@ export const useTrigger = (addSystemComponents: boolean) => {
   }, [componentsData, addSystemComponents, controller.platform, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent || !controller.platform) return [];
-    const getAll = controller.platform['getAvailableEvents'];
-    const getImg = controller.platform['getEventIconUrl'];
+    if (!selectedComponent || !controller.platform[smId]) return [];
+    const getAll = controller.platform[smId]['getAvailableEvents'];
+    const getImg = controller.platform[smId]['getEventIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(controller.platform, selectedComponent).map(({ name, description }) => {
-      return {
-        value: name,
-        label: name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(controller.platform, selectedComponent, name, true)}
-            className="mr-1 size-7 object-contain"
-          />
-        ),
-      };
-    });
-  }, [controller.platform, selectedComponent, visual]);
+    return getAll
+      .call(controller.platform[smId], selectedComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
+  }, [controller, selectedComponent]);
 
   const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? null);

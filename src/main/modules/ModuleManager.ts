@@ -135,7 +135,7 @@ export class ModuleManager {
             chprocess = spawn(modulePath);
         }
         chprocess.on('error', function (err) {
-          if (err.code == 'ENOENT') {
+          if (err.code === 'ENOENT') {
             ModuleManager.moduleStatus.set(
               module,
               new ModuleStatus(2, `Файл ${modulePath} не найден.`)

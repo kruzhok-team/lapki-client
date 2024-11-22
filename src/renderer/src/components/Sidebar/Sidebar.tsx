@@ -6,9 +6,10 @@ import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.sv
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
@@ -19,6 +20,7 @@ import { Loader } from './Loader';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
+import { StateMachinesList } from './StateMachinesTab/StateMachinesList';
 
 import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
@@ -54,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   },
   openImportError,
 }) => {
-  const { model } = useEditorContext();
+  const modelController = useModelContext();
 
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
@@ -66,7 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
 
-  const isEditorDataStale = model.useData('isStale');
+  const isEditorDataStale = modelController.model.useData('', 'isStale');
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);
@@ -81,10 +83,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
     if (!flasherSetting) return;
 
-    Flasher.setAutoReconnect(data.type === 'remote');
     setFlasherSetting({ ...flasherSetting, ...data });
   };
 
+  // при добавлении новой вкладки или изменения их расположения нужно обновить SidebarIndex из useSidebar
   const menus = useMemo(
     () => [
       <Menu
@@ -97,6 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setOpenData={setOpenData}
       />,
       <Explorer />,
+      <StateMachinesList />,
       <CompilerTab
         openData={openData}
         openCompilerSettings={openCompilerSettings}
@@ -133,6 +136,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {
         Icon: <ComponentsIcon />,
         hint: 'Проводник',
+      },
+      {
+        Icon: <StateIcon />,
+        hint: 'Машины состояний',
       },
       {
         Icon: <CompilerIcon />,

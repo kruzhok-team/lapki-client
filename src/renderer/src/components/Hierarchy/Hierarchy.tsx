@@ -13,9 +13,16 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
-import { FinalState, State } from '@renderer/lib/drawable';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
-import { useEditorContext } from '@renderer/store/EditorContext';
+import { useModelContext } from '@renderer/store/ModelContext';
+import {
+  ChoiceState,
+  FinalState,
+  InitialState,
+  Note,
+  State,
+  Transition,
+} from '@renderer/types/diagram';
 import { escapeRegExp } from '@renderer/utils';
 
 import { Filter } from './Filter';
@@ -28,24 +35,32 @@ export interface HierarchyItemData {
 }
 
 export const Hierarchy: React.FC = () => {
-  const editor = useEditorContext();
-  const model = editor.model;
-  const controller = editor.controller;
-
+  const modelController = useModelContext();
+  const model = modelController.model;
   const [theme] = useSettings('theme');
-
-  const states = model.useData('elements.states');
-  const initialStates = model.useData('elements.initialStates');
-  const finalStates = model.useData('elements.finalStates');
-  const choiceStates = model.useData('elements.choiceStates');
-  const transitions = model.useData('elements.transitions');
-  const notes = model.useData('elements.notes');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  // TODO(L140-beep): реализовать отображение нескольких МС, когда появится общий канвас
+  const smId = stateMachines[0];
+  const states = model.useData(smId, 'elements.states') as { [id: string]: State };
+  const initialStates = model.useData(smId, 'elements.initialStates') as {
+    [id: string]: InitialState;
+  };
+  const finalStates = model.useData(smId, 'elements.finalStates') as {
+    [id: string]: FinalState;
+  };
+  const choiceStates = model.useData(smId, 'elements.choiceStates') as {
+    [id: string]: ChoiceState;
+  };
+  const transitions = model.useData(smId, 'elements.transitions') as {
+    [id: string]: Transition;
+  };
+  const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 
   const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
-
   const hierarchy = useMemo(() => {
     const data: Record<TreeItemIndex, TreeItem<HierarchyItemData>> = {
       root: {
@@ -148,12 +163,14 @@ export const Hierarchy: React.FC = () => {
         canRename: false,
         canMove: false,
       };
-      data[transition.sourceId].children?.push(transitionId);
-      data[transition.sourceId].isFolder = true;
+      if (data[transition.sourceId]) {
+        data[transition.sourceId].children?.push(transitionId);
+        data[transition.sourceId].isFolder = true;
+      }
     }
 
     return data;
-  }, [choiceStates, finalStates, initialStates, notes, states, transitions]);
+  }, [headControllerId, choiceStates, finalStates, initialStates, notes, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
@@ -164,7 +181,7 @@ export const Hierarchy: React.FC = () => {
   const handleSelectItems = (items: TreeItemIndex[]) => setSelectedItems(items);
 
   const handleRename = (item: TreeItem, name: string) => {
-    controller.states.changeStateName(item.index.toString(), name);
+    modelController.changeStateName(smId, item.index.toString(), name);
   };
 
   const handleDrop = (items: TreeItem[], target: DraggingPosition) => {
@@ -172,25 +189,26 @@ export const Hierarchy: React.FC = () => {
       const childId = value.index.toString();
 
       if (target.targetType === 'root') {
-        return controller.states.unlinkState({ id: childId });
+        return modelController.unlinkState({ smId: smId, id: childId });
       }
 
       const parent = target.parentItem.toString();
 
       if (parent === 'root') {
-        return controller.states.unlinkState({ id: childId });
+        return modelController.unlinkState({ smId: smId, id: childId });
       }
 
       if (parent === childId) return;
 
-      return controller.states.linkState({ parentId: parent, childId });
+      return modelController.linkState({ smId: smId, parentId: parent, childId });
     });
   };
 
   const onFocus = (item: TreeItem) => () => {
-    controller.selectState(item.index.toString());
-    controller.selectNote(item.index.toString());
-    controller.selectTransition(item.index.toString());
+    modelController.selectState({ smId, id: item.index.toString() });
+    modelController.selectNote({ smId, id: item.index.toString() });
+    modelController.selectTransition({ smId, id: item.index.toString() });
+    modelController.selectChoiceState({ smId, id: item.index.toString() });
   };
 
   const onClick =
@@ -223,24 +241,30 @@ export const Hierarchy: React.FC = () => {
       nativeEvent: e.nativeEvent,
     };
 
-    const state = controller.states.get(item.index.toString());
-    if (state && state instanceof State) {
-      return controller.states.handleContextMenu(state, { event: mouse });
+    const sm = modelController.model.data.elements.stateMachines[smId];
+    const itemId = item.index.toString();
+    const state = sm.states[itemId];
+    const headControllerId = model.useData('', 'headControllerId');
+    const canvasController = modelController.controllers[headControllerId];
+    if (state !== undefined) {
+      return canvasController.states.handleContextMenu(itemId, { event: mouse });
     }
-    if (state && state instanceof FinalState) {
-      return controller.states.handleFinalStateContextMenu(state, {
+
+    const finalState = sm.finalStates[itemId];
+    if (finalState) {
+      return canvasController.states.handleFinalStateContextMenu(itemId, {
         event: mouse,
       });
     }
-    const transition = controller.transitions.get(item.index.toString());
+    const transition = sm.transitions[itemId];
     if (transition) {
-      return controller.transitions.handleContextMenu(transition, {
+      return canvasController.transitions.handleContextMenu(itemId, {
         event: mouse,
       });
     }
-    const note = controller.notes.get(item.index.toString());
+    const note = sm.notes[itemId];
     if (note) {
-      return controller.notes.handleContextMenu(note, {
+      return canvasController.notes.handleContextMenu(itemId, {
         event: mouse,
       });
     }

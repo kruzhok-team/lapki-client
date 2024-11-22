@@ -7,3 +7,4 @@ export * from './useSettings';
 export * from './useFetch';
 export * from './useModal';
 export * from './usePrevious';
+export * from './useStateMachines';

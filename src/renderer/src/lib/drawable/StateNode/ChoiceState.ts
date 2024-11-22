@@ -2,6 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EdgeHandlers } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import theme from '@renderer/theme';
+import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
 
 const style = theme.colors.diagram.state;
 
@@ -11,15 +12,13 @@ const style = theme.colors.diagram.state;
 export class ChoiceState extends Shape {
   isSelected = false;
   edgeHandlers!: EdgeHandlers;
-
-  constructor(app: CanvasEditor, id: string, parent?: Shape) {
+  data: DataChoiceState;
+  smId: string;
+  constructor(app: CanvasEditor, id: string, smId: string, data: DataChoiceState, parent?: Shape) {
     super(app, id, parent);
-
-    this.edgeHandlers = new EdgeHandlers(this.app, this);
-  }
-
-  get data() {
-    return this.app.model.data.elements.choiceStates[this.id];
+    this.data = data;
+    this.smId = smId;
+    this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
   get position() {
@@ -71,7 +70,7 @@ export class ChoiceState extends Shape {
     const halfWidth = width / 2;
     const halfHeight = height / 2;
 
-    ctx.lineWidth = 2 / this.app.model.data.scale;
+    ctx.lineWidth = 2 / this.app.controller.scale;
     ctx.strokeStyle = '#FFFFFF';
 
     ctx.beginPath();

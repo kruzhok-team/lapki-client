@@ -133,7 +133,8 @@ export class Initializer {
       if (smId === '') continue;
       const dataSm = stateMachines[smId];
       this.controller.stateMachines.createStateMachine({
-        smId,
+        smId: smId,
+        name: dataSm.name,
         ...dataSm,
       });
       for (const componentId in dataSm.components) {

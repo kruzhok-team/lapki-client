@@ -66,7 +66,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     handleInputChange(name, undefined, inputValue);
   };
 
-  const [isChecked, setIsChecked] = useState<boolean | null>(null);
+  const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
   const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
   const methodOptionsSearch = (selectedParameterComponent: string | null) => {
@@ -119,10 +119,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
-
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
         const componentAttibute = getComponentAttribute(value);
-        const currentChecked = isChecked ?? componentAttibute != null;
+        const currentChecked = isChecked.get(name) ?? componentAttibute != null;
         const selectedParameterComponent =
           currentChecked && componentAttibute ? componentAttibute[0] : null;
         const selectedParameterMethod =
@@ -133,7 +132,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             <Checkbox
               checked={currentChecked}
               onCheckedChange={() => {
-                setIsChecked(!currentChecked);
+                setIsChecked((oldValue) => {
+                  const newValue = new Map(oldValue);
+                  newValue.set(name, !currentChecked);
+                  return newValue;
+                });
                 handleInputChange(name, type, '');
               }}
               className="mr-2 mt-[9px]"

@@ -312,19 +312,19 @@ export class Picto {
 
     const baseFontSize = 24;
     const w = this.textPadding * 2 + text.length * this.pxPerChar;
-    const cy = (picto.eventHeight - baseFontSize) / this.scale;
+    const cy = (this.eventHeight - baseFontSize) / this.scale;
 
     // Рамка
     this.drawRect(ctx, x, y, w, this.eventHeight, bgColor, fgColor, opacity);
 
-    const fontSize = baseFontSize / picto.scale;
+    const fontSize = baseFontSize / this.scale;
     ctx.save();
     ctx.font = `${fontSize}px/0 monospace`;
     ctx.fillStyle = fgColor;
     ctx.strokeStyle = fgColor;
     ctx.textBaseline = 'hanging';
 
-    const p = 5 / picto.scale;
+    const p = 5 / this.scale;
     ctx.fillText(text, x + p, y + cy - p);
 
     ctx.restore();
@@ -385,9 +385,9 @@ export class Picto {
     }
     if (ps.parameter) {
       const baseFontSize = 12;
-      const cy = (picto.eventHeight - baseFontSize) / this.scale;
+      const cy = (this.eventHeight - baseFontSize) / this.scale;
       const cx = (this.eventWidth - 5) / this.scale;
-      const fontSize = baseFontSize / picto.scale;
+      const fontSize = baseFontSize / this.scale;
       ctx.save();
       ctx.font = `${fontSize}px/0 monospace`;
       ctx.fillStyle = fgColor;
@@ -407,4 +407,4 @@ export class Picto {
 /**
  * Глобальный экземпляр отрисовщика пиктограмм.
  */
-export const picto = new Picto();
+// export const picto = new Picto();

@@ -1,7 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { serializeTransitionActions } from '@renderer/lib/data/GraphmlBuilder';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
-import { Transition, picto } from '@renderer/lib/drawable';
+import { Transition } from '@renderer/lib/drawable';
 import { stateStyle, transitionStyle } from '@renderer/lib/styles';
 import { Drawable } from '@renderer/lib/types';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
@@ -75,17 +75,18 @@ export class Label implements Drawable {
     if (!label || !platform[this.parent.smId]) return;
 
     const { x, y, width, height } = this.parent.drawBounds;
-    const eventMargin = picto.eventMargin;
+    const eventMargin = this.app.view.picto.eventMargin;
     const p = 15 / this.app.controller.scale;
     const px = x + p;
     const py = y + p;
-    const yDx = picto.eventHeight + 10;
+    const yDx = this.app.view.picto.eventHeight + 10;
     const fontSize = stateStyle.titleFontSize / this.app.controller.scale;
     const opacity = this.parent.data.selection ? 1.0 : 0.7;
 
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.app.controller.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.app.controller.scale - 30) / (this.app.view.picto.eventWidth + 5)) -
+        1
     );
 
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
@@ -111,7 +112,7 @@ export class Label implements Drawable {
       platform[this.parent.smId].drawEvent(ctx, trigger, x + p, y + p);
       ctx.closePath();
     } else {
-      picto.drawPicto(ctx, x + p, y + p, {
+      this.app.view.picto.drawPicto(ctx, x + p, y + p, {
         rightIcon: 'condition',
       });
     }
@@ -124,7 +125,9 @@ export class Label implements Drawable {
         const ax = 1;
         const ay = 0;
         const aX =
-          px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.controller.scale;
+          px +
+          (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * ax) /
+            this.app.controller.scale;
         const aY = py + (ay * yDx) / this.app.controller.scale;
         platform[this.parent.smId].drawCondition(ctx, label.condition, aX, aY, opacity);
       }
@@ -137,7 +140,9 @@ export class Label implements Drawable {
         const ax = 1 + (actIdx % eventRowLength);
         const ay = 1 + Math.floor(actIdx / eventRowLength);
         const aX =
-          px + (eventMargin + (picto.eventWidth + eventMargin) * ax) / this.app.controller.scale;
+          px +
+          (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * ax) /
+            this.app.controller.scale;
         const aY = py + (ay * yDx) / this.app.controller.scale;
         platform[this.parent.smId].drawAction(ctx, data, aX, aY, opacity);
       });

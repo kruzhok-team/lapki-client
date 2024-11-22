@@ -22,7 +22,7 @@ export const emptyControllerData = () => ({
   stateMachinesSub: {},
 });
 
-export type ControllerDataPropertyName = 'stateMachinesSub' | 'visual' | 'platform';
+export type ControllerDataPropertyName = 'stateMachinesSub' | 'visual' | 'platform' | 'scale';
 
 export type ControllerDataListeners = { [key in ControllerDataPropertyName]: (() => void)[] };
 
@@ -54,6 +54,11 @@ export interface ChangeSelectionParams {
 export interface SetMountedStatusParams {
   canvasId: string;
   status: boolean;
+}
+
+export interface ChangeScale {
+  canvasId: string;
+  value: number;
 }
 
 export interface RenameComponentParams {

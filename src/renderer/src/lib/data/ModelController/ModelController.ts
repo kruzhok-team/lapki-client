@@ -199,7 +199,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Большинство событий исходит от ModelController, но сигналы, связаные с событиями, отслеживаемыми в Shape,
   // такие как клик, двойной клик перемещением в определенное место, вызываются в контроллерах
   private watch(controller: CanvasController) {
-    controller.on('changeScale', this.changeScale);
+    // controller.on('changeScale', this.changeScale);
     controller.on('isMounted', this.setMountStatus);
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
@@ -225,7 +225,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   private unwatch(controller: CanvasController) {
-    controller.off('changeScale', this.changeScale);
+    // controller.off('changeScale', this.changeScale);
     controller.off('isMounted', this.setMountStatus);
     controller.off('linkState', this.linkState);
     controller.off('selectState', this.selectState);
@@ -264,17 +264,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.triggerDataUpdate('canvas.isMounted');
   };
 
-  changeScale = (value: number, replace = false, onlyModel: boolean = false) => {
+  changeScale = (value: number, replace = false) => {
     this.model.setScale(replace ? value : this.model.data.scale + value);
-    // for (const controller of Object.values(this.controllers)) {
-    //   const controller = this.controllers[this.model.data.headControllerId];
-    //   controller.view.changeScale(value, replace);
-    // }
-    if (!onlyModel) {
-      const controller = this.controllers[this.model.data.headControllerId];
-      controller.view.changeScale(value, replace);
-    }
-    // this.emit('changeScale', replace ? value : this.model.data.scale + value);
+    const controller = this.controllers[this.model.data.headControllerId];
+    this.emit('changeScale', {
+      value: replace ? value : controller.scale + value,
+      canvasId: this.model.data.headControllerId,
+    });
   };
 
   initPlatform() {
@@ -647,7 +643,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   editStateMachine(smId: string, data: StateMachineData) {
-    debugger;
     this.model.editStateMachine(smId, data);
     this.emit('editStateMachine', { id: smId, ...data });
   }

@@ -15,21 +15,20 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
-  const scale = modelController.model.useData('', 'scale');
+  const scale = controller.useData('scale');
   const isMounted = modelController.model.useData('', 'canvas.isMounted', controller.id);
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
 
   const handleZoomOut = () => {
-    modelController.changeScale(0.1);
+    controller.view.changeScale(0.1);
   };
 
   const handleZoomIn = () => {
-    modelController.changeScale(-0.1);
+    controller.view.changeScale(-0.1);
   };
 
   const handleReset = () => {
-    debugger;
-    modelController.changeScale(1, true);
+    controller.view.changeScale(1, true);
   };
 
   const handleCanvasGrid = () => {

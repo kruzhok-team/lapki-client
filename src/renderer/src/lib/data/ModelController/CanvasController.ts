@@ -692,6 +692,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         }
         if (initData[smId] && (initData[smId] as StateMachine).position) {
           this.initData[smId].position = (initData[smId] as StateMachine).position;
+          this.initData[smId].name = (initData[smId] as StateMachine).name;
         }
         break;
       default:

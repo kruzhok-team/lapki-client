@@ -83,7 +83,7 @@ export class Flasher extends ClientWS {
     this.setErrorMessage = setErrorMessage;
     this.setFlashResult = setFlashResult;
   }
-  /*
+  /**
     Добавляет устройство в список устройств
 
     @param {device} устройство для добавления
@@ -113,7 +113,6 @@ export class Flasher extends ClientWS {
     });
   }
 
-  // обновление порта (только для ArduinoDevice)
   /**
    * обновление порта (сообщение приходит только для {@link ArduinoDevice})
    * @param port сообщение от сервера об обновлении порта
@@ -261,6 +260,12 @@ export class Flasher extends ClientWS {
           `Соединение с сервером ${this.host}:${this.port} прервано неожиданно, возможно сеть недоступна или произошёл сбой на сервере.`
         );
       }
+    }
+    if (this.currentFlashingDevice) {
+      this.flashingEnd(
+        'Потеряно соединение с сервером. Статус загрузки прошивки неизвестен.',
+        undefined
+      );
     }
     super.closeHandler(host, port, event);
   }

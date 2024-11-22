@@ -11,6 +11,23 @@ export const getMatrixDimensions = (matrixType: string): Dimensions => {
   };
 };
 
+export const createEmptyMatrix = (matrixType: string): Matrix => {
+  const { width, height } = getMatrixDimensions(matrixType);
+  const emptyMatrixValue: number[][] = [];
+  for (let row = 0; row != height; row += 1) {
+    emptyMatrixValue.push([]);
+    for (let col = 0; col != width; col += 1) {
+      emptyMatrixValue[row].push(0);
+    }
+  }
+
+  return {
+    values: emptyMatrixValue,
+    width,
+    height,
+  };
+};
+
 export const buildMatrix = (matrix: Matrix) => {
   let strMatrix = '{';
   for (let row = 0; row != matrix.height; row += 1) {

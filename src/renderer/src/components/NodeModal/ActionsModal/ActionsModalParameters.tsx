@@ -4,7 +4,7 @@ import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormField
 import { Select } from '@renderer/components/UI';
 import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
-import { formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
+import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
 
 import { MatrixWidget } from './MatrixWidget';
 
@@ -75,6 +75,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
         if (type.startsWith('Matrix')) {
           const { width, height } = getMatrixDimensions(type);
+          if (!value) {
+            const newMatrix = createEmptyMatrix(type);
+            parameters[name] = newMatrix.values;
+            setParameters({ ...parameters });
+          }
           if (Array.isArray(value) && Array.isArray(value[0])) {
             return (
               <ComponentFormFieldLabel

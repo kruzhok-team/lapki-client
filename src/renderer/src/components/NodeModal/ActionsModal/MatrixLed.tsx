@@ -17,7 +17,7 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({ colIndex, rowIndex, value,
   return (
     <button
       className={twMerge(
-        'm-1 h-16 w-16 rounded border border-border-contrast',
+        'm-1 h-16 w-16 rounded border-2 border-border-contrast',
         value === 0 && 'bg-matrix-inactive',
         value >= 1 && 'bg-matrix-active'
       )}

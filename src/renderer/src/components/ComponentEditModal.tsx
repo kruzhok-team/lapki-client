@@ -168,7 +168,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       onSide={handleDelete}
     >
       <ComponentFormFields
-        showMainData={!proto.singletone}
+        showMainData={!proto.singletone && !platform!.staticComponents}
         protoParameters={proto.constructorParameters}
         protoInitializationParameters={proto.initializationParameters}
         name={name}

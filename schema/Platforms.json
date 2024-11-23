@@ -12,6 +12,12 @@
             "type": "string"
           },
           "type": "array"
+        },
+        {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
         }
       ]
     },
@@ -245,6 +251,9 @@
         "standardVersion": {
           "type": "string"
         },
+        "staticActionDelimeter": {
+          "type": "string"
+        },
         "staticComponents": {
           "type": "boolean"
         },
@@ -266,6 +275,7 @@
         "delimeter",
         "version",
         "visual",
+        "staticActionDelimeter",
         "components"
       ],
       "type": "object"

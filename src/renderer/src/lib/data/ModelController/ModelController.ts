@@ -205,6 +205,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Большинство событий исходит от ModelController, но сигналы, связаные с событиями, отслеживаемыми в Shape,
   // такие как клик, двойной клик перемещением в определенное место, вызываются в контроллерах
   private watch(controller: CanvasController) {
+    // controller.on('changeScale', this.changeScale);
     controller.on('isMounted', this.setMountStatus);
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
@@ -230,6 +231,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   private unwatch(controller: CanvasController) {
+    // controller.off('changeScale', this.changeScale);
     controller.off('isMounted', this.setMountStatus);
     controller.off('linkState', this.linkState);
     controller.off('selectState', this.selectState);
@@ -268,12 +270,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.triggerDataUpdate('canvas.isMounted');
   };
 
-  changeScale(diff: number, replace = false) {
-    this.model.setScale(replace ? diff : this.model.data.scale + diff);
+  changeScale = (value: number, replace = false) => {
+    this.model.setScale(replace ? value : this.model.data.scale + value);
     const controller = this.controllers[this.model.data.headControllerId];
-    controller.view.changeScale(diff, replace);
-    this.emit('changeScale', replace ? diff : this.model.data.scale + diff);
-  }
+    this.emit('changeScale', {
+      value: replace ? value : controller.scale + value,
+      canvasId: this.model.data.headControllerId,
+    });
+  };
 
   initPlatform() {
     //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController

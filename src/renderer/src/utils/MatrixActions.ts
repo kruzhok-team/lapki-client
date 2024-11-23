@@ -55,5 +55,10 @@ export const parseMatrixFromString = (
       parsedValues.slice(row * width, (row + 1) * width).map((value) => Number(value))
     );
   }
+
+  if (matrixValues.length !== height || !matrixValues.every((value) => value.length === width))
+    throw new Error(
+      `Ошибка парсинга матрицы (${values}) - количество значений не соответствует заявленному типу (Matrix${width}x${height})!`
+    );
   return matrixValues;
 };

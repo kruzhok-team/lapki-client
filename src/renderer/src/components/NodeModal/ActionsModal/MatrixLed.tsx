@@ -8,12 +8,6 @@ interface MatrixLedProps {
 }
 
 export const MatrixLed: React.FC<MatrixLedProps> = ({ colIndex, rowIndex, value, onChange }) => {
-  const handleClick = (e: React.MouseEvent) => {
-    const newValue = value === 0 ? 1 : 0;
-    e.stopPropagation();
-    onChange(rowIndex, colIndex, newValue);
-  };
-
   return (
     <button
       className={twMerge(
@@ -22,7 +16,7 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({ colIndex, rowIndex, value,
         value >= 1 && 'bg-matrix-active'
       )}
       type="button"
-      onClick={handleClick}
+      onClick={onChange.bind(this, rowIndex, colIndex, value === 0 ? 1 : 0)}
     ></button>
   );
 };

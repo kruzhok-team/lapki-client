@@ -318,36 +318,39 @@ export class PlatformManager {
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
     let argQuery: string = '';
-
+    const compoData = this.resolveComponent(ac.component);
+    const component = compoData.component;
+    const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
     if (ac.component === 'System') {
       rightIcon = ac.method;
     } else {
-      const compoData = this.resolveComponent(ac.component);
-      const component = compoData.component;
       leftIcon = {
         ...compoData,
         icon: this.getComponentIcon(component),
       };
       rightIcon = this.getActionIcon(component, ac.method);
 
-      const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
       if (parameterList && parameterList.length > 0) {
         argQuery = parameterList[0].name;
       }
     }
 
     let parameter: string | undefined = undefined;
-    if (argQuery && ac.args) {
+    if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
       if (typeof paramValue === 'undefined') {
         parameter = '?!';
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
-      } else if (Array.isArray(paramValue) && Array.isArray(paramValue[0])) {
+      } else if (
+        typeof parameterList[0].type === 'string' &&
+        parameterList[0].type.startsWith('Matrix')
+      ) {
+        const { width, height } = getMatrixDimensions(parameterList[0].type);
         parameter = buildMatrix({
           values: paramValue,
-          width: paramValue.length,
-          height: paramValue[0].length,
+          width: width,
+          height: height,
         });
         if (parameter.length > 10) {
           parameter = parameter.slice(0, 10) + '...';

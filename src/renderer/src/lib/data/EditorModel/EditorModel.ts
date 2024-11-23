@@ -179,7 +179,6 @@ export class EditorModel {
             }
           }
         }
-        // debugger;
         this.data.isStale = true;
         this.dataListeners['isStale'].forEach((listener) => listener());
       }

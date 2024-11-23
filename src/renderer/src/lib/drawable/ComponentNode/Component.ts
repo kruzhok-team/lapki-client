@@ -3,7 +3,7 @@ import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, Point } from '@renderer/lib/types';
 import { getColor } from '@renderer/theme';
 
-import { MarkedIconData, picto } from '../Picto';
+import { MarkedIconData } from '../Picto';
 
 const fontSizeMark = 32;
 /**
@@ -65,8 +65,8 @@ export class DrawableComponent extends Shape {
     if (!platform || !this.icon) return;
 
     const { x, y, width, height } = this.drawBounds;
-    picto.drawRect(ctx, x, y, width, height, undefined, undefined, 50);
-    picto.drawImage(
+    this.app.view.picto.drawRect(ctx, x, y, width, height, undefined, undefined, 50);
+    this.app.view.picto.drawImage(
       ctx,
       this.icon,
       {

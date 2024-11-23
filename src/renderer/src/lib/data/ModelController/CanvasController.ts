@@ -11,6 +11,7 @@ import {
   ChangeNoteText,
   ChangeNoteTextColorParams,
   ChangePosition,
+  ChangeScale,
   ChangeSelectionParams,
   ChangeStateNameParams,
   ChangeStateParams,
@@ -136,7 +137,7 @@ export type CanvasControllerEvents = {
   deleteSelected: string;
 
   isMounted: SetMountedStatusParams;
-  changeScale: number;
+  changeScale: ChangeScale;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
 
@@ -431,8 +432,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.states.unwatchAll();
   }
 
-  changeScale = (value: number) => {
-    this.scale = value;
+  changeScale = (args: ChangeScale) => {
+    if (args.canvasId !== this.id) return;
+
+    this.scale = args.value;
+    this.view.isDirty = true;
+    this.triggerDataUpdate('scale');
   };
 
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
@@ -716,6 +721,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       if (typeof platformManager === 'undefined') {
         throw Error("couldn't init platform " + platform);
       }
+      platformManager.picto = this.view.picto;
       this.platform[smId] = platformManager;
       this.triggerDataUpdate('platform');
     }
@@ -962,6 +968,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         if (typeof platform === 'undefined') {
           throw Error("couldn't init platform " + platformName);
         }
+        platform.picto = this.view.picto;
         this.platform[smId] = platform;
       }
     }
@@ -1014,14 +1021,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   // Отлавливание дефолтных событий для контроллера
   watch() {
     this.model.on('deleteStateMachine', this.deleteStateMachine);
-    this.model.on('loadData', () => this.loadData());
-    this.model.on('initEvents', () => this.transitions.initEvents());
-    this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));
-    this.model.on('changeScale', (value) => {
-      this.scale = value;
-      this.app.view.isDirty = true;
-    });
-    this.model.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
+    this.model.on('loadData', this.loadData);
+    this.model.on('initEvents', this.transitions.initEvents);
+    this.model.on('deleteSelected', this.deleteSelected);
+    this.model.on('changeScale', this.changeScale);
+    this.model.on('isMounted', this.setMountStatus);
   }
 
   private setMountStatus = (args: SetMountedStatusParams) => {

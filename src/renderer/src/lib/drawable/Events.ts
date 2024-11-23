@@ -1,4 +1,4 @@
-import { State, picto } from '@renderer/lib/drawable';
+import { State } from '@renderer/lib/drawable';
 import { Dimensions, Point } from '@renderer/lib/types/graphics';
 import { isPointInRectangle } from '@renderer/lib/utils';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
@@ -26,17 +26,21 @@ export class Events {
   selection?: EventSelection;
 
   minEventRow = 3;
-
-  minWidth = 15 + (picto.eventWidth + 5) * (this.minEventRow + 1);
-  minHeight = picto.eventHeight;
-
+  minWidth: number;
+  minHeight: number;
   constructor(private app: CanvasEditor, public parent: State) {
+    this.minWidth = 15 + (this.picto.eventWidth + 5) * (this.minEventRow + 1);
+    this.minHeight = this.picto.eventHeight;
     this.dimensions = {
       width: this.minWidth,
       height: this.minHeight,
     };
 
     this.update();
+  }
+
+  get picto() {
+    return this.app.controller.view.picto;
   }
 
   get data() {
@@ -74,23 +78,23 @@ export class Events {
       }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
     });
-    this.dimensions.height = picto.eventHeight * eventRows + (eventRows - 1) * 10 + 10 * 2;
+    this.dimensions.height = this.picto.eventHeight * eventRows + (eventRows - 1) * 10 + 10 * 2;
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     const { x, y, width } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / this.app.controller.scale;
 
-    const eventRowLength = Math.max(3, Math.floor((width - 30) / (picto.eventWidth + 5)) - 1);
+    const eventRowLength = Math.max(3, Math.floor((width - 30) / (this.picto.eventWidth + 5)) - 1);
 
     const px = 15 / this.app.controller.scale;
     const py = 10 / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
-    const yDx = picto.eventHeight + 10;
+    const yDx = this.picto.eventHeight + 10;
 
-    const pW = picto.eventWidth / picto.scale;
-    const pH = picto.eventHeight / picto.scale;
+    const pW = this.picto.eventWidth / this.picto.scale;
+    const pH = this.picto.eventHeight / this.picto.scale;
 
     let eventRow = 0;
 
@@ -116,7 +120,7 @@ export class Events {
         const ax = 1 + (actionIdx % eventRowLength);
         const ay = eventRow + Math.floor(actionIdx / eventRowLength);
         const actRect = {
-          x: baseX + (5 + (picto.eventWidth + 5) * ax) / picto.scale,
+          x: baseX + (5 + (this.picto.eventWidth + 5) * ax) / this.picto.scale,
           y: baseY + (ay * yDx) / this.app.controller.scale,
           width: pW,
           height: pH,
@@ -162,14 +166,14 @@ export class Events {
 
     const eventRowLength = Math.max(
       3,
-      Math.floor((width * this.app.controller.scale - 30) / (picto.eventWidth + 5)) - 1
+      Math.floor((width * this.app.controller.scale - 30) / (this.picto.eventWidth + 5)) - 1
     );
 
     const px = 15 / this.app.controller.scale;
     const py = 10 / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
-    const yDx = picto.eventHeight + 10;
+    const yDx = this.picto.eventHeight + 10;
 
     let eventRow = 0;
     ctx.beginPath();
@@ -179,7 +183,7 @@ export class Events {
       const eY = baseY + (eventRow * yDx) / this.app.controller.scale;
       if (typeof this.selection !== 'undefined') {
         if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
-          picto.drawCursor(ctx, eX, eY);
+          this.picto.drawCursor(ctx, eX, eY);
         }
       }
 
@@ -192,7 +196,7 @@ export class Events {
         platform.drawCondition(
           ctx,
           events.condition,
-          eX + (picto.eventWidth + 5) / picto.scale,
+          eX + (this.picto.eventWidth + 5) / this.picto.scale,
           eY
         );
         ctx.closePath();
@@ -202,11 +206,11 @@ export class Events {
         events.do.forEach((act, actIdx) => {
           const ax = 1 + (actIdx % eventRowLength);
           const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
-          const aX = baseX + ((picto.eventWidth + 5) * ax) / picto.scale;
+          const aX = baseX + ((this.picto.eventWidth + 5) * ax) / this.picto.scale;
           const aY = baseY + (ay * yDx) / this.app.controller.scale;
           if (typeof this.selection !== 'undefined') {
             if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-              picto.drawCursor(ctx, aX, aY);
+              this.picto.drawCursor(ctx, aX, aY);
             }
           }
           platform.drawAction(ctx, act, aX, aY);

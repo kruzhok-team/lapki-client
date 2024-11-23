@@ -53,6 +53,7 @@ import {
   FinalState,
   emptyStateMachine,
   Action,
+  Component,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -180,13 +181,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!sm) return;
     // const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
     controller.addStateMachineId(smId);
+    /* 
+      Порядок важен, так как данные инициализируются сразу
+      Если инициализировать сначала переходы, то будет ошибка,
+      так как инстансы source и target еще не существуют
+    */
     controller.subscribe(smId, 'choice', sm.choiceStates);
     controller.subscribe(smId, 'final', sm.finalStates);
     controller.subscribe(smId, 'state', sm.states);
     controller.subscribe(smId, 'note', sm.notes);
-    controller.subscribe(smId, 'transition', sm.transitions);
     controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
+    controller.subscribe(smId, 'transition', sm.transitions);
     controller.watch();
 
     if (!sm.visual) {
@@ -655,7 +661,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createStateMachine',
-        args: { smId, ...data },
+        args: { smId, ...structuredClone(data) },
       });
     }
 
@@ -1214,7 +1220,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     this.model.editComponent(smId, id, parameters);
     if (newName) {
-      this.renameComponent(smId, id, newName);
+      this.renameComponent(smId, id, newName, { ...prevComponent });
     }
 
     if (canUndo) {
@@ -1277,9 +1283,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // this.scheme.view.isDirty = true;
   }
 
-  private renameComponent(smId: string, name: string, newName: string) {
+  private renameComponent(smId: string, name: string, newName: string, data: Component) {
     this.model.changeComponentName(smId, name, newName);
-    this.emit('renameComponent', { smId: smId, id: name, newName: newName });
+    this.emit('renameComponent', { ...data, smId: smId, id: name, newName: newName });
   }
 
   private getEachByStateId(smId: string, stateId: string) {

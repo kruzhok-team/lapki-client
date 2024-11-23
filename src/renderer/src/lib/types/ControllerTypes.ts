@@ -7,6 +7,7 @@ import {
   Note as NoteData,
   InitialState as InitialStateData,
   StateMachine,
+  Component,
 } from '@renderer/types/diagram';
 
 import { Point } from './graphics';
@@ -60,6 +61,8 @@ export interface RenameComponentParams {
   smId: string;
   id: string;
   newName: string;
+  type: string;
+  parameters: ComponentData['parameters'];
 }
 
 export interface DeleteStateMachineParams {

@@ -1,7 +1,12 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
-import { ChangeSelectionParams, EditComponentParams, Layer } from '@renderer/lib/types';
+import {
+  ChangeSelectionParams,
+  EditComponentParams,
+  Layer,
+  RenameComponentParams,
+} from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangePosition,
@@ -45,6 +50,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   createComponent = (args: CreateComponentParams) => {
+    if (this.items.get(args.name)) return;
     const platform = this.controller.platform[args.smId];
     if (!platform) return;
     const icon = platform.getComponentIcon(args.type);
@@ -99,6 +105,22 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
     return component;
   };
+
+  renameComponent(args: RenameComponentParams) {
+    const component = this.items.get(args.id);
+    if (!component) return;
+    this.controller.deleteComponent(args);
+    // (L140-beep) скорее всего придется потом возиться с переходами
+    // на схематехническом экране
+    this.controller.createComponent({
+      smId: args.smId,
+      type: args.type,
+      name: args.newName,
+      position: component.position,
+      parameters: args.parameters,
+      order: 0,
+    });
+  }
 
   changeComponentPosition = (args: ChangePosition) => {
     const { id, endPosition } = args;

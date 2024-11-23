@@ -153,9 +153,6 @@ export class Initializer {
   }
 
   initComponents(smId: string, components: { [id: string]: Component }) {
-    if (!this.platform[smId]) {
-      this.controller.initPlatformBySmId(smId);
-    }
     for (const name in components) {
       const component = components[name];
       this.platform[smId].nameToVisual.set(name, {

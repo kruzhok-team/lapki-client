@@ -425,7 +425,7 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.editComponent.bind(
       sM,
       {
-        smId: 'G',
+        smId: args.smId,
         type: args.type,
         id: args.newName ?? args.id,
         parameters: prevComponent.parameters,

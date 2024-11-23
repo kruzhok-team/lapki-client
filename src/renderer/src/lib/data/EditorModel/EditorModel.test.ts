@@ -4,10 +4,7 @@ import { EditorModel } from './EditorModel';
 
 import { emptyElements } from '../../../types/diagram';
 
-const em = new EditorModel(
-  () => 42,
-  () => 42
-);
+const em = new EditorModel(() => 42);
 
 em.init('basename', 'name', emptyElements());
 

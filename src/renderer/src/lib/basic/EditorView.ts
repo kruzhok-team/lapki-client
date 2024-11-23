@@ -100,7 +100,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
 
-    const scale = this.app.controller.model.model.data.scale;
+    const scale = this.app.controller.scale;
     const offset = this.app.controller.model.model.data.offset;
 
     let size = 30;
@@ -155,7 +155,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   setScale(value: number) {
-    this.app.controller.model.changeScale(value, true);
+    this.app.controller.setScale(value);
     this.picto.scale = value;
     this.isDirty = true;
   }

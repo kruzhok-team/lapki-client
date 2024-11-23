@@ -11,7 +11,6 @@ import {
   ChangeNoteText,
   ChangeNoteTextColorParams,
   ChangePosition,
-  ChangeScale,
   ChangeSelectionParams,
   ChangeStateNameParams,
   ChangeStateParams,
@@ -38,7 +37,6 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
-  SetMountedStatusParams,
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
@@ -136,8 +134,6 @@ export type CanvasControllerEvents = {
   selectTransition: SelectDrawable;
   deleteSelected: string;
 
-  isMounted: SetMountedStatusParams;
-  changeScale: ChangeScale;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
 
@@ -409,16 +405,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.off('initPlatform', this.initPlatform);
     this.off('initEvents', this.transitions.initEvents);
     this.off('deleteSelected', this.deleteSelected);
-    this.off('changeScale', this.changeScale);
-    this.off('isMounted', this.setMountStatus);
 
     this.states.unwatchAll();
   }
 
-  changeScale = (args: ChangeScale) => {
-    if (args.canvasId !== this.id) return;
-
-    this.scale = args.value;
+  setScale = (value: number) => {
+    this.scale = value;
     this.view.isDirty = true;
     this.triggerDataUpdate('scale');
   };
@@ -1013,13 +1005,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.model.on('loadData', this.loadData);
     this.model.on('initEvents', this.transitions.initEvents);
     this.model.on('deleteSelected', this.deleteSelected);
-    this.model.on('changeScale', this.changeScale);
-    this.model.on('isMounted', this.setMountStatus);
   }
 
-  private setMountStatus = (args: SetMountedStatusParams) => {
-    if (!this || args.canvasId !== this.app.id) return;
-    this.isMounted = args.status;
+  setMountStatus = (status: boolean) => {
+    this.isMounted = status;
+    this.triggerDataUpdate('isMounted');
   };
 
   private linkState = (args: LinkStateParams) => {

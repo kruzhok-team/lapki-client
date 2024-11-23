@@ -15,7 +15,6 @@ import {
   EditComponentParams,
   LinkStateParams,
   SelectDrawable,
-  SetMountedStatusParams,
   StatesControllerDataStateType,
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
@@ -90,15 +89,9 @@ type StateType = (typeof StateTypes)[number];
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
   //! Порядок создания важен, так как контроллер при инициализации использует представление
-  model = new EditorModel(
-    () => {
-      this.initPlatform();
-    },
-    () => {
-      this.loadData();
-      this.history.clear();
-    }
-  );
+  model = new EditorModel(() => {
+    this.initPlatform();
+  });
   schemeEditorId: string | null = null;
   files = new FilesManager(this);
   history = new History(this);
@@ -132,19 +125,21 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     editor.setController(controller);
     this.controllers = {};
     this.controllers[''] = controller;
-    this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
+    this.model.data.canvas[''] = { isInitialized: false };
     this.model.changeHeadControllerId('');
     this.schemeEditorId = null;
   }
 
   reset() {
     for (const controllerId in this.controllers) {
-      if (this.model.data.canvas[controllerId].isMounted) {
+      if (this.controllers[controllerId].isMounted) {
         const controller = this.controllers[controllerId];
         this.unwatch(controller);
       }
     }
     this.emptyController();
+    this.loadData();
+    this.history.clear();
   }
 
   // Берем машины состояний, который обрабатываются главным канвасом
@@ -205,8 +200,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Большинство событий исходит от ModelController, но сигналы, связаные с событиями, отслеживаемыми в Shape,
   // такие как клик, двойной клик перемещением в определенное место, вызываются в контроллерах
   private watch(controller: CanvasController) {
-    // controller.on('changeScale', this.changeScale);
-    controller.on('isMounted', this.setMountStatus);
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
     controller.on('selectNote', this.selectNote);
@@ -231,8 +224,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   private unwatch(controller: CanvasController) {
-    // controller.off('changeScale', this.changeScale);
-    controller.off('isMounted', this.setMountStatus);
     controller.off('linkState', this.linkState);
     controller.off('selectState', this.selectState);
     controller.off('selectNote', this.selectNote);
@@ -259,24 +250,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     } else {
       this.emit('openCreateTransitionModal', args);
     }
-  };
-
-  private setMountStatus = (args: SetMountedStatusParams) => {
-    const canvas = this.model.data.canvas[args.canvasId];
-    if (!canvas) {
-      return;
-    }
-    canvas.isMounted = args.status;
-    this.model.triggerDataUpdate('canvas.isMounted');
-  };
-
-  changeScale = (value: number, replace = false) => {
-    this.model.setScale(replace ? value : this.model.data.scale + value);
-    const controller = this.controllers[this.model.data.headControllerId];
-    this.emit('changeScale', {
-      value: replace ? value : controller.scale + value,
-      canvasId: this.model.data.headControllerId,
-    });
   };
 
   initPlatform() {
@@ -355,8 +328,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       headCanvas = canvasId;
       this.model.data.canvas[canvasId] = {
         isInitialized: true,
-        isMounted: false,
-        prevMounted: false,
       };
     }
     this.model.changeHeadControllerId(headCanvas);
@@ -391,8 +362,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[schemeScreenId] = schemeScreenController;
     this.model.data.canvas[schemeScreenId] = {
       isInitialized: true,
-      isMounted: false,
-      prevMounted: false,
     };
     this.watch(schemeScreenController);
     this.setupSchemeScreenEditorController(stateMachines, schemeScreenController);
@@ -642,8 +611,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[canvasId] = controller;
     this.model.data.canvas[canvasId] = {
       isInitialized: true,
-      isMounted: false,
-      prevMounted: false,
     };
     this.model.createStateMachine(smId, data);
     this.watch(controller);
@@ -1469,14 +1436,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     result =
       (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
-        this.model.data.scale +
+        this.controllers[this.model.data.headControllerId].scale +
       bottomChildContainerHeight;
 
     return result;
   }
 
   getComputedHeight(object: State | InitialState | FinalState | ChoiceState) {
-    return object.dimensions.height / this.model.data.scale;
+    return object.dimensions.height / this.controllers[this.model.data.headControllerId].scale;
   }
 
   getComputedDimensions(smId: string, stateId: string, stateType: StateType) {
@@ -1496,8 +1463,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { x, y } = this.compoundStatePosition(smId, stateId, stateType);
 
     return {
-      x: (x + this.model.data.offset.x) / this.model.data.scale,
-      y: (y + this.model.data.offset.y) / this.model.data.scale,
+      x: (x + this.model.data.offset.x) / this.controllers[this.model.data.headControllerId].scale,
+      y: (y + this.model.data.offset.y) / this.controllers[this.model.data.headControllerId].scale,
     };
   }
 
@@ -1527,7 +1494,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm[stateType][stateId];
 
-    let width = state.dimensions.width / this.model.data.scale;
+    let width = state.dimensions.width / this.controllers[this.model.data.headControllerId].scale;
 
     const children = this.getEachObjectByParentId(smId, stateId);
     const notEmptyChildrens = Object.values(children).filter(
@@ -1561,7 +1528,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         cx +
           this.getComputedDimensions(smId, rightChildrenId, rightChildrenType).width -
           x +
-          CHILDREN_PADDING / this.model.data.scale
+          CHILDREN_PADDING / this.controllers[this.model.data.headControllerId].scale
       );
     }
 

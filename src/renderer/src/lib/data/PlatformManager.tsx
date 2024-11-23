@@ -58,7 +58,7 @@ export class PlatformManager {
    * переданное название типом компонента,
    * а данные метки – пустыми.
    */
-  private __picto!: Picto;
+  private __picto: Picto | undefined = undefined;
   nameToVisual: Map<string, VisualCompoData> = new Map();
 
   componentToIcon: Map<string, string> = new Map();

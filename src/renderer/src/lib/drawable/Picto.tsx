@@ -403,8 +403,3 @@ export class Picto {
     }
   }
 }
-
-/**
- * Глобальный экземпляр отрисовщика пиктограмм.
- */
-// export const picto = new Picto();

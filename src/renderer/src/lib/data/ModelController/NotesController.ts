@@ -182,15 +182,21 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.changeNotePosition({ id: note.id, endPosition: e.dragEndPosition });
   };
 
+  /*
+  Мы вынесли это сюда, потому что EdgeHandlers подписывается на события мыши, которой не существует
+  на момент инициализации данных, из-за чего происходил краш IDE. И теперь биндим EdgeHandlers в момент маунта канваса.
+  */
+  bindEdgeHandlers(note: Note) {
+    note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
+    note.edgeHandlers.bindEvents();
+  }
+
   watch(note: Note) {
     note.on('mousedown', this.handleMouseDown.bind(this, note));
     note.on('dblclick', this.handleDoubleClick.bind(this, note));
     note.on('mouseup', this.handleMouseUpOnNote.bind(this, note));
     note.on('contextmenu', this.handleContextMenu.bind(this, note.id));
     note.on('dragend', this.handleDragEnd.bind(this, note));
-
-    note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
-    note.edgeHandlers.bindEvents();
   }
 
   unwatch(note: Note) {

@@ -65,6 +65,8 @@ export interface RenameComponentParams {
   smId: string;
   id: string;
   newName: string;
+  type: string;
+  parameters: ComponentData['parameters'];
 }
 
 export interface DeleteStateMachineParams {

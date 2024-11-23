@@ -188,6 +188,7 @@ export type CreateEventParams = {
 export type CreateComponentParams = ComponentData & {
   name: string;
   smId: string;
+  parameters: { [id: string]: string };
   placeInCenter?: boolean;
 };
 

@@ -16,6 +16,8 @@ import {
   CreateFinalStateParams,
   CreateChoiceStateParams,
   SwapComponentsParams,
+  CreateComponentParams,
+  DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';
 import { roundPoint } from '@renderer/lib/utils';
 import {
@@ -28,11 +30,10 @@ import {
   Event,
   Component,
   EventData,
+  StateMachine,
 } from '@renderer/types/diagram';
 
 import { ModelController } from './ModelController';
-
-// import { DrawableStateMachine } from '../drawable/StateMachineNode';
 
 export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
@@ -61,6 +62,9 @@ export type PossibleActions = {
     startPosition: Point;
     endPosition: Point;
   };
+
+  createStateMachine: { smId: string } & StateMachine;
+  deleteStateMachine: { smId: string } & StateMachine;
 
   createFinalState: CreateFinalStateParams & { newStateId: string };
   deleteFinalState: { smId: string; id: string; stateData: FinalStateData };
@@ -100,8 +104,8 @@ export type PossibleActions = {
     prevValue: EventAction;
   };
 
-  // createComponent: { args: CreateComponentParams };
-  // deleteComponent: { args: DeleteComponentParams; prevComponent: Component };
+  createComponent: { args: CreateComponentParams };
+  deleteComponent: { args: DeleteDrawableParams; prevComponent: Component };
   editComponent: { args: EditComponentParams; prevComponent: Component };
   changeComponentPosition: { smId: string; name: string; startPosition: Point; endPosition: Point };
   swapComponents: SwapComponentsParams;
@@ -109,24 +113,24 @@ export type PossibleActions = {
   createNote: { smId: string; id: string; params: CreateNoteParams };
   changeNotePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
   changeNoteText: { smId: string; id: string; text: string; prevText: string };
-  // changeNoteBackgroundColor: {
-  //   smId: string;
-  //   id: string;
-  //   color: string | undefined;
-  //   prevColor: string | undefined;
-  // };
-  // changeNoteTextColor: {
-  //   smId: string;
-  //   id: string;
-  //   color: string | undefined;
-  //   prevColor: string | undefined;
-  // };
-  // changeNoteFontSize: {
-  //   smId: string;
-  //   id: string;
-  //   fontSize: number | undefined;
-  //   prevFontSize: number | undefined;
-  // };
+  changeNoteBackgroundColor: {
+    smId: string;
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteTextColor: {
+    smId: string;
+    id: string;
+    color: string | undefined;
+    prevColor: string | undefined;
+  };
+  changeNoteFontSize: {
+    smId: string;
+    id: string;
+    fontSize: number | undefined;
+    prevFontSize: number | undefined;
+  };
   deleteNote: { smId: string; id: string; prevData: NoteData };
 };
 export type PossibleActionTypes = keyof PossibleActions;
@@ -150,6 +154,14 @@ type ActionDescriptions = {
 };
 
 export const actionFunctions: ActionFunctions = {
+  createStateMachine: (sM, args) => ({
+    redo: sM.createStateMachine.bind(sM, args.smId, { ...args }, false),
+    undo: sM.deleteStateMachine.bind(sM, args.smId, false),
+  }),
+  deleteStateMachine: (sM, args) => ({
+    redo: sM.deleteStateMachine.bind(sM, args.smId, false),
+    undo: sM.createStateMachine.bind(sM, args.smId, { ...args }, false),
+  }),
   createState: (sM, args) => ({
     redo: sM.createState.bind(
       sM,
@@ -394,26 +406,20 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }),
   }),
 
-  // TODO (L140-beep): удаление машин состояний
-  // deleteStateMachine: (sM, { args, prevStateMachine }) => ({
-  //   redo: sM.stateMachines.deleteStateMachine.bind(sM.stateMachines, args, false),
-  //   undo: sM.stateMachines.createStateMachineFromObject.bind(sM.stateMachines, prevStateMachine),
-  // }),
-
-  // createComponent: (sM, { args }) => ({
-  //   redo: sM.createComponent.bind(sM, args, false),
-  //   undo: sM.deleteComponent.bind(sM, { name: args.name, sm: 'G', purge: false }, false),
-  // }),
-  // deleteComponent: (sM, { args, prevComponent }) => ({
-  //   redo: sM.deleteComponent.bind(sM, args, false),
-  //   undo: sM.createComponent.bind(sM, { name: args.name, ...prevComponent }, false),
-  // }),
+  createComponent: (sM, { args }) => ({
+    redo: sM.createComponent.bind(sM, args, false),
+    undo: sM.deleteComponent.bind(sM, { id: args.name, smId: args.smId, purge: false }, false),
+  }),
+  deleteComponent: (sM, { args, prevComponent }) => ({
+    redo: sM.deleteComponent.bind(sM, args, false),
+    undo: sM.createComponent.bind(sM, { name: args.id, smId: args.smId, ...prevComponent }, false),
+  }),
   editComponent: (sM, { args, prevComponent }) => ({
     redo: sM.editComponent.bind(sM, args, false),
     undo: sM.editComponent.bind(
       sM,
       {
-        smId: 'G',
+        smId: args.smId,
         type: args.type,
         id: args.newName ?? args.id,
         parameters: prevComponent.parameters,
@@ -430,7 +436,7 @@ export const actionFunctions: ActionFunctions = {
     ),
     undo: sM.changeComponentPosition.bind(
       sM,
-      { smId, id: name, endPosition, startPosition },
+      { smId, id: name, startPosition: endPosition, endPosition: startPosition },
       false
     ),
   }),
@@ -463,6 +469,42 @@ export const actionFunctions: ActionFunctions = {
       false
     ),
   }),
+  changeNoteBackgroundColor: (sM, { smId, id, color, prevColor }) => ({
+    redo: sM.changeNoteBackgroundColor.bind(
+      sM,
+      { smId, id, backgroundColor: color, prevColor },
+      false
+    ),
+    undo: sM.changeNoteBackgroundColor.bind(
+      sM,
+      { smId, id, backgroundColor: prevColor, prevColor: color },
+      false
+    ),
+  }),
+  changeNoteTextColor: (sM, { smId, id, color, prevColor }) => ({
+    redo: sM.changeNoteTextColor.bind(
+      sM,
+      { smId, id, textColor: color, prevColor: prevColor },
+      false
+    ),
+    undo: sM.changeNoteTextColor.bind(
+      sM,
+      { smId, id, textColor: prevColor, prevColor: color },
+      false
+    ),
+  }),
+  changeNoteFontSize: (sM, { smId, id, fontSize, prevFontSize }) => ({
+    redo: sM.changeNoteFontSize.bind(
+      sM,
+      { smId, id, fontSize: fontSize, prevColor: prevFontSize },
+      false
+    ),
+    undo: sM.changeNoteFontSize.bind(
+      sM,
+      { smId, id, fontSize: prevFontSize, prevColor: fontSize },
+      false
+    ),
+  }),
   deleteNote: (sM, { smId, id, prevData }) => ({
     redo: sM.deleteNote.bind(sM, { smId, id }, false),
     undo: sM.createNote.bind(sM, { smId, id, ...prevData }, false),
@@ -470,6 +512,10 @@ export const actionFunctions: ActionFunctions = {
 };
 
 export const actionDescriptions: ActionDescriptions = {
+  createStateMachine: (args) => ({
+    name: 'Создание МС',
+    description: `Имя: ${args.name ?? args.smId}, платформа ${args.platform}`,
+  }),
   createState: (args) => ({
     name: 'Создание состояния',
     description: `Имя: ${args.name}`,
@@ -500,10 +546,10 @@ export const actionDescriptions: ActionDescriptions = {
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
   }),
-  // deleteStateMachine: (args) => ({
-  // name: 'Удаление машины состояний',
-  // description: `Id: ${args.args.id}`,
-  // }),
+  deleteStateMachine: (args) => ({
+    name: 'Удаление машины состояний',
+    description: `Id: "${args.smId}"\n name: "${args.name ?? 'Имя отсутствует'}"`,
+  }),
   createInitialState: () => ({
     name: 'Создание начального состояния',
     description: ``,
@@ -590,14 +636,14 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Id состояния: ${args.stateId}\nПозиция: ${JSON.stringify(args.event)}`,
   }),
 
-  // createComponent: ({ args }) => ({
-  //   name: 'Добавление компонента',
-  //   description: `Имя: ${args.name}\nТип: ${args.type}`,
-  // }),
-  // deleteComponent: ({ args, prevComponent }) => ({
-  //   name: 'Удаление компонента',
-  //   description: `Имя: ${args.name}\nТип: ${prevComponent.type}`,
-  // }),
+  createComponent: ({ args }) => ({
+    name: 'Добавление компонента',
+    description: `Имя: ${args.name}\nТип: ${args.type}`,
+  }),
+  deleteComponent: ({ args, prevComponent }) => ({
+    name: 'Удаление компонента',
+    description: `Имя: ${args.id}\nТип: ${prevComponent.type}`,
+  }),
   editComponent: ({ args, prevComponent }) => {
     const prev = { prevComponent, name: args.id };
     const newComp = { ...args, type: prevComponent.type };
@@ -624,18 +670,18 @@ export const actionDescriptions: ActionDescriptions = {
     name: 'Изменение текста заметки',
     description: `ID: ${args.id}\nБыло: "${args.prevText}"\nСтало: "${args.text}"`,
   }),
-  // changeNoteBackgroundColor: (args) => ({
-  //   name: 'Изменение цвета заметки',
-  //   description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
-  // }),
-  // changeNoteTextColor: (args) => ({
-  //   name: 'Изменение цвета текста заметки',
-  //   description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
-  // }),
-  // changeNoteFontSize: (args) => ({
-  //   name: 'Изменение размера шрифта заметки',
-  //   description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
-  // }),
+  changeNoteBackgroundColor: (args) => ({
+    name: 'Изменение цвета заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteTextColor: (args) => ({
+    name: 'Изменение цвета текста заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevColor}"\nСтало: "${args.color}"`,
+  }),
+  changeNoteFontSize: (args) => ({
+    name: 'Изменение размера шрифта заметки',
+    description: `ID: ${args.id}\nБыло: "${args.prevFontSize}"\nСтало: "${args.fontSize}"`,
+  }),
   changeNotePosition: (args) => ({
     name: 'Перемещение заметки',
     description: `Id: "${args.id}"\nБыло: ${JSON.stringify(

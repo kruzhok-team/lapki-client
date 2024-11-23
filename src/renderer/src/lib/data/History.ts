@@ -406,12 +406,6 @@ export const actionFunctions: ActionFunctions = {
     undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }),
   }),
 
-  // TODO (L140-beep): удаление машин состояний
-  // deleteStateMachine: (sM, { args, prevStateMachine }) => ({
-  //   redo: sM.stateMachines.deleteStateMachine.bind(sM.stateMachines, args, false),
-  //   undo: sM.stateMachines.createStateMachineFromObject.bind(sM.stateMachines, prevStateMachine),
-  // }),
-
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
     undo: sM.deleteComponent.bind(sM, { id: args.name, smId: args.smId, purge: false }, false),
@@ -554,7 +548,7 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   deleteStateMachine: (args) => ({
     name: 'Удаление машины состояний',
-    description: `Id: ${args.name ?? args.smId}`,
+    description: `Id: "${args.smId}"\n name: "${args.name ?? 'Имя отсутствует'}"`,
   }),
   createInitialState: () => ({
     name: 'Создание начального состояния',

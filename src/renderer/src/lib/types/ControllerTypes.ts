@@ -7,7 +7,6 @@ import {
   Note as NoteData,
   InitialState as InitialStateData,
   StateMachine,
-  Component,
 } from '@renderer/types/diagram';
 
 import { Point } from './graphics';

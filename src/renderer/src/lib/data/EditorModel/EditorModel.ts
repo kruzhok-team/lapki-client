@@ -44,7 +44,7 @@ export class EditorModel {
   dataListeners = emptyDataListeners; //! Подписчиков обнулять нельзя, react сам разбирается
   serializer = new Serializer(this);
 
-  constructor(private initPlatform: () => void, private resetEditor: () => void) {}
+  constructor(private initPlatform: () => void) {}
 
   createStateMachine(smId: string, data: StateMachine) {
     if (this.data.elements.stateMachines[smId]) return;
@@ -70,7 +70,7 @@ export class EditorModel {
   init(basename: string | null, name: string, elements: Elements) {
     // this.triggerDataUpdate('canvas');
     this.data = emptyEditorData();
-    this.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
+    this.data.canvas[''] = { isInitialized: false };
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = elements;
@@ -83,13 +83,8 @@ export class EditorModel {
   initCanvasData() {
     for (const canvasId in this.data.canvas) {
       const canvas = this.data.canvas[canvasId];
-      const prevMounted = canvas.isMounted;
       canvas.isInitialized = true;
-      canvas.isMounted = prevMounted;
-      if (canvas.isMounted) {
-        this.resetEditor();
-      }
-      this.triggerDataUpdate('canvas.isInitialized', 'canvas.isMounted');
+      this.triggerDataUpdate('canvas.isInitialized');
     }
   }
 
@@ -184,7 +179,7 @@ export class EditorModel {
             }
           }
         }
-
+        // debugger;
         this.data.isStale = true;
         this.dataListeners['isStale'].forEach((listener) => listener());
       }
@@ -764,12 +759,6 @@ export class EditorModel {
 
     this.triggerDataUpdate('elements.components');
 
-    return true;
-  }
-
-  setScale(value: number) {
-    this.data.scale = value;
-    this.triggerDataUpdate('scale');
     return true;
   }
 

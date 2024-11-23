@@ -28,7 +28,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   const modelController = useModelContext();
   const stateMachines = Object.keys(controller.stateMachinesSub);
   const smId = stateMachines[0]; // TODO(L140-beep): Как понять с какой именно МС мы работаем в данный момент?
-  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
+  const isMounted = controller.useData('isMounted');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
@@ -89,7 +89,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
   useEffect(() => {
     if (!canvasSettings) return;
-
     editor.setSettings(canvasSettings);
   }, [canvasSettings, editor]);
 

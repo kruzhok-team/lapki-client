@@ -20,7 +20,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const model = modelController.model;
   const name = model.useData('', 'name') as string | null;
   const isStale = model.useData('', 'isStale');
-
+  debugger;
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
   const [data, setData] = useState<SaveModalData | null>(null);
@@ -53,6 +53,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
+    debugger;
     if (isStale) {
       setData({
         shownName: name,

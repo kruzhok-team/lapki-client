@@ -107,11 +107,7 @@ export class CanvasEditor {
       this.view.isDirty = false;
     });
 
-    this.controller.emit('isMounted', {
-      canvasId: this.controller.id,
-      status: true,
-    });
-
+    this.controller.setMountStatus(true);
     this.controller.loadData();
     this.view.initEvents();
     this.controller.transitions.initEvents();
@@ -146,10 +142,7 @@ export class CanvasEditor {
 
     this.controller.isMounted = false;
     this.controller.needToRewatchEdgeHandlers = true;
-    this.controller.emit('isMounted', {
-      canvasId: this.controller.id,
-      status: false,
-    });
+    this.controller.setMountStatus(false);
   }
 
   focus() {

@@ -668,6 +668,16 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.unwatchInitialState(state);
   }
 
+  /*
+  Мы вынесли это сюда, потому что EdgeHandlers подписывается на события мыши, которой не существует
+  на момент инициализации данных, из-за чего происходил краш IDE.
+  */
+
+  bindEdgeHandlers(state: State | ChoiceState) {
+    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
+    state.edgeHandlers.bindEvents();
+  }
+
   private watchState(state: State) {
     state.on('dragend', this.handleDragEnd.bind(this, state));
     state.on('click', this.handleStateClick.bind(this, state));
@@ -677,9 +687,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('contextmenu', this.handleContextMenu.bind(this, state.id));
     state.on('drag', this.handleDrag.bind(this, state));
     state.on('longpress', this.handleLongPress.bind(this, state));
-
-    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
-    state.edgeHandlers.bindEvents();
   }
   private unwatchState(state: State) {
     state.off('dragend', this.handleDragEnd.bind(this, state));
@@ -716,9 +723,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
-
-    state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
-    state.edgeHandlers.bindEvents();
   }
   private unwatchChoiceState(state: ChoiceState) {
     state.off('dragend', this.handleChoiceStateDragEnd.bind(this, state));

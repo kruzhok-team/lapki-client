@@ -120,7 +120,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         openLoaderSettings={openLoaderSettings}
       />,
     ],
-    [compilerData, openData, compilerStatus]
+    [
+      onRequestSaveFile,
+      onRequestImportFile,
+      onRequestNewFile,
+      onRequestOpenFile,
+      onRequestSaveAsFile,
+      compilerData,
+      openData,
+      compilerStatus,
+    ]
   );
 
   const tabLabels = useMemo(

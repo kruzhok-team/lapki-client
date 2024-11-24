@@ -13,7 +13,7 @@ import {
   SerialRead,
   FlasherPayload,
   FlasherType,
-  MSPingResult,
+  MetaDataID,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -25,14 +25,13 @@ import {
 import { ClientWS } from './Websocket/ClientWS';
 
 export class Flasher extends ClientWS {
-  static devices: Map<string, Device>;
-
   // Переменные, связанные с отправкой бинарных данных
   static reader: FileReader;
   static binary: Blob;
   static currentBlob: Blob;
   static filePos: number = 0;
   static blobSize: number = 1024;
+
   private static currentFlashingDevice: Device | undefined = undefined;
   static setFlasherLog: Dispatch<SetStateAction<string | undefined>>;
   static setFlasherDevices: Dispatch<SetStateAction<Map<string, Device>>>;
@@ -147,7 +146,11 @@ export class Flasher extends ClientWS {
   static flashingEnd(result: string, avrdudeMsg: string | undefined) {
     this.onFlashingChange(false);
     this.setFlasherFile(undefined);
-    this.setFlasherLog(result);
+    if (this.currentFlashingDevice instanceof ArduinoDevice) {
+      this.setFlasherLog(result);
+    } else {
+      ManagerMS.addLog(result);
+    }
     this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
     this.currentFlashingDevice = undefined;
   }
@@ -156,7 +159,7 @@ export class Flasher extends ClientWS {
     this.filePos = 0;
   }
 
-  static async setBinary(binaries: Array<Binary>) {
+  static setBinary(binaries: Array<Binary>) {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
         Flasher.binary = bin.fileContent as Blob;
@@ -178,9 +181,11 @@ export class Flasher extends ClientWS {
       //console.log(buffer.toString());
       Flasher.binary = new Blob([buffer]);
       this.setFlasherFile(openData[2]);
+      return true;
     } else {
       //console.log('set file (false)');
       this.setFlasherFile(undefined);
+      return false;
     }
   }
 
@@ -190,6 +195,7 @@ export class Flasher extends ClientWS {
     serialConnectionStatus: string = ''
   ) {
     if (
+      device instanceof ArduinoDevice &&
       serialMonitorDevice &&
       serialMonitorDevice.deviceID === device.deviceID &&
       serialConnectionStatus === SERIAL_MONITOR_CONNECTED
@@ -202,7 +208,12 @@ export class Flasher extends ClientWS {
     }
     this.currentFlashingDevice = device;
     this.refresh();
-    this.setFlasherLog('Идет загрузка...');
+    const loading: string = 'Идет загрузка...';
+    if (device instanceof ArduinoDevice) {
+      this.setFlasherLog(loading);
+    } else {
+      ManagerMS.addLog(loading);
+    }
   }
 
   static flashCompiler(
@@ -211,12 +222,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    binaries.map((bin) => {
-      if (bin.extension.endsWith('ino.hex')) {
-        Flasher.binary = new Blob([bin.fileContent as unknown as Uint8Array]);
-        return;
-      }
-    });
+    this.setBinary(binaries);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 
@@ -525,7 +531,7 @@ export class Flasher extends ClientWS {
         break;
       case 'ms-ping-result':
         {
-          const pingResult = response.payload as MSPingResult;
+          const pingResult = response.payload as DeviceCommentCode;
           switch (pingResult.code) {
             case 0:
               ManagerMS.addLog('Получен ответ устройства на пинг');
@@ -533,9 +539,32 @@ export class Flasher extends ClientWS {
             case 1:
               ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
               break;
-            case 2:
-              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг.');
+            case 2: {
+              const errorText = pingResult.comment;
+              const errorLog = 'Возникла ошибка при попытке отправить пинг';
+              if (errorText != '') {
+                ManagerMS.addLog(`${errorLog}. Текст ошибки ${errorText}`);
+              } else {
+                ManagerMS.addLog(`${errorLog}.`);
+              }
               break;
+            }
+            case 3:
+              ManagerMS.addLog(
+                'Не удалось отправить пинг, так как переданное устройство не является МС-ТЮК.'
+              );
+              break;
+            case 4: {
+              const errorText = pingResult.comment;
+              const errorLog =
+                'Не удалось отправить пинг на устройство из-за ошибки обработки JSON';
+              if (errorText != '') {
+                ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+              } else {
+                ManagerMS.addLog(`${errorLog}.`);
+              }
+              break;
+            }
           }
         }
         break;
@@ -561,6 +590,99 @@ export class Flasher extends ClientWS {
             ManagerMS.setAddress('');
             break;
           }
+          case 3:
+            ManagerMS.addLog(
+              'Не удалось узнать адрес, так как переданное устройство не является МС-ТЮК.'
+            );
+            break;
+          case 4: {
+            const errorText = getAddressStatus.comment;
+            const errorLog = 'Не удалось узнать адрес устройства из-за ошибки обработки JSON';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            break;
+          }
+        }
+        break;
+      }
+      case 'ms-reset-result': {
+        const result = response.payload as DeviceCommentCode;
+        switch (result.code) {
+          case 0:
+            ManagerMS.addLog(`Выполнена операция сброса.`);
+            break;
+          case 1:
+            ManagerMS.addLog('Не удалось выполнить сброс устройства, так как оно не подключено.');
+            break;
+          case 2: {
+            const errorText = result.comment;
+            const errorLog = 'Возникла ошибка при попытке сбросить устройство';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${result.comment}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            ManagerMS.setAddress('');
+            break;
+          }
+          case 3:
+            ManagerMS.addLog('Переданное устройство для сброса не является МС-ТЮК.');
+            break;
+          case 4: {
+            const errorText = result.comment;
+            const errorLog = 'Не удалось сбросить устройство из-за ошибки обработки JSON';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            break;
+          }
+        }
+        break;
+      }
+      case 'ms-meta-data': {
+        const meta = response.payload as MetaDataID;
+        ManagerMS.setMeta(meta);
+        break;
+      }
+      case 'ms-meta-data-error': {
+        const result = response.payload as DeviceCommentCode;
+        const comment = result.comment;
+        switch (result.code) {
+          case 1: {
+            const text = 'Не удалось получить метаданные из-за ошибки';
+            if (comment) {
+              ManagerMS.addLog(`${text}. Текст ошибки: ${comment}`);
+            } else {
+              ManagerMS.addLog(`${text}.`);
+            }
+            break;
+          }
+          case 2:
+            ManagerMS.addLog('Не удалось получить метаданные, так как устройство не найдено.');
+            break;
+          case 3:
+            ManagerMS.addLog(
+              'Не удалось получить метаданные, так как запрашиваемое устройство не является МС-ТЮК'
+            );
+            break;
+          case 4: {
+            const text = 'Не удалось получить метаданные из-за ошибки обработки JSON-сообщения';
+            if (comment) {
+              ManagerMS.addLog(`${text}. Текст ошибки: ${comment}`);
+            } else {
+              ManagerMS.addLog(`${text}.`);
+            }
+            break;
+          }
+          default:
+            ManagerMS.addLog(
+              `Не удалось получить метаданные из-за незизвестной ошибки с кодом ${result.code}. ${comment}`
+            );
         }
       }
     }

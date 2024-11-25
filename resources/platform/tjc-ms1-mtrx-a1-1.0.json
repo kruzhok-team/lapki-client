@@ -169,7 +169,7 @@
       "methods": {
         "setPixel": {
           "img": "arduino/blink.svg",
-          "description": "Установить опеределенную яркость на светодиод.",
+          "description": "Включить или выключить светодиод.",
           "parameters": [
             {
               "name": "row",
@@ -183,8 +183,8 @@
             },
             {
               "name": "value",
-              "type": "uint8_t",
-              "description": "Яркость светодиода [0, 255]."
+              "type": ["0", "1"],
+              "description": "Состояние светодиода вкл./выкл."
             }
           ]
         },

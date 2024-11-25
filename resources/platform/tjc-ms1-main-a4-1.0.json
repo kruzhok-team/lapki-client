@@ -177,6 +177,14 @@
       "methods": {
         "on": {
           "img": "arduino/switch-on.svg",
+          "parameters": [
+            {
+              "name": "brightness",
+              "type": "uint8_t",
+              "description": "Яркость светодиода (по умолчанию: 100)",
+              "optional": true
+            }
+          ],
           "description": "Зажечь светодиод"
         },
         "off": {

@@ -8,7 +8,6 @@ export const ComponentsList: React.FC = () => {
   const modelController = useModelContext();
   const model = modelController.model;
   const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const stateMachines = Object.keys(
     modelController.controllers[headControllerId].useData('stateMachinesSub')
   );

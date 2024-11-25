@@ -4,25 +4,24 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Event } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
  */
-export const useTrigger = (addSystemComponents: boolean) => {
+export const useTrigger = (
+  smId: string,
+  controller: CanvasController,
+  addSystemComponents: boolean
+) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const smId = stateMachines[0];
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
 
-  const controller = modelController.controllers[headControllerId];
-
-  const visual = modelController.controllers[headControllerId].useData('visual');
+  const visual = controller.useData('visual');
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -65,7 +64,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
     }
 
     return result;
-  }, [componentsData, addSystemComponents, controller.platform, visual]);
+  }, [smId, controller, componentsData, addSystemComponents, controller.platform, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform[smId]) return [];
@@ -88,7 +87,7 @@ export const useTrigger = (addSystemComponents: boolean) => {
           ),
         };
       });
-  }, [controller, selectedComponent]);
+  }, [smId, controller, selectedComponent]);
 
   const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponent(value?.value ?? null);
@@ -141,7 +140,8 @@ export const useTrigger = (addSystemComponents: boolean) => {
     onMethodChange: handleMethodChange,
     setSelectedComponent,
     setSelectedMethod,
-
+    smId,
+    controller,
     parse,
     clear,
   };

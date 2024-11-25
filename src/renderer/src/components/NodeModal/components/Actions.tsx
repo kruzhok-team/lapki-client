@@ -28,13 +28,11 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     onDeleteAction,
     onReorderAction,
     modal,
+    smId,
+    controller,
     text,
     onChangeText,
   } = props;
-
-  const editor = useModelContext();
-  const headControllerId = editor.model.useData('', 'headControllerId');
-  const controller = editor.controllers[headControllerId];
   const visual = controller.useData('visual');
 
   const [selectedActionIndex, setSelectedActionIndex] = useState<number | null>(null);
@@ -148,7 +146,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
         )}
       </div>
 
-      <ActionsModal {...modal} />
+      <ActionsModal smId={smId} controller={controller} {...modal} />
     </div>
   );
 };

@@ -40,7 +40,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   ) as string;
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
-  const visual = modelController.controllers[headControllerId].useData('visual');
+  const visual = controller.useData('visual');
 
   const items: MenuItem[] = [
     {
@@ -149,7 +149,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         </button>
       ))}
 
-      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModal} />
+      <PropertiesModal
+        controller={controller}
+        isOpen={isPropertiesModalOpen}
+        onClose={closePropertiesModal}
+      />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
     </section>
   );

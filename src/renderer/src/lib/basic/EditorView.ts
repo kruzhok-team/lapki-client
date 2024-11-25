@@ -3,7 +3,7 @@ import * as TWEEN from '@tweenjs/tween.js';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
-import { Children, picto, Shape } from '@renderer/lib/drawable';
+import { Children, Picto, Shape } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { Point } from '@renderer/lib/types/graphics';
@@ -24,7 +24,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   isDirty = true;
 
   children = new Children();
-
+  picto = new Picto();
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
   constructor(public app: CanvasEditor) {
     super();
@@ -100,7 +100,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     const { width, height } = canvas;
 
-    const scale = this.app.controller.model.model.data.scale;
+    const scale = this.app.controller.scale;
     const offset = this.app.controller.model.model.data.offset;
 
     let size = 30;
@@ -155,9 +155,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   setScale(value: number) {
-    this.app.controller.model.model.setScale(value);
-    picto.scale = value;
-
+    this.app.controller.setScale(value);
+    this.picto.scale = value;
     this.isDirty = true;
   }
 
@@ -363,7 +362,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
         .onUpdate(({ x, y, scale }) => {
           this.app.controller.offset = { x, y };
           this.app.controller.scale = scale;
-          picto.scale = scale;
+          this.picto.scale = scale;
           this.isDirty = true;
         })
         .onComplete(({ scale }) => {

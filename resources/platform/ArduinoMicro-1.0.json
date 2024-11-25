@@ -45,7 +45,7 @@
           "description": "Пин, к которому подключена кнопка"
         },
         "buttonMode": {
-          "type": [0, 1],
+          "type": ["BUTTON_PULLUP", "BUTTON_PULLDOWN"],
           "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
           "optional": true
         }

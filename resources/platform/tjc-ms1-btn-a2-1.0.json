@@ -174,13 +174,8 @@
       },
       "constructorParameters": {
         "pin": {
-          "type": "uint8_t",
-          "description": "Пин, к которому подключена кнопка"
-        },
-        "buttonMode": {
-          "type": "uint8_t",
-          "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
-          "optional": true
+          "type": ["1", "2", "3", "4"],
+          "description": "Номер кнопки"
         }
       },
       "variables": {

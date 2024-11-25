@@ -2,11 +2,9 @@ import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
-import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
-import { frameworkWords, reservedWordsC, validators } from '@renderer/utils';
 
 import { ComponentFormFields } from './ComponentFormFields';
 
@@ -40,7 +38,6 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const stateMachines = Object.keys(controller.stateMachinesSub);
   const editor = controller.app;
   const smId = stateMachines[0];
-  const components = model.useData(smId, 'elements.components');
   const [name, setName] = useState('');
   const platformId = model.useData(smId, 'elements.platform');
   const platform = getPlatform(platformId);
@@ -56,71 +53,20 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
-    if (proto.singletone || (platform && platform.staticComponents)) {
-      return true;
-    }
+    const validationResult = modelController.validator.validateComponentName(
+      proto,
+      name,
+      idx,
+      platform
+    );
+    if (validationResult.status) return true;
 
-    if (name !== idx && name in components) {
-      setErrors((p) => ({ ...p, [nameError]: `Имя не должно повторяться` }));
-      return false;
-    }
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [nameError]: validationResult.error,
+    }));
 
-    if (name === '') {
-      setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
-      return false;
-    }
-    // допустимыми символами на первой позиции являются латинские буквы и подчёркивания
-    const firstSymbolRegex = '[A-Z]|[a-z]|_';
-    const numberSymbolRegex = '[0-9]';
-    if (!name[0].match(firstSymbolRegex)) {
-      setErrors((p) => ({
-        ...p,
-        [nameError]: `Название должно начинаться с латинской буквы или подчёркивания`,
-      }));
-      return false;
-    }
-    // допустимыми символами на всех позициях кроме первой являются латинские буквы, подчёркивания и цифры
-    const remainingSymbolsRegex = firstSymbolRegex + '|' + numberSymbolRegex;
-    for (const symbol of name) {
-      if (!symbol.match(remainingSymbolsRegex)) {
-        setErrors((p) => ({
-          ...p,
-          [nameError]: `Допускаются только латинские буквы, цифры и подчёркивания`,
-        }));
-        return false;
-      }
-    }
-    for (const word of reservedWordsC) {
-      if (word === name) {
-        setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
-        return false;
-      }
-    }
-    for (const word of frameworkWords) {
-      if (word === name) {
-        setErrors((p) => ({
-          ...p,
-          [nameError]: `Название является недопустимым. Выберите другое`,
-        }));
-        return false;
-      }
-    }
-    // проверка на то, что название не является типом данных
-    for (const key in validators) {
-      if (key === name) {
-        setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
-        return false;
-      }
-    }
-    // проверка на то, что название не совпадает с названием класса компонентов
-    const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
-    for (const component of vacantComponents) {
-      if (component.name === name) {
-        setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));
-        return false;
-      }
-    }
-    return true;
+    return false;
   };
 
   const handleSubmit = (e: React.FormEvent) => {

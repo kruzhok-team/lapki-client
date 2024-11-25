@@ -60,7 +60,7 @@ import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
+import { loadPlatform } from '../PlatformLoader';
 import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 /**
@@ -96,8 +96,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   schemeEditorId: string | null = null;
   files = new FilesManager(this);
   history = new History(this);
-  vacantComponents: { [id: string]: ComponentEntry[] } = {};
-  platforms: { [id: string]: PlatformManager } = {};
   // По умолчанию главным считается "призрачный" канвас.
   // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
   controllers: { [id: string]: CanvasController } = {};
@@ -256,14 +254,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   initPlatform() {
-    //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
-    for (const smId in this.model.data.elements.stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      const platform = loadPlatform(sm.platform);
-      if (platform) {
-        this.platforms[platform.name] = platform;
-      }
-    }
     this.emit('initPlatform', null);
   }
 
@@ -2078,41 +2068,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   //   note.setIsSelected(true);
   // }
-
-  getVacantComponents(): ComponentEntry[] {
-    if (!this.platforms) return [];
-    const stateMachines = this.getHeadControllerStateMachines();
-    for (const smId in stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      const components = sm.components;
-      const vacant: ComponentEntry[] = [];
-      let platform: PlatformManager | undefined = this.platforms[sm.platform];
-      if (!platform) {
-        if (isPlatformAvailable(sm.platform)) {
-          const platformManager = loadPlatform(sm.platform);
-          if (!platformManager) throw new Error('No platform loaded!');
-          this.platforms[sm.platform] = platformManager;
-          platform = platformManager;
-        } else {
-          throw new Error('No platform loaded!');
-        }
-      }
-      for (const idx in platform.data.components) {
-        const compo = platform.data.components[idx];
-        if (compo.singletone && components.hasOwnProperty(idx)) continue;
-        vacant.push({
-          idx,
-          name: compo.name ?? idx,
-          img: compo.img ?? 'unknown',
-          description: compo.description ?? '',
-          singletone: compo.singletone ?? false,
-        });
-      }
-      return vacant;
-    }
-
-    return [];
-  }
 
   /**
    * Снимает выделение со всех нод и переходов.

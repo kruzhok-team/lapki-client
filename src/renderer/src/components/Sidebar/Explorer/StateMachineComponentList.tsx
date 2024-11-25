@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
 
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
+import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
+import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
+import { ComponentEditModal } from '@renderer/components/ComponentEditModal';
+import { useComponents } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -8,28 +13,36 @@ import { Component as ComponentData } from '@renderer/types/diagram';
 import { Component } from './Component';
 
 export interface StateMachineComponentListProps {
+  isInitialized: boolean;
   controller: CanvasController;
   smId: string;
   dragName: string | null;
   selectedComponent: string | null;
   setSelectedComponent: React.Dispatch<React.SetStateAction<string | null>>;
-  onRequestEditComponent: (name: string) => void;
-  onRequestDeleteComponent: (name: string) => void;
+  // onRequestEditComponent: (name: string) => void;
+  // onRequestDeleteComponent: (name: string) => void;
   setDragName: (name: string) => void;
-  onDropComponent: (name: string) => void;
 }
 
 export const StateMachineComponentList: React.FC<StateMachineComponentListProps> = ({
+  isInitialized,
   controller,
   smId,
   dragName,
   selectedComponent,
   setSelectedComponent,
-  onRequestDeleteComponent,
-  onRequestEditComponent,
   setDragName,
-  onDropComponent,
 }) => {
+  const {
+    addProps,
+    editProps,
+    deleteProps,
+    onSwapComponents,
+    onRequestAddComponent,
+    onRequestEditComponent,
+    onRequestDeleteComponent,
+  } = useComponents(smId, controller);
+
   const modelController = useModelContext();
   const model = modelController.model;
   const components = model.useData(smId, 'elements.components') as {
@@ -43,8 +56,14 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
       .map((c) => c[0]);
   }, [components]);
 
+  const onDropComponent = (name: string) => {
+    if (!dragName) return;
+
+    onSwapComponents(dragName, name);
+  };
+
   return (
-    <div>
+    <>
       <div>{smName ?? smId}</div>
       {sortedComponents.map((name) => (
         <Component
@@ -68,6 +87,19 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           onDrop={() => onDropComponent(name)}
         />
       ))}
-    </div>
+      <button
+        type="button"
+        className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
+        disabled={!isInitialized || controller.id === ''}
+        onClick={onRequestAddComponent}
+      >
+        <AddIcon className="shrink-0" />
+        Добавить...
+      </button>
+
+      <ComponentAddModal {...addProps} />
+      <ComponentEditModal {...editProps} />
+      <ComponentDeleteModal {...deleteProps} />
+    </>
   );
 };

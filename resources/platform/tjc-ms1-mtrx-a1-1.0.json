@@ -1,0 +1,366 @@
+{
+  "name": "МС-ТЮК-1: Матрица",
+  "id": "tjc-ms1-mtrx-a1",
+  "description": "Платформа для программирования матрицы МС-ТЮК-1.",
+  "icon": "",
+  "staticComponents": false,
+  "version": "1.0",
+  "standardVersion": "1.0",
+  "formatVersion": "1.0",
+  "language": "C++",
+  "author": "Vladislav Syzikh",
+  "visual": true,
+  "compile": true,
+  "mainFileExtension": "cpp",
+  "staticActionDelimeter": "::",
+  "compilingSettings": [
+    {
+      "command": "arm-none-eabi-g++",
+      "flags": [
+        "-mcpu=cortex-m0plus",
+        "-DSTM32G030x6",
+        "-D_FIR_GIT_REV=\"GIT_NIY\"",
+        "-T",
+        "./tjc-ms1-b4272ba421624bbe-usercode.ld",
+        "./startup_stm32g030xx.s",
+        "-o",
+        "./build/sketch.elf",
+        "-g",
+        "./sketch.cpp",
+        "-mthumb",
+        "--specs=nosys.specs",
+        "-Os",
+        "qhsm.c",
+        "-fno-exceptions",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-Xlinker",
+        "--gc-sections"
+      ]
+    },
+    {
+      "command": "arm-none-eabi-objcopy",
+      "flags": ["-Obinary", "./build/sketch.elf", "./build/sketch.bin"]
+    }
+  ],
+  "mainFunction": true,
+  "delimeter": ";",
+  "defaultIncludeFiles": ["stm32g030xx.h", "system.c", "UART.hpp", "Pins.hpp", "macros.hpp"],
+  "defaultBuildFiles": [
+    "tjc-ms1-b4272ba421624bbe-usercode.ld",
+    "system.c",
+    "startup_stm32g030xx.s",
+    "stm32g030xx.h",
+    "core_cm0plus.h",
+    "core_cmInstr.h",
+    "cmsis_gcc.h",
+    "core_cmFunc.h",
+    "system_stm32g0xx.h",
+    "UART.hpp",
+    "Pins.hpp",
+    "macros.hpp"
+  ],
+  "components": {
+    "SimpleBus": {
+      "description": "Компонент для базового взаимодействия с общей шиной данных на основе простого протокола. Шина является полудуплексной – отправку в конкретный момент времени может осуществлять только один участник.",
+      "img": "arduino/serial.svg",
+      "signals": {
+        "packetReceived": {
+          "img": "arduino/byteReceived.svg",
+          "description": "Получен байт.",
+          "checkMethod": "packetReceived"
+        }
+      },
+      "constructorParameters": {
+        "baudrate": {
+          "type": "uint32_t",
+          "description": "Частота работы."
+        }
+      },
+      "variables": {
+        "myAddress": {
+          "img": "common/value.svg",
+          "type": "uint8_t",
+          "description": "Адрес устройства."
+        },
+        "lastData": {
+          "img": "common/value.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный символ."
+        }
+      },
+      "methods": {
+        "setAddress": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "address",
+              "type": "byte",
+              "description": "Новое значение для адреса."
+            }
+          ],
+          "description": "Назначить новый адрес для получения пакетов."
+        },
+        "sendPacket": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "address",
+              "type": "byte",
+              "description": "Адрес устройства-получателя."
+            },
+            {
+              "name": "data",
+              "type": "byte",
+              "description": "Байт данных (сообщение)."
+            }
+          ],
+          "description": "Отправляет символ по адресу."
+        }
+      },
+      "buildFiles": ["SimpleBus.hpp"],
+      "importFiles": ["SimpleBus.hpp"],
+      "singletone": false
+    },
+    "DataBus": {
+      "description": "Компонент для низкоуровневого взаимодействия с общей шиной данных. Шина является полудуплексной – отправку в конкретный момент времени может отсуществлять только один участник.",
+      "img": "arduino/serial.svg",
+      "signals": {
+        "isByteReceived": {
+          "img": "arduino/byteReceived.svg",
+          "description": "Получен байт.",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "constructorParameters": {
+        "baudrate": {
+          "type": "uint32_t",
+          "description": "Частота работы."
+        }
+      },
+      "variables": {
+        "lastByte": {
+          "img": "common/value.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }
+      },
+      "methods": {
+        "sendByte": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "byte",
+              "description": "Байт данных (сообщение)."
+            }
+          ],
+          "description": "Отправить байт в шину."
+        }
+      },
+      "buildFiles": ["DataBus.hpp"],
+      "importFiles": ["DataBus.hpp"],
+      "singletone": false
+    },
+    "Matrix": {
+      "description": "Компонент для взаимодействия со светодиодной матрицы.",
+      "img": "arduino/led.svg",
+      "signals": {},
+      "methods": {
+        "setPixel": {
+          "img": "arduino/blink.svg",
+          "description": "Установить опеределенную яркость на светодиод.",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "uint8_t",
+              "description": "Номер строки, на которой расположен светодиод."
+            },
+            {
+              "name": "col",
+              "type": "uint8_t",
+              "description": "Номер столбца, на котором расположен светодиод."
+            },
+            {
+              "name": "value",
+              "type": "uint8_t",
+              "description": "Яркость светодиода [0, 255]."
+            }
+          ]
+        },
+        "offPixel": {
+          "img": "arduino/blink.svg",
+          "description": "Выключить светодиод.",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "uint8_t",
+              "description": "Номер строки, на которой расположен светодиод."
+            },
+            {
+              "name": "col",
+              "type": "uint8_t",
+              "description": "Номер столбца, на котором расположен светодиод."
+            }
+          ]
+        },
+        "setPattern": {
+          "img": "arduino/blink.svg",
+          "description": "Изобразить паттерн на матрице.",
+          "parameters": [
+            {
+              "name": "pattern",
+              "type": "Matrix5x5",
+              "description": "Паттерн, который будет изображен на матрице."
+            }
+          ]
+        },
+        "fill": {
+          "img": "arduino/blink.svg",
+          "description": "Установить уровень яркости на каждый светодиод.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "uint8_t",
+              "description": "Уровень яркости, который будет установлен на каждый светодиод."
+            }
+          ]
+        },
+        "clear": {
+          "img": "arduino/blink.svg",
+          "description": "Выключить все светодиоды.",
+          "parameters": []
+        }
+      },
+      "variables": {},
+      "constructorParameters": {},
+      "buildFiles": ["Matrix.hpp"],
+      "importFiles": ["Matrix.hpp"],
+      "singletone": false
+    },
+
+    "Timer": {
+      "description": "Программный таймер",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "timeout": {
+          "img": "arduino/timeout.svg",
+          "description": "Время вышло!",
+          "checkMethod": "timeout"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "reset": {
+          "img": "arduino/reset.svg",
+          "description": "Сбросить таймер, отчет начнется сначала"
+        },
+        "disable": {
+          "img": "arduino/timer-stop.svg",
+          "description": "Отключить таймер."
+        },
+        "enable": {
+          "img": "arduino/timer-start.svg",
+          "description": "Включить таймер."
+        },
+        "start": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "interval",
+              "type": "unsigned long",
+              "description": "Интервал срабатывания."
+            }
+          ],
+          "description": "Запустить таймер. Будет сигнал раз в интервал."
+        }
+      },
+      "buildFiles": ["Timer.h"],
+      "importFiles": ["Timer.h"],
+      "singletone": false,
+      "variables": {
+        "difference": {
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Оставшееся время до окончания таймера."
+        }
+      }
+    },
+    "Counter": {
+      "description": "Переменная-счетчик.",
+      "img": "arduino/counter.svg",
+      "signals": {
+        "isEqual": {
+          "img": "arduino/isEqual.svg",
+          "description": "Издать сигнал, если значение счетчика равно value",
+          "checkMethod": "isEqual",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "isLess": {
+          "img": "arduino/isLess.svg",
+          "description": "Издать сигнал, если значение счетчика меньше value",
+          "checkMethod": "isLess",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "isGreater": {
+          "img": "arduino/isGreater.svg",
+          "description": "Издать сигнал, если значение счетчика больше value",
+          "checkMethod": "isGreater",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "add": {
+          "img": "arduino/add.svg",
+          "description": "Добавить value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "sub": {
+          "img": "arduino/sub.svg",
+          "description": "Вычесть value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "reset": {
+          "img": "arduino/reset.svg",
+          "description": "Обнулить значение счетчика."
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "description": "Текущее значение счетчика",
+          "type": "int"
+        }
+      },
+      "buildFiles": ["Counter.h", "Counter.cpp"],
+      "importFiles": ["Counter.h"],
+      "singletone": false
+    }
+  }
+}

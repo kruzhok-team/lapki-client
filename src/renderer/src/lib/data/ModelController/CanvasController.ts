@@ -689,6 +689,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
   }
 
+  // TODO (L140-beep): Скорее всего, нужно будет отнести это в ModelController
   // Компоненты передаем, чтобы отсеять уже добавленные синглтоны
   getVacantComponents(smId: string, components: { [id: string]: Component }) {
     if (!this.platform[smId]) return [];

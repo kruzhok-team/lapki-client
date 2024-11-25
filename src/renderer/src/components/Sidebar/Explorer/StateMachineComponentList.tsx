@@ -64,38 +64,47 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
 
   return (
     <>
-      <div>{smName ?? smId}</div>
-      {sortedComponents.map((name) => (
-        <Component
-          key={name}
-          name={name}
-          description={
-            platform[smId] !== undefined
-              ? platform[smId].getComponent(name)?.description
-              : undefined
-          }
-          icon={
-            platform[smId] !== undefined ? platform[smId].getFullComponentIcon(name) : undefined
-          }
-          isSelected={name === selectedComponent}
-          isDragging={name === dragName}
-          onCallContextMenu={() => onRequestEditComponent(name)}
-          onSelect={() => setSelectedComponent(name)}
-          onEdit={() => onRequestEditComponent(name)}
-          onDelete={() => onRequestDeleteComponent(name)}
-          onDragStart={() => setDragName(name)}
-          onDrop={() => onDropComponent(name)}
-        />
-      ))}
-      <button
-        type="button"
-        className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
-        disabled={!isInitialized || controller.id === ''}
-        onClick={onRequestAddComponent}
-      >
-        <AddIcon className="shrink-0" />
-        Добавить...
-      </button>
+      <div className="flex">
+        <div className="flex w-full justify-start">{smName ?? smId}</div>
+        <div className="flex w-full justify-end">
+          <button
+            type="button"
+            className="h-5 w-5 opacity-60"
+            disabled={!isInitialized || controller.id === ''}
+            onClick={onRequestAddComponent}
+          >
+            <AddIcon className="shrink-0" />
+          </button>
+        </div>
+      </div>
+      <div className="mb-2 mt-1">
+        {sortedComponents.length === 0 ? (
+          <p className="text-text-inactive">Нет компонентов</p>
+        ) : (
+          sortedComponents.map((name) => (
+            <Component
+              key={name}
+              name={name}
+              description={
+                platform[smId] !== undefined
+                  ? platform[smId].getComponent(name)?.description
+                  : undefined
+              }
+              icon={
+                platform[smId] !== undefined ? platform[smId].getFullComponentIcon(name) : undefined
+              }
+              isSelected={name === selectedComponent}
+              isDragging={name === dragName}
+              onCallContextMenu={() => onRequestEditComponent(name)}
+              onSelect={() => setSelectedComponent(name)}
+              onEdit={() => onRequestEditComponent(name)}
+              onDelete={() => onRequestDeleteComponent(name)}
+              onDragStart={() => setDragName(name)}
+              onDrop={() => onDropComponent(name)}
+            />
+          ))
+        )}
+      </div>
 
       <ComponentAddModal {...addProps} />
       <ComponentEditModal {...editProps} />

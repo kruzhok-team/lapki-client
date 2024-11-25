@@ -60,8 +60,6 @@ import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { loadPlatform } from '../PlatformLoader';
-import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.

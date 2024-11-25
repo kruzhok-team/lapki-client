@@ -4,17 +4,19 @@ import { twMerge } from 'tailwind-merge';
 
 import { TextAreaAutoResize } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { Note } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { placeCaretAtEnd } from '@renderer/utils';
 
-export const NoteEdit: React.FC = () => {
+interface NoteEditProps {
+  smId: string;
+  controller: CanvasController;
+}
+
+export const NoteEdit: React.FC<NoteEditProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
-  const stateMachines = Object.keys(controller.stateMachinesSub);
   const editor = controller.app;
-  const smId = stateMachines[0];
 
   const [isOpen, open, close] = useModal(false);
   const [noteId, setNoteId] = useState<string | null>(null);
@@ -29,12 +31,12 @@ export const NoteEdit: React.FC = () => {
     if (noteId !== null && initialText !== value)
       modelController.changeNoteText({ smId, id: noteId, text: value });
 
-    if (noteId) editor.controller.notes.setIsVisible(noteId, true);
+    if (noteId) controller.notes.setIsVisible(noteId, true);
 
     setNoteId(null);
     setInitialText(null);
     close();
-  }, [close, editor.controller.notes, initialText, noteId]);
+  }, [smId, controller, close, editor.controller.notes, initialText, noteId]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Отмена редактирования

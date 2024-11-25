@@ -54,6 +54,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   const handleNameValidation = (): boolean => {
     const validationResult = modelController.validator.validateComponentName(
+      smId,
+      controller,
       proto,
       name,
       idx,

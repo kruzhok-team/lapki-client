@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { serializeCondition } from '@renderer/lib/data/GraphmlBuilder';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
@@ -11,18 +12,13 @@ import { Component, Condition, Variable as VariableData } from '@renderer/types/
 /**
  * Инкапсуляция логики условия формы
  */
-export const useCondition = () => {
+export const useCondition = (smId: string, controller: CanvasController) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const smId = stateMachines[0];
 
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  const visual = modelController.controllers[headControllerId].useData('visual');
-  const controller = modelController.controllers[headControllerId];
+  const visual = controller.useData('visual');
 
   const [errors, setErrors] = useState({} as Record<string, string>);
 
@@ -68,7 +64,7 @@ export const useCondition = () => {
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
     return result;
-  }, [componentsData, controller.platform, visual]);
+  }, [smId, controller, componentsData, controller.platform, visual]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -93,7 +89,7 @@ export const useCondition = () => {
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
     return result;
-  }, [componentsData, controller.platform, visual]);
+  }, [smId, controller, componentsData, controller.platform, visual]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1 || !controller.platform[smId]) return [];
@@ -116,7 +112,7 @@ export const useCondition = () => {
           ),
         };
       });
-  }, [controller.platform, selectedComponentParam1, visual]);
+  }, [smId, controller, controller.platform, selectedComponentParam1, visual]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam2 || !controller.platform[smId]) return [];
@@ -139,7 +135,7 @@ export const useCondition = () => {
           ),
         };
       });
-  }, [controller.platform, selectedComponentParam2, visual]);
+  }, [smId, controller, controller.platform, selectedComponentParam2, visual]);
 
   const checkForErrors = useCallback(() => {
     const newErrors: Record<string, string> = {};
@@ -291,7 +287,7 @@ export const useCondition = () => {
       }
       return setConditionOperator(operator);
     },
-    [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
+    [smId, controller, clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
   );
 
   return {
@@ -345,5 +341,7 @@ export const useCondition = () => {
 
     parse,
     clear,
+    controller,
+    smId,
   };
 };

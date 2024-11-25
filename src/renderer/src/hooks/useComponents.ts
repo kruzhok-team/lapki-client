@@ -1,21 +1,17 @@
 import { useState } from 'react';
 
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { systemComponent, ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { useModal } from './useModal';
 
-export const useComponents = () => {
+export const useComponents = (smId: string, controller: CanvasController) => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const stateMachines = Object.keys(controller.stateMachinesSub);
-  const currentSm = stateMachines[0];
-  const components = model.useData(stateMachines[0], 'elements.components') as {
+  const components = model.useData(smId, 'elements.components') as {
     [id: string]: ComponentData;
   };
 
@@ -35,7 +31,7 @@ export const useComponents = () => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const onRequestAddComponent = () => {
-    const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
+    const vacantComponents = controller.getVacantComponents(smId, components) as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
 
@@ -45,11 +41,11 @@ export const useComponents = () => {
   const onRequestEditComponent = (idx: string) => {
     const controller = editor.controller;
 
-    if (!controller.platform[currentSm]) return;
+    if (!controller.platform[smId]) return;
 
     const component = components[idx];
     if (typeof component === 'undefined') return;
-    const proto = controller?.platform[currentSm].data.components[component.type];
+    const proto = controller?.platform[smId].data.components[component.type];
     if (typeof proto === 'undefined') {
       console.error('non-existing %s %s', idx, component.type);
       return;
@@ -64,13 +60,12 @@ export const useComponents = () => {
   const onRequestDeleteComponent = (idx: string) => {
     const controller = editor.controller;
 
-    if (!controller.platform[currentSm]) return;
+    if (!controller.platform[smId]) return;
 
     const component = components[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    const proto =
-      controller?.platform[currentSm].data.components[component.type] ?? systemComponent;
+    const proto = controller?.platform[smId].data.components[component.type] ?? systemComponent;
 
     setIdx(idx);
     setData(component);
@@ -81,7 +76,7 @@ export const useComponents = () => {
   const onAdd = (idx: string, name: string | undefined) => {
     const realName = name ?? idx;
     modelController.createComponent({
-      smId: currentSm,
+      smId: smId,
       name: realName,
       type: idx,
       parameters: {},
@@ -98,7 +93,7 @@ export const useComponents = () => {
     newName?: string
   ) => {
     modelController.editComponent({
-      smId: currentSm,
+      smId: smId,
       id: idx,
       type: data.type,
       parameters: data.parameters,
@@ -107,13 +102,13 @@ export const useComponents = () => {
   };
 
   const onDelete = (idx: string) => {
-    modelController.deleteComponent({ smId: currentSm, id: idx });
+    modelController.deleteComponent({ smId: smId, id: idx });
 
     editClose();
   };
 
   const onSwapComponents = (name1: string, name2: string) => {
-    modelController.swapComponents({ smId: currentSm, name1, name2 });
+    modelController.swapComponents({ smId: smId, name1, name2 });
   };
 
   return {

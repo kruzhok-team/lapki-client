@@ -8,6 +8,7 @@ import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as FontSizeIcon } from '@renderer/assets/icons/font_size.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ColorInput } from '@renderer/components/UI';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { Note } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -15,6 +16,8 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { ContextMenu, MenuItem, SubMenu, SubMenuContainer } from '../ContextMenu';
 
 interface NoteMenuProps {
+  smId: string;
+  controller: CanvasController;
   position: Point;
   note: Note;
   onClose: () => void;
@@ -22,14 +25,15 @@ interface NoteMenuProps {
 
 const fontSizes = [12, 14, 16, 18, 20, 22];
 
-export const NoteMenu: React.FC<NoteMenuProps> = ({ onClose, note, position }) => {
+export const NoteMenu: React.FC<NoteMenuProps> = ({
+  smId,
+  controller,
+  onClose,
+  note,
+  position,
+}) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
-  const stateMachines = Object.keys(controller.stateMachinesSub);
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const smId = stateMachines[0];
 
   const [bgColor, setBgColor] = useState<string | undefined>(undefined);
   const [textColor, setTextColor] = useState<string | undefined>(undefined);

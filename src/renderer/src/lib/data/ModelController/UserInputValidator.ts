@@ -1,6 +1,8 @@
 import { ComponentProto, Platform } from '@renderer/types/platform';
 import { frameworkWords, reservedWordsC, validators } from '@renderer/utils';
 
+import { CanvasController } from './CanvasController';
+
 import { ComponentEntry } from '../PlatformManager';
 
 import { ModelController } from '.';
@@ -35,6 +37,8 @@ export class UserInputValidator {
   }
 
   validateComponentName(
+    smId: string,
+    controller: CanvasController,
     proto: ComponentProto,
     componentName: string,
     prevName: string,
@@ -110,7 +114,7 @@ export class UserInputValidator {
     }
 
     // проверка на то, что название не совпадает с названием класса компонентов
-    const vacantComponents = this.modelController.getVacantComponents() as ComponentEntry[];
+    const vacantComponents = controller.getVacantComponents(smId, {}) as ComponentEntry[];
     for (const component of vacantComponents) {
       if (component.name === componentName) {
         return {

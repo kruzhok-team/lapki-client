@@ -3,6 +3,7 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -10,11 +11,14 @@ import { ArgumentProto } from '@renderer/types/platform';
 import { ActionsModalParameters } from './ActionsModalParameters';
 
 export interface ActionsModalData {
+  smId: string;
   action: Action;
   isEditingEvent: boolean;
 }
 
 interface ActionsModalProps {
+  smId: string;
+  controller: CanvasController;
   initialData?: ActionsModalData;
   isOpen: boolean;
   onSubmit: (data: Action) => void;
@@ -24,18 +28,15 @@ interface ActionsModalProps {
 export const ActionsModal: React.FC<ActionsModalProps> = ({
   initialData,
   onSubmit,
+  controller,
+  smId,
   isOpen,
   onClose,
 }) => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
   const platforms = controller.useData('platform');
-  const stateMachines = Object.keys(controller.stateMachinesSub);
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
   const visual = controller.useData('visual');
-  const smId = stateMachines[0];
   const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
@@ -78,7 +79,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     }
 
     return result;
-  }, [platforms, componentsData, isEditingEvent, visual]);
+  }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !platforms[smId]) return [];
@@ -196,7 +197,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     const { action, isEditingEvent: isEditingAction } = initialData;
 
     init(action, isEditingAction ? 'signals' : 'methods');
-  }, [controller, platforms, initialData]);
+  }, [smId, controller, platforms, initialData]);
 
   return (
     <Modal

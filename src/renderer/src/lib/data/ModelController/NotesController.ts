@@ -44,7 +44,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
-  createNote = (params: CreateNoteParams) => {
+  initNote = (params: CreateNoteParams) => {
     const { id, smId } = params;
     if (!id) return;
     const note = new Note(this.app, smId, id, { ...params });
@@ -54,6 +54,15 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.children.add(note, Layer.Notes);
 
     this.view.isDirty = true;
+
+    return note;
+  };
+
+  createNote = (params: CreateNoteParams) => {
+    const note = this.initNote(params);
+    if (!note) return;
+
+    this.bindEdgeHandlers(note);
   };
 
   changeNoteText = (args: ChangeNoteText) => {

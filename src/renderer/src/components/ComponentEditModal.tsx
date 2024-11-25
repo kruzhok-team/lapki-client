@@ -2,11 +2,9 @@ import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
-import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
-import { frameworkWords, reservedWordsC, validators } from '@renderer/utils';
 
 import { ComponentFormFields } from './ComponentFormFields';
 

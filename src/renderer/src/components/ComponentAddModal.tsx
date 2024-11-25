@@ -30,12 +30,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
-  const stateMachines = Object.keys(controller.stateMachinesSub);
   const editor = controller.app;
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const components = modelController.model.useData(stateMachines[0], 'elements.components') as {
-    [id: string]: Component;
-  };
 
   const [cursor, setCursor] = useState<ComponentEntry | null>(null);
 

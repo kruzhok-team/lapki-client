@@ -54,7 +54,7 @@ export class Initializer {
    */
   initStates(smId: string, states: { [id: string]: DataState }) {
     for (const id in states) {
-      this.states.createState({ smId, id: id, ...states[id] });
+      this.states.initState({ smId, id: id, ...states[id] });
     }
 
     for (const id in states) {

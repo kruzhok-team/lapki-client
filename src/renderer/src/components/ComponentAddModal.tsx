@@ -8,7 +8,6 @@ import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component } from '@renderer/types/diagram';
 
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';

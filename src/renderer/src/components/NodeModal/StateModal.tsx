@@ -219,6 +219,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }
       parseEvents(smId, event.do);
     }
   }, [
+    smId,
     parseCondition,
     parseEvents,
     state,

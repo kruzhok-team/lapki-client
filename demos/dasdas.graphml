@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <data key="gFormat">Cyberiada-GraphML-1.0</data>
+  <key attr.name="name" attr.type="string" for="node" id="dName"></key>
+  <key attr.name="data" attr.type="string" for="node" id="dData"></key>
+  <key attr.name="data" attr.type="string" for="edge" id="dData"></key>
+  <key attr.name="initial" attr.type="string" for="node" id="dInitial"></key>
+  <key for="edge" id="dGeometry"></key>
+  <key for="node" id="dGeometry"></key>
+  <key for="edge" id="dColor"></key>
+  <key for="node" id="dNote"></key>
+  <key for="node" id="dColor"></key>
+  <graph id="G">
+    <data key="dStateMachine"></data>
+    <data key="dGeometry">
+      <rect x="0" y="0" width="450" height="100"></rect>
+    </data>
+    <node id="coreMeta">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_META</data>
+      <data key="dData">platform/ ArduinoUno
+
+standardVersion/ 1.0
+
+name/ Arduino Blinker
+
+author/ Lapki IDE TEAM
+
+description/ Включение и выключение лампочки по таймеру
+
+platformVersion/ 1.0
+
+lapkiVisual/ true
+
+</data>
+    </node>
+    <node id="diod1">
+      <data key="dName">Включен</data>
+      <data key="dData">entry/
+LEDG1.on();
+timerG1.start(1000);
+
+</data>
+      <data key="dGeometry">
+        <rect x="82" y="57" width="450" height="95"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
+    </node>
+    <node id="diod2">
+      <data key="dName">Выключен</data>
+      <data key="dData">entry/
+LEDG1.off();
+timerG1.start(1000);
+
+</data>
+      <data key="dGeometry">
+        <rect x="81" y="334" width="450" height="95"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
+    </node>
+    <node id="init">
+      <data key="dVertex">initial</data>
+      <data key="dGeometry">
+        <rect x="20" y="30" width="-1" height="-1"></rect>
+      </data>
+    </node>
+    <node id="cLEDG1">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_COMPONENT</data>
+      <data key="dData">id/ LEDG1
+
+type/ LED
+
+name/ Светодиод
+
+description/ Встроенный в плату светодиод, чтобы им мигать
+
+pin/ 12
+
+</data>
+      <data key="dLapkiSchemePosition">
+        <point x="0" y="0"></point>
+      </data>
+    </node>
+    <node id="ctimerG1">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_COMPONENT</data>
+      <data key="dData">id/ timerG1
+
+type/ Timer
+
+name/ Таймер
+
+description/ Программный таймер.
+
+</data>
+      <data key="dLapkiSchemePosition">
+        <point x="0" y="0"></point>
+      </data>
+    </node>
+    <node id="commentX">
+      <data key="dGeometry">
+        <point x="640" y="114"></point>
+      </data>
+      <data key="dNote">informal</data>
+      <data key="dData">Включение и выключение лампочки по таймеру в МС G!</data>
+    </node>
+    <edge id="init-edge" source="init" target="diod1"></edge>
+    <edge id="edge3" source="diod1" target="diod2">
+      <data key="dData">timerG1.timeout/
+timerG1.enable();
+
+</data>
+      <data key="dLabelGeometry">
+        <point x="389" y="193"></point>
+      </data>
+    </edge>
+    <edge id="edge4" source="diod2" target="diod1">
+      <data key="dData">timerG1.timeout/
+
+</data>
+      <data key="dColor">#F24C3D</data>
+      <data key="dLabelGeometry">
+        <point x="81.5" y="193.46"></point>
+      </data>
+    </edge>
+  </graph>
+  <graph id="A">
+    <data key="dStateMachine"></data>
+    <data key="dGeometry">
+      <rect x="0" y="0" width="450" height="100"></rect>
+    </data>
+    <node id="coreMeta">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_META</data>
+      <data key="dData">platform/ ArduinoUno
+
+standardVersion/ 1.0
+
+name/ Arduino Blinker
+
+author/ Lapki IDE TEAM
+
+description/ Включение и выключение лампочки по таймеру
+
+platformVersion/ 1.0
+
+lapkiVisual/ false
+
+</data>
+    </node>
+    <node id="Adiod1">
+      <data key="dName">Включен</data>
+      <data key="dData">entry/
+LED1.on();
+timer1.start(1000);
+
+</data>
+      <data key="dGeometry">
+        <rect x="82" y="57" width="450" height="95"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
+    </node>
+    <node id="Adiod2">
+      <data key="dName">Выключен</data>
+      <data key="dData">entry/
+LED1.off();
+timer1.start(1000);
+
+</data>
+      <data key="dGeometry">
+        <rect x="81" y="334" width="450" height="95"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
+    </node>
+    <node id="Ainit">
+      <data key="dVertex">initial</data>
+      <data key="dGeometry">
+        <rect x="20" y="30" width="-1" height="-1"></rect>
+      </data>
+    </node>
+    <node id="cLED1">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_COMPONENT</data>
+      <data key="dData">id/ LED1
+
+type/ LED
+
+name/ Светодиод
+
+description/ Встроенный в плату светодиод, чтобы им мигать
+
+pin/ 12
+
+</data>
+      <data key="dLapkiSchemePosition">
+        <point x="0" y="0"></point>
+      </data>
+    </node>
+    <node id="ctimer1">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_COMPONENT</data>
+      <data key="dData">id/ timer1
+
+type/ Timer
+
+name/ Таймер
+
+description/ Программный таймер.
+
+</data>
+      <data key="dLapkiSchemePosition">
+        <point x="0" y="0"></point>
+      </data>
+    </node>
+    <node id="AcommentX">
+      <data key="dGeometry">
+        <point x="640" y="114"></point>
+      </data>
+      <data key="dNote">informal</data>
+      <data key="dData">Включение и выключение лампочки по таймеру в МС A!</data>
+    </node>
+    <edge id="Ainit-edge" source="Ainit" target="Adiod1"></edge>
+    <edge id="Aedge3" source="Adiod1" target="Adiod2">
+      <data key="dData">timer1.timeout/
+
+</data>
+      <data key="dColor">#F29727</data>
+      <data key="dLabelGeometry">
+        <point x="389" y="193"></point>
+      </data>
+    </edge>
+    <edge id="Aedge4" source="Adiod2" target="Adiod1">
+      <data key="dData">timer1.timeout/
+
+</data>
+      <data key="dColor">#F24C3D</data>
+      <data key="dLabelGeometry">
+        <point x="81.5" y="193.46"></point>
+      </data>
+    </edge>
+  </graph>
+</graphml>

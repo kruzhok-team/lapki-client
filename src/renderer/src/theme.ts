@@ -7,12 +7,14 @@ const colorNames = {
 
   primaryHover: '--p-h',
   primaryActive: '--p-a',
-
+  'matrix-active': '--m-a',
+  'matrix-inactive': '--m-i',
   'bg-primary': '--bg-p',
   'bg-secondary': '--bg-s',
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
 
+  'border-contrast': '--b-c',
   'border-primary': '--b-p',
   'border-warning': '--b-w',
 

@@ -785,7 +785,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!args) return;
     for (const [index, arg] of Object.entries(args)) {
       const componentAttribute = getComponentAttribute(arg);
-      console.log('HERE', componentAttribute, oldName, newName);
       if (componentAttribute !== null && componentAttribute[0] === oldName) {
         args[index] = `${newName}${componentAttribute[2]}${componentAttribute[1]}`;
       }

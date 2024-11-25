@@ -7,7 +7,6 @@ import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { ActionsModal } from '@renderer/components';
 import { TabPanel, Tabs } from '@renderer/components/UI';
-import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Action } from './Action';
 

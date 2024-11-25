@@ -28,21 +28,16 @@ export const emptyEditorData = () => ({
   elements: emptyElements(),
   offset: { x: 0, y: 0 },
   headControllerId: '',
-  scale: 1,
   isStale: false,
 });
 
 export function emptyEditorStatus(): EditorStatus {
   return {
-    prevMounted: false,
-    isMounted: false,
     isInitialized: false,
   };
 }
 
 export type EditorStatus = {
-  prevMounted: boolean;
-  isMounted: boolean;
   isInitialized: boolean;
 };
 
@@ -188,6 +183,7 @@ export type CreateEventParams = {
 export type CreateComponentParams = ComponentData & {
   name: string;
   smId: string;
+  parameters: { [id: string]: string };
   placeInCenter?: boolean;
 };
 

@@ -18,9 +18,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const modelController = useModelContext();
   const model = modelController.model;
-  const name = model.useData('', 'name') as string | null;
-  const isStale = model.useData('', 'isStale');
-
+  const name = modelController.model.useData('', 'name') as string | null;
+  const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
 
   const [data, setData] = useState<SaveModalData | null>(null);

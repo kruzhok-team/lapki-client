@@ -37,7 +37,6 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
-  SetMountedStatusParams,
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
@@ -137,8 +136,6 @@ export type CanvasControllerEvents = {
   selectTransition: SelectDrawable;
   deleteSelected: string;
 
-  isMounted: SetMountedStatusParams;
-  changeScale: number;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
 
@@ -169,12 +166,14 @@ export type CanvasData = {
   platformNames: { [id: string]: string };
 };
 
-// Это разделение нужно при удалении машин состояний.
-// scheme и common все равно, если связанные с ними машины состояний удалят
-// А specific становится не нужным, если его машину состояний удалят
-// specific - канвас для работы с определенной машиной состояний
-// scheme - схемотехнический экран
-// common - для работы сразу со всеми машинами состояний
+/* 
+  Это разделение нужно при удалении машин состояний.
+  scheme и common все равно, если связанные с ними машины состояний удалят
+  А specific становится не нужным, если его машину состояний удалят
+  specific - канвас для работы с определенной машиной состояний
+  scheme - схемотехнический экран
+  common - для работы сразу со всеми машинами состояний
+*/
 export type CanvasControllerType = 'specific' | 'scheme' | 'common';
 
 export class CanvasController extends EventEmitter<CanvasControllerEvents> {
@@ -184,7 +183,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   platform: { [id: string]: PlatformManager } = {};
   initializer: Initializer;
   states: StatesController;
-  inited = false;
   transitions: TransitionsController;
   notes: NotesController;
   components: ComponentsController;
@@ -199,7 +197,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   binded = {}; // Функции обработчики
   model: ModelController;
   type: CanvasControllerType;
-  needToRewatchEdgeHandlers = false;
+  needToRewatchEdgeHandlers = true;
   visual = true;
   constructor(
     id: string,
@@ -222,7 +220,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.canvasData = canvasData;
     this.model = model;
     this.initPlatform();
-    // this.watch();
   }
 
   get view() {
@@ -301,24 +298,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   init() {
-    if (!this.inited) {
-      for (const smId in this.initData) {
-        // TODO (L140-beep): отрефакторить так, чтобы мы инициализировали только то, на что подписаны
-        this.initializer.initComponents(smId, this.initData[smId].components);
-        this.initializer.initStates(smId, this.initData[smId].states);
-        this.initializer.initChoiceStates(smId, this.initData[smId].choiceStates);
-        this.initializer.initFinalStates(smId, this.initData[smId].finalStates);
-        this.initializer.initNotes(smId, this.initData[smId].notes);
-        this.initializer.initInitialStates(smId, this.initData[smId].initialStates);
-        this.initializer.initTransitions(smId, this.initData[smId].transitions);
-      }
-      this.triggerDataUpdate('platform');
-      if (this.type === 'scheme') {
-        this.initializer.initStateMachines(this.initData);
-      }
-      this.inited = true;
-    }
-
     if (this.needToRewatchEdgeHandlers) {
       // Это нужно, потому что после unmount удаляются
       // listeners событий мыши, на которые подписаны EdgeHandlers.
@@ -399,6 +378,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('renameComponent', this.binded['renameComponent']);
             this.model.off('selectComponent', this.binded['selectComponent']);
             this.model.off('changeComponentSelection', this.binded['changeComponentSelection']);
+            this.model.off('changeComponentPosition', this.binded['changeComponentPosition']);
             break;
           case 'transition':
             this.model.off('createTransition', this.binded['createTransition']);
@@ -427,14 +407,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.off('initPlatform', this.initPlatform);
     this.off('initEvents', this.transitions.initEvents);
     this.off('deleteSelected', this.deleteSelected);
-    this.off('changeScale', this.changeScale);
-    this.off('isMounted', this.setMountStatus);
 
     this.states.unwatchAll();
   }
 
-  changeScale = (value: number) => {
+  setScale = (value: number) => {
     this.scale = value;
+    this.view.isDirty = true;
+    this.triggerDataUpdate('scale');
   };
 
   subscribe(smId: string, attribute: CanvasSubscribeAttribute, initData: DiagramData) {
@@ -502,9 +482,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'deleteEventAction',
           this.bindHelper('state', 'deleteEventAction', this.states.deleteEvent)
         );
-        this.initData[smId].states = {
-          ...(initData as { [id: string]: State }),
-        };
+        this.initializer.initStates(smId, initData as { [id: string]: State });
         break;
       case 'initialState':
         this.model.on(
@@ -523,9 +501,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.states.changeInitialStatePosition
           )
         );
-        this.initData[smId].initialStates = {
-          ...(initData as { [id: string]: InitialState }),
-        };
+        this.initializer.initInitialStates(smId, initData as { [id: string]: InitialState });
         break;
       case 'final':
         this.model.on(
@@ -544,9 +520,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'linkFinalState',
           this.bindHelper('final', 'linkFinalState', this.states.linkFinalState)
         );
-        this.initData[smId].finalStates = {
-          ...(initData as { [id: string]: FinalState }),
-        };
+        this.initializer.initFinalStates(smId, initData as { [id: string]: FinalState });
         break;
       case 'choice':
         this.model.on(
@@ -569,9 +543,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeChoicePosition',
           this.bindHelper('choice', 'changeChoicePosition', this.states.changeChoiceStatePosition)
         );
-        this.initData[smId].choiceStates = {
-          ...(initData as { [id: string]: ChoiceState }),
-        };
+        this.initializer.initFinalStates(smId, initData as { [id: string]: FinalState });
         break;
       case 'note':
         this.model.on('createNote', this.bindHelper('note', 'createNote', this.notes.createNote));
@@ -594,10 +566,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.bindHelper('note', 'changeNoteTextColor', this.notes.changeNoteTextColor)
         );
         this.model.on('changeNoteBackgroundColor', this.notes.changeNoteBackgroundColor);
-        this.initData[smId].notes = {
-          ...(initData as { [id: string]: Note }),
-        };
         this.model.on('changeNoteSelection', this.notes.changeNoteSelection);
+        this.initializer.initNotes(smId, initData as { [id: string]: Note });
         break;
       case 'component':
         if (!this.binded['createComponent']) {
@@ -629,10 +599,18 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
               this.components.changeComponentSelection
             )
           );
+          this.model.on(
+            'changeComponentPosition',
+            this.bindHelper(
+              'component',
+              'changeComponentPosition',
+              this.components.changeComponentPosition
+            )
+          );
         }
-        this.initData[smId].components = {
+        this.initializer.initComponents(smId, {
           ...(initData as { [id: string]: Component }),
-        };
+        });
         break;
       case 'transition':
         this.model.on(
@@ -671,9 +649,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'linkTransitions',
           this.bindHelper('transition', 'linkTransitions', this.linkTransitions)
         );
-        this.initData[smId].transitions = {
-          ...(initData as { [id: string]: Transition }),
-        };
+        this.initializer.initTransitions(smId, initData as { [id: string]: Transition });
         break;
       case 'stateMachine':
         if (!this.binded['createStateMachine']) {
@@ -693,6 +669,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         if (initData[smId] && (initData[smId] as StateMachine).position) {
           this.initData[smId].position = (initData[smId] as StateMachine).position;
           this.initData[smId].name = (initData[smId] as StateMachine).name;
+          this.loadPlatform(smId, (initData[smId] as StateMachine).platform);
+          this.initializer.initStateMachines({ [smId]: initData[smId] as StateMachine });
         }
         break;
       default:
@@ -703,23 +681,20 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   rewatchEdgeHandlers() {
     // TODO(L140-beep): Вот с этим надо что-то делать, иначе плодиться будет только так
     for (const state of this.states.data.states.values()) {
-      state.edgeHandlers.bindEvents();
+      this.states.bindEdgeHandlers(state);
+    }
+    for (const state of this.states.data.choiceStates.values()) {
+      this.states.bindEdgeHandlers(state);
     }
     for (const note of this.notes.items.values()) {
-      note.edgeHandlers.bindEvents();
+      this.notes.bindEdgeHandlers(note);
     }
   }
 
   createStateMachine = (args: CreateStateMachineParams) => {
     const { smId, platform } = args;
-
-    if (isPlatformAvailable(platform)) {
-      const platformManager = loadPlatform(platform);
-      if (typeof platformManager === 'undefined') {
-        throw Error("couldn't init platform " + platform);
-      }
-      this.platform[smId] = platformManager;
-      this.triggerDataUpdate('platform');
+    if (!this.platform[smId]) {
+      this.loadPlatform(smId, platform);
     }
     this.stateMachines.createStateMachine(args);
   };
@@ -745,6 +720,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.platform[smId].nameToVisual.set(newName, visualCompo);
     this.platform[smId].nameToVisual.delete(id);
+
+    this.components.renameComponent(args);
 
     if (this.visual) {
       // А сейчас будет занимательное путешествие по схеме с заменой всего
@@ -934,6 +911,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     });
     this.view.isDirty = true;
     this.triggerDataUpdate('platform');
+
+    this.view.isDirty = true;
   };
 
   deleteComponent = (args: DeleteDrawableParams) => {
@@ -947,6 +926,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
     this.platform[args.smId].nameToVisual.delete(args.id);
     this.triggerDataUpdate('platform');
+
+    this.view.isDirty = true;
   };
 
   createComponent = (args: CreateComponentParams) => {
@@ -960,6 +941,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     });
     this.triggerDataUpdate('platform');
 
+    this.view.isDirty = true;
+
     if (this.type !== 'scheme') return;
 
     const component = this.components.createComponent(args);
@@ -969,18 +952,23 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.stateMachines.addComponent(args.smId, component);
   };
 
+  loadPlatform(smId: string, platformName: string) {
+    if (isPlatformAvailable(platformName)) {
+      const platform = loadPlatform(platformName);
+      if (typeof platform === 'undefined') {
+        throw Error("couldn't init platform " + platformName);
+      }
+      platform.picto = this.view.picto;
+      this.platform[smId] = platform;
+      this.triggerDataUpdate('platform');
+    }
+  }
+
   initPlatform = () => {
     // ИНВАРИАНТ: платформа должна существовать, проверка лежит на внешнем поле
     for (const smId in this.canvasData.platformNames) {
       const platformName = this.canvasData.platformNames[smId];
-
-      if (isPlatformAvailable(platformName)) {
-        const platform = loadPlatform(platformName);
-        if (typeof platform === 'undefined') {
-          throw Error("couldn't init platform " + platformName);
-        }
-        this.platform[smId] = platform;
-      }
+      this.loadPlatform(smId, platformName);
     }
     this.triggerDataUpdate('platform');
     //! Инициализировать компоненты нужно сразу после загрузки платформы
@@ -1031,19 +1019,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   // Отлавливание дефолтных событий для контроллера
   watch() {
     this.model.on('deleteStateMachine', this.deleteStateMachine);
-    this.model.on('loadData', () => this.loadData());
-    this.model.on('initEvents', () => this.transitions.initEvents());
-    this.model.on('deleteSelected', (smId: string) => this.deleteSelected(smId));
-    this.model.on('changeScale', (value) => {
-      this.scale = value;
-      this.app.view.isDirty = true;
-    });
-    this.model.on('isMounted', (args: SetMountedStatusParams) => this.setMountStatus(args));
+    this.model.on('loadData', this.loadData);
+    this.model.on('initEvents', this.transitions.initEvents);
+    this.model.on('deleteSelected', this.deleteSelected);
   }
 
-  private setMountStatus = (args: SetMountedStatusParams) => {
-    if (!this || args.canvasId !== this.app.id) return;
-    this.isMounted = args.status;
+  setMountStatus = (status: boolean) => {
+    this.isMounted = status;
+    this.triggerDataUpdate('isMounted');
   };
 
   private linkState = (args: LinkStateParams) => {

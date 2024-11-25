@@ -48,16 +48,10 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
 
     if (!cursor) return;
 
-    const getName = () => {
-      let idx = 1;
-      while (`${cursor.idx}${idx}` in components) {
-        idx++;
-      }
-
-      return `${cursor.idx}${idx}`;
-    };
-
-    onSubmit(cursor.idx, cursor.singletone ? undefined : getName());
+    onSubmit(
+      cursor.idx,
+      cursor.singletone ? undefined : modelController.validator.getComponentName(cursor)
+    );
     onRequestClose();
   };
 

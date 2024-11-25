@@ -56,6 +56,7 @@ import {
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
+import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
@@ -100,6 +101,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // По умолчанию главным считается "призрачный" канвас.
   // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
   controllers: { [id: string]: CanvasController } = {};
+  validator: UserInputValidator;
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
   private onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void;
@@ -107,6 +109,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     super();
     this.onStateMachineDelete = onStateMachineDelete;
     this.emptyController();
+    this.validator = new UserInputValidator(this);
     ModelController.instance = this;
   }
 

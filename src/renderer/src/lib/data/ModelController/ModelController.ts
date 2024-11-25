@@ -1642,7 +1642,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('deleteChoice', args);
   }
 
-  changeFinalStatePosition(args: ChangePosition, canUndo = true) {
+  changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
     this.emit('changeFinalStatePosition', args);
     const { startPosition } = args;
@@ -1652,7 +1652,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { ...args, startPosition: startPosition },
       });
     }
-  }
+  };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);

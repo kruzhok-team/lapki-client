@@ -541,7 +541,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeChoicePosition',
           this.bindHelper('choice', 'changeChoicePosition', this.states.changeChoiceStatePosition)
         );
-        this.initializer.initFinalStates(smId, initData as { [id: string]: FinalState });
+        this.initializer.initChoiceStates(smId, initData as { [id: string]: ChoiceState });
         break;
       case 'note':
         this.model.on('createNote', this.bindHelper('note', 'createNote', this.notes.createNote));

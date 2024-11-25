@@ -19,7 +19,7 @@ export const AvrdudeGuideModal: React.FC<AvrdudeGuideModalProps> = ({ onClose, .
     <Modal {...props} onRequestClose={onClose} title="Отсутствует avrdude">
       <div>
         Загрузчик не может найти программу Avrdude на вашем устройстве. Она необходима для того,
-        чтобы прошивать некоторые устройства (например, Arduino).
+        чтобы прошить выбранное устройство.
         <br></br>
         <br></br>
         Обратитесь к{' '}

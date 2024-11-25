@@ -9,9 +9,9 @@ import {
 import { useSettings } from '@renderer/hooks';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
-import { Select, SelectOption, Switch, TextInput } from './UI';
+import { Select, Switch, TextInput } from './UI';
 
-type LineBreakType = 'LF' | 'CR' | 'CR&LF' | 'Без';
+type LineBreakType = 'LF' | 'CR' | 'CRLF' | 'Без';
 // опции выбора символа окончания строки
 // при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
 class LineBreakOptions {
@@ -26,7 +26,7 @@ class LineBreakOptions {
     hint: 'Символ возврата каретки',
   };
   static CRLF = {
-    label: 'CR&LF' as LineBreakType,
+    label: 'CRLF' as LineBreakType,
     value: this.CR.value + this.LF.value,
     hint: 'Символы возврата каретки и новой строки',
   };
@@ -38,6 +38,8 @@ class LineBreakOptions {
 }
 
 export const SerialMonitorTab: React.FC = () => {
+  const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
+
   const {
     deviceMessages,
     setDeviceMessages: setMessages,
@@ -50,16 +52,13 @@ export const SerialMonitorTab: React.FC = () => {
   const makeOption = (x) => {
     return { label: x, value: x };
   };
-  const [baudRate, setBaudRate] = useState<SelectOption>(makeOption(9600));
+
   const baudRateAll = [
     50, 75, 110, 134, 150, 200, 300, 600, 750, 1200, 1800, 2400, 4800, 9600, 19200, 31250, 38400,
     57600, 74880, 115200, 230400, 250000, 460800, 500000, 921600, 1000000, 1152000, 1500000,
     2000000, 2500000, 3000000, 3500000, 4000000,
   ].map(makeOption);
 
-  const [lineBreak, setLineBreak] = useState<SelectOption>(LineBreakOptions.LF);
-
-  const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>('');
 
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
@@ -67,11 +66,15 @@ export const SerialMonitorTab: React.FC = () => {
 
   // При изменении deviceMessages и log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
-    if (autoScroll && deviceMessageContainerRef.current && logContainerRef.current) {
+    if (
+      monitorSetting?.autoScroll &&
+      deviceMessageContainerRef.current &&
+      logContainerRef.current
+    ) {
       deviceMessageContainerRef.current.scrollTop = deviceMessageContainerRef.current.scrollHeight;
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  }, [deviceMessages, log, autoScroll]);
+  }, [deviceMessages, log, monitorSetting]);
 
   useLayoutEffect(() => {
     if (deviceMessages != '' && deviceMessages[deviceMessages.length - 1] != '\n') {
@@ -80,9 +83,12 @@ export const SerialMonitorTab: React.FC = () => {
   }, [device]);
 
   const handleSend = () => {
-    if (inputValue.trim() && device != undefined) {
+    if (inputValue.trim() && device != undefined && monitorSetting != null) {
       // Отправляем сообщение через SerialMonitor
-      SerialMonitor.sendMessage(device?.deviceID, inputValue + lineBreak.value);
+      SerialMonitor.sendMessage(
+        device?.deviceID,
+        inputValue + LineBreakOptions[monitorSetting?.lineBreak].value
+      );
       setInputValue('');
     }
   };
@@ -106,41 +112,29 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleConnectionButton = () => {
-    if (device === undefined) {
+    if (device === undefined || monitorSetting === null) {
       return;
     }
     if (connectionStatus === SERIAL_MONITOR_CONNECTED) {
       SerialMonitor.closeMonitor(device?.deviceID);
     } else {
-      SerialMonitor.openMonitor(device, Number(baudRate.value));
+      SerialMonitor.openMonitor(device, Number(monitorSetting.baudRate));
     }
   };
 
-  const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
-
-  useLayoutEffect(() => {
-    if (!monitorSetting) return;
-    setBaudRate(makeOption(monitorSetting.baudRate));
-    switch (monitorSetting.lineBreak) {
-      case 'LF':
-        setLineBreak(LineBreakOptions.LF);
-        break;
-      case 'CR':
-        setLineBreak(LineBreakOptions.CR);
-        break;
-      case 'CR&LF':
-        setLineBreak(LineBreakOptions.CRLF);
-        break;
-      case 'Без':
-        setLineBreak(LineBreakOptions.EMPTY);
-    }
-  }, [setMonitorSetting, monitorSetting]);
-
   const settingLineBreak = (newBreakLine: LineBreakType) => {
     if (!monitorSetting) return;
+    let settingValue: typeof monitorSetting.lineBreak;
+    switch (newBreakLine) {
+      case 'Без':
+        settingValue = 'EMPTY';
+        break;
+      default:
+        settingValue = newBreakLine;
+    }
     setMonitorSetting({
       ...monitorSetting,
-      lineBreak: newBreakLine,
+      lineBreak: settingValue,
     });
   };
 
@@ -151,7 +145,9 @@ export const SerialMonitorTab: React.FC = () => {
       baudRate: newBaudRate,
     });
   };
-
+  if (!monitorSetting) {
+    return null;
+  }
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex justify-between">{`${handleCurrentDeviceDisplay()} - ${connectionStatus}`}</div>
@@ -166,7 +162,7 @@ export const SerialMonitorTab: React.FC = () => {
         <div className="mr-2 w-48">
           <Select
             isSearchable={false}
-            value={lineBreak}
+            value={LineBreakOptions[monitorSetting.lineBreak]}
             placeholder="Выберите конец строки..."
             onChange={(option) => {
               if (option) {
@@ -192,9 +188,9 @@ export const SerialMonitorTab: React.FC = () => {
       <div className="m-2 flex justify-between">
         <div className="flex w-40 items-center justify-between">
           <Switch
-            checked={autoScroll}
+            checked={monitorSetting.autoScroll}
             onCheckedChange={() => {
-              setAutoScroll(!autoScroll);
+              setMonitorSetting({ ...monitorSetting, autoScroll: !monitorSetting.autoScroll });
             }}
           />
           Автопрокрутка
@@ -207,7 +203,7 @@ export const SerialMonitorTab: React.FC = () => {
           <div className="mr-2 w-48">
             <Select
               isSearchable={false}
-              value={baudRate}
+              value={makeOption(monitorSetting.baudRate)}
               placeholder="Выберите скорость передачи..."
               onChange={(option) => {
                 if (option) {

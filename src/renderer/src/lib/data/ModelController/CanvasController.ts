@@ -64,7 +64,7 @@ import { StatesController } from './StatesController';
 import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
-import { getPlatform, isPlatformAvailable, loadPlatform } from '../PlatformLoader';
+import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
 import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =

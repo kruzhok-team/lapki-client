@@ -60,8 +60,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     name: string,
     component: string,
     attribute: string,
-    platform: Platform
+    platform: Platform | undefined
   ) => {
+    if (!platform) return;
     let inputValue = '';
     if (component || attribute) {
       const proto = controller.platform[smId].getComponent(component);

@@ -92,7 +92,7 @@ export const StateMachinesList: React.FC = () => {
                   key={id}
                   name={sm.name || id}
                   isSelected={id === selectedSm}
-                  icon={<StateMachineIcon className="fill-bg-contrast" />}
+                  icon={<StateMachineIcon className="fill-border-contrast" />}
                   onSelect={() => setSmSelected(id)}
                   onEdit={() => onRequestEditStateMachine(id)}
                   onDelete={() => undefined}

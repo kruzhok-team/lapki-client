@@ -5,6 +5,7 @@ export type ArgumentProto = {
   img?: string;
   description?: string;
   type?: ArgType;
+  optional?: boolean;
 };
 
 export type ParameterProto = {

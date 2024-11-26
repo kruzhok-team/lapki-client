@@ -153,7 +153,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       if (errors[key]) return;
     }
     if (!selectedComponent || !selectedMethod) return;
-
+    // TODO (L140-beep): не отправлять форму при отсутствии обязательных параметров
     onSubmit({
       component: selectedComponent,
       method: selectedMethod,

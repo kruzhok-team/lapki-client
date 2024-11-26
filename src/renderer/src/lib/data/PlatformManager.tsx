@@ -312,28 +312,33 @@ export class PlatformManager {
     const opacity = alpha ?? 1.0;
     let argQuery: string = '';
 
+    const compoData = this.resolveComponent(ac.component);
+    const component = compoData.component;
+    const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
+
     if (ac.component === 'System') {
       rightIcon = ac.method;
     } else {
-      const compoData = this.resolveComponent(ac.component);
-      const component = compoData.component;
       leftIcon = {
         ...compoData,
         icon: this.getComponentIcon(component),
       };
       rightIcon = this.getActionIcon(component, ac.method);
 
-      const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
       if (parameterList && parameterList.length > 0) {
-        argQuery = parameterList[0].name;
+        argQuery = parameterList[0].name ?? '';
       }
     }
 
     let parameter: string | undefined = undefined;
-    if (argQuery && ac.args) {
+    if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
       if (typeof paramValue === 'undefined') {
-        parameter = '?!';
+        if (parameterList[0].optional) {
+          parameter = '';
+        } else {
+          parameter = '?!';
+        }
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
       } else {

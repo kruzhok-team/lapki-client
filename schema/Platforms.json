@@ -33,6 +33,9 @@
         "name": {
           "type": "string"
         },
+        "optional": {
+          "type": "boolean"
+        },
         "type": {
           "$ref": "#/definitions/ArgType"
         }
@@ -78,9 +81,6 @@
         },
         "description": {
           "type": "string"
-        },
-        "position": {
-          "$ref": "#/definitions/Point"
         },
         "img": {
           "type": "string"
@@ -134,9 +134,7 @@
       "required": [
         "signals",
         "variables",
-        "position",
-        "methods",
-        "parameters"
+        "methods"
       ],
       "type": "object"
     },

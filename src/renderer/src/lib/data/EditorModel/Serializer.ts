@@ -16,7 +16,11 @@ export class Serializer {
       case 'JSON':
         return JSON.stringify(this.data.elements, undefined, 2);
       case 'Cyberiada':
-        return exportCGML(this.data.elements);
+        // TODO (L140-beep): пофиксить этот костыль
+        // Клонируем, потому что при экспорте у нас параметры-матрицы превращаются в строку
+        // и эти параметры меняются глобально
+        // Если не клонировать, то значения матрицы отрисовываются полностью после сохранения.
+        return exportCGML(structuredClone(this.data.elements));
     }
   }
 

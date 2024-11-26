@@ -4,7 +4,9 @@ import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormField
 import { Select } from '@renderer/components/UI';
 import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
-import { formatArgType, validators } from '@renderer/utils';
+import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
+
+import { MatrixWidget } from './MatrixWidget';
 
 interface ActionsModalParametersProps {
   protoParameters: ArgumentProto[];
@@ -33,6 +35,13 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
     parameters[name] = value;
     setParameters({ ...parameters });
+  };
+
+  const onChange = (parameter: string, row: number, col: number, value: number) => {
+    (parameters[parameter] as number[][])[row][col] = value;
+    setParameters({
+      ...parameters,
+    });
   };
 
   if (protoParameters.length === 0) {
@@ -64,6 +73,35 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
+        if (type.startsWith('Matrix')) {
+          const { width, height } = getMatrixDimensions(type);
+          if (!value) {
+            const newMatrix = createEmptyMatrix(type);
+            parameters[name] = newMatrix.values;
+            setParameters({ ...parameters });
+          }
+          if (Array.isArray(value) && Array.isArray(value[0])) {
+            return (
+              <ComponentFormFieldLabel
+                as="div"
+                key={name}
+                label={label}
+                hint={hint}
+                error={error}
+                name={name}
+              >
+                <MatrixWidget
+                  {...{
+                    width: width,
+                    height: height,
+                    values: parameters[name] as number[][],
+                  }}
+                  onChange={onChange.bind(this, name)}
+                />
+              </ComponentFormFieldLabel>
+            );
+          }
+        }
 
         return (
           <ComponentFormFieldLabel
@@ -71,7 +109,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             label={label}
             hint={hint}
             error={error}
-            value={value}
+            value={value as string}
             name={name}
             onChange={(e) => handleInputChange(name, type, e.target.value)}
           />

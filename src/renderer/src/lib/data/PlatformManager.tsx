@@ -1,6 +1,7 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
+import { buildMatrix, getMatrixDimensions } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
 
@@ -262,32 +263,47 @@ export class PlatformManager {
     const bgColor = '#3a426b';
     const fgColor = '#fff';
     let argQuery: string = '';
-
+    const compoData = this.resolveComponent(ev.component);
+    const component = compoData.component;
+    const parameterList = this.data.components[component]?.signals[ev.method]?.parameters;
     if (ev.component === 'System') {
       // ev.method === 'onEnter' || ev.method === 'onExit'
       rightIcon = ev.method;
     } else {
-      const compoData = this.resolveComponent(ev.component);
-      const component = compoData.component;
       leftIcon = {
         ...compoData,
         icon: this.getComponentIcon(component),
       };
       rightIcon = this.getEventIcon(component, ev.method);
 
-      const parameterList = this.data.components[component]?.signals[ev.method]?.parameters;
       if (parameterList && parameterList.length > 0) {
         argQuery = parameterList[0].name;
       }
     }
 
     let parameter: string | undefined = undefined;
-    if (argQuery && ev.args) {
+    if (argQuery && ev.args && parameterList) {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
         parameter = '?!';
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
+      } else if (
+        typeof parameterList[0].type === 'string' &&
+        parameterList[0].type.startsWith('Matrix')
+      ) {
+        const { width, height } = getMatrixDimensions(parameterList[0].type);
+        parameter = buildMatrix({
+          values: paramValue,
+          width: width,
+          height: height,
+        });
+        if (parameter.length > 10) {
+          parameter = parameter.slice(0, 10) + '...';
+        }
+        // TODO (L140-beep): Пиктограмма для матрицы
+        // drawMAtrix...
+        // return
       } else {
         // FIXME
         console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
@@ -311,11 +327,9 @@ export class PlatformManager {
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
     let argQuery: string = '';
-
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;
     const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
-
     if (ac.component === 'System') {
       rightIcon = ac.method;
     } else {
@@ -341,6 +355,20 @@ export class PlatformManager {
         }
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
+      } else if (
+        typeof parameterList[0].type === 'string' &&
+        parameterList[0].type.startsWith('Matrix')
+      ) {
+        // TODO (L140-beep): Пиктограмма для матрицы
+        const { width, height } = getMatrixDimensions(parameterList[0].type);
+        parameter = buildMatrix({
+          values: paramValue,
+          width: width,
+          height: height,
+        });
+        if (parameter.length > 10) {
+          parameter = parameter.slice(0, 10) + '...';
+        }
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);

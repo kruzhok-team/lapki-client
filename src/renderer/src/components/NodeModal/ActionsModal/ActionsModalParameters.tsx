@@ -8,8 +8,11 @@ import { ModelController } from '@renderer/lib/data/ModelController/ModelControl
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { ArgList, StateMachine } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto, Platform } from '@renderer/types/platform';
-import { formatArgType, validators } from '@renderer/utils';
+import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
+
+import { MatrixWidget } from './MatrixWidget';
+
 interface ActionsModalParametersProps {
   protoParameters: ArgumentProto[];
   parameters: ArgList;
@@ -99,6 +102,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         };
       });
   };
+  const onChange = (parameter: string, row: number, col: number, value: number) => {
+    (parameters[parameter] as number[][])[row][col] = value;
+    setParameters({
+      ...parameters,
+    });
+  };
 
   if (protoParameters.length === 0) {
     return null;
@@ -128,8 +137,37 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
+        if (type.startsWith('Matrix')) {
+          const { width, height } = getMatrixDimensions(type);
+          if (!value) {
+            const newMatrix = createEmptyMatrix(type);
+            parameters[name] = newMatrix.values;
+            setParameters({ ...parameters });
+          }
+          if (Array.isArray(value) && Array.isArray(value[0])) {
+            return (
+              <ComponentFormFieldLabel
+                as="div"
+                key={name}
+                label={label}
+                hint={hint}
+                error={error}
+                name={name}
+              >
+                <MatrixWidget
+                  {...{
+                    width: width,
+                    height: height,
+                    values: parameters[name] as number[][],
+                  }}
+                  onChange={onChange.bind(this, name)}
+                />
+              </ComponentFormFieldLabel>
+            );
+          }
+        }
         const platform = getPlatform(stateMachines[smId].platform);
-        const componentAttibute = getComponentAttribute(value, platform);
+        const componentAttibute = getComponentAttribute(value as string, platform);
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
         const currentChecked = isChecked.get(name) ?? componentAttibute != null;
         const selectedParameterComponent =
@@ -205,7 +243,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 label={label}
                 hint={hint}
                 error={error}
-                value={value}
+                value={value as string}
                 name={name}
                 onChange={(e) => handleInputChange(name, type, e.target.value)}
               />

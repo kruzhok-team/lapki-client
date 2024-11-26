@@ -30,7 +30,7 @@ import {
   Note,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
-import { isString } from '@renderer/utils';
+import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -108,6 +108,28 @@ function initArgList(args: string[]): ArgList {
 
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
 
+function splitArgs(argString: string): string[] {
+  // split по запятой, но не внутри скобок
+  const args: string[] = [];
+  let currentArg = '';
+  let bracketCount = 0;
+  for (const char of argString) {
+    if (char === '{') {
+      bracketCount++;
+    } else if (char === '}') {
+      bracketCount--;
+    }
+    if (char === ',' && bracketCount === 0) {
+      args.push(currentArg);
+      currentArg = '';
+    } else {
+      currentArg += char;
+    }
+  }
+  args.push(currentArg);
+  return args;
+}
+
 function parseAction(unproccessedAction: string): Action | undefined | string {
   if (unproccessedAction === '') {
     return undefined;
@@ -139,10 +161,17 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
 
   // На случай, если действий у события нет
   const bracketPos = action.indexOf('(');
-  const args = action
-    .slice(bracketPos + 1, action.length - 1)
-    .split(',')
-    .filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+  const lastBracketPos = action.lastIndexOf(')');
+  let args: string[] = [];
+  if (bracketPos != -1) {
+    if (lastBracketPos == -1) {
+      // выдать ошибку, у нас незакрытая скобка
+      throw new Error(`Неправильные скобки в действии ${unproccessedAction}!`);
+    }
+  }
+  const argString = action.slice(bracketPos + 1, lastBracketPos);
+  args = splitArgs(argString).filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
+
   const method = action.slice(0, bracketPos);
   return {
     component: componentName,
@@ -368,8 +397,13 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
 function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
-    labeledArgs[element.name] = args[index];
     delete labeledArgs[index];
+    if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
+      const { width, height } = getMatrixDimensions(element.type);
+      labeledArgs[element.name] = parseMatrixFromString(args[index] as string, width, height);
+      return;
+    }
+    labeledArgs[element.name] = args[index];
   });
   return labeledArgs;
 }

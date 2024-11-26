@@ -152,11 +152,6 @@ export class FilesManager {
   }
 
   save = async (): Promise<Either<FileError | null, null>> => {
-    const headControllerId = this.controller.model.data.headControllerId;
-    const controller = this.controller.controllers[headControllerId];
-    const canvas = controller.app;
-    const isInitialized = this.data.canvas[canvas.id].isInitialized;
-    if (!isInitialized) return makeLeft(null);
     if (!this.data.basename) {
       return await this.saveAs();
     }
@@ -176,11 +171,6 @@ export class FilesManager {
   };
 
   saveAs = async (): Promise<Either<FileError | null, null>> => {
-    const headControllerId = this.controller.model.data.headControllerId;
-    const controller = this.controller.controllers[headControllerId];
-    const canvas = controller.app;
-    const isInitialized = this.data.canvas[canvas.id].isInitialized;
-    if (!isInitialized) return makeLeft(null);
     const data = this.modelController.model.serializer.getAll('Cyberiada');
     const saveData = await window.api.fileHandlers.saveAsFile(this.data.basename as string, data);
     if (saveData[0]) {

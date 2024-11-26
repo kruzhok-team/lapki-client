@@ -13,7 +13,7 @@ export const ComponentsList: React.FC = () => {
   );
   const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
-  const isInitialized = model.useData('', 'canvas.isInitialized', editor.id) as boolean;
+  const isInitialized = model.useData('', 'isInitialized') as boolean;
 
   const [dragName, setDragName] = useState<string | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

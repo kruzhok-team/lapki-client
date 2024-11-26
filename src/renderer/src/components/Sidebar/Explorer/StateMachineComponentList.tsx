@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
@@ -61,7 +63,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
 
     onSwapComponents(dragName, name);
   };
-
+  const isDisabled = !isInitialized;
   return (
     <>
       <div className="flex">
@@ -69,8 +71,8 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         <div className="flex w-full justify-end">
           <button
             type="button"
-            className="h-5 w-5 opacity-60"
-            disabled={!isInitialized || controller.id === ''}
+            className={twMerge('h-5 w-5 opacity-70', isDisabled && 'opacity-40')}
+            disabled={isDisabled}
             onClick={onRequestAddComponent}
           >
             <AddIcon className="shrink-0" />

@@ -5,8 +5,8 @@ import { Platform } from '@renderer/types/platform';
  * @param parameter компонент и атрибут, записанный в виде строки
  * @returns массив из трёх элементов, где первый - это компонент, второй - атрибут, а третий разделитель. Null, если строка не является параметром с атрибутом.
  */
-export const getComponentAttribute = (parameter: string, platform: Platform) => {
-  if (parameter.includes('"') || !isNaN(Number(parameter))) {
+export const getComponentAttribute = (parameter: string, platform: Platform | undefined) => {
+  if (!platform || parameter.includes('"') || !isNaN(Number(parameter))) {
     return null;
   }
   let delimiter = '.';

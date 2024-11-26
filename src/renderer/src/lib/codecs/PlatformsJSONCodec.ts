@@ -277,7 +277,17 @@ const typeMap: any = {
     [
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
-      { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ParameterProto'))) },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ArgumentProto'))) },
+    ],
+    false
+  ),
+  ArgumentProto: o(
+    [
+      { json: 'description', js: 'description', typ: u(undefined, '') },
+      { json: 'img', js: 'img', typ: u(undefined, '') },
+      { json: 'name', js: 'name', typ: '' },
+      { json: 'optional', js: 'optional', typ: u(undefined, true) },
+      { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
     ],
     false
   ),
@@ -286,7 +296,7 @@ const typeMap: any = {
       { json: 'checkMethod', js: 'checkMethod', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
-      { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ParameterProto'))) },
+      { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ArgumentProto'))) },
     ],
     false
   ),

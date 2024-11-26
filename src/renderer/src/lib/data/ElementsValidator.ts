@@ -96,7 +96,7 @@ function validateArgs(
   method: MethodProto | SignalProto,
   args: ArgList | undefined
 ) {
-  const methodArgs: ParameterProto[] | undefined = method.parameters;
+  const methodArgs: ParameterProto[] | ArgumentProto[] | undefined = method.parameters;
   const requiredArgs = getRequiredArgs(method);
   if (methodArgs === undefined) {
     if (args !== undefined && methodArgs === 0) {

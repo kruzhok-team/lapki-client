@@ -5,6 +5,7 @@ export type ArgumentProto = {
   img?: string;
   description?: string;
   type?: ArgType;
+  optional?: boolean;
 };
 
 export type ParameterProto = {
@@ -18,7 +19,7 @@ export type ParameterProto = {
 export type SignalProto = {
   img?: string;
   description?: string;
-  parameters?: ParameterProto[];
+  parameters?: ArgumentProto[];
   checkMethod?: string;
 };
 
@@ -32,7 +33,7 @@ export type VariableProto = {
 export type MethodProto = {
   img?: string;
   description?: string;
-  parameters?: ParameterProto[];
+  parameters?: ArgumentProto[];
 };
 
 export type ComponentProto = {

@@ -66,12 +66,7 @@
           "checkMethod": "packetReceived"
         }
       },
-      "constructorParameters": {
-        "baudrate": {
-          "type": "uint32_t",
-          "description": "Частота работы."
-        }
-      },
+      "constructorParameters": {},
       "variables": {
         "myAddress": {
           "img": "common/value.svg",
@@ -130,7 +125,8 @@
       "constructorParameters": {
         "baudrate": {
           "type": "uint32_t",
-          "description": "Частота работы."
+          "description": "Частота работы.",
+          "optional" : true
         }
       },
       "variables": {
@@ -196,7 +192,7 @@
       "signals": {},
       "constructorParameters": {
         "pin": {
-          "type": "uint8_t",
+          "type": ["1", "2", "3"],
           "description": "Пин, к которому подключен светодиод"
         }
       },
@@ -210,6 +206,14 @@
       "methods": {
         "on": {
           "img": "arduino/switch-on.svg",
+          "parameters": [
+            {
+              "name": "brightness",
+              "type": "uint8_t",
+              "description": "Яркость светодиода (по умолчанию: 100)",
+              "optional": true
+            }
+          ],
           "description": "Зажечь светодиод"
         },
         "off": {
@@ -218,7 +222,7 @@
         },
         "toggle": {
           "img": "arduino/toggle.svg",
-          "description": "Меняет состояние кнопки на противоположное"
+          "description": "Меняет состояние светодиода на противоположное"
         },
         "blink": {
           "img": "arduino/blink.svg",
@@ -234,7 +238,7 @@
               "description": "Длительность мигания"
             }
           ],
-          "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания"
+          "description": "Мигает светодиодом определенное количество раз с определенной длительностью каждого мигания"
         }
       },
       "buildFiles": ["LED.h"],

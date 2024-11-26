@@ -71,12 +71,7 @@
           "checkMethod": "packetReceived"
         }
       },
-      "constructorParameters": {
-        "baudrate": {
-          "type": "uint32_t",
-          "description": "Частота работы."
-        }
-      },
+      "constructorParameters": {},
       "variables": {
         "myAddress": {
           "img": "common/value.svg",
@@ -135,7 +130,8 @@
       "constructorParameters": {
         "baudrate": {
           "type": "uint32_t",
-          "description": "Частота работы."
+          "description": "Частота работы.",
+          "optional" : true
         }
       },
       "variables": {
@@ -162,6 +158,7 @@
       "importFiles": ["DataBus.hpp"],
       "singletone": false
     },
+    
     "Matrix": {
       "description": "Компонент для взаимодействия со светодиодной матрицы.",
       "img": "arduino/led.svg",

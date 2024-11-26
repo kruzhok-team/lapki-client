@@ -113,8 +113,9 @@ function validateArgs(
       );
     }
     // TODO (L140-beep): Проверять, что значение является одним из списка возможных значений
-    if (!args) throw Error(`Отсутствуют аргументы вызова метода ${methodName}!`);
-    const argNames = Object.keys(args);
+    if (!args && requiredArgs.length !== 0)
+      throw Error(`Отсутствуют аргументы вызова метода ${methodName}!`);
+    const argNames = Object.keys(args ?? {});
     for (const argIdx in methodArgs) {
       if (argNames[argIdx] !== methodArgs[argIdx].name) {
         throw new Error(

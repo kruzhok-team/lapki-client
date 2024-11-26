@@ -99,7 +99,7 @@ function validateArgs(
   const methodArgs: ParameterProto[] | ArgumentProto[] | undefined = method.parameters;
   const requiredArgs = getRequiredArgs(method);
   if (methodArgs === undefined) {
-    if (args !== undefined) {
+    if (args !== undefined && Object.keys(args).length !== 0) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
           Object.keys(args).length
@@ -107,14 +107,15 @@ function validateArgs(
       );
     }
   } else {
-    if (args !== undefined && requiredArgs.length !== 0) {
+    if (args !== undefined && requiredArgs.length > Object.keys(args).length) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${requiredArgs.length}`
       );
     }
     // TODO (L140-beep): Проверять, что значение является одним из списка возможных значений
-    if (!args) throw Error(`Отсутствуют аргументы вызова метода ${methodName}!`);
-    const argNames = Object.keys(args);
+    if (!args && requiredArgs.length !== 0)
+      throw Error(`Отсутствуют аргументы вызова метода ${methodName}!`);
+    const argNames = Object.keys(args ?? {});
     for (const argIdx in methodArgs) {
       if (argNames[argIdx] !== methodArgs[argIdx].name) {
         throw new Error(

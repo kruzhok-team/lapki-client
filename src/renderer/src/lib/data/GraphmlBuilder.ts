@@ -95,7 +95,7 @@ export function serializeActions(
   platform: Platform
 ): string {
   let serialized = '';
-  // TODO: Стиль команд, внедрить новый формат платформ
+
   for (const action of actions) {
     const component = components[action.component];
     const platformComponent = platform.components[component.type];
@@ -104,6 +104,7 @@ export function serializeActions(
       action.args
     )})${platform.delimeter}\n`;
   }
+
   return serialized.trim();
 }
 

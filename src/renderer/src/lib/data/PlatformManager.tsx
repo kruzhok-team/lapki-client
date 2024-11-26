@@ -1,4 +1,4 @@
-import { MarkedIconData, icons, picto } from '@renderer/lib/drawable';
+import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
 import { buildMatrix, getMatrixDimensions } from '@renderer/utils';
@@ -59,6 +59,7 @@ export class PlatformManager {
    * переданное название типом компонента,
    * а данные метки – пустыми.
    */
+  private __picto: Picto | undefined = undefined;
   nameToVisual: Map<string, VisualCompoData> = new Map();
 
   componentToIcon: Map<string, string> = new Map();
@@ -69,7 +70,6 @@ export class PlatformManager {
   constructor(name: string, platform: Platform) {
     this.name = name;
     this.data = platform;
-
     if (!this.data.components['System']) {
       this.componentToIcon.set('System', systemComponent.img!);
       this.eventToIcon.set('System/onEnter', 'onEnterAlt');
@@ -104,6 +104,15 @@ export class PlatformManager {
         }
       }
     }
+  }
+
+  get picto() {
+    if (!this.__picto) throw Error('Picto не инициализирован!');
+    return this.__picto;
+  }
+
+  set picto(picto: Picto) {
+    this.__picto = picto;
   }
 
   resolveComponent(name: string) {
@@ -191,7 +200,7 @@ export class PlatformManager {
       icon: this.getComponentIcon(query.component, false),
     };
     // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
-    return picto.getMarkedIcon(iconQuery, className);
+    return this.picto.getMarkedIcon(iconQuery, className);
   }
 
   getEventIcon(component: string, method: string) {
@@ -302,7 +311,7 @@ export class PlatformManager {
       }
     }
 
-    picto.drawPicto(ctx, x, y, {
+    this.picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
@@ -331,7 +340,7 @@ export class PlatformManager {
       rightIcon = this.getActionIcon(component, ac.method);
 
       if (parameterList && parameterList.length > 0) {
-        argQuery = parameterList[0].name;
+        argQuery = parameterList[0].name ?? '';
       }
     }
 
@@ -339,7 +348,11 @@ export class PlatformManager {
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
       if (typeof paramValue === 'undefined') {
-        parameter = '?!';
+        if (parameterList[0].optional) {
+          parameter = '';
+        } else {
+          parameter = '?!';
+        }
       } else if (typeof paramValue === 'string') {
         parameter = paramValue;
       } else if (
@@ -363,7 +376,7 @@ export class PlatformManager {
       }
     }
 
-    picto.drawPicto(ctx, x, y, {
+    this.picto.drawPicto(ctx, x, y, {
       bgColor,
       fgColor,
       leftIcon,
@@ -376,8 +389,8 @@ export class PlatformManager {
   measureFullCondition(ac: Condition): number {
     if (!operatorSet.has(ac.type)) return 0;
 
-    const leftW = this.measureCondition(ac.value[0]) + picto.eventMargin;
-    const icoW = picto.eventHeight + picto.eventMargin;
+    const leftW = this.measureCondition(ac.value[0]) + this.picto.eventMargin;
+    const icoW = this.picto.eventHeight + this.picto.eventMargin;
     const rightW = this.measureCondition(ac.value[1]);
 
     return leftW + icoW + rightW;
@@ -385,10 +398,10 @@ export class PlatformManager {
 
   measureCondition(ac: Condition): number {
     if (ac.type == 'component') {
-      return picto.eventWidth;
+      return this.picto.eventWidth;
     }
     if (ac.type == 'value') {
-      return picto.textPadding * 2 + ac.value.toString().length * picto.pxPerChar;
+      return this.picto.textPadding * 2 + ac.value.toString().length * this.picto.pxPerChar;
     }
     if (operatorSet.has(ac.type)) {
       if (Array.isArray(ac.value)) {
@@ -396,13 +409,13 @@ export class PlatformManager {
         for (const x of ac.value) {
           w += this.measureCondition(x);
         }
-        return w + picto.eventHeight + picto.eventMargin * (ac.value.length - 1);
+        return w + this.picto.eventHeight + this.picto.eventMargin * (ac.value.length - 1);
       }
       console.log(['PlatformManager.measureCondition', 'non-array operator', ac]);
-      return picto.eventHeight;
+      return this.picto.eventHeight;
     }
     console.log(['PlatformManager.measureCondition', 'wtf', ac]);
-    return picto.eventWidth;
+    return this.picto.eventWidth;
   }
 
   drawCondition(
@@ -440,7 +453,7 @@ export class PlatformManager {
         }
       }
 
-      picto.drawPicto(ctx, x, y, {
+      this.picto.drawPicto(ctx, x, y, {
         bgColor,
         fgColor,
         leftIcon,
@@ -454,16 +467,16 @@ export class PlatformManager {
       // TODO: менять цвет с заходом в глубину
       if (!(Array.isArray(ac.value) && ac.value.length == 2)) {
         console.error(['PlatformManager.drawCondition', 'non-binary not implemented yet', ac]);
-        picto.drawBorder(ctx, x, y, 'red');
+        this.picto.drawBorder(ctx, x, y, 'red');
         return;
       }
 
-      const mr = picto.eventMargin;
-      const icoW = (picto.eventHeight + picto.eventMargin) / picto.scale;
-      const leftW = (this.measureCondition(ac.value[0]) + mr) / picto.scale;
+      const mr = this.picto.eventMargin;
+      const icoW = (this.picto.eventHeight + this.picto.eventMargin) / this.picto.scale;
+      const leftW = (this.measureCondition(ac.value[0]) + mr) / this.picto.scale;
 
       this.drawCondition(ctx, ac.value[0], x, y, opacity);
-      picto.drawMono(ctx, x + leftW, y, {
+      this.picto.drawMono(ctx, x + leftW, y, {
         bgColor,
         fgColor,
         rightIcon: `op/${ac.type}`,
@@ -473,7 +486,7 @@ export class PlatformManager {
       return;
     }
     if (ac.type == 'value') {
-      picto.drawText(ctx, x, y, {
+      this.picto.drawText(ctx, x, y, {
         rightIcon: ac.value.toString(),
         bgColor,
         fgColor,
@@ -482,14 +495,14 @@ export class PlatformManager {
       return;
     }
 
-    const fontSize = 8 / picto.scale;
+    const fontSize = 8 / this.picto.scale;
     ctx.save();
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
 
-    picto.drawBorder(ctx, x, y, '#880000');
-    const p = 5 / picto.scale;
+    this.picto.drawBorder(ctx, x, y, '#880000');
+    const p = 5 / this.picto.scale;
     ctx.fillText(ac.type, x + p, y + p);
     // ctx.fillText(JSON.stringify(ac.value), x + p, y + fontSize + p);
 

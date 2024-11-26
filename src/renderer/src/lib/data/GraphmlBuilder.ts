@@ -84,8 +84,7 @@ export function serializeEvent(trigger: Event): string {
 
 function getActionDelimeter(platform: Platform, componentType: string): string {
   const platformComponent = platform.components[componentType];
-  const isArduino = platform.name?.startsWith('Arduino');
-  return platformComponent.singletone && isArduino ? '::' : '.';
+  return platformComponent.singletone ? platform.staticActionDelimeter : '.';
 }
 
 /**
@@ -101,17 +100,16 @@ export function serializeActions(
   platform: Platform
 ): string {
   let serialized = '';
-  // TODO: Стиль команд, внедрить новый формат платформ
-  const isArduino = platform.name?.startsWith('Arduino');
-  const delimeter = isArduino ? ';' : '';
+
   for (const action of actions) {
     const component = components[action.component];
     const platformComponent = platform.components[component.type];
-    const actionDelimeter = platformComponent.singletone && isArduino ? '::' : '.';
+    const actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
     serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
       action.args
-    )})${delimeter}\n`;
+    )})${platform.delimeter}\n`;
   }
+
   return serialized.trim();
 }
 

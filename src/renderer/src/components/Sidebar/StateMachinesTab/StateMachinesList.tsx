@@ -43,7 +43,7 @@ export const StateMachinesList: React.FC = () => {
     editProps,
     deleteProps,
     // onSwapStateMachines
-    onRequestDeleteStateMachine,
+    // onRequestDeleteStateMachine,
     onRequestAddStateMachine,
     onRequestEditStateMachine,
     isDuplicateName,
@@ -55,6 +55,21 @@ export const StateMachinesList: React.FC = () => {
 
   return (
     <section>
+      {/* <div className="mx-4 mb-3 flex justify-center border-b border-border-primary py-2 text-center text-lg">
+        <div className="flex w-full justify-center">
+          <h3>Машины состояний</h3>{' '}
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className="w-5 opacity-60"
+            disabled={!isInitialized || controller.id === ''}
+            onClick={onRequestAddStateMachine}
+          >
+            <AddIcon className="shrink-0" />
+          </button>
+        </div>
+      </div> */}
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Машины состояний
       </h3>
@@ -76,7 +91,7 @@ export const StateMachinesList: React.FC = () => {
               isSelected={id === selectedSm}
               onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}
-              onDelete={() => onRequestDeleteStateMachine(id)}
+              onDelete={() => undefined}
               onCallContextMenu={() => onCallContextMenu(id, sm)}
               // TODO (L140-beep): Доделать свап машин состояний
               onDragStart={() => console.log('setDragState')}

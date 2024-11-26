@@ -44,7 +44,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   clear = this.items.clear.bind(this.items);
   forEach = this.items.forEach.bind(this.items);
 
-  createNote = (params: CreateNoteParams) => {
+  initNote = (params: CreateNoteParams) => {
     const { id, smId } = params;
     if (!id) return;
     const note = new Note(this.app, smId, id, { ...params });
@@ -54,6 +54,15 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.children.add(note, Layer.Notes);
 
     this.view.isDirty = true;
+
+    return note;
+  };
+
+  createNote = (params: CreateNoteParams) => {
+    const note = this.initNote(params);
+    if (!note) return;
+
+    this.bindEdgeHandlers(note);
   };
 
   changeNoteText = (args: ChangeNoteText) => {
@@ -182,15 +191,21 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.changeNotePosition({ id: note.id, endPosition: e.dragEndPosition });
   };
 
+  /*
+  Мы вынесли это сюда, потому что EdgeHandlers подписывается на события мыши, которой не существует
+  на момент инициализации данных, из-за чего происходил краш IDE. И теперь биндим EdgeHandlers в момент маунта канваса.
+  */
+  bindEdgeHandlers(note: Note) {
+    note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
+    note.edgeHandlers.bindEvents();
+  }
+
   watch(note: Note) {
     note.on('mousedown', this.handleMouseDown.bind(this, note));
     note.on('dblclick', this.handleDoubleClick.bind(this, note));
     note.on('mouseup', this.handleMouseUpOnNote.bind(this, note));
     note.on('contextmenu', this.handleContextMenu.bind(this, note.id));
     note.on('dragend', this.handleDragEnd.bind(this, note));
-
-    note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
-    note.edgeHandlers.bindEvents();
   }
 
   unwatch(note: Note) {

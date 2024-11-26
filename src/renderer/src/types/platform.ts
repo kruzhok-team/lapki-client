@@ -1,10 +1,11 @@
-export type ArgType = string | string[];
+export type ArgType = string | string[] | number[];
 
 export type ArgumentProto = {
   name: string;
   img?: string;
   description?: string;
   type?: ArgType;
+  optional?: boolean;
 };
 
 export type ParameterProto = {
@@ -75,6 +76,7 @@ export type Platform = {
   mainFileExtension?: string;
   version: string;
   visual: boolean;
+  staticActionDelimeter: string;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

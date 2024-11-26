@@ -3,6 +3,7 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -10,11 +11,14 @@ import { ArgumentProto } from '@renderer/types/platform';
 import { ActionsModalParameters } from './ActionsModalParameters';
 
 export interface ActionsModalData {
+  smId: string;
   action: Action;
   isEditingEvent: boolean;
 }
 
 interface ActionsModalProps {
+  smId: string;
+  controller: CanvasController;
   initialData?: ActionsModalData;
   isOpen: boolean;
   onSubmit: (data: Action) => void;
@@ -24,17 +28,15 @@ interface ActionsModalProps {
 export const ActionsModal: React.FC<ActionsModalProps> = ({
   initialData,
   onSubmit,
+  controller,
+  smId,
   isOpen,
   onClose,
 }) => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
-  const stateMachines = Object.keys(controller.stateMachinesSub);
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const platforms = controller.useData('platform');
   const visual = controller.useData('visual');
-  const smId = stateMachines[0];
   const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
@@ -47,10 +49,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    if (!controller.platform[smId]) return [];
+    if (!platforms[smId]) return [];
 
     const getComponentOption = (id: string) => {
-      if (!controller.platform[smId]) {
+      if (!platforms[smId]) {
         return {
           value: id,
           label: id,
@@ -58,13 +60,13 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
           icon: undefined,
         };
       }
-      const proto = controller.platform[smId].getComponent(id);
+      const proto = platforms[smId].getComponent(id);
 
       return {
         value: id,
         label: id,
         hint: proto?.description,
-        icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: platforms[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
@@ -77,32 +79,28 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     }
 
     return result;
-  }, [controller.platform, componentsData, isEditingEvent, visual]);
+  }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent || !controller.platform[smId]) return [];
-    const getAll =
-      controller.platform[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
-    const getImg =
-      controller.platform[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
+    if (!selectedComponent || !platforms[smId]) return [];
+    const getAll = platforms[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
+    const getImg = platforms[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll
-      .call(controller.platform[smId], selectedComponent)
-      .map(({ name, description }) => {
-        return {
-          value: name,
-          label: name,
-          hint: description,
-          icon: (
-            <img
-              src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
-              className="mr-1 size-7 object-contain"
-            />
-          ),
-        };
-      });
-  }, [selectedComponent, controller.platform, isEditingEvent, visual]);
+    return getAll.call(platforms[smId], selectedComponent).map(({ name, description }) => {
+      return {
+        value: name,
+        label: name,
+        hint: description,
+        icon: (
+          <img
+            src={getImg.call(platforms[smId], selectedComponent, name, true)}
+            className="mr-1 size-7 object-contain"
+          />
+        ),
+      };
+    });
+  }, [selectedComponent, platforms, isEditingEvent, visual]);
 
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
@@ -155,7 +153,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       if (errors[key]) return;
     }
     if (!selectedComponent || !selectedMethod) return;
-
+    // TODO (L140-beep): не отправлять форму при отсутствии обязательных параметров
     onSubmit({
       component: selectedComponent,
       method: selectedMethod,
@@ -177,10 +175,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     }
 
     const init = (action: Action, path: 'signals' | 'methods') => {
-      if (!controller.platform) return;
+      if (!platforms[smId]) return;
 
       const { component, method, args = {} } = action;
-      const componentProto = controller.platform[smId].getComponent(component);
+      const componentProto = platforms[smId].getComponent(component);
       const argumentProto = componentProto?.[path][method]?.parameters ?? [];
 
       setSelectedComponent(component);
@@ -199,7 +197,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     const { action, isEditingEvent: isEditingAction } = initialData;
 
     init(action, isEditingAction ? 'signals' : 'methods');
-  }, [controller, initialData]);
+  }, [smId, controller, platforms, initialData]);
 
   return (
     <Modal

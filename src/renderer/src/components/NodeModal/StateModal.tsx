@@ -11,24 +11,24 @@ import { useTrigger, useActions, useCondition } from './hooks';
 
 interface StateModalProps {
   smId: string;
-  editorController: CanvasController;
+  controller: CanvasController;
 }
 
 /**
  * Модальное окно редактирования состояния
  */
-export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }) => {
+export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
-  const visual = editorController.useData('visual');
+  const visual = controller.useData('visual');
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
-  const trigger = useTrigger(true);
-  const condition = useCondition();
-  const actions = useActions();
+  const trigger = useTrigger(smId, controller, true);
+  const condition = useCondition(smId, controller);
+  const actions = useActions(smId, controller);
   const [color, setColor] = useState<string | undefined>();
 
   const { parse: parseTrigger } = trigger;
@@ -181,10 +181,10 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }
       open();
     };
 
-    editorController.states.on('changeState', handler);
+    controller.states.on('changeState', handler);
 
     return () => {
-      editorController.states.off('changeState', handler);
+      controller.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
@@ -220,6 +220,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, editorController }
     }
   }, [
     smId,
+    controller,
     parseCondition,
     parseEvents,
     state,

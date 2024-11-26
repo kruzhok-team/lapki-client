@@ -83,7 +83,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleFlasherModalSubmit = (data: FlasherSelectModalFormValues) => {
     if (!flasherSetting) return;
 
-    Flasher.setAutoReconnect(data.type === 'remote');
     setFlasherSetting({ ...flasherSetting, ...data });
   };
 
@@ -121,7 +120,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         openLoaderSettings={openLoaderSettings}
       />,
     ],
-    [compilerData, openData, compilerStatus]
+    [
+      onRequestSaveFile,
+      onRequestImportFile,
+      onRequestNewFile,
+      onRequestOpenFile,
+      onRequestSaveAsFile,
+      compilerData,
+      openData,
+      compilerStatus,
+    ]
   );
 
   const tabLabels = useMemo(

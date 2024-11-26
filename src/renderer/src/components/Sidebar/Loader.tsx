@@ -60,6 +60,7 @@ export const Loader: React.FC<FlasherProps> = ({
     setDevice: setDeviceMS,
     setLog: setLogMS,
     setAddress: setAddressMS,
+    setMeta: setMetaMS,
   } = useManagerMS();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -243,6 +244,8 @@ export const Loader: React.FC<FlasherProps> = ({
     openTab(modelController, {
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
+      devices: devices,
+      compilerData: compilerData,
     });
   };
 
@@ -267,19 +270,20 @@ export const Loader: React.FC<FlasherProps> = ({
       setSerialConnectionStatus,
       setSerialLog
     );
-    ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS);
+    ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS, setMetaMS);
     Flasher.initReader(new FileReader());
   }, []);
 
   useEffect(() => {
     if (!flasherSetting) return;
     const { host, port, localPort, type } = flasherSetting;
+    const autoReconnect = type === 'remote';
     if (type === 'local' && port !== localPort) {
       setFlasherSetting({ ...flasherSetting, port: localPort }).then(() => {
-        Flasher.connect(host, localPort);
+        Flasher.connect(host, localPort, autoReconnect);
       });
     } else {
-      Flasher.connect(host, port);
+      Flasher.connect(host, port, autoReconnect);
     }
   }, [flasherSetting, setFlasherSetting]);
 
@@ -443,9 +447,9 @@ export const Loader: React.FC<FlasherProps> = ({
     if (!device) return;
     if (device.isMSDevice()) {
       const MSDevice = device as MSDevice;
-      let portNames = '';
-      for (let i = 0; i < MSDevice.portNames.length; i++) {
-        portNames = portNames + ' ' + MSDevice.portNames[i];
+      let portNames = MSDevice.portNames[0];
+      for (let i = 1; i < MSDevice.portNames.length; i++) {
+        portNames = portNames + '; ' + MSDevice.portNames[i];
       }
       return (
         <div>
@@ -468,43 +472,57 @@ export const Loader: React.FC<FlasherProps> = ({
   };
   const buttonsDisplay = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
-    if (!curDevice || !curDevice.isMSDevice()) {
-      return (
-        <div>
-          <div className="flex justify-between gap-2">
-            <button
-              className="btn-primary mb-2 w-full"
-              onClick={handleFlash}
-              disabled={flashButtonDisabled()}
-            >
-              Загрузить
-            </button>
-            <button
-              className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
-              onClick={handleFileChoose}
-              disabled={isFlashing || avrdudeBlock}
-            >
-              {flasherFile ? '✖' : '…'}
+    if (curDevice) {
+      if (!curDevice.isMSDevice()) {
+        return (
+          <div>
+            {avrdudeCheck()}
+            <div className="flex justify-between gap-2">
+              <button
+                className="btn-primary mb-2 w-full"
+                onClick={handleFlash}
+                disabled={flashButtonDisabled()}
+              >
+                Загрузить
+              </button>
+              <button
+                className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
+                onClick={handleFileChoose}
+                disabled={isFlashing || avrdudeBlock}
+              >
+                {flasherFile ? '✖' : '…'}
+              </button>
+            </div>
+            {flasherFile ? (
+              <p className="mb-2 rounded bg-primaryActive text-white">
+                из файла <span className="font-medium">{flasherFile}</span>
+              </p>
+            ) : (
+              ''
+            )}
+            <Select
+              className="mb-2"
+              isSearchable={false}
+              placeholder="Выберите машину состояний..."
+              options={stateMachineOptions()}
+              value={getSelectMachineStateOption()}
+              onChange={(opt) => onSelectMachineState(opt?.value)}
+              isDisabled={currentDeviceID == undefined}
+              noOptionsMessage={() => 'Нет подходящих машин состояний'}
+            />
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
+              Менеджер МС-ТЮК
             </button>
           </div>
-          {flasherFile ? (
-            <p className="mb-2 rounded bg-primaryActive text-white">
-              из файла <span className="font-medium">{flasherFile}</span>
-            </p>
-          ) : (
-            ''
-          )}
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
-            Менеджер МС-ТЮК
-          </button>
-        </div>
-      );
+        );
+      }
     }
+    return null;
   };
   return (
     <section className="flex h-full flex-col text-center">
@@ -580,18 +598,7 @@ export const Loader: React.FC<FlasherProps> = ({
             </div>
           ))}
         </div>
-        {avrdudeCheck()}
         {buttonsDisplay()}
-        <Select
-          className="mb-2"
-          isSearchable={false}
-          placeholder="Выберите машину состояний..."
-          options={stateMachineOptions()}
-          value={getSelectMachineStateOption()}
-          onChange={(opt) => onSelectMachineState(opt?.value)}
-          isDisabled={currentDeviceID == undefined}
-          noOptionsMessage={() => 'Нет подходящих машин состояний'}
-        />
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}

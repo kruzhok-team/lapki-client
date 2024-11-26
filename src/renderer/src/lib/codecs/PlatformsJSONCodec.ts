@@ -223,6 +223,7 @@ const typeMap: any = {
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
       { json: 'standardVersion', js: 'standardVersion', typ: '' },
+      { json: 'staticActionDelimeter', js: 'staticActionDelimeter', typ: '' },
       { json: 'staticComponents', js: 'staticComponents', typ: true },
       { json: 'version', js: 'version', typ: '' },
       { json: 'visual', js: 'visual', typ: true },
@@ -268,7 +269,7 @@ const typeMap: any = {
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
-      { json: 'type', js: 'type', typ: u(undefined, u(a(''), '')) },
+      { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
     ],
     false
   ),
@@ -285,7 +286,8 @@ const typeMap: any = {
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: '' },
-      { json: 'type', js: 'type', typ: u(undefined, u(a(''), '')) },
+      { json: 'optional', js: 'optional', typ: u(undefined, true) },
+      { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
     ],
     false
   ),
@@ -302,7 +304,7 @@ const typeMap: any = {
     [
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
-      { json: 'type', js: 'type', typ: u(undefined, u(a(''), '')) },
+      { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
     ],
     false
   ),

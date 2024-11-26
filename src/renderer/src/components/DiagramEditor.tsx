@@ -27,8 +27,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   const [canvasSettings] = useSettings('canvas');
   const modelController = useModelContext();
   const stateMachines = Object.keys(controller.stateMachinesSub);
-  const smId = stateMachines[0]; // TODO(L140-beep): Как понять с какой именно МС мы работаем в данный момент?
-  const isMounted = modelController.model.useData('', 'canvas.isMounted', editor.id) as boolean;
+  const [smId, setSmId] = useState<string>(stateMachines[0]); // TODO(L140-beep): Как понять с какой именно МС мы работаем в данный момент?
+  const isMounted = controller.useData('isMounted');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
@@ -68,7 +68,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
       const { state, eventSelection, event, isEditingEvent } = data;
 
       setActionsModalParentData({ state, eventSelection });
-      setActionsModalData({ action: event, isEditingEvent });
+      setActionsModalData({ smId: state.smId, action: event, isEditingEvent });
+      setSmId(state.smId);
       openActionsModal();
     };
 
@@ -89,7 +90,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
   useEffect(() => {
     if (!canvasSettings) return;
-
     editor.setSettings(canvasSettings);
   }, [canvasSettings, editor]);
 
@@ -97,7 +97,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     if (!actionsModalParentData) return;
 
     modelController.changeEvent({
-      smId: smId,
+      smId: actionsModalParentData.state.smId,
       stateId: actionsModalParentData.state.id,
       event: actionsModalParentData.eventSelection,
       newValue: data,
@@ -105,7 +105,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
     closeActionsModal();
   };
-  // TODO(L140-beep): Прокинуть smId в другие модалки
 
   return (
     <>
@@ -113,13 +112,15 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
       {isMounted && (
         <>
-          <StateNameEdit />
-          <NoteEdit />
+          <StateNameEdit smId={smId} controller={controller} />
+          <NoteEdit smId={smId} controller={controller} />
 
-          <StateModal smId={smId} editorController={controller} />
-          <TransitionModal smId={smId} />
+          <StateModal smId={smId} controller={controller} />
+          <TransitionModal controller={controller} smId={smId} />
 
           <ActionsModal
+            controller={controller}
+            smId={smId}
             initialData={actionsModalData}
             onSubmit={handleActionsModalSubmit}
             isOpen={isActionsModalOpen}

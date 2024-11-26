@@ -15,7 +15,6 @@ import {
   EditComponentParams,
   LinkStateParams,
   SelectDrawable,
-  SetMountedStatusParams,
   StatesControllerDataStateType,
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
@@ -53,14 +52,14 @@ import {
   FinalState,
   emptyStateMachine,
   Action,
+  Component,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
+import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
-import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.
@@ -89,30 +88,24 @@ type StateType = (typeof StateTypes)[number];
 export class ModelController extends EventEmitter<ModelControllerEvents> {
   public static instance: ModelController | null = null;
   //! Порядок создания важен, так как контроллер при инициализации использует представление
-  model = new EditorModel(
-    () => {
-      this.initPlatform();
-    },
-    () => {
-      this.loadData();
-      this.history.clear();
-    }
-  );
+  model = new EditorModel(() => {
+    this.initPlatform();
+  });
   schemeEditorId: string | null = null;
   files = new FilesManager(this);
   history = new History(this);
-  vacantComponents: { [id: string]: ComponentEntry[] } = {};
-  platforms: { [id: string]: PlatformManager } = {};
   // По умолчанию главным считается "призрачный" канвас.
   // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
   controllers: { [id: string]: CanvasController } = {};
+  validator: UserInputValidator;
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
-
-  constructor() {
+  private onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void;
+  constructor(onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void) {
     super();
-
+    this.onStateMachineDelete = onStateMachineDelete;
     this.emptyController();
+    this.validator = new UserInputValidator(this);
     ModelController.instance = this;
   }
 
@@ -131,19 +124,21 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     editor.setController(controller);
     this.controllers = {};
     this.controllers[''] = controller;
-    this.model.data.canvas[''] = { isInitialized: false, isMounted: false, prevMounted: false };
+    this.model.data.canvas[''] = { isInitialized: false };
     this.model.changeHeadControllerId('');
     this.schemeEditorId = null;
   }
 
   reset() {
     for (const controllerId in this.controllers) {
-      if (this.model.data.canvas[controllerId].isMounted) {
+      if (this.controllers[controllerId].isMounted) {
         const controller = this.controllers[controllerId];
         this.unwatch(controller);
       }
     }
     this.emptyController();
+    this.loadData();
+    this.history.clear();
   }
 
   // Берем машины состояний, который обрабатываются главным канвасом
@@ -167,8 +162,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = smIds[smId];
       if (smId === '') continue;
       if (!sm) return;
-      const smToSubscribe = {};
-      smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
       controller.subscribe(smId, 'stateMachine', { [smId]: smIds[smId] });
       controller.subscribe(smId, 'component', sm.components);
@@ -182,13 +175,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!sm) return;
     // const controller = new CanvasController(generateId(), app, { platformName: sm.platform });
     controller.addStateMachineId(smId);
+    /* 
+      Порядок важен, так как данные инициализируются сразу
+      Если инициализировать сначала переходы, то будет ошибка,
+      так как инстансы source и target еще не существуют
+    */
     controller.subscribe(smId, 'choice', sm.choiceStates);
     controller.subscribe(smId, 'final', sm.finalStates);
     controller.subscribe(smId, 'state', sm.states);
     controller.subscribe(smId, 'note', sm.notes);
-    controller.subscribe(smId, 'transition', sm.transitions);
     controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
+    controller.subscribe(smId, 'transition', sm.transitions);
     controller.watch();
 
     if (!sm.visual) {
@@ -201,7 +199,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Большинство событий исходит от ModelController, но сигналы, связаные с событиями, отслеживаемыми в Shape,
   // такие как клик, двойной клик перемещением в определенное место, вызываются в контроллерах
   private watch(controller: CanvasController) {
-    controller.on('isMounted', this.setMountStatus);
     controller.on('linkState', this.linkState);
     controller.on('selectState', this.selectState);
     controller.on('selectNote', this.selectNote);
@@ -226,7 +223,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   private unwatch(controller: CanvasController) {
-    controller.off('isMounted', this.setMountStatus);
     controller.off('linkState', this.linkState);
     controller.off('selectState', this.selectState);
     controller.off('selectNote', this.selectNote);
@@ -255,68 +251,61 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
-  private setMountStatus = (args: SetMountedStatusParams) => {
-    const canvas = this.model.data.canvas[args.canvasId];
-    if (!canvas) {
-      return;
-    }
-    canvas.isMounted = args.status;
-    this.model.triggerDataUpdate('canvas.isMounted');
-  };
-
-  changeScale(diff: number, replace = false) {
-    this.model.setScale(replace ? diff : this.model.data.scale + diff);
-    const controller = this.controllers[this.model.data.headControllerId];
-    controller.view.changeScale(diff, replace);
-    this.emit('changeScale', replace ? diff : this.model.data.scale + diff);
-  }
-
   initPlatform() {
-    //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
-    for (const smId in this.model.data.elements.stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      const platform = loadPlatform(sm.platform);
-      if (platform) {
-        this.platforms[platform.name] = platform;
-      }
-    }
     this.emit('initPlatform', null);
   }
 
-  changeNoteFontSize(args: ChangeNoteFontSizeParams) {
+  changeNoteFontSize(args: ChangeNoteFontSizeParams, canUndo = true) {
     const { id, smId, fontSize } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const note = sm.notes[id];
     if (!note) return;
 
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteFontSize',
+        args: { smId, id, fontSize, prevFontSize: note.fontSize },
+      });
+    }
+
     this.model.changeNoteFontSize(smId, id, fontSize);
 
     this.emit('changeNoteFontSize', args);
-    // TODO (L140-beep): History
   }
 
-  changeNoteTextColor(args: ChangeNoteTextColorParams) {
+  changeNoteTextColor(args: ChangeNoteTextColorParams, canUndo = true) {
     const { id, smId, textColor } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const note = sm.notes[id];
     if (!note) return;
 
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteTextColor',
+        args: { smId, id, color: textColor, prevColor: note.textColor },
+      });
+    }
+
     this.model.changeNoteTextColor(smId, id, textColor);
 
     this.emit('changeNoteTextColor', args);
-    // TODO (L140-beep): History
   }
 
-  changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
+  changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams, canUndo = true) {
     const { id, smId, backgroundColor } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const note = sm.notes[id];
     if (!note) return;
 
-    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
+    if (canUndo) {
+      this.history.do({
+        type: 'changeNoteBackgroundColor',
+        args: { smId, id, color: args.backgroundColor, prevColor: note.backgroundColor },
+      });
+    }
 
+    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
     this.emit('changeNoteBackgroundColor', args);
-    // TODO: History
   }
 
   initData(basename: string | null, filename: string, elements: Elements) {
@@ -326,12 +315,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let headCanvas = '';
     for (const smId in elements.stateMachines) {
       if (smId === '') continue;
-      const canvasId = this.createStateMachine(smId, elements.stateMachines[smId]);
+      const canvasId = this.createStateMachine(smId, elements.stateMachines[smId], false);
       headCanvas = canvasId;
       this.model.data.canvas[canvasId] = {
         isInitialized: true,
-        isMounted: false,
-        prevMounted: false,
       };
     }
     this.model.changeHeadControllerId(headCanvas);
@@ -366,8 +353,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[schemeScreenId] = schemeScreenController;
     this.model.data.canvas[schemeScreenId] = {
       isInitialized: true,
-      isMounted: false,
-      prevMounted: false,
     };
     this.watch(schemeScreenController);
     this.setupSchemeScreenEditorController(stateMachines, schemeScreenController);
@@ -398,15 +383,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // this.emit('selectComponent', args);
   };
 
-  createComponent(args: CreateComponentParams) {
+  createComponent(args: CreateComponentParams, canUndo = true) {
     this.model.createComponent(args);
     this.emit('createComponent', args);
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'createComponent',
-    //     args: { args },
-    //   });
-    // }
+    if (canUndo) {
+      this.history.do({
+        type: 'createComponent',
+        args: { args },
+      });
+    }
   }
 
   createNote(args: CreateNoteParams, canUndo = true) {
@@ -601,7 +586,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  createStateMachine(smId: string, data: StateMachine) {
+  createStateMachine(smId: string, data: StateMachine, canUndo = true) {
     const canvasId = generateId();
     const editor = new CanvasEditor(canvasId);
     const controller = new CanvasController(
@@ -617,8 +602,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.controllers[canvasId] = controller;
     this.model.data.canvas[canvasId] = {
       isInitialized: true,
-      isMounted: false,
-      prevMounted: false,
     };
     this.model.createStateMachine(smId, data);
     this.watch(controller);
@@ -637,6 +620,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       position: data.position,
     });
 
+    if (canUndo) {
+      this.history.do({
+        type: 'createStateMachine',
+        args: { smId, ...structuredClone(data) },
+      });
+    }
+
     return canvasId;
   }
 
@@ -645,7 +635,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('editStateMachine', { id: smId, ...data });
   }
 
-  deleteStateMachine(smId: string) {
+  deleteStateMachine(smId: string, canUndo = true) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
     // Сделать общий канвас канвасом по умолчанию?
     const specificCanvas = Object.values(this.controllers).find(
@@ -659,8 +649,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (Object.values(this.controllers).length === 1) {
       this.model.changeHeadControllerId('');
+    } else {
+      this.model.changeHeadControllerId(Object.values(this.controllers)[1].id);
     }
 
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteStateMachine',
+        args: { smId, ...sm },
+      });
+    } else {
+      // Значит, что мы удалили через undo и вкладка осталась открытой
+      this.onStateMachineDelete(this, sm.name ?? smId);
+    }
     this.model.deleteStateMachine(smId);
     this.emit('deleteStateMachine', {
       id: smId,
@@ -1180,9 +1181,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.model.data.elements.stateMachines[smId].components[id]
     );
     this.model.editComponent(smId, id, parameters);
-
     if (newName) {
-      this.renameComponent(smId, id, newName);
+      this.renameComponent(smId, id, newName, { ...prevComponent });
     }
 
     if (canUndo) {
@@ -1197,13 +1197,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   changeComponentPosition = (args: ChangePosition, _canUndo = true) => {
     const { smId, id, startPosition = { x: 0, y: 0 }, endPosition } = args;
-    this.model.changeComponentPosition(smId, id, endPosition);
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
-        args: { smId, name: id, startPosition: startPosition, endPosition },
+        args: { smId, name: id, startPosition, endPosition },
       });
     }
+    this.model.changeComponentPosition(smId, id, endPosition);
     this.emit('changeComponentPosition', {
       smId,
       id: id,
@@ -1215,14 +1215,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
 
-    // const prevComponent = this.model.data.elements.stateMachines[smId].components[id];
+    const prevComponent = structuredClone(
+      this.model.data.elements.stateMachines[smId].components[id]
+    );
     this.model.deleteComponent(smId, id);
 
     if (canUndo) {
-      //   this.history.do({
-      //     type: 'deleteComponent',
-      //     args: { args, prevComponent },
-      //   });
+      this.history.do({
+        type: 'deleteComponent',
+        args: { args, prevComponent },
+      });
     }
 
     this.emit('deleteComponent', args);
@@ -1243,9 +1245,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // this.scheme.view.isDirty = true;
   }
 
-  private renameComponent(smId: string, name: string, newName: string) {
+  private renameComponent(smId: string, name: string, newName: string, data: Component) {
     this.model.changeComponentName(smId, name, newName);
-    this.emit('renameComponent', { smId: smId, id: name, newName: newName });
+    this.emit('renameComponent', { ...data, smId: smId, id: name, newName: newName });
   }
 
   private getEachByStateId(smId: string, stateId: string) {
@@ -1425,14 +1427,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     result =
       (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
-        this.model.data.scale +
+        this.controllers[this.model.data.headControllerId].scale +
       bottomChildContainerHeight;
 
     return result;
   }
 
   getComputedHeight(object: State | InitialState | FinalState | ChoiceState) {
-    return object.dimensions.height / this.model.data.scale;
+    return object.dimensions.height / this.controllers[this.model.data.headControllerId].scale;
   }
 
   getComputedDimensions(smId: string, stateId: string, stateType: StateType) {
@@ -1452,8 +1454,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { x, y } = this.compoundStatePosition(smId, stateId, stateType);
 
     return {
-      x: (x + this.model.data.offset.x) / this.model.data.scale,
-      y: (y + this.model.data.offset.y) / this.model.data.scale,
+      x: (x + this.model.data.offset.x) / this.controllers[this.model.data.headControllerId].scale,
+      y: (y + this.model.data.offset.y) / this.controllers[this.model.data.headControllerId].scale,
     };
   }
 
@@ -1483,7 +1485,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm[stateType][stateId];
 
-    let width = state.dimensions.width / this.model.data.scale;
+    let width = state.dimensions.width / this.controllers[this.model.data.headControllerId].scale;
 
     const children = this.getEachObjectByParentId(smId, stateId);
     const notEmptyChildrens = Object.values(children).filter(
@@ -1517,7 +1519,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         cx +
           this.getComputedDimensions(smId, rightChildrenId, rightChildrenType).width -
           x +
-          CHILDREN_PADDING / this.model.data.scale
+          CHILDREN_PADDING / this.controllers[this.model.data.headControllerId].scale
       );
     }
 
@@ -1628,7 +1630,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('deleteChoice', args);
   }
 
-  changeFinalStatePosition(args: ChangePosition, canUndo = true) {
+  changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
     this.emit('changeFinalStatePosition', args);
     const { startPosition } = args;
@@ -1638,7 +1640,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { ...args, startPosition: startPosition },
       });
     }
-  }
+  };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);
@@ -2064,41 +2066,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   //   note.setIsSelected(true);
   // }
-
-  getVacantComponents(): ComponentEntry[] {
-    if (!this.platforms) return [];
-    const stateMachines = this.getHeadControllerStateMachines();
-    for (const smId in stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      const components = sm.components;
-      const vacant: ComponentEntry[] = [];
-      let platform: PlatformManager | undefined = this.platforms[sm.platform];
-      if (!platform) {
-        if (isPlatformAvailable(sm.platform)) {
-          const platformManager = loadPlatform(sm.platform);
-          if (!platformManager) throw new Error('No platform loaded!');
-          this.platforms[sm.platform] = platformManager;
-          platform = platformManager;
-        } else {
-          throw new Error('No platform loaded!');
-        }
-      }
-      for (const idx in platform.data.components) {
-        const compo = platform.data.components[idx];
-        if (compo.singletone && components.hasOwnProperty(idx)) continue;
-        vacant.push({
-          idx,
-          name: compo.name ?? idx,
-          img: compo.img ?? 'unknown',
-          description: compo.description ?? '',
-          singletone: compo.singletone ?? false,
-        });
-      }
-      return vacant;
-    }
-
-    return [];
-  }
 
   /**
    * Снимает выделение со всех нод и переходов.

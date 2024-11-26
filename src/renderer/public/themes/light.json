@@ -10,8 +10,11 @@
   "bg-hover": "#cfcfcf",
   "bg-active": "#c2c2c2",
 
-  "border-primary": "#c2c2c2",
+  "matrix-active": "#f8f9fa",
+  "matrix-inactive": "#343a40",
 
+  "border-primary": "#c2c2c2",
+  "border-contrast": "#343a40",
   "text-primary": "#000",
   "text-secondary": "#fff",
   "text-inactive": "#b3b2b2",

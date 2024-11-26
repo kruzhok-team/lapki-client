@@ -10,6 +10,10 @@
   "bg-hover": "#434343",
   "bg-active": "#545454",
 
+  "matrix-active": "#f8f9fa",
+  "matrix-inactive": "#343a40",
+
+  "border-contrast": "#f8f9fa",
   "border-primary": "#666666",
 
   "text-primary": "#f2f2f2",

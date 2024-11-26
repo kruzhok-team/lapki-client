@@ -21,27 +21,6 @@
         }
       ]
     },
-    "ArgumentProto": {
-      "additionalProperties": false,
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "img": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/ArgType"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "type": "object"
-    },
     "CompilingSettings": {
       "additionalProperties": false,
       "properties": {
@@ -78,9 +57,6 @@
         },
         "description": {
           "type": "string"
-        },
-        "position": {
-          "$ref": "#/definitions/Point"
         },
         "img": {
           "type": "string"
@@ -134,9 +110,7 @@
       "required": [
         "signals",
         "variables",
-        "position",
-        "methods",
-        "parameters"
+        "methods"
       ],
       "type": "object"
     },
@@ -151,7 +125,7 @@
         },
         "parameters": {
           "items": {
-            "$ref": "#/definitions/ArgumentProto"
+            "$ref": "#/definitions/ParameterProto"
           },
           "type": "array"
         }
@@ -297,7 +271,7 @@
         },
         "parameters": {
           "items": {
-            "$ref": "#/definitions/ArgumentProto"
+            "$ref": "#/definitions/ParameterProto"
           },
           "type": "array"
         }

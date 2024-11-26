@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 // import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ChangeTransitionParams } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Transition } from '@renderer/types/diagram';
@@ -12,13 +13,12 @@ import { useTrigger, useCondition, useActions } from './hooks';
 
 interface TransitionModalProps {
   smId: string;
+  controller: CanvasController;
 }
 
-export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
+export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const visual = modelController.controllers[headControllerId].useData('visual');
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
+  const visual = controller.useData('visual');
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);
@@ -30,9 +30,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
   const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
   // Данные формы
-  const trigger = useTrigger(false);
-  const condition = useCondition();
-  const actions = useActions();
+  const trigger = useTrigger(smId, controller, false);
+  const condition = useCondition(smId, controller);
+  const actions = useActions(smId, controller);
   const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
@@ -46,7 +46,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId }) => {
     }
 
     return true;
-  }, [newTransition, transition]);
+  }, [smId, controller, newTransition, transition]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -292,7 +292,7 @@ export class PlatformManager {
         if (parameter.length > 10) {
           parameter = parameter.slice(0, 10) + '...';
         }
-        // TODO: Пиктограмма для матрицы
+        // TODO (L140-beep): Пиктограмма для матрицы
         // drawMAtrix...
         // return
       } else {
@@ -346,6 +346,7 @@ export class PlatformManager {
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
+        // TODO (L140-beep): Пиктограмма для матрицы
         const { width, height } = getMatrixDimensions(parameterList[0].type);
         parameter = buildMatrix({
           values: paramValue,

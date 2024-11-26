@@ -78,8 +78,7 @@ export function serializeEvent(trigger: Event): string {
 
 function getActionDelimeter(platform: Platform, componentType: string): string {
   const platformComponent = platform.components[componentType];
-  const isArduino = platform.name?.startsWith('Arduino');
-  return platformComponent.singletone && isArduino ? '::' : '.';
+  return platformComponent.singletone ? platform.staticActionDelimeter : '.';
 }
 
 /**

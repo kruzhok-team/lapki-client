@@ -5,8 +5,9 @@ import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormField
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ModelController } from '@renderer/lib/data/ModelController/ModelController';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { ArgList, StateMachine } from '@renderer/types/diagram';
-import { ArgType, ArgumentProto } from '@renderer/types/platform';
+import { ArgType, ArgumentProto, Platform } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 interface ActionsModalParametersProps {
@@ -55,12 +56,19 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
-  const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
+  const handleComponentAttributeChange = (
+    name: string,
+    component: string,
+    attribute: string,
+    platform: Platform
+  ) => {
     let inputValue = '';
     if (component || attribute) {
       const proto = controller.platform[smId].getComponent(component);
-      const platform = stateMachines[smId].platform;
-      const delimiter = proto?.singletone && !platform.startsWith('Bearloga') ? '::' : '.';
+      const delimiter =
+        proto?.singletone && !platform.id.startsWith('Bearloga')
+          ? platform.staticActionDelimeter
+          : '.';
       inputValue = `${component}${delimiter}${attribute}`;
     }
     handleInputChange(name, undefined, inputValue);
@@ -119,8 +127,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
+        const platform = getPlatform(stateMachines[smId].platform);
+        const componentAttibute = getComponentAttribute(value, platform);
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
-        const componentAttibute = getComponentAttribute(value);
         const currentChecked = isChecked.get(name) ?? componentAttibute != null;
         const selectedParameterComponent =
           currentChecked && componentAttibute ? componentAttibute[0] : null;
@@ -160,7 +169,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <Select
                   containerClassName="w-full"
                   options={filteredComponentOptions}
-                  onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
+                  onChange={(opt) =>
+                    handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
+                  }
                   value={
                     filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
                     null
@@ -176,7 +187,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     handleComponentAttributeChange(
                       name,
                       selectedParameterComponent ?? '',
-                      opt?.value ?? ''
+                      opt?.value ?? '',
+                      platform
                     )
                   }
                   value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}

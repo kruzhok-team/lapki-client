@@ -53,6 +53,7 @@ import {
   Transition,
   Variable,
 } from '@renderer/types/diagram';
+import { Platform } from '@renderer/types/platform';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ComponentsController } from './ComponentsController';
@@ -63,7 +64,7 @@ import { StatesController } from './StatesController';
 import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
-import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
+import { getPlatform, isPlatformAvailable, loadPlatform } from '../PlatformLoader';
 import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
@@ -764,7 +765,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
                 act.component = newName;
                 continue;
               }
-              this.renameParameters(act.args, id, newName);
+              this.renameParameters(act.args, id, newName, this.platform[smId].data);
             }
           }
         }
@@ -787,7 +788,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
                 act.component = newName;
                 continue;
               }
-              this.renameParameters(act.args, id, newName);
+              this.renameParameters(act.args, id, newName, this.platform[smId].data);
             }
           }
         }
@@ -805,10 +806,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.app.view.isDirty = true;
   };
 
-  private renameParameters = (args: ArgList | undefined, oldName: string, newName: string) => {
+  private renameParameters = (
+    args: ArgList | undefined,
+    oldName: string,
+    newName: string,
+    platform: Platform
+  ) => {
     if (!args) return;
     for (const [index, arg] of Object.entries(args)) {
-      const componentAttribute = getComponentAttribute(arg);
+      const componentAttribute = getComponentAttribute(arg, platform);
       if (componentAttribute !== null && componentAttribute[0] === oldName) {
         args[index] = `${newName}${componentAttribute[2]}${componentAttribute[1]}`;
       }

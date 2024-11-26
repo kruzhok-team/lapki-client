@@ -3,16 +3,12 @@ import { useCallback, useState } from 'react';
 import { ActionsModalData } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action } from '@renderer/types/diagram';
 
-export const useActions = () => {
+export const useActions = (smId: string, controller: CanvasController) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
-  const stateMachines = Object.keys(controller.stateMachinesSub);
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const smId = stateMachines[0];
   const componentsData = modelController.model.useData(smId, 'elements.components');
   const visual = controller.useData('visual');
 
@@ -29,7 +25,7 @@ export const useActions = () => {
     openActionsModal();
   };
   const handleChangeAction = (action: Action) => {
-    setActionsModalData(action && { action, isEditingEvent: false });
+    setActionsModalData(action && { smId, action, isEditingEvent: false });
     openActionsModal();
   };
   const handleDeleteAction = (index: number) => {
@@ -93,7 +89,7 @@ export const useActions = () => {
       setTabValue(1);
       setText(actionsToParse);
     },
-    [headControllerId, visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
+    [controller, visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
   );
 
   return {
@@ -117,7 +113,8 @@ export const useActions = () => {
       onSubmit: handleActionsModalSubmit,
       initialData: actionsModalData,
     },
-
+    smId,
+    controller,
     parse,
     clear,
   };

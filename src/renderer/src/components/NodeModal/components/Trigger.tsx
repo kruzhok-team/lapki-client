@@ -4,13 +4,13 @@ import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/r
 import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
-import { useModelContext } from '@renderer/store/ModelContext';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 
 import { useTrigger } from '../hooks';
 
 import '../style.css';
 
-type TriggerProps = ReturnType<typeof useTrigger>;
+type TriggerProps = ReturnType<typeof useTrigger> & { controller: CanvasController };
 
 /**
  * Виджет редактирования триггера (сигнала) события.
@@ -29,14 +29,10 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
     selectedMethod,
     onComponentChange,
     onMethodChange,
-
+    controller,
     text,
     onChangeText,
   } = props;
-
-  const editor = useModelContext();
-  const headControllerId = editor.model.useData('', 'headControllerId');
-  const controller = editor.controllers[headControllerId];
   const visual = controller.useData('visual');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);

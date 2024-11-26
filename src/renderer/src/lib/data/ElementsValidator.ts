@@ -88,7 +88,7 @@ function getRequiredArgs(method: MethodProto | SignalProto) {
   const methodArgs: ParameterProto[] | undefined = method.parameters;
   if (!methodArgs) return [];
 
-  return methodArgs.filter((param) => param.optional);
+  return methodArgs.filter((param) => !param.optional);
 }
 
 function validateArgs(
@@ -99,7 +99,7 @@ function validateArgs(
   const methodArgs: ParameterProto[] | ArgumentProto[] | undefined = method.parameters;
   const requiredArgs = getRequiredArgs(method);
   if (methodArgs === undefined) {
-    if (args !== undefined && methodArgs === 0) {
+    if (args !== undefined) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
           Object.keys(args).length

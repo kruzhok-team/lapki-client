@@ -244,7 +244,6 @@ export const Hierarchy: React.FC = () => {
     const sm = modelController.model.data.elements.stateMachines[smId];
     const itemId = item.index.toString();
     const state = sm.states[itemId];
-    const headControllerId = model.useData('', 'headControllerId');
     const canvasController = modelController.controllers[headControllerId];
     if (state !== undefined) {
       return canvasController.states.handleContextMenu(itemId, { event: mouse });

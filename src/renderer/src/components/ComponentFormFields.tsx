@@ -134,7 +134,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
               <Select
                 className="w-[250px]"
                 options={options}
-                value={options.find((o) => o.value === value)}
+                value={options.find((o) => o.value === value || o.value === Number(value))}
                 onChange={({ value }: any) => handleInputChange(name, value)}
               />
             </ComponentFormFieldLabel>

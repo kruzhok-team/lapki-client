@@ -56,11 +56,10 @@ import {
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
+import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
-import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.
@@ -95,11 +94,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   schemeEditorId: string | null = null;
   files = new FilesManager(this);
   history = new History(this);
-  vacantComponents: { [id: string]: ComponentEntry[] } = {};
-  platforms: { [id: string]: PlatformManager } = {};
   // По умолчанию главным считается "призрачный" канвас.
   // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
   controllers: { [id: string]: CanvasController } = {};
+  validator: UserInputValidator;
   private copyData: CopyData | null = null; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
   private onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void;
@@ -107,6 +105,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     super();
     this.onStateMachineDelete = onStateMachineDelete;
     this.emptyController();
+    this.validator = new UserInputValidator(this);
     ModelController.instance = this;
   }
 
@@ -253,14 +252,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   initPlatform() {
-    //TODO (L140-beep): исправить то, что платформы загружаются и в ModelController, и в CanvasController
-    for (const smId in this.model.data.elements.stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      const platform = loadPlatform(sm.platform);
-      if (platform) {
-        this.platforms[platform.name] = platform;
-      }
-    }
     this.emit('initPlatform', null);
   }
 
@@ -1639,7 +1630,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('deleteChoice', args);
   }
 
-  changeFinalStatePosition(args: ChangePosition, canUndo = true) {
+  changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
     this.emit('changeFinalStatePosition', args);
     const { startPosition } = args;
@@ -1649,7 +1640,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { ...args, startPosition: startPosition },
       });
     }
-  }
+  };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);
@@ -2075,41 +2066,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   //   note.setIsSelected(true);
   // }
-
-  getVacantComponents(): ComponentEntry[] {
-    if (!this.platforms) return [];
-    const stateMachines = this.getHeadControllerStateMachines();
-    for (const smId in stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      const components = sm.components;
-      const vacant: ComponentEntry[] = [];
-      let platform: PlatformManager | undefined = this.platforms[sm.platform];
-      if (!platform) {
-        if (isPlatformAvailable(sm.platform)) {
-          const platformManager = loadPlatform(sm.platform);
-          if (!platformManager) throw new Error('No platform loaded!');
-          this.platforms[sm.platform] = platformManager;
-          platform = platformManager;
-        } else {
-          throw new Error('No platform loaded!');
-        }
-      }
-      for (const idx in platform.data.components) {
-        const compo = platform.data.components[idx];
-        if (compo.singletone && components.hasOwnProperty(idx)) continue;
-        vacant.push({
-          idx,
-          name: compo.name ?? idx,
-          img: compo.img ?? 'unknown',
-          description: compo.description ?? '',
-          singletone: compo.singletone ?? false,
-        });
-      }
-      return vacant;
-    }
-
-    return [];
-  }
 
   /**
    * Снимает выделение со всех нод и переходов.

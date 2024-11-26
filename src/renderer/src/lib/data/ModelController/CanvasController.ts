@@ -64,7 +64,7 @@ import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
 import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
-import { operatorSet, PlatformManager } from '../PlatformManager';
+import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
   | 'state'
@@ -543,7 +543,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeChoicePosition',
           this.bindHelper('choice', 'changeChoicePosition', this.states.changeChoiceStatePosition)
         );
-        this.initializer.initFinalStates(smId, initData as { [id: string]: FinalState });
+        this.initializer.initChoiceStates(smId, initData as { [id: string]: ChoiceState });
         break;
       case 'note':
         this.model.on('createNote', this.bindHelper('note', 'createNote', this.notes.createNote));
@@ -689,6 +689,30 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     for (const note of this.notes.items.values()) {
       this.notes.bindEdgeHandlers(note);
     }
+  }
+
+  // TODO (L140-beep): Скорее всего, нужно будет отнести это в ModelController
+  // Компоненты передаем, чтобы отсеять уже добавленные синглтоны
+  getVacantComponents(smId: string, components: { [id: string]: Component }) {
+    if (!this.platform[smId]) return [];
+
+    const vacant: ComponentEntry[] = [];
+    const platform: PlatformManager = this.platform[smId];
+    if (!platform) return;
+
+    for (const idx in platform.data.components) {
+      const compo = platform.data.components[idx];
+      if (compo.singletone && components.hasOwnProperty(idx)) continue;
+      vacant.push({
+        idx,
+        name: compo.name ?? idx,
+        img: compo.img ?? 'unknown',
+        description: compo.description ?? '',
+        singletone: compo.singletone ?? false,
+      });
+    }
+
+    return vacant;
   }
 
   createStateMachine = (args: CreateStateMachineParams) => {

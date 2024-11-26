@@ -95,17 +95,16 @@ export function serializeActions(
   platform: Platform
 ): string {
   let serialized = '';
-  // TODO: Стиль команд, внедрить новый формат платформ
-  const isArduino = platform.name?.startsWith('Arduino');
-  const delimeter = isArduino ? ';' : '';
+
   for (const action of actions) {
     const component = components[action.component];
     const platformComponent = platform.components[component.type];
-    const actionDelimeter = platformComponent.singletone && isArduino ? '::' : '.';
+    const actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
     serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
       action.args
-    )})${delimeter}\n`;
+    )})${platform.delimeter}\n`;
   }
+
   return serialized.trim();
 }
 

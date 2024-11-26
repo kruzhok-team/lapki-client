@@ -11,15 +11,17 @@ import { twMerge } from 'tailwind-merge';
 
 import { WithHint } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 
-export const StateNameEdit: React.FC = () => {
+interface StateNameEditProps {
+  smId: string;
+  controller: CanvasController;
+}
+
+export const StateNameEdit: React.FC<StateNameEditProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const editor = modelController.controllers[headControllerId].app;
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const currentSmId = stateMachines[0];
   const [isOpen, open, close] = useModal(false);
   const [stateId, setStateId] = useState<string | null>(null);
   const [initialName, setInitialName] = useState<string | null>(null);
@@ -31,12 +33,12 @@ export const StateNameEdit: React.FC = () => {
     const value = (el?.value ?? '').trim();
 
     if (stateId !== null && initialName !== value)
-      modelController.changeStateName(currentSmId, stateId, value);
+      modelController.changeStateName(smId, stateId, value);
 
     setStateId(null);
     setInitialName(null);
     close();
-  }, [close, modelController.model, initialName, stateId]);
+  }, [smId, close, initialName, stateId]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') return handleSubmit();
@@ -58,7 +60,7 @@ export const StateNameEdit: React.FC = () => {
       const el = ref.current;
       if (!el) return;
 
-      const globalOffset = editor.view.app.mouse.getOffset();
+      const globalOffset = controller.view.app.mouse.getOffset();
       const statePos = state.computedPosition;
       const position = {
         x: statePos.x + globalOffset.x,
@@ -81,12 +83,12 @@ export const StateNameEdit: React.FC = () => {
       setTimeout(() => el.focus(), 0);
       open();
     };
-    editor.controller.states.on('changeStateName', handler);
+    controller.states.on('changeStateName', handler);
 
     return () => {
-      editor.controller.states.off('changeStateName', handler);
+      controller.states.off('changeStateName', handler);
     };
-  }, [editor, open]);
+  }, [smId, controller, open]);
 
   return (
     <WithHint

@@ -131,7 +131,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   }
 
-  createState = (args: CreateStateParams) => {
+  initState = (args: CreateStateParams) => {
     const { id, smId } = args;
 
     if (!id) return;
@@ -144,6 +144,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.watch(state);
 
     this.view.isDirty = true;
+
+    return state;
+  };
+
+  createState = (args: CreateStateParams) => {
+    const state = this.initState(args);
+    if (!state) return;
+
+    this.bindEdgeHandlers(state);
   };
 
   changeStateName = (args: ChangeStateNameParams) => {
@@ -296,7 +305,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  createChoiceState = (params: CreateChoiceStateParams) => {
+  initChoiceState = (params: CreateChoiceStateParams) => {
     const { id, smId } = params;
     if (!id) return;
     const state = new ChoiceState(this.app, id, smId, { ...params });
@@ -308,6 +317,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.watch(state);
 
     this.view.isDirty = true;
+    return state;
+  };
+
+  createChoiceState = (params: CreateChoiceStateParams) => {
+    const state = this.initChoiceState(params);
+    if (!state) return;
+
+    this.bindEdgeHandlers(state);
   };
 
   deleteChoiceState = (args: DeleteDrawableParams) => {

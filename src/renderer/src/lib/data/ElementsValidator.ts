@@ -3,6 +3,7 @@ import {
   ArgumentProto,
   ComponentProto,
   MethodProto,
+  ParameterProto,
   Platform,
   SignalProto,
 } from '@renderer/types/platform';
@@ -83,14 +84,22 @@ function validateEvent(
   }
 }
 
+function getRequiredArgs(method: MethodProto | SignalProto) {
+  const methodArgs: ParameterProto[] | undefined = method.parameters;
+  if (!methodArgs) return [];
+
+  return methodArgs.filter((param) => !param.optional);
+}
+
 function validateArgs(
   methodName: string,
   method: MethodProto | SignalProto,
   args: ArgList | undefined
 ) {
-  const methodArgs: ArgumentProto[] | undefined = method.parameters;
+  const methodArgs: ParameterProto[] | ArgumentProto[] | undefined = method.parameters;
+  const requiredArgs = getRequiredArgs(method);
   if (methodArgs === undefined) {
-    if (args !== undefined && Object.keys(args).length != 0) {
+    if (args !== undefined && Object.keys(args).length !== 0) {
       throw new Error(
         `Неправильное количество аргументов у метода ${methodName}! Ожидалось 0, получено ${
           Object.keys(args).length
@@ -98,12 +107,15 @@ function validateArgs(
       );
     }
   } else {
-    if (args === undefined) {
+    if (args !== undefined && requiredArgs.length > Object.keys(args).length) {
       throw new Error(
-        `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${methodArgs.length}`
+        `Неправильное количество аргументов у метода ${methodName}! Ожидалось ${requiredArgs.length}`
       );
     }
-    const argNames = Object.keys(args);
+    // TODO (L140-beep): Проверять, что значение является одним из списка возможных значений
+    if (!args && requiredArgs.length !== 0)
+      throw Error(`Отсутствуют аргументы вызова метода ${methodName}!`);
+    const argNames = Object.keys(args ?? {});
     for (const argIdx in methodArgs) {
       if (argNames[argIdx] !== methodArgs[argIdx].name) {
         throw new Error(

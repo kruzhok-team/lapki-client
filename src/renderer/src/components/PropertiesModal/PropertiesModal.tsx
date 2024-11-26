@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Modal } from '@renderer/components/UI';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Meta as MetaData } from '@renderer/types/diagram';
@@ -15,18 +16,22 @@ const dateFormat = new Intl.DateTimeFormat('ru-Ru', {
 }).format;
 
 interface PropertiesModalProps {
+  controller: CanvasController;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
+export const PropertiesModal: React.FC<PropertiesModalProps> = ({
+  controller,
+  onClose,
+  ...props
+}) => {
   const modelController = useModelContext();
   const model = modelController.model;
   const name = model.useData('', 'name');
   const basename = model.useData('', 'basename');
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  // TODO(L140-beep): здесь нужно будет прокинуть машину состояний, когда появится общий канвас
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  // TODO(L140-beep): А вот здесь нужно селектор сделать и убрать CanvasController
+  const stateMachines = Object.keys(controller.stateMachinesSub);
   const currentSm = stateMachines[0];
   const platform = model.useData(currentSm, 'elements.platform');
   const meta: MetaData = model.useData(currentSm, 'elements.meta');

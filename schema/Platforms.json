@@ -12,6 +12,12 @@
             "type": "string"
           },
           "type": "array"
+        },
+        {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
         }
       ]
     },
@@ -26,6 +32,9 @@
         },
         "name": {
           "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
         },
         "type": {
           "$ref": "#/definitions/ArgType"
@@ -72,9 +81,6 @@
         },
         "description": {
           "type": "string"
-        },
-        "position": {
-          "$ref": "#/definitions/Point"
         },
         "img": {
           "type": "string"
@@ -128,9 +134,7 @@
       "required": [
         "signals",
         "variables",
-        "position",
-        "methods",
-        "parameters"
+        "methods"
       ],
       "type": "object"
     },
@@ -245,6 +249,9 @@
         "standardVersion": {
           "type": "string"
         },
+        "staticActionDelimeter": {
+          "type": "string"
+        },
         "staticComponents": {
           "type": "boolean"
         },
@@ -266,6 +273,7 @@
         "delimeter",
         "version",
         "visual",
+        "staticActionDelimeter",
         "components"
       ],
       "type": "object"

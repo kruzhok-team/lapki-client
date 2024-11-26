@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
 import { useStateMachines } from '@renderer/hooks';
@@ -55,7 +56,7 @@ export const StateMachinesList: React.FC = () => {
 
   return (
     <section>
-      {/* <div className="mx-4 mb-3 flex justify-center border-b border-border-primary py-2 text-center text-lg">
+      <div className="mx-4 mb-3 flex justify-center border-b border-border-primary py-2 text-center text-lg">
         <div className="flex w-full justify-center">
           <h3>Машины состояний</h3>{' '}
         </div>
@@ -69,12 +70,12 @@ export const StateMachinesList: React.FC = () => {
             <AddIcon className="shrink-0" />
           </button>
         </div>
-      </div> */}
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
+      </div>
+      {/* <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Машины состояний
-      </h3>
+      </h3> */}
       <div className="px-4">
-        <button
+        {/* <button
           type="button"
           className="btn-primary mb-2 flex w-full items-center justify-center gap-3"
           disabled={!isInitialized}
@@ -82,23 +83,27 @@ export const StateMachinesList: React.FC = () => {
         >
           <AddIcon className="shrink-0" />
           Добавить...
-        </button>
+        </button> */}
         <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {[...Object.entries(elements)].map(([id, sm]) => (
-            <Component
-              key={id}
-              name={sm.name || id}
-              isSelected={id === selectedSm}
-              onSelect={() => setSmSelected(id)}
-              onEdit={() => onRequestEditStateMachine(id)}
-              onDelete={() => undefined}
-              onCallContextMenu={() => onCallContextMenu(id, sm)}
-              // TODO (L140-beep): Доделать свап машин состояний
-              onDragStart={() => console.log('setDragState')}
-              onDrop={() => console.log('onDrop')}
-              isDragging={id === ''}
-            />
-          ))}
+          {[...Object.entries(elements)].map(
+            ([id, sm]) =>
+              id !== '' && (
+                <Component
+                  key={id}
+                  name={sm.name || id}
+                  isSelected={id === selectedSm}
+                  icon={<StateMachineIcon className="fill-bg-contrast" />}
+                  onSelect={() => setSmSelected(id)}
+                  onEdit={() => onRequestEditStateMachine(id)}
+                  onDelete={() => undefined}
+                  onCallContextMenu={() => onCallContextMenu(id, sm)}
+                  // TODO (L140-beep): Доделать свап машин состояний
+                  onDragStart={() => console.log('setDragState')}
+                  onDrop={() => console.log('onDrop')}
+                  isDragging={id === ''}
+                />
+              )
+          )}
         </div>
       </div>
       <StateMachineEditModal

@@ -5,7 +5,7 @@ import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/lib/types/graphics';
-import theme from '@renderer/theme';
+import theme, { getColor } from '@renderer/theme';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
 import { drawText, getTextWidth } from '../utils/text';
@@ -251,7 +251,7 @@ export class Picto {
     ctx.fillStyle = bgColor ?? '#3a426b';
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 0.25;
     ctx.beginPath();
     ctx.roundRect(x, y, width / this.scale, height / this.scale, round ?? 5 / this.scale);
     ctx.fill();
@@ -340,7 +340,20 @@ export class Picto {
    * @param y Y-координата
    * @param ps Контейнер с параметрами пиктограммы
    */
-  drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+  drawPicto(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    ps: PictoProps,
+    drawCustomParameter?: (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      parameter: any,
+      bgColor: string,
+      fgColor: string
+    ) => void
+  ) {
     const leftIcon = ps.leftIcon;
     const rightIcon = ps.rightIcon;
     const bgColor = ps.bgColor ?? '#3a426b';
@@ -385,22 +398,66 @@ export class Picto {
       });
     }
     if (ps.parameter) {
-      const baseFontSize = 12;
-      const cy = (this.eventHeight - baseFontSize) / this.scale;
-      const cx = (this.eventWidth - 5) / this.scale;
-      const fontSize = baseFontSize / this.scale;
-      ctx.save();
-      ctx.font = `${fontSize}px/0 monospace`;
-      ctx.fillStyle = fgColor;
-      ctx.strokeStyle = bgColor;
-      ctx.textBaseline = 'hanging';
-      ctx.textAlign = 'end';
-      ctx.lineWidth = 0.5 / this.scale;
-
-      ctx.strokeText(ps.parameter, x + cx, y + cy);
-      ctx.fillText(ps.parameter, x + cx, y + cy);
-
-      ctx.restore();
+      drawCustomParameter
+        ? drawCustomParameter(ctx, x, y, ps.parameter, bgColor, fgColor)
+        : this.drawParameter(ctx, x, y, ps.parameter, bgColor, fgColor);
     }
   }
+
+  drawParameter(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameter: any,
+    bgColor: string,
+    fgColor: string
+  ) {
+    const baseFontSize = 12;
+    const cy = (this.eventHeight - baseFontSize) / this.scale;
+    const cx = (this.eventWidth - 5) / this.scale;
+    const fontSize = baseFontSize / this.scale;
+    ctx.save();
+    ctx.font = `${fontSize}px/0 monospace`;
+    ctx.fillStyle = fgColor;
+    ctx.strokeStyle = bgColor;
+    ctx.textBaseline = 'hanging';
+    ctx.textAlign = 'end';
+    ctx.lineWidth = 0.5 / this.scale;
+
+    ctx.strokeText(parameter, x + cx, y + cy);
+    ctx.fillText(parameter, x + cx, y + cy);
+
+    ctx.restore();
+  }
+
+  drawMatrix = (ctx: CanvasRenderingContext2D, x: number, y: number, values: number[][]) => {
+    const width = 5;
+    const height = 5;
+    const scaledWidth = width / this.scale;
+    const scaledHeight = height / this.scale;
+    const computedY = y + this.eventHeight / 2.2 / this.scale;
+    const computedX = x + this.eventWidth / 1.3 / this.scale;
+    const inactiveColor = getColor('matrix-inactive');
+    const activeColor = getColor('matrix-active');
+    let px = 0;
+    let py = 0;
+    values.map((rowArr) => {
+      rowArr.map((value) => {
+        this.drawRect(
+          ctx,
+          computedX + px,
+          computedY + py,
+          width,
+          height,
+          value === 0 ? inactiveColor : activeColor,
+          undefined,
+          undefined,
+          1
+        );
+        px += scaledWidth;
+      });
+      py += scaledHeight;
+      px = 0;
+    });
+  };
 }

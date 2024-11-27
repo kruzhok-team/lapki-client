@@ -43,7 +43,6 @@ export class Label implements Drawable {
 
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.parent.data.label) return;
-    debugger;
     this.drawBody(ctx);
     if (!this.app.controller.visual) {
       this.drawTextVariant(ctx);

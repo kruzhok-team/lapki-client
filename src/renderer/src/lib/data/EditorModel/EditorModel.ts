@@ -70,22 +70,14 @@ export class EditorModel {
   init(basename: string | null, name: string, elements: Elements) {
     // this.triggerDataUpdate('canvas');
     this.data = emptyEditorData();
-    this.data.canvas[''] = { isInitialized: false };
     this.data.basename = basename;
     this.data.name = name;
     this.data.elements = elements;
     this.data.headControllerId = '';
     this.data.elements.stateMachines[''] = emptyStateMachine();
+    this.data.isInitialized = true;
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('basename', 'name', 'elements');
-  }
-
-  initCanvasData() {
-    for (const canvasId in this.data.canvas) {
-      const canvas = this.data.canvas[canvasId];
-      canvas.isInitialized = true;
-      this.triggerDataUpdate('canvas.isInitialized');
-    }
+    this.triggerDataUpdate('basename', 'name', 'elements', 'isInitialized');
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -126,20 +118,13 @@ export class EditorModel {
 
   // TODO (L140-beep): разобраться с возвращаемым never
   // TODO (L140-beep): сделать stateId необязательным
-  useData<T extends EditorDataPropertyName>(
-    smId: string,
-    propertyName: T,
-    canvasId?: string
-  ): EditorDataReturn<T> {
+  useData<T extends EditorDataPropertyName>(smId: string, propertyName: T): EditorDataReturn<T> {
     const isShallow = (propertyName: string): propertyName is keyof EditorData => {
       return !propertyName.startsWith('elements');
     };
 
     const getSnapshot = () => {
       if (isShallow(propertyName)) {
-        if (propertyName.startsWith('canvas') && canvasId !== undefined) {
-          return this.data.canvas[canvasId][propertyName.split('.')[1]];
-        }
         return this.data[propertyName];
       }
 

@@ -212,7 +212,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
       condition.parse(args.label?.condition);
       actions.parse(args.smId, args.label?.do);
 
-      setColor(color);
+      setColor(args.color);
 
       setTransition({ ...args });
       setTransitionId(args.id);

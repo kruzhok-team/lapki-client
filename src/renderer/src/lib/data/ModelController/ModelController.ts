@@ -201,6 +201,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private watch(controller: CanvasController) {
     controller.on('linkState', this.linkState);
     controller.on('unlinkState', this.unlinkState);
+    // controller.on('unlinkChoiceState', this.unlinkChoiceState);
     controller.on('selectState', this.selectState);
     controller.on('selectNote', this.selectNote);
     controller.on('selectChoice', this.selectChoiceState);
@@ -225,6 +226,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   private unwatch(controller: CanvasController) {
     controller.off('linkState', this.linkState);
+    controller.off('unlinkState', this.unlinkState);
     controller.off('selectState', this.selectState);
     controller.off('selectNote', this.selectNote);
     controller.off('selectTransition', this.selectTransition);
@@ -920,7 +922,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   unlinkState = (params: UnlinkStateParams) => {
-    const { id, smId, canUndo } = params;
+    const { id, smId, canUndo = true } = params;
 
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state || !state.parentId) return;
@@ -948,7 +950,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
       }
 
-      numberOfConnectedActions += 2;
+      numberOfConnectedActions += 1;
     }
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
@@ -961,15 +963,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.unlinkState(smId, id);
 
-    if (canUndo) {
-      this.history.do({
-        type: 'unlinkState',
-        args: { smId, parentId, params },
-        numberOfConnectedActions,
-      });
-    }
-    this.emit('unlinkState', params);
-
     const [, siblingIds] = this.getSiblings(
       smId,
       id,
@@ -978,7 +971,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     if (!siblingIds.length) {
       this.createInitialStateWithTransition(smId, id);
+      numberOfConnectedActions += 1;
     }
+    if (canUndo) {
+      this.history.do({
+        type: 'unlinkState',
+        args: { smId, parentId, params },
+        numberOfConnectedActions,
+      });
+    }
+    this.emit('unlinkState', params);
   };
 
   linkState = (args: LinkStateParams, canUndo = true) => {
@@ -1008,7 +1010,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       { smId, id: childId, startPosition: child.position, endPosition: { x: 0, y: 0 } },
       false
     );
-
     this.emit('linkState', args);
 
     // Перелинковка переходов

@@ -177,7 +177,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     const parent = this.data.states.get(parentId);
     const child = this.data.states.get(childId);
-
     if (!parent || !child) return;
 
     (child.parent || this.view).children.remove(child, Layer.States);
@@ -529,7 +528,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   // TODO: визуальная обратная связь
   // если состояние вложено – отсоединяем
-  handleLongPress = (state: State) => {
+  handleStateLongPress = (state: State) => {
     if (!state.data.parentId) return;
 
     this.controller.emit('unlinkState', { smId: state.smId, id: state.id });
@@ -637,6 +636,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   };
 
+  handleChoiceStateLongPress = (state: ChoiceState) => {
+    if (!state.data.parentId) return;
+
+    this.controller.emit('unlinkChoiceState', { smId: state.smId, id: state.id });
+  };
+
   handleChoiceStateContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const item = this.data.choiceStates.get(stateId);
     if (!item) return;
@@ -705,7 +710,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleContextMenu.bind(this, state.id));
     state.on('drag', this.handleDrag.bind(this, state));
-    state.on('longpress', this.handleLongPress.bind(this, state));
+    state.on('longpress', this.handleStateLongPress.bind(this, state));
   }
   private unwatchState(state: State) {
     state.off('dragend', this.handleDragEnd.bind(this, state));
@@ -715,7 +720,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.off('contextmenu', this.handleContextMenu.bind(this, state.id));
     state.off('drag', this.handleDrag.bind(this, state));
-    state.off('longpress', this.handleLongPress.bind(this, state));
+    state.off('longpress', this.handleStateLongPress.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
   }
@@ -742,13 +747,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
+    state.on('longpress', this.handleChoiceStateLongPress.bind(this, state));
   }
   private unwatchChoiceState(state: ChoiceState) {
     state.off('dragend', this.handleChoiceStateDragEnd.bind(this, state));
     state.off('mousedown', this.handleChoiceStateMouseDown.bind(this, state));
     state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.off('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
-
+    state.off('longpress', this.handleChoiceStateLongPress.bind(this, state));
     state.edgeHandlers.unbindEvents();
   }
 }

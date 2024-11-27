@@ -61,9 +61,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     if (component || attribute) {
       const proto = controller.platform[smId].getComponent(component);
       const delimiter =
-        proto?.singletone && !platform.id.startsWith('Bearloga')
-          ? platform.staticActionDelimeter
-          : '.';
+        proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
       inputValue = `${component}${delimiter}${attribute}`;
     }
     handleInputChange(name, undefined, inputValue);

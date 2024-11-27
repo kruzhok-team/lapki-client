@@ -124,7 +124,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     editor.setController(controller);
     this.controllers = {};
     this.controllers[''] = controller;
-    this.model.data.canvas[''] = { isInitialized: false };
     this.model.changeHeadControllerId('');
     this.schemeEditorId = null;
   }
@@ -317,15 +316,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (smId === '') continue;
       const canvasId = this.createStateMachine(smId, elements.stateMachines[smId], false);
       headCanvas = canvasId;
-      this.model.data.canvas[canvasId] = {
-        isInitialized: true,
-      };
     }
     this.model.changeHeadControllerId(headCanvas);
     this.model.makeStale();
     this.createSchemeScreenController(elements.stateMachines);
     this.history.clear();
-    this.model.initCanvasData();
     this.initPlatform();
   }
 
@@ -351,9 +346,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     editor.setController(schemeScreenController);
     this.controllers[schemeScreenId] = schemeScreenController;
-    this.model.data.canvas[schemeScreenId] = {
-      isInitialized: true,
-    };
     this.watch(schemeScreenController);
     this.setupSchemeScreenEditorController(stateMachines, schemeScreenController);
     this.schemeEditorId = schemeScreenId;
@@ -600,9 +592,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     editor.setController(controller);
     this.controllers[canvasId] = controller;
-    this.model.data.canvas[canvasId] = {
-      isInitialized: true,
-    };
     this.model.createStateMachine(smId, data);
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);

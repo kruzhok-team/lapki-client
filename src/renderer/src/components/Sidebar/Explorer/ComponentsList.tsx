@@ -12,8 +12,7 @@ export const ComponentsList: React.FC = () => {
     modelController.controllers[headControllerId].useData('stateMachinesSub')
   );
   const controller = modelController.controllers[headControllerId];
-  const editor = controller.app;
-  const isInitialized = model.useData('', 'canvas.isInitialized', editor.id) as boolean;
+  const isInitialized = model.useData('', 'isInitialized') as boolean;
 
   const [dragName, setDragName] = useState<string | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -21,17 +20,20 @@ export const ComponentsList: React.FC = () => {
   return (
     <>
       <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-        {stateMachines.map((smId: string) => (
-          <StateMachineComponentList
-            isInitialized={isInitialized}
-            controller={controller}
-            dragName={dragName}
-            smId={smId}
-            selectedComponent={selectedComponent}
-            setDragName={setDragName}
-            setSelectedComponent={setSelectedComponent}
-          />
-        ))}
+        {stateMachines.map(
+          (smId: string) =>
+            smId !== '' && (
+              <StateMachineComponentList
+                isInitialized={isInitialized}
+                controller={controller}
+                dragName={dragName}
+                smId={smId}
+                selectedComponent={selectedComponent}
+                setDragName={setDragName}
+                setSelectedComponent={setSelectedComponent}
+              />
+            )
+        )}
       </div>
     </>
   );

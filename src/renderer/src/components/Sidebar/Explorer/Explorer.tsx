@@ -16,14 +16,7 @@ import { ComponentsList } from './ComponentsList';
 
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
-  const editor = controller.app;
-  const isInitialized = modelController.model.useData(
-    '',
-    'canvas.isInitialized',
-    editor.id
-  ) as boolean;
+  const isInitialized = modelController.model.useData('', 'isInitialized');
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);

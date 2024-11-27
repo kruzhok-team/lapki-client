@@ -140,12 +140,17 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   }
   const getAction = (delimeter: string, reserveDelimeter: string) => {
     const trimed = unproccessedAction.trim();
-    const firstSplit = trimed.split(delimeter);
-    if (firstSplit.length > 1) {
-      return firstSplit;
+    const bracketPos = trimed.indexOf('(');
+    const beforeBracket = trimed.slice(0, bracketPos);
+    const firstDelimeter = beforeBracket.indexOf(delimeter);
+    if (firstDelimeter != -1) {
+      return [trimed.slice(0, firstDelimeter), trimed.slice(firstDelimeter + delimeter.length)];
     }
-    const secondSplit = trimed.split(reserveDelimeter);
-    return secondSplit;
+    const secondDelimeter = beforeBracket.indexOf(reserveDelimeter);
+    return [
+      trimed.slice(0, secondDelimeter),
+      trimed.slice(secondDelimeter + reserveDelimeter.length),
+    ];
   };
   let [componentName, action] = getAction('.', '::');
 
@@ -571,7 +576,6 @@ function getVisualFlag(
   }
   return visual;
 }
-
 export function importGraphml(
   expression: string,
   openImportError: (error: string) => void

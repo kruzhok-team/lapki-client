@@ -31,13 +31,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
-  const editor = controller.app;
   const isStale = modelController.model.useData('', 'isStale');
-  const isInitialized = modelController.model.useData(
-    '',
-    'canvas.isInitialized',
-    editor.id
-  ) as string;
+  const isInitialized = modelController.model.useData('', 'isInitialized');
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const visual = controller.useData('visual');

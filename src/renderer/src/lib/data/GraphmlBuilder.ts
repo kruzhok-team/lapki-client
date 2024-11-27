@@ -52,17 +52,27 @@ function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
   };
 }
 
+/* 
+  Клонируем, потому что при экспорте у нас параметры-матрицы превращаются в строку
+  и эти параметры меняются глобально
+  Если не клонировать, то значения матрицы отрисовываются полностью после сохранения.
+*/
 function serializeArgs(args: ArgList | undefined) {
-  if (args === undefined) {
+  const serializedArgs = structuredClone(args);
+  if (serializedArgs === undefined) {
     return '';
   }
-  for (const argId in args) {
-    const arg = args[argId];
+  for (const argId in serializedArgs) {
+    const arg = serializedArgs[argId];
     if (Array.isArray(arg) && Array.isArray(arg[0])) {
-      args[argId] = buildMatrix({ values: arg, width: arg.length, height: arg[0].length });
+      serializedArgs[argId] = buildMatrix({
+        values: arg,
+        width: arg.length,
+        height: arg[0].length,
+      });
     }
   }
-  return Object.values(args).join(', ');
+  return Object.values(serializedArgs).join(', ');
 }
 
 /**

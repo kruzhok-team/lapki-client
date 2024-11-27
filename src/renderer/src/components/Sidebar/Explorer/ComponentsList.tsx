@@ -12,7 +12,6 @@ export const ComponentsList: React.FC = () => {
     modelController.controllers[headControllerId].useData('stateMachinesSub')
   );
   const controller = modelController.controllers[headControllerId];
-  const editor = controller.app;
   const isInitialized = model.useData('', 'isInitialized') as boolean;
 
   const [dragName, setDragName] = useState<string | null>(null);

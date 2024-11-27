@@ -21,9 +21,6 @@ export class FilesManager {
   private get data() {
     return this.modelController.model.data;
   }
-  private get controller() {
-    return this.modelController;
-  }
 
   newFile(platformIdx: string) {
     const platform = getPlatform(platformIdx);

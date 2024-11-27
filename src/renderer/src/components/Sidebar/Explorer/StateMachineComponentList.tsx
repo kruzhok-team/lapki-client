@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
 
-import { twMerge } from 'tailwind-merge';
-
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';

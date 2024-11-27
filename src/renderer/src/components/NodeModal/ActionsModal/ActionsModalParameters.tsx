@@ -40,7 +40,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   controller,
 }) => {
   const modelController = useModelContext();
-  const Component = 'label';
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;
   };
@@ -190,7 +189,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             />
             {currentChecked ? (
               <div className="flex w-full gap-2" key={name}>
-                <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
+                <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                   <div className="flex min-w-28 items-center gap-1">
                     <span>{label}</span>
                     {hint && (
@@ -203,7 +202,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       </WithHint>
                     )}
                   </div>
-                </Component>
+                </label>
                 <Select
                   containerClassName="w-full"
                   options={filteredComponentOptions}

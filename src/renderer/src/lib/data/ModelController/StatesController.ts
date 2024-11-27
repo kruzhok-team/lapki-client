@@ -182,6 +182,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     (child.parent || this.view).children.remove(child, Layer.States);
     child.parent = parent;
+    child.data.parentId = args.parentId;
     parent.children.add(child, Layer.States);
 
     this.view.isDirty = true;
@@ -196,7 +197,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.parent.children.remove(state, Layer.States);
     this.view.children.add(state, Layer.States);
     state.parent = undefined;
-
+    state.data.parentId = undefined;
     if (canUndo) {
       state.addOnceOff('dragend');
     }
@@ -289,7 +290,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.data.finalStates.get(childId);
     const parent = this.data.states.get(parentId);
     if (!state || !parent) return;
-
+    state.data.parentId = args.parentId;
     state.parent = parent;
     this.view.children.remove(state, Layer.FinalStates);
     parent.children.add(state, Layer.FinalStates);
@@ -364,6 +365,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (!state || !parent) return;
 
     state.parent = parent;
+    state.data.parentId = args.parentId;
     this.view.children.remove(state, Layer.ChoiceStates);
     parent.children.add(state, Layer.ChoiceStates);
 
@@ -530,7 +532,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleLongPress = (state: State) => {
     if (!state.data.parentId) return;
 
-    this.unlinkState({ smId: '', id: state.id });
+    this.controller.emit('unlinkState', { smId: state.smId, id: state.id });
   };
 
   handleDrag: DragHandler = throttle<DragHandler>((state, e) => {

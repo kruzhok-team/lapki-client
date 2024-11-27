@@ -200,6 +200,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // такие как клик, двойной клик перемещением в определенное место, вызываются в контроллерах
   private watch(controller: CanvasController) {
     controller.on('linkState', this.linkState);
+    controller.on('unlinkState', this.unlinkState);
     controller.on('selectState', this.selectState);
     controller.on('selectNote', this.selectNote);
     controller.on('selectChoice', this.selectChoiceState);
@@ -918,7 +919,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return { x, y };
   }
 
-  unlinkState(params: UnlinkStateParams) {
+  unlinkState = (params: UnlinkStateParams) => {
     const { id, smId, canUndo } = params;
 
     const state = this.model.data.elements.stateMachines[smId].states[id];
@@ -978,7 +979,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!siblingIds.length) {
       this.createInitialStateWithTransition(smId, id);
     }
-  }
+  };
 
   linkState = (args: LinkStateParams, canUndo = true) => {
     const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;

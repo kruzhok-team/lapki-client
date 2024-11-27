@@ -281,7 +281,7 @@ export class PlatformManager {
     }
 
     let drawFunction:
-      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: number[][]) => void)
+      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
       | undefined = undefined;
     let parameter: any | undefined = undefined;
     if (argQuery && ev.args && parameterList) {

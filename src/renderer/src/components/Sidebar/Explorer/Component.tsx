@@ -83,8 +83,8 @@ export const Component: React.FC<ComponentProps> = (props) => {
           draggable
           {...props}
         >
-          {icon ?? ''}
-          <p className="ml-2 line-clamp-1">{name}</p>
+          <div className="size-8">{icon ?? ''}</div>
+          <p className="ml-2 line-clamp-1"> {name}</p>
         </button>
       )}
     </WithHint>

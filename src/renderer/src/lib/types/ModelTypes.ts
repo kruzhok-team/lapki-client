@@ -21,7 +21,6 @@ export type StateMachineData = {
 };
 
 export const emptyEditorData = () => ({
-  canvas: {} as { [id: string]: EditorStatus },
   basename: null as string | null,
   name: null as string | null,
 
@@ -29,24 +28,14 @@ export const emptyEditorData = () => ({
   offset: { x: 0, y: 0 },
   headControllerId: '',
   isStale: false,
+  isInitialized: false,
 });
-
-export function emptyEditorStatus(): EditorStatus {
-  return {
-    isInitialized: false,
-  };
-}
-
-export type EditorStatus = {
-  isInitialized: boolean;
-};
 
 export type EditorData = ReturnType<typeof emptyEditorData>;
 export type EditorDataPropertyName =
   | keyof EditorData
   | 'elements.stateMachinesId'
-  | `elements.${keyof StateMachine}`
-  | `canvas.${keyof EditorStatus}`;
+  | `elements.${keyof StateMachine}`;
 export type EditorDataReturn<T> = T extends `elements.${infer V}`
   ? V extends keyof EditorData['elements']
     ? EditorData['elements'][V]

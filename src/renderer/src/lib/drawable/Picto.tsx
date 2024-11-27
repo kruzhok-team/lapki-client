@@ -80,7 +80,7 @@ const basePicto: BasePicto = {
   onExit: resolveImg('common/onExitAlt.svg'),
   onEnterAlt: resolveImg('common/onEnter.svg'),
   onExitAlt: resolveImg('common/onExit.svg'),
-  stateMachine: resolveImg('common/statemachine.svg'),
+  stateMachine: resolveImg('common/cpu-color.svg'),
 };
 
 export function extendPreloadPicto(addition: { [path: string]: string }) {

@@ -4,8 +4,8 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { ModelController } from '@renderer/lib/data/ModelController/ModelController';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, StateMachine } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto, Platform } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
@@ -25,7 +25,6 @@ interface ActionsModalParametersProps {
   componentOptions: SelectOption[];
 
   smId: string;
-  modelController: ModelController;
   controller: CanvasController;
 }
 
@@ -39,8 +38,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   componentOptions,
   smId,
   controller,
-  modelController,
 }) => {
+  const modelController = useModelContext();
   const Component = 'label';
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;

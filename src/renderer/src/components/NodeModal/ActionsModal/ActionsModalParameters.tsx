@@ -4,9 +4,7 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { getPlatform } from '@renderer/lib/data/PlatformLoader';
-import { useModelContext } from '@renderer/store/ModelContext';
-import { ArgList, StateMachine } from '@renderer/types/diagram';
+import { ArgList } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto, Platform } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
@@ -39,11 +37,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   smId,
   controller,
 }) => {
-  const modelController = useModelContext();
-  const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
-    [id: string]: StateMachine;
-  };
-
   const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
     if (type && typeof type === 'string' && validators[type]) {
       if (!validators[type](value)) {
@@ -164,7 +157,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             );
           }
         }
-        const platform = getPlatform(stateMachines[smId].platform);
+        const platform = controller.platform[smId].data;
         const componentAttibute = getComponentAttribute(value as string, platform);
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
         const currentChecked = isChecked.get(name) ?? componentAttibute != null;

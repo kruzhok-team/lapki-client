@@ -1670,13 +1670,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         parent = possibleParent[1];
       }
     }
-    const siblings = this.getSiblings(
-      smId,
-      params.id,
-      parentId ?? computedParentId,
-      'finalStates'
-    )[0];
-    if (siblings.length) return;
     const id = this.model.createFinalState(params);
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
     this.emit('createFinal', { ...params, id });

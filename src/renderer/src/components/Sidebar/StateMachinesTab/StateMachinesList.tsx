@@ -63,7 +63,7 @@ export const StateMachinesList: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="button"
-            className={twMerge('w-5 opacity-70', isDisabled && 'opacity-40')}
+            className={'w-5 opacity-70 disabled:opacity-40'}
             disabled={isDisabled}
             onClick={onRequestAddStateMachine}
           >

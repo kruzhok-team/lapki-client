@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 
+import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { Select } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ArgList } from '@renderer/types/diagram';
-import { ArgType, ArgumentProto } from '@renderer/types/platform';
+import { ArgType, ArgumentProto, Platform } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
+import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { MatrixWidget } from './MatrixWidget';
 
@@ -15,6 +18,12 @@ interface ActionsModalParametersProps {
 
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+
+  selectedComponent: string | null;
+  componentOptions: SelectOption[];
+
+  smId: string;
+  controller: CanvasController;
 }
 
 export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
@@ -23,6 +32,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   setParameters,
   errors,
   setErrors,
+  selectedComponent,
+  componentOptions,
+  smId,
+  controller,
 }) => {
   const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
     if (type && typeof type === 'string' && validators[type]) {
@@ -37,6 +50,46 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
+  const handleComponentAttributeChange = (
+    name: string,
+    component: string,
+    attribute: string,
+    platform: Platform | undefined
+  ) => {
+    if (!platform) return;
+    let inputValue = '';
+    if (component || attribute) {
+      const proto = controller.platform[smId].getComponent(component);
+      const delimiter =
+        proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
+      inputValue = `${component}${delimiter}${attribute}`;
+    }
+    handleInputChange(name, undefined, inputValue);
+  };
+
+  const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
+
+  const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
+  const methodOptionsSearch = (selectedParameterComponent: string | null) => {
+    if (!selectedParameterComponent || !controller?.platform[smId]) return [];
+    const platformManager = controller.platform[smId];
+
+    return platformManager
+      .getAvailableVariables(selectedParameterComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={platformManager.getVariableIconUrl(selectedParameterComponent, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
+  };
   const onChange = (parameter: string, row: number, col: number, value: number) => {
     (parameters[parameter] as number[][])[row][col] = value;
     setParameters({
@@ -59,7 +112,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         const hint =
           description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
         const label = name + ':';
-
         if (Array.isArray(type)) {
           const options = type.map((value) => ({ label: value, value }));
           return (
@@ -102,17 +154,87 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             );
           }
         }
-
+        const platform = controller.platform[smId].data;
+        const componentAttibute = getComponentAttribute(value as string, platform);
+        // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
+        const currentChecked = isChecked.get(name) ?? componentAttibute != null;
+        const selectedParameterComponent =
+          currentChecked && componentAttibute ? componentAttibute[0] : null;
+        const selectedParameterMethod =
+          currentChecked && componentAttibute ? componentAttibute[1] : null;
+        const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
-          <ComponentFormFieldLabel
-            key={name}
-            label={label}
-            hint={hint}
-            error={error}
-            value={value as string}
-            name={name}
-            onChange={(e) => handleInputChange(name, type, e.target.value)}
-          />
+          <div className="flex items-start" key={name}>
+            <Checkbox
+              checked={currentChecked}
+              onCheckedChange={() => {
+                setIsChecked((oldValue) => {
+                  const newValue = new Map(oldValue);
+                  newValue.set(name, !currentChecked);
+                  return newValue;
+                });
+                handleInputChange(name, type, '');
+              }}
+              className="mr-2 mt-[9px]"
+            />
+            {currentChecked ? (
+              <div className="flex w-full gap-2" key={name}>
+                <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
+                  <div className="flex min-w-28 items-center gap-1">
+                    <span>{label}</span>
+                    {hint && (
+                      <WithHint hint={hint}>
+                        {(props) => (
+                          <div className="shrink-0" {...props}>
+                            <QuestionMark className="h-5 w-5" />
+                          </div>
+                        )}
+                      </WithHint>
+                    )}
+                  </div>
+                </label>
+                <Select
+                  containerClassName="w-full"
+                  options={filteredComponentOptions}
+                  onChange={(opt) =>
+                    handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
+                  }
+                  value={
+                    filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
+                    null
+                  }
+                  isSearchable={false}
+                  noOptionsMessage={() => 'Нет подходящих компонентов'}
+                />
+                <Select
+                  containerClassName="w-full"
+                  options={methodOptions}
+                  onChange={(opt) =>
+                    handleComponentAttributeChange(
+                      name,
+                      selectedParameterComponent ?? '',
+                      opt?.value ?? '',
+                      platform
+                    )
+                  }
+                  value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
+                  isSearchable={false}
+                  noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                />
+                <p className="pl-[120px] text-sm text-error">{error}</p>
+              </div>
+            ) : (
+              <ComponentFormFieldLabel
+                key={name}
+                label={label}
+                hint={hint}
+                error={error}
+                value={value as string}
+                name={name}
+                onChange={(e) => handleInputChange(name, type, e.target.value)}
+              />
+            )}
+          </div>
         );
       })}
     </div>

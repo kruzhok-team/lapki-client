@@ -19,6 +19,7 @@ interface TransitionModalProps {
 export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
   const visual = controller.useData('visual');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);
@@ -199,14 +200,20 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
   // Подстановка начальных значений
   useEffect(() => {
     const handleCreateTransition = (data: { smId: string; sourceId: string; targetId: string }) => {
-      if (data.smId !== smId) return;
+      if (data.smId !== smId || controller.id !== headControllerId) return;
       setNewTransition(data);
       actions.parse(data.smId, []);
       open();
     };
 
     const handleChangeTransition = (args: ChangeTransitionParams) => {
-      if (args.smId !== smId) return;
+      /*
+        Эта проверка здесь потому что у нас создаются инстансы модалки на каждую МС.
+        Так как схемотехнический экран подписан на все машины состояний сразу, то
+        модалки с его DiagramEditor всегда будут реагировать на openChangeTransitionModal.
+        И, получается, что вызывается модалка как для specific канваса, так и для схемотехнического.
+      */
+      if (args.smId !== smId || controller.id !== headControllerId) return;
 
       trigger.parse(args.label?.trigger);
       condition.parse(args.label?.condition);
@@ -227,7 +234,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
       modelController.off('openChangeTransitionModal', handleChangeTransition);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
+  }, [headControllerId, visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
   return (
     <>

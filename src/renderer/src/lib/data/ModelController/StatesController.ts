@@ -192,7 +192,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     const state = this.data.states.get(id);
     if (!state || !state.parent) return;
-
     state.parent.children.remove(state, Layer.States);
     this.view.children.add(state, Layer.States);
     state.parent = undefined;
@@ -529,7 +528,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   // TODO: визуальная обратная связь
   // если состояние вложено – отсоединяем
   handleStateLongPress = (state: State) => {
-    if (!state.data.parentId) return;
+    // TODO (L140-beep): Раньше здесь был state.data.parentId, но при отмене анлинка состояния рассинхрон по данным с моделью происходит
+    if (!state.parent) return;
 
     this.controller.emit('unlinkState', { smId: state.smId, id: state.id });
   };
@@ -556,12 +556,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleDragEnd = (state: State, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     if (this.dragInfo && state instanceof State) {
       this.linkState({
-        smId: '',
+        smId: state.smId,
         parentId: this.dragInfo.parentId,
         childId: this.dragInfo.childId,
       });
       this.app.controller.emit('linkState', {
-        smId: this.dragInfo.smId,
+        smId: state.smId,
         childId: this.dragInfo.childId,
         parentId: this.dragInfo.parentId,
       });

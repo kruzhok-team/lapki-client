@@ -281,7 +281,10 @@ export class PlatformManager {
       }
     }
 
-    let parameter: string | undefined = undefined;
+    let drawFunction:
+      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: number[][]) => void)
+      | undefined = undefined;
+    let parameter: any | undefined = undefined;
     if (argQuery && ev.args && parameterList) {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
@@ -292,18 +295,8 @@ export class PlatformManager {
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        const { width, height } = getMatrixDimensions(parameterList[0].type);
-        parameter = buildMatrix({
-          values: paramValue,
-          width: width,
-          height: height,
-        });
-        if (parameter.length > 10) {
-          parameter = parameter.slice(0, 10) + '...';
-        }
-        // TODO (L140-beep): Пиктограмма для матрицы
-        // drawMAtrix...
-        // return
+        parameter = paramValue;
+        drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
         console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
@@ -321,7 +314,8 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
       },
-      parameter
+      parameter,
+      drawFunction
     );
   }
 

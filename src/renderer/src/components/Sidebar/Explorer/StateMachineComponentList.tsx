@@ -71,7 +71,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         <div className="flex w-full justify-end">
           <button
             type="button"
-            className={twMerge('h-5 w-5 opacity-70', isDisabled && 'opacity-40')}
+            className={'h-5 w-5 opacity-70 disabled:opacity-40'}
             disabled={isDisabled}
             onClick={onRequestAddComponent}
           >

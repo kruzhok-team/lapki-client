@@ -311,13 +311,18 @@ export class PlatformManager {
       }
     }
 
-    this.picto.drawPicto(ctx, x, y, {
-      bgColor,
-      fgColor,
-      leftIcon,
-      rightIcon,
-      parameter,
-    });
+    this.picto.drawPicto(
+      ctx,
+      x,
+      y,
+      {
+        bgColor,
+        fgColor,
+        leftIcon,
+        rightIcon,
+      },
+      parameter
+    );
   }
 
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
@@ -381,8 +386,8 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
         opacity,
-        parameter,
       },
+      parameter,
       drawFunction
     );
   }

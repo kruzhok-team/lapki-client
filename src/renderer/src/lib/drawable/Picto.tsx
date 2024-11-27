@@ -111,7 +111,6 @@ export type PictoProps = {
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
-  parameter?: string;
   // TODO: args
 };
 
@@ -340,16 +339,17 @@ export class Picto {
    * @param y Y-координата
    * @param ps Контейнер с параметрами пиктограммы
    */
-  drawPicto(
+  drawPicto<T>(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     ps: PictoProps,
+    parameter?: T,
     drawCustomParameter?: (
       ctx: CanvasRenderingContext2D,
       x: number,
       y: number,
-      parameter: any,
+      parameter: T,
       bgColor: string,
       fgColor: string
     ) => void
@@ -397,10 +397,15 @@ export class Picto {
         height: this.iconSize,
       });
     }
-    if (ps.parameter) {
-      drawCustomParameter
-        ? drawCustomParameter(ctx, x, y, ps.parameter, bgColor, fgColor)
-        : this.drawParameter(ctx, x, y, ps.parameter, bgColor, fgColor);
+    if (parameter) {
+      if (drawCustomParameter) {
+        drawCustomParameter(ctx, x, y, parameter, bgColor, fgColor);
+        return;
+      }
+
+      if (typeof parameter === 'string') {
+        this.drawParameter(ctx, x, y, parameter, bgColor, fgColor);
+      }
     }
   }
 
@@ -408,7 +413,7 @@ export class Picto {
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
-    parameter: any,
+    parameter: string,
     bgColor: string,
     fgColor: string
   ) {

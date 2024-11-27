@@ -36,7 +36,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const visual = controller.useData('visual');
-  const schemeEditorName = 'Схемотехнический экран';
+  const schemeEditorName = 'Схемоэкран';
 
   const items: MenuItem[] = [
     {

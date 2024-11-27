@@ -244,13 +244,14 @@ export class Picto {
     bgColor?: string,
     fgColor?: string,
     opacity?: number,
-    round?: number
+    round?: number,
+    lineWidth?: number
   ) {
     ctx.save();
     ctx.fillStyle = bgColor ?? '#3a426b';
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
-    ctx.lineWidth = 0.25;
+    ctx.lineWidth = lineWidth ?? 0.5;
     ctx.beginPath();
     ctx.roundRect(x, y, width / this.scale, height / this.scale, round ?? 5 / this.scale);
     ctx.fill();
@@ -457,7 +458,8 @@ export class Picto {
           value === 0 ? inactiveColor : activeColor,
           undefined,
           undefined,
-          1
+          1,
+          0.25
         );
         px += scaledWidth;
       });

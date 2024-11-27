@@ -1,7 +1,6 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
-import { buildMatrix, getMatrixDimensions } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
 

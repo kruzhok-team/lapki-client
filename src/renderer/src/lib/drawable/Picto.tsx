@@ -5,7 +5,7 @@ import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/lib/types/graphics';
-import theme from '@renderer/theme';
+import theme, { getColor } from '@renderer/theme';
 
 import { drawImageFit, preloadImagesMap } from '../utils';
 import { drawText, getTextWidth } from '../utils/text';
@@ -111,7 +111,6 @@ export type PictoProps = {
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
-  parameter?: string;
   // TODO: args
 };
 
@@ -244,15 +243,17 @@ export class Picto {
     height: number,
     bgColor?: string,
     fgColor?: string,
-    opacity?: number
+    opacity?: number,
+    round?: number,
+    lineWidth?: number
   ) {
     ctx.save();
     ctx.fillStyle = bgColor ?? '#3a426b';
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = lineWidth ?? 0.5;
     ctx.beginPath();
-    ctx.roundRect(x, y, width / this.scale, height / this.scale, 5 / this.scale);
+    ctx.roundRect(x, y, width / this.scale, height / this.scale, round ?? 5 / this.scale);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
@@ -339,7 +340,21 @@ export class Picto {
    * @param y Y-координата
    * @param ps Контейнер с параметрами пиктограммы
    */
-  drawPicto(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
+  drawPicto<T>(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    ps: PictoProps,
+    parameter?: T,
+    drawCustomParameter?: (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      parameter: T,
+      bgColor: string,
+      fgColor: string
+    ) => void
+  ) {
     const leftIcon = ps.leftIcon;
     const rightIcon = ps.rightIcon;
     const bgColor = ps.bgColor ?? '#3a426b';
@@ -383,23 +398,73 @@ export class Picto {
         height: this.iconSize,
       });
     }
-    if (ps.parameter) {
-      const baseFontSize = 12;
-      const cy = (this.eventHeight - baseFontSize) / this.scale;
-      const cx = (this.eventWidth - 5) / this.scale;
-      const fontSize = baseFontSize / this.scale;
-      ctx.save();
-      ctx.font = `${fontSize}px/0 monospace`;
-      ctx.fillStyle = fgColor;
-      ctx.strokeStyle = bgColor;
-      ctx.textBaseline = 'hanging';
-      ctx.textAlign = 'end';
-      ctx.lineWidth = 0.5 / this.scale;
+    if (parameter) {
+      if (drawCustomParameter) {
+        drawCustomParameter(ctx, x, y, parameter, bgColor, fgColor);
+        return;
+      }
 
-      ctx.strokeText(ps.parameter, x + cx, y + cy);
-      ctx.fillText(ps.parameter, x + cx, y + cy);
-
-      ctx.restore();
+      if (typeof parameter === 'string') {
+        this.drawParameter(ctx, x, y, parameter, bgColor, fgColor);
+      }
     }
   }
+
+  drawParameter(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameter: string,
+    bgColor: string,
+    fgColor: string
+  ) {
+    const baseFontSize = 12;
+    const cy = (this.eventHeight - baseFontSize) / this.scale;
+    const cx = (this.eventWidth - 5) / this.scale;
+    const fontSize = baseFontSize / this.scale;
+    ctx.save();
+    ctx.font = `${fontSize}px/0 monospace`;
+    ctx.fillStyle = fgColor;
+    ctx.strokeStyle = bgColor;
+    ctx.textBaseline = 'hanging';
+    ctx.textAlign = 'end';
+    ctx.lineWidth = 0.5 / this.scale;
+
+    ctx.strokeText(parameter, x + cx, y + cy);
+    ctx.fillText(parameter, x + cx, y + cy);
+
+    ctx.restore();
+  }
+
+  drawMatrix = (ctx: CanvasRenderingContext2D, x: number, y: number, values: number[][]) => {
+    const width = 5;
+    const height = 5;
+    const scaledWidth = width / this.scale;
+    const scaledHeight = height / this.scale;
+    const computedY = y + this.eventHeight / 2.2 / this.scale;
+    const computedX = x + this.eventWidth / 1.3 / this.scale;
+    const inactiveColor = getColor('matrix-inactive');
+    const activeColor = getColor('matrix-active');
+    let px = 0;
+    let py = 0;
+    values.map((rowArr) => {
+      rowArr.map((value) => {
+        this.drawRect(
+          ctx,
+          computedX + px,
+          computedY + py,
+          width,
+          height,
+          value === 0 ? inactiveColor : activeColor,
+          undefined,
+          undefined,
+          1,
+          0.25
+        );
+        px += scaledWidth;
+      });
+      py += scaledHeight;
+      px = 0;
+    });
+  };
 }

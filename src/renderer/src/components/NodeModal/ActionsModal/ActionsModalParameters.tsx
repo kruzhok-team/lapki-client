@@ -74,11 +74,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
   const methodOptionsSearch = (selectedParameterComponent: string | null) => {
     if (!selectedParameterComponent || !controller?.platform[smId]) return [];
-    const getAll = controller.platform[smId].getAvailableVariables;
-    const getImg = controller.platform[smId].getVariableIconUrl;
+    const platformManager = controller.platform[smId];
 
-    return getAll
-      .call(controller.platform[smId], selectedParameterComponent)
+    return platformManager
+      .getAvailableVariables(selectedParameterComponent)
       .map(({ name, description }) => {
         return {
           value: name,
@@ -86,7 +85,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           hint: description,
           icon: (
             <img
-              src={getImg.call(controller.platform[smId], selectedParameterComponent, name, true)}
+              src={platformManager.getVariableIconUrl(selectedParameterComponent, name, true)}
               className="mr-1 h-7 w-7 object-contain"
             />
           ),

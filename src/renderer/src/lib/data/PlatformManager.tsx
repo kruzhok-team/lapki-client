@@ -1,9 +1,11 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
+import { getColor } from '@renderer/theme';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
 import { buildMatrix, getMatrixDimensions } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
+import { Dimensions } from '../types';
 
 export type VisualCompoData = {
   component: string;
@@ -360,15 +362,16 @@ export class PlatformManager {
         parameterList[0].type.startsWith('Matrix')
       ) {
         // TODO (L140-beep): Пиктограмма для матрицы
-        const { width, height } = getMatrixDimensions(parameterList[0].type);
-        parameter = buildMatrix({
-          values: paramValue,
-          width: width,
-          height: height,
-        });
-        if (parameter.length > 10) {
-          parameter = parameter.slice(0, 10) + '...';
-        }
+        this.drawMatrix(ctx, x, y, paramValue);
+        // const { width, height } = getMatrixDimensions(parameterList[0].type);
+        // parameter = buildMatrix({
+        //   values: paramValue,
+        //   width: width,
+        //   height: height,
+        // });
+        // if (parameter.length > 10) {
+        //   parameter = parameter.slice(0, 10) + '...';
+        // }
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);
@@ -507,6 +510,35 @@ export class PlatformManager {
     // ctx.fillText(JSON.stringify(ac.value), x + p, y + fontSize + p);
 
     ctx.restore();
+  }
+
+  drawMatrix(ctx: CanvasRenderingContext2D, x: number, y: number, values: number[][]) {
+    const width = 5;
+    const height = 5;
+    const scaledWidth = width / this.picto.scale;
+    const scaledHeight = height / this.picto.scale;
+    const computedY = y + this.picto.eventHeight / 1.3 / this.picto.scale;
+    const computedX = x + this.picto.eventWidth / this.picto.scale;
+    let px = 0;
+    let py = 0;
+    values.map((rowArr) => {
+      rowArr.map((value) => {
+        this.picto.drawRect(
+          ctx,
+          computedX + px,
+          computedY + py,
+          width,
+          height,
+          value === 0 ? getColor('matrix-inactive') : getColor('matrix-active'),
+          undefined,
+          undefined,
+          1
+        );
+        px += scaledWidth;
+      });
+      py += scaledHeight;
+      px = 0;
+    });
   }
 }
 

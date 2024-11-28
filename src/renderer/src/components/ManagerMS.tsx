@@ -10,6 +10,7 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { StateMachine } from '@renderer/types/diagram';
+import { PlatformType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { Device, MSDevice } from './Modules/Device';
@@ -119,7 +120,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   };
   const handleSendBin = async () => {
     if (!device || !binOption) return;
-    if (binOption.value == fileOption) {
+    if (binOption.value === fileOption) {
       let isOk = false;
       await Flasher.setFile().then((isOpen: boolean) => {
         isOk = isOpen;
@@ -129,7 +130,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
       if (!compilerData) return;
       const binData = compilerData.state_machines[binOption.value].binary;
       if (!binData || binData.length === 0) return;
-      Flasher.setBinary(binData);
+      Flasher.setBinary(binData, PlatformType.ms1);
     }
     ManagerMS.binStart(
       device,
@@ -188,10 +189,12 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     }
     if (binOption.value != fileOption) {
       if (!compilerData) {
+        console.log('here1');
         return true;
       }
       const binData = compilerData.state_machines[binOption.value].binary;
       if (!binData || binData.length === 0) {
+        console.log('here2');
         return true;
       }
     }

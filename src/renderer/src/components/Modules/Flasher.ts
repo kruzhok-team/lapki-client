@@ -14,6 +14,7 @@ import {
   FlasherPayload,
   FlasherType,
   MetaDataID,
+  PlatformType,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -159,9 +160,20 @@ export class Flasher extends ClientWS {
     this.filePos = 0;
   }
 
-  static setBinary(binaries: Array<Binary>) {
+  static setBinary(binaries: Array<Binary>, platformType: PlatformType) {
+    let ending: string;
+    switch (platformType) {
+      case PlatformType.Arduino:
+        ending = 'ino.hex';
+        break;
+      case PlatformType.ms1:
+        ending = '.bin';
+        break;
+      default:
+        throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
+    }
     binaries.map((bin) => {
-      if (bin.extension.endsWith('ino.hex')) {
+      if (bin.extension.endsWith(ending)) {
         Flasher.binary = bin.fileContent as Blob;
         return;
       }
@@ -222,7 +234,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    this.setBinary(binaries);
+    this.setBinary(binaries, PlatformType.Arduino);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 

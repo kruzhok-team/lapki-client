@@ -190,3 +190,8 @@ export interface MetaDataID extends MetaData {
   deviceID: string;
   type: string; // тип устройства (определяется по RefBlHw)
 }
+
+export enum PlatformType {
+  Arduino,
+  ms1,
+}

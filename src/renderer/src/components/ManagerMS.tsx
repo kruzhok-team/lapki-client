@@ -189,12 +189,10 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     }
     if (binOption.value != fileOption) {
       if (!compilerData) {
-        console.log('here1');
         return true;
       }
       const binData = compilerData.state_machines[binOption.value].binary;
       if (!binData || binData.length === 0) {
-        console.log('here2');
         return true;
       }
     }

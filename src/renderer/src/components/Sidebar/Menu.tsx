@@ -27,7 +27,7 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const [openTab, activeTab] = useTabs((state) => [state.openTab, state.activeTab]);
+  const [openTab] = useTabs((state) => [state.openTab, state.activeTab]);
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
@@ -36,7 +36,6 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const visual = controller.useData('visual');
-  const schemeEditorName = 'Схемоэкран';
 
   const items: MenuItem[] = [
     {
@@ -88,17 +87,17 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         openTab(modelController, {
           type: 'editor',
           canvasId: schemeEditorId,
-          name: schemeEditorName,
+          name: 'Схемоэкран',
         });
         modelController.model.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
-      hidden: activeTab === schemeEditorName,
+      hidden: controller.type === 'scheme',
     },
     {
       text: 'Перейти в текстовый режим (β)',
       onClick: () => openTextModeModal(),
-      hidden: !visual || !isInitialized || activeTab === schemeEditorName,
+      hidden: !visual || !isInitialized || controller.type === 'scheme',
     },
     // {
     //   text: 'Примеры',

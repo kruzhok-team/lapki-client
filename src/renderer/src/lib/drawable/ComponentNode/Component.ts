@@ -41,16 +41,6 @@ export class DrawableComponent extends Shape {
     };
   }
 
-  // TODO (L140-beep): заглушка
-  get data() {
-    return {
-      position: {
-        x: 0,
-        y: 0,
-      },
-    };
-  }
-
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     this.drawBody(ctx);
 
@@ -65,7 +55,32 @@ export class DrawableComponent extends Shape {
     if (!platform || !this.icon) return;
 
     const { x, y, width, height } = this.drawBounds;
-    this.app.view.picto.drawRect(ctx, x, y, width, height, undefined, undefined, 50);
+    /*
+      Записки разработчиков.
+
+      Был баг с неправильным скейлом компонентов на схемоэкране, они были слишком большие 
+      и визуально выходили за пределы контейнера.
+      Проблема заключалась в том, что здесь для отрисовки используются низкоуровневые
+      функции отрисовки Picto (обычно все отрисовывается через PlatformManager, который, 
+      в свою очередь, использует высокоуровневую функцию drawPicto). И в drawPicto пиктограммы имеют фиксированный размер,
+      выставляемый Picto. И поэтому со скейлом проблем там нет. НО drawRect и drawImage всегда скейлили входные данные.
+      В итоге получалось так, что мы заскейленные значения из drawBounds передавали в drawImage/drawRect, где они скейлились еще раз. 
+
+      Поэтому был добавлен флаг, который отключал скейл входных данных
+    */
+    this.app.view.picto.drawRect(
+      ctx,
+      x,
+      y,
+      width,
+      height,
+      undefined,
+      undefined,
+      50,
+      undefined,
+      undefined,
+      true
+    );
     this.app.view.picto.drawImage(
       ctx,
       this.icon,
@@ -75,7 +90,8 @@ export class DrawableComponent extends Shape {
         width: width,
         height: height,
       },
-      fontSizeMark
+      fontSizeMark,
+      true
     );
   }
 
@@ -86,13 +102,7 @@ export class DrawableComponent extends Shape {
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#FFF';
 
-    ctx.roundRect(
-      x,
-      y,
-      width / this.app.controller.scale,
-      height / this.app.controller.scale,
-      borderRadius
-    );
+    ctx.roundRect(x, y, width, height, borderRadius);
     ctx.stroke();
   }
 

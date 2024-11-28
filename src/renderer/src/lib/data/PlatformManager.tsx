@@ -1,7 +1,6 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
-import { buildMatrix, getMatrixDimensions } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
 
@@ -281,7 +280,10 @@ export class PlatformManager {
       }
     }
 
-    let parameter: string | undefined = undefined;
+    let drawFunction:
+      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
+      | undefined = undefined;
+    let parameter: any | undefined = undefined;
     if (argQuery && ev.args && parameterList) {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
@@ -292,18 +294,8 @@ export class PlatformManager {
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        const { width, height } = getMatrixDimensions(parameterList[0].type);
-        parameter = buildMatrix({
-          values: paramValue,
-          width: width,
-          height: height,
-        });
-        if (parameter.length > 10) {
-          parameter = parameter.slice(0, 10) + '...';
-        }
-        // TODO (L140-beep): Пиктограмма для матрицы
-        // drawMAtrix...
-        // return
+        parameter = paramValue;
+        drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
         console.log(['PlatformManager.drawEvent', 'Variable!', ev]);
@@ -311,13 +303,19 @@ export class PlatformManager {
       }
     }
 
-    this.picto.drawPicto(ctx, x, y, {
-      bgColor,
-      fgColor,
-      leftIcon,
-      rightIcon,
+    this.picto.drawPicto(
+      ctx,
+      x,
+      y,
+      {
+        bgColor,
+        fgColor,
+        leftIcon,
+        rightIcon,
+      },
       parameter,
-    });
+      drawFunction
+    );
   }
 
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
@@ -344,7 +342,10 @@ export class PlatformManager {
       }
     }
 
-    let parameter: string | undefined = undefined;
+    let parameter: any | undefined = undefined;
+    let drawFunction:
+      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
+      | undefined = undefined;
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
       if (typeof paramValue === 'undefined') {
@@ -359,16 +360,8 @@ export class PlatformManager {
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        // TODO (L140-beep): Пиктограмма для матрицы
-        const { width, height } = getMatrixDimensions(parameterList[0].type);
-        parameter = buildMatrix({
-          values: paramValue,
-          width: width,
-          height: height,
-        });
-        if (parameter.length > 10) {
-          parameter = parameter.slice(0, 10) + '...';
-        }
+        parameter = paramValue;
+        drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);
@@ -376,14 +369,20 @@ export class PlatformManager {
       }
     }
 
-    this.picto.drawPicto(ctx, x, y, {
-      bgColor,
-      fgColor,
-      leftIcon,
-      rightIcon,
-      opacity,
+    this.picto.drawPicto(
+      ctx,
+      x,
+      y,
+      {
+        bgColor,
+        fgColor,
+        leftIcon,
+        rightIcon,
+        opacity,
+      },
       parameter,
-    });
+      drawFunction
+    );
   }
 
   measureFullCondition(ac: Condition): number {

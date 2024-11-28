@@ -2,7 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, Layer, Point } from '@renderer/lib/types';
 import { drawText } from '@renderer/lib/utils/text';
-import theme, { getColor } from '@renderer/theme';
+import theme from '@renderer/theme';
 
 import { DrawableComponent } from '../ComponentNode';
 import { MarkedIconData } from '../Picto';

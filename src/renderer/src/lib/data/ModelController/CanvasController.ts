@@ -344,6 +344,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeEvent', this.binded['changeEvent']);
             this.model.off('changeEventAction', this.binded['changeEventAction']);
             this.model.off('deleteEventAction', this.binded['deleteEventAction']);
+            this.model.off('deleteEvent', this.binded['deleteEvent']);
             break;
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);
@@ -483,6 +484,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.model.on(
           'deleteEventAction',
           this.bindHelper('state', 'deleteEventAction', this.states.deleteEvent)
+        );
+        this.model.on(
+          'deleteEvent',
+          this.bindHelper('state', 'deleteEvent', this.states.deleteEvent)
         );
         this.initializer.initStates(smId, initData as { [id: string]: State });
         break;

@@ -14,6 +14,7 @@ import {
   FlasherPayload,
   FlasherType,
   MetaDataID,
+  PlatformType,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -159,9 +160,20 @@ export class Flasher extends ClientWS {
     this.filePos = 0;
   }
 
-  static setBinary(binaries: Array<Binary>) {
+  static setBinary(binaries: Array<Binary>, platformType: PlatformType) {
+    let ending: string;
+    switch (platformType) {
+      case PlatformType.Arduino:
+        ending = 'ino.hex';
+        break;
+      case PlatformType.MS1:
+        ending = '.bin';
+        break;
+      default:
+        throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
+    }
     binaries.map((bin) => {
-      if (bin.extension.endsWith('ino.hex')) {
+      if (bin.extension.endsWith(ending)) {
         Flasher.binary = bin.fileContent as Blob;
         return;
       }
@@ -188,12 +200,21 @@ export class Flasher extends ClientWS {
       return false;
     }
   }
-
+  /**
+   * Эту функцию следует вызывать перед прошивкой. Она проверяет наличие бинарных данных для прошивки,
+   * оповещает пользователя, закрывает монитор порта для arduino.
+   * @param device устройство на которое будет загружена прошивка
+   * @param serialMonitorDevice устройство для которого открыт монитор порта
+   * @param serialConnectionStatus статус монитора порта
+   */
   static flashPreparation(
     device: Device,
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ) {
+    if (!Flasher.binary) {
+      throw new Error('Отсутствуют бинарные данные');
+    }
     if (
       device instanceof ArduinoDevice &&
       serialMonitorDevice &&
@@ -222,7 +243,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    this.setBinary(binaries);
+    this.setBinary(binaries, PlatformType.Arduino);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 

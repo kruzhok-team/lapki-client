@@ -27,7 +27,7 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const [openTab] = useTabs((state) => [state.openTab]);
+  const [openTab] = useTabs((state) => [state.openTab, state.activeTab]);
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
@@ -87,16 +87,17 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         openTab(modelController, {
           type: 'editor',
           canvasId: schemeEditorId,
-          name: 'Схемотехнический экран',
+          name: 'Схемоэкран',
         });
         modelController.model.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
+      hidden: controller.type === 'scheme',
     },
     {
       text: 'Перейти в текстовый режим (β)',
       onClick: () => openTextModeModal(),
-      hidden: !visual || !isInitialized,
+      hidden: !visual || !isInitialized || controller.type === 'scheme',
     },
     // {
     //   text: 'Примеры',

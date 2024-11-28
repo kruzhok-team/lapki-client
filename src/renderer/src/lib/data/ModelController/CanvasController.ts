@@ -152,6 +152,7 @@ export type CanvasControllerEvents = {
   linkFinalState: LinkStateParams;
   linkChoiceState: LinkStateParams;
   unlinkState: UnlinkStateParams;
+  unlinkChoiceState: UnlinkStateParams;
   changeStateName: ChangeStateNameParams;
   changeFinalStatePosition: ChangePosition;
   deleteEventAction: DeleteEventParams;

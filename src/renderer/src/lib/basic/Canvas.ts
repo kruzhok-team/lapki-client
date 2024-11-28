@@ -32,6 +32,7 @@ export class Canvas extends EventEmitter<CanvasEvents> {
 
     this.element.id = app.id;
     this.element.tabIndex = -1;
+    this.element.style.outline = 'none';
   }
 
   clear() {

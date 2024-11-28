@@ -204,7 +204,7 @@ export class Flasher extends ClientWS {
    * Эту функцию следует вызывать перед прошивкой. Она проверяет наличие бинарных данных для прошивки,
    * оповещает пользователя, закрывает монитор порта для arduino.
    * @param device устройство на которое будет загружена прошивка
-   * @param serialMonitorDevice устройство для которого открыт мониторпорта
+   * @param serialMonitorDevice устройство для которого открыт монитор порта
    * @param serialConnectionStatus статус монитора порта
    */
   static flashPreparation(

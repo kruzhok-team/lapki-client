@@ -16,7 +16,6 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
   const [activeTabName, items] = useTabs((state) => [state.activeTab, state.items]);
   const activeTab = items.find((tab) => tab.name === activeTabName);
   const modelController = useModelContext();
-  activeTab;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const scale = controller.useData('scale');

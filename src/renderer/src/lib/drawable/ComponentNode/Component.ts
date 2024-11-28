@@ -68,6 +68,8 @@ export class DrawableComponent extends Shape {
 
       Поэтому был добавлен флаг, который отключал скейл входных данных
     */
+
+    // TODO (L140-beep): Сделать picto.drawComponent
     this.app.view.picto.drawRect(
       ctx,
       x,

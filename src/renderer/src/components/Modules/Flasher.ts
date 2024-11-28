@@ -166,7 +166,7 @@ export class Flasher extends ClientWS {
       case PlatformType.Arduino:
         ending = 'ino.hex';
         break;
-      case PlatformType.ms1:
+      case PlatformType.MS1:
         ending = '.bin';
         break;
       default:

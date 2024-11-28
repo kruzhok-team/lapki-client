@@ -130,7 +130,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
       if (!compilerData) return;
       const binData = compilerData.state_machines[binOption.value].binary;
       if (!binData || binData.length === 0) return;
-      Flasher.setBinary(binData, PlatformType.ms1);
+      Flasher.setBinary(binData, PlatformType.MS1);
     }
     ManagerMS.binStart(
       device,

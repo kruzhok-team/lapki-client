@@ -193,5 +193,5 @@ export interface MetaDataID extends MetaData {
 
 export enum PlatformType {
   Arduino,
-  ms1,
+  MS1,
 }

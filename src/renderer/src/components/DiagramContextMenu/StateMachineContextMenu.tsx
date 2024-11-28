@@ -135,7 +135,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       controller.transitions.off('transitionContextMenu', handleTransitionContextMenu);
       controller.notes.off('contextMenu', handleNoteContextMenu);
     };
-  }, [open, refs]);
+  }, [controller, open, refs]);
 
   const content = useMemo(() => {
     if (!menuVariant) return null;

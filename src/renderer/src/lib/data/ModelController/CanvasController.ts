@@ -704,7 +704,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     for (const idx in platform.data.components) {
       const compo = platform.data.components[idx];
-      if (compo.singletone && components.hasOwnProperty(idx)) continue;
+      if ((compo.singletone || platform.data.staticComponents) && components.hasOwnProperty(idx))
+        continue;
       vacant.push({
         idx,
         name: compo.name ?? idx,

@@ -1315,7 +1315,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
-    // TODO: unlink choiceState, finalState, notes
     if (transitionFromInitialState) {
       // Перемещаем начальное состояние, на первое найденное в родителе
       const newState = [
@@ -1604,7 +1603,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
+    const dependetTransitionsIds = [
+      ...this.getAllByTargetId(smId, id)[1],
+      ...this.getAllBySourceId(smId, id).map((value) => value[0]),
+    ];
     dependetTransitionsIds.forEach((transitionId) => {
       this.deleteTransition({ smId, id: transitionId }, canUndo);
       numberOfConnectedActions += 1;

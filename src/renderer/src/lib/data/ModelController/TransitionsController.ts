@@ -123,6 +123,18 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
+  unwatchAll() {
+    for (const item of this.items.values()) {
+      this.unwatchTransition(item);
+    }
+  }
+
+  watchAll() {
+    for (const item of this.items.values()) {
+      this.watchTransition(item);
+    }
+  }
+
   linkTransition = (id: string) => {
     const transition = this.items.get(id);
     if (!transition) return;

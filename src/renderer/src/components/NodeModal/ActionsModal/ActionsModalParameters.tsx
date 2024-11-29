@@ -130,7 +130,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           if (!value) {
             const newMatrix = createEmptyMatrix(type);
             parameters[name] = newMatrix.values;
-            setParameters({ ...parameters });
           }
           if (Array.isArray(value) && Array.isArray(value[0])) {
             return (

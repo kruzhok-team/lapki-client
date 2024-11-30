@@ -45,6 +45,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         setErrors((p) => ({ ...p, [name]: '' }));
       }
     }
+
     parameters[name] = value;
     setParameters({ ...parameters });
   };

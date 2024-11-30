@@ -132,7 +132,7 @@ export class Picto {
    * @param iconData Название значка или контейнер с данными для метки
    * @param bounds Координаты и размер рамки
    * @param fontSize Размер шрифта метки, по умолчанию равен 13
-   * @param isScaled Указан ли bounds с учетом скейла
+   * @param isScaled Указан ли bounds с учетом масштаба
    */
   drawImage(
     ctx: CanvasRenderingContext2D,

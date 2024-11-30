@@ -56,7 +56,7 @@ export class DrawableComponent extends Shape {
 
     const { x, y, width, height } = this.drawBounds;
     /*
-      Записки разработчиков.
+      NOTE (L140-beep)
 
       Был баг с неправильным скейлом компонентов на схемоэкране, они были слишком большие 
       и визуально выходили за пределы контейнера.

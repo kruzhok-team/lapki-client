@@ -112,7 +112,7 @@ export class CanvasEditor {
     this.view.initEvents();
     this.controller.transitions.initEvents();
     this.controller.initializer.init();
-    this.controller.init();
+    this.controller.watchDrawable();
   }
 
   setSettings(settings: CanvasEditorSettings) {
@@ -125,6 +125,7 @@ export class CanvasEditor {
 
   unmount() {
     this.view.removeEvents();
+    this.controller.unwatchDrawable();
 
     this.canvas.cleanUp();
     this.keyboard.cleanUp();

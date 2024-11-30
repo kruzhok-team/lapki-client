@@ -676,6 +676,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   }
 
+  watchAll() {
+    for (const itemsMap of Object.values(this.data)) {
+      for (const item of itemsMap.values()) {
+        this.watch(item);
+      }
+    }
+  }
+
   unwatch(state: StateVariant) {
     if (state instanceof State) {
       return this.unwatchState(state);

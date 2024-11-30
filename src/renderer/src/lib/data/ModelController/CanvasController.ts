@@ -410,8 +410,18 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.off('initPlatform', this.initPlatform);
     this.off('initEvents', this.transitions.initEvents);
     this.off('deleteSelected', this.deleteSelected);
+  }
 
+  watchDrawable() {
+    this.states.watchAll();
+    this.transitions.watchAll();
+    this.notes.watchAll();
+  }
+
+  unwatchDrawable() {
     this.states.unwatchAll();
+    this.transitions.unwatchAll();
+    this.notes.unwatchAll();
   }
 
   setScale = (value: number) => {

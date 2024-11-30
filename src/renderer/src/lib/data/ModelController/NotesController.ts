@@ -200,6 +200,18 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.edgeHandlers.bindEvents();
   }
 
+  watchAll() {
+    for (const item of this.items.values()) {
+      this.watch(item);
+    }
+  }
+
+  unwatchAll() {
+    for (const item of this.items.values()) {
+      this.unwatch(item);
+    }
+  }
+
   watch(note: Note) {
     note.on('mousedown', this.handleMouseDown.bind(this, note));
     note.on('dblclick', this.handleDoubleClick.bind(this, note));

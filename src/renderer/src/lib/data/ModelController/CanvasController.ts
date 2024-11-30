@@ -199,7 +199,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   binded = {}; // Функции обработчики
   model: ModelController;
   type: CanvasControllerType;
-  needToRewatchEdgeHandlers = true;
   visual = true;
   constructor(
     id: string,
@@ -297,17 +296,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     }
 
     return callback(parameters);
-  }
-
-  init() {
-    if (this.needToRewatchEdgeHandlers) {
-      // Это нужно, потому что после unmount удаляются
-      // listeners событий мыши, на которые подписаны EdgeHandlers.
-      // Но подписка на эти события происходит только в момент создания состояния.
-      // Из-за чего EdgeHandler существует, но не подписан на события мыши.
-      this.rewatchEdgeHandlers();
-      this.needToRewatchEdgeHandlers = false;
-    }
   }
 
   private bindHelper<T extends (args: any) => any>(
@@ -414,6 +402,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   watchDrawable() {
     this.states.watchAll();
+    this.states.bindAll();
     this.transitions.watchAll();
     this.notes.watchAll();
   }

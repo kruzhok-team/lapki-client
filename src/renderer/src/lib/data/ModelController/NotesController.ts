@@ -203,6 +203,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   watchAll() {
     for (const item of this.items.values()) {
       this.watch(item);
+      this.bindEdgeHandlers(item);
     }
   }
 

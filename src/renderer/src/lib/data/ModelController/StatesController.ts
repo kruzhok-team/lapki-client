@@ -684,6 +684,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
   }
 
+  bindAll() {
+    for (const choiceState of this.data.choiceStates.values()) {
+      this.bindEdgeHandlers(choiceState);
+    }
+    for (const state of this.data.states.values()) {
+      this.bindEdgeHandlers(state);
+    }
+  }
+
   unwatch(state: StateVariant) {
     if (state instanceof State) {
       return this.unwatchState(state);

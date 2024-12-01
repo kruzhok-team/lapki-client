@@ -142,7 +142,6 @@ export class CanvasEditor {
     this._render = null;
 
     this.controller.isMounted = false;
-    this.controller.needToRewatchEdgeHandlers = true;
     this.controller.setMountStatus(false);
   }
 

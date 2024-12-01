@@ -107,7 +107,7 @@ export function preloadPicto(callback: () => void) {
 
 export type PictoProps = {
   leftIcon?: string | MarkedIconData;
-  rightIcon: string;
+  rightIcon: string | MarkedIconData;
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
@@ -132,33 +132,36 @@ export class Picto {
    * @param iconData Название значка или контейнер с данными для метки
    * @param bounds Координаты и размер рамки
    * @param fontSize Размер шрифта метки, по умолчанию равен 13
+   * @param isScaled Указан ли bounds с учетом масштаба
    */
   drawImage(
     ctx: CanvasRenderingContext2D,
     iconData: string | MarkedIconData,
     bounds: Rectangle,
-    fontSize: number = 13
+    fontSize: number = 13,
+    isScaled = false
   ) {
     // console.log([iconName, icons.has(iconName)]);
     const isMarked = typeof iconData !== 'string';
     const iconName = isMarked ? iconData.icon : iconData;
     const image = icons.get(iconName);
     if (!image) return;
-
+    const computedWidth = isScaled ? bounds.width : bounds.width / this.scale;
+    const computedHeight = isScaled ? bounds.height : bounds.height / this.scale;
     // Отрисовка самой иконки
     ctx.beginPath();
     drawImageFit(ctx, image, {
       ...bounds,
-      width: bounds.width / this.scale,
-      height: bounds.height / this.scale,
+      width: computedWidth,
+      height: computedHeight,
     });
     ctx.closePath();
 
     if (isMarked && iconData['label']) {
-      const { x, y, width, height } = bounds;
+      const { x, y } = bounds;
       // Координаты правого нижнего угла картинки
-      const tX = x + (width + 6) / this.scale;
-      const tY = y + (height + 3) / this.scale;
+      const tX = x + (computedWidth + 6) / this.scale;
+      const tY = y + (computedHeight + 3) / this.scale;
       // Отступы внутри метки
       const pX = 1 / this.scale;
       const pY = 0.5 / this.scale;
@@ -245,15 +248,18 @@ export class Picto {
     fgColor?: string,
     opacity?: number,
     round?: number,
-    lineWidth?: number
+    lineWidth?: number,
+    isScaled = false
   ) {
+    const computedWidth = isScaled ? width : width / this.scale;
+    const computedHeight = isScaled ? height : height / this.scale;
     ctx.save();
     ctx.fillStyle = bgColor ?? '#3a426b';
     ctx.strokeStyle = fgColor ?? '#fff';
     ctx.globalAlpha = opacity ?? 1.0;
     ctx.lineWidth = lineWidth ?? 0.5;
     ctx.beginPath();
-    ctx.roundRect(x, y, width / this.scale, height / this.scale, round ?? 5 / this.scale);
+    ctx.roundRect(x, y, computedWidth, computedHeight, round ?? 5 / this.scale);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
@@ -307,6 +313,7 @@ export class Picto {
 
   drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
     const text = ps.rightIcon;
+    if (typeof text !== 'string') return;
     const bgColor = ps.bgColor ?? '#3a426b';
     const fgColor = ps.fgColor ?? '#fff';
     const opacity = ps.opacity ?? 1.0;

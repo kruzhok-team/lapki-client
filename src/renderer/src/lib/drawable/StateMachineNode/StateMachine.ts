@@ -2,7 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, Layer, Point } from '@renderer/lib/types';
 import { drawText } from '@renderer/lib/utils/text';
-import theme, { getColor } from '@renderer/theme';
+import theme from '@renderer/theme';
 
 import { DrawableComponent } from '../ComponentNode';
 import { MarkedIconData } from '../Picto';
@@ -84,31 +84,21 @@ export class DrawableStateMachine extends Shape {
     ctx.closePath();
   }
 
-  get computedStyles() {
-    const scale = this.app.controller.scale;
-
-    return {
-      padding: 10 / scale,
-      fontSize: 16 / scale,
-      borderRadius: 6 / scale,
-      color: getColor('border-primary'),
-    };
-  }
-
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     if (this.isSelected) {
       this.drawSelection(ctx);
     }
     if (!this.children.isEmpty) {
-      this.drawChildrenBorder(ctx);
+      this.drawChildren(ctx, _canvas);
     }
     this.drawTitle(ctx);
   }
 
-  private drawChildrenBorder(ctx: CanvasRenderingContext2D) {
+  private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 2;
     ctx.strokeStyle = style.bodyBg;
+
     ctx.beginPath();
 
     ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
@@ -124,12 +114,11 @@ export class DrawableStateMachine extends Shape {
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height } = this.drawBounds;
-    const { borderRadius } = this.computedStyles;
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#FFF';
 
-    ctx.roundRect(x, y, width, height, borderRadius);
+    ctx.roundRect(x, y, width, height, 6 / this.app.controller.scale);
     ctx.stroke();
   }
 

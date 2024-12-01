@@ -1108,10 +1108,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!state) return;
 
     if (canUndo) {
-      // TODO: Что делать тут?
-      const prevEvents = state.events;
+      const prevEvents = structuredClone(state.events);
       const prevColor = state.color;
-      // const prevActions = structuredClone(prevEvent ?? []);
 
       this.history.do({
         type: 'changeState',
@@ -1781,7 +1779,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { eventIdx, actionIdx } = event;
 
     if (actionIdx !== null) {
-      const prevValue = state.events[eventIdx].do[actionIdx];
+      const prevValue = structuredClone(state.events[eventIdx].do[actionIdx]);
 
       this.model.changeEventAction(smId, stateId, event, newValue);
       this.emit('changeEventAction', { smId, stateId, event, newValue });
@@ -1793,7 +1791,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         });
       }
     } else {
-      const prevValue = state.events[eventIdx].trigger;
+      const prevValue = structuredClone(state.events[eventIdx].trigger);
 
       this.model.changeEvent(smId, stateId, eventIdx, newValue);
       this.emit('changeEvent', { smId, stateId, event, newValue });

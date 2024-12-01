@@ -493,7 +493,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
           : eventData.do[eventSelection.actionIdx];
       const isEditingEvent = eventSelection.actionIdx === null;
 
-      this.emit('changeEvent', { state, eventSelection, event: event as Event, isEditingEvent });
+      this.emit('changeEvent', {
+        state,
+        eventSelection,
+        event: structuredClone(event) as Event,
+        isEditingEvent,
+      });
     }
   };
 

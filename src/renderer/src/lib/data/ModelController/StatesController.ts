@@ -391,11 +391,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeState = (args: ChangeStateParams) => {
-    const { id, events } = args;
+    const { id, events, color } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
 
+    state.data.color = color;
     state.data.events = events;
 
     state.updateEventBox();

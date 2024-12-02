@@ -14,24 +14,25 @@ interface AddressBookRowProps {
 }
 export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
   const { data, onSelect, isSelected, onEdit, onDragStart, onDrop } = props;
+  const labelClassName = twMerge('flex w-full', isSelected && 'bg-bg-active');
   return (
     <div
-      className={twMerge('flex items-start gap-1', isSelected && 'bg-bg-active')}
+      className="flex items-start"
       draggable
       onClick={onSelect}
       onDoubleClick={onEdit}
       onDragStart={onDragStart}
       onDrop={onDrop}
     >
-      <label className="flex w-full flex-col">
+      <label className={labelClassName}>
         <TextInput value={data.name ?? ''} disabled={true} placeholder="Название" />
       </label>
 
-      <label className="flex w-full flex-col">
+      <label className={labelClassName}>
         <TextInput value={data.address} disabled={true} />
       </label>
 
-      <label className="flex w-full flex-col">
+      <label className={labelClassName}>
         <TextInput
           value={data.type ?? ''}
           placeholder="Тип"

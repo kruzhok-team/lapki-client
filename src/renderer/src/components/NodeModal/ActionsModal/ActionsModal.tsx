@@ -234,7 +234,6 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         setParameters={setParameters}
         errors={errors}
         setErrors={setErrors}
-        selectedComponent={selectedComponent}
         componentOptions={componentOptions}
         controller={controller}
         smId={smId}

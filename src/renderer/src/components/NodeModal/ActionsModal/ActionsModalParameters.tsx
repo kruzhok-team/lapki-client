@@ -19,7 +19,6 @@ interface ActionsModalParametersProps {
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
-  selectedComponent: string | null;
   componentOptions: SelectOption[];
 
   smId: string;
@@ -32,7 +31,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   setParameters,
   errors,
   setErrors,
-  selectedComponent,
   componentOptions,
   smId,
   controller,

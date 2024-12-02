@@ -309,7 +309,8 @@ function actionsToEventData(
     if (action.trigger?.event) {
       let trigger = parseEvent(action.trigger.event);
       if (typeof trigger === 'string') {
-        // Делаем это, потому что визуальном режиме постфикса нет
+        // Делаем это, потому что в визуальном режиме постфикса нет
+        // NOTE(chekoopa): у нас в будущем могут быть визуальные платформы с бескомпонентными сигналами
         if (action.trigger.postfix) {
           trigger += ' ' + action.trigger.postfix;
         }

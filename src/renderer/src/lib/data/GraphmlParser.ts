@@ -83,11 +83,14 @@ function parseCondition(condition: string): Condition {
   throw new Error(`Неизвестный оператор ${operator}`);
 }
 
-function parseEvent(trigger: string): Event | undefined {
+function parseEvent(trigger: string): Event | string | undefined {
   if (trigger === undefined) return;
   let ev: Event = systemComponentAlias[trigger]; // Подстановка exit/entry на System.onExit/System.onEnter
   if (ev === undefined) {
     const [component, method] = trigger.split('.');
+    if (!component || !method) {
+      return trigger;
+    }
     ev = {
       component: component,
       method: method,
@@ -304,7 +307,15 @@ function actionsToEventData(
       }
     }
     if (action.trigger?.event) {
-      const trigger = parseEvent(action.trigger.event);
+      let trigger = parseEvent(action.trigger.event);
+      if (typeof trigger === 'string') {
+        // Делаем это, потому что в визуальном режиме постфикса нет
+        // NOTE(chekoopa): у нас в будущем могут быть визуальные платформы с бескомпонентными сигналами
+        if (action.trigger.postfix) {
+          trigger += ' ' + action.trigger.postfix;
+        }
+        visual = false;
+      }
       if (trigger) {
         eventData.trigger = trigger;
       }

@@ -69,7 +69,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
-  const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
   const methodOptionsSearch = (selectedParameterComponent: string | null) => {
     if (!selectedParameterComponent || !controller?.platform[smId]) return [];
     const platformManager = controller.platform[smId];
@@ -194,13 +193,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 </label>
                 <Select
                   containerClassName="w-full"
-                  options={filteredComponentOptions}
+                  options={componentOptions}
                   onChange={(opt) =>
                     handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
                   }
                   value={
-                    filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
-                    null
+                    componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
                   }
                   isSearchable={false}
                   noOptionsMessage={() => 'Нет подходящих компонентов'}

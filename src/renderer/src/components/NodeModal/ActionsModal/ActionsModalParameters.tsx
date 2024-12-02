@@ -97,6 +97,14 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     });
   };
 
+  const setCheckedTo = (name: string, checked: boolean) => {
+    setIsChecked((oldValue) => {
+      const newValue = new Map(oldValue);
+      newValue.set(name, checked);
+      return newValue;
+    });
+  };
+
   if (protoParameters.length === 0) {
     return null;
     // return <div className="flex text-text-inactive">Параметров нет</div>;
@@ -156,7 +164,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         const platform = controller.platform[smId].data;
         const componentAttibute = getComponentAttribute(value as string, platform);
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
-        const currentChecked = isChecked.get(name) ?? componentAttibute != null;
+        const currentChecked = isChecked.get(name);
+        if (isChecked.get(name) === undefined) {
+          setCheckedTo(name, componentAttibute != null);
+        }
         const selectedParameterComponent =
           currentChecked && componentAttibute ? componentAttibute[0] : null;
         const selectedParameterMethod =
@@ -167,11 +178,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             <Checkbox
               checked={currentChecked}
               onCheckedChange={() => {
-                setIsChecked((oldValue) => {
-                  const newValue = new Map(oldValue);
-                  newValue.set(name, !currentChecked);
-                  return newValue;
-                });
+                setCheckedTo(name, !currentChecked);
                 handleInputChange(name, type, '');
               }}
               className="mr-2 mt-[9px]"

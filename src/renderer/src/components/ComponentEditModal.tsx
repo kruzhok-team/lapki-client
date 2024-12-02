@@ -104,6 +104,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     setParameters({ ...data.parameters });
   }, [data.parameters]);
 
+  const showMainData = () => {
+    if (proto.singletone) return false;
+    if (platform) return !platform.staticComponents;
+
+    return true;
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -116,7 +123,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       onSide={handleDelete}
     >
       <ComponentFormFields
-        showMainData={!proto.singletone && platform ? platform.staticComponents : false}
+        showMainData={showMainData()}
         protoParameters={proto.constructorParameters}
         protoInitializationParameters={proto.initializationParameters}
         name={name}

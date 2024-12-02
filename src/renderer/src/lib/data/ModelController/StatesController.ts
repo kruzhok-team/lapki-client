@@ -391,11 +391,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeState = (args: ChangeStateParams) => {
-    const { id, events } = args;
+    const { id, events, color } = args;
 
     const state = this.data.states.get(id);
     if (!state) return;
 
+    state.data.color = color;
     state.data.events = events;
 
     state.updateEventBox();
@@ -492,7 +493,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
           : eventData.do[eventSelection.actionIdx];
       const isEditingEvent = eventSelection.actionIdx === null;
 
-      this.emit('changeEvent', { state, eventSelection, event: event as Event, isEditingEvent });
+      this.emit('changeEvent', {
+        state,
+        eventSelection,
+        event: structuredClone(event) as Event,
+        isEditingEvent,
+      });
     }
   };
 
@@ -673,6 +679,23 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       for (const item of itemsMap.values()) {
         this.unwatch(item);
       }
+    }
+  }
+
+  watchAll() {
+    for (const itemsMap of Object.values(this.data)) {
+      for (const item of itemsMap.values()) {
+        this.watch(item);
+      }
+    }
+  }
+
+  bindAll() {
+    for (const choiceState of this.data.choiceStates.values()) {
+      this.bindEdgeHandlers(choiceState);
+    }
+    for (const state of this.data.states.values()) {
+      this.bindEdgeHandlers(state);
     }
   }
 

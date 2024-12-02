@@ -85,7 +85,7 @@ export function serializeEvent(trigger: Event): string {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
 
-  if (trigger.args === undefined) {
+  if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {
     return `${trigger.component}.${trigger.method}`;
   } else {
     return `${trigger.component}.${trigger.method}(${serializeArgs(trigger.args)})`;

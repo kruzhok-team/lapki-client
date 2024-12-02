@@ -199,7 +199,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   binded = {}; // Функции обработчики
   model: ModelController;
   type: CanvasControllerType;
-  needToRewatchEdgeHandlers = true;
   visual = true;
   constructor(
     id: string,
@@ -299,17 +298,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     return callback(parameters);
   }
 
-  init() {
-    if (this.needToRewatchEdgeHandlers) {
-      // Это нужно, потому что после unmount удаляются
-      // listeners событий мыши, на которые подписаны EdgeHandlers.
-      // Но подписка на эти события происходит только в момент создания состояния.
-      // Из-за чего EdgeHandler существует, но не подписан на события мыши.
-      this.rewatchEdgeHandlers();
-      this.needToRewatchEdgeHandlers = false;
-    }
-  }
-
   private bindHelper<T extends (args: any) => any>(
     attribute: CanvasSubscribeAttribute,
     bindName: string,
@@ -344,6 +332,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeEvent', this.binded['changeEvent']);
             this.model.off('changeEventAction', this.binded['changeEventAction']);
             this.model.off('deleteEventAction', this.binded['deleteEventAction']);
+            this.model.off('deleteEvent', this.binded['deleteEvent']);
             break;
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);
@@ -409,8 +398,19 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.off('initPlatform', this.initPlatform);
     this.off('initEvents', this.transitions.initEvents);
     this.off('deleteSelected', this.deleteSelected);
+  }
 
+  watchDrawable() {
+    this.states.watchAll();
+    this.states.bindAll();
+    this.transitions.watchAll();
+    this.notes.watchAll();
+  }
+
+  unwatchDrawable() {
     this.states.unwatchAll();
+    this.transitions.unwatchAll();
+    this.notes.unwatchAll();
   }
 
   setScale = (value: number) => {
@@ -483,6 +483,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.model.on(
           'deleteEventAction',
           this.bindHelper('state', 'deleteEventAction', this.states.deleteEvent)
+        );
+        this.model.on(
+          'deleteEvent',
+          this.bindHelper('state', 'deleteEvent', this.states.deleteEvent)
         );
         this.initializer.initStates(smId, initData as { [id: string]: State });
         break;
@@ -704,7 +708,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     for (const idx in platform.data.components) {
       const compo = platform.data.components[idx];
-      if (compo.singletone && components.hasOwnProperty(idx)) continue;
+      if ((compo.singletone || platform.data.staticComponents) && components.hasOwnProperty(idx))
+        continue;
       vacant.push({
         idx,
         name: compo.name ?? idx,

@@ -1108,10 +1108,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!state) return;
 
     if (canUndo) {
-      // TODO: Что делать тут?
-      const prevEvents = state.events;
+      const prevEvents = structuredClone(state.events);
       const prevColor = state.color;
-      // const prevActions = structuredClone(prevEvent ?? []);
 
       this.history.do({
         type: 'changeState',
@@ -1315,7 +1313,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
-    // TODO: unlink choiceState, finalState, notes
     if (transitionFromInitialState) {
       // Перемещаем начальное состояние, на первое найденное в родителе
       const newState = [
@@ -1604,7 +1601,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
-    const dependetTransitionsIds = this.getAllByTargetId(smId, id)[1];
+    const dependetTransitionsIds = [
+      ...this.getAllByTargetId(smId, id)[1],
+      ...this.getAllBySourceId(smId, id).map((value) => value[0]),
+    ];
     dependetTransitionsIds.forEach((transitionId) => {
       this.deleteTransition({ smId, id: transitionId }, canUndo);
       numberOfConnectedActions += 1;
@@ -1779,7 +1779,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { eventIdx, actionIdx } = event;
 
     if (actionIdx !== null) {
-      const prevValue = state.events[eventIdx].do[actionIdx];
+      const prevValue = structuredClone(state.events[eventIdx].do[actionIdx]);
 
       this.model.changeEventAction(smId, stateId, event, newValue);
       this.emit('changeEventAction', { smId, stateId, event, newValue });
@@ -1791,7 +1791,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         });
       }
     } else {
-      const prevValue = state.events[eventIdx].trigger;
+      const prevValue = structuredClone(state.events[eventIdx].trigger);
 
       this.model.changeEvent(smId, stateId, eventIdx, newValue);
       this.emit('changeEvent', { smId, stateId, event, newValue });

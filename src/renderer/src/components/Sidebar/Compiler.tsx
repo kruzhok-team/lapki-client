@@ -217,6 +217,25 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       .filter((item) => item.value);
     return options;
   };
+
+  const getCompilerResult = () => {
+    if (!compilerData) {
+      return compilerNoDataStatus;
+    }
+    if (compilerData.result === 'NOTOK') {
+      const failedSms = Object.entries(compilerData.state_machines)
+        .map(([smId, sm]) => {
+          if (sm.result === 'NOTOK' && stateMachines[smId]) {
+            return stateMachines[smId].name ?? smId;
+          }
+        })
+        .join(', ');
+      return `NOTOK(${failedSms})`;
+    }
+
+    return compilerData.result;
+  };
+
   const getSelectMachineStateOption = () => {
     if (!smId) return null;
     const sm = stateMachines[smId];
@@ -273,7 +292,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         </p>
         {showReconnectTime()}
         <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
-          Результат компиляции: {compilerData ? compilerData.result : compilerNoDataStatus}
+          Результат компиляции: {getCompilerResult()}
         </div>
         <Select
           className="mb-2"

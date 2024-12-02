@@ -228,6 +228,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           if (sm.result === 'NOTOK' && stateMachines[smId]) {
             return stateMachines[smId].name ?? smId;
           }
+          return null;
         })
         .join(', ');
       return `NOTOK(${failedSms})`;

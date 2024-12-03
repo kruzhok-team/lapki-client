@@ -152,6 +152,7 @@ export class Compiler extends ClientWS {
     switch (this.mode) {
       case 'compile':
         data = JSON.parse(msg.data as string) as CompilerRequest;
+        compilerResult.result = data.result;
         for (const stateMachineId in data.state_machines) {
           const sm = data.state_machines[stateMachineId];
           compilerResult.state_machines[stateMachineId] = sm;

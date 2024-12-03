@@ -19,7 +19,6 @@ interface ActionsModalParametersProps {
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
-  selectedComponent: string | null;
   componentOptions: SelectOption[];
 
   smId: string;
@@ -32,7 +31,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   setParameters,
   errors,
   setErrors,
-  selectedComponent,
   componentOptions,
   smId,
   controller,
@@ -69,7 +67,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
-  const filteredComponentOptions = componentOptions?.filter((v) => v.value != selectedComponent);
   const methodOptionsSearch = (selectedParameterComponent: string | null) => {
     if (!selectedParameterComponent || !controller?.platform[smId]) return [];
     const platformManager = controller.platform[smId];
@@ -201,13 +198,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 </label>
                 <Select
                   containerClassName="w-full"
-                  options={filteredComponentOptions}
+                  options={componentOptions}
                   onChange={(opt) =>
                     handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
                   }
                   value={
-                    filteredComponentOptions.find((o) => o.value === selectedParameterComponent) ??
-                    null
+                    componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
                   }
                   isSearchable={false}
                   noOptionsMessage={() => 'Нет подходящих компонентов'}

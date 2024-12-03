@@ -159,16 +159,16 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           }
         }
         const platform = controller.platform[smId].data;
-        const componentAttibute = getComponentAttribute(value as string, platform);
+        const componentAttribute = getComponentAttribute(value as string, platform);
         // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
         const currentChecked = isChecked.get(name);
         if (isChecked.get(name) === undefined) {
-          setCheckedTo(name, componentAttibute != null);
+          setCheckedTo(name, componentAttribute != null);
         }
         const selectedParameterComponent =
-          currentChecked && componentAttibute ? componentAttibute[0] : null;
+          currentChecked && componentAttribute ? componentAttribute[0] : null;
         const selectedParameterMethod =
-          currentChecked && componentAttibute ? componentAttibute[1] : null;
+          currentChecked && componentAttribute ? componentAttribute[1] : null;
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
           <div className="flex items-start" key={name}>

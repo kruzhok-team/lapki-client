@@ -5,8 +5,8 @@ import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormField
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ArgList } from '@renderer/types/diagram';
-import { ArgType, ArgumentProto, Platform } from '@renderer/types/platform';
-import { createEmptyMatrix, formatArgType, getMatrixDimensions, validators } from '@renderer/utils';
+import { ArgumentProto, Platform } from '@renderer/types/platform';
+import { createEmptyMatrix, formatArgType, getMatrixDimensions } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { MatrixWidget } from './MatrixWidget';
@@ -20,6 +20,12 @@ interface ActionsModalParametersProps {
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
   componentOptions: SelectOption[];
+  methodOptionsSearch: (selectedParameterComponent: string | null) => {
+    value: string;
+    label: string;
+    hint: string | undefined;
+    icon: JSX.Element;
+  }[];
 
   smId: string;
   controller: CanvasController;
@@ -32,18 +38,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   errors,
   setErrors,
   componentOptions,
+  methodOptionsSearch,
   smId,
   controller,
 }) => {
-  const handleInputChange = (name: string, type: ArgType | undefined, value: string) => {
-    if (type && typeof type === 'string' && validators[type]) {
-      if (!validators[type](value)) {
-        setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
-      } else {
-        setErrors((p) => ({ ...p, [name]: '' }));
-      }
-    }
-
+  const handleInputChange = (name: string, value: string) => {
+    setErrors((p) => ({ ...p, [name]: '' }));
     parameters[name] = value;
     setParameters({ ...parameters });
   };
@@ -62,31 +62,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
       inputValue = `${component}${delimiter}${attribute}`;
     }
-    handleInputChange(name, undefined, inputValue);
+    handleInputChange(name, inputValue);
   };
 
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
-  const methodOptionsSearch = (selectedParameterComponent: string | null) => {
-    if (!selectedParameterComponent || !controller?.platform[smId]) return [];
-    const platformManager = controller.platform[smId];
-
-    return platformManager
-      .getAvailableVariables(selectedParameterComponent)
-      .map(({ name, description }) => {
-        return {
-          value: name,
-          label: name,
-          hint: description,
-          icon: (
-            <img
-              src={platformManager.getVariableIconUrl(selectedParameterComponent, name, true)}
-              className="mr-1 h-7 w-7 object-contain"
-            />
-          ),
-        };
-      });
-  };
   const onChange = (parameter: string, row: number, col: number, value: number) => {
     (parameters[parameter] as number[][])[row][col] = value;
     setParameters({
@@ -125,7 +105,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 className="w-[250px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
-                onChange={(opt) => handleInputChange(name, type, opt?.value ?? '')}
+                onChange={(opt) => handleInputChange(name, opt?.value ?? '')}
               />
             </ComponentFormFieldLabel>
           );
@@ -176,7 +156,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               checked={currentChecked}
               onCheckedChange={() => {
                 setCheckedTo(name, !currentChecked);
-                handleInputChange(name, type, '');
+                handleInputChange(name, '');
               }}
               className="mr-2 mt-[9px]"
             />
@@ -233,7 +213,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 error={error}
                 value={value as string}
                 name={name}
-                onChange={(e) => handleInputChange(name, type, e.target.value)}
+                onChange={(e) => handleInputChange(name, e.target.value)}
               />
             )}
           </div>

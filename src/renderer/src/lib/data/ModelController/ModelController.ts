@@ -1165,7 +1165,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   editComponent(args: EditComponentParams, canUndo = true) {
     const { id, parameters, newName, smId } = args;
-
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );

@@ -7,6 +7,8 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
+import { formatArgType, validators } from '@renderer/utils';
+import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ActionsModalParameters } from './ActionsModalParameters';
 
@@ -102,6 +104,27 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     });
   }, [selectedComponent, platforms, isEditingEvent, visual]);
 
+  const methodOptionsSearch = (selectedParameterComponent: string | null) => {
+    if (!selectedParameterComponent || !controller?.platform[smId]) return [];
+    const platformManager = controller.platform[smId];
+
+    return platformManager
+      .getAvailableVariables(selectedParameterComponent)
+      .map(({ name, description }) => {
+        return {
+          value: name,
+          label: name,
+          hint: description,
+          icon: (
+            <img
+              src={platformManager.getVariableIconUrl(selectedParameterComponent, name, true)}
+              className="mr-1 h-7 w-7 object-contain"
+            />
+          ),
+        };
+      });
+  };
+
   // Функция обновления параметров при смене метода в селекте
   const updateParameters = (componentName: string | null, method: string | null) => {
     if (!componentName || !method || !controller.platform[smId]) return;
@@ -148,9 +171,52 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     e.preventDefault();
     e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
 
-    // Если есть ошибка то не отправляем форму
-    for (const key in errors) {
-      if (errors[key]) return;
+    const platform = controller.platform[smId].data;
+    if (
+      !protoParameters.every((proto) => {
+        const { name, type = '' } = proto;
+        const value = parameters[name] ?? '';
+        if (Array.isArray(value)) {
+          return true;
+        }
+        const componentAttribute = getComponentAttribute(value as string, platform);
+        if (componentAttribute) {
+          // существует ли компонет с таким названием
+          if (
+            !componentOptions.find((opt) => {
+              return opt.value === componentAttribute[0];
+            })
+          ) {
+            setErrors((p) => ({ ...p, [name]: `Неправильный формат данных` }));
+            return false;
+          }
+          if (componentAttribute[1] === '') {
+            setErrors((p) => ({ ...p, [name]: `Выберите метод` }));
+            return false;
+          }
+          // существует ли атрибут с таким названием у данного компонента
+          const attributeOptions = methodOptionsSearch(componentAttribute[0]);
+          if (
+            !attributeOptions.find((opt) => {
+              return opt.value === componentAttribute[1];
+            })
+          ) {
+            setErrors((p) => ({ ...p, [name]: `Неправильный формат данных` }));
+            return false;
+          }
+        } else if (type && typeof type === 'string' && validators[type]) {
+          if (!validators[type](value as string)) {
+            setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
+            return false;
+          } else {
+            setErrors((p) => ({ ...p, [name]: '' }));
+            return true;
+          }
+        }
+        return true;
+      })
+    ) {
+      return;
     }
     if (!selectedComponent || !selectedMethod) return;
     // TODO (L140-beep): не отправлять форму при отсутствии обязательных параметров
@@ -237,6 +303,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         componentOptions={componentOptions}
         controller={controller}
         smId={smId}
+        methodOptionsSearch={methodOptionsSearch}
       />
     </Modal>
   );

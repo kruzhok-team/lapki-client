@@ -161,7 +161,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               className="mr-2 mt-[9px]"
             />
             {currentChecked ? (
-              <div key={name}>
+              <div className="w-full">
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                     <div className="flex min-w-28 items-center gap-1">
@@ -177,33 +177,35 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       )}
                     </div>
                   </label>
-                  <Select
-                    containerClassName="w-full"
-                    options={componentOptions}
-                    onChange={(opt) =>
-                      handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
-                    }
-                    value={
-                      componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
-                    }
-                    isSearchable={false}
-                    noOptionsMessage={() => 'Нет подходящих компонентов'}
-                  />
-                  <Select
-                    containerClassName="w-full"
-                    options={methodOptions}
-                    onChange={(opt) =>
-                      handleComponentAttributeChange(
-                        name,
-                        selectedParameterComponent ?? '',
-                        opt?.value ?? '',
-                        platform
-                      )
-                    }
-                    value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
-                    isSearchable={false}
-                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
-                  />
+                  <div className="flex w-full">
+                    <Select
+                      containerClassName="w-full"
+                      options={componentOptions}
+                      onChange={(opt) =>
+                        handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
+                      }
+                      value={
+                        componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
+                      }
+                      isSearchable={false}
+                      noOptionsMessage={() => 'Нет подходящих компонентов'}
+                    />
+                    <Select
+                      containerClassName="w-full"
+                      options={methodOptions}
+                      onChange={(opt) =>
+                        handleComponentAttributeChange(
+                          name,
+                          selectedParameterComponent ?? '',
+                          opt?.value ?? '',
+                          platform
+                        )
+                      }
+                      value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
+                      isSearchable={false}
+                      noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                    />
+                  </div>
                 </div>
                 <p className="pl-[120px] text-sm text-error">{error}</p>
               </div>

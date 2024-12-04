@@ -160,8 +160,8 @@ export class Picto {
     if (isMarked && iconData['label']) {
       const { x, y } = bounds;
       // Координаты правого нижнего угла картинки
-      const tX = x + (computedWidth * this.scale + 6) / this.scale;
-      const tY = y + (computedHeight * this.scale + 3) / this.scale;
+      const tX = x + computedWidth + 6 / this.scale;
+      const tY = y + computedHeight + 3 / this.scale;
       // TODO(L140-beep): Исправить изменение соотношения сторон метки при масштабе не равном 1
       // Отступы внутри метки
       const pX = 1 / this.scale;

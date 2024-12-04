@@ -160,16 +160,18 @@ export class Picto {
     if (isMarked && iconData['label']) {
       const { x, y } = bounds;
       // Координаты правого нижнего угла картинки
-      const tX = x + (computedWidth + 6) / this.scale;
-      const tY = y + (computedHeight + 3) / this.scale;
+      const tX = x + (computedWidth * this.scale + 6) / this.scale;
+      const tY = y + (computedHeight * this.scale + 3) / this.scale;
+      // TODO(L140-beep): Исправить изменение соотношения сторон метки при масштабе не равном 1
       // Отступы внутри метки
       const pX = 1 / this.scale;
       const pY = 0.5 / this.scale;
-      const font = `500 ${fontSize / this.scale}px/0 Fira Mono`;
+      const computedFontSize = isScaled ? fontSize : fontSize / this.scale;
+      const font = `500 ${computedFontSize}px/0 Fira Mono`;
       const textWidth = getTextWidth(iconData.label, font);
-      const textHeight = fontSize / this.scale;
-      const labelWidth = textWidth + pX * 2 + 3;
-      const labelHeight = textHeight + pY * 2 + 3;
+      const textHeight = computedFontSize;
+      const labelWidth = textWidth + pX * 2 + 3 / this.scale;
+      const labelHeight = textHeight + pY * 2 + 3 / this.scale;
 
       // Отрисовка заднего фона метки
       // Рисуется в правом нижнем углу картинки, ширина и высота зависит от текста
@@ -189,7 +191,7 @@ export class Picto {
         y: tY - textHeight - pY,
         font: {
           fontFamily: 'Fira Mono',
-          fontSize: fontSize / this.scale,
+          fontSize: computedFontSize,
           lineHeight: 1,
           fontWeight: 500,
         },

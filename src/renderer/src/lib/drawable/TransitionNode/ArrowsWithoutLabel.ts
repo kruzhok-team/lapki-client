@@ -29,10 +29,11 @@ export class ArrowsWithoutLabel implements Drawable {
     });
 
     const data = this.parent.data;
+    const fillStyle = data.color ?? getColor('default-transition-color');
 
     ctx.lineWidth = transitionStyle.width;
     ctx.strokeStyle = this.parent.data.color ?? getColor('default-transition-color');
-    ctx.fillStyle = this.parent.data.color ?? getColor('default-transition-color');
+    ctx.fillStyle = fillStyle;
 
     if (!this.parent.isSelected && this.parent.source instanceof Note) {
       ctx.globalAlpha = 0.3;
@@ -42,7 +43,7 @@ export class ArrowsWithoutLabel implements Drawable {
     drawCircle(ctx, {
       position: line.end,
       radius: transitionStyle.startSize / this.app.controller.scale,
-      fillStyle: data.color,
+      fillStyle: fillStyle,
     });
     drawTriangle(ctx, line.start, 10 / this.app.controller.scale, degrees_to_radians(line.se));
   }

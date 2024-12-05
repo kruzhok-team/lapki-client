@@ -8,6 +8,16 @@ export class ManagerMS {
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
   static setAddress: (curAddress: string) => void;
   static setMeta: (curMeta: MetaDataID) => void;
+  private static backtrackMap: Map<string, string> = new Map([
+    ['PING', 'отравка пинга на устройство...'],
+    ['PREPARE_FIRMWARE', ' открытие прошивки и формирование пакетов...'],
+    ['CHANGE_MODE_TO_PROG', 'перевод в режим программирования...'],
+    ['CHANGE_MODE_TO_RUN', ' запуск загруженной прошивки...'],
+    ['ERASE_OLD_FIRMWARE', 'очистка страниц старой прошивки...'],
+    ['PUSH_FIRMWARE', 'загрузка прошивки...'],
+    ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
+    ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
+  ]);
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
@@ -60,5 +70,14 @@ export class ManagerMS {
       deviceID: deviceID,
       address: address,
     });
+  }
+  static backtrack(log: string) {
+    const msg = this.backtrackMap.get(log);
+    const status = 'Статус загрузки';
+    if (msg) {
+      ManagerMS.addLog(`${status}: ${msg}`);
+    } else {
+      ManagerMS.addLog(`${status}: получено неизвестное сообщение (${log}) от загрузчика`);
+    }
   }
 }

@@ -320,6 +320,16 @@
             }
           ]
         },
+        "set": {
+          "img": "arduino/sub.svg",
+          "description": "Установить value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
         "reset": {
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."

@@ -380,6 +380,14 @@ export class Flasher extends ClientWS {
         );
         break;
       }
+      case 'flash-backtrack': {
+        const payload = response.payload as string;
+        // пока, обратная связь есть только для МС-ТЮК
+        if (this.currentFlashingDevice?.isMSDevice()) {
+          ManagerMS.backtrack(payload);
+        }
+        break;
+      }
       case 'event-not-supported': {
         this.setFlasherLog('Загрузчик получил неизвестный тип сообщения.');
         break;

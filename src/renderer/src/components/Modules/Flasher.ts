@@ -382,7 +382,7 @@ export class Flasher extends ClientWS {
       }
       case 'flash-backtrack': {
         const payload = response.payload as string;
-        // пока, обратная связь есть только для МС-ТЮК
+        // TODO: пока обратная связь реализована только для МС-ТЮК
         if (this.currentFlashingDevice?.isMSDevice()) {
           ManagerMS.backtrack(payload);
         }

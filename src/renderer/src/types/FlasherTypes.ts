@@ -39,6 +39,7 @@ export type FlasherType =
   | 'get-list-cooldown'
   | 'flash-not-supported'
   | 'flash-open-serial-monitor'
+  | 'flash-backtrack'
   | 'serial-log'
   | 'serial-connect'
   | 'serial-connection-status'

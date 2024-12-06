@@ -5,18 +5,17 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
-import { useModelContext } from '@renderer/store/ModelContext';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { StateMachine } from '@renderer/types/diagram';
 import { PlatformType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
+import { FlashSelect } from './FlashSelectMS1';
 import { Device, MSDevice } from './Modules/Device';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
-import { Select, SelectOption, Switch } from './UI';
+import { Select, Switch } from './UI';
 
 export interface ManagerMSProps {
   devices: Map<string, Device>;
@@ -31,14 +30,9 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [address, setAddress] = useState<string>('');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
+  const [isFlashSelectOpen, openFlashSelect, closeFlashSelect] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  const modelController = useModelContext();
-  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
-    [ID: string]: StateMachine;
-  };
-  const [binOption, setBinOption] = useState<SelectOption | null>(null);
-  const fileOption = 'file';
   // При изменении log прокручиваем вниз, если включена автопрокрутка
   useLayoutEffect(() => {
     if (managerMSSetting?.autoScroll && logContainerRef.current) {
@@ -119,26 +113,27 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     openAddressBook();
   };
   const handleSendBin = async () => {
-    if (!device || !binOption) return;
-    if (binOption.value === fileOption) {
-      let isOk = false;
-      await Flasher.setFile().then((isOpen: boolean) => {
-        isOk = isOpen;
-      });
-      if (!isOk) return;
-    } else {
-      if (!compilerData) return;
-      const binData = compilerData.state_machines[binOption.value].binary;
-      if (!binData || binData.length === 0) return;
-      Flasher.setBinary(binData, PlatformType.MS1);
-    }
-    ManagerMS.binStart(
-      device,
-      address,
-      managerMSSetting?.verification,
-      serialMonitorDevice,
-      serialConnectionStatus
-    );
+    // TODO
+    // if (!device || !binOption) return;
+    // if (binOption.value === fileOption) {
+    //   let isOk = false;
+    //   await Flasher.setFile().then((isOpen: boolean) => {
+    //     isOk = isOpen;
+    //   });
+    //   if (!isOk) return;
+    // } else {
+    //   if (!compilerData) return;
+    //   const binData = compilerData.state_machines[binOption.value].binary;
+    //   if (!binData || binData.length === 0) return;
+    //   Flasher.setBinary(binData, PlatformType.MS1);
+    // }
+    // ManagerMS.binStart(
+    //   device,
+    //   address,
+    //   managerMSSetting?.verification,
+    //   serialMonitorDevice,
+    //   serialConnectionStatus
+    // );
   };
   const handlePing = () => {
     if (!device) return;
@@ -181,32 +176,23 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     return found;
   };
   const isFlashDisabled = () => {
-    if (address === '') {
-      return true;
-    }
-    if (!binOption) {
-      return true;
-    }
-    if (binOption.value != fileOption) {
-      if (!compilerData) {
-        return true;
-      }
-      const binData = compilerData.state_machines[binOption.value].binary;
-      if (!binData || binData.length === 0) {
-        return true;
-      }
-    }
+    // TODO
+    // if (address === '') {
+    //   return true;
+    // }
+    // if (!binOption) {
+    //   return true;
+    // }
+    // if (binOption.value != fileOption) {
+    //   if (!compilerData) {
+    //     return true;
+    //   }
+    //   const binData = compilerData.state_machines[binOption.value].binary;
+    //   if (!binData || binData.length === 0) {
+    //     return true;
+    //   }
+    // }
     return false;
-  };
-  const getBinaryOptions = () => {
-    const options = [{ label: 'Файл', value: fileOption, hint: 'Загрузить прошивку из файла' }];
-    return options.concat(
-      [...Object.entries(stateMachinesId)]
-        .filter(([, sm]) => sm.platform.toLowerCase().startsWith('tjc-ms1'))
-        .map(([id, sm]) => {
-          return { value: id, label: sm.name ?? id, hint: 'Загрузить прошивку из компилятора' };
-        })
-    );
   };
   if (!managerMSSetting) {
     return null;
@@ -236,16 +222,9 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         <button className="btn-primary mr-4" onClick={handleSendBin} disabled={isFlashDisabled()}>
           Отправить bin...
         </button>
-        <Select
-          className="mr-4 w-56"
-          isSearchable={false}
-          placeholder="Выберите прошивку..."
-          options={getBinaryOptions()}
-          value={binOption}
-          onChange={(opt) => setBinOption(opt)}
-          //isDisabled={currentDeviceID == undefined}
-          //noOptionsMessage={() => 'Нет подходящих машин состояний'}
-        />
+        <button className="btn-primary mr-4" onClick={openFlashSelect}>
+          Выбрать прошивки...
+        </button>
         <div className="mr-4 flex w-40 items-center justify-between">
           <Switch
             checked={managerMSSetting.verification}
@@ -291,6 +270,14 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         }}
         isDuplicate={isDuplicate}
       ></AddressBookModal>
+      <FlashSelect
+        addressBookSetting={addressBookSetting}
+        isOpen={isFlashSelectOpen}
+        onClose={closeFlashSelect}
+        onSubmit={() => {
+          // TODO
+        }}
+      ></FlashSelect>
     </section>
   );
 };

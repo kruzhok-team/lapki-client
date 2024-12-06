@@ -5,7 +5,7 @@ import { getColor } from '@renderer/theme';
 
 import { MarkedIconData } from '../Picto';
 
-const fontSizeMark = 32;
+const fontSizeMark = 24;
 /**
  * Представление компонента в схемотехническом экране
  */
@@ -92,7 +92,7 @@ export class DrawableComponent extends Shape {
         width: width,
         height: height,
       },
-      fontSizeMark,
+      fontSizeMark / this.app.controller.scale,
       true
     );
   }

@@ -12,10 +12,11 @@ import { PlatformType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlashSelect } from './FirmwareSelectMS1';
-import { Device, MSDevice } from './Modules/Device';
-import { Flasher } from './Modules/Flasher';
-import { ManagerMS } from './Modules/ManagerMS';
-import { Select, Switch } from './UI';
+import { ManagerMS } from './ManagerMS';
+
+import { Select, Switch } from '../../UI';
+import { Device, MSDevice } from '../Device';
+import { Flasher } from '../Flasher';
 
 export interface ManagerMSProps {
   devices: Map<string, Device>;

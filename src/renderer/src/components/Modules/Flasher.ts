@@ -17,7 +17,7 @@ import {
   PlatformType,
 } from '@renderer/types/FlasherTypes';
 
-import { ManagerMS } from './ManagerMS';
+import { ManagerMS } from './ManagerMS/ManagerMS';
 import {
   SerialMonitor,
   SERIAL_MONITOR_CONNECTED,

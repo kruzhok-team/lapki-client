@@ -26,8 +26,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   onSubmit,
   ...props
 }) => {
-  const { addressBookSetting, onRemove, onSwapEntries, onAdd, onEdit, getID, isDuplicate } =
-    useAddressBook();
+  const { addressBookSetting, onRemove, onSwapEntries, onAdd, onEdit, getID } = useAddressBook();
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
   const addressEntryEditForm = useForm<AddressData>();
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
@@ -151,7 +150,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         form={addressEntryEditForm}
         isOpen={isAddressEnrtyEditOpen}
         onClose={closeAddressEnrtyEdit}
-        isDuplicate={isDuplicate}
+        addressBook={addressBookSetting}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
       ></AddressEntryEditModal>
@@ -159,7 +158,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         form={addressEntryAddForm}
         isOpen={isAddressEnrtyAddOpen}
         onClose={closeAddressEnrtyAdd}
-        isDuplicate={isDuplicate}
+        addressBook={addressBookSetting}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
       ></AddressEntryEditModal>

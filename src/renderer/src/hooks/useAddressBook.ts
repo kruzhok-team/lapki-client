@@ -102,29 +102,12 @@ export const useAddressBook = () => {
     setAddressBookSetting(newBook);
     setIdStorage(newIdStorage);
   };
-  /**
-   * Проверка на наличие адреса в адресной книге
-   * @param address адрес МС-ТЮК
-   * @returns истина, если адрес уже встречается в адресной книге; null, если адресная книга не загрузилась (если она является null)
-   */
-  const isDuplicate = (address: string): boolean | null => {
-    if (addressBookSetting === null) return null;
-    let found = false;
-    for (const addr of addressBookSetting) {
-      if (addr.address == address) {
-        found = true;
-        break;
-      }
-    }
-    return found;
-  };
   return {
     addressBookSetting,
     onAdd,
     onRemove,
     onEdit,
     onSwapEntries,
-    isDuplicate,
     getID,
     getIndex,
   };

@@ -8,7 +8,7 @@ import { TextInput } from './UI/TextInput';
 interface AddressEntryEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isDuplicate: (address: string) => boolean | null;
+  addressBook: AddressData[] | null;
   onSubmit: (data: AddressData) => void;
   submitLabel: string;
   form: UseFormReturn<AddressData>;
@@ -18,7 +18,7 @@ interface AddressEntryEditModalProps {
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { isOpen, isDuplicate, onClose, onSubmit, submitLabel, form } = props;
+  const { isOpen, addressBook, onClose, onSubmit, submitLabel, form } = props;
   const {
     handleSubmit: hookHandleSubmit,
     register,
@@ -50,8 +50,21 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       setError('address', { message: 'Адрес не является корректным шестнадцатеричным числом' });
       return;
     }
-    if (isDuplicate(submitData.address)) {
+    if (addressBook === null) return;
+    if (
+      addressBook.find((v) => {
+        return v.address === submitData.address;
+      }) !== undefined
+    ) {
       setError('address', { message: 'Адрес уже содержится в книге' });
+      return;
+    }
+    if (
+      addressBook.find((v) => {
+        return v.name === submitData.name;
+      }) !== undefined
+    ) {
+      setError('address', { message: 'Имя уже содержится в книге' });
       return;
     }
     sendSubmit();

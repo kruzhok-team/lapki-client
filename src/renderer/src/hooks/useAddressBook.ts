@@ -56,7 +56,7 @@ export const useAddressBook = () => {
    * @param data запись, которую следует добавить
    */
   const onAdd = (data: AddressData) => {
-    if (!addressBookSetting) return;
+    if (addressBookSetting === null) return;
     setAddressBookSetting([...addressBookSetting, data]);
   };
   const onEdit = (data: AddressData, index: number) => {

@@ -11,7 +11,7 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { PlatformType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { FlashSelect } from './FlashSelectMS1';
+import { FlashSelect } from './FirmwareSelectMS1';
 import { Device, MSDevice } from './Modules/Device';
 import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';

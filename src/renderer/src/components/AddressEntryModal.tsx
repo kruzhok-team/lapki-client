@@ -33,7 +33,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       clearErrors();
       onClose();
     };
-    if (submitData.address != '' && !dirtyFields.address) {
+    if (submitData.address != '' && !dirtyFields.address && !dirtyFields.name) {
       sendSubmit();
       return;
     }
@@ -52,6 +52,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     }
     if (addressBook === null) return;
     if (
+      dirtyFields.address &&
       addressBook.find((v) => {
         return v.address === submitData.address;
       }) !== undefined
@@ -60,11 +61,12 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       return;
     }
     if (
+      dirtyFields.name &&
       addressBook.find((v) => {
         return v.name === submitData.name;
       }) !== undefined
     ) {
-      setError('address', { message: 'Имя уже содержится в книге' });
+      setError('name', { message: 'Имя уже содержится в книге' });
       return;
     }
     sendSubmit();
@@ -81,6 +83,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       <div className="flex items-start gap-1">
         <label className="flex w-full flex-col">
           <TextInput placeholder="Название" {...register('name')} />
+          <p className="text-sm text-error">{errors.name?.message}</p>
         </label>
 
         <label className="flex w-full flex-col">

@@ -8,7 +8,7 @@ import { TextInput } from './UI/TextInput';
 interface AddressEntryEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isDuplicate: (address: string) => boolean | undefined;
+  isDuplicate: (address: string) => boolean | null;
   onSubmit: (data: AddressData) => void;
   submitLabel: string;
   form: UseFormReturn<AddressData>;

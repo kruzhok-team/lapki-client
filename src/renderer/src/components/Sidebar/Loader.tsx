@@ -17,7 +17,7 @@ import { StateMachine } from '@renderer/types/diagram';
 import { FlashResult } from '@renderer/types/FlasherTypes';
 
 import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
-import { ManagerMS } from '../Modules/ManagerMS/ManagerMS';
+import { ManagerMS } from '../Modules/ManagerMS';
 import {
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,

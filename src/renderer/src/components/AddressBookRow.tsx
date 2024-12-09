@@ -2,7 +2,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { AddressData } from '@renderer/types/FlasherTypes';
 
-import { TextInput } from '../../UI/TextInput';
+import { TextInput } from './UI/TextInput';
 
 interface AddressBookRowProps {
   data: AddressData;

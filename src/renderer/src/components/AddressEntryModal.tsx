@@ -2,8 +2,8 @@ import { UseFormReturn } from 'react-hook-form';
 
 import { AddressData } from '@renderer/types/FlasherTypes';
 
-import { Modal } from '../../UI';
-import { TextInput } from '../../UI/TextInput';
+import { Modal } from './UI';
+import { TextInput } from './UI/TextInput';
 
 interface AddressEntryEditModalProps {
   isOpen: boolean;

@@ -1,7 +1,7 @@
 import { MetaDataID } from '@renderer/types/FlasherTypes';
 
-import { Device, MSDevice } from '../Device';
-import { Flasher } from '../Flasher';
+import { Device, MSDevice } from './Device';
+import { Flasher } from './Flasher';
 
 export class ManagerMS {
   static setDevice: (currentDevice: MSDevice | undefined) => void;

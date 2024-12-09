@@ -150,7 +150,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         form={addressEntryEditForm}
         isOpen={isAddressEnrtyEditOpen}
         onClose={closeAddressEnrtyEdit}
-        addressBook={addressBookSetting}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
       ></AddressEntryEditModal>
@@ -158,7 +157,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         form={addressEntryAddForm}
         isOpen={isAddressEnrtyAddOpen}
         onClose={closeAddressEnrtyAdd}
-        addressBook={addressBookSetting}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
       ></AddressEntryEditModal>

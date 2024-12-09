@@ -1,5 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
 
+import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { Modal } from './UI';
@@ -8,7 +9,6 @@ import { TextInput } from './UI/TextInput';
 interface AddressEntryEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  addressBook: AddressData[] | null;
   onSubmit: (data: AddressData) => void;
   submitLabel: string;
   form: UseFormReturn<AddressData>;
@@ -18,7 +18,8 @@ interface AddressEntryEditModalProps {
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { isOpen, addressBook, onClose, onSubmit, submitLabel, form } = props;
+  const { isOpen, onClose, onSubmit, submitLabel, form } = props;
+  const { isDuplicateName, isDuplicateAddress } = useAddressBook();
   const {
     handleSubmit: hookHandleSubmit,
     register,
@@ -50,22 +51,11 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       setError('address', { message: 'Адрес не является корректным шестнадцатеричным числом' });
       return;
     }
-    if (addressBook === null) return;
-    if (
-      dirtyFields.address &&
-      addressBook.find((v) => {
-        return v.address === submitData.address;
-      }) !== undefined
-    ) {
+    if (dirtyFields.address && isDuplicateAddress(submitData.address)) {
       setError('address', { message: 'Адрес уже содержится в книге' });
       return;
     }
-    if (
-      dirtyFields.name &&
-      addressBook.find((v) => {
-        return v.name === submitData.name;
-      }) !== undefined
-    ) {
+    if (dirtyFields.name && isDuplicateName(submitData.name)) {
       setError('name', { message: 'Имя уже содержится в книге' });
       return;
     }

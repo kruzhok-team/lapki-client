@@ -156,6 +156,14 @@ export const useAddressBook = () => {
       setSelectedAddressIndex(index);
     }
   };
+
+  const displayEntry = (index: number) => {
+    if (addressBookSetting === null) return null;
+    const entry = addressBookSetting[index];
+    const name = entry.name === '' ? entry.address : entry.name;
+    const type = entry.type ? ` (${entry.type})` : '';
+    return name + type;
+  };
   return {
     addressBookSetting,
     selectedAddress,
@@ -169,5 +177,6 @@ export const useAddressBook = () => {
     getIndex,
     isDuplicateAddress,
     isDuplicateName,
+    displayEntry,
   };
 };

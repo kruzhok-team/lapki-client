@@ -138,7 +138,7 @@ export const useAddressBook = () => {
 
   const selectedAddress = () => {
     if (addressBookSetting === null || selectedAddressIndex === null) return '';
-    return addressBookSetting[selectedAddressIndex];
+    return addressBookSetting[selectedAddressIndex].address;
   };
 
   const setSelectedAddress = (address: string) => {

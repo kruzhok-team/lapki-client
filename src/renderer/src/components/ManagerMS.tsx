@@ -38,6 +38,8 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     onAdd,
     onRemove,
     onSwapEntries,
+    stateMachineIds,
+    assignStateMachineToAddress,
   } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
@@ -277,6 +279,8 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         onSubmit={() => {
           // TODO
         }}
+        stateMachineIds={stateMachineIds}
+        assignStateMachineToAddress={assignStateMachineToAddress}
       ></FlashSelect>
     </section>
   );

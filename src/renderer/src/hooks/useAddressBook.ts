@@ -156,6 +156,7 @@ export const useAddressBook = () => {
   return {
     addressBookSetting,
     selectedAddress,
+    selectedAddressIndex,
     setSelectedAddress,
     onAdd,
     onRemove,

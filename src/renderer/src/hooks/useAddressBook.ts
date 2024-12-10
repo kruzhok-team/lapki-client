@@ -112,32 +112,6 @@ export const useAddressBook = () => {
     setAddressBookSetting(newBook);
     setIdStorage(newIdStorage);
   };
-  /**
-   * Проверка на наличие адреса в адресной книге
-   * @param address адрес МС-ТЮК
-   * @returns истина, если адрес уже встречается в адресной книге; null, если адресная книга не загрузилась (если она является null)
-   */
-  const isDuplicateAddress = (address: string): boolean | null => {
-    if (addressBookSetting === null) return null;
-    return (
-      addressBookSetting.find((v) => {
-        return v.address === address;
-      }) !== undefined
-    );
-  };
-  /**
-   * Проверка на наличие имени в адресной книге
-   * @param name имя МС-ТЮК
-   * @returns истина, если имя уже встречается в адресной книге; null, если адресная книга не загрузилась (если она является null)
-   */
-  const isDuplicateName = (name: string): boolean | null => {
-    if (addressBookSetting === null) return null;
-    return (
-      addressBookSetting.find((v) => {
-        return v.name === name;
-      }) !== undefined
-    );
-  };
 
   const selectedAddress = () => {
     if (addressBookSetting === null || selectedAddressIndex === null) return '';
@@ -175,8 +149,6 @@ export const useAddressBook = () => {
     onSwapEntries,
     getID,
     getIndex,
-    isDuplicateAddress,
-    isDuplicateName,
     displayEntry,
   };
 };

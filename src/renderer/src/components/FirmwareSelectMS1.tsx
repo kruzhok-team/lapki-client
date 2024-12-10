@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { Component, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { Modal, SelectOption } from '@renderer/components/UI';
+import { Checkbox, Modal, SelectOption, TextInput } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -29,6 +29,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
   };
+  const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   // индекс записи для переноса при начале drag
   const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
   const onRemoveFile = () => {
@@ -57,6 +58,22 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const onAddressChange = (ID: number, address: SelectOption) => {
     // TODO
   };
+  const checkbox = (key: string) => {
+    const checked = isChecked.get(key) ?? false;
+    return (
+      <Checkbox
+        className={'ml-1 mr-1 mt-[9px]'}
+        checked={checked}
+        onCheckedChange={() =>
+          setIsChecked((oldValue) => {
+            const newValue = new Map(oldValue);
+            newValue.set(key, !checked);
+            return newValue;
+          })
+        }
+      ></Checkbox>
+    );
+  };
   return (
     <div>
       <Modal
@@ -66,7 +83,19 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         onSubmit={handleSubmit}
       >
         <div className="flex gap-2 pl-4">
-          <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"></div>
+          <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            {[...Object.entries(stateMachinesId)].map(
+              ([id, sm]) =>
+                id && (
+                  <div key={id} className="flex items-start">
+                    {checkbox(id)}
+                    <label className="'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors">
+                      {sm.name ? sm.name : id}
+                    </label>
+                  </div>
+                )
+            )}
+          </div>
         </div>
       </Modal>
     </div>

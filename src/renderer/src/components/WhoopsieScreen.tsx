@@ -34,7 +34,7 @@ export class WhoopsieScreen extends Component<WhoopsieScreenProps, WhoopsieScree
   }
 
   openDevTools() {
-    window.electron.ipcRenderer.invoke('devtools');
+    window.electron.ipcRenderer.invoke('devtools-open');
   }
 
   render() {

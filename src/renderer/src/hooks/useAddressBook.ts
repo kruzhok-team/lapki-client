@@ -9,6 +9,8 @@ export const useAddressBook = () => {
 
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
 
+  const [stateMachineIds, setStateMachineIds] = useState<Map<string, number>>(new Map());
+
   const [idStorage, setIdStorage] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
   /**
@@ -79,6 +81,15 @@ export const useAddressBook = () => {
     }
     setIdStorage(idStorage.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
+    setStateMachineIds((oldValue) => {
+      const newValue = new Map(oldValue);
+      oldValue.forEach((idx, smId) => {
+        if (idx === index) {
+          newValue.delete(smId);
+        }
+      });
+      return newValue;
+    });
   };
   const onSwapEntries = (index1: number, index2: number) => {
     if (addressBookSetting === null) {
@@ -104,6 +115,14 @@ export const useAddressBook = () => {
       }
       return v;
     });
+    const newStateMachineIds = new Map(stateMachineIds);
+    stateMachineIds.forEach((index, smId) => {
+      if (index === index1) {
+        newStateMachineIds.set(smId, index2);
+      } else if (index === index2) {
+        newStateMachineIds.set(smId, index1);
+      }
+    });
     if (index1 === selectedAddressIndex) {
       setSelectedAddressIndex(index2);
     } else if (index2 === selectedAddressIndex) {
@@ -111,6 +130,7 @@ export const useAddressBook = () => {
     }
     setAddressBookSetting(newBook);
     setIdStorage(newIdStorage);
+    setStateMachineIds(newStateMachineIds);
   };
 
   const selectedAddress = () => {
@@ -138,6 +158,14 @@ export const useAddressBook = () => {
     const type = entry.type ? ` (${entry.type})` : '';
     return name + type;
   };
+
+  const assignStateMachineToAddress = (stateMachineID: string, addressIndex: number) => {
+    setStateMachineIds((oldValue) => {
+      const newValue = new Map(oldValue);
+      newValue.set(stateMachineID, addressIndex);
+      return newValue;
+    });
+  };
   return {
     addressBookSetting,
     selectedAddress,
@@ -150,5 +178,7 @@ export const useAddressBook = () => {
     getID,
     getIndex,
     displayEntry,
+    stateMachineIds,
+    assignStateMachineToAddress,
   };
 };

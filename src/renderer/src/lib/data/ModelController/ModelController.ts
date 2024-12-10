@@ -1161,6 +1161,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
       numberOfConnectedActions;
     }
+    return newStateId;
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
@@ -1882,6 +1883,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
+  getAllChildren(smId: string, parentId: string) {
+    return [
+      ...this.getStatesByParentId(smId, parentId),
+      ...this.getChoicesByParentId(smId, parentId),
+      ...this.getFinalsByParentId(smId, parentId),
+      ...this.getInitialStatesByParentId(smId, parentId),
+    ];
+  }
+
   pasteSelected = () => {
     if (!this.copyData) {
       throw new Error('No copy data!');
@@ -1890,16 +1900,59 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-      this.createState({
+      const prevCopy = structuredClone(this.copyData);
+      const newState = this.createState({
         ...structuredClone({ ...data, id: undefined }),
         smId,
         linkByPoint: false,
         id: undefined,
+        parentId: data.parentId,
         position: {
           x: data.position.x + this.pastePositionOffset,
           y: data.position.y + this.pastePositionOffset,
         },
       });
+
+      const stateChildrens = this.getStatesByParentId(smId, data.id);
+
+      for (const [id, state] of stateChildrens) {
+        this.copyData = {
+          type: 'state',
+          data: { ...state, id, parentId: newState },
+          smId: smId,
+        };
+
+        this.pasteSelected();
+      }
+
+      const choiceChildrens = this.getChoicesByParentId(smId, data.id);
+
+      for (const [id, state] of choiceChildrens) {
+        this.copyData = {
+          type: 'choiceState',
+          data: { ...state, id, parentId: newState },
+          smId,
+        };
+        this.pasteSelected();
+      }
+
+      const finalStates = this.getFinalsByParentId(smId, data.id);
+
+      for (const [_, state] of finalStates) {
+        this.createFinalState({ ...state, smId, parentId: newState });
+      }
+
+      const initials = this.getInitialStatesByParentId(smId, data.id);
+
+      for (const state of initials) {
+        const transitionFrom = this.getBySourceId(smId, state[0]);
+
+        if (!transitionFrom) continue;
+
+        this.createInitialStateWithTransition(smId, transitionFrom[1].targetId);
+      }
+
+      this.copyData = prevCopy;
 
       return;
     }

@@ -3,6 +3,7 @@
 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
@@ -26,9 +27,15 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   const { device, log, setLog, address: serverAddress, meta } = useManagerMS();
   const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
     useSerialMonitor();
-  const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
+  const {
+    addressBookSetting,
+    selectedAddress,
+    selectedAddressIndex,
+    setSelectedAddress,
+    onEdit,
+    displayEntry,
+  } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
-  const [address, setAddress] = useState<string>('');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isFlashSelectOpen, openFlashSelect, closeFlashSelect] = useModal(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -41,31 +48,22 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   }, [log, managerMSSetting]);
   useEffect(() => {
     if (device) {
-      setAddress(device.address ?? '');
+      setSelectedAddress(device.address ?? '');
     } else {
-      setAddress('');
+      setSelectedAddress('');
     }
   }, [device]);
   useEffect(() => {
-    if (serverAddress == '' || addressBookSetting == null) return;
-    setAddress(serverAddress);
-    if (!isDuplicate(serverAddress)) {
-      const newRow = {
-        name: '',
-        address: serverAddress,
-        type: '',
-        meta: undefined,
-      };
-      setAddressBookSetting([...addressBookSetting, newRow]);
-    }
+    if (serverAddress == '') return;
+    setSelectedAddress(serverAddress);
   }, [serverAddress]);
   useEffect(() => {
+    const address = selectedAddress();
     if (!address || !device) return;
     device.address = address;
-  }, [address]);
+  }, [selectedAddress]);
   useEffect(() => {
-    if (!meta || !addressBookSetting) return;
-    const dev = devices.get(meta.deviceID) as MSDevice;
+    if (!meta || addressBookSetting === null) return;
     const metaStr = `
 - bootloader REF_HW: ${meta.RefBlChip} (${meta.type})
 - bootloader REF_FW: ${meta.RefBlFw}
@@ -75,36 +73,33 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
 - cybergene REF_HW: ${meta.RefCgHw}
 - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
     `;
-    if (!dev) {
-      ManagerMS.addLog(
-        `Получены метаданные, но не удаётся определить для какого устройства, возможно оно больше не подключено:${metaStr}`
-      );
+    if (selectedAddressIndex === null) {
+      ManagerMS.addLog(`Получены метаданные, но не удаётся найти адрес устройства:${metaStr}`);
       return;
     }
-    ManagerMS.addLog(`Получены метаданные для устройства ${dev.displayName()}: ${metaStr}`);
-    const newBook = addressBookSetting.map((entry) => {
-      if (entry.address === dev.address) {
-        return {
-          name: entry.name,
-          address: entry.address,
-          type: meta.type,
-          meta: {
-            RefBlHw: meta.RefBlHw,
-            RefBlFw: meta.RefBlFw,
-            RefBlUserCode: meta.RefBlUserCode,
-            RefBlChip: meta.RefBlChip,
-            RefBlProtocol: meta.RefBlProtocol,
-            RefCgHw: meta.RefCgHw,
-            RefCgFw: meta.RefCgFw,
-            RefCgProtocol: meta.RefCgProtocol,
-          },
-        };
-      } else {
-        return entry;
-      }
-    });
-    setAddressBookSetting(newBook);
-  }, [meta]);
+    ManagerMS.addLog(
+      `Получены метаданные для устройства ${displayEntry(selectedAddressIndex)}: ${metaStr}`
+    );
+    const entry = addressBookSetting[selectedAddressIndex];
+    onEdit(
+      {
+        name: entry.name,
+        address: entry.address,
+        type: meta.type,
+        meta: {
+          RefBlHw: meta.RefBlHw,
+          RefBlFw: meta.RefBlFw,
+          RefBlUserCode: meta.RefBlUserCode,
+          RefBlChip: meta.RefBlChip,
+          RefBlProtocol: meta.RefBlProtocol,
+          RefCgHw: meta.RefCgHw,
+          RefCgFw: meta.RefCgFw,
+          RefCgProtocol: meta.RefCgProtocol,
+        },
+      },
+      selectedAddressIndex
+    );
+  });
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);
@@ -137,17 +132,17 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   };
   const handlePing = () => {
     if (!device) return;
-    ManagerMS.ping(device.deviceID, address);
+    ManagerMS.ping(device.deviceID, selectedAddress());
     ManagerMS.addLog('Отправлен пинг на устройство.');
   };
   const handleReset = () => {
     if (!device) return;
-    ManagerMS.reset(device.deviceID, address);
+    ManagerMS.reset(device.deviceID, selectedAddress());
     ManagerMS.addLog('Отправлен запрос на сброс устройства.');
   };
   const handleGetMetaData = () => {
     if (!device) return;
-    ManagerMS.getMetaData(device.deviceID, address);
+    ManagerMS.getMetaData(device.deviceID, selectedAddress());
     ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
   };
   const handleCurrentDeviceDisplay = () => {
@@ -158,22 +153,6 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   };
   const handleClear = () => {
     setLog(() => []);
-  };
-  /**
-   * Проверка на наличие адреса в адресной книге
-   * @param address адрес МС-ТЮК
-   * @returns истина, если адрес уже встречается в адресной книге; undefined, если адресная книга не загрузилась (если она является null)
-   */
-  const isDuplicate = (address: string): boolean | undefined => {
-    if (!addressBookSetting) return undefined;
-    let found = false;
-    for (const addr of addressBookSetting) {
-      if (addr.address == address) {
-        found = true;
-        break;
-      }
-    }
-    return found;
   };
   const isFlashDisabled = () => {
     // TODO
@@ -200,7 +179,9 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
-      <label className="m-2">Адрес: {address}</label>
+      <label className="m-2">
+        Адрес: {displayEntry(selectedAddressIndex ?? -1) ?? 'выберите из адресной книги'}
+      </label>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
           Узнать адрес...
@@ -208,13 +189,25 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адресная книга
         </button>
-        <button className="btn-primary mr-4" onClick={handlePing} disabled={address == ''}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handlePing}
+          disabled={selectedAddress() === ''}
+        >
           Пинг
         </button>
-        <button className="btn-primary mr-4" onClick={handleReset} disabled={address == ''}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleReset}
+          disabled={selectedAddress() == ''}
+        >
           Сброс
         </button>
-        <button className="btn-primary mr-4" onClick={handleGetMetaData} disabled={address == ''}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleGetMetaData}
+          disabled={selectedAddress() == ''}
+        >
           Получить метаданные
         </button>
       </div>
@@ -261,14 +254,11 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         ))}
       </div>
       <AddressBookModal
-        addressBookSetting={addressBookSetting}
-        setAddressBookSetting={setAddressBookSetting}
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
         onSubmit={(selectedAddress: string) => {
-          setAddress(selectedAddress);
+          setSelectedAddress(selectedAddress);
         }}
-        isDuplicate={isDuplicate}
       ></AddressBookModal>
       <FlashSelect
         addressBookSetting={addressBookSetting}

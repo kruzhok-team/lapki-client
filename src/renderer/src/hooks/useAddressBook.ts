@@ -9,7 +9,9 @@ export const useAddressBook = () => {
 
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
 
-  const [stateMachineIds, setStateMachineIds] = useState<Map<string, number>>(new Map());
+  const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<string, number>>(
+    new Map()
+  );
 
   const [idStorage, setIdStorage] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
@@ -81,7 +83,7 @@ export const useAddressBook = () => {
     }
     setIdStorage(idStorage.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
-    setStateMachineIds((oldValue) => {
+    setStateMachineAddresses((oldValue) => {
       const newValue = new Map(oldValue);
       oldValue.forEach((idx, smId) => {
         if (idx === index) {
@@ -115,8 +117,8 @@ export const useAddressBook = () => {
       }
       return v;
     });
-    const newStateMachineIds = new Map(stateMachineIds);
-    stateMachineIds.forEach((index, smId) => {
+    const newStateMachineIds = new Map(stateMachineAddresses);
+    stateMachineAddresses.forEach((index, smId) => {
       if (index === index1) {
         newStateMachineIds.set(smId, index2);
       } else if (index === index2) {
@@ -130,7 +132,7 @@ export const useAddressBook = () => {
     }
     setAddressBookSetting(newBook);
     setIdStorage(newIdStorage);
-    setStateMachineIds(newStateMachineIds);
+    setStateMachineAddresses(newStateMachineIds);
   };
 
   const selectedAddress = () => {
@@ -160,7 +162,7 @@ export const useAddressBook = () => {
   };
 
   const assignStateMachineToAddress = (stateMachineID: string, addressIndex: number) => {
-    setStateMachineIds((oldValue) => {
+    setStateMachineAddresses((oldValue) => {
       const newValue = new Map(oldValue);
       newValue.set(stateMachineID, addressIndex);
       return newValue;
@@ -178,7 +180,7 @@ export const useAddressBook = () => {
     getID,
     getIndex,
     displayEntry,
-    stateMachineIds,
+    stateMachineAddresses,
     assignStateMachineToAddress,
   };
 };

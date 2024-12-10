@@ -38,7 +38,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     onAdd,
     onRemove,
     onSwapEntries,
-    stateMachineIds,
+    stateMachineAddresses,
     assignStateMachineToAddress,
   } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -279,7 +279,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         onSubmit={() => {
           // TODO
         }}
-        stateMachineIds={stateMachineIds}
+        stateMachineAddresses={stateMachineAddresses}
         assignStateMachineToAddress={assignStateMachineToAddress}
       ></FlashSelect>
     </section>

@@ -9,7 +9,7 @@ import { AddressData } from '@renderer/types/FlasherTypes';
 
 interface FlashSelectMS1Props {
   addressBookSetting: AddressData[] | null;
-  stateMachineIds: Map<string, number>;
+  stateMachineAddresses: Map<string, number>;
   assignStateMachineToAddress: (smId: string, idx: number) => void;
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +18,7 @@ interface FlashSelectMS1Props {
 
 export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   addressBookSetting,
-  stateMachineIds,
+  stateMachineAddresses,
   assignStateMachineToAddress,
   onClose,
   onSubmit,

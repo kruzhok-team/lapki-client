@@ -132,7 +132,7 @@ export const useAddressBook = () => {
   };
 
   const displayEntry = (index: number) => {
-    if (addressBookSetting === null) return null;
+    if (addressBookSetting === null || selectedAddressIndex === null) return null;
     const entry = addressBookSetting[index];
     const name = entry.name === '' ? entry.address : entry.name;
     const type = entry.type ? ` (${entry.type})` : '';

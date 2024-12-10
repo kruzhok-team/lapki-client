@@ -58,7 +58,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     }
   }, [device]);
   useEffect(() => {
-    if (serverAddress == '') return;
+    if (serverAddress === '') return;
     setSelectedAddress(serverAddress);
   }, [serverAddress]);
   useEffect(() => {
@@ -203,14 +203,14 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         <button
           className="btn-primary mr-4"
           onClick={handleReset}
-          disabled={selectedAddress() == ''}
+          disabled={selectedAddress() === ''}
         >
           Сброс
         </button>
         <button
           className="btn-primary mr-4"
           onClick={handleGetMetaData}
-          disabled={selectedAddress() == ''}
+          disabled={selectedAddress() === ''}
         >
           Получить метаданные
         </button>

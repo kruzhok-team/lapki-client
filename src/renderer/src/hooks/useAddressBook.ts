@@ -74,6 +74,9 @@ export const useAddressBook = () => {
   };
   const onRemove = (index: number) => {
     if (addressBookSetting === null) return;
+    if (selectedAddressIndex === index) {
+      setSelectedAddressIndex(null);
+    }
     setIdStorage(idStorage.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
   };

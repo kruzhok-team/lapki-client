@@ -7,6 +7,8 @@ import { useSettings } from './useSettings';
 export const useAddressBook = () => {
   const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
 
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
+
   const [idStorage, setIdStorage] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
   /**
@@ -99,6 +101,11 @@ export const useAddressBook = () => {
       }
       return v;
     });
+    if (index1 === selectedAddressIndex) {
+      setSelectedAddressIndex(index2);
+    } else if (index2 === selectedAddressIndex) {
+      setSelectedAddressIndex(index1);
+    }
     setAddressBookSetting(newBook);
     setIdStorage(newIdStorage);
   };
@@ -128,8 +135,28 @@ export const useAddressBook = () => {
       }) !== undefined
     );
   };
+
+  const selectedAddress = () => {
+    if (addressBookSetting === null || selectedAddressIndex === null) return '';
+    return addressBookSetting[selectedAddressIndex];
+  };
+
+  const setSelectedAddress = (address: string) => {
+    if (addressBookSetting === null) return;
+    const index = addressBookSetting.findIndex((v) => {
+      return v.address === address;
+    });
+    if (index === -1) {
+      setSelectedAddressIndex(addressBookSetting.length);
+      onAdd({ name: '', address: address, type: '', meta: undefined });
+    } else {
+      setSelectedAddressIndex(index);
+    }
+  };
   return {
     addressBookSetting,
+    selectedAddress,
+    setSelectedAddress,
     onAdd,
     onRemove,
     onEdit,

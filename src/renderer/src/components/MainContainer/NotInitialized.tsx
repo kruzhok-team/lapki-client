@@ -38,14 +38,6 @@ const combination = [
       button2: undefined,
     },
   },
-  {
-    name: 'Открыть консоль разработчика',
-    command: {
-      button1: 'Ctrl',
-      button2: 'Shift',
-      button3: 'F12',
-    },
-  },
 ];
 
 export const NotInitialized: React.FC = () => {
@@ -68,14 +60,6 @@ export const NotInitialized: React.FC = () => {
                   <p className="px-1">+</p>
                   <div className="rounded border-b-2 bg-gray-600 px-1 text-gray-300">
                     {value.command.button2}
-                  </div>
-                </>
-              )}
-              {value.command.button3 && (
-                <>
-                  <p className="px-1">+</p>
-                  <div className="rounded border-b-2 bg-gray-600 px-1 text-gray-300">
-                    {value.command.button3}
                   </div>
                 </>
               )}

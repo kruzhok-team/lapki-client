@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
-import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
@@ -13,20 +12,31 @@ import { AddressBookRow } from './AddressBookRow';
 import { AddressEntryEditModal } from './AddressEntryModal';
 
 interface AddressBookModalProps {
+  addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (address: string) => void;
+  onRemove: (index: number) => void;
+  onSwapEntries: (index1: number, index2: number) => void;
+  onAdd: (data: AddressData) => void;
+  onEdit: (data: AddressData, index: number) => void;
+  getID: (index: number) => number | null;
 }
 
 /**
  * Модальное окно с адресной книгой МС-ТЮК.
  */
 export const AddressBookModal: React.FC<AddressBookModalProps> = ({
+  addressBookSetting,
+  onRemove,
+  onSwapEntries,
+  onAdd,
+  onEdit,
+  getID,
   onClose,
   onSubmit,
   ...props
 }) => {
-  const { addressBookSetting, onRemove, onSwapEntries, onAdd, onEdit, getID } = useAddressBook();
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
   const addressEntryEditForm = useForm<AddressData>();
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
@@ -147,6 +157,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         </div>
       </Modal>
       <AddressEntryEditModal
+        addressBookSetting={addressBookSetting}
         form={addressEntryEditForm}
         isOpen={isAddressEnrtyEditOpen}
         onClose={closeAddressEnrtyEdit}
@@ -154,6 +165,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         submitLabel="Сохранить"
       ></AddressEntryEditModal>
       <AddressEntryEditModal
+        addressBookSetting={addressBookSetting}
         form={addressEntryAddForm}
         isOpen={isAddressEnrtyAddOpen}
         onClose={closeAddressEnrtyAdd}

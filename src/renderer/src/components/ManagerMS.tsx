@@ -34,6 +34,10 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     setSelectedAddress,
     onEdit,
     displayEntry,
+    getID,
+    onAdd,
+    onRemove,
+    onSwapEntries,
   } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
@@ -259,6 +263,12 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         onSubmit={(selectedAddress: string) => {
           setSelectedAddress(selectedAddress);
         }}
+        addressBookSetting={addressBookSetting}
+        getID={getID}
+        onAdd={onAdd}
+        onEdit={onEdit}
+        onRemove={onRemove}
+        onSwapEntries={onSwapEntries}
       ></AddressBookModal>
       <FlashSelect
         addressBookSetting={addressBookSetting}

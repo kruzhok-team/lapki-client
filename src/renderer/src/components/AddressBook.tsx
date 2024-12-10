@@ -75,7 +75,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   };
   const addressEntryAddSubmitHandle = (data: AddressData) => {
     addressEntryAddForm.reset();
-    if (selectedEntry === undefined) return;
     onAdd(data);
   };
   const handleEdit = (data: AddressData, index: number) => {

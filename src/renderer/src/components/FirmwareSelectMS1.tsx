@@ -1,9 +1,8 @@
-import { Component, useState } from 'react';
+import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { Checkbox, Modal, Select, SelectOption, TextInput } from '@renderer/components/UI';
-import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
+import { Checkbox, Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -83,19 +82,33 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     );
   };
 
+  const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
+    if (!addressData) return null;
+    return {
+      value: '' + index,
+      label: addressData.name ? addressData.name : addressData.address,
+    };
+  };
+
+  const assignedStateMachineOption = (smId: string) => {
+    if (addressBookSetting === null) return null;
+    const index = stateMachineAddresses.get(smId);
+    if (index === undefined) return null;
+    return stateMachineOption(addressBookSetting[index], index);
+  };
+
   const platformWithoutVersion = (platform: string | undefined) => {
     if (!platform) return '';
     return platform.slice(0, platform.lastIndexOf('-'));
   };
 
   if (addressBookSetting !== null) {
-    addressBookSetting.forEach((entry) => {
+    addressBookSetting.forEach((entry, index) => {
       const key = platformWithoutVersion(entry.type);
       const value = addressOptions.get(key) ?? [];
-      addressOptions.set(key, [
-        ...value,
-        { value: entry.address, label: entry.name ? entry.name : entry.address },
-      ]);
+      // здесь null не будет, так как мы уже делаем проверку addressBookSetting
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      addressOptions.set(key, [...value, stateMachineOption(entry, index)!]);
     });
     const noPlatformOptions = addressOptions.get('');
     if (noPlatformOptions !== undefined) {
@@ -128,6 +141,12 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                     </label>
                     <Select
                       options={addressOptions.get(platformWithoutVersion(sm.platform))}
+                      className="w-52"
+                      isSearchable={false}
+                      placeholder="Выберите адрес..."
+                      noOptionsMessage={() => 'Нет подходящих адресов'}
+                      value={assignedStateMachineOption(id) as SelectOption}
+                      onChange={(opt) => assignStateMachineToAddress(id, Number(opt?.value))}
                     ></Select>
                   </div>
                 )

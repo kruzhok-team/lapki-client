@@ -78,8 +78,20 @@ function createWindow(): BrowserWindow {
     return { action: 'deny' };
   });
 
-  ipcMain.handle('devtools', (_event) => {
+  ipcMain.handle('devtools-open', (_event) => {
     mainWindow.webContents.openDevTools();
+  });
+
+  ipcMain.handle('devtools-close', (_event) => {
+    mainWindow.webContents.closeDevTools();
+  });
+
+  ipcMain.handle('devtools-switch', (_event) => {
+    if (mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+    } else {
+      mainWindow.webContents.openDevTools();
+    }
   });
 
   // Развилка для горячей пересборки через Electron-Vite.

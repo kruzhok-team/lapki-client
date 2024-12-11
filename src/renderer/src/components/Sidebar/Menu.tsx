@@ -121,6 +121,9 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       if (e.code === 'KeyI') {
         return props.onRequestImport(props.setOpenData);
       }
+      if (e.shiftKey && e.code === 'F12') {
+        window.electron.ipcRenderer.invoke('devtools-switch');
+      }
     }
   };
 

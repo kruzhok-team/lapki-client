@@ -121,6 +121,13 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       }
     }
   }
+  const tableTextCell = (text: string) => {
+    return (
+      <label className="'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors">
+        {text}
+      </label>
+    );
+  };
   return (
     <div>
       <Modal
@@ -134,11 +141,10 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
             {stateMachinesId.map(
               ([id, sm]) =>
                 id && (
-                  <div key={id} className="flex items-start">
+                  <div key={id} className="flex w-full items-start">
                     {checkbox(id)}
-                    <label className="'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors">
-                      {sm.name ? sm.name : id}
-                    </label>
+                    {tableTextCell(sm.name ? sm.name : id)}
+                    {tableTextCell(sm.platform)}
                     <Select
                       options={addressOptions.get(platformWithoutVersion(sm.platform))}
                       className="w-52"

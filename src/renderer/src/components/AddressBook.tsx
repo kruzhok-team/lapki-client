@@ -103,22 +103,21 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {addressBookSetting?.length === 0 && (
-              // в адресной книге нулевым элементом является заголовком таблицы, он всегда должен присутствовать;
-              // если массив пуст, то значит таблица ещё не загрузилась;
-              // если таблица, не загрузилась, то скорее всего это произошло, потому что её нет в electron-settings,
-              // перезапуск IDE может помочь в этом случае
+            {addressBookSetting === null ? (
               <p className="mx-2 my-2 flex text-text-inactive">Адресная книга не загрузилась</p>
+            ) : addressBookSetting.length === 0 ? (
+              <p className="mx-2 my-2 flex text-text-inactive">Нет записей в книге</p>
+            ) : (
+              <AddressBookRow
+                // заголовок таблицы
+                isSelected={false}
+                data={{ name: 'Название', address: 'Адрес', type: 'Тип', meta: undefined }}
+                onSelect={() => undefined}
+                onEdit={() => undefined}
+                onDragStart={() => undefined}
+                onDrop={() => undefined}
+              ></AddressBookRow>
             )}
-            <AddressBookRow
-              // заголовок таблицы
-              isSelected={false}
-              data={{ name: 'Название', address: 'Адрес', type: 'Тип', meta: undefined }}
-              onSelect={() => undefined}
-              onEdit={() => undefined}
-              onDragStart={() => undefined}
-              onDrop={() => undefined}
-            ></AddressBookRow>
             {addressBookSetting?.map((field, index) => (
               <div key={getID(index)}>
                 <AddressBookRow
@@ -131,9 +130,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 ></AddressBookRow>
               </div>
             ))}
-            {addressBookSetting?.length === 1 && (
-              <p className="mx-2 my-2 flex text-text-inactive">Нет записей в книге</p>
-            )}
           </div>
           <div className="flex flex-col gap-2">
             <button

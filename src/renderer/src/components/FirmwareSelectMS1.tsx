@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
 import { Checkbox, Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -121,11 +122,43 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       }
     }
   }
-  const tableTextCell = (text: string) => {
+  const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
+    const checked = smId ? isChecked.get(smId) ?? false : false;
+    const textCellClassName =
+      "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
-      <label className="'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors">
-        {text}
-      </label>
+      <div key={smId} className="flex w-full items-start">
+        <Checkbox
+          className={twMerge('ml-1 mr-1 mt-[9px]', !smId && 'opacity-0')}
+          checked={checked}
+          onCheckedChange={() => {
+            if (!smId) return;
+            setIsChecked((oldValue) => {
+              const newValue = new Map(oldValue);
+              newValue.set(smId, !checked);
+              return newValue;
+            });
+          }}
+          disabled={!smId}
+        ></Checkbox>
+        <label className={textCellClassName}>
+          {sm ? (sm.name ? sm.name : smId) : 'Машина состояний'}
+        </label>
+        <label className={textCellClassName}>{sm ? sm.platform : 'Тип'}</label>
+        {smId && sm ? (
+          <Select
+            options={addressOptions.get(platformWithoutVersion(sm.platform))}
+            className="w-52"
+            isSearchable={false}
+            placeholder="Выберите адрес..."
+            noOptionsMessage={() => 'Нет подходящих адресов'}
+            value={assignedStateMachineOption(smId) as SelectOption}
+            onChange={(opt) => assignStateMachineToAddress(smId, Number(opt?.value))}
+          ></Select>
+        ) : (
+          <label className={twMerge(textCellClassName, 'w-56')}>{'Адрес'}</label>
+        )}
+      </div>
     );
   };
   return (
@@ -138,25 +171,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {stateMachinesId.map(
-              ([id, sm]) =>
-                id && (
-                  <div key={id} className="flex w-full items-start">
-                    {checkbox(id)}
-                    {tableTextCell(sm.name ? sm.name : id)}
-                    {tableTextCell(sm.platform)}
-                    <Select
-                      options={addressOptions.get(platformWithoutVersion(sm.platform))}
-                      className="w-52"
-                      isSearchable={false}
-                      placeholder="Выберите адрес..."
-                      noOptionsMessage={() => 'Нет подходящих адресов'}
-                      value={assignedStateMachineOption(id) as SelectOption}
-                      onChange={(opt) => assignStateMachineToAddress(id, Number(opt?.value))}
-                    ></Select>
-                  </div>
-                )
-            )}
+            {rowRender(null, null)}
+            {stateMachinesId.map(([id, sm]) => id && rowRender(id, sm))}
           </div>
         </div>
       </Modal>

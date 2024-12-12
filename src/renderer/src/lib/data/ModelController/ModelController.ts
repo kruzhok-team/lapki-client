@@ -1245,22 +1245,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  private getStatesByParentId(smId: string, parentId: string) {
-    return Object.entries(this.model.data.elements.stateMachines[smId].states).filter(
-      (state) => state[1].parentId === parentId
-    );
+  private getStatesByParentId(
+    smId: string,
+    parentId: string,
+    searchObj = this.model.data.elements.stateMachines[smId].states
+  ) {
+    return Object.entries(searchObj).filter((state) => state[1].parentId === parentId);
   }
 
-  private getChoicesByParentId(smId: string, parentId: string) {
-    return Object.entries(this.model.data.elements.stateMachines[smId].choiceStates).filter(
-      (state) => state[1].parentId === parentId
-    );
+  private getChoicesByParentId(
+    smId: string,
+    parentId: string,
+    searchObj = this.model.data.elements.stateMachines[smId].choiceStates
+  ) {
+    return Object.entries(searchObj).filter((state) => state[1].parentId === parentId);
   }
 
-  private getFinalsByParentId(smId: string, parentId: string) {
-    return Object.entries(this.model.data.elements.stateMachines[smId].finalStates).filter(
-      (state) => state[1].parentId === parentId
-    );
+  private getFinalsByParentId(
+    smId: string,
+    parentId: string,
+    searchObj = this.model.data.elements.stateMachines[smId].finalStates
+  ) {
+    return Object.entries(searchObj).filter((state) => state[1].parentId === parentId);
   }
 
   private getInitialStatesByParentId(smId: string, parentId: string) {
@@ -1863,6 +1869,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       if (!nodeToCopy || !id) continue;
 
+      const state = structuredClone(this.model.data.elements.stateMachines[smId]);
+
       // Тип нужен чтобы отделить ноды при вставке
       let copyType: CopyType = 'state';
       if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
@@ -1878,6 +1886,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         smId: smId,
         type: copyType,
         data: { ...(structuredClone(nodeToCopy) as any), id: id },
+        state: state,
       };
       break;
     }
@@ -1887,7 +1896,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!this.copyData) {
       throw new Error('No copy data!');
     }
-    const { type, data, smId } = this.copyData;
+    const { type, data, smId, state } = this.copyData;
 
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
@@ -1904,25 +1913,27 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         },
       });
 
-      const stateChildrens = this.getStatesByParentId(smId, data.id);
+      const stateChildrens = this.getStatesByParentId(smId, data.id, state.states);
 
-      for (const [id, state] of stateChildrens) {
+      for (const [id, stateData] of stateChildrens) {
         this.copyData = {
           type: 'state',
-          data: { ...state, id, parentId: newState },
+          data: { ...stateData, id, parentId: newState },
           smId: smId,
+          state,
         };
 
         this.pasteSelected();
       }
 
-      const choiceChildrens = this.getChoicesByParentId(smId, data.id);
+      const choiceChildrens = this.getChoicesByParentId(smId, data.id, state.finalStates);
 
-      for (const [id, state] of choiceChildrens) {
+      for (const [id, stateData] of choiceChildrens) {
         this.copyData = {
           type: 'choiceState',
-          data: { ...state, id, parentId: newState },
+          data: { ...stateData, id, parentId: newState },
           smId,
+          state,
         };
         this.pasteSelected();
       }

@@ -268,6 +268,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ sendBins, hasCompileDat
         onClose={closeFlashSelect}
         stateMachineAddresses={stateMachineAddresses}
         assignStateMachineToAddress={assignStateMachineToAddress}
+        selectedFirmwares={selectedFirmwares}
         setSelectedFirmwares={setSelectedFirmwares}
       ></FlashSelect>
     </section>

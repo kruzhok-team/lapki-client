@@ -451,7 +451,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       sm.states[targetId] ||
       sm.notes[targetId] ||
       sm.choiceStates[targetId] ||
-      sm.transitions[targetId];
+      sm.transitions[targetId] ||
+      sm.finalStates[targetId];
 
     if (!source || !target) return;
 

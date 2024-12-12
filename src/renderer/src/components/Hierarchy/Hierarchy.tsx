@@ -267,6 +267,12 @@ export const Hierarchy: React.FC = () => {
         event: mouse,
       });
     }
+    const choiceState = sm.choiceStates[itemId];
+    if (choiceState) {
+      return canvasController.states.handleChoiceStateContextMenu(itemId, {
+        event: mouse,
+      });
+    }
   };
 
   const onDragStart = (item: TreeItem, actions: TreeItemActions) => (e) => {
@@ -349,6 +355,7 @@ export const Hierarchy: React.FC = () => {
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <ControlledTreeEnvironment
+        key={smId}
         items={hierarchy}
         getItemTitle={(item) => item.data.title}
         canDragAndDrop

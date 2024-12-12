@@ -1883,15 +1883,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
-  getAllChildren(smId: string, parentId: string) {
-    return [
-      ...this.getStatesByParentId(smId, parentId),
-      ...this.getChoicesByParentId(smId, parentId),
-      ...this.getFinalsByParentId(smId, parentId),
-      ...this.getInitialStatesByParentId(smId, parentId),
-    ];
-  }
-
   pasteSelected = () => {
     if (!this.copyData) {
       throw new Error('No copy data!');

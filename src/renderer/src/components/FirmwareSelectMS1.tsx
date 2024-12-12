@@ -66,22 +66,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const onAddressChange = (ID: number, address: SelectOption) => {
     // TODO
   };
-  const checkbox = (key: string) => {
-    const checked = isChecked.get(key) ?? false;
-    return (
-      <Checkbox
-        className={'ml-1 mr-1 mt-[9px]'}
-        checked={checked}
-        onCheckedChange={() =>
-          setIsChecked((oldValue) => {
-            const newValue = new Map(oldValue);
-            newValue.set(key, !checked);
-            return newValue;
-          })
-        }
-      ></Checkbox>
-    );
-  };
 
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;

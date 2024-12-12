@@ -1942,16 +1942,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.createFinalState({ ...state, smId, parentId: newState });
       }
 
-      const initials = this.getInitialStatesByParentId(smId, data.id);
-
-      for (const state of initials) {
-        const transitionFrom = this.getBySourceId(smId, state[0]);
-
-        if (!transitionFrom) continue;
-
-        this.createInitialStateWithTransition(smId, transitionFrom[1].targetId);
-      }
-
       this.copyData = prevCopy;
 
       return;

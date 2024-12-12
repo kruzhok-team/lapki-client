@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { AddressData } from '@renderer/types/FlasherTypes';
+import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { useSettings } from './useSettings';
 
@@ -12,6 +12,8 @@ export const useAddressBook = () => {
   const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<string, number>>(
     new Map()
   );
+
+  const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
 
   const [idStorage, setIdStorage] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
@@ -182,5 +184,7 @@ export const useAddressBook = () => {
     displayEntry,
     stateMachineAddresses,
     assignStateMachineToAddress,
+    selectedFirmwares,
+    setSelectedFirmwares,
   };
 };

@@ -196,3 +196,12 @@ export enum PlatformType {
   Arduino,
   MS1,
 }
+
+// выбранные для прошивки МС-ТЮК платы
+export type SelectedMsFirmwaresType = {
+  address: string;
+  firmware: {
+    source: string;
+    isFile: boolean;
+  };
+};

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
@@ -6,15 +6,15 @@ import { twMerge } from 'tailwind-merge';
 import { Checkbox, Modal, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
-import { AddressData } from '@renderer/types/FlasherTypes';
+import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 interface FlashSelectMS1Props {
   addressBookSetting: AddressData[] | null;
   stateMachineAddresses: Map<string, number>;
   assignStateMachineToAddress: (smId: string, idx: number) => void;
+  setSelectedFirmwares: Dispatch<SetStateAction<SelectedMsFirmwaresType[]>>;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (address: string) => void;
 }
 
 export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
@@ -22,7 +22,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   stateMachineAddresses,
   assignStateMachineToAddress,
   onClose,
-  onSubmit,
   ...props
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm();
@@ -57,7 +56,26 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     // TODO
   };
   const handleSubmit = hookHandleSubmit(() => {
-    // TODO
+    if (addressBookSetting === null) {
+      onClose();
+      return;
+    }
+    const submitFirmwares: SelectedMsFirmwaresType[] = [];
+    isChecked.forEach((checked: boolean, smId: string) => {
+      if (checked) {
+        const addressIndex = stateMachineAddresses.get(smId);
+        if (addressIndex === undefined) {
+          return;
+        }
+        submitFirmwares.push({
+          address: addressBookSetting[addressIndex].address,
+          firmware: {
+            isFile: false,
+            source: smId,
+          },
+        });
+      }
+    });
     onClose();
   });
   const onCheck = (ID: number) => {

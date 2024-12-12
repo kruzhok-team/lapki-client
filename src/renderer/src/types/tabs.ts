@@ -1,6 +1,4 @@
-import { Device } from '@renderer/components/Modules/Device';
-
-import { CompilerResult } from './CompilerTypes';
+import { SelectedMsFirmwaresType } from './FlasherTypes';
 
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
@@ -25,8 +23,8 @@ export interface SerialMonitorTab {
 export interface ManagerMSTab {
   type: 'managerMS';
   name: string;
-  devices: Map<string, Device>;
-  compilerData: CompilerResult | undefined;
+  sendBins: (firmwares: SelectedMsFirmwaresType[], verification: boolean) => void;
+  hasCompileData: (stateMachineId: string) => boolean;
 }
 
 export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

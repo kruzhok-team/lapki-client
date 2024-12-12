@@ -1,32 +1,26 @@
 /*
 Окно менеджера для МС-ТЮК
 */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
-import { PlatformType } from '@renderer/types/FlasherTypes';
+import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlashSelect } from './FirmwareSelectMS1';
-import { Device, MSDevice } from './Modules/Device';
-import { Flasher } from './Modules/Flasher';
 import { ManagerMS } from './Modules/ManagerMS';
-import { Select, Switch } from './UI';
+import { Switch } from './UI';
 
 export interface ManagerMSProps {
-  devices: Map<string, Device>;
-  compilerData: CompilerResult | undefined;
+  sendBins: (firmwares: SelectedMsFirmwaresType[], verification: boolean) => void;
+  hasCompileData: (stateMachineId: string) => boolean;
 }
 
-export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }) => {
+export const ManagerMSTab: React.FC<ManagerMSProps> = ({ sendBins, hasCompileData }) => {
   const { device, log, setLog, address: serverAddress, meta } = useManagerMS();
-  const { device: serialMonitorDevice, connectionStatus: serialConnectionStatus } =
-    useSerialMonitor();
   const {
     addressBookSetting,
     selectedAddress,
@@ -40,6 +34,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     onSwapEntries,
     stateMachineAddresses,
     assignStateMachineToAddress,
+    selectedFirmwares,
     setSelectedFirmwares,
   } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -162,23 +157,13 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
     setLog(() => []);
   };
   const isFlashDisabled = () => {
-    // TODO
-    // if (address === '') {
-    //   return true;
-    // }
-    // if (!binOption) {
-    //   return true;
-    // }
-    // if (binOption.value != fileOption) {
-    //   if (!compilerData) {
-    //     return true;
-    //   }
-    //   const binData = compilerData.state_machines[binOption.value].binary;
-    //   if (!binData || binData.length === 0) {
-    //     return true;
-    //   }
-    // }
-    return false;
+    if (selectedFirmwares.length === 0) return true;
+    return !selectedFirmwares.every((item) => {
+      if (!item.firmware.isFile) {
+        return hasCompileData(item.firmware.source);
+      }
+      return true;
+    });
   };
   if (!managerMSSetting) {
     return null;
@@ -219,7 +204,11 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ devices, compilerData }
         </button>
       </div>
       <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={handleSendBin} disabled={isFlashDisabled()}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => sendBins(selectedFirmwares, managerMSSetting.verification)}
+          disabled={isFlashDisabled()}
+        >
           Отправить bin...
         </button>
         <button className="btn-primary mr-4" onClick={openFlashSelect}>

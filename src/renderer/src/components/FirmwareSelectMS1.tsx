@@ -21,6 +21,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   addressBookSetting,
   stateMachineAddresses,
   assignStateMachineToAddress,
+  setSelectedFirmwares,
   onClose,
   ...props
 }) => {
@@ -76,6 +77,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         });
       }
     });
+    setSelectedFirmwares(submitFirmwares);
     onClose();
   });
   const onCheck = (ID: number) => {

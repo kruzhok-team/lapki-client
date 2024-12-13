@@ -1,5 +1,3 @@
-import { SelectedMsFirmwaresType } from './FlasherTypes';
-
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
 export interface EditorTab {
@@ -23,8 +21,6 @@ export interface SerialMonitorTab {
 export interface ManagerMSTab {
   type: 'managerMS';
   name: string;
-  sendBins: (firmwares: SelectedMsFirmwaresType[], verification: boolean) => void;
-  hasCompileData: (stateMachineId: string) => boolean;
 }
 
 export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

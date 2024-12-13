@@ -58,7 +58,7 @@ export const Tabs: React.FC = () => {
       case 'serialMonitor':
         return <SerialMonitorTab />;
       case 'managerMS':
-        return <ManagerMSTab hasCompileData={item.hasCompileData} sendBins={item.sendBins} />;
+        return <ManagerMSTab />;
       default:
         return undefined;
     }

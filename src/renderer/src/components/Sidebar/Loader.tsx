@@ -238,50 +238,6 @@ export const Loader: React.FC<FlasherProps> = ({
     });
   };
 
-  const hasCompileData = (smId: string) => {
-    if (!compilerData) return false;
-    const data = compilerData.state_machines[smId];
-    return data && data.binary && data.binary.length !== 0;
-  };
-
-  const handleSendBinsMs = (firmwares: SelectedMsFirmwaresType[], verification: boolean) => {
-    if (!deviceMS) {
-      ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
-      return;
-    }
-    firmwares.forEach((item) => {
-      if (item.firmware.isFile) {
-        // TODO
-      } else {
-        if (!compilerData) return;
-        const smData = compilerData.state_machines[item.firmware.source];
-        if (!smData || !smData.binary || smData.binary.length === 0) {
-          const sm = stateMachinesId[item.firmware.source];
-          const noAddressFlashMsg = `Загрузка по адресу ${item.address} невозможна!`;
-          if (!sm) {
-            ManagerMS.addLog(
-              `Ошибка! Не удаётся найти машину состояния по её ID ${item.firmware.source}. ${noAddressFlashMsg}`
-            );
-            return;
-          }
-          ManagerMS.addLog(
-            `Ошибка! Отсутствуют бинарные данные для машины состояния ${
-              sm.name ? sm.name : item.firmware.source
-            }. ${noAddressFlashMsg}`
-          );
-          return;
-        }
-        ManagerMS.binAdd({
-          address: item.address,
-          device: deviceMS,
-          verification: verification,
-          binaries: smData.binary,
-        });
-      }
-    });
-    ManagerMS.binStart();
-  };
-
   const handleAddManagerMSTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
     setDeviceMS(curDevice as MSDevice);
@@ -289,8 +245,6 @@ export const Loader: React.FC<FlasherProps> = ({
     openTab(modelController, {
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
-      sendBins: handleSendBinsMs,
-      hasCompileData: hasCompileData,
     });
   };
 

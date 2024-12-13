@@ -40,8 +40,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   });
   const addressOptions = new Map<string, SelectOption[]>();
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
-  // индекс записи для переноса при начале drag
-  const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
   const restoreChecks = () => {
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {
@@ -54,22 +52,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const closeWithChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
     onClose();
     restoreChecks();
-  };
-  const onRemoveFile = () => {
-    // TODO
-  };
-  const onAddFile = () => {
-    // TODO
-  };
-  /**
-   * замена двух записей при drag&drop
-   * @param index - индекс второй записи, при drop, первая запись берётся из {@link dragIndex}
-   */
-  const onSwapEntries = (index: number) => {
-    // TODO
-  };
-  const onDragStart = (index: number) => {
-    // TODO
   };
   const handleSubmit = hookHandleSubmit(() => {
     if (addressBookSetting === null) {
@@ -95,13 +77,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     setSelectedFirmwares(submitFirmwares);
     closeWithChecks(submitFirmwares);
   });
-  const onCheck = (ID: number) => {
-    // TODO
-  };
-  const onAddressChange = (ID: number, address: SelectOption) => {
-    // TODO
-  };
-
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;
     return {

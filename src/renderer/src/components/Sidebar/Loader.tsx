@@ -14,7 +14,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { StateMachine } from '@renderer/types/diagram';
-import { FlashResult, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
+import { FlashResult } from '@renderer/types/FlasherTypes';
 
 import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
 import { ManagerMS } from '../Modules/ManagerMS';

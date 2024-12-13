@@ -45,11 +45,10 @@ export class ArduinoDevice extends Device {
 
 export class MSDevice extends Device {
   portNames: string[];
-  address: string | undefined;
+  //address: string | undefined;
   constructor(device: MSDevice) {
     super(device);
     this.portNames = device.portNames;
-    this.address = undefined;
   }
 
   displayName(): string {

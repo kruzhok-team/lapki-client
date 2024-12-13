@@ -14,7 +14,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { StateMachine } from '@renderer/types/diagram';
-import { FlashResult, PlatformType, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
+import { FlashResult, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
 import { ManagerMS } from '../Modules/ManagerMS';
@@ -270,16 +270,15 @@ export const Loader: React.FC<FlasherProps> = ({
           );
           return;
         }
-        Flasher.setBinary(smData.binary, PlatformType.MS1);
+        ManagerMS.binAdd({
+          address: item.address,
+          device: deviceMS,
+          verification: verification,
+          binaries: smData.binary,
+        });
       }
-      ManagerMS.binStart(
-        deviceMS,
-        item.address,
-        verification,
-        serialMonitorDevice,
-        serialConnectionStatus
-      );
     });
+    ManagerMS.binStart();
   };
 
   const handleAddManagerMSTab = () => {

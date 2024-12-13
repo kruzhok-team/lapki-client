@@ -14,7 +14,6 @@ import {
   FlasherPayload,
   FlasherType,
   MetaDataID,
-  PlatformType,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -154,30 +153,38 @@ export class Flasher extends ClientWS {
     }
     this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
     this.currentFlashingDevice = undefined;
+    ManagerMS.binStart();
   }
 
   static refresh(): void {
     this.filePos = 0;
   }
 
-  static setBinary(binaries: Array<Binary>, platformType: PlatformType) {
+  static extractBinaries(binaries: Array<Binary>, device: Device) {
     let ending: string;
-    switch (platformType) {
-      case PlatformType.Arduino:
-        ending = 'ino.hex';
-        break;
-      case PlatformType.MS1:
-        ending = '.bin';
-        break;
-      default:
-        throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
+    if (device.isArduinoDevice()) {
+      ending = 'ino.hex';
+    } else if (device.isMSDevice()) {
+      ending = '.bin';
+    } else {
+      throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
     }
-    binaries.map((bin) => {
+    for (const bin of binaries) {
       if (bin.extension.endsWith(ending)) {
-        Flasher.binary = bin.fileContent as Blob;
-        return;
+        return bin.fileContent as Blob;
       }
-    });
+    }
+    return null;
+  }
+
+  static setBinary(binaries: Array<Binary>, device: Device) {
+    const extracted = this.extractBinaries(binaries, device);
+    if (extracted === null) {
+      throw new Error(
+        `Не удаётся извлечь бинарные данные для устройства ${device.displayName()}. Переданный бинарный массив: ${binaries}`
+      );
+    }
+    Flasher.binary = extracted;
   }
 
   static async setFile() {
@@ -243,7 +250,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    this.setBinary(binaries, PlatformType.Arduino);
+    this.setBinary(binaries, device);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 

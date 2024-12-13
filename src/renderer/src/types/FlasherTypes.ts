@@ -1,4 +1,6 @@
-import { ArduinoDevice, Device } from '@renderer/components/Modules/Device';
+import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
+
+import { Binary } from './CompilerTypes';
 
 export type FlasherData = {
   devices: Map<string, Device>;
@@ -192,11 +194,6 @@ export interface MetaDataID extends MetaData {
   type: string; // тип устройства (определяется по RefBlHw)
 }
 
-export enum PlatformType {
-  Arduino,
-  MS1,
-}
-
 // выбранные для прошивки МС-ТЮК платы
 export type SelectedMsFirmwaresType = {
   address: string;
@@ -204,4 +201,11 @@ export type SelectedMsFirmwaresType = {
     source: string;
     isFile: boolean;
   };
+};
+
+export type BinariesMsType = {
+  device: MSDevice;
+  address: string;
+  verification: boolean;
+  binaries: Array<Binary>;
 };

@@ -1,6 +1,5 @@
 import { UseFormReturn } from 'react-hook-form';
 
-import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { Modal } from './UI';

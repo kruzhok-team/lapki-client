@@ -149,7 +149,7 @@ export class Flasher extends ClientWS {
     if (this.currentFlashingDevice instanceof ArduinoDevice) {
       this.setFlasherLog(result);
     } else {
-      ManagerMS.addLog(result);
+      ManagerMS.flashingAddressEndLog(result);
     }
     this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
     this.currentFlashingDevice = undefined;
@@ -209,7 +209,7 @@ export class Flasher extends ClientWS {
   }
   /**
    * Эту функцию следует вызывать перед прошивкой. Она проверяет наличие бинарных данных для прошивки,
-   * оповещает пользователя, закрывает монитор порта для arduino.
+   * закрывает монитор порта для arduino.
    * @param device устройство на которое будет загружена прошивка
    * @param serialMonitorDevice устройство для которого открыт монитор порта
    * @param serialConnectionStatus статус монитора порта
@@ -236,12 +236,6 @@ export class Flasher extends ClientWS {
     }
     this.currentFlashingDevice = device;
     this.refresh();
-    const loading: string = 'Идет загрузка...';
-    if (device instanceof ArduinoDevice) {
-      this.setFlasherLog(loading);
-    } else {
-      ManagerMS.addLog(loading);
-    }
   }
 
   static flashCompiler(
@@ -260,6 +254,7 @@ export class Flasher extends ClientWS {
     serialConnectionStatus: string = ''
   ) {
     this.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
+    this.setFlasherLog('Идёт загрузка...');
     this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,

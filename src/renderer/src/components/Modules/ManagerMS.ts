@@ -1,6 +1,6 @@
 import { BinariesMsType, MetaDataID } from '@renderer/types/FlasherTypes';
 
-import { Device, MSDevice } from './Device';
+import { MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
@@ -19,6 +19,7 @@ export class ManagerMS {
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
   ]);
   private static flashQueue: BinariesMsType[] = [];
+  private static flashingAddress = '';
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
@@ -39,6 +40,8 @@ export class ManagerMS {
     if (!binariesInfo) return;
     Flasher.setBinary(binariesInfo.binaries, binariesInfo.device);
     Flasher.flashPreparation(binariesInfo.device);
+    this.flashingAddress = binariesInfo.address;
+    ManagerMS.flashingAddressLog('Начат процесс прошивки...');
     Flasher.send('ms-bin-start', {
       deviceID: binariesInfo.device.deviceID,
       fileSize: Flasher.binary.size,
@@ -60,6 +63,13 @@ export class ManagerMS {
   static addLog(log: string) {
     this.setLog((prevMessages) => [...prevMessages, log]);
   }
+  static flashingAddressLog(log: string) {
+    ManagerMS.addLog(`${this.flashingAddress}: ${log}`);
+  }
+  static flashingAddressEndLog(log: string) {
+    ManagerMS.flashingAddressLog(log);
+    this.flashingAddress = '';
+  }
   static reset(deviceID: string, address: string) {
     Flasher.send('ms-reset', {
       deviceID: deviceID,
@@ -76,9 +86,11 @@ export class ManagerMS {
     const msg = this.backtrackMap.get(log);
     const status = 'Статус загрузки';
     if (msg) {
-      ManagerMS.addLog(`${status}: ${msg}`);
+      ManagerMS.flashingAddressLog(`${status}: ${msg}`);
     } else {
-      ManagerMS.addLog(`${status}: получено неизвестное сообщение (${log}) от загрузчика`);
+      ManagerMS.flashingAddressLog(
+        `${status}: получено неизвестное сообщение (${log}) от загрузчика`
+      );
     }
   }
 }

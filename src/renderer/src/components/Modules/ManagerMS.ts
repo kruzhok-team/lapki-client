@@ -1,4 +1,4 @@
-import { BinariesMsType, MetaDataID } from '@renderer/types/FlasherTypes';
+import { AddressData, BinariesMsType, MetaDataID } from '@renderer/types/FlasherTypes';
 
 import { MSDevice } from './Device';
 import { Flasher } from './Flasher';
@@ -40,12 +40,12 @@ export class ManagerMS {
     if (!binariesInfo) return;
     Flasher.setBinary(binariesInfo.binaries, binariesInfo.device);
     Flasher.flashPreparation(binariesInfo.device);
-    this.flashingAddress = binariesInfo.address;
+    this.flashingAddress = this.displayAddressInfo(binariesInfo.addressInfo);
     ManagerMS.flashingAddressLog('Начат процесс прошивки...');
     Flasher.send('ms-bin-start', {
       deviceID: binariesInfo.device.deviceID,
       fileSize: Flasher.binary.size,
-      address: binariesInfo.address,
+      address: binariesInfo.addressInfo.address,
       verification: binariesInfo.verification,
     });
   }
@@ -92,5 +92,10 @@ export class ManagerMS {
         `${status}: получено неизвестное сообщение (${log}) от загрузчика`
       );
     }
+  }
+  static displayAddressInfo(addressInfo: AddressData) {
+    const name = addressInfo.name === '' ? addressInfo.address : addressInfo.name;
+    const type = addressInfo.type ? ` (${addressInfo.type})` : '';
+    return name + type;
   }
 }

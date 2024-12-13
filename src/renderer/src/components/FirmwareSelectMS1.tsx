@@ -84,7 +84,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
           return;
         }
         submitFirmwares.push({
-          address: addressBookSetting[addressIndex].address,
+          addressInfo: addressBookSetting[addressIndex],
           firmware: {
             isFile: false,
             source: smId,

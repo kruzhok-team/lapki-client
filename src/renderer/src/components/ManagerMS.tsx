@@ -152,12 +152,12 @@ export const ManagerMSTab: React.FC = () => {
         const smData = compilerData.state_machines[item.firmware.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(
-            `Ошибка! Загрузка по адресу ${item.address} невозможна! Отсутствуют бинарные данные для машины состояния ${item.firmware.source}.`
+            `Ошибка! Загрузка по адресу ${item.addressInfo} невозможна! Отсутствуют бинарные данные для машины состояния ${item.firmware.source}.`
           );
           return;
         }
         ManagerMS.binAdd({
-          address: item.address,
+          addressInfo: item.addressInfo,
           device: device,
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,

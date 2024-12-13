@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { useSettings } from './useSettings';
@@ -157,10 +158,7 @@ export const useAddressBook = () => {
 
   const displayEntry = (index: number) => {
     if (addressBookSetting === null || selectedAddressIndex === null) return null;
-    const entry = addressBookSetting[index];
-    const name = entry.name === '' ? entry.address : entry.name;
-    const type = entry.type ? ` (${entry.type})` : '';
-    return name + type;
+    return ManagerMS.displayAddressInfo(addressBookSetting[index]);
   };
 
   const assignStateMachineToAddress = (stateMachineID: string, addressIndex: number) => {

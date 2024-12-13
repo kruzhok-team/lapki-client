@@ -109,29 +109,6 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ sendBins, hasCompileDat
   const handleOpenAddressBook = () => {
     openAddressBook();
   };
-  const handleSendBin = async () => {
-    // TODO
-    // if (!device || !binOption) return;
-    // if (binOption.value === fileOption) {
-    //   let isOk = false;
-    //   await Flasher.setFile().then((isOpen: boolean) => {
-    //     isOk = isOpen;
-    //   });
-    //   if (!isOk) return;
-    // } else {
-    //   if (!compilerData) return;
-    //   const binData = compilerData.state_machines[binOption.value].binary;
-    //   if (!binData || binData.length === 0) return;
-    //   Flasher.setBinary(binData, PlatformType.MS1);
-    // }
-    // ManagerMS.binStart(
-    //   device,
-    //   address,
-    //   managerMSSetting?.verification,
-    //   serialMonitorDevice,
-    //   serialConnectionStatus
-    // );
-  };
   const handlePing = () => {
     if (!device) return;
     ManagerMS.ping(device.deviceID, selectedAddress());

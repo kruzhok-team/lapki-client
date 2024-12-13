@@ -105,14 +105,14 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       addressOptions.set(key, [...value, stateMachineOption(entry, index)!]);
     });
-    const noPlatformOptions = addressOptions.get('');
-    if (noPlatformOptions !== undefined) {
-      for (const key of addressOptions.keys()) {
-        if (key === '') continue;
-        const options = addressOptions.get(key);
-        if (options !== undefined) {
-          addressOptions.set(key, options.concat(noPlatformOptions));
-        }
+  }
+  const noPlatformOptions = addressOptions.get('');
+  if (noPlatformOptions !== undefined) {
+    for (const key of addressOptions.keys()) {
+      if (key === '') continue;
+      const options = addressOptions.get(key);
+      if (options !== undefined) {
+        addressOptions.set(key, options.concat(noPlatformOptions));
       }
     }
   }
@@ -141,7 +141,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         <label className={textCellClassName}>{sm ? sm.platform : 'Тип'}</label>
         {smId && sm ? (
           <Select
-            options={addressOptions.get(platformWithoutVersion(sm.platform))}
+            options={addressOptions.get(platformWithoutVersion(sm.platform)) ?? noPlatformOptions}
             className="w-52"
             isSearchable={false}
             placeholder="Выберите адрес..."

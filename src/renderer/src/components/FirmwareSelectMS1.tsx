@@ -213,7 +213,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     <div>
       <Modal
         {...props}
-        onRequestClose={() => closeWithChecks(selectedFirmwares)}
+        onRequestClose={() => closeWithChecks()}
         title="Выбор прошивок для загрузки"
         onSubmit={handleSubmit}
         submitLabel="Выбрать"

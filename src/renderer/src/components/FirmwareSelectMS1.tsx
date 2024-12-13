@@ -41,7 +41,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const addressOptions = new Map<string, SelectOption[]>();
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
-  const [checkedAll, setCheckedAll] = useState<boolean>(true);
+  const [checkedAll, setCheckedAll] = useState<boolean>(false);
   const restoreChecks = () => {
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {

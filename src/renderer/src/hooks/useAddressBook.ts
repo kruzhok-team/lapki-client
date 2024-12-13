@@ -139,7 +139,13 @@ export const useAddressBook = () => {
   };
 
   const selectedAddress = () => {
-    if (addressBookSetting === null || selectedAddressIndex === null) return '';
+    if (
+      addressBookSetting === null ||
+      selectedAddressIndex === null ||
+      selectedAddressIndex >= addressBookSetting.length ||
+      selectedAddressIndex < 0
+    )
+      return '';
     return addressBookSetting[selectedAddressIndex].address;
   };
 
@@ -149,15 +155,21 @@ export const useAddressBook = () => {
       return v.address === address;
     });
     if (index === -1) {
-      setSelectedAddressIndex(addressBookSetting.length);
       onAdd({ name: '', address: address, type: '', meta: undefined });
+      setSelectedAddressIndex(addressBookSetting.length);
     } else {
       setSelectedAddressIndex(index);
     }
   };
 
   const displayEntry = (index: number) => {
-    if (addressBookSetting === null || selectedAddressIndex === null) return null;
+    if (
+      addressBookSetting === null ||
+      selectedAddressIndex === null ||
+      index < 0 ||
+      index >= addressBookSetting.length
+    )
+      return null;
     return ManagerMS.displayAddressInfo(addressBookSetting[index]);
   };
 

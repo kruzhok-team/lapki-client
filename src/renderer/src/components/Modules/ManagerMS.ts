@@ -9,7 +9,7 @@ export class ManagerMS {
   static setAddress: (curAddress: string) => void;
   static setMeta: (curMeta: MetaDataID) => void;
   private static backtrackMap: Map<string, string> = new Map([
-    ['PING', 'отравка пинга на устройство...'],
+    ['PING', 'отправка пинга на устройство...'],
     ['PREPARE_FIRMWARE', 'открытие прошивки и формирование пакетов...'],
     ['CHANGE_MODE_TO_PROG', 'перевод в режим программирования...'],
     ['CHANGE_MODE_TO_RUN', 'запуск загруженной прошивки...'],

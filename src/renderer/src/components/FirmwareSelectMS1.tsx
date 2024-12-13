@@ -40,7 +40,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   });
   const addressOptions = new Map<string, SelectOption[]>();
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
-  const restoreChecks = () => {
+  const restoreChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {
       selectedFirmwares.forEach((item) => {
@@ -51,7 +51,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   };
   const closeWithChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
     onClose();
-    restoreChecks();
+    restoreChecks(selectedFirmwares);
   };
   const handleSubmit = hookHandleSubmit(() => {
     if (addressBookSetting === null) {

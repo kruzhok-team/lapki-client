@@ -7,20 +7,14 @@ import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlashSelect } from './FirmwareSelectMS1';
 import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
 
-export interface ManagerMSProps {
-  sendBins: (firmwares: SelectedMsFirmwaresType[], verification: boolean) => void;
-  hasCompileData: (stateMachineId: string) => boolean;
-}
-
-export const ManagerMSTab: React.FC<ManagerMSProps> = ({ sendBins, hasCompileData }) => {
-  const { device, log, setLog, address: serverAddress, meta } = useManagerMS();
+export const ManagerMSTab: React.FC = () => {
+  const { device, log, setLog, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,
     selectedAddress,
@@ -137,10 +131,40 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ sendBins, hasCompileDat
     if (selectedFirmwares.length === 0) return true;
     return !selectedFirmwares.every((item) => {
       if (!item.firmware.isFile) {
-        return hasCompileData(item.firmware.source);
+        if (!compilerData) return false;
+        const data = compilerData.state_machines[item.firmware.source];
+        return data && data.binary && data.binary.length !== 0;
       }
       return true;
     });
+  };
+
+  const handleSendBin = () => {
+    if (!device) {
+      ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
+      return;
+    }
+    selectedFirmwares.forEach((item) => {
+      if (item.firmware.isFile) {
+        // TODO
+      } else {
+        if (!compilerData) return;
+        const smData = compilerData.state_machines[item.firmware.source];
+        if (!smData || !smData.binary || smData.binary.length === 0) {
+          ManagerMS.addLog(
+            `Ошибка! Загрузка по адресу ${item.address} невозможна! Отсутствуют бинарные данные для машины состояния ${item.firmware.source}.`
+          );
+          return;
+        }
+        ManagerMS.binAdd({
+          address: item.address,
+          device: device,
+          verification: managerMSSetting ? managerMSSetting.verification : false,
+          binaries: smData.binary,
+        });
+      }
+    });
+    ManagerMS.binStart();
   };
   if (!managerMSSetting) {
     return null;
@@ -183,7 +207,7 @@ export const ManagerMSTab: React.FC<ManagerMSProps> = ({ sendBins, hasCompileDat
       <div className="m-2 flex">
         <button
           className="btn-primary mr-4"
-          onClick={() => sendBins(selectedFirmwares, managerMSSetting.verification)}
+          onClick={() => handleSendBin()}
           disabled={isFlashDisabled()}
         >
           Отправить bin...

@@ -39,9 +39,10 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     return sm.platform.startsWith('tjc');
   });
   const addressOptions = new Map<string, SelectOption[]>();
+  const [errors, setErrors] = useState<Map<string, string>>(new Map());
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
-  const restoreChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
+  const restoreChecks = () => {
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {
       selectedFirmwares.forEach((item) => {
@@ -53,20 +54,34 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       setCheckedAll(false);
     }
   };
-  const closeWithChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
+  const closeWithChecks = () => {
+    setErrors(new Map());
     onClose();
-    restoreChecks(selectedFirmwares);
+    restoreChecks();
   };
   const handleSubmit = hookHandleSubmit(() => {
     if (addressBookSetting === null) {
-      closeWithChecks(selectedFirmwares);
+      closeWithChecks();
       return;
     }
     const submitFirmwares: SelectedMsFirmwaresType[] = [];
-    isChecked.forEach((checked: boolean, smId: string) => {
+    const checks = isChecked;
+    if (checkedAll) {
+      stateMachinesId.forEach(([smId]) => {
+        checks.set(smId, true);
+      });
+    }
+    let canSubmit = true;
+    checks.forEach((checked: boolean, smId: string) => {
       if (checked) {
         const addressIndex = stateMachineAddresses.get(smId);
         if (addressIndex === undefined) {
+          setErrors((oldValue) => {
+            canSubmit = false;
+            const newValue = new Map(oldValue);
+            newValue.set(smId, 'Выберите адрес или уберите галочку');
+            return newValue;
+          });
           return;
         }
         submitFirmwares.push({
@@ -78,8 +93,11 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         });
       }
     });
-    setSelectedFirmwares(submitFirmwares);
-    closeWithChecks(submitFirmwares);
+    if (canSubmit) {
+      setErrors(new Map());
+      setSelectedFirmwares(submitFirmwares);
+      onClose();
+    }
   });
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;
@@ -120,53 +138,74 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       }
     }
   }
+  const clearError = (smId: string) => {
+    setErrors((oldValue) => {
+      const newValue = new Map(oldValue);
+      newValue.set(smId, '');
+      return newValue;
+    });
+  };
   const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
     const checked = checkedAll || (smId ? isChecked.get(smId) ?? false : false);
     const textCellClassName =
       "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
-      <div key={smId} className="flex w-full items-start">
-        <Checkbox
-          className={twMerge('ml-1 mr-1 mt-[9px]', !smId && 'opacity-0')}
-          checked={checked}
-          onCheckedChange={() => {
-            if (!smId) return;
-            if (checkedAll) {
-              setIsChecked(() => {
-                const newMap = new Map();
-                stateMachinesId.forEach(([curSmId]) => {
-                  newMap.set(curSmId, curSmId !== smId);
+      <div key={smId}>
+        <div className="flex w-full items-start">
+          <Checkbox
+            className={twMerge('ml-1 mr-1 mt-[9px]', !smId && 'opacity-0')}
+            checked={checked}
+            onCheckedChange={() => {
+              if (!smId) return;
+              if (checkedAll) {
+                setIsChecked(() => {
+                  const newMap = new Map();
+                  stateMachinesId.forEach(([curSmId]) => {
+                    if (isChecked.get(curSmId) && errors.get(smId)) {
+                      clearError(smId);
+                    }
+                    newMap.set(curSmId, curSmId !== smId);
+                  });
+                  return newMap;
                 });
-                return newMap;
+                setCheckedAll(!checkedAll);
+                return;
+              }
+              if (checked && errors.get(smId)) {
+                clearError(smId);
+              }
+              setIsChecked((oldValue) => {
+                const newValue = new Map(oldValue);
+                newValue.set(smId, !checked);
+                return newValue;
               });
-              setCheckedAll(!checkedAll);
-              return;
-            }
-            setIsChecked((oldValue) => {
-              const newValue = new Map(oldValue);
-              newValue.set(smId, !checked);
-              return newValue;
-            });
-          }}
-          disabled={!smId}
-        ></Checkbox>
-        <label className={textCellClassName}>
-          {sm ? (sm.name ? sm.name : smId) : 'Машина состояний'}
-        </label>
-        <label className={textCellClassName}>{sm ? sm.platform : 'Тип'}</label>
-        {smId && sm ? (
-          <Select
-            options={addressOptions.get(platformWithoutVersion(sm.platform)) ?? noPlatformOptions}
-            className="w-52"
-            isSearchable={false}
-            placeholder="Выберите адрес..."
-            noOptionsMessage={() => 'Нет подходящих адресов'}
-            value={assignedStateMachineOption(smId) as SelectOption}
-            onChange={(opt) => assignStateMachineToAddress(smId, Number(opt?.value))}
-          ></Select>
-        ) : (
-          <label className={twMerge(textCellClassName, 'w-56')}>{'Адрес'}</label>
-        )}
+            }}
+            disabled={!smId}
+          ></Checkbox>
+          <label className={textCellClassName}>
+            {sm ? (sm.name ? sm.name : smId) : 'Машина состояний'}
+          </label>
+          <label className={textCellClassName}>{sm ? sm.platform : 'Тип'}</label>
+          {smId && sm ? (
+            <Select
+              options={addressOptions.get(platformWithoutVersion(sm.platform)) ?? noPlatformOptions}
+              className="w-52"
+              isSearchable={false}
+              placeholder="Выберите адрес..."
+              noOptionsMessage={() => 'Нет подходящих адресов'}
+              value={assignedStateMachineOption(smId) as SelectOption}
+              onChange={(opt) => {
+                assignStateMachineToAddress(smId, Number(opt?.value));
+                if (errors.get(smId)) {
+                  clearError(smId);
+                }
+              }}
+            ></Select>
+          ) : (
+            <label className={twMerge(textCellClassName, 'w-56')}>{'Адрес'}</label>
+          )}
+        </div>
+        <p className="pl-[120px] text-sm text-error">{smId ? errors.get(smId) : ''}</p>
       </div>
     );
   };
@@ -191,6 +230,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                   onCheckedChange={() => {
                     setIsChecked(new Map());
                     setCheckedAll(!checkedAll);
+                    setErrors(new Map());
                   }}
                 ></Checkbox>
                 <label className="mt-[9px]">{'Выбрать всё'}</label>

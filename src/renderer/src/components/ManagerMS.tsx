@@ -83,7 +83,7 @@ export const ManagerMSTab: React.FC = () => {
       },
       selectedAddressIndex
     );
-  });
+  }, [meta]);
   const handleGetAddress = () => {
     if (!device) return;
     ManagerMS.getAddress(device.deviceID);

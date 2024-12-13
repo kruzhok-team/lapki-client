@@ -40,6 +40,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   });
   const addressOptions = new Map<string, SelectOption[]>();
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
+  const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const restoreChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {
@@ -48,6 +49,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       });
     }
     setIsChecked(resValue);
+    if (checkedAll && selectedFirmwares.length !== stateMachinesId.length) {
+      setCheckedAll(false);
+    }
   };
   const closeWithChecks = (selectedFirmwares: SelectedMsFirmwaresType[]) => {
     onClose();
@@ -117,7 +121,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     }
   }
   const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
-    const checked = smId ? isChecked.get(smId) ?? false : false;
+    const checked = checkedAll || (smId ? isChecked.get(smId) ?? false : false);
     const textCellClassName =
       "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
@@ -127,6 +131,17 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
           checked={checked}
           onCheckedChange={() => {
             if (!smId) return;
+            if (checkedAll) {
+              setIsChecked(() => {
+                const newMap = new Map();
+                stateMachinesId.forEach(([curSmId]) => {
+                  newMap.set(curSmId, curSmId !== smId);
+                });
+                return newMap;
+              });
+              setCheckedAll(!checkedAll);
+              return;
+            }
             setIsChecked((oldValue) => {
               const newValue = new Map(oldValue);
               newValue.set(smId, !checked);
@@ -168,6 +183,19 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
             {rowRender(null, null)}
             {stateMachinesId.map(([id, sm]) => id && rowRender(id, sm))}
+            {stateMachinesId.length !== 0 && (
+              <div className="flex items-start">
+                <Checkbox
+                  className={'ml-1 mr-1 mt-[9px]'}
+                  checked={checkedAll}
+                  onCheckedChange={() => {
+                    setIsChecked(new Map());
+                    setCheckedAll(!checkedAll);
+                  }}
+                ></Checkbox>
+                <label className="mt-[9px]">{'Выбрать всё'}</label>
+              </div>
+            )}
           </div>
         </div>
       </Modal>

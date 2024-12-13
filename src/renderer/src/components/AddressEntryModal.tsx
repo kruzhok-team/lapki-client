@@ -61,6 +61,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       return;
     }
     if (
+      submitData.name &&
       dirtyFields.name &&
       addressBookSetting.find((v) => {
         return v.name === submitData.name;

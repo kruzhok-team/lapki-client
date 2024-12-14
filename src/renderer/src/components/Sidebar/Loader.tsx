@@ -61,6 +61,7 @@ export const Loader: React.FC<FlasherProps> = ({
     setLog: setLogMS,
     setAddress: setAddressMS,
     setMeta: setMetaMS,
+    setCompilerData: setCompilerDataMS,
   } = useManagerMS();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [devices, setFlasherDevices] = useState<Map<string, Device>>(new Map());
@@ -244,8 +245,6 @@ export const Loader: React.FC<FlasherProps> = ({
     openTab(modelController, {
       type: 'managerMS',
       name: 'Менеджер МС-ТЮК',
-      devices: devices,
-      compilerData: compilerData,
     });
   };
 
@@ -330,6 +329,10 @@ export const Loader: React.FC<FlasherProps> = ({
       }
     }
   };
+
+  useEffect(() => {
+    setCompilerDataMS(compilerData);
+  }, [compilerData, setCompilerDataMS]);
 
   const handleReconnect = async () => {
     if (flasherIsLocal) {

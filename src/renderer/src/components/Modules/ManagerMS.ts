@@ -1,6 +1,6 @@
-import { MetaDataID } from '@renderer/types/FlasherTypes';
+import { AddressData, BinariesMsType, MetaDataID } from '@renderer/types/FlasherTypes';
 
-import { Device, MSDevice } from './Device';
+import { MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
@@ -18,6 +18,8 @@ export class ManagerMS {
     ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
   ]);
+  private static flashQueue: BinariesMsType[] = [];
+  private static flashingAddress = '';
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
@@ -30,19 +32,21 @@ export class ManagerMS {
     this.setAddress = setAddress;
     this.setMeta = setMeta;
   }
-  static binStart(
-    device: MSDevice,
-    address: string,
-    verification: boolean = false,
-    serialMonitorDevice: Device | undefined = undefined,
-    serialConnectionStatus: string = ''
-  ) {
-    Flasher.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
+  static binAdd(binariesInfo: BinariesMsType) {
+    this.flashQueue.push(binariesInfo);
+  }
+  static binStart() {
+    const binariesInfo = this.flashQueue.shift();
+    if (!binariesInfo) return;
+    Flasher.setBinary(binariesInfo.binaries, binariesInfo.device);
+    Flasher.flashPreparation(binariesInfo.device);
+    this.flashingAddress = this.displayAddressInfo(binariesInfo.addressInfo);
+    ManagerMS.flashingAddressLog('Начат процесс прошивки...');
     Flasher.send('ms-bin-start', {
-      deviceID: device.deviceID,
+      deviceID: binariesInfo.device.deviceID,
       fileSize: Flasher.binary.size,
-      address: address,
-      verification: verification,
+      address: binariesInfo.addressInfo.address,
+      verification: binariesInfo.verification,
     });
   }
   static ping(deviceID: string, address: string) {
@@ -58,6 +62,13 @@ export class ManagerMS {
   }
   static addLog(log: string) {
     this.setLog((prevMessages) => [...prevMessages, log]);
+  }
+  static flashingAddressLog(log: string) {
+    ManagerMS.addLog(`${this.flashingAddress}: ${log}`);
+  }
+  static flashingAddressEndLog(log: string) {
+    ManagerMS.flashingAddressLog(log);
+    this.flashingAddress = '';
   }
   static reset(deviceID: string, address: string) {
     Flasher.send('ms-reset', {
@@ -75,9 +86,16 @@ export class ManagerMS {
     const msg = this.backtrackMap.get(log);
     const status = 'Статус загрузки';
     if (msg) {
-      ManagerMS.addLog(`${status}: ${msg}`);
+      ManagerMS.flashingAddressLog(`${status}: ${msg}`);
     } else {
-      ManagerMS.addLog(`${status}: получено неизвестное сообщение (${log}) от загрузчика`);
+      ManagerMS.flashingAddressLog(
+        `${status}: получено неизвестное сообщение (${log}) от загрузчика`
+      );
     }
+  }
+  static displayAddressInfo(addressInfo: AddressData) {
+    const name = addressInfo.name === '' ? addressInfo.address : addressInfo.name;
+    const type = addressInfo.type ? ` (${addressInfo.type})` : '';
+    return name + type;
   }
 }

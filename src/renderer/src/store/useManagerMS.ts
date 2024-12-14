@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { MSDevice } from '@renderer/components/Modules/Device';
+import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { MetaDataID } from '@renderer/types/FlasherTypes';
 
 interface ManagerMSState {
@@ -12,6 +13,8 @@ interface ManagerMSState {
   setAddress: (curAddress: string) => void;
   meta: MetaDataID | undefined;
   setMeta: (curMeta: MetaDataID | undefined) => void;
+  compilerData: CompilerResult | undefined;
+  setCompilerData: (data: CompilerResult | undefined) => void;
 }
 
 export const useManagerMS = create<ManagerMSState>((set) => ({
@@ -23,4 +26,6 @@ export const useManagerMS = create<ManagerMSState>((set) => ({
   setAddress: (newAddress) => set({ address: newAddress }),
   meta: undefined,
   setMeta: (newMeta) => set({ meta: newMeta }),
+  compilerData: undefined,
+  setCompilerData: (newCompilerData) => set({ compilerData: newCompilerData }),
 }));

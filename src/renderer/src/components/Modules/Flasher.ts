@@ -14,7 +14,6 @@ import {
   FlasherPayload,
   FlasherType,
   MetaDataID,
-  PlatformType,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -150,34 +149,42 @@ export class Flasher extends ClientWS {
     if (this.currentFlashingDevice instanceof ArduinoDevice) {
       this.setFlasherLog(result);
     } else {
-      ManagerMS.addLog(result);
+      ManagerMS.flashingAddressEndLog(result);
     }
     this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
     this.currentFlashingDevice = undefined;
+    ManagerMS.binStart();
   }
 
   static refresh(): void {
     this.filePos = 0;
   }
 
-  static setBinary(binaries: Array<Binary>, platformType: PlatformType) {
+  static extractBinaries(binaries: Array<Binary>, device: Device) {
     let ending: string;
-    switch (platformType) {
-      case PlatformType.Arduino:
-        ending = 'ino.hex';
-        break;
-      case PlatformType.MS1:
-        ending = '.bin';
-        break;
-      default:
-        throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
+    if (device.isArduinoDevice()) {
+      ending = 'ino.hex';
+    } else if (device.isMSDevice()) {
+      ending = '.bin';
+    } else {
+      throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
     }
-    binaries.map((bin) => {
+    for (const bin of binaries) {
       if (bin.extension.endsWith(ending)) {
-        Flasher.binary = bin.fileContent as Blob;
-        return;
+        return bin.fileContent as Blob;
       }
-    });
+    }
+    return null;
+  }
+
+  static setBinary(binaries: Array<Binary>, device: Device) {
+    const extracted = this.extractBinaries(binaries, device);
+    if (extracted === null) {
+      throw new Error(
+        `Не удаётся извлечь бинарные данные для устройства ${device.displayName()}. Переданный бинарный массив: ${binaries}`
+      );
+    }
+    Flasher.binary = extracted;
   }
 
   static async setFile() {
@@ -202,7 +209,7 @@ export class Flasher extends ClientWS {
   }
   /**
    * Эту функцию следует вызывать перед прошивкой. Она проверяет наличие бинарных данных для прошивки,
-   * оповещает пользователя, закрывает монитор порта для arduino.
+   * закрывает монитор порта для arduino.
    * @param device устройство на которое будет загружена прошивка
    * @param serialMonitorDevice устройство для которого открыт монитор порта
    * @param serialConnectionStatus статус монитора порта
@@ -229,12 +236,6 @@ export class Flasher extends ClientWS {
     }
     this.currentFlashingDevice = device;
     this.refresh();
-    const loading: string = 'Идет загрузка...';
-    if (device instanceof ArduinoDevice) {
-      this.setFlasherLog(loading);
-    } else {
-      ManagerMS.addLog(loading);
-    }
   }
 
   static flashCompiler(
@@ -243,7 +244,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    this.setBinary(binaries, PlatformType.Arduino);
+    this.setBinary(binaries, device);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 
@@ -253,6 +254,7 @@ export class Flasher extends ClientWS {
     serialConnectionStatus: string = ''
   ) {
     this.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
+    this.setFlasherLog('Идёт загрузка...');
     this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,

@@ -6,9 +6,9 @@ import { Modal } from './UI';
 import { TextInput } from './UI/TextInput';
 
 interface AddressEntryEditModalProps {
+  addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  isDuplicate: (address: string) => boolean | undefined;
   onSubmit: (data: AddressData) => void;
   submitLabel: string;
   form: UseFormReturn<AddressData>;
@@ -18,7 +18,7 @@ interface AddressEntryEditModalProps {
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { isOpen, isDuplicate, onClose, onSubmit, submitLabel, form } = props;
+  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form } = props;
   const {
     handleSubmit: hookHandleSubmit,
     register,
@@ -28,12 +28,13 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     getValues,
   } = form;
   const handleSubmit = hookHandleSubmit((submitData) => {
+    if (addressBookSetting === null) return;
     const sendSubmit = () => {
       onSubmit(submitData);
       clearErrors();
       onClose();
     };
-    if (submitData.address != '' && !dirtyFields.address) {
+    if (submitData.address != '' && !dirtyFields.address && !dirtyFields.name) {
       sendSubmit();
       return;
     }
@@ -50,8 +51,23 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       setError('address', { message: 'Адрес не является корректным шестнадцатеричным числом' });
       return;
     }
-    if (isDuplicate(submitData.address)) {
+    if (
+      dirtyFields.address &&
+      addressBookSetting.find((v) => {
+        return v.address === submitData.address;
+      }) !== undefined
+    ) {
       setError('address', { message: 'Адрес уже содержится в книге' });
+      return;
+    }
+    if (
+      submitData.name &&
+      dirtyFields.name &&
+      addressBookSetting.find((v) => {
+        return v.name === submitData.name;
+      }) !== undefined
+    ) {
+      setError('name', { message: 'Имя уже содержится в книге' });
       return;
     }
     sendSubmit();
@@ -68,6 +84,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       <div className="flex items-start gap-1">
         <label className="flex w-full flex-col">
           <TextInput placeholder="Название" {...register('name')} />
+          <p className="text-sm text-error">{errors.name?.message}</p>
         </label>
 
         <label className="flex w-full flex-col">

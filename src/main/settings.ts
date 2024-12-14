@@ -14,6 +14,13 @@ type MetaType =
     }
   | undefined;
 
+type AddressBook = {
+  name: string;
+  address: string;
+  type: string;
+  meta: MetaType;
+};
+
 export const defaultSettings = {
   doc: {
     host: 'https://lapki-doc.polyus-nt.ru/v/0.2.1/',
@@ -51,17 +58,8 @@ export const defaultSettings = {
   },
   /**
    * Записи адресной книги МС-ТЮК.
-   *
-   * Первым элементов является заголовок таблицы, он всегда должен присутствовать.
    */
-  addressBookMS: [
-    {
-      name: 'Имя',
-      address: 'Адрес',
-      type: 'Тип',
-      meta: undefined as MetaType,
-    },
-  ],
+  addressBookMS: [] as AddressBook[],
   /**
    * Параметры менеджера МС-ТЮК
    */

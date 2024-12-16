@@ -1,4 +1,9 @@
-import { AddressData, BinariesMsType, MetaDataID } from '@renderer/types/FlasherTypes';
+import {
+  AddressData,
+  BinariesMsType,
+  FlashBacktrackMs,
+  MetaDataID,
+} from '@renderer/types/FlasherTypes';
 
 import { MSDevice } from './Device';
 import { Flasher } from './Flasher';
@@ -82,14 +87,16 @@ export class ManagerMS {
       address: address,
     });
   }
-  static backtrack(log: string) {
-    const msg = this.backtrackMap.get(log);
+  static backtrack(backtrack: FlashBacktrackMs) {
+    const uploadStage = this.backtrackMap.get(backtrack.UploadStage);
     const status = 'Статус загрузки';
-    if (msg) {
-      ManagerMS.flashingAddressLog(`${status}: ${msg}`);
+    if (uploadStage) {
+      const prefix = `${status}: ${uploadStage}`;
+      const progress = backtrack.NoPacks ? '' : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
+      ManagerMS.flashingAddressLog(prefix + progress);
     } else {
       ManagerMS.flashingAddressLog(
-        `${status}: получено неизвестное сообщение (${log}) от загрузчика`
+        `${status}: получено неизвестное сообщение (${uploadStage}) от загрузчика`
       );
     }
   }

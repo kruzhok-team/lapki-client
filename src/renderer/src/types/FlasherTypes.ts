@@ -41,7 +41,7 @@ export type FlasherType =
   | 'get-list-cooldown'
   | 'flash-not-supported'
   | 'flash-open-serial-monitor'
-  | 'flash-backtrack'
+  | 'flash-backtrack-ms'
   | 'serial-log'
   | 'serial-connect'
   | 'serial-connection-status'
@@ -76,7 +76,8 @@ export type FlasherPayload =
   | MSBinStart
   | MSGetAddress
   | MSAddressAction
-  | MetaData;
+  | MetaData
+  | FlashBacktrackMs;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -208,4 +209,11 @@ export type BinariesMsType = {
   addressInfo: AddressData;
   verification: boolean;
   binaries: Array<Binary>;
+};
+
+export type FlashBacktrackMs = {
+  UploadStage: string;
+  NoPacks: boolean;
+  CurPack: number;
+  TotalPacks: number;
 };

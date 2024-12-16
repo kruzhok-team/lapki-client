@@ -120,7 +120,7 @@ export class ManagerMS {
     const prefix = `${status}: ${uploadStage} `;
     const progress =
       backtrack.NoPacks || backtrack.TotalPacks === 1
-        ? 'Ок'
+        ? ''
         : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
     if (this.lastBacktrackLogIndex === null || this.lastBacktrackStage !== uploadStage) {
       if (this.lastBacktrackLogIndex !== null) {

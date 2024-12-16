@@ -53,8 +53,6 @@ import {
   emptyStateMachine,
   Action,
   Component,
-  Condition,
-  Variable,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -62,7 +60,6 @@ import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
 import { FilesManager } from '../EditorModel/FilesManager';
-import { operatorSet } from '../PlatformManager';
 
 /**
  * Общий контроллер машин состояний.

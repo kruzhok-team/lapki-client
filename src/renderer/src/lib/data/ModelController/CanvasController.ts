@@ -40,7 +40,6 @@ import {
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
-  ArgList,
   ChoiceState,
   Component,
   Condition,
@@ -53,8 +52,6 @@ import {
   Transition,
   Variable,
 } from '@renderer/types/diagram';
-import { Platform } from '@renderer/types/platform';
-import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ComponentsController } from './ComponentsController';
 import { ModelController } from './ModelController';

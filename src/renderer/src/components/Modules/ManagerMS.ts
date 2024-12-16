@@ -25,6 +25,8 @@ export class ManagerMS {
   ]);
   private static flashQueue: BinariesMsType[] = [];
   private static flashingAddress = '';
+  private static lastBacktrackLogIndex: number | null;
+  private static logSize: number = 0;
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
@@ -66,14 +68,29 @@ export class ManagerMS {
     });
   }
   static addLog(log: string) {
+    this.logSize++;
     this.setLog((prevMessages) => [...prevMessages, log]);
   }
+  static editLog(log: string, index: number) {
+    this.setLog((prevMessages) => {
+      return prevMessages.map((msg, idx) => {
+        return index === idx ? log : msg;
+      });
+    });
+  }
+  static flashingAddressLogString(log: string) {
+    return `${this.flashingAddress}: ${log}`;
+  }
   static flashingAddressLog(log: string) {
-    ManagerMS.addLog(`${this.flashingAddress}: ${log}`);
+    ManagerMS.addLog(this.flashingAddressLogString(log));
   }
   static flashingAddressEndLog(log: string) {
     ManagerMS.flashingAddressLog(log);
+    this.lastBacktrackLogIndex = null;
     this.flashingAddress = '';
+  }
+  static flashingEditLog(log: string, index: number) {
+    this.editLog(this.flashingAddressLogString(log), index);
   }
   static reset(deviceID: string, address: string) {
     Flasher.send('ms-reset', {
@@ -93,7 +110,17 @@ export class ManagerMS {
     if (uploadStage) {
       const prefix = `${status}: ${uploadStage}`;
       const progress = backtrack.NoPacks ? '' : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
-      ManagerMS.flashingAddressLog(prefix + progress);
+      if (this.lastBacktrackLogIndex === null) {
+        if (!backtrack.NoPacks) {
+          this.lastBacktrackLogIndex = this.logSize;
+        }
+        ManagerMS.flashingAddressLog(prefix + progress);
+      } else {
+        ManagerMS.flashingEditLog(prefix + progress, this.lastBacktrackLogIndex);
+        if (!backtrack.NoPacks && backtrack.CurPack === backtrack.TotalPacks) {
+          this.lastBacktrackLogIndex = null;
+        }
+      }
     } else {
       ManagerMS.flashingAddressLog(
         `${status}: получено неизвестное сообщение (${uploadStage}) от загрузчика`
@@ -106,6 +133,8 @@ export class ManagerMS {
     return name + type;
   }
   static clearLog() {
+    this.logSize = 0;
+    this.lastBacktrackLogIndex = null;
     this.setLog(() => []);
   }
 }

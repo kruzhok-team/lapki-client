@@ -754,78 +754,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.components.renameComponent(args);
 
-    if (this.visual) {
-      // А сейчас будет занимательное путешествие по схеме с заменой всего
-      this.states.forEachState((state) => {
-        for (const ev of state.eventBox.data) {
-          if (typeof ev.trigger !== 'string')
-            if (ev.trigger.component == id) {
-              // заменяем в триггере
-              ev.trigger.component = newName;
-            }
-
-          for (const act of ev.do) {
-            if (typeof act !== 'string') {
-              // заменяем в действии
-              if (act.component === id) {
-                act.component = newName;
-                continue;
-              }
-              this.renameParameters(act.args, id, newName, this.platform[smId].data);
-            }
-          }
-        }
-      });
-
-      this.transitions.forEach((transition) => {
-        if (!transition.data.label) return;
-
-        if (
-          typeof transition.data.label.trigger !== 'string' &&
-          transition.data.label.trigger?.component === id
-        ) {
-          transition.data.label.trigger.component = newName;
-        }
-
-        if (transition.data.label.do) {
-          for (const act of transition.data.label.do) {
-            if (typeof act !== 'string') {
-              if (act.component === id) {
-                act.component = newName;
-                continue;
-              }
-              this.renameParameters(act.args, id, newName, this.platform[smId].data);
-            }
-          }
-        }
-
-        if (
-          typeof transition.data.label.condition !== 'string' &&
-          transition.data.label.condition
-        ) {
-          this.renameCondition(transition.data.label.condition, id, newName);
-        }
-      });
-    }
-
     this.triggerDataUpdate('platform');
     this.app.view.isDirty = true;
-  };
-
-  private renameParameters = (
-    args: ArgList | undefined,
-    oldName: string,
-    newName: string,
-    platform: Platform
-  ) => {
-    if (!args) return;
-    for (const [index, arg] of Object.entries(args)) {
-      if (Array.isArray(arg)) continue;
-      const componentAttribute = getComponentAttribute(arg, platform);
-      if (componentAttribute !== null && componentAttribute[0] === oldName) {
-        args[index] = `${newName}${componentAttribute[2]}${componentAttribute[1]}`;
-      }
-    }
   };
 
   private deleteSelected = (smId: string) => {

@@ -44,7 +44,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
 
     onSubmit(
       cursor.idx,
-      cursor.singletone ? undefined : modelController.validator.getComponentName(cursor)
+      cursor.singletone ? undefined : modelController.validator.getComponentName(cursor.idx)
     );
     onRequestClose();
   };

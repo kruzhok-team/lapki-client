@@ -61,11 +61,27 @@ export const useStateMachines = () => {
     openDelete();
   };
 
+  const onDublicateStateMachine = () => {
+    if (!idx) return;
+
+    const sm = modelController.model.data.elements.stateMachines[idx];
+
+    if (!sm) return;
+
+    const [newSmId, canvasId] = modelController.dublicateStateMachine(idx);
+
+    openTab(modelController, {
+      type: 'editor',
+      canvasId: canvasId,
+      name: sm.name ?? newSmId,
+    });
+    editClose();
+  };
+
   const onAdd = (data: StateMachineData) => {
     const smId = generateId();
     const sm = { ...emptyStateMachine(), ...data };
     const canvasId = modelController.createStateMachine(smId, sm);
-    modelController.model.changeHeadControllerId(canvasId);
     openTab(modelController, {
       type: 'editor',
       canvasId: canvasId,
@@ -75,12 +91,12 @@ export const useStateMachines = () => {
 
   const onEdit = (data: StateMachineData) => {
     if (!idx) return;
+    const newName = data.name === '' ? undefined : data.name;
     const sm = modelController.model.data.elements.stateMachines[idx];
-    const smName = sm.name ?? '';
-    if (data.name !== smName) {
-      renameTab(smName ? smName : idx, data.name ? data.name : idx);
+    if (newName !== sm.name) {
+      renameTab(sm.name ? sm.name : idx, data.name ? data.name : idx);
     }
-    modelController.editStateMachine(idx, data);
+    modelController.editStateMachine(idx, { ...data, name: newName });
   };
 
   const onDelete = () => {
@@ -145,6 +161,7 @@ export const useStateMachines = () => {
       data: data,
       idx: idx,
     },
+    onDublicateStateMachine,
     onRequestDeleteStateMachine,
     onRequestAddStateMachine,
     onRequestEditStateMachine,

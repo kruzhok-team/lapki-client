@@ -32,9 +32,13 @@ import {
   Meta,
   StateMachine,
   emptyStateMachine,
+  Condition,
+  Variable,
 } from '@renderer/types/diagram';
 
 import { Serializer } from './Serializer';
+
+import { operatorSet } from '../PlatformManager';
 
 /**
  * Класс-прослойка, обеспечивающий взаимодействие с React.
@@ -104,6 +108,88 @@ export class EditorModel {
       );
     };
   };
+
+  private renameCondition(ac: Condition, oldName: string, newName: string) {
+    if (ac.type == 'value') {
+      return;
+    }
+    if (ac.type == 'component') {
+      if ((ac.value as Variable).component === oldName) {
+        (ac.value as Variable).component = newName;
+      }
+      return;
+    }
+    if (operatorSet.has(ac.type)) {
+      if (Array.isArray(ac.value)) {
+        for (const x of ac.value) {
+          this.renameCondition(x, oldName, newName);
+        }
+        return;
+      }
+      return;
+    }
+  }
+
+  renameComponentInEvents(sm: StateMachine, oldComponentId: string, newComponentId: string) {
+    for (const stateId in sm.states) {
+      const state = sm.states[stateId];
+      for (const ev of state.events) {
+        if (typeof ev.trigger !== 'string')
+          if (ev.trigger.component == oldComponentId) {
+            ev.trigger.component = newComponentId;
+          }
+
+        for (const act of ev.do) {
+          if (typeof act !== 'string') {
+            if (act.component === oldComponentId) {
+              act.component = newComponentId;
+              continue;
+            }
+            for (const argId in act.args) {
+              const arg = act.args[argId];
+              if (typeof arg === 'string') {
+                arg.replace(oldComponentId, newComponentId);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for (const transitionId in sm.transitions) {
+      const transition = sm.transitions[transitionId];
+
+      if (!transition.label) continue;
+
+      if (
+        typeof transition.label.trigger !== 'string' &&
+        transition.label.trigger?.component === oldComponentId
+      ) {
+        transition.label.trigger.component = newComponentId;
+      }
+
+      if (transition.label.do) {
+        for (const act of transition.label.do) {
+          if (typeof act !== 'string') {
+            if (act.component === oldComponentId) {
+              act.component = newComponentId;
+              continue;
+            }
+            for (const argId in act.args) {
+              const arg = act.args[argId];
+              if (typeof arg === 'string') {
+                arg.replace(oldComponentId, newComponentId);
+              }
+            }
+          }
+        }
+      }
+
+      if (typeof transition.label.condition !== 'string' && transition.label.condition) {
+        this.renameCondition(transition.label.condition, oldComponentId, newComponentId);
+      }
+    }
+  }
 
   editStateMachine(smId: string, data: StateMachineData) {
     const sm = this.data.elements.stateMachines[smId];
@@ -693,7 +779,7 @@ export class EditorModel {
     this.data.elements.stateMachines[smId].components[newName] = component;
 
     delete this.data.elements.stateMachines[smId].components[name];
-
+    this.renameComponentInEvents(this.data.elements.stateMachines[smId], name, newName);
     this.triggerDataUpdate('elements.components');
 
     return true;

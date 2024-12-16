@@ -16,7 +16,7 @@ import {
 import { EventSelection } from '../drawable';
 
 export type StateMachineData = {
-  name: string;
+  name?: string;
   platform: string;
 };
 

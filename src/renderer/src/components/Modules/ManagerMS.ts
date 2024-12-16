@@ -26,6 +26,7 @@ export class ManagerMS {
   private static flashQueue: BinariesMsType[] = [];
   private static flashingAddress = '';
   private static lastBacktrackLogIndex: number | null;
+  private static lastBacktrackStage: string = '';
   private static logSize: number = 0;
 
   static bindReact(
@@ -87,6 +88,7 @@ export class ManagerMS {
   static flashingAddressEndLog(log: string) {
     ManagerMS.flashingAddressLog(log);
     this.lastBacktrackLogIndex = null;
+    this.lastBacktrackStage = '';
     this.flashingAddress = '';
   }
   static flashingEditLog(log: string, index: number) {
@@ -107,27 +109,35 @@ export class ManagerMS {
   static backtrack(backtrack: FlashBacktrackMs) {
     const uploadStage = this.backtrackMap.get(backtrack.UploadStage);
     const status = 'Статус загрузки';
-    if (uploadStage) {
-      const prefix = `${status}: ${uploadStage}`;
-      const progress =
-        backtrack.NoPacks || backtrack.TotalPacks === 1
-          ? ''
-          : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
-      if (this.lastBacktrackLogIndex === null) {
-        if (!backtrack.NoPacks) {
-          this.lastBacktrackLogIndex = this.logSize;
-        }
-        ManagerMS.flashingAddressLog(prefix + progress);
-      } else {
-        ManagerMS.flashingEditLog(prefix + progress, this.lastBacktrackLogIndex);
-        if (!backtrack.NoPacks && backtrack.CurPack === backtrack.TotalPacks) {
-          this.lastBacktrackLogIndex = null;
-        }
-      }
-    } else {
+    if (uploadStage === undefined) {
       ManagerMS.flashingAddressLog(
         `${status}: получено неизвестное сообщение (${uploadStage}) от загрузчика`
       );
+      this.lastBacktrackLogIndex = null;
+      this.lastBacktrackStage = '';
+      return;
+    }
+    const prefix = `${status}: ${uploadStage} `;
+    const progress =
+      backtrack.NoPacks || backtrack.TotalPacks === 1
+        ? 'Ок'
+        : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
+    if (this.lastBacktrackLogIndex === null || this.lastBacktrackStage !== uploadStage) {
+      if (this.lastBacktrackLogIndex !== null) {
+        ManagerMS.flashingEditLog(
+          `${status}: ${this.lastBacktrackStage} Ок`,
+          this.lastBacktrackLogIndex
+        );
+      }
+      this.lastBacktrackLogIndex = this.logSize;
+      this.lastBacktrackStage = uploadStage;
+      ManagerMS.flashingAddressLog(prefix + progress);
+    } else {
+      ManagerMS.flashingEditLog(prefix + progress, this.lastBacktrackLogIndex);
+    }
+    if (!backtrack.NoPacks && backtrack.CurPack === backtrack.TotalPacks) {
+      this.lastBacktrackLogIndex = null;
+      this.lastBacktrackStage = '';
     }
   }
   static displayAddressInfo(addressInfo: AddressData) {
@@ -138,6 +148,7 @@ export class ManagerMS {
   static clearLog() {
     this.logSize = 0;
     this.lastBacktrackLogIndex = null;
+    this.lastBacktrackStage = '';
     this.setLog(() => []);
   }
 }

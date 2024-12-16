@@ -42,7 +42,6 @@ import {
 import {
   ChoiceState,
   Component,
-  Condition,
   emptyStateMachine,
   FinalState,
   InitialState,
@@ -50,7 +49,6 @@ import {
   State,
   StateMachine,
   Transition,
-  Variable,
 } from '@renderer/types/diagram';
 
 import { ComponentsController } from './ComponentsController';
@@ -62,7 +60,7 @@ import { TransitionsController } from './TransitionsController';
 
 import { Initializer } from '../Initializer';
 import { isPlatformAvailable, loadPlatform } from '../PlatformLoader';
-import { ComponentEntry, operatorSet, PlatformManager } from '../PlatformManager';
+import { ComponentEntry, PlatformManager } from '../PlatformManager';
 
 export type CanvasSubscribeAttribute =
   | 'state'

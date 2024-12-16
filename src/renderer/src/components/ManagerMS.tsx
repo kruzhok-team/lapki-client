@@ -112,9 +112,6 @@ export const ManagerMSTab: React.FC = () => {
     }
     return device.displayName();
   };
-  const handleClear = () => {
-    setLog(() => []);
-  };
   const isFlashDisabled = () => {
     if (selectedFirmwares.length === 0) return true;
     return !selectedFirmwares.every((item) => {

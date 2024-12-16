@@ -14,7 +14,7 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log, setLog, address: serverAddress, meta, compilerData } = useManagerMS();
+  const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,
     selectedAddress,

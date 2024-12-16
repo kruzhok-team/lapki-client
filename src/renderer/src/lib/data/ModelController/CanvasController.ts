@@ -839,27 +839,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.emit('selectComponent', { id: component.id, smId: component.smId });
   };
 
-  private renameCondition(ac: Condition, oldName: string, newName: string) {
-    if (ac.type == 'value') {
-      return;
-    }
-    if (ac.type == 'component') {
-      if ((ac.value as Variable).component === oldName) {
-        (ac.value as Variable).component = newName;
-      }
-      return;
-    }
-    if (operatorSet.has(ac.type)) {
-      if (Array.isArray(ac.value)) {
-        for (const x of ac.value) {
-          this.renameCondition(x, oldName, newName);
-        }
-        return;
-      }
-      return;
-    }
-  }
-
   private editComponent = (args: EditComponentParams) => {
     if (!this.platform[args.smId]) {
       return;

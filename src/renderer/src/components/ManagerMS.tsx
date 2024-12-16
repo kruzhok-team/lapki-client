@@ -14,7 +14,7 @@ import { ManagerMS } from './Modules/ManagerMS';
 import { Switch } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
-  const { device, log, setLog, address: serverAddress, meta, compilerData } = useManagerMS();
+  const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,
     selectedAddress,
@@ -111,9 +111,6 @@ export const ManagerMSTab: React.FC = () => {
       return 'Устройство отсутствует.';
     }
     return device.displayName();
-  };
-  const handleClear = () => {
-    setLog(() => []);
   };
   const isFlashDisabled = () => {
     if (selectedFirmwares.length === 0) return true;
@@ -226,7 +223,12 @@ export const ManagerMSTab: React.FC = () => {
           />
           Автопрокрутка
         </div>
-        <button className="btn-primary" onClick={handleClear}>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            ManagerMS.clearLog();
+          }}
+        >
           Очистить
         </button>
       </div>

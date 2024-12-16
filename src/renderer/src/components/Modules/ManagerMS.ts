@@ -1,4 +1,9 @@
-import { AddressData, BinariesMsType, MetaDataID } from '@renderer/types/FlasherTypes';
+import {
+  AddressData,
+  BinariesMsType,
+  FlashBacktrackMs,
+  MetaDataID,
+} from '@renderer/types/FlasherTypes';
 
 import { MSDevice } from './Device';
 import { Flasher } from './Flasher';
@@ -20,6 +25,9 @@ export class ManagerMS {
   ]);
   private static flashQueue: BinariesMsType[] = [];
   private static flashingAddress = '';
+  private static lastBacktrackLogIndex: number | null;
+  private static lastBacktrackStage: string = '';
+  private static logSize: number = 0;
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
@@ -61,14 +69,30 @@ export class ManagerMS {
     });
   }
   static addLog(log: string) {
+    this.logSize++;
     this.setLog((prevMessages) => [...prevMessages, log]);
   }
+  static editLog(log: string, index: number) {
+    this.setLog((prevMessages) => {
+      return prevMessages.map((msg, idx) => {
+        return index === idx ? log : msg;
+      });
+    });
+  }
+  static flashingAddressLogString(log: string) {
+    return `${this.flashingAddress}: ${log}`;
+  }
   static flashingAddressLog(log: string) {
-    ManagerMS.addLog(`${this.flashingAddress}: ${log}`);
+    ManagerMS.addLog(this.flashingAddressLogString(log));
   }
   static flashingAddressEndLog(log: string) {
     ManagerMS.flashingAddressLog(log);
+    this.lastBacktrackLogIndex = null;
+    this.lastBacktrackStage = '';
     this.flashingAddress = '';
+  }
+  static flashingEditLog(log: string, index: number) {
+    this.editLog(this.flashingAddressLogString(log), index);
   }
   static reset(deviceID: string, address: string) {
     Flasher.send('ms-reset', {
@@ -82,20 +106,49 @@ export class ManagerMS {
       address: address,
     });
   }
-  static backtrack(log: string) {
-    const msg = this.backtrackMap.get(log);
+  static backtrack(backtrack: FlashBacktrackMs) {
+    const uploadStage = this.backtrackMap.get(backtrack.UploadStage);
     const status = 'Статус загрузки';
-    if (msg) {
-      ManagerMS.flashingAddressLog(`${status}: ${msg}`);
-    } else {
+    if (uploadStage === undefined) {
       ManagerMS.flashingAddressLog(
-        `${status}: получено неизвестное сообщение (${log}) от загрузчика`
+        `${status}: получено неизвестное сообщение (${uploadStage}) от загрузчика`
       );
+      this.lastBacktrackLogIndex = null;
+      this.lastBacktrackStage = '';
+      return;
+    }
+    const prefix = `${status}: ${uploadStage} `;
+    const progress =
+      backtrack.NoPacks || backtrack.TotalPacks === 1
+        ? ''
+        : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
+    if (this.lastBacktrackLogIndex === null || this.lastBacktrackStage !== uploadStage) {
+      if (this.lastBacktrackLogIndex !== null) {
+        ManagerMS.flashingEditLog(
+          `${status}: ${this.lastBacktrackStage} Ок`,
+          this.lastBacktrackLogIndex
+        );
+      }
+      this.lastBacktrackLogIndex = this.logSize;
+      this.lastBacktrackStage = uploadStage;
+      ManagerMS.flashingAddressLog(prefix + progress);
+    } else {
+      ManagerMS.flashingEditLog(prefix + progress, this.lastBacktrackLogIndex);
+    }
+    if (!backtrack.NoPacks && backtrack.CurPack === backtrack.TotalPacks) {
+      this.lastBacktrackLogIndex = null;
+      this.lastBacktrackStage = '';
     }
   }
   static displayAddressInfo(addressInfo: AddressData) {
     const name = addressInfo.name === '' ? addressInfo.address : addressInfo.name;
     const type = addressInfo.type ? ` (${addressInfo.type})` : '';
     return name + type;
+  }
+  static clearLog() {
+    this.logSize = 0;
+    this.lastBacktrackLogIndex = null;
+    this.lastBacktrackStage = '';
+    this.setLog(() => []);
   }
 }

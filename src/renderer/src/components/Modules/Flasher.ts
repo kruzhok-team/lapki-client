@@ -14,6 +14,7 @@ import {
   FlasherPayload,
   FlasherType,
   MetaDataID,
+  FlashBacktrackMs,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -382,12 +383,10 @@ export class Flasher extends ClientWS {
         );
         break;
       }
-      case 'flash-backtrack': {
-        const payload = response.payload as string;
+      case 'flash-backtrack-ms': {
+        const payload = response.payload as FlashBacktrackMs;
         // TODO: пока обратная связь реализована только для МС-ТЮК
-        if (this.currentFlashingDevice?.isMSDevice()) {
-          ManagerMS.backtrack(payload);
-        }
+        ManagerMS.backtrack(payload);
         break;
       }
       case 'event-not-supported': {

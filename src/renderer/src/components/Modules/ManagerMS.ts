@@ -109,7 +109,10 @@ export class ManagerMS {
     const status = 'Статус загрузки';
     if (uploadStage) {
       const prefix = `${status}: ${uploadStage}`;
-      const progress = backtrack.NoPacks ? '' : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
+      const progress =
+        backtrack.NoPacks || backtrack.TotalPacks === 1
+          ? ''
+          : ` ${backtrack.CurPack}/${backtrack.TotalPacks}`;
       if (this.lastBacktrackLogIndex === null) {
         if (!backtrack.NoPacks) {
           this.lastBacktrackLogIndex = this.logSize;

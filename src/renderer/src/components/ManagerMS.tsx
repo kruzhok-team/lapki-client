@@ -226,7 +226,12 @@ export const ManagerMSTab: React.FC = () => {
           />
           Автопрокрутка
         </div>
-        <button className="btn-primary" onClick={handleClear}>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            ManagerMS.clearLog();
+          }}
+        >
           Очистить
         </button>
       </div>

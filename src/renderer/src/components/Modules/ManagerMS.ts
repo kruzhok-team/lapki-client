@@ -105,4 +105,7 @@ export class ManagerMS {
     const type = addressInfo.type ? ` (${addressInfo.type})` : '';
     return name + type;
   }
+  static clearLog() {
+    this.setLog(() => []);
+  }
 }

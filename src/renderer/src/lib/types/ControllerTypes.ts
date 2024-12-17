@@ -72,7 +72,7 @@ export interface DeleteStateMachineParams {
 
 export interface EditStateMachine {
   id: string;
-  name: string;
+  name?: string;
   platform: string;
 }
 

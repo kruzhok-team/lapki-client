@@ -45,6 +45,7 @@ export const StateMachinesList: React.FC = () => {
     onRequestAddStateMachine,
     onRequestEditStateMachine,
     isDuplicateName,
+    onDuplicateStateMachine,
   } = useStateMachines();
 
   const platformList = getAvailablePlatforms().map((platform) => {
@@ -71,7 +72,7 @@ export const StateMachinesList: React.FC = () => {
       </div>
       {isInitialized ? (
         <div className="px-4">
-          <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
             {[...Object.entries(elements)].map(
               ([id, sm]) =>
                 id !== '' && (
@@ -108,6 +109,7 @@ export const StateMachinesList: React.FC = () => {
         platformList={platformList}
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={true}
+        duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineEditModal
         form={addProps.addForm}
@@ -120,6 +122,7 @@ export const StateMachinesList: React.FC = () => {
         platformList={platformList}
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={false}
+        duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>

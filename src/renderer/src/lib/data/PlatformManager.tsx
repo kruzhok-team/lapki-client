@@ -398,11 +398,11 @@ export class PlatformManager {
     };
     const rightIcon = this.getVariableIcon(component, value.method);
 
-    this.picto.drawPicto(ctx, x + 37 / this.picto.scale, y + 20 / this.picto.scale, {
+    this.picto.drawPicto(ctx, x + 50 / this.picto.scale, y + 20 / this.picto.scale, {
       leftIcon,
       rightIcon,
       opacity: 0.7,
-      scalePictoSize: 1.6,
+      scalePictoSize: 2,
     });
   };
 

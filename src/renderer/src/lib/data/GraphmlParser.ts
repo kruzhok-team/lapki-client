@@ -190,7 +190,6 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   }
   const argString = action.slice(bracketPos + 1, lastBracketPos);
   args = splitArgs(argString).filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-  debugger;
   const method = action.slice(0, bracketPos);
   return {
     component: componentName,
@@ -652,7 +651,7 @@ export function importGraphml(
       platforms[rawSm.platform] = platform;
     }
     validateElements(elements, platforms);
-    debugger;
+
     return elements;
   } catch (error) {
     console.error(error);

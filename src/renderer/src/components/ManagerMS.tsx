@@ -1,12 +1,13 @@
 /*
 Окно менеджера для МС-ТЮК
 */
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useManagerMS } from '@renderer/store/useManagerMS';
+import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlashSelect } from './FirmwareSelectMS1';
@@ -28,12 +29,11 @@ export const ManagerMSTab: React.FC = () => {
     onSwapEntries,
     stateMachineAddresses,
     assignStateMachineToAddress,
-    selectedFirmwares,
-    setSelectedFirmwares,
   } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isFlashSelectOpen, openFlashSelect, closeFlashSelect] = useModal(false);
+  const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -115,9 +115,9 @@ export const ManagerMSTab: React.FC = () => {
   const isFlashDisabled = () => {
     if (selectedFirmwares.length === 0) return true;
     return !selectedFirmwares.every((item) => {
-      if (!item.firmware.isFile) {
+      if (!item.isFile) {
         if (!compilerData) return false;
-        const data = compilerData.state_machines[item.firmware.source];
+        const data = compilerData.state_machines[item.source];
         return data && data.binary && data.binary.length !== 0;
       }
       return true;
@@ -125,24 +125,35 @@ export const ManagerMSTab: React.FC = () => {
   };
 
   const handleSendBin = () => {
+    if (!addressBookSetting) {
+      ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
+      return;
+    }
     if (!device) {
       ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
       return;
     }
     selectedFirmwares.forEach((item) => {
-      if (item.firmware.isFile) {
+      if (item.isFile) {
         // TODO
       } else {
         if (!compilerData) return;
-        const smData = compilerData.state_machines[item.firmware.source];
+        const addressIndex = stateMachineAddresses.get(item.source);
+        // значит адрес или машина состояний были удалены
+        if (addressIndex === undefined) {
+          return;
+        }
+        const smData = compilerData.state_machines[item.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(
-            `Ошибка! Загрузка по адресу ${item.addressInfo} невозможна! Отсутствуют бинарные данные для машины состояния ${item.firmware.source}.`
+            `Ошибка! Загрузка по адресу ${displayEntry(
+              addressIndex
+            )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
           );
           return;
         }
         ManagerMS.binAdd({
-          addressInfo: item.addressInfo,
+          addressInfo: addressBookSetting[addressIndex],
           device: device,
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,

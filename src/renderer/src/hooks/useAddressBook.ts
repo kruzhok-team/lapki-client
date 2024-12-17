@@ -14,8 +14,6 @@ export const useAddressBook = () => {
     new Map()
   );
 
-  const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
-
   const [idStorage, setIdStorage] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
   /**
@@ -194,7 +192,5 @@ export const useAddressBook = () => {
     displayEntry,
     stateMachineAddresses,
     assignStateMachineToAddress,
-    selectedFirmwares,
-    setSelectedFirmwares,
   };
 };

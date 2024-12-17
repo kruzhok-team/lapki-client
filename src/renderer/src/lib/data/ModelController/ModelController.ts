@@ -1984,26 +1984,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.pasteSelected();
   };
 
-  private dublicateComponents(components: {
+  private duplicateComponents(components: {
     [id: string]: Component;
   }): [{ [id: string]: string }, { [id: string]: Component }] {
-    const dublicatedComponents: { [id: string]: Component } = {};
+    const duplicatedComponents: { [id: string]: Component } = {};
     const componentMap: { [id: string]: string } = {};
     for (const componentId in components) {
       const newComponentId = this.validator.getComponentName(componentId);
-      dublicatedComponents[newComponentId] = structuredClone(components[componentId]);
+      duplicatedComponents[newComponentId] = structuredClone(components[componentId]);
       componentMap[newComponentId] = componentId;
     }
 
-    return [componentMap, dublicatedComponents];
+    return [componentMap, duplicatedComponents];
   }
 
-  dublicateStateMachine(smId: string) {
+  duplicateStateMachine(smId: string) {
     const stateMachine = this.model.data.elements.stateMachines[smId];
 
     if (!stateMachine) throw new Error('aaaaaa');
     const newStateMachine = structuredClone(stateMachine);
-    const [componentMap, dublicatedComponents] = this.dublicateComponents(
+    const [componentMap, duplicatedComponents] = this.duplicateComponents(
       newStateMachine.components
     );
     const newSmId = generateId();
@@ -2019,7 +2019,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           newStateMachine.name !== undefined
             ? this.validator.getStateMachineName(newStateMachine.name)
             : undefined,
-        components: dublicatedComponents,
+        components: duplicatedComponents,
       },
       true
     );

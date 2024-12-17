@@ -23,7 +23,7 @@ interface StateMachineEditModalProps {
   platformList: optionType[];
   isDuplicateName: (name: string) => boolean;
   selectPlatformDisabled: boolean;
-  dublicateStateMachine: () => void;
+  duplicateStateMachine: () => void;
 }
 
 export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
@@ -33,7 +33,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   submitLabel,
   sideLabel,
   onSide,
-  dublicateStateMachine,
+  duplicateStateMachine,
   form,
   platformList,
   isDuplicateName,
@@ -82,7 +82,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
       onAfterClose={handleAfterClose}
       title="Машина состояний"
       middleLabel="Дублировать МС"
-      onMiddle={dublicateStateMachine}
+      onMiddle={duplicateStateMachine}
       submitLabel={submitLabel}
       onSubmit={handleSubmit}
       sideLabel={sideLabel}

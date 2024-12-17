@@ -61,14 +61,14 @@ export const useStateMachines = () => {
     openDelete();
   };
 
-  const onDublicateStateMachine = () => {
+  const onDuplicateStateMachine = () => {
     if (!idx) return;
 
     const sm = modelController.model.data.elements.stateMachines[idx];
 
     if (!sm) return;
 
-    const [newSmId, canvasId] = modelController.dublicateStateMachine(idx);
+    const [newSmId, canvasId] = modelController.duplicateStateMachine(idx);
 
     openTab(modelController, {
       type: 'editor',
@@ -161,7 +161,7 @@ export const useStateMachines = () => {
       data: data,
       idx: idx,
     },
-    onDublicateStateMachine,
+    onDuplicateStateMachine,
     onRequestDeleteStateMachine,
     onRequestAddStateMachine,
     onRequestEditStateMachine,

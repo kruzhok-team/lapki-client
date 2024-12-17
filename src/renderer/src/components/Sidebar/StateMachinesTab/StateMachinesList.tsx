@@ -45,7 +45,7 @@ export const StateMachinesList: React.FC = () => {
     onRequestAddStateMachine,
     onRequestEditStateMachine,
     isDuplicateName,
-    onDublicateStateMachine,
+    onDuplicateStateMachine,
   } = useStateMachines();
 
   const platformList = getAvailablePlatforms().map((platform) => {
@@ -109,7 +109,7 @@ export const StateMachinesList: React.FC = () => {
         platformList={platformList}
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={true}
-        dublicateStateMachine={onDublicateStateMachine}
+        duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineEditModal
         form={addProps.addForm}
@@ -122,7 +122,7 @@ export const StateMachinesList: React.FC = () => {
         platformList={platformList}
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={false}
-        dublicateStateMachine={onDublicateStateMachine}
+        duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>

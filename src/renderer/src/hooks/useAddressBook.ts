@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
-import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
+import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { useSettings } from './useSettings';
 

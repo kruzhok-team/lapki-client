@@ -57,14 +57,23 @@ function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
   и эти параметры меняются глобально
   Если не клонировать, то значения матрицы отрисовываются полностью после сохранения.
 */
-function serializeArgs(args: ArgList | undefined) {
+function serializeArgs(
+  components: { [id: string]: Component },
+  platform: Platform,
+  args: ArgList | undefined
+) {
   const serializedArgs = structuredClone(args);
   if (serializedArgs === undefined) {
     return '';
   }
   for (const argId in serializedArgs) {
     const arg = serializedArgs[argId];
-    if (Array.isArray(arg) && Array.isArray(arg[0])) {
+    if (isVariable(arg)) {
+      const component = components[arg.component];
+      serializedArgs[argId] = `${arg.component}${getActionDelimeter(platform, component.type)}${
+        arg.method
+      }`;
+    } else if (Array.isArray(arg) && Array.isArray(arg[0])) {
       serializedArgs[argId] = buildMatrix({
         values: arg,
         width: arg.length,
@@ -80,7 +89,11 @@ function serializeArgs(args: ArgList | undefined) {
  * @param trigger Данные триггера
  * @returns Строка с сериализованным триггером
  */
-export function serializeEvent(trigger: Event): string {
+export function serializeEvent(
+  components: { [id: string]: Component },
+  platform: Platform,
+  trigger: Event
+): string {
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
@@ -88,7 +101,11 @@ export function serializeEvent(trigger: Event): string {
   if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {
     return `${trigger.component}.${trigger.method}`;
   } else {
-    return `${trigger.component}.${trigger.method}(${serializeArgs(trigger.args)})`;
+    return `${trigger.component}.${trigger.method}(${serializeArgs(
+      components,
+      platform,
+      trigger.args
+    )})`;
   }
 }
 
@@ -116,6 +133,8 @@ export function serializeActions(
     const platformComponent = platform.components[component.type];
     const actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
     serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
+      components,
+      platform,
       action.args
     )})${platform.delimeter}\n`;
   }
@@ -123,11 +142,15 @@ export function serializeActions(
   return serialized.trim();
 }
 
-function getTrigger(trigger: Event | string | undefined): string | undefined {
+function getTrigger(
+  components: { [id: string]: Component },
+  platform: Platform,
+  trigger: Event | string | undefined
+): string | undefined {
   if (!trigger) {
     return undefined;
   }
-  return isString(trigger) ? trigger : serializeEvent(trigger);
+  return isString(trigger) ? trigger : serializeEvent(components, platform, trigger);
 }
 
 function getActions(
@@ -162,7 +185,7 @@ function serializeTransitionEvents(
   return [
     {
       trigger: {
-        event: getTrigger(trigger),
+        event: getTrigger(components, platform, trigger),
         condition: getCondition(condition, platform, components),
       },
       action: getActions(doActions, components, platform),
@@ -179,7 +202,7 @@ function serializeStateEvents(
   for (const event of events) {
     serializedActions.push({
       trigger: {
-        event: getTrigger(event.trigger) ?? '',
+        event: getTrigger(components, platform, event.trigger) ?? '',
         condition: getCondition(event.condition, platform, components),
       },
       action: getActions(event.do, components, platform),

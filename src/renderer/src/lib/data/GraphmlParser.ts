@@ -28,6 +28,7 @@ import {
   emptyElements,
   emptyStateMachine,
   Note,
+  Variable,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
@@ -101,21 +102,36 @@ function parseEvent(trigger: string): Event | string | undefined {
 
 // Затычка, чтобы не прокидывать повсюду платформу и компоненты.
 // Настоящие название аргументов подтягиваются позднее.
-function initArgList(args: string[]): ArgList {
+function initArgList(args: (string | Variable)[]): ArgList {
   const argList: ArgList = {};
   args.forEach((value, index) => {
-    argList[index] = value.trim();
+    if (typeof value === 'string') {
+      argList[index] = value.trim();
+    } else {
+      argList[index] = value;
+    }
   });
   return argList;
 }
 
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
-
-function splitArgs(argString: string): string[] {
+const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
+function splitArgs(argString: string): (string | Variable)[] {
   // split по запятой, но не внутри скобок
-  const args: string[] = [];
+  const args: (string | Variable)[] = [];
   let currentArg = '';
   let bracketCount = 0;
+  const pushCurrentArg = () => {
+    const isVariable = variableRegex.exec(currentArg);
+    if (isVariable?.groups) {
+      args.push({
+        component: isVariable.groups['component'] ?? '',
+        method: isVariable.groups['method'] ?? '',
+      });
+    } else {
+      args.push(currentArg);
+    }
+  };
   for (const char of argString) {
     if (char === '{') {
       bracketCount++;
@@ -123,13 +139,13 @@ function splitArgs(argString: string): string[] {
       bracketCount--;
     }
     if (char === ',' && bracketCount === 0) {
-      args.push(currentArg);
+      pushCurrentArg();
       currentArg = '';
     } else {
       currentArg += char;
     }
   }
-  args.push(currentArg);
+  pushCurrentArg();
   return args;
 }
 
@@ -165,7 +181,7 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   // На случай, если действий у события нет
   const bracketPos = action.indexOf('(');
   const lastBracketPos = action.lastIndexOf(')');
-  let args: string[] = [];
+  let args: (string | Variable)[] = [];
   if (bracketPos != -1) {
     if (lastBracketPos == -1) {
       // выдать ошибку, у нас незакрытая скобка
@@ -174,7 +190,7 @@ function parseAction(unproccessedAction: string): Action | undefined | string {
   }
   const argString = action.slice(bracketPos + 1, lastBracketPos);
   args = splitArgs(argString).filter((value) => value !== ''); // Фильтр нужен, чтобы отсеять пустое значение в случае отсутствия аргументов.
-
+  debugger;
   const method = action.slice(0, bracketPos);
   return {
     component: componentName,
@@ -636,6 +652,7 @@ export function importGraphml(
       platforms[rawSm.platform] = platform;
     }
     validateElements(elements, platforms);
+    debugger;
     return elements;
   } catch (error) {
     console.error(error);

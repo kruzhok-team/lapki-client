@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { isVariable } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -179,7 +180,9 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         if (Array.isArray(value)) {
           return true;
         }
-        const componentAttribute = getComponentAttribute(value as string, platform);
+        const componentAttribute = isVariable(value)
+          ? [value.component, value.method]
+          : getComponentAttribute(value, platform);
         if (componentAttribute) {
           // существует ли компонет с таким названием
           if (

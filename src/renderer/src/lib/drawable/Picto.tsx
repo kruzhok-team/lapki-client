@@ -111,6 +111,10 @@ export type PictoProps = {
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
+  /*
+   Изменение размеров самой пиктограммы до учета масштаба канваса (просто чтобы поменьше пиктограмму нарисовать можно было)
+  */
+  scalePictoSize?: number;
   // TODO: args
 };
 
@@ -277,19 +281,27 @@ export class Picto {
     y: number,
     bgColor?: string,
     fgColor?: string,
-    opacity?: number
+    opacity?: number,
+    eventWidth: number = this.eventWidth,
+    eventHeight: number = this.eventHeight
   ) {
-    this.drawRect(ctx, x, y, this.eventWidth, this.eventHeight, bgColor, fgColor, opacity);
+    this.drawRect(ctx, x, y, eventWidth, eventHeight, bgColor, fgColor, opacity);
   }
 
-  drawCursor(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  drawCursor(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    eventWidth: number = this.eventWidth,
+    eventHeight: number = this.eventHeight
+  ) {
     // FIXME: рисовать лучше под иконкой, рисует фон, даже если не просишь
     ctx.save();
     ctx.strokeStyle = '#fff';
     ctx.fillStyle = 'none';
     ctx.lineWidth = 3 / this.scale;
     ctx.beginPath();
-    ctx.roundRect(x, y, this.eventWidth / this.scale, this.eventHeight / this.scale, 5);
+    ctx.roundRect(x, y, eventWidth / this.scale, eventHeight / this.scale, 5);
     ctx.stroke();
     ctx.restore();
   }
@@ -364,6 +376,14 @@ export class Picto {
       fgColor: string
     ) => void
   ) {
+    const scalePictoSize = ps.scalePictoSize ?? 1;
+    const eventWidth = this.eventWidth / scalePictoSize;
+    const eventHeight: number = this.eventHeight / scalePictoSize;
+    const iconSize: number = this.iconSize / scalePictoSize;
+    const iconHOffset: number = this.iconHOffset / scalePictoSize;
+    const iconVOffset: number = this.iconVOffset / scalePictoSize;
+    const separatorVOffset: number = this.separatorVOffset / scalePictoSize;
+    const labelFontSize = 13 / scalePictoSize;
     const leftIcon = ps.leftIcon;
     const rightIcon = ps.rightIcon;
     const bgColor = ps.bgColor ?? '#3a426b';
@@ -371,40 +391,50 @@ export class Picto {
     const opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawBorder(ctx, x, y, bgColor, fgColor, opacity);
+    this.drawBorder(ctx, x, y, bgColor, fgColor, opacity, eventWidth, eventHeight);
 
     if (!rightIcon) return;
     if (!leftIcon) {
       // single icon mode
-      this.drawImage(ctx, rightIcon, {
-        x: x + (this.eventWidth - this.iconSize) / 2 / this.scale,
-        y: y + this.iconVOffset / this.scale,
-        width: this.iconSize,
-        height: this.iconSize,
-      });
+      this.drawImage(
+        ctx,
+        rightIcon,
+        {
+          x: x + (eventWidth - iconSize) / 2 / this.scale,
+          y: y + iconVOffset / this.scale,
+          width: iconSize,
+          height: iconSize,
+        },
+        labelFontSize
+      );
     } else {
       // double icon mode
-      this.drawImage(ctx, leftIcon, {
-        x: x + this.iconHOffset / this.scale,
-        y: y + this.iconVOffset / this.scale,
-        width: this.iconSize,
-        height: this.iconSize,
-      });
+      this.drawImage(
+        ctx,
+        leftIcon,
+        {
+          x: x + iconHOffset / this.scale,
+          y: y + iconVOffset / this.scale,
+          width: iconSize,
+          height: iconSize,
+        },
+        labelFontSize
+      );
 
       ctx.strokeStyle = fgColor;
       ctx.lineWidth = 1;
-      ctx.moveTo(x + this.eventWidth / 2 / this.scale, y + this.separatorVOffset / this.scale);
+      ctx.moveTo(x + eventWidth / 2 / this.scale, y + separatorVOffset / this.scale);
       ctx.lineTo(
-        x + this.eventWidth / 2 / this.scale,
-        y + (this.eventHeight - this.separatorVOffset) / this.scale
+        x + eventWidth / 2 / this.scale,
+        y + (eventHeight - separatorVOffset) / this.scale
       );
       ctx.stroke();
 
       this.drawImage(ctx, rightIcon, {
-        x: x + (this.eventWidth - this.iconSize - this.iconHOffset) / this.scale,
-        y: y + this.iconVOffset / this.scale,
-        width: this.iconSize,
-        height: this.iconSize,
+        x: x + (eventWidth - iconSize - iconHOffset) / this.scale,
+        y: y + iconVOffset / this.scale,
+        width: iconSize,
+        height: iconSize,
       });
     }
     if (parameter) {

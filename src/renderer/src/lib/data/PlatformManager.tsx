@@ -3,6 +3,7 @@ import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
 
 import { stateStyle } from '../styles';
+import { isVariable } from '../utils';
 
 export type VisualCompoData = {
   component: string;
@@ -362,6 +363,9 @@ export class PlatformManager {
       ) {
         parameter = paramValue;
         drawFunction = this.picto.drawMatrix;
+      } else if (isVariable(paramValue)) {
+        drawFunction = this.drawParameterPicto;
+        parameter = paramValue;
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);
@@ -384,6 +388,23 @@ export class PlatformManager {
       drawFunction
     );
   }
+
+  drawParameterPicto = (ctx: CanvasRenderingContext2D, x: number, y: number, value: Variable) => {
+    const compoData = this.resolveComponent(value.component);
+    const component = compoData.component;
+    const leftIcon = {
+      ...compoData,
+      icon: this.getComponentIcon(component),
+    };
+    const rightIcon = this.getVariableIcon(component, value.method);
+
+    this.picto.drawPicto(ctx, x + 37 / this.picto.scale, y + 20 / this.picto.scale, {
+      leftIcon,
+      rightIcon,
+      opacity: 0.7,
+      scalePictoSize: 1.6,
+    });
+  };
 
   measureFullCondition(ac: Condition): number {
     if (!operatorSet.has(ac.type)) return 0;

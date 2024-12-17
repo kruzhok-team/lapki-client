@@ -4,7 +4,6 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { isVariable } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';

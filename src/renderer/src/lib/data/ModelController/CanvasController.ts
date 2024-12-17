@@ -54,7 +54,6 @@ import {
   Transition,
   Variable,
 } from '@renderer/types/diagram';
-import { Platform } from '@renderer/types/platform';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ComponentsController } from './ComponentsController';

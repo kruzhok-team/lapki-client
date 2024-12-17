@@ -197,11 +197,8 @@ export interface MetaDataID extends MetaData {
 
 // выбранные для прошивки МС-ТЮК платы
 export type SelectedMsFirmwaresType = {
-  addressInfo: AddressData;
-  firmware: {
-    source: string;
-    isFile: boolean;
-  };
+  source: string;
+  isFile: boolean;
 };
 
 export type BinariesMsType = {

@@ -6,7 +6,7 @@ import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/U
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
-import { ArgumentProto, Platform } from '@renderer/types/platform';
+import { ArgumentProto } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
@@ -49,13 +49,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     setParameters({ ...parameters });
   };
 
-  const handleComponentAttributeChange = (
-    name: string,
-    component: string,
-    attribute: string,
-    platform: Platform | undefined
-  ) => {
-    if (!platform) return;
+  const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
     let inputValue: string | Variable = '';
     if (component || attribute) {
       inputValue = {
@@ -143,7 +137,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             );
           }
         }
-        const platform = controller.platform[smId].data;
+        const platform = controller.platform[smId];
         let currentChecked = isChecked.get(name);
         let selectedParameterMethod: string | null = null;
         let selectedParameterComponent: string | null = null;
@@ -195,9 +189,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     <Select
                       containerClassName="w-full"
                       options={componentOptions}
-                      onChange={(opt) =>
-                        handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
-                      }
+                      onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
                       value={
                         componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
                       }
@@ -211,8 +203,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                         handleComponentAttributeChange(
                           name,
                           selectedParameterComponent ?? '',
-                          opt?.value ?? '',
-                          platform
+                          opt?.value ?? ''
                         )
                       }
                       value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}

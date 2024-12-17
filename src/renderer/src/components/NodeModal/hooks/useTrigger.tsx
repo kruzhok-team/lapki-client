@@ -114,7 +114,8 @@ export const useTrigger = (
       if (typeof triggerToParse !== 'string') {
         setSelectedComponent(triggerToParse.component);
         setSelectedMethod(triggerToParse.method);
-        if (!visual) setText(serializeEvent(triggerToParse)); // для перехода в текст
+        if (!visual && controller.platform[smId])
+          setText(serializeEvent(componentsData, controller.platform[smId].data, triggerToParse)); // для перехода в текст
         return setTabValue(0);
       }
 

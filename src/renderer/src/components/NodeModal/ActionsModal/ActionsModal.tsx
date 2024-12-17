@@ -172,7 +172,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     e.preventDefault();
     e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
 
-    const platform = controller.platform[smId].data;
+    const platform = controller.platform[smId];
     if (
       !protoParameters.every((proto) => {
         const { name, type = '' } = proto;
@@ -180,9 +180,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         if (Array.isArray(value)) {
           return true;
         }
-        const componentAttribute = isVariable(value)
-          ? [value.component, value.method]
-          : getComponentAttribute(value, platform);
+        const componentAttribute = getComponentAttribute(value, platform);
         if (componentAttribute) {
           // существует ли компонет с таким названием
           if (

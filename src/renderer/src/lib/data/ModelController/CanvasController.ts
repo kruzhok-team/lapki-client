@@ -39,6 +39,7 @@ import {
   SelectDrawable,
   UnlinkStateParams,
 } from '@renderer/lib/types';
+import { isVariable } from '@renderer/lib/utils';
 import {
   ArgList,
   ChoiceState,
@@ -771,7 +772,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
                 act.component = newName;
                 continue;
               }
-              this.renameParameters(act.args, id, newName, this.platform[smId].data);
+              this.renameParameters(act.args, id, newName, this.platform[smId]);
             }
           }
         }
@@ -794,7 +795,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
                 act.component = newName;
                 continue;
               }
-              this.renameParameters(act.args, id, newName, this.platform[smId].data);
+              this.renameParameters(act.args, id, newName, this.platform[smId]);
             }
           }
         }
@@ -816,14 +817,18 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     args: ArgList | undefined,
     oldName: string,
     newName: string,
-    platform: Platform
+    platform: PlatformManager
   ) => {
     if (!args) return;
     for (const [index, arg] of Object.entries(args)) {
       if (Array.isArray(arg)) continue;
       const componentAttribute = getComponentAttribute(arg, platform);
       if (componentAttribute !== null && componentAttribute[0] === oldName) {
-        args[index] = `${newName}${componentAttribute[2]}${componentAttribute[1]}`;
+        if (isVariable(arg)) {
+          arg.component = newName;
+        } else {
+          args[index] = `${newName}${componentAttribute[2]}${componentAttribute[1]}`;
+        }
       }
     }
   };

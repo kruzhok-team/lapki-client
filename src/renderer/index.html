@@ -6,11 +6,14 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src * ws://localhost:*; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      content="default-src * ws://localhost:*; script-src 'self' http://localhost:*; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
     />
+    <!-- Раскомментировать при использовании React Dev Tools -- >
+    <script src="http://localhost:8097"></script>
+    < !-- -->
     <link rel="stylesheet" href="./src/assets/styles/preload.css" />
     <!-- Подгрузка темы до начала исполнения основного скрипта, чтобы не дёргалось -->
-    <script type="module" src="/src/initTheme.ts"></script>
+    <script type="module" src="./src/initTheme.ts"></script>
   </head>
 
   <body>

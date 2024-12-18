@@ -27,13 +27,24 @@ export class UserInputValidator {
     return componentsArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
-  getComponentName(selectedComponent: ComponentEntry) {
-    const components = this.getAllComponents();
+  getStateMachineName(name: string) {
+    const smNames = Object.values(this.modelController.model.data.elements.stateMachines).map(
+      (sm) => sm.name
+    );
     let idx = 1;
-    while (`${selectedComponent.idx}${idx}` in components) {
+    while (smNames.includes(`${name}${idx}`)) {
       idx++;
     }
-    return `${selectedComponent.idx}${idx}`;
+    return `${name}${idx}`;
+  }
+
+  getComponentName(id: string) {
+    const components = this.getAllComponents();
+    let idx = 1;
+    while (`${id}${idx}` in components) {
+      idx++;
+    }
+    return `${id}${idx}`;
   }
 
   validateComponentName(

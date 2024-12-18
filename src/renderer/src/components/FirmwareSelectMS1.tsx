@@ -46,7 +46,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {
       selectedFirmwares.forEach((item) => {
-        resValue.set(item.firmware.source, true);
+        resValue.set(item.source, true);
       });
     }
     setIsChecked(resValue);
@@ -85,11 +85,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
           return;
         }
         submitFirmwares.push({
-          addressInfo: addressBookSetting[addressIndex],
-          firmware: {
-            isFile: false,
-            source: smId,
-          },
+          isFile: false,
+          source: smId,
         });
       }
     });

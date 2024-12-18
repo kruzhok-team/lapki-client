@@ -15,7 +15,9 @@ interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   submitLabel?: string;
   extraLabel?: string;
   sideLabel?: string;
+  middleLabel?: string;
   children: React.ReactNode;
+  onMiddle?: React.FormEventHandler;
   onExtra?: React.FormEventHandler;
   onSide?: React.FormEventHandler;
   onSubmit?: React.FormEventHandler;
@@ -32,6 +34,8 @@ export const Modal: React.FC<ModalProps> = ({
   submitLabel,
   extraLabel,
   sideLabel,
+  middleLabel,
+  onMiddle,
   onExtra,
   onSide,
   submitDisabled,
@@ -73,6 +77,9 @@ export const Modal: React.FC<ModalProps> = ({
             hidden={!sideLabel}
           >
             {sideLabel}
+          </button>
+          <button type="button" className="btn-secondary" onClick={onMiddle} hidden={!middleLabel}>
+            {middleLabel}
           </button>
           <div className="flex-grow"></div>
           <button type="button" className="btn-secondary" onClick={props.onRequestClose}>

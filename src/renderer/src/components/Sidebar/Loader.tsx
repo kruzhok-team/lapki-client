@@ -501,18 +501,17 @@ export const Loader: React.FC<FlasherProps> = ({
                 из файла <span className="font-medium">{flasherFile}</span>
               </p>
             ) : (
-              ''
+              <Select
+                className="mb-2"
+                isSearchable={false}
+                placeholder="Выберите машину состояний..."
+                options={stateMachineOptions()}
+                value={getSelectMachineStateOption()}
+                onChange={(opt) => onSelectMachineState(opt?.value)}
+                isDisabled={currentDeviceID == undefined}
+                noOptionsMessage={() => 'Нет подходящих машин состояний'}
+              />
             )}
-            <Select
-              className="mb-2"
-              isSearchable={false}
-              placeholder="Выберите машину состояний..."
-              options={stateMachineOptions()}
-              value={getSelectMachineStateOption()}
-              onChange={(opt) => onSelectMachineState(opt?.value)}
-              isDisabled={currentDeviceID == undefined}
-              noOptionsMessage={() => 'Нет подходящих машин состояний'}
-            />
           </div>
         );
       } else {

@@ -2029,6 +2029,49 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.pasteSelected();
   };
 
+  private duplicateComponents(components: {
+    [id: string]: Component;
+  }): [{ [id: string]: string }, { [id: string]: Component }] {
+    const duplicatedComponents: { [id: string]: Component } = {};
+    const componentMap: { [id: string]: string } = {};
+    for (const componentId in components) {
+      const newComponentId = this.validator.getComponentName(componentId);
+      duplicatedComponents[newComponentId] = structuredClone(components[componentId]);
+      componentMap[newComponentId] = componentId;
+    }
+
+    return [componentMap, duplicatedComponents];
+  }
+
+  duplicateStateMachine(smId: string) {
+    const stateMachine = this.model.data.elements.stateMachines[smId];
+
+    if (!stateMachine) throw new Error('aaaaaa');
+    const newStateMachine = structuredClone(stateMachine);
+    const [componentMap, duplicatedComponents] = this.duplicateComponents(
+      newStateMachine.components
+    );
+    const newSmId = generateId();
+    for (const newComponentId in componentMap) {
+      const oldComponentId = componentMap[newComponentId];
+      this.model.renameComponentInEvents(newStateMachine, oldComponentId, newComponentId);
+    }
+    const canvasId: string = this.createStateMachine(
+      newSmId,
+      {
+        ...newStateMachine,
+        name:
+          newStateMachine.name !== undefined
+            ? this.validator.getStateMachineName(newStateMachine.name)
+            : undefined,
+        components: duplicatedComponents,
+      },
+      true
+    );
+
+    return [newSmId, canvasId];
+  }
+
   selectState = (args: SelectDrawable) => {
     const { id, smId } = args;
     const state = this.model.data.elements.stateMachines[smId].states[id];

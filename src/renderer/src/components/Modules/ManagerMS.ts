@@ -151,4 +151,7 @@ export class ManagerMS {
     this.lastBacktrackStage = '';
     this.setLog(() => []);
   }
+  static clearQueue() {
+    this.flashQueue = [];
+  }
 }

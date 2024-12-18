@@ -1,9 +1,14 @@
 import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/lib/types/graphics';
+import { Variable } from '@renderer/types/diagram';
 
 import { Transition } from '../drawable';
 
 export * from './generateId';
 export * from './roundPoint';
+
+export const isVariable = (value: any): value is Variable => {
+  return value['component'] !== undefined && value['method'] !== undefined;
+};
 
 export const isPointInRectangle = (rectangle: Rectangle, point: Point) => {
   return (

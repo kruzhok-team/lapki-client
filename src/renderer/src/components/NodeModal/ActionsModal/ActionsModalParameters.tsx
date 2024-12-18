@@ -4,8 +4,9 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { ArgList } from '@renderer/types/diagram';
-import { ArgumentProto, Platform } from '@renderer/types/platform';
+import { isVariable } from '@renderer/lib/utils';
+import { ArgList, Variable } from '@renderer/types/diagram';
+import { ArgumentProto } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
@@ -42,25 +43,23 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   smId,
   controller,
 }) => {
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = (name: string, value: string | Variable) => {
     setErrors((p) => ({ ...p, [name]: '' }));
     parameters[name] = value;
     setParameters({ ...parameters });
   };
 
-  const handleComponentAttributeChange = (
-    name: string,
-    component: string,
-    attribute: string,
-    platform: Platform | undefined
-  ) => {
-    if (!platform) return;
-    let inputValue = '';
+  const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
+    let inputValue: string | Variable = '';
     if (component || attribute) {
-      const proto = controller.platform[smId].getComponent(component);
-      const delimiter =
-        proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
-      inputValue = `${component}${delimiter}${attribute}`;
+      inputValue = {
+        component: component,
+        method: attribute,
+      };
+      // const proto = controller.platform[smId].getComponent(component);
+      // const delimiter =
+      //   proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
+      // inputValue = `${component}${delimiter}${attribute}`;
     }
     handleInputChange(name, inputValue);
   };
@@ -138,18 +137,27 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             );
           }
         }
-        const platform = controller.platform[smId].data;
-        const componentAttribute = getComponentAttribute(value as string, platform);
-        // в первый раз проверяет является ли записанное значение атрибутом, затем отслеживает нажатие на чекбокс
-        const currentChecked = isChecked.get(name);
-        if (isChecked.get(name) === undefined) {
-          setCheckedTo(name, componentAttribute != null);
+        const platform = controller.platform[smId];
+        let currentChecked = isChecked.get(name);
+        let selectedParameterMethod: string | null = null;
+        let selectedParameterComponent: string | null = null;
+        if (typeof value === 'string') {
+          const componentAttribute = getComponentAttribute(value, platform);
+          if (isChecked.get(name) === undefined) {
+            setCheckedTo(name, componentAttribute != null);
+          }
+          selectedParameterComponent =
+            currentChecked && componentAttribute ? componentAttribute[0] : null;
+          selectedParameterMethod =
+            currentChecked && componentAttribute ? componentAttribute[1] : null;
+        } else if (isVariable(value)) {
+          selectedParameterComponent = value.component;
+          selectedParameterMethod = value.method;
+          isChecked.set(name, true);
+          currentChecked = true;
         }
-        const selectedParameterComponent =
-          currentChecked && componentAttribute ? componentAttribute[0] : null;
-        const selectedParameterMethod =
-          currentChecked && componentAttribute ? componentAttribute[1] : null;
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
+
         return (
           <div className="flex items-start" key={name}>
             <Checkbox
@@ -181,9 +189,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     <Select
                       containerClassName="w-full"
                       options={componentOptions}
-                      onChange={(opt) =>
-                        handleComponentAttributeChange(name, opt?.value ?? '', '', platform)
-                      }
+                      onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
                       value={
                         componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
                       }
@@ -197,8 +203,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                         handleComponentAttributeChange(
                           name,
                           selectedParameterComponent ?? '',
-                          opt?.value ?? '',
-                          platform
+                          opt?.value ?? ''
                         )
                       }
                       value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}

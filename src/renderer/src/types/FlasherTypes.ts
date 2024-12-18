@@ -97,14 +97,19 @@ export class FlashResult {
   private result: string | undefined;
   /** сообщение от программы для прошивки (например, avrdude)*/
   private flashMsg: string | undefined;
+
+  /** Для МС-ТЮК*/
+  private addressInfo: AddressData | undefined;
   constructor(
     device: Device | undefined,
     result: string | undefined,
-    flashMsg: string | undefined
+    flashMsg: string | undefined,
+    addressInfo: AddressData | undefined
   ) {
     this.device = device;
     this.result = result;
     this.flashMsg = flashMsg;
+    this.addressInfo = addressInfo;
   }
   /** получить результат прошивки*/
   public report(): string {
@@ -114,9 +119,19 @@ export class FlashResult {
         ? (this.device as ArduinoDevice).serialID
         : 'отсутствует';
     const avrdudeMsg = this.flashMsg ? this.flashMsg : 'отсутствует сообщение';
+    const addressInfoDisplay = (addressInfo: AddressData | undefined) => {
+      if (addressInfo === undefined) {
+        return '';
+      }
+      const name = `Название: ${addressInfo.name}`;
+      const address = `Адрес: ${addressInfo.address}`;
+      const type = addressInfo ? `Тип: ${addressInfo.type}` : '';
+      return `Информация о плате:\n ${name}\n ${address}\n ${type}`;
+    };
     return `
 Устройство: ${deviceDesc}
 Серийный номер устройства: ${serialID}
+${addressInfoDisplay(this.addressInfo)}
 Результат прошивки: "${this.result}"
 
 Вывод программы для загрузки прошивки:

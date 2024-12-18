@@ -15,6 +15,7 @@ import {
   FlasherType,
   MetaDataID,
   FlashBacktrackMs,
+  AddressData,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -42,7 +43,7 @@ export class Flasher extends ClientWS {
   static setErrorMessage: Dispatch<SetStateAction<string | undefined>>;
   // сообщение о результате последней попытки прошить устройство
   // если информации о последней прошивки нет, то равняется undefined
-  static setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>;
+  static setFlashResult: Dispatch<SetStateAction<Map<string, FlashResult>>>;
 
   //Когда прочитывает блоб - отправляет его
   static initReader(reader): void {
@@ -72,7 +73,7 @@ export class Flasher extends ClientWS {
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     onFlashingChange: (flashing: boolean) => void,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>,
+    setFlashResult: Dispatch<SetStateAction<Map<string, FlashResult>>>,
     setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
   ): void {
     super.bind(setFlasherConnectionStatus, setSecondsUntilReconnect);
@@ -147,12 +148,31 @@ export class Flasher extends ClientWS {
   static flashingEnd(result: string, avrdudeMsg: string | undefined) {
     this.onFlashingChange(false);
     this.setFlasherFile(undefined);
+    let flashResultKey: string = '';
+    let addressInfo: AddressData | undefined = undefined;
     if (this.currentFlashingDevice instanceof ArduinoDevice) {
+      flashResultKey = this.currentFlashingDevice.displayName();
       this.setFlasherLog(result);
-    } else {
+    } else if (this.currentFlashingDevice instanceof MSDevice) {
+      const msDev = this.currentFlashingDevice as MSDevice;
+      flashResultKey = msDev.displayName() + ' - ' + ManagerMS.getFlashingAddress()?.name;
+      addressInfo = ManagerMS.getFlashingAddress();
       ManagerMS.flashingAddressEndLog(result);
+    } else {
+      flashResultKey = 'Неизвестное устройство';
     }
-    this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
+    //this.setFlashResult(new FlashResult(this.currentFlashingDevice, result, avrdudeMsg));
+    const flashReport = new FlashResult(
+      this.currentFlashingDevice,
+      result,
+      avrdudeMsg,
+      addressInfo
+    );
+    this.setFlashResult((oldValue) => {
+      const newValue = new Map(oldValue);
+      newValue.set(flashResultKey, flashReport);
+      return newValue;
+    });
     this.currentFlashingDevice = undefined;
     ManagerMS.binStart();
   }

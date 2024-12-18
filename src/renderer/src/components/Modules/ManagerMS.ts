@@ -24,7 +24,7 @@ export class ManagerMS {
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
   ]);
   private static flashQueue: BinariesMsType[] = [];
-  private static flashingAddress = '';
+  private static flashingAddress: AddressData | undefined;
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
   private static logSize: number = 0;
@@ -48,7 +48,7 @@ export class ManagerMS {
     if (!binariesInfo) return;
     Flasher.setBinary(binariesInfo.binaries, binariesInfo.device);
     Flasher.flashPreparation(binariesInfo.device);
-    this.flashingAddress = this.displayAddressInfo(binariesInfo.addressInfo);
+    this.flashingAddress = binariesInfo.addressInfo;
     ManagerMS.flashingAddressLog('Начат процесс прошивки...');
     Flasher.send('ms-bin-start', {
       deviceID: binariesInfo.device.deviceID,
@@ -80,7 +80,10 @@ export class ManagerMS {
     });
   }
   static flashingAddressLogString(log: string) {
-    return `${this.flashingAddress}: ${log}`;
+    const addrPlace = this.flashingAddress
+      ? this.displayAddressInfo(this.flashingAddress)
+      : 'Неизвестный адрес';
+    return `${addrPlace}: ${log}`;
   }
   static flashingAddressLog(log: string) {
     ManagerMS.addLog(this.flashingAddressLogString(log));
@@ -89,7 +92,7 @@ export class ManagerMS {
     ManagerMS.flashingAddressLog(log);
     this.lastBacktrackLogIndex = null;
     this.lastBacktrackStage = '';
-    this.flashingAddress = '';
+    this.flashingAddress = undefined;
   }
   static flashingEditLog(log: string, index: number) {
     this.editLog(this.flashingAddressLogString(log), index);
@@ -153,5 +156,8 @@ export class ManagerMS {
   }
   static clearQueue() {
     this.flashQueue = [];
+  }
+  static getFlashingAddress() {
+    return this.flashingAddress;
   }
 }

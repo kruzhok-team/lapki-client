@@ -154,6 +154,9 @@ export class ManagerMS {
     this.lastBacktrackStage = '';
     this.setLog(() => []);
   }
+  static clearQueue() {
+    this.flashQueue = [];
+  }
   static getFlashingAddress() {
     return this.flashingAddress;
   }

@@ -311,6 +311,7 @@ export class Flasher extends ClientWS {
         );
       }
     }
+    ManagerMS.clearQueue();
     if (this.currentFlashingDevice) {
       this.flashingEnd(
         'Потеряно соединение с сервером. Статус загрузки прошивки неизвестен.',

@@ -77,7 +77,7 @@ export const Loader: React.FC<FlasherProps> = ({
     setIsMsgModalOpen(true);
   };
 
-  const [flashResult, setFlashResult] = useState<FlashResult>();
+  const [flashResult, setFlashResult] = useState<Map<string, FlashResult>>(new Map());
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
 
@@ -209,12 +209,14 @@ export const Loader: React.FC<FlasherProps> = ({
 
   // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
   const handleAddAvrdudeTab = () => {
-    closeTab('Прошивка', modelController);
-    openTab(modelController, {
-      type: 'code',
-      name: 'Прошивка',
-      code: flashResult?.report() ?? '',
-      language: 'txt',
+    flashResult.forEach((result, key) => {
+      closeTab(key, modelController);
+      openTab(modelController, {
+        type: 'code',
+        name: key,
+        code: result.report() ?? '',
+        language: 'txt',
+      });
     });
   };
 
@@ -604,7 +606,7 @@ export const Loader: React.FC<FlasherProps> = ({
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}
-          disabled={flashResult === undefined}
+          disabled={flashResult.size === 0}
         >
           Результат прошивки
         </button>

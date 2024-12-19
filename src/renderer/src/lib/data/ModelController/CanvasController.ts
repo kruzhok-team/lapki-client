@@ -195,12 +195,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   model: ModelController;
   type: CanvasControllerType;
   visual = true;
+  hierarchyViews: CanvasSubscribeAttribute[];
   constructor(
     id: string,
     type: CanvasControllerType,
     app: CanvasEditor,
     canvasData: CanvasData,
-    model: ModelController
+    model: ModelController,
+    hierarchyViews: CanvasSubscribeAttribute[]
   ) {
     super();
     this.id = id;
@@ -215,6 +217,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.stateMachines = new StateMachineController(app);
     this.canvasData = canvasData;
     this.model = model;
+    this.hierarchyViews = hierarchyViews;
     this.initPlatform();
   }
 

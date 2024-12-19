@@ -117,7 +117,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       'specific',
       editor,
       { platformNames: { '': '' } },
-      this
+      this,
+      []
     );
     controller.addStateMachineId('');
     this.model.data.elements.stateMachines[''] = emptyStateMachine();
@@ -345,7 +346,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       {
         platformNames: platforms,
       },
-      this
+      this,
+      ['component']
     );
     editor.setController(schemeScreenController);
     this.controllers[schemeScreenId] = schemeScreenController;
@@ -592,7 +594,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       {
         platformNames: { [smId]: data.platform },
       },
-      this
+      this,
+      ['choice', 'final', 'initialState', 'note', 'state', 'transition']
     );
     editor.setController(controller);
     this.controllers[canvasId] = controller;

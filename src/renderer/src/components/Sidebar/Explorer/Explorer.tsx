@@ -85,7 +85,7 @@ export const Explorer: React.FC = () => {
                 hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
               )}
             />
-            <h3 className="font-semibold">Стуктура</h3>
+            <h3 className="font-semibold">Структура</h3>
           </button>
 
           {isInitialized ? <StateMachinesHierarchy /> : 'Недоступно до открытия схемы'}

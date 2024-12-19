@@ -20,7 +20,9 @@ export const Explorer: React.FC = () => {
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
-
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachinesIds = Object.keys(controller.useData('stateMachinesSub'));
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
@@ -89,7 +91,9 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Иерархия состояний</h3>
           </button>
 
-          {isInitialized ? <Hierarchy /> : 'Недоступно до открытия схемы'}
+          {isInitialized
+            ? stateMachinesIds.map((smId) => <Hierarchy controller={controller} smId={smId} />)
+            : 'Недоступно до открытия схемы'}
         </Panel>
       </PanelGroup>
     </section>

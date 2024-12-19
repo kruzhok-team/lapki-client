@@ -13,10 +13,12 @@ import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
 import { useSettings } from '@renderer/hooks';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { useModelContext } from '@renderer/store/ModelContext';
 import {
   ChoiceState,
+  Component,
   FinalState,
   InitialState,
   Note,
@@ -31,17 +33,27 @@ import { TitleRender } from './TitleRender';
 
 export interface HierarchyItemData {
   title: string;
-  type: 'state' | 'initialState' | 'finalState' | 'choiceState' | 'transition' | 'note';
+  type:
+    | 'state'
+    | 'initialState'
+    | 'finalState'
+    | 'choiceState'
+    | 'transition'
+    | 'note'
+    | 'stateMachine'
+    | 'component';
 }
 
-export const Hierarchy: React.FC = () => {
+interface HierarchyProps {
+  controller: CanvasController;
+  smId: string;
+}
+
+export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
   const modelController = useModelContext();
   const model = modelController.model;
   const [theme] = useSettings('theme');
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
   // TODO(L140-beep): реализовать отображение нескольких МС, когда появится общий канвас
-  const smId = stateMachines[0];
   const states = model.useData(smId, 'elements.states') as { [id: string]: State };
   const initialStates = model.useData(smId, 'elements.initialStates') as {
     [id: string]: InitialState;
@@ -54,6 +66,9 @@ export const Hierarchy: React.FC = () => {
   };
   const transitions = model.useData(smId, 'elements.transitions') as {
     [id: string]: Transition;
+  };
+  const components = model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
   };
   const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 
@@ -70,83 +85,120 @@ export const Hierarchy: React.FC = () => {
         children: [],
       },
     };
-
-    for (const stateId in states) {
-      const state = states[stateId];
-
-      data[stateId] = {
-        index: stateId,
-        isFolder: false,
-        data: { title: state.name ?? 'asd', type: 'state' },
-        children: [],
-        canRename: true,
-        canMove: true,
-      };
-    }
-
-    for (const stateId in initialStates) {
-      data[stateId] = {
-        index: stateId,
-        isFolder: false,
-        data: { title: 'Начальное состояние', type: 'initialState' },
-        children: [],
-        canRename: false,
-        canMove: false,
-      };
-    }
-
-    for (const stateId in finalStates) {
-      data[stateId] = {
-        index: stateId,
-        isFolder: false,
-        data: { title: 'Конечное состояние', type: 'finalState' },
-        children: [],
-        canRename: false,
-        canMove: false,
-      };
-    }
-
-    for (const noteId in notes) {
-      const note = notes[noteId];
-
-      data[noteId] = {
-        index: noteId,
-        isFolder: false,
-        //TODO: (XidFanSan) надо добавить название заметки (title)
-        data: { title: note.text ?? 'Комментарий', type: 'note' },
-        children: [],
-        canRename: false,
-        canMove: false,
-      };
-    }
-
-    for (const stateId in choiceStates) {
-      data[stateId] = {
-        index: stateId,
-        isFolder: false,
-        data: { title: 'Состояние выбора', type: 'choiceState' },
-        children: [],
-        canRename: false,
-        canMove: false,
-      };
-    }
-
-    for (const [stateId, state] of [
-      ...Object.entries(states),
-      ...Object.entries(initialStates),
-      ...Object.entries(finalStates),
-      ...Object.entries(choiceStates),
-    ]) {
-      if (!state.parentId) {
-        data.root.children?.push(stateId);
-      } else {
-        data[state.parentId].children?.push(stateId);
-        data[state.parentId].isFolder = true;
+    data[smId] = {
+      index: smId,
+      isFolder: true,
+      data: { title: smId, type: 'stateMachine' },
+      children: [],
+      canRename: false, // TODO (L140-beep): Переименование машин состояний в иерархии
+      canMove: false,
+    };
+    data.root.children?.push(smId);
+    const linkStates = (states: {
+      [id: string]: State | ChoiceState | InitialState | FinalState;
+    }) => {
+      for (const [stateId, state] of Object.entries(states)) {
+        if (!state.parentId) {
+          data[smId].children?.push(stateId);
+        } else {
+          data[state.parentId].children?.push(stateId);
+          data[state.parentId].isFolder = true;
+        }
       }
-    }
+    };
+    for (const attribute of controller.hierarchyViews) {
+      switch (attribute) {
+        case 'component':
+          for (const componentId in components) {
+            data[componentId] = {
+              index: componentId,
+              isFolder: false,
+              data: { title: componentId, type: 'component' },
+              children: [],
+              canRename: true,
+              canMove: true,
+            };
+          }
+          for (const componentId in components) {
+            data[smId].children?.push(componentId);
+          }
+          break;
+        case 'state':
+          for (const stateId in states) {
+            const state = states[stateId];
 
-    for (const [noteId] of [...Object.entries(notes)]) {
-      data.root.children?.push(noteId);
+            data[stateId] = {
+              index: stateId,
+              isFolder: false,
+              data: { title: state.name ?? 'asd', type: 'state' },
+              children: [],
+              canRename: true,
+              canMove: true,
+            };
+          }
+
+          linkStates(states);
+          break;
+        case 'initialState':
+          for (const stateId in initialStates) {
+            data[stateId] = {
+              index: stateId,
+              isFolder: false,
+              data: { title: 'Начальное состояние', type: 'initialState' },
+              children: [],
+              canRename: false,
+              canMove: false,
+            };
+          }
+          linkStates(initialStates);
+          break;
+        case 'final':
+          for (const stateId in finalStates) {
+            data[stateId] = {
+              index: stateId,
+              isFolder: false,
+              data: { title: 'Конечное состояние', type: 'finalState' },
+              children: [],
+              canRename: false,
+              canMove: false,
+            };
+          }
+          linkStates(finalStates);
+          break;
+        case 'choice':
+          for (const stateId in choiceStates) {
+            data[stateId] = {
+              index: stateId,
+              isFolder: false,
+              data: { title: 'Состояние выбора', type: 'choiceState' },
+              children: [],
+              canRename: false,
+              canMove: false,
+            };
+          }
+          linkStates(finalStates);
+          break;
+        case 'note':
+          for (const noteId in notes) {
+            const note = notes[noteId];
+
+            data[noteId] = {
+              index: noteId,
+              isFolder: false,
+              //TODO: (XidFanSan) надо добавить название заметки (title)
+              data: { title: note.text ?? 'Комментарий', type: 'note' },
+              children: [],
+              canRename: false,
+              canMove: false,
+            };
+          }
+          for (const [noteId] of [...Object.entries(notes)]) {
+            data[smId].children?.push(noteId);
+          }
+          break;
+        default:
+          break;
+      }
     }
 
     for (const transitionId in transitions) {
@@ -170,7 +222,17 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [headControllerId, choiceStates, finalStates, initialStates, notes, states, transitions]);
+  }, [
+    smId,
+    components,
+    controller.hierarchyViews,
+    choiceStates,
+    finalStates,
+    initialStates,
+    notes,
+    states,
+    transitions,
+  ]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);
@@ -244,32 +306,31 @@ export const Hierarchy: React.FC = () => {
     const sm = modelController.model.data.elements.stateMachines[smId];
     const itemId = item.index.toString();
     const state = sm.states[itemId];
-    const canvasController = modelController.controllers[headControllerId];
     if (state !== undefined) {
-      return canvasController.states.handleContextMenu(itemId, { event: mouse });
+      return controller.states.handleContextMenu(itemId, { event: mouse });
     }
 
     const finalState = sm.finalStates[itemId];
     if (finalState) {
-      return canvasController.states.handleFinalStateContextMenu(itemId, {
+      return controller.states.handleFinalStateContextMenu(itemId, {
         event: mouse,
       });
     }
     const transition = sm.transitions[itemId];
     if (transition) {
-      return canvasController.transitions.handleContextMenu(itemId, {
+      return controller.transitions.handleContextMenu(itemId, {
         event: mouse,
       });
     }
     const note = sm.notes[itemId];
     if (note) {
-      return canvasController.notes.handleContextMenu(itemId, {
+      return controller.notes.handleContextMenu(itemId, {
         event: mouse,
       });
     }
     const choiceState = sm.choiceStates[itemId];
     if (choiceState) {
-      return canvasController.states.handleChoiceStateContextMenu(itemId, {
+      return controller.states.handleChoiceStateContextMenu(itemId, {
         event: mouse,
       });
     }

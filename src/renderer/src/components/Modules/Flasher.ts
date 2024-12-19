@@ -172,7 +172,11 @@ export class Flasher extends ClientWS {
     }
     for (const bin of binaries) {
       if (bin.extension.endsWith(ending)) {
-        return bin.fileContent as Blob;
+        if (bin.fileContent instanceof Blob) {
+          return bin.fileContent;
+        } else {
+          return new Blob([bin.fileContent]);
+        }
       }
     }
     return null;

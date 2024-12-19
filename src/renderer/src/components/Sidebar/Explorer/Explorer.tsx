@@ -9,10 +9,10 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
-import { Hierarchy } from '@renderer/components/Hierarchy';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentsList } from './ComponentsList';
+import { StateMachinesHierarchy } from './StateMachinesHierarchy';
 
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
@@ -20,7 +20,6 @@ export const Explorer: React.FC = () => {
 
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
-
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
@@ -86,10 +85,10 @@ export const Explorer: React.FC = () => {
                 hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
               )}
             />
-            <h3 className="font-semibold">Иерархия состояний</h3>
+            <h3 className="font-semibold">Структура</h3>
           </button>
 
-          {isInitialized ? <Hierarchy /> : 'Недоступно до открытия схемы'}
+          {isInitialized ? <StateMachinesHierarchy /> : 'Недоступно до открытия схемы'}
         </Panel>
       </PanelGroup>
     </section>

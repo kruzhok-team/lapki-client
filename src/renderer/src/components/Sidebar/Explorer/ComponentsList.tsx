@@ -23,6 +23,7 @@ export const ComponentsList: React.FC = () => {
         (smId: string) =>
           smId !== '' && (
             <StateMachineComponentList
+              key={smId}
               isInitialized={isInitialized}
               controller={controller}
               dragName={dragName}

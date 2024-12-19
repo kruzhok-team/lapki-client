@@ -46,6 +46,7 @@ export const StateMachinesHierarchy: React.FC = () => {
       />
       {stateMachinesIds.map((smId) => (
         <Hierarchy
+          key={smId}
           expand={expand}
           collapse={collapse}
           search={search}

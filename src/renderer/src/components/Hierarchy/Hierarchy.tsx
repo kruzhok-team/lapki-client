@@ -27,7 +27,6 @@ import {
 } from '@renderer/types/diagram';
 import { escapeRegExp } from '@renderer/utils';
 
-import { Filter } from './Filter';
 import { InputRender } from './InputRender';
 import { TitleRender } from './TitleRender';
 
@@ -47,14 +46,24 @@ export interface HierarchyItemData {
 interface HierarchyProps {
   controller: CanvasController;
   smId: string;
+  search: string;
+  collapse: boolean;
+  expand: boolean;
 }
 
-export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
+export const Hierarchy: React.FC<HierarchyProps> = ({
+  controller,
+  collapse,
+  expand,
+  smId,
+  search,
+}) => {
   const modelController = useModelContext();
   const model = modelController.model;
   const [theme] = useSettings('theme');
   // TODO(L140-beep): реализовать отображение нескольких МС, когда появится общий канвас
   const states = model.useData(smId, 'elements.states') as { [id: string]: State };
+  const smName = model.useData(smId, 'elements.name') as string | undefined;
   const initialStates = model.useData(smId, 'elements.initialStates') as {
     [id: string]: InitialState;
   };
@@ -72,7 +81,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
   };
   const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 
-  const [search, setSearch] = useState('');
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>([]);
   const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
@@ -88,7 +96,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
     data[smId] = {
       index: smId,
       isFolder: true,
-      data: { title: smId, type: 'stateMachine' },
+      data: { title: smName ?? smId, type: 'stateMachine' },
       children: [],
       canRename: false, // TODO (L140-beep): Переименование машин состояний в иерархии
       canMove: false,
@@ -108,6 +116,27 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
     };
     for (const attribute of controller.hierarchyViews) {
       switch (attribute) {
+        case 'transition':
+          for (const transitionId in transitions) {
+            const transition = transitions[transitionId];
+            const targetName = data[transition.targetId]?.data?.title;
+
+            data[transitionId] = {
+              index: transitionId,
+              isFolder: false,
+              data: {
+                title: targetName,
+                type: 'transition',
+              },
+              canRename: false,
+              canMove: false,
+            };
+            if (data[transition.sourceId]) {
+              data[transition.sourceId].children?.push(transitionId);
+              data[transition.sourceId].isFolder = true;
+            }
+          }
+          break;
         case 'component':
           for (const componentId in components) {
             data[componentId] = {
@@ -116,7 +145,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
               data: { title: componentId, type: 'component' },
               children: [],
               canRename: true,
-              canMove: true,
+              canMove: false,
             };
           }
           for (const componentId in components) {
@@ -133,7 +162,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
               data: { title: state.name ?? 'asd', type: 'state' },
               children: [],
               canRename: true,
-              canMove: true,
+              canMove: false,
             };
           }
 
@@ -201,28 +230,9 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
       }
     }
 
-    for (const transitionId in transitions) {
-      const transition = transitions[transitionId];
-      const targetName = data[transition.targetId]?.data?.title;
-
-      data[transitionId] = {
-        index: transitionId,
-        isFolder: false,
-        data: {
-          title: targetName,
-          type: 'transition',
-        },
-        canRename: false,
-        canMove: false,
-      };
-      if (data[transition.sourceId]) {
-        data[transition.sourceId].children?.push(transitionId);
-        data[transition.sourceId].isFolder = true;
-      }
-    }
-
     return data;
   }, [
+    smName,
     smId,
     components,
     controller.hierarchyViews,
@@ -343,19 +353,26 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
     actions.startDragging();
   };
 
-  const onExpandAll = () => {
-    const items = Object.entries(hierarchy)
-      .filter(([, item]) => item.isFolder)
-      .map(([key]) => key);
+  useMemo(() => {
+    const onExpandAll = () => {
+      const items = Object.entries(hierarchy)
+        .filter(([, item]) => item.isFolder)
+        .map(([key]) => key);
 
-    return setExpandedItems(items);
-  };
-  const onCollapseAll = () => setExpandedItems([]);
+      return setExpandedItems(items);
+    };
+    const onCollapseAll = () => setExpandedItems([]);
 
-  const handleChangeSearch = (value: string) => {
-    setSearch(value);
+    if (collapse) {
+      onCollapseAll();
+    }
+    if (expand) {
+      onExpandAll();
+    }
+  }, [hierarchy, collapse, expand]);
 
-    if (!value) {
+  useMemo(() => {
+    if (!search) {
       setSelectedItems([]);
       return;
     }
@@ -368,7 +385,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
     };
 
     const items = Object.values(hierarchy).filter((item) =>
-      item.data.title.trim().toLowerCase().includes(value.trim().toLowerCase())
+      item.data.title.trim().toLowerCase().includes(search.trim().toLowerCase())
     );
     const itemsParents = items.reduce((acc, cur) => {
       if (cur.data.type === 'state') {
@@ -389,7 +406,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
       return [...p];
     });
     setSelectedItems([itemsIds[itemsIds.length - 1]]);
-  };
+  }, [hierarchy, states, search]);
 
   useLayoutEffect(() => {
     setSelectedItems([]);
@@ -459,12 +476,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({ controller, smId }) => {
           }),
         }}
       >
-        <Filter
-          onExpandAll={onExpandAll}
-          onCollapseAll={onCollapseAll}
-          search={search}
-          onChangeSearch={handleChangeSearch}
-        />
         <Tree treeId="tree" rootItem="root" />
       </ControlledTreeEnvironment>
     </div>

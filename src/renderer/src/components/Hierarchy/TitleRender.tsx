@@ -1,3 +1,5 @@
+import { twMerge } from 'tailwind-merge';
+
 import { ReactComponent as InitialStateIcon } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
@@ -46,7 +48,9 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
         {(props) => (
           <div {...props} className="flex w-full items-center gap-1">
             <div className="text-[#737373]">
-              <Icon className="h-6 w-6" />
+              <Icon
+                className={twMerge('h-6 w-6', type === 'stateMachine' && 'fill-border-contrast')}
+              />
             </div>
 
             <span className="line-clamp-1">

@@ -18,23 +18,21 @@ export const ComponentsList: React.FC = () => {
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
 
   return (
-    <>
-      <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-        {stateMachines.map(
-          (smId: string) =>
-            smId !== '' && (
-              <StateMachineComponentList
-                isInitialized={isInitialized}
-                controller={controller}
-                dragName={dragName}
-                smId={smId}
-                selectedComponent={selectedComponent}
-                setDragName={setDragName}
-                setSelectedComponent={setSelectedComponent}
-              />
-            )
-        )}
-      </div>
-    </>
+    <div className="max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      {stateMachines.map(
+        (smId: string) =>
+          smId !== '' && (
+            <StateMachineComponentList
+              isInitialized={isInitialized}
+              controller={controller}
+              dragName={dragName}
+              smId={smId}
+              selectedComponent={selectedComponent}
+              setDragName={setDragName}
+              setSelectedComponent={setSelectedComponent}
+            />
+          )
+      )}
+    </div>
   );
 };

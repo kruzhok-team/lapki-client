@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import {
   Tree,
@@ -353,7 +353,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
     actions.startDragging();
   };
 
-  useMemo(() => {
+  useEffect(() => {
     const onExpandAll = () => {
       const items = Object.entries(hierarchy)
         .filter(([, item]) => item.isFolder)
@@ -371,7 +371,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
     }
   }, [hierarchy, collapse, expand]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (!search) {
       setSelectedItems([]);
       return;

@@ -9,7 +9,6 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
-import { Hierarchy } from '@renderer/components/Hierarchy';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentsList } from './ComponentsList';
@@ -86,7 +85,7 @@ export const Explorer: React.FC = () => {
                 hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
               )}
             />
-            <h3 className="font-semibold">Иерархия состояний</h3>
+            <h3 className="font-semibold">Стуктура</h3>
           </button>
 
           {isInitialized ? <StateMachinesHierarchy /> : 'Недоступно до открытия схемы'}

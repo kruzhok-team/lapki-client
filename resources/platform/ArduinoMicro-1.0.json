@@ -31,10 +31,10 @@
           "description": "Создает сигнал, если кнопка была нажата",
           "checkMethod": "isPressed"
         },
-        "clicked": {
+        "isClicked": {
           "img": "arduino/clicked.svg",
           "description": "Создает сигнал, если кнопка была кликнута",
-          "checkMethod": "clicked"
+          "checkMethod": "isClicked"
         }
       },
       "constructorParameters": {

@@ -22,11 +22,7 @@ interface PropertiesModalProps {
   onClose: () => void;
 }
 
-export const PropertiesModal: React.FC<PropertiesModalProps> = ({
-  controller,
-  onClose,
-  ...props
-}) => {
+export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
   const modelController = useModelContext();
   const model = modelController.model;
   const name = model.useData('', 'name');
@@ -38,16 +34,11 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
   const stateMachinesId = Object.keys(stateMachines).filter((value) => value !== '');
   const [selectedSm, setSelectedSm] = useState<string>(stateMachinesId[0]);
   const platform = model.useData(selectedSm, 'elements.platform');
-  const meta: MetaData = model.useData(selectedSm, 'elements.meta');
+  const meta = model.useData(selectedSm, 'elements.meta') as MetaData;
   const [baseProperties, setBaseProperties] = useState<[string, string][]>([]);
   const metaForm = useForm<MetaFormValues>();
-  useMemo(async () => {
-    metaForm.setValue(
-      'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
-    );
-    metaForm.clearErrors();
 
+  useMemo(async () => {
     const propertiesValues: [string, string][] = [
       ['Название', name ?? 'отсутствует'],
       ['Платформа', getPlatform(platform)?.name ?? 'отсутствует'],
@@ -60,8 +51,13 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
       propertiesValues.push(['Дата и время создания файла', dateFormat(stat['birthtime'])]);
       propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
     }
+    metaForm.setValue(
+      'meta',
+      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
+    );
+    metaForm.clearErrors();
     setBaseProperties(propertiesValues);
-  }, [basename, name, selectedSm]);
+  }, [platform, basename, name, meta]);
 
   const smOptions: SelectOption[] = useMemo(() => {
     const getOption = (id: string) => {
@@ -91,9 +87,14 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
 
   const handleStateMachineChange = async (smId: string) => {
     if (!smId) return;
+
+    const newSm = modelController.model.data.elements.stateMachines[smId];
+    metaForm.setValue(
+      'meta',
+      Object.entries(newSm.meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
+    );
+    metaForm.clearErrors();
     setSelectedSm(smId);
-    // onAfterOpen();
-    // // setSmProperties(Object.entries(meta).map(([name, value]) => [name, value]));
   };
 
   return (
@@ -109,7 +110,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
         containerClassName="w-[250px]"
         options={smOptions}
         onChange={(opt) => handleStateMachineChange(opt?.value ?? '')}
-        value={smOptions.find((o) => o.value === selectedSm) ?? null}
+        value={smOptions.find((o) => o.value === selectedSm)}
         isSearchable={false}
         noOptionsMessage={() => 'Нет подходящих атрибутов'}
       />

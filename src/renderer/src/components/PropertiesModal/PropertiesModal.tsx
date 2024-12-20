@@ -22,11 +22,7 @@ interface PropertiesModalProps {
   onClose: () => void;
 }
 
-export const PropertiesModal: React.FC<PropertiesModalProps> = ({
-  controller,
-  onClose,
-  ...props
-}) => {
+export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
   const modelController = useModelContext();
   const model = modelController.model;
   const name = model.useData('', 'name');
@@ -76,15 +72,6 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
     return stateMachinesId.map((smId) => getOption(stateMachines[smId].name ?? smId));
   }, [stateMachines, stateMachinesId]);
 
-  // const addProperty = (id: string, value: string) => {
-  //   meta[id] = value;
-  // };
-
-  // const deleteProperty = (id: string) => {
-  //   if ()
-  //   delete meta[id];
-  // };
-
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
     model.setMeta(
       selectedSm,
@@ -102,17 +89,12 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
     if (!smId) return;
 
     const newSm = modelController.model.data.elements.stateMachines[smId];
-    // updateProperties(smId);
     metaForm.setValue(
       'meta',
       Object.entries(newSm.meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
     );
     metaForm.clearErrors();
     setSelectedSm(smId);
-    // setSelectedSm(smId);
-    // setBaseProperties(propertiesValues);
-    // onAfterOpen();
-    // // setSmProperties(Object.entries(meta).map(([name, value]) => [name, value]));
   };
 
   return (

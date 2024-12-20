@@ -38,16 +38,11 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
   const stateMachinesId = Object.keys(stateMachines).filter((value) => value !== '');
   const [selectedSm, setSelectedSm] = useState<string>(stateMachinesId[0]);
   const platform = model.useData(selectedSm, 'elements.platform');
-  const meta: MetaData = model.useData(selectedSm, 'elements.meta');
+  const meta = model.useData(selectedSm, 'elements.meta') as MetaData;
   const [baseProperties, setBaseProperties] = useState<[string, string][]>([]);
   const metaForm = useForm<MetaFormValues>();
-  useMemo(async () => {
-    metaForm.setValue(
-      'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
-    );
-    metaForm.clearErrors();
 
+  useMemo(async () => {
     const propertiesValues: [string, string][] = [
       ['Название', name ?? 'отсутствует'],
       ['Платформа', getPlatform(platform)?.name ?? 'отсутствует'],
@@ -60,8 +55,13 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
       propertiesValues.push(['Дата и время создания файла', dateFormat(stat['birthtime'])]);
       propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
     }
+    metaForm.setValue(
+      'meta',
+      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
+    );
+    metaForm.clearErrors();
     setBaseProperties(propertiesValues);
-  }, [basename, name, selectedSm]);
+  }, [platform, basename, name, meta]);
 
   const smOptions: SelectOption[] = useMemo(() => {
     const getOption = (id: string) => {
@@ -75,6 +75,15 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
 
     return stateMachinesId.map((smId) => getOption(stateMachines[smId].name ?? smId));
   }, [stateMachines, stateMachinesId]);
+
+  // const addProperty = (id: string, value: string) => {
+  //   meta[id] = value;
+  // };
+
+  // const deleteProperty = (id: string) => {
+  //   if ()
+  //   delete meta[id];
+  // };
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
     model.setMeta(
@@ -91,7 +100,17 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
 
   const handleStateMachineChange = async (smId: string) => {
     if (!smId) return;
+
+    const newSm = modelController.model.data.elements.stateMachines[smId];
+    // updateProperties(smId);
+    metaForm.setValue(
+      'meta',
+      Object.entries(newSm.meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
+    );
+    metaForm.clearErrors();
     setSelectedSm(smId);
+    // setSelectedSm(smId);
+    // setBaseProperties(propertiesValues);
     // onAfterOpen();
     // // setSmProperties(Object.entries(meta).map(([name, value]) => [name, value]));
   };
@@ -109,7 +128,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
         containerClassName="w-[250px]"
         options={smOptions}
         onChange={(opt) => handleStateMachineChange(opt?.value ?? '')}
-        value={smOptions.find((o) => o.value === selectedSm) ?? null}
+        value={smOptions.find((o) => o.value === selectedSm)}
         isSearchable={false}
         noOptionsMessage={() => 'Нет подходящих атрибутов'}
       />

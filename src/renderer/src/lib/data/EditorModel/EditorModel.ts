@@ -72,7 +72,6 @@ export class EditorModel {
   }
 
   init(basename: string | null, name: string, elements: Elements) {
-    // this.triggerDataUpdate('canvas');
     this.data = emptyEditorData();
     this.data.basename = basename;
     this.data.name = name;
@@ -81,7 +80,7 @@ export class EditorModel {
     this.data.elements.stateMachines[''] = emptyStateMachine();
     this.data.isInitialized = true;
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('basename', 'name', 'elements', 'isInitialized');
+    this.triggerDataUpdate('elements.meta', 'basename', 'name', 'elements', 'isInitialized');
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -937,6 +936,8 @@ export class EditorModel {
   }
 
   setMeta(smId: string, meta: Meta) {
+    if (!this.data.elements.stateMachines[smId]) return false;
+
     this.data.elements.stateMachines[smId].meta = meta;
 
     this.triggerDataUpdate('elements.meta');

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, Dispatch } from 'react';
 
 import { SaveModalData } from '@renderer/components';
+import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
@@ -68,6 +69,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const performOpenFile = async (path?: string) => {
     const result = await modelController.files.open(openImportError, path);
+    Compiler.setCompilerData(undefined);
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -84,6 +86,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
+    Compiler.setCompilerData(undefined);
     clearTabs();
     openTabs();
   };
@@ -105,6 +108,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (idx: string) => {
+    Compiler.setCompilerData(undefined);
     modelController.files.newFile(idx);
     clearTabs();
     openTabs();
@@ -155,6 +159,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (setOpenData) {
       const result = await modelController.files.import(setOpenData);
       if (result) {
+        Compiler.setCompilerData(undefined);
         clearTabs();
         openTabs();
       }
@@ -167,6 +172,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   ) => {
     const result = modelController.files.initImportData(importData, openData);
     if (result) {
+      Compiler.setCompilerData(undefined);
       clearTabs();
       openTabs();
     }

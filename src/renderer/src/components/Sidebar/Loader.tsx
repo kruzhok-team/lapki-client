@@ -334,6 +334,9 @@ export const Loader: React.FC<FlasherProps> = ({
 
   useEffect(() => {
     setCompilerDataMS(compilerData);
+    if (compilerData === undefined) {
+      setDeviceStateMachine(new Map());
+    }
   }, [compilerData, setCompilerDataMS]);
 
   const handleReconnect = async () => {

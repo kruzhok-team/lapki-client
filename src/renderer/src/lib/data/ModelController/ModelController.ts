@@ -595,7 +595,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         platformNames: { [smId]: data.platform },
       },
       this,
-      ['choice', 'final', 'initialState', 'note', 'state', 'transition']
+      // Порядок важен!
+      ['state', 'choice', 'final', 'initialState', 'note', 'transition']
     );
     editor.setController(controller);
     this.controllers[canvasId] = controller;

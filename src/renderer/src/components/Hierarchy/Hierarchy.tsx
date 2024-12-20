@@ -144,7 +144,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
               isFolder: false,
               data: { title: componentId, type: 'component' },
               children: [],
-              canRename: true,
+              canRename: false,
               canMove: false,
             };
           }

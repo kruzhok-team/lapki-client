@@ -11,7 +11,9 @@ export const StateMachinesHierarchy: React.FC = () => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
-  const stateMachinesIds = Object.keys(controller.useData('stateMachinesSub'));
+  const stateMachinesIds = Object.keys(controller.useData('stateMachinesSub')).filter(
+    (value) => value != ''
+  );
   const [theme] = useSettings('theme');
   const [search, setSearch] = useState('');
   const [expand, setExpand] = useState(true);

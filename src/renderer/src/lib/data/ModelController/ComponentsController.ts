@@ -49,8 +49,13 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.items.clear();
   }
 
+  private getComponentKey(smId: string, componentName: string) {
+    return smId + componentName;
+  }
+
   createComponent = (args: CreateComponentParams) => {
-    if (this.items.get(args.name)) return;
+    const key = this.getComponentKey(args.smId, args.name);
+    if (this.items.get(key)) return;
     const platform = this.controller.platform[args.smId];
     if (!platform) return;
     const icon = platform.getComponentIcon(args.type);
@@ -67,7 +72,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
       args.position,
       markedIcon
     );
-    this.items.set(args.name, component);
+    this.items.set(key, component);
     this.watch(component);
 
     this.app.view.isDirty = true;
@@ -76,14 +81,16 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   };
 
   changeComponentSelection = (args: ChangeSelectionParams) => {
-    const component = this.items.get(args.id);
+    const key = this.getComponentKey(args.smId, args.id);
+    const component = this.items.get(key);
     if (!component) return;
 
     component.setIsSelected(args.value);
   };
 
   editComponent = (args: EditComponentParams) => {
-    const component = this.items.get(args.id);
+    const key = this.getComponentKey(args.smId, args.id);
+    const component = this.items.get(key);
     if (!component) return;
     // const componentData = component.data;
     if (args.newName !== undefined) {
@@ -107,7 +114,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   };
 
   renameComponent(args: RenameComponentParams) {
-    const component = this.items.get(args.id);
+    const key = this.getComponentKey(args.smId, args.id);
+    const component = this.items.get(key);
     if (!component) return;
     this.controller.deleteComponent(args);
     // (L140-beep) скорее всего придется потом возиться с переходами
@@ -123,15 +131,17 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   changeComponentPosition = (args: ChangePosition) => {
-    const { id, endPosition } = args;
-    const component = this.items.get(id);
+    const { endPosition } = args;
+    const key = this.getComponentKey(args.smId, args.id);
+    const component = this.items.get(key);
     if (!component) return;
     component.position = endPosition;
     this.view.isDirty = true;
   };
 
   deleteComponent = (args: DeleteDrawableParams) => {
-    const component = this.items.get(args.id);
+    const key = this.getComponentKey(args.smId, args.id);
+    const component = this.items.get(key);
     if (!component) return;
 
     // const numberOfConnectedActions = 0;
@@ -152,7 +162,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
 
     this.view.children.remove(component, Layer.Components);
     this.unwatch(component);
-    this.items.delete(args.id);
+    this.items.delete(key);
 
     this.view.isDirty = true;
   };

@@ -81,28 +81,33 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         {sortedComponents.length === 0 ? (
           <p className="text-text-inactive">Нет компонентов</p>
         ) : (
-          sortedComponents.map((name) => (
-            <Component
-              key={name}
-              name={name}
-              description={
-                platform[smId] !== undefined
-                  ? platform[smId].getComponent(name)?.description
-                  : undefined
-              }
-              icon={
-                platform[smId] !== undefined ? platform[smId].getFullComponentIcon(name) : undefined
-              }
-              isSelected={name === selectedComponent}
-              isDragging={name === dragName}
-              onCallContextMenu={() => onRequestEditComponent(name)}
-              onSelect={() => setSelectedComponent(name)}
-              onEdit={() => onRequestEditComponent(name)}
-              onDelete={() => onRequestDeleteComponent(name)}
-              onDragStart={() => setDragName(name)}
-              onDrop={() => onDropComponent(name)}
-            />
-          ))
+          sortedComponents.map((name) => {
+            const key = smId + name;
+            return (
+              <Component
+                key={key}
+                name={name}
+                description={
+                  platform[smId] !== undefined
+                    ? platform[smId].getComponent(name)?.description
+                    : undefined
+                }
+                icon={
+                  platform[smId] !== undefined
+                    ? platform[smId].getFullComponentIcon(name)
+                    : undefined
+                }
+                isSelected={key === selectedComponent}
+                isDragging={key === dragName}
+                onCallContextMenu={() => onRequestEditComponent(name)}
+                onSelect={() => setSelectedComponent(key)}
+                onEdit={() => onRequestEditComponent(name)}
+                onDelete={() => onRequestDeleteComponent(name)}
+                onDragStart={() => setDragName(key)}
+                onDrop={() => onDropComponent(key)}
+              />
+            );
+          })
         )}
       </div>
 

@@ -831,13 +831,9 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   }
 
   selectComponent = (args: SelectDrawable) => {
-    const component = this.components.items.get(args.id);
-    if (!component) {
-      return;
-    }
+    this.components.changeComponentSelection({ ...args, value: true });
     this.removeSelection();
-    component.setIsSelected(true);
-    this.emit('selectComponent', { id: component.id, smId: component.smId });
+    this.emit('selectComponent', { id: args.id, smId: args.smId });
   };
 
   private editComponent = (args: EditComponentParams) => {

@@ -73,9 +73,12 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
       .getLayer(Layer.Components)
       .find((value) => value['id'] === componentId);
     if (!component) {
-      throw Error('Попытка удалить несуществующий компонент!');
+      console.error('Попытка удалить несуществующий компонент!');
+      return;
     }
     sm.children.remove(component, Layer.Components);
+
+    this.view.isDirty = true;
   };
 
   getStateMachineById(sm: string): DrawableStateMachine | undefined {

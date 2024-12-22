@@ -131,10 +131,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   reset() {
     for (const controllerId in this.controllers) {
-      if (this.controllers[controllerId].isMounted) {
-        const controller = this.controllers[controllerId];
-        this.unwatch(controller);
-      }
+      const controller = this.controllers[controllerId];
+      this.unwatch(controller);
     }
     this.emptyController();
     this.loadData();
@@ -1149,7 +1147,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     const siblings = this.getSiblings(smId, newStateId, parentId)[0];
     if (!siblings.length && !parentId) {
-      this.createInitialStateWithTransition(smId, newStateId);
+      this.createInitialStateWithTransition(smId, newStateId, canUndo);
       numberOfConnectedActions += 1;
     }
 

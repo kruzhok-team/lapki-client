@@ -82,7 +82,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           <p className="text-text-inactive">Нет компонентов</p>
         ) : (
           sortedComponents.map((name) => {
-            const key = smId + name;
+            const key = controller.components.getComponentKey(smId, name);
             return (
               <Component
                 key={key}

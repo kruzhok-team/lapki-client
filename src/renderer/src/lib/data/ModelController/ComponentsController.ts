@@ -49,8 +49,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.items.clear();
   }
 
-  private getComponentKey(smId: string, componentName: string) {
-    return smId + componentName;
+  getComponentKey(smId: string, componentName: string) {
+    return `${smId}::${componentName}`;
   }
 
   createComponent = (args: CreateComponentParams) => {

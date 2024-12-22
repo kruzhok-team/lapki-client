@@ -28,7 +28,6 @@ export class FilesManager {
     if (!platform) {
       throw Error('unknown platform ' + platformIdx);
     }
-    this.modelController.reset();
     const elements = emptyElements();
     elements.stateMachines['G'] = emptyStateMachine();
     elements.stateMachines['G'].platform = platformIdx;

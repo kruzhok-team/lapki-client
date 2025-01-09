@@ -177,7 +177,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       handler: handleSaveSourceIntoFolder,
       disabled:
         !smId ||
-        compilerData?.state_machines[smId]?.source == undefined ||
+        compilerData?.state_machines[smId]?.source === undefined ||
         compilerData?.state_machines[smId]?.source.length === 0,
     },
     {
@@ -185,7 +185,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       handler: handleShowSource,
       disabled:
         !smId ||
-        compilerData?.state_machines[smId]?.source == undefined ||
+        compilerData?.state_machines[smId]?.source === undefined ||
         compilerData?.state_machines[smId]?.source.length === 0,
     },
     {

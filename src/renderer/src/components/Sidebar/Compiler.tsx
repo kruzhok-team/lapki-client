@@ -62,6 +62,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const name = modelController.model.useData('', 'name');
   const isInitialized = modelController.model.useData('', 'isInitialized');
 
+  const [hasBinary, setHasBinary] = useState<boolean>(false);
+
   const handleFlashButton = () => {
     changeSidebarTab(SidebarIndex.Flasher);
   };
@@ -155,6 +157,19 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     );
     Compiler.connect(host, port);
   }, [compilerSetting]);
+
+  useEffect(() => {
+    if (compilerData === undefined) {
+      setHasBinary(false);
+      return;
+    }
+    setHasBinary(
+      [...Object.values(compilerData?.state_machines)].some((result) => {
+        return result.binary !== undefined && result.binary.length > 0;
+      })
+    );
+  }, [compilerData]);
+
   const button = [
     {
       name: 'Показать журнал компиляции',
@@ -191,10 +206,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     {
       name: 'Прошить...',
       handler: handleFlashButton,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.binary === undefined ||
-        compilerData?.state_machines[smId]?.binary.length === 0,
+      disabled: !hasBinary,
     },
   ];
   const processing =

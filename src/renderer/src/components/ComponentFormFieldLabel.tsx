@@ -46,6 +46,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
               className
             )}
             {...props}
+            value={props.value ?? ''}
           />
         )}
       </Component>

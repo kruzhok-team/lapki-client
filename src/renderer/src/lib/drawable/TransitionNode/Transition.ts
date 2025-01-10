@@ -1,8 +1,8 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { ArrowsWithLabel, ArrowsWithoutLabel, Label, Shape } from '@renderer/lib/drawable';
-import { transitionStyle } from '@renderer/lib/styles';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { isPointOnLine } from '@renderer/lib/utils';
+import { getColor } from '@renderer/theme';
 import { Transition as DataTransition } from '@renderer/types/diagram';
 
 /**
@@ -93,7 +93,8 @@ export class Transition extends Shape {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.beginPath();
-    ctx.strokeStyle = transitionStyle.bgColor;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = getColor('default-transition-outline');
     ctx.roundRect(x, y, width, height + childrenHeight, 8 / this.app.controller.scale);
     ctx.stroke();
     ctx.closePath();

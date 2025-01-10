@@ -1,7 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EdgeHandlers } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import theme from '@renderer/theme';
+import theme, { getColor } from '@renderer/theme';
 import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
 
 const style = theme.colors.diagram.state;
@@ -71,7 +71,8 @@ export class ChoiceState extends Shape {
     const halfHeight = height / 2;
 
     ctx.lineWidth = 2 / this.app.controller.scale;
-    ctx.strokeStyle = '#FFFFFF';
+    // TODO(L140-beep): Пользовательский цвет обводки
+    ctx.strokeStyle = getColor('default-state-outline');
 
     ctx.beginPath();
 

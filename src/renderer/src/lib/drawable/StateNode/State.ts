@@ -140,7 +140,7 @@ export class State extends Shape {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = this.data.color ?? getColor('default-state-color');
+    ctx.strokeStyle = this.data.color ?? getColor('default-state-outline');
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.scale);

@@ -53,7 +53,8 @@ export default {
           '--d-n-bg': 'rgba(0,0,0,0.3)',
           '--d-n-c': '#FFFFFF',
           '--d-t-c': '#F2F2F2',
-          '--d-s-c': '#F2F2F2',
+          '--d-s-o': '#F2F2F2',
+          '--d-t-o': '#FFFFFF',
         },
         ':root[data-theme="light"]': {
           '--p': '#0C4BEE',
@@ -90,7 +91,8 @@ export default {
           '--d-n-bg': 'rgba(255,255,255,0.5)',
           '--d-n-c': '#000000',
           '--d-t-c': '#404040',
-          '--d-s-c': '#F2F2F2',
+          '--d-s-o': '#0a0a0a',
+          '--d-t-o': '#a6a6a6',
         },
       };
 

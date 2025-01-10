@@ -55,7 +55,7 @@
   "components": {
     "SimpleBus": {
       "description": "Компонент для базового взаимодействия с общей шиной данных на основе простого протокола. Шина является полудуплексной – отправку в конкретный момент времени может осуществлять только один участник.",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/busSimple.svg",
       "signals": {
         "packetReceived": {
           "img": "arduino/byteReceived.svg",
@@ -66,19 +66,19 @@
       "constructorParameters": {},
       "variables": {
         "myAddress": {
-          "img": "common/value.svg",
+          "img": "tjc-ms/addr.svg",
           "type": "uint8_t",
           "description": "Адрес устройства."
         },
         "lastData": {
-          "img": "common/value.svg",
+          "img": "tjc-ms/dataRecv.svg",
           "type": "uint8_t",
           "description": "Последний полученный символ."
         }
       },
       "methods": {
         "setAddress": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/addrSet.svg",
           "parameters": [
             {
               "name": "address",
@@ -89,7 +89,7 @@
           "description": "Назначить новый адрес для получения пакетов."
         },
         "sendPacket": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/message.svg",
           "parameters": [
             {
               "name": "address",
@@ -111,7 +111,7 @@
     },
     "DataBus": {
       "description": "Компонент для низкоуровневого взаимодействия с общей шиной данных. Шина является полудуплексной – отправку в конкретный момент времени может отсуществлять только один участник.",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/bus.svg",
       "signals": {
         "isByteReceived": {
           "img": "arduino/byteReceived.svg",
@@ -123,19 +123,19 @@
         "baudrate": {
           "type": "uint32_t",
           "description": "Частота работы.",
-          "optional" : true
+          "optional": true
         }
       },
       "variables": {
         "lastByte": {
-          "img": "common/value.svg",
+          "img": "tjc-ms/dataRecv.svg",
           "type": "uint8_t",
           "description": "Последний полученный байт."
         }
       },
       "methods": {
         "sendByte": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/message.svg",
           "parameters": [
             {
               "name": "data",
@@ -150,7 +150,7 @@
       "importFiles": ["DataBus.hpp"],
       "singletone": false
     },
-    
+
     "LED": {
       "description": "Компонент для взаимодействия со светодиодом",
       "img": "arduino/led.svg",
@@ -319,7 +319,7 @@
           ]
         },
         "set": {
-          "img": "arduino/sub.svg",
+          "img": "common/set.svg",
           "description": "Установить value к значению счетчика",
           "parameters": [
             {

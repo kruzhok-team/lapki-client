@@ -226,7 +226,7 @@
           ]
         },
         "set": {
-          "img": "arduino/sub.svg",
+          "img": "common/set.svg",
           "description": "Установить value к значению счетчика",
           "parameters": [
             {

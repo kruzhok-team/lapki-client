@@ -513,7 +513,7 @@ export const Loader: React.FC<FlasherProps> = ({
                 options={stateMachineOptions()}
                 value={getSelectMachineStateOption()}
                 onChange={(opt) => onSelectMachineState(opt?.value)}
-                isDisabled={currentDeviceID == undefined}
+                isDisabled={currentDeviceID === undefined}
                 noOptionsMessage={() => 'Нет подходящих машин состояний'}
               />
             )}

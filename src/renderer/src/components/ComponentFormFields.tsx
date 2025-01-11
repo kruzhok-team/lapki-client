@@ -119,7 +119,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
       {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
-        const value = parameters[name] ?? '';
+        const value: string | undefined = parameters[name];
         const type = allParameters[name].type;
         const error = errors[name];
 

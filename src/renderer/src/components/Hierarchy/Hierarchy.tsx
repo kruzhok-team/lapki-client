@@ -205,7 +205,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
               canMove: false,
             };
           }
-          linkStates(finalStates);
+          linkStates(choiceStates);
           break;
         case 'note':
           for (const noteId in notes) {

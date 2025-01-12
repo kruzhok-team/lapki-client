@@ -143,9 +143,20 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       setData({
         shownName: name,
         question: 'Хотите сохранить файл перед тем, как импортировать новый?',
-        onConfirm: performImportFile,
+        // "Не сохранять"
+        // Модальное окно закроется автоматически и откроется окно выбора файла.
+        onConfirm: async () => await performImportFile(setOpenData),
         onSave: handleSaveFile,
-        onOpen: async () => await performImportFile(setOpenData),
+        /* 
+          "Сохранить".
+          модальное окно само не закроется после выбора пути для сохранения,
+          только после выбора файла для импорта, поэтому закрываем сами,
+          чтобы пользователь не подумал, что что-то зависло
+        */
+        onOpen: async () => {
+          onClose();
+          await performImportFile(setOpenData);
+        },
       });
       openSaveModal();
     } else {

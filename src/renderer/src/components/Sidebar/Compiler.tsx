@@ -236,12 +236,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     }
     if (compilerData.result === 'NOTOK') {
       const failedSms = Object.entries(compilerData.state_machines)
-        .map(([smId, sm]) => {
-          if (sm.result === 'NOTOK' && stateMachines[smId]) {
-            return stateMachines[smId].name ?? smId;
-          }
-          return null;
-        })
+        .filter(([smId, sm]) => sm.result === 'NOTOK' && stateMachines[smId])
+        .map(([smId]) => stateMachines[smId].name ?? smId)
         .join(', ');
       return `NOTOK(${failedSms})`;
     }

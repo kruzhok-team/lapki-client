@@ -30,7 +30,8 @@ const colorNames = {
   grid: '--g',
 
   'default-transition-color': '--d-t-c',
-  'default-state-color': '--d-s-c',
+  'default-state-outline': '--d-s-o',
+  'default-transition-outline': '--d-t-o',
 } as const;
 type ColorNames = typeof colorNames;
 type ColorName = keyof ColorNames;

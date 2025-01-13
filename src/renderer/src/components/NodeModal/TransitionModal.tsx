@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-// import { ChoiceState, FinalState, State, Transition } from '@renderer/lib/drawable';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ChangeTransitionParams } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';

@@ -167,6 +167,14 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     updateParameters(selectedComponent, value?.value ?? null);
   };
 
+  const reset = () => {
+    setSelectedComponent(null);
+    setSelectedMethod(null);
+    setProtoParameters([]);
+    setParameters({});
+    setErrors({});
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
@@ -225,17 +233,14 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       method: selectedMethod,
       args: parameters,
     });
+    reset();
   };
 
   // Обработка начальных данных
   useLayoutEffect(() => {
     // Сброс всего если нет начальных данных, то есть когда создаём новое событие
     if (!initialData) {
-      setSelectedComponent(null);
-      setSelectedMethod(null);
-      setProtoParameters([]);
-      setParameters({});
-      setErrors({});
+      reset();
 
       return;
     }

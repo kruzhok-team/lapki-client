@@ -114,10 +114,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
         <>
           <StateNameEdit smId={smId} controller={controller} />
           <NoteEdit smId={smId} controller={controller} />
-
+          {/* 
+            Здесь находятся модалки, которые вызываются через взаимодействие с канвасом. 
+            Модалки могут дублироваться по кодовой базе, если они вызываются другим способом.
+          */}
           <StateModal smId={smId} controller={controller} />
           <TransitionModal controller={controller} smId={smId} />
-
           <ActionsModal
             controller={controller}
             smId={smId}

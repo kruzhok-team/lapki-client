@@ -73,7 +73,6 @@ export const useActions = (smId: string, controller: CanvasController) => {
   const parse = useCallback(
     (parseSmId: string, actionsToParse: Action[] | string | undefined) => {
       clear();
-
       if (!actionsToParse) return;
 
       if (typeof actionsToParse !== 'string') {

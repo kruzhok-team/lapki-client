@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
@@ -197,6 +197,23 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
     setIsInitialTransition(false);
   };
 
+  useLayoutEffect(() => {
+    if (!transition) return;
+    if (trigger.tabValue === 1) {
+      if (typeof value.trigger !== 'string') {
+        return serializeEvent(components, platform, value.trigger) === trigger.text;
+      }
+      return value.trigger === trigger.text;
+    }
+  }, [
+    visual,
+    transition,
+    trigger.selectedComponent,
+    trigger.selectedMethod,
+    trigger.tabValue,
+    trigger.text,
+  ]);
+
   // Подстановка начальных значений
   useEffect(() => {
     const handleCreateTransition = (data: { smId: string; sourceId: string; targetId: string }) => {
@@ -214,7 +231,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
         И, получается, что вызывается модалка как для specific канваса, так и для схемотехнического.
       */
       if (args.smId !== smId || controller.id !== headControllerId) return;
-
+      debugger;
       trigger.parse(args.label?.trigger);
       condition.parse(args.label?.condition);
       actions.parse(args.smId, args.label?.do);

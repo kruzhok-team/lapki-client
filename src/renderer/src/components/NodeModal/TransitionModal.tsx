@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';

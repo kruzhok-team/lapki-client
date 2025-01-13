@@ -6,7 +6,6 @@ import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Platform } from '@renderer/types/platform';
 
 import { Actions, ColorField, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';

@@ -37,22 +37,20 @@ export const Explorer: React.FC = () => {
 
   return (
     <section className="flex h-full flex-col">
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Проводник
-      </h3>
+      <h3 className="mx-4 border-b border-border-primary py-2 text-center text-lg">Проводник</h3>
       <PanelGroup direction="vertical">
         <Panel
           ref={componentPanelRef}
           id="panel1"
           collapsible
           defaultSize={50}
-          minSize={2.5}
-          collapsedSize={2.5}
+          minSize={3}
+          collapsedSize={3}
           onCollapse={forceUpdate}
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="mb-3 flex items-center" onClick={() => togglePanel(componentPanelRef)}>
+          <button className="my-3 flex items-center" onClick={() => togglePanel(componentPanelRef)}>
             <ArrowIcon
               className={twMerge(
                 'rotate-0 transition-transform',
@@ -73,12 +71,13 @@ export const Explorer: React.FC = () => {
           id="panel2"
           ref={hierarchyPanelRef}
           collapsible
-          collapsedSize={2.5}
+          minSize={3}
+          collapsedSize={3}
           onCollapse={forceUpdate}
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="mb-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
+          <button className="my-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
             <ArrowIcon
               className={twMerge(
                 'rotate-0 transition-transform',

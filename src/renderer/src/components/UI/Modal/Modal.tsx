@@ -24,6 +24,11 @@ interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   submitDisabled?: boolean;
   className?: string;
   overlayClassName?: string;
+  cancelClassName?: string;
+  submitClassName?: string;
+  extraClassName?: string;
+  sideClassName?: string;
+  middleClassName?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -41,6 +46,11 @@ export const Modal: React.FC<ModalProps> = ({
   submitDisabled,
   className,
   overlayClassName,
+  cancelClassName,
+  submitClassName,
+  extraClassName,
+  sideClassName,
+  middleClassName,
   ...props
 }) => {
   return (
@@ -72,25 +82,41 @@ export const Modal: React.FC<ModalProps> = ({
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
-            className="rounded px-4 py-2 text-red-400 transition-colors hover:text-red-200"
+            className={
+              sideClassName ?? 'rounded px-4 py-2 text-red-400 transition-colors hover:text-red-200'
+            }
             onClick={onSide}
             hidden={!sideLabel}
           >
             {sideLabel}
           </button>
-          <button type="button" className="btn-secondary" onClick={onMiddle} hidden={!middleLabel}>
+          <button
+            type="button"
+            className={middleClassName ?? 'btn-secondary'}
+            onClick={onMiddle}
+            hidden={!middleLabel}
+          >
             {middleLabel}
           </button>
           <div className="flex-grow"></div>
-          <button type="button" className="btn-secondary" onClick={props.onRequestClose}>
+          <button
+            type="button"
+            className={cancelClassName ?? 'btn-secondary'}
+            onClick={props.onRequestClose}
+          >
             {cancelLabel ?? 'Закрыть'}
           </button>
-          <button type="button" className="btn-primary" hidden={!extraLabel} onClick={onExtra}>
+          <button
+            type="button"
+            className={extraClassName ?? 'btn-primary'}
+            hidden={!extraLabel}
+            onClick={onExtra}
+          >
             {extraLabel ?? ''}
           </button>
           <button
             type="submit"
-            className="btn-primary"
+            className={submitClassName ?? 'btn-primary'}
             hidden={!onSubmit}
             disabled={submitDisabled}
           >

@@ -50,6 +50,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
       submitLabel="Не сохранять"
       onSubmit={handleSubmit}
       onExtra={handleSave}
+      cancelLabel="Отменить"
     >
       <h3>Файл был отредактирован.</h3>
       <h3>{data?.question ?? 'Хотите его сохранить, прежде чем продолжить?'}</h3>

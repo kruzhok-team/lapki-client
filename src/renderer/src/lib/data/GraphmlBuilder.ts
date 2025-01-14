@@ -69,7 +69,8 @@ function serializeArgs(
   for (const argId in serializedArgs) {
     const arg = serializedArgs[argId];
     if (isVariable(arg)) {
-      const component = components[arg.component];
+      const trimmedComponentName = arg.component.trim();
+      const component = components[trimmedComponentName];
       serializedArgs[argId] = `${arg.component}${getActionDelimeter(platform, component.type)}${
         arg.method
       }`;

@@ -31,7 +31,7 @@ export const useTrigger = (
   const [text, setText] = useState('');
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    // Почему-то эта функция может вызываться раньше инициаилзации платформы
+    // Почему-то эта функция может вызываться раньше инициализации платформы
     // из-за чего возникают ошибки
     if (!controller.platform[smId]) {
       return [];
@@ -108,7 +108,6 @@ export const useTrigger = (
   const parse = useCallback(
     (triggerToParse: Event | string | undefined) => {
       clear();
-
       if (!triggerToParse) return;
 
       if (typeof triggerToParse !== 'string') {

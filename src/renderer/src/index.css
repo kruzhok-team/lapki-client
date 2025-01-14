@@ -25,6 +25,6 @@
   }
 
   .btn-error {
-    @apply btn border-error bg-error text-text-primary enabled:hover:opacity-90 enabled:active:opacity-80;
+    @apply btn border-error bg-error text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
   }
 }

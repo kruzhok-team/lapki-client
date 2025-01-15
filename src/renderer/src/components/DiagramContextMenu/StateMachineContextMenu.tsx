@@ -349,7 +349,11 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
     if (menuVariant.type === 'transition') {
       const { transition, position } = menuVariant;
 
-      const sourceArray = Array.from(controller.states.getStates()).filter(
+      const unfilteredSourceArray = controller.notes.items.get(transition.data.sourceId)
+        ? []
+        : // TODO (L140-beep): Заголовки у заметок Array.from(controller.notes.items)
+          Array.from(controller.states.getStates());
+      const sourceArray = unfilteredSourceArray.filter(
         (value) => transition.data.sourceId !== value[0]
       );
       const targetArray = Array.from(controller.states.getStates()).filter(
@@ -370,22 +374,24 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
-              {sourceArray.map(([id, state]) => (
-                <MenuItem
-                  key={id}
-                  onClick={() =>
-                    modelController.changeTransition({
-                      ...transition.data,
-                      smId: smId,
-                      id: transition.id,
-                      sourceId: state.id,
-                    })
-                  }
-                >
-                  <InitialIcon className="size-6 flex-shrink-0" />
-                  {state.data.name}
-                </MenuItem>
-              ))}
+              {sourceArray.length > 0
+                ? sourceArray.map(([id, state]) => (
+                    <MenuItem
+                      key={id}
+                      onClick={() =>
+                        modelController.changeTransition({
+                          ...transition.data,
+                          smId: smId,
+                          id: transition.id,
+                          sourceId: state.id,
+                        })
+                      }
+                    >
+                      <InitialIcon className="size-6 flex-shrink-0" />
+                      {state.data.name}
+                    </MenuItem>
+                  ))
+                : 'Нет подходящих элементов'}
             </SubMenu>
           </SubMenuContainer>
 

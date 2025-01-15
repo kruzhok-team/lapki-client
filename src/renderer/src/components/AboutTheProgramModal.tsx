@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { releaseName, releaseDate, appVersion } from '@renderer/version';
 
 interface AboutTheProgramModalProps {
   isOpen: boolean;
@@ -11,16 +12,6 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   onClose,
   ...props
 }) => {
-  const [appVersion, setAppVersion] = useState<string>('0.0.0');
-  const releaseName = 'Birman';
-  const releaseDate = '9 сентября 2024 года';
-
-  useEffect(() => {
-    window.electron.ipcRenderer.invoke('appVersion').then((version) => {
-      setAppVersion(version);
-    });
-  }, []);
-
   return (
     <Modal {...props} onRequestClose={onClose} title="О программе">
       <div>

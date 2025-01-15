@@ -23,11 +23,11 @@ type AddressBook = {
 
 export const defaultSettings = {
   doc: {
-    host: 'https://lapki-doc.polyus-nt.ru/v/0.2.1/',
+    host: 'https://lapki-doc.polyus-nt.ru/v/0.3.0/',
   },
   compiler: {
     host: 'lapki.polyus-nt.ru',
-    port: 8082,
+    port: 8083,
   },
   flasher: {
     host: 'localhost',

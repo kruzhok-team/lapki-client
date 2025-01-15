@@ -7,6 +7,9 @@ import './assets/styles/fira-sans.css';
 import './assets/styles/fira-mono.css';
 import { App } from './App';
 import { WhoopsieScreen } from './components/WhoopsieScreen';
+import { initAppVersion } from './version';
+
+initAppVersion();
 
 /*
  Для отладки мы запускаем React в строгом режиме.

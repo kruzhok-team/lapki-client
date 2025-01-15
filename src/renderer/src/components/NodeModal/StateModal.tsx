@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
+import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -20,6 +21,9 @@ interface StateModalProps {
 export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
   const visual = controller.useData('visual');
+  const components = modelController.model.useData(smId, 'elements.components');
+  const platforms = controller.useData('platform');
+  const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
@@ -194,6 +198,9 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     if (!state) return;
     const eventIndex = state.data.events.findIndex((value) => {
       if (trigger.tabValue === 1) {
+        if (typeof value.trigger !== 'string') {
+          return serializeEvent(components, platform, value.trigger) === trigger.text;
+        }
         return value.trigger === trigger.text;
       }
 
@@ -206,7 +213,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
       return false;
     });
-
     if (eventIndex === -1) {
       setCurrentEventIndex(undefined);
       parseCondition(undefined);
@@ -228,6 +234,8 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     trigger.selectedMethod,
     trigger.tabValue,
     trigger.text,
+    components,
+    platform,
   ]);
 
   return (

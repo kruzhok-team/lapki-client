@@ -54,7 +54,6 @@ export const useActions = (smId: string, controller: CanvasController) => {
         const newActions = [...p];
 
         newActions[prevActionIndex] = data;
-
         return newActions;
       });
     } else {

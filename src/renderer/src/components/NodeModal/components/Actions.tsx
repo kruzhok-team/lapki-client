@@ -105,6 +105,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
               {actions.map((data, i) => (
                 <Action
                   key={i}
+                  smId={smId}
                   isSelected={selectedActionIndex === i}
                   onSelect={() => setSelectedActionIndex(i)}
                   onChange={() => onChangeAction(data)}

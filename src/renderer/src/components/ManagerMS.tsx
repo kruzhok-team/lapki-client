@@ -49,7 +49,7 @@ export const ManagerMSTab: React.FC = () => {
   useEffect(() => {
     if (!meta || addressBookSetting === null) return;
     const metaStr = `
-- bootloader REF_HW: ${meta.RefBlChip} (${meta.type})
+- bootloader REF_HW: ${meta.RefBlHw} (${meta.type})
 - bootloader REF_FW: ${meta.RefBlFw}
 - bootloader REF_CHIP: ${meta.RefBlChip}
 - booloader REF_PROTOCOL: ${meta.RefBlProtocol}

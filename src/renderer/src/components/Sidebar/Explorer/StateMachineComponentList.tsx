@@ -59,7 +59,14 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   const onDropComponent = (name: string) => {
     if (!dragName) return;
 
-    onSwapComponents(dragName, name);
+    /* 
+      Сюда приходят названия вида smId::componentId
+      Но в модели данных компоненты хранятся как componentId
+      Поэтому сплитим
+    */
+    const splittedDragName = dragName.split('::')[1];
+    const splittedName = name.split('::')[1];
+    onSwapComponents(splittedDragName, splittedName);
   };
   const isDisabled = !isInitialized;
   return (

@@ -2,9 +2,10 @@ import React from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { getActionDelimeter } from '@renderer/lib/data/GraphmlBuilder';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action as ActionData } from '@renderer/types/diagram';
+import { Action as ActionData, Component, Variable } from '@renderer/types/diagram';
 import { getMatrixDimensions } from '@renderer/utils';
 
 import { MatrixWidget } from '../ActionsModal/MatrixWidget';
@@ -27,9 +28,22 @@ export const Action: React.FC<ActionProps> = (props) => {
 
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
+  const components = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
   const controller = modelController.controllers[headControllerId];
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
+
+  const serializeParameter = (param: string | Variable | number[][]) => {
+    if (Array.isArray(param)) return '[...]';
+    if (typeof param === 'string') return param;
+
+    return `${param.component}${getActionDelimeter(
+      platform.data,
+      components[param.component].type
+    )}${param.method}`;
+  };
 
   return (
     <div
@@ -69,7 +83,7 @@ export const Action: React.FC<ActionProps> = (props) => {
               if (!protoParameters)
                 return (
                   <>
-                    {value}
+                    {serializeParameter(value)}
                     {index !== 0 && ', '}
                   </>
                 );
@@ -79,7 +93,8 @@ export const Action: React.FC<ActionProps> = (props) => {
               if (!parameter || !parameter.type)
                 return (
                   <>
-                    {index !== 0 && ', '} {value}
+                    {serializeParameter(value)}
+                    {index !== 0 && ', '}
                   </>
                 );
 
@@ -113,7 +128,7 @@ export const Action: React.FC<ActionProps> = (props) => {
               return (
                 <>
                   {index !== 0 && ', '}
-                  {value}
+                  {serializeParameter(value)}
                 </>
               );
             })}

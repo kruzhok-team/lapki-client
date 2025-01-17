@@ -181,7 +181,9 @@ export class EditorModel {
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
               } else if (isVariable(arg)) {
-                (arg as Variable).component = newComponentId;
+                if ((arg as Variable).component === oldComponentId) {
+                  (arg as Variable).component = newComponentId;
+                }
               }
             }
           }

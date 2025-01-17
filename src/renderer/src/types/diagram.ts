@@ -1,6 +1,5 @@
 import { Dimensions, Point } from '@renderer/lib/types';
 
-// FIXME: в перспективе тип должен быть string | Variable
 export type ArgList = { [key: string]: string | number[][] | Variable };
 
 export type Action = {

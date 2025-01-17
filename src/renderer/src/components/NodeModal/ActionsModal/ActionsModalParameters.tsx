@@ -126,10 +126,19 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 name={name}
               >
                 <MatrixWidget
+                  key={name}
                   {...{
                     width: width,
                     height: height,
                     values: parameters[name] as number[][],
+                    isClickable: true,
+                    style: {
+                      ledHeight: 16,
+                      ledWidth: 16,
+                      margin: 1,
+                      border: 2,
+                      isRounded: true,
+                    },
                   }}
                   onChange={onChange.bind(this, name)}
                 />

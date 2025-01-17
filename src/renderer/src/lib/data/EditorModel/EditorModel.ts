@@ -175,7 +175,6 @@ export class EditorModel {
           if (typeof act !== 'string') {
             if (act.component === oldComponentId) {
               act.component = newComponentId;
-              continue;
             }
             for (const argId in act.args) {
               const arg = act.args[argId];

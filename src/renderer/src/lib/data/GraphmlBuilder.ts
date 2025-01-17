@@ -110,9 +110,11 @@ export function serializeEvent(
   }
 }
 
-function getActionDelimeter(platform: Platform, componentType: string): string {
+export function getActionDelimeter(platform: Platform, componentType: string): string {
   const platformComponent = platform.components[componentType];
-  return platformComponent.singletone ? platform.staticActionDelimeter : '.';
+  return platformComponent.singletone || platform.staticComponents
+    ? platform.staticActionDelimeter
+    : '.';
 }
 
 /**

@@ -21,7 +21,7 @@ import {
   SwapComponentsParams,
   StateMachineData,
 } from '@renderer/lib/types';
-import { generateId } from '@renderer/lib/utils';
+import { generateId, isVariable } from '@renderer/lib/utils';
 import {
   Event,
   Action,
@@ -134,7 +134,7 @@ export class EditorModel {
       const state = sm.states[stateId];
       for (const ev of state.events) {
         if (typeof ev.trigger !== 'string')
-          if (ev.trigger.component == oldComponentId) {
+          if (ev.trigger.component === oldComponentId) {
             ev.trigger.component = newComponentId;
           }
 
@@ -142,12 +142,15 @@ export class EditorModel {
           if (typeof act !== 'string') {
             if (act.component === oldComponentId) {
               act.component = newComponentId;
-              continue;
             }
             for (const argId in act.args) {
               const arg = act.args[argId];
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
+              } else if (isVariable(arg)) {
+                if ((arg as Variable).component === oldComponentId) {
+                  (arg as Variable).component = newComponentId;
+                }
               }
             }
           }
@@ -172,12 +175,15 @@ export class EditorModel {
           if (typeof act !== 'string') {
             if (act.component === oldComponentId) {
               act.component = newComponentId;
-              continue;
             }
             for (const argId in act.args) {
               const arg = act.args[argId];
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
+              } else if (isVariable(arg)) {
+                if ((arg as Variable).component === oldComponentId) {
+                  (arg as Variable).component = newComponentId;
+                }
               }
             }
           }

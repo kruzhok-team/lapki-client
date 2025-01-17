@@ -122,7 +122,7 @@ function splitArgs(argString: string): (string | Variable)[] {
   let currentArg = '';
   let bracketCount = 0;
   const pushCurrentArg = () => {
-    const isVariable = variableRegex.exec(currentArg);
+    const isVariable = variableRegex.exec(currentArg.trim());
     if (isVariable?.groups) {
       args.push({
         component: isVariable.groups['component'] ?? '',

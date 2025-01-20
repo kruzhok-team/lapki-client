@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { twMerge } from 'tailwind-merge';
+import { s } from 'vitest/dist/reporters-5f784f42';
 
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
-import { useModal, useClickOutside, useStateMachines } from '@renderer/hooks';
+import { useModal, useClickOutside, useStateMachines, useComponents } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { DrawableComponent } from '@renderer/lib/drawable';
@@ -16,6 +17,9 @@ import { getVirtualElement } from '@renderer/utils';
 
 import { ContextMenu, MenuItem, SubMenuContainer, SubMenu } from './ContextMenu';
 
+import { ComponentAddModal } from '../ComponentAddModal';
+import { ComponentDeleteModal } from '../ComponentDeleteModal';
+import { ComponentEditModal } from '../ComponentEditModal';
 import { StateMachineEditModal } from '../StateMachineEditModal';
 
 type MenuVariant =
@@ -37,7 +41,6 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
 
   const [isOpen, open, close] = useModal(false);
   const [menuVariant, setMenuVariant] = useState<MenuVariant | null>(null);
-
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
     middleware: [offset(), flip(), shift({ padding: 5 })],
@@ -47,19 +50,11 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
     return { value: platform.idx, label: platform.name };
   });
 
-  const {
-    addProps,
-    editProps,
-    deleteProps,
-    // onSwapStateMachines
-    // onRequestDeleteStateMachine,
-    onRequestAddStateMachine,
-    onRequestEditStateMachine,
-    isDuplicateName,
-    onDuplicateStateMachine,
-  } = useStateMachines();
+  const sMFuncs = useStateMachines();
 
-  useClickOutside(refs.floating.current, close, !isOpen, '#color-picker');
+  const componentFuncs = useComponents(controller);
+
+  const a = useClickOutside(refs.floating.current, close, !isOpen, '#color-picker');
 
   useEffect(() => {
     const handleEvent = (menuVariant: MenuVariant, position: Point) => {
@@ -103,7 +98,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
 
       return (
         <ContextMenu onClose={close}>
-          <MenuItem onClick={onRequestAddStateMachine}>
+          <MenuItem onClick={sMFuncs.onRequestAddStateMachine}>
             <StateMachineIcon className="size-6 flex-shrink-0 fill-border-contrast" />
             Вставить машину состояний
           </MenuItem>
@@ -112,12 +107,25 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
     }
 
     if (menuVariant.type === 'component') {
+      const componentSmId = menuVariant.component.smId;
+      const components =
+        modelController.model.data.elements.stateMachines[componentSmId].components;
       return (
         <ContextMenu onClose={close}>
-          <MenuItem onClick={onRequestAddStateMachine}>
+          <MenuItem
+            onClick={() =>
+              componentFuncs.onRequestEditComponent(
+                componentSmId,
+                components,
+                menuVariant.component.id
+              )
+            }
+          >
             <StateMachineIcon className="size-6 flex-shrink-0 fill-border-contrast" />
             Редактировать
           </MenuItem>
+          {/* <ComponentAddModal {...componentFuncs.addProps} smId={smId} components={components} /> */}
+          {/* <ComponentDeleteModal {...componentFuncs.deleteProps} smId={smId} /> */}
         </ContextMenu>
       );
     }
@@ -132,18 +140,19 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
     >
       {content}
+      <ComponentEditModal {...componentFuncs.editProps} />
       <StateMachineEditModal
-        form={addProps.addForm}
-        isOpen={addProps.isOpen}
-        onClose={addProps.onClose}
-        onSubmit={addProps.onSubmit}
+        form={sMFuncs.addProps.addForm}
+        isOpen={sMFuncs.addProps.isOpen}
+        onClose={sMFuncs.addProps.onClose}
+        onSubmit={sMFuncs.addProps.onSubmit}
         submitLabel="Добавить"
         onSide={undefined}
         sideLabel={undefined}
         platformList={platformList}
-        isDuplicateName={isDuplicateName}
+        isDuplicateName={sMFuncs.isDuplicateName}
         selectPlatformDisabled={false}
-        duplicateStateMachine={onDuplicateStateMachine}
+        duplicateStateMachine={sMFuncs.onDuplicateStateMachine}
       />
     </div>
   );

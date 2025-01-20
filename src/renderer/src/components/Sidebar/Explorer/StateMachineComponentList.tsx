@@ -37,6 +37,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     addProps,
     editProps,
     deleteProps,
+    validateComponentName,
     onSwapComponents,
     onRequestAddComponent,
     onRequestEditComponent,
@@ -118,9 +119,9 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         )}
       </div>
 
-      <ComponentAddModal {...addProps} smId={smId} components={components} />
-      <ComponentEditModal {...editProps} smId={smId} components={components} />
-      <ComponentDeleteModal {...deleteProps} smId={smId} />
+      <ComponentAddModal {...addProps} />
+      <ComponentEditModal {...editProps} />
+      <ComponentDeleteModal {...deleteProps} />
     </>
   );
 };

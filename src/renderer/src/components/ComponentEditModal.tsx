@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { ValidationResult } from '@renderer/lib/data/ModelController/UserInputValidator';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Component as ComponentData } from '@renderer/types/diagram';
@@ -12,21 +13,19 @@ import { ComponentFormFields } from './ComponentFormFields';
 export const nameError = 'name';
 
 interface ComponentEditModalProps {
-  smId: string;
-  components: { [id: string]: Component };
   isOpen: boolean;
   onClose: () => void;
 
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (
-    smId: string,
-    idx: string,
-    data: Omit<ComponentData, 'order' | 'position'>,
-    newName?: string
-  ) => void;
-  onDelete: (smId: string, components: { [id: string]: Component }, idx: string) => void;
+  onEdit: (idx: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
+  onDelete: (idx: string) => void;
+  validateComponentName: (
+    name: string,
+    validateProto: ComponentProto,
+    idx: string
+  ) => ValidationResult;
 }
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
@@ -37,8 +36,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onClose,
   onEdit,
   onDelete,
-  smId,
-  components,
+  validateComponentName,
 }) => {
   const modelController = useModelContext();
   const { model } = modelController;
@@ -46,8 +44,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
   const [name, setName] = useState('');
-  const platformId = model.useData(smId, 'elements.platform');
-  const platform = getPlatform(platformId);
+  // const platformId = model.useData(smId, 'elements.platform');
+  // const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
   const [errors, setErrors] = useState({} as Record<string, string>);
@@ -60,14 +58,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
-    const validationResult = modelController.validator.validateComponentName(
-      smId,
-      controller,
-      proto,
-      name,
-      idx,
-      platform
-    );
+    const validationResult = validateComponentName(name, proto, idx);
     if (validationResult.status) return true;
 
     setErrors((prevErrors) => ({
@@ -91,12 +82,12 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     const submitData = { type: data.type, parameters };
     const newName = name === idx ? undefined : name;
 
-    onEdit(smId, idx, submitData, newName);
+    onEdit(idx, submitData, newName);
     onClose();
   };
 
   const handleDelete = () => {
-    onDelete(smId, components, idx);
+    onDelete(idx);
     onClose();
   };
 
@@ -113,7 +104,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   const showMainData = () => {
     if (proto.singletone) return false;
-    if (platform) return !platform.staticComponents;
+    // if (platform) return !platform.staticComponents;
 
     return true;
   };

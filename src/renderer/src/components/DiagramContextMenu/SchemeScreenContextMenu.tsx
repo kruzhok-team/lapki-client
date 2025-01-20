@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { twMerge } from 'tailwind-merge';
-import { s } from 'vitest/dist/reporters-5f784f42';
 
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
+import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
+import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { useModal, useClickOutside, useStateMachines, useComponents } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
@@ -121,11 +122,21 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
               )
             }
           >
-            <StateMachineIcon className="size-6 flex-shrink-0 fill-border-contrast" />
+            <EditIcon className="size-6 flex-shrink-0" />
             Редактировать
           </MenuItem>
-          {/* <ComponentAddModal {...componentFuncs.addProps} smId={smId} components={components} /> */}
-          {/* <ComponentDeleteModal {...componentFuncs.deleteProps} smId={smId} /> */}
+          <MenuItem
+            onClick={() =>
+              componentFuncs.onRequestDeleteComponent(
+                menuVariant.component.id,
+                components,
+                componentSmId
+              )
+            }
+          >
+            <DeleteIcon className="size-6 flex-shrink-0" />
+            Удалить
+          </MenuItem>
         </ContextMenu>
       );
     }
@@ -140,6 +151,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
     >
       {content}
+      <ComponentDeleteModal {...componentFuncs.deleteProps} />
       <ComponentEditModal {...componentFuncs.editProps} />
       <StateMachineEditModal
         form={sMFuncs.addProps.addForm}

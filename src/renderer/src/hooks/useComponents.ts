@@ -89,7 +89,7 @@ export const useComponents = (controller: CanvasController) => {
     components?: { [id: string]: Component },
     smId?: string
   ) => {
-    if ((!requestedSmId && !smId) || (!components && !requestedComponents)) throw new Error();
+    if ((!requestedSmId && !smId) || (!components && !requestedComponents)) return;
     const usedSm = smId ?? (requestedSmId as string);
     const usedComponents = components ?? requestedComponents;
     const controller = editor.controller;

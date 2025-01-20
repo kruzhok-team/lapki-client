@@ -8,16 +8,24 @@ import { Modal } from '@renderer/components/UI';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { icons } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { Component } from '@renderer/types/diagram';
 
 import { convert } from './utils/html-element-to-react';
 import { stringToHTML } from './utils/stringToHTML';
 
 interface ComponentAddModalProps {
+  smId: string;
+  components: { [id: string]: Component };
   isOpen: boolean;
   onClose: () => void;
 
   vacantComponents: ComponentEntry[];
-  onSubmit: (idx: string, name: string | undefined) => void;
+  onSubmit: (
+    smId: string,
+    components: { [id: string]: Component },
+    idx: string,
+    name: string | undefined
+  ) => void;
 }
 
 export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
@@ -43,6 +51,8 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
     if (!cursor) return;
 
     onSubmit(
+      props.smId,
+      props.components,
       cursor.idx,
       cursor.singletone ? undefined : modelController.validator.getComponentName(cursor.idx)
     );

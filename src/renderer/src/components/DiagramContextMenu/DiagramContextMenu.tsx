@@ -15,7 +15,7 @@ export const DiagramContextMenu: React.FC = () => {
     case 'specific':
       return <StateMachineContextMenu smId={stateMachines[0]} controller={controller} />;
     case 'scheme':
-      return <SchemeScreenContextMenu />;
+      return <SchemeScreenContextMenu controller={controller} />;
     default:
       break;
   }

@@ -6,16 +6,18 @@ import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
 interface ComponentDeleteModalProps {
+  smId: string;
   isOpen: boolean;
   onClose: () => void;
 
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onSubmit: (idx: string) => void;
+  onSubmit: (smId: string, idx: string) => void;
 }
 
 export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
+  smId,
   idx,
   data,
   proto,
@@ -34,7 +36,7 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    onSubmit(idx);
+    onSubmit(smId, idx);
     onClose();
   };
 

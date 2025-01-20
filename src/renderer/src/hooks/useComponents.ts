@@ -3,17 +3,17 @@ import { useState } from 'react';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { systemComponent, ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component as ComponentData } from '@renderer/types/diagram';
+import { Component, Component as ComponentData } from '@renderer/types/diagram';
 
 import { useModal } from './useModal';
 
-export const useComponents = (smId: string, controller: CanvasController) => {
+export const useComponents = (controller: CanvasController) => {
   const modelController = useModelContext();
-  const model = modelController.model;
+  // const model = modelController.model;
   const editor = controller.app;
-  const components = model.useData(smId, 'elements.components') as {
-    [id: string]: ComponentData;
-  };
+  // const components = model.useData(smId, 'elements.components') as {
+  //   [id: string]: ComponentData;
+  // };
 
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<ComponentData>({
@@ -30,7 +30,7 @@ export const useComponents = (smId: string, controller: CanvasController) => {
   const [isEditOpen, openEdit, editClose] = useModal(false);
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
-  const onRequestAddComponent = () => {
+  const onRequestAddComponent = (smId: string, components: { [id: string]: Component }) => {
     const vacantComponents = controller.getVacantComponents(smId, components) as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
@@ -38,7 +38,11 @@ export const useComponents = (smId: string, controller: CanvasController) => {
     openAdd();
   };
 
-  const onRequestEditComponent = (idx: string) => {
+  const onRequestEditComponent = (
+    smId: string,
+    components: { [id: string]: Component },
+    idx: string
+  ) => {
     const controller = editor.controller;
 
     if (!controller.platform[smId]) return;
@@ -57,7 +61,11 @@ export const useComponents = (smId: string, controller: CanvasController) => {
     openEdit();
   };
 
-  const onRequestDeleteComponent = (idx: string) => {
+  const onRequestDeleteComponent = (
+    smId: string,
+    components: { [id: string]: Component },
+    idx: string
+  ) => {
     const controller = editor.controller;
 
     if (!controller.platform[smId]) return;
@@ -73,7 +81,12 @@ export const useComponents = (smId: string, controller: CanvasController) => {
     openDelete();
   };
 
-  const onAdd = (idx: string, name: string | undefined) => {
+  const onAdd = (
+    smId: string,
+    components: { [id: string]: Component },
+    idx: string,
+    name: string | undefined
+  ) => {
     const realName = name ?? idx;
     modelController.createComponent({
       smId: smId,
@@ -84,10 +97,11 @@ export const useComponents = (smId: string, controller: CanvasController) => {
       order: 0,
     });
 
-    onRequestEditComponent(realName);
+    onRequestEditComponent(smId, components, realName);
   };
 
   const onEdit = (
+    smId: string,
     idx: string,
     data: Omit<ComponentData, 'order' | 'position'>,
     newName?: string
@@ -101,13 +115,13 @@ export const useComponents = (smId: string, controller: CanvasController) => {
     });
   };
 
-  const onDelete = (idx: string) => {
+  const onDelete = (smId: string, idx: string) => {
     modelController.deleteComponent({ smId: smId, id: idx });
 
     editClose();
   };
 
-  const onSwapComponents = (name1: string, name2: string) => {
+  const onSwapComponents = (smId: string, name1: string, name2: string) => {
     modelController.swapComponents({ smId: smId, name1, name2 });
   };
 

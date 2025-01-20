@@ -3,7 +3,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { Modal } from '@renderer/components/UI';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component as ComponentData } from '@renderer/types/diagram';
+import { Component, Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
 import { ComponentFormFields } from './ComponentFormFields';
@@ -12,14 +12,21 @@ import { ComponentFormFields } from './ComponentFormFields';
 export const nameError = 'name';
 
 interface ComponentEditModalProps {
+  smId: string;
+  components: { [id: string]: Component };
   isOpen: boolean;
   onClose: () => void;
 
   idx: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (idx: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
-  onDelete: (idx: string) => void;
+  onEdit: (
+    smId: string,
+    idx: string,
+    data: Omit<ComponentData, 'order' | 'position'>,
+    newName?: string
+  ) => void;
+  onDelete: (smId: string, components: { [id: string]: Component }, idx: string) => void;
 }
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
@@ -30,14 +37,14 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onClose,
   onEdit,
   onDelete,
+  smId,
+  components,
 }) => {
   const modelController = useModelContext();
   const { model } = modelController;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
-  const stateMachines = Object.keys(controller.stateMachinesSub);
   const editor = controller.app;
-  const smId = stateMachines[0];
   const [name, setName] = useState('');
   const platformId = model.useData(smId, 'elements.platform');
   const platform = getPlatform(platformId);
@@ -84,12 +91,12 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     const submitData = { type: data.type, parameters };
     const newName = name === idx ? undefined : name;
 
-    onEdit(idx, submitData, newName);
+    onEdit(smId, idx, submitData, newName);
     onClose();
   };
 
   const handleDelete = () => {
-    onDelete(idx);
+    onDelete(smId, components, idx);
     onClose();
   };
 

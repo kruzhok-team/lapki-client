@@ -7,8 +7,10 @@ import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
+import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { useModal, useClickOutside, useStateMachines, useComponents } from '@renderer/hooks';
+import { useProperties } from '@renderer/hooks/useProperties';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { DrawableComponent } from '@renderer/lib/drawable';
@@ -16,6 +18,7 @@ import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { StateMachine } from '@renderer/types/diagram';
 import { getVirtualElement } from '@renderer/utils';
 
 import { ContextMenu, MenuItem, SubMenuContainer, SubMenu } from './ContextMenu';
@@ -23,6 +26,7 @@ import { ContextMenu, MenuItem, SubMenuContainer, SubMenu } from './ContextMenu'
 import { ComponentAddModal } from '../ComponentAddModal';
 import { ComponentDeleteModal } from '../ComponentDeleteModal';
 import { ComponentEditModal } from '../ComponentEditModal';
+import { PropertiesModal } from '../PropertiesModal';
 import { StateMachineEditModal } from '../StateMachineEditModal';
 
 type MenuVariant =
@@ -40,10 +44,10 @@ interface SchemeScreenContextMenuProps {
 export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = ({ controller }) => {
   // TODO(L140-beep): Контекстное меню для схемотехнического экрана
   const modelController = useModelContext();
-  const openTab = useTabs((state) => state.openTab);
 
   const [isOpen, open, close] = useModal(false);
   const [menuVariant, setMenuVariant] = useState<MenuVariant | null>(null);
+  const { propertiesModalProps, setSelectedSmId, openPropertiesModal } = useProperties(controller);
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
     middleware: [offset(), flip(), shift({ padding: 5 })],
@@ -56,8 +60,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
   const sMFuncs = useStateMachines();
 
   const componentFuncs = useComponents(controller);
-
-  const a = useClickOutside(refs.floating.current, close, !isOpen, '#color-picker');
+  useClickOutside(refs.floating.current, close, !isOpen, '#color-picker');
 
   useEffect(() => {
     const handleEvent = (menuVariant: MenuVariant, position: Point) => {
@@ -165,18 +168,23 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
     }
 
     if (menuVariant.type === 'stateMachine') {
+      setSelectedSmId(menuVariant.stateMachine.id);
       return (
         <ContextMenu onClose={close}>
           <MenuItem onClick={() => sMFuncs.onRequestEditStateMachine(menuVariant.stateMachine.id)}>
             <EditIcon className="size-6 flex-shrink-0" />
             Редактировать
           </MenuItem>
+          <MenuItem onClick={openPropertiesModal}>
+            <NoteIcon className="size-6 flex-shrink-0" />
+            Открыть свойства
+          </MenuItem>
         </ContextMenu>
       );
     }
 
     return null;
-  }, [controller, close, menuVariant, openTab]);
+  }, [controller, isOpen, close, menuVariant]);
 
   return (
     <div
@@ -213,6 +221,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
         selectPlatformDisabled={true}
         duplicateStateMachine={sMFuncs.onDuplicateStateMachine}
       />
+      <PropertiesModal {...propertiesModalProps} />
     </div>
   );
 };

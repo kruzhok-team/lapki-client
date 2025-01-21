@@ -15,6 +15,7 @@ interface StateMachineEvents {
   change: DrawableStateMachine;
   mouseUpOnComponent: DrawableStateMachine;
   contextMenu: { stateMachine: DrawableStateMachine; position: Point };
+  changeStateMachineName: DrawableStateMachine;
 }
 
 /**
@@ -137,27 +138,29 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     sm.on('mousedown', this.handleMouseDown.bind(this, sm));
     sm.on('dragend', this.handleDragEnd.bind(this, sm));
     sm.on('contextmenu', this.handleContextMenu.bind(this, sm));
+    sm.on('dblclick', this.handleStateMachineDoubleClick.bind(this, sm));
   }
 
   unwatch(sm: DrawableStateMachine) {
     sm.off('dragend', this.handleDragEnd.bind(this, sm));
     sm.off('mousedown', this.handleMouseDown.bind(this, sm));
     sm.off('contextmenu', this.handleContextMenu.bind(this, sm));
+    sm.off('dblclick', this.handleStateMachineDoubleClick.bind(this, sm));
   }
+
+  handleStateMachineDoubleClick = (sM: DrawableStateMachine, e: { event: MyMouseEvent }) => {
+    const targetPos = sM.computedPosition;
+    const titleHeight = sM.computedTitleSizes.height;
+    const y = e.event.y - titleHeight - targetPos.y - titleHeight;
+
+    if (y <= titleHeight) {
+      return this.emit('changeStateMachineName', sM);
+    }
+  };
 
   deleteStateMachine = (args: DeleteStateMachineParams) => {
     const sm = this.items.get(args.id);
     if (!sm) return;
-
-    // const numberOfConnectedActions = 0;
-
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'deleteStateMachine',
-    //     args: { args, prevStateMachine: structuredClone(sm) },
-    //     numberOfConnectedActions,
-    //   });
-    // }
 
     sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);

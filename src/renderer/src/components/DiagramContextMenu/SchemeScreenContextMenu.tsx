@@ -179,6 +179,12 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
             <NoteIcon className="size-6 flex-shrink-0" />
             Открыть свойства
           </MenuItem>
+          <MenuItem
+            onClick={() => modelController.duplicateStateMachine(menuVariant.stateMachine.id)}
+          >
+            <PasteIcon className="size-6 flex-shrink-0" />
+            Дублировать
+          </MenuItem>
         </ContextMenu>
       );
     }

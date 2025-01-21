@@ -7,6 +7,7 @@ import {
   ActionsModalData,
   StateModal,
   TransitionModal,
+  StateMachineNameEdit,
 } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
@@ -114,6 +115,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
         <>
           <StateNameEdit smId={smId} controller={controller} />
           <NoteEdit smId={smId} controller={controller} />
+          <StateMachineNameEdit controller={controller} />
           {/* 
             Здесь находятся модалки, которые вызываются через взаимодействие с канвасом. 
             Модалки могут дублироваться по кодовой базе, если они вызываются другим способом.

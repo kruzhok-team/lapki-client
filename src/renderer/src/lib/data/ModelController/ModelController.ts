@@ -2072,6 +2072,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             ? this.validator.getStateMachineName(newStateMachine.name)
             : undefined,
         components: duplicatedComponents,
+        position: {
+          x: newStateMachine.position.x + PASTE_POSITION_OFFSET_STEP,
+          y: newStateMachine.position.y + PASTE_POSITION_OFFSET_STEP,
+        },
       },
       true
     );

@@ -68,11 +68,7 @@ export const StateMachineNameEdit: React.FC<StateMachineNameEditProps> = ({ cont
 
       const position = {
         x: statePos.x + globalOffset.x,
-        y:
-          statePos.y +
-          globalOffset.y +
-          (sizes.height / controller.scale) * 2 -
-          3 / controller.scale,
+        y: statePos.y + globalOffset.y + sizes.height * 2 - 3 / controller.scale,
       };
       setStateId(sm.id);
       setInitialName(sm.icon.label ?? null);

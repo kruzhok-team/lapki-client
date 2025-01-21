@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { ValidationResult } from '@renderer/lib/data/ModelController/UserInputValidator';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
@@ -20,6 +20,11 @@ interface ComponentEditModalProps {
   proto: ComponentProto;
   onEdit: (idx: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
   onDelete: (idx: string) => void;
+  validateComponentName: (
+    name: string,
+    validateProto: ComponentProto,
+    idx: string
+  ) => ValidationResult;
 }
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
@@ -30,17 +35,15 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   onClose,
   onEdit,
   onDelete,
+  validateComponentName,
 }) => {
   const modelController = useModelContext();
-  const { model } = modelController;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
-  const stateMachines = Object.keys(controller.stateMachinesSub);
   const editor = controller.app;
-  const smId = stateMachines[0];
   const [name, setName] = useState('');
-  const platformId = model.useData(smId, 'elements.platform');
-  const platform = getPlatform(platformId);
+  // const platformId = model.useData(smId, 'elements.platform');
+  // const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
   const [errors, setErrors] = useState({} as Record<string, string>);
@@ -53,14 +56,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
-    const validationResult = modelController.validator.validateComponentName(
-      smId,
-      controller,
-      proto,
-      name,
-      idx,
-      platform
-    );
+    const validationResult = validateComponentName(name, proto, idx);
     if (validationResult.status) return true;
 
     setErrors((prevErrors) => ({
@@ -106,7 +102,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   const showMainData = () => {
     if (proto.singletone) return false;
-    if (platform) return !platform.staticComponents;
+    // if (platform) return !platform.staticComponents;
 
     return true;
   };

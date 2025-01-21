@@ -2,14 +2,20 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { DrawableComponent, MarkedIconData } from '@renderer/lib/drawable';
 import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
-import { DeleteStateMachineParams, EditStateMachine, Layer } from '@renderer/lib/types';
+import {
+  DeleteStateMachineParams,
+  EditStateMachine,
+  Layer,
+  MyMouseEvent,
+} from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import { CreateStateMachineParams } from '@renderer/lib/types/ModelTypes';
 
 interface StateMachineEvents {
   change: DrawableStateMachine;
   mouseUpOnComponent: DrawableStateMachine;
-  contextMenu: { component: DrawableStateMachine; position: Point };
+  contextMenu: { stateMachine: DrawableStateMachine; position: Point };
+  changeStateMachineName: DrawableStateMachine;
 }
 
 /**
@@ -115,34 +121,46 @@ export class StateMachineController extends EventEmitter<StateMachineEvents> {
     });
   };
 
-  // handleMouseDown(sm: DrawableStateMachine) {
-  //   const item = this.items.get(sm.id);
-  //   if (!item) return;
-  //   this.controller.emit('selectNote', { smId: note.smId, id: note.id });
-  // }
+  handleContextMenu = (sm: DrawableStateMachine, e: { event: MyMouseEvent }) => {
+    this.emit('contextMenu', {
+      stateMachine: sm,
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
+    });
+  };
+
+  handleMouseDown(sm: DrawableStateMachine) {
+    const item = this.items.get(sm.id);
+    if (!item) return;
+    // sm.on('contextmenu', this.handleContextMenu.bind(this, sm));
+  }
 
   watch(sm: DrawableStateMachine) {
-    // sm.on('mousedown', this.handleMouseDown.bind(this, sm));
+    sm.on('mousedown', this.handleMouseDown.bind(this, sm));
     sm.on('dragend', this.handleDragEnd.bind(this, sm));
+    sm.on('contextmenu', this.handleContextMenu.bind(this, sm));
+    sm.on('dblclick', this.handleStateMachineDoubleClick.bind(this, sm));
   }
 
   unwatch(sm: DrawableStateMachine) {
     sm.off('dragend', this.handleDragEnd.bind(this, sm));
+    sm.off('mousedown', this.handleMouseDown.bind(this, sm));
+    sm.off('contextmenu', this.handleContextMenu.bind(this, sm));
+    sm.off('dblclick', this.handleStateMachineDoubleClick.bind(this, sm));
   }
+
+  handleStateMachineDoubleClick = (sM: DrawableStateMachine, e: { event: MyMouseEvent }) => {
+    const targetPos = sM.computedPosition;
+    const titleHeight = sM.computedTitleSizes.height;
+    const y = e.event.y - titleHeight - targetPos.y - titleHeight;
+
+    if (y <= titleHeight) {
+      return this.emit('changeStateMachineName', sM);
+    }
+  };
 
   deleteStateMachine = (args: DeleteStateMachineParams) => {
     const sm = this.items.get(args.id);
     if (!sm) return;
-
-    // const numberOfConnectedActions = 0;
-
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'deleteStateMachine',
-    //     args: { args, prevStateMachine: structuredClone(sm) },
-    //     numberOfConnectedActions,
-    //   });
-    // }
 
     sm.children.clear();
     this.view.children.remove(sm, Layer.Machines);

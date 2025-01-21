@@ -18,21 +18,27 @@ const dateFormat = new Intl.DateTimeFormat('ru-Ru', {
 
 interface PropertiesModalProps {
   controller: CanvasController;
+  stateMachines: { [id: string]: StateMachine };
+  stateMachinesId: string[];
   isOpen: boolean;
   onClose: () => void;
+  selectedSm: string;
+  setSelectedSm: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...props }) => {
+export const PropertiesModal: React.FC<PropertiesModalProps> = ({
+  setSelectedSm,
+  selectedSm,
+  onClose,
+  stateMachines,
+  stateMachinesId,
+  ...props
+}) => {
   const modelController = useModelContext();
   const model = modelController.model;
   const name = model.useData('', 'name');
   const basename = model.useData('', 'basename');
-  // TODO(L140-beep): А вот здесь нужно селектор сделать и убрать CanvasController
-  const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
-    [id: string]: StateMachine;
-  };
-  const stateMachinesId = Object.keys(stateMachines).filter((value) => value !== '');
-  const [selectedSm, setSelectedSm] = useState<string>(stateMachinesId[0]);
+  const smName = modelController.model.useData(selectedSm, 'elements.name');
   const platform = model.useData(selectedSm, 'elements.platform');
   const meta = model.useData(selectedSm, 'elements.meta') as MetaData;
   const [baseProperties, setBaseProperties] = useState<[string, string][]>([]);
@@ -53,11 +59,11 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
     }
     metaForm.setValue(
       'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
+      Object.entries(meta).map(([name, value]) => ({ name, value })) as never
     );
     metaForm.clearErrors();
     setBaseProperties(propertiesValues);
-  }, [platform, basename, name, meta]);
+  }, [platform, basename, name, smName, meta]);
 
   const smOptions: SelectOption[] = useMemo(() => {
     const getOption = (id: string) => {
@@ -69,8 +75,14 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
       };
     };
 
-    return stateMachinesId.map((smId) => getOption(stateMachines[smId].name ?? smId));
-  }, [stateMachines, stateMachinesId]);
+    return stateMachinesId.map((smId) =>
+      getOption(
+        (stateMachines[smId].name !== undefined && stateMachines[smId].name !== ''
+          ? stateMachines[smId].name
+          : smId) as string
+      )
+    );
+  }, [smName, selectedSm, stateMachines, stateMachinesId]);
 
   const handleMetaSubmit = metaForm.handleSubmit((data) => {
     model.setMeta(
@@ -87,14 +99,17 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
 
   const handleStateMachineChange = async (smId: string) => {
     if (!smId) return;
-
-    const newSm = modelController.model.data.elements.stateMachines[smId];
+    const newSm =
+      modelController.model.data.elements.stateMachines[smId] ||
+      Object.values(modelController.model.data.elements.stateMachines).find(
+        (sm) => sm.name === smId
+      );
     metaForm.setValue(
       'meta',
-      Object.entries(newSm.meta).map(([name, value]) => ({ name, value })) as never // TODO(L140-beep): Почему линтер ругается?
+      Object.entries(newSm.meta).map(([name, value]) => ({ name, value }))
     );
     metaForm.clearErrors();
-    setSelectedSm(smId);
+    setSelectedSm(newSm.name && newSm.name !== '' ? newSm.name : smId);
   };
 
   return (
@@ -110,7 +125,7 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
         containerClassName="w-[250px]"
         options={smOptions}
         onChange={(opt) => handleStateMachineChange(opt?.value ?? '')}
-        value={smOptions.find((o) => o.value === selectedSm)}
+        value={smOptions.find((o) => o.value === selectedSm || o.value === smName)}
         isSearchable={false}
         noOptionsMessage={() => 'Нет подходящих атрибутов'}
       />

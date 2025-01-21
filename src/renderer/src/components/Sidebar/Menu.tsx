@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { PropertiesModal, TextModeModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
+import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
@@ -38,7 +39,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const controller = modelController.controllers[headControllerId];
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
-  const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
+  const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const visual = controller.useData('visual');
 
@@ -157,11 +158,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         </button>
       ))}
 
-      <PropertiesModal
-        controller={controller}
-        isOpen={isPropertiesModalOpen}
-        onClose={closePropertiesModal}
-      />
+      <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
     </section>
   );

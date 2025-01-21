@@ -1,22 +1,28 @@
 import { useState } from 'react';
 
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { systemComponent, ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component as ComponentData } from '@renderer/types/diagram';
+import { Component } from '@renderer/types/diagram';
+import { ComponentProto } from '@renderer/types/platform';
 
 import { useModal } from './useModal';
 
-export const useComponents = (smId: string, controller: CanvasController) => {
+export const useComponents = (controller: CanvasController) => {
   const modelController = useModelContext();
-  const model = modelController.model;
+  // const model = modelController.model;
   const editor = controller.app;
-  const components = model.useData(smId, 'elements.components') as {
-    [id: string]: ComponentData;
-  };
+  const [requestedSmId, setRequestedSmId] = useState<string | null>(null);
+  const [requestedComponents, setRequestedComponents] = useState<{
+    [id: string]: Component;
+  }>({});
+  // const components = model.useData(smId, 'elements.components') as {
+  //   [id: string]: ComponentData;
+  // };
 
   const [idx, setIdx] = useState('');
-  const [data, setData] = useState<ComponentData>({
+  const [data, setData] = useState<Component>({
     type: '',
     parameters: {},
     order: 0,
@@ -30,15 +36,35 @@ export const useComponents = (smId: string, controller: CanvasController) => {
   const [isEditOpen, openEdit, editClose] = useModal(false);
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
-  const onRequestAddComponent = () => {
+  const validateComponentName = (name: string, validateProto: ComponentProto, idx: string) => {
+    if (!requestedSmId) throw new Error('ssadasdas');
+    const platformId = modelController.model.data.elements.stateMachines[requestedSmId].platform;
+    const platform = getPlatform(platformId);
+    const validationResult = modelController.validator.validateComponentName(
+      requestedSmId,
+      controller,
+      validateProto,
+      name,
+      idx,
+      platform
+    );
+    return validationResult;
+  };
+
+  const onRequestAddComponent = (smId: string, components: { [id: string]: Component }) => {
     const vacantComponents = controller.getVacantComponents(smId, components) as ComponentEntry[];
 
     setVacantComponents(vacantComponents);
-
+    setRequestedSmId(smId);
+    setRequestedComponents(components);
     openAdd();
   };
 
-  const onRequestEditComponent = (idx: string) => {
+  const onRequestEditComponent = (
+    smId: string,
+    components: { [id: string]: Component },
+    idx: string
+  ) => {
     const controller = editor.controller;
 
     if (!controller.platform[smId]) return;
@@ -50,33 +76,49 @@ export const useComponents = (smId: string, controller: CanvasController) => {
       console.error('non-existing %s %s', idx, component.type);
       return;
     }
-
+    setRequestedSmId(smId);
+    setRequestedComponents(components);
     setIdx(idx);
     setData(component);
     setProto(proto);
     openEdit();
   };
 
-  const onRequestDeleteComponent = (idx: string) => {
+  const onRequestDeleteComponent = (
+    idx: string,
+    components?: { [id: string]: Component },
+    smId?: string
+  ) => {
+    if ((!requestedSmId && !smId) || (!components && !requestedComponents)) return;
+    const usedSm = smId ?? (requestedSmId as string);
+    const usedComponents = components ?? requestedComponents;
     const controller = editor.controller;
 
-    if (!controller.platform[smId]) return;
+    if (!controller.platform[usedSm]) return;
 
-    const component = components[idx];
+    const component = usedComponents[idx];
     if (typeof component === 'undefined') return;
     // NOTE: systemComponent имеет флаг singletone, что и используется в форме
-    const proto = controller?.platform[smId].data.components[component.type] ?? systemComponent;
+    const proto = controller?.platform[usedSm].data.components[component.type] ?? systemComponent;
 
     setIdx(idx);
+    if (components) {
+      setRequestedComponents(components);
+    }
+    if (smId) {
+      setRequestedSmId(smId);
+    }
     setData(component);
     setProto(proto);
     openDelete();
   };
 
   const onAdd = (idx: string, name: string | undefined) => {
+    if (!requestedSmId) throw new Error('No requested smId in onAdd');
+
     const realName = name ?? idx;
     modelController.createComponent({
-      smId: smId,
+      smId: requestedSmId,
       name: realName,
       type: idx,
       parameters: {},
@@ -84,16 +126,13 @@ export const useComponents = (smId: string, controller: CanvasController) => {
       order: 0,
     });
 
-    onRequestEditComponent(realName);
+    onRequestEditComponent(requestedSmId, requestedComponents, realName);
   };
 
-  const onEdit = (
-    idx: string,
-    data: Omit<ComponentData, 'order' | 'position'>,
-    newName?: string
-  ) => {
+  const onEdit = (idx: string, data: Omit<Component, 'order' | 'position'>, newName?: string) => {
+    if (!requestedSmId) throw new Error('No requested smId in onEdit');
     modelController.editComponent({
-      smId: smId,
+      smId: requestedSmId,
       id: idx,
       type: data.type,
       parameters: data.parameters,
@@ -102,12 +141,13 @@ export const useComponents = (smId: string, controller: CanvasController) => {
   };
 
   const onDelete = (idx: string) => {
-    modelController.deleteComponent({ smId: smId, id: idx });
+    if (!requestedSmId) throw new Error('No requested smId in onDelete');
+    modelController.deleteComponent({ smId: requestedSmId, id: idx });
 
     editClose();
   };
 
-  const onSwapComponents = (name1: string, name2: string) => {
+  const onSwapComponents = (smId: string, name1: string, name2: string) => {
     modelController.swapComponents({ smId: smId, name1, name2 });
   };
 
@@ -126,6 +166,7 @@ export const useComponents = (smId: string, controller: CanvasController) => {
       proto,
       onEdit,
       onDelete: onRequestDeleteComponent,
+      validateComponentName,
     },
     deleteProps: {
       isOpen: isDeleteOpen,
@@ -136,6 +177,7 @@ export const useComponents = (smId: string, controller: CanvasController) => {
       onEdit,
       onSubmit: onDelete,
     },
+    validateComponentName,
     onSwapComponents,
     onRequestAddComponent,
     onRequestDeleteComponent,

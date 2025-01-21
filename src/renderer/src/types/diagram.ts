@@ -87,11 +87,6 @@ export type Note = {
   fontSize?: number;
 };
 
-//Получаем тип со всеми машинами состояний
-export type StateMachines = {
-  stateMachines: { [id: string]: Machine };
-};
-
 //Добавляем id для машины состояний, а также прилегающие к ней элементы, плюс выделение
 export type Machine = {
   elements: Elements;

@@ -102,7 +102,7 @@ export class DrawableComponent extends Shape {
     const { borderRadius } = this.computedStyles;
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = '#FFF';
+    ctx.strokeStyle = getColor('default-state-outline');
 
     ctx.roundRect(x, y, width, height, borderRadius);
     ctx.stroke();

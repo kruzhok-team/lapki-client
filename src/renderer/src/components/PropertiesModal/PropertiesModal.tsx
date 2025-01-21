@@ -77,9 +77,9 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
 
     return stateMachinesId.map((smId) =>
       getOption(
-        stateMachines[smId].name !== undefined && stateMachines[smId].name !== ''
+        (stateMachines[smId].name !== undefined && stateMachines[smId].name !== ''
           ? stateMachines[smId].name
-          : smId
+          : smId) as string
       )
     );
   }, [smName, selectedSm, stateMachines, stateMachinesId]);

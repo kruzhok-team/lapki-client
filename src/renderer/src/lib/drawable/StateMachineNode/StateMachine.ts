@@ -1,6 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { Dimensions, Layer, Point } from '@renderer/lib/types';
+import { Dimensions, GetCapturedNodeParams, Layer, Point } from '@renderer/lib/types';
 import { drawText } from '@renderer/lib/utils/text';
 import theme from '@renderer/theme';
 
@@ -124,5 +124,35 @@ export class DrawableStateMachine extends Shape {
 
   setIsSelected(value: boolean) {
     this.isSelected = value;
+  }
+
+  getIntersection(args: GetCapturedNodeParams): Shape | null {
+    const { position, layer, exclude } = args;
+
+    if (exclude?.includes(this)) return null;
+
+    if (layer !== undefined) {
+      for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
+        const node = (this.children.layers[layer][i] as Shape)?.getIntersection(args);
+
+        if (node) return node;
+      }
+    } else {
+      for (let i = this.children.layers.length - 1; i >= 0; i--) {
+        if (!this.children.layers[i]) continue;
+
+        for (let j = this.children.layers[i].length - 1; j >= 0; j--) {
+          const node = (this.children.layers[i][j] as Shape)?.getIntersection(args);
+
+          if (node) return node;
+        }
+      }
+    }
+
+    if (this.isUnderMouse(position, true)) {
+      return this;
+    }
+
+    return null;
   }
 }

@@ -3,9 +3,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
+import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { useModal, useClickOutside, useStateMachines, useComponents } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
@@ -78,12 +80,25 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       handleEvent({ type: 'component', component }, position);
     };
 
+    const handleStateMachineContextMenu = ({
+      position,
+      stateMachine,
+    }: {
+      position: Point;
+      stateMachine: DrawableStateMachine;
+    }) => {
+      handleEvent({ type: 'stateMachine', stateMachine }, position);
+    };
+
     // контекстное меню для пустого поля
     controller.view.on('contextMenu', handleViewContextMenu);
     controller.components.on('contextMenu', handleComponentContextMenu);
+    controller.stateMachines.on('contextMenu', handleStateMachineContextMenu);
     //! Не забывать удалять слушатели
     return () => {
       controller.view.off('contextMenu', handleViewContextMenu);
+      controller.stateMachines.off('contextMenu', handleStateMachineContextMenu);
+      controller.components.off('contextMenu', handleComponentContextMenu);
     };
   }, [controller, open, refs]);
 
@@ -125,6 +140,14 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
             <EditIcon className="size-6 flex-shrink-0" />
             Редактировать
           </MenuItem>
+          <MenuItem onClick={() => modelController.copySelected()}>
+            <CopyIcon className="size-6 flex-shrink-0" />
+            Копировать
+          </MenuItem>
+          <MenuItem onClick={() => modelController.pasteSelected()}>
+            <PasteIcon className="size-6 flex-shrink-0" />
+            Вставить
+          </MenuItem>
           <MenuItem
             onClick={() =>
               componentFuncs.onRequestDeleteComponent(
@@ -136,6 +159,17 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
           >
             <DeleteIcon className="size-6 flex-shrink-0" />
             Удалить
+          </MenuItem>
+        </ContextMenu>
+      );
+    }
+
+    if (menuVariant.type === 'stateMachine') {
+      return (
+        <ContextMenu onClose={close}>
+          <MenuItem onClick={() => sMFuncs.onRequestEditStateMachine(menuVariant.stateMachine.id)}>
+            <EditIcon className="size-6 flex-shrink-0" />
+            Редактировать
           </MenuItem>
         </ContextMenu>
       );
@@ -164,6 +198,19 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
         platformList={platformList}
         isDuplicateName={sMFuncs.isDuplicateName}
         selectPlatformDisabled={false}
+        duplicateStateMachine={sMFuncs.onDuplicateStateMachine}
+      />
+      <StateMachineEditModal
+        form={sMFuncs.editProps.editForm}
+        isOpen={sMFuncs.editProps.isOpen}
+        onClose={sMFuncs.editProps.onClose}
+        onSubmit={sMFuncs.editProps.onEdit}
+        submitLabel="Применить"
+        onSide={sMFuncs.editProps.onDelete}
+        sideLabel="Удалить"
+        platformList={platformList}
+        isDuplicateName={sMFuncs.isDuplicateName}
+        selectPlatformDisabled={true}
         duplicateStateMachine={sMFuncs.onDuplicateStateMachine}
       />
     </div>

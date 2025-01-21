@@ -1868,6 +1868,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         [...Object.entries(this.model.data.elements.stateMachines[smId].notes)].find(
           (note) => note[1].selection
         ) ||
+        [...Object.entries(this.model.data.elements.stateMachines[smId].components)].find(
+          (component) => component[1].selection
+        ) ||
         [];
 
       if (!nodeToCopy || !id) continue;
@@ -1876,9 +1879,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       // Тип нужен чтобы отделить ноды при вставке
       let copyType: CopyType = 'state';
-      if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
-      if (this.isTransition(nodeToCopy)) copyType = 'transition';
-      if (this.isNote(nodeToCopy)) copyType = 'note';
+      if (nodeToCopy['parameters']) copyType = 'component';
+      else if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
+      else if (this.isTransition(nodeToCopy)) copyType = 'transition';
+      else if (this.isNote(nodeToCopy)) copyType = 'note';
 
       // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
       if (id !== this.copyData?.data.id) {
@@ -2011,18 +2015,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     // TODO: Доделать копирование компонентов
-    // if (type === 'component') {
-    //   this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+    if (type === 'component') {
+      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
-    //   return this.scheme.controller.components.createComponent({
-    //     ...data,
-    //     name: '', // name должно сгенерится новое, так как это новая сушность
-    //     position: {
-    //       x: data.position.x + this.pastePositionOffset,
-    //       y: data.position.y + this.pastePositionOffset,
-    //     },
-    //   });
-    // }
+      return this.createComponent({
+        ...data,
+        smId,
+        name: this.validator.getComponentName(data.id), // name должно сгенерится новое, так как это новая сушность
+        position: {
+          x: data.position.x + this.pastePositionOffset,
+          y: data.position.y + this.pastePositionOffset,
+        },
+      });
+    }
     return null;
   };
 

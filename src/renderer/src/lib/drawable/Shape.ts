@@ -285,7 +285,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const { position, layer, exclude, includeChildrenHeight } = args;
 
     if (exclude?.includes(this)) return null;
-
+    // TODO: Флаг includeChildrenHeight выставить в true
     if (this.isUnderMouse(position, includeChildrenHeight)) {
       return this;
     }

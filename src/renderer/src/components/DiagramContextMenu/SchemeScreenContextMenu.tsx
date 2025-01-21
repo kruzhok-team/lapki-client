@@ -17,13 +17,10 @@ import { DrawableComponent } from '@renderer/lib/drawable';
 import { DrawableStateMachine } from '@renderer/lib/drawable/StateMachineNode';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { useTabs } from '@renderer/store/useTabs';
-import { StateMachine } from '@renderer/types/diagram';
 import { getVirtualElement } from '@renderer/utils';
 
-import { ContextMenu, MenuItem, SubMenuContainer, SubMenu } from './ContextMenu';
+import { ContextMenu, MenuItem } from './ContextMenu';
 
-import { ComponentAddModal } from '../ComponentAddModal';
 import { ComponentDeleteModal } from '../ComponentDeleteModal';
 import { ComponentEditModal } from '../ComponentEditModal';
 import { PropertiesModal } from '../PropertiesModal';

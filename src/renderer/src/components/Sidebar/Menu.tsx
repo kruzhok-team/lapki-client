@@ -39,8 +39,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const controller = modelController.controllers[headControllerId];
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
-  const { propertiesModalProps, isPropertiesModalOpen, openPropertiesModal, closePropertiesModal } =
-    useProperties(controller);
+  const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const visual = controller.useData('visual');
 

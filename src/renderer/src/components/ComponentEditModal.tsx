@@ -2,9 +2,8 @@ import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { ValidationResult } from '@renderer/lib/data/ModelController/UserInputValidator';
-import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component, Component as ComponentData } from '@renderer/types/diagram';
+import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 
 import { ComponentFormFields } from './ComponentFormFields';
@@ -39,7 +38,6 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   validateComponentName,
 }) => {
   const modelController = useModelContext();
-  const { model } = modelController;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const editor = controller.app;

@@ -500,6 +500,48 @@
       "importFiles": ["ShiftRegister.h"],
       "variables": {},
       "singletone": false
+    },
+
+    "Random": {
+      "description": "Генерация псевдо-случайного числа",
+      "img": "arduino/timer.svg",
+      "constructorParameters": {},
+      "signals": {},
+      "methods": {
+        "doRandom": {
+          "img": "arduino/start.svg",
+          "description": "Сгенерировать случайное число"
+        },
+        "doRangeRandom": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "begin",
+              "type": "signed long long"
+            },
+            {
+              "name": "end",
+              "type": "signed long long"
+            }
+          ],
+          "description": "Сгенерировать случайное число в заданном диапазоне [begin; end)"
+        }
+      },
+      "buildFiles": ["Random.hpp"],
+      "importFiles": ["Random.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "img": "arduino/difference.svg",
+          "type": "signed long",
+          "description": "Сгенерированное целое число со знаком"
+        },
+        "uValue": {
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Сгенерированное безнаковое целое число"
+        }
+      }
     }
   }
 }

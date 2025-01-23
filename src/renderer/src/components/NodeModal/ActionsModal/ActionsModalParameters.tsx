@@ -102,7 +102,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           return (
             <ComponentFormFieldLabel key={name} label={label} hint={hint}>
               <Select
-                className="w-[250px]"
+                className="w-[326px] pl-[76px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
                 onChange={(opt) => handleInputChange(name, opt?.value ?? '')}

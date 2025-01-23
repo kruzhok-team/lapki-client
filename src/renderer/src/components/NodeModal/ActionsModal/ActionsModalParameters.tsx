@@ -177,7 +177,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               }}
             ></AttributeConstSwitch>
             {currentChecked ? (
-              <div className="w-full">
+              <div>
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                     <div className="flex min-w-28 items-center gap-1">
@@ -195,7 +195,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   </label>
                   <div className="flex w-full">
                     <Select
-                      containerClassName="w-full"
+                      containerClassName="w-[250px]"
                       options={componentOptions}
                       onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
                       value={
@@ -205,7 +205,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       noOptionsMessage={() => 'Нет подходящих компонентов'}
                     />
                     <Select
-                      containerClassName="w-full"
+                      containerClassName="w-[250px]"
                       options={methodOptions}
                       onChange={(opt) =>
                         handleComponentAttributeChange(

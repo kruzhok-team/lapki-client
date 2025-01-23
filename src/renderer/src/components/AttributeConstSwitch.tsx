@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 interface AttributeConstSwitch {
-  isAttributeOutside?: boolean;
+  isAttributeSelected?: boolean;
   hidden?: boolean;
   disabled?: boolean;
 }
 
 export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
-  isAttributeOutside,
+  isAttributeSelected: isAttributeOutside,
   hidden,
   disabled,
   ...props

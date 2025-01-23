@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
+import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -168,15 +169,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
 
         return (
-          <div className="flex items-start" key={name}>
-            <Checkbox
-              checked={currentChecked}
-              onCheckedChange={() => {
-                setCheckedTo(name, !currentChecked);
-                handleInputChange(name, '');
-              }}
-              className="mr-2 mt-[9px]"
-            />
+          <div className="flex items-start space-x-1" key={name}>
+            <AttributeConstSwitch></AttributeConstSwitch>
             {currentChecked ? (
               <div className="w-full">
                 <div className="flex">

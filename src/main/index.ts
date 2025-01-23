@@ -117,6 +117,8 @@ startFlasher();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
+  ipcMain.handle('appVersion', app.getVersion);
+
   const mainWindow = createWindow();
   initFileHandlersIPC();
 
@@ -131,8 +133,6 @@ app.whenReady().then(() => {
   ipcMain.handle('Module:getStatus', (_event, module: ModuleName) => {
     return ModuleManager.getLocalStatus(module);
   });
-
-  ipcMain.handle('appVersion', app.getVersion);
 
   ipcMain.handle('getAllTemplates', getAllTemplates);
 

@@ -167,10 +167,15 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           currentChecked = true;
         }
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
-
         return (
           <div className="flex items-start space-x-1" key={name}>
-            <AttributeConstSwitch></AttributeConstSwitch>
+            <AttributeConstSwitch
+              defaultIsAttribute={currentChecked}
+              beforeSwitch={(currentIsAttribute) => {
+                setCheckedTo(name, !currentIsAttribute);
+                handleInputChange(name, '');
+              }}
+            ></AttributeConstSwitch>
             {currentChecked ? (
               <div className="w-full">
                 <div className="flex">

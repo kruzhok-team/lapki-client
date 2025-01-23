@@ -4,7 +4,7 @@ import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/r
 import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';

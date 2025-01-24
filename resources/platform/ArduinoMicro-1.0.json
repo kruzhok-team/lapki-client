@@ -516,16 +516,16 @@
 
     "Random": {
       "description": "Генерация псевдо-случайного числа",
-      "img": "arduino/timer.svg",
+      "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},
       "methods": {
         "doRandom": {
-          "img": "arduino/start.svg",
+          "img": "common/randomRoll.svg",
           "description": "Сгенерировать случайное число"
         },
         "doRangeRandom": {
-          "img": "arduino/start.svg",
+          "img": "common/randomRange.svg",
           "parameters": [
             {
               "name": "begin",
@@ -544,12 +544,12 @@
       "singletone": false,
       "variables": {
         "value": {
-          "img": "arduino/difference.svg",
+          "img": "common/valueSigned.svg",
           "type": "signed long",
           "description": "Сгенерированное целое число со знаком"
         },
         "uValue": {
-          "img": "arduino/difference.svg",
+          "img": "common/valueUnsigned.svg",
           "type": "unsigned long",
           "description": "Сгенерированное безнаковое целое число"
         }

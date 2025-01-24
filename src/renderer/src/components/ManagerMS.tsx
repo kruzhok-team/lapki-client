@@ -201,15 +201,15 @@ export const ManagerMSTab: React.FC = () => {
         </button>
       </div>
       <div className="m-2 flex">
+        <button className="btn-primary mr-4" onClick={openFlashSelect}>
+          Выбрать прошивки...
+        </button>
         <button
           className="btn-primary mr-4"
           onClick={() => handleSendBin()}
           disabled={isFlashDisabled()}
         >
-          Отправить bin...
-        </button>
-        <button className="btn-primary mr-4" onClick={openFlashSelect}>
-          Выбрать прошивки...
+          Прошить!
         </button>
         <div className="mr-4 flex w-40 items-center justify-between">
           <Switch

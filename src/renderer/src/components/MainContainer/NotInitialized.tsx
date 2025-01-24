@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { ReactComponent as Icon } from '@renderer/assets/icons/icon.svg';
-import { appVersion } from '@renderer/version';
+import { appVersion, askAppVersion } from '@renderer/version';
 
 const combination = [
   {
@@ -42,6 +42,12 @@ const combination = [
 ];
 
 export const NotInitialized: React.FC = () => {
+  useEffect(() => {
+    if (!appVersion) {
+      askAppVersion();
+    }
+  }, []);
+
   return (
     <div className="flex flex-col items-center pt-24">
       <Icon />

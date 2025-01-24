@@ -157,7 +157,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               {isParamOneInput1 ? (
                 <div className="flex gap-2">
                   <Select
-                    containerClassName="w-[305px]"
+                    containerClassName="w-[290px]"
                     options={componentOptionsParam1}
                     onChange={handleComponentParam1Change}
                     value={
@@ -168,7 +168,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     error={errors.selectedComponentParam1 || ''}
                   />
                   <Select
-                    containerClassName="w-[305px]"
+                    containerClassName="w-[290px]"
                     options={methodOptionsParam1}
                     onChange={handleMethodParam1Change}
                     value={
@@ -210,7 +210,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               {isParamOneInput2 ? (
                 <div className="flex gap-2">
                   <Select
-                    containerClassName="w-[305px]"
+                    containerClassName="w-[290px]"
                     options={componentOptionsParam2}
                     onChange={handleComponentParam2Change}
                     value={
@@ -221,7 +221,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     error={errors.selectedComponentParam2 || ''}
                   />
                   <Select
-                    containerClassName="w-[305px]"
+                    containerClassName="w-[290px]"
                     options={methodOptionsParam2}
                     onChange={handleMethodParam2Change}
                     value={

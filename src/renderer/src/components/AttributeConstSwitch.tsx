@@ -48,8 +48,8 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
   };
   return (
     <div className="flex-row" {...props} hidden={hidden ?? false}>
-      {selectOption('❎', isAttributeInternal, 'Атрибут компонента')}
-      {selectOption('✏', !isAttributeInternal, 'Константа')}
+      {selectOption('🔼', isAttributeInternal, 'Атрибут компонента')}
+      {selectOption('🔢', !isAttributeInternal, 'Константа')}
     </div>
   );
 };

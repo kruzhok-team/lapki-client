@@ -368,6 +368,48 @@
       "buildFiles": ["Counter.h", "Counter.cpp"],
       "importFiles": ["Counter.h"],
       "singletone": false
+    },
+
+    "Random": {
+      "description": "Генерация псевдо-случайного числа",
+      "img": "common/random.svg",
+      "constructorParameters": {},
+      "signals": {},
+      "methods": {
+        "doRandom": {
+          "img": "common/randomRoll.svg",
+          "description": "Сгенерировать случайное число"
+        },
+        "doRangeRandom": {
+          "img": "common/randomRange.svg",
+          "parameters": [
+            {
+              "name": "begin",
+              "type": "signed long long"
+            },
+            {
+              "name": "end",
+              "type": "signed long long"
+            }
+          ],
+          "description": "Сгенерировать случайное число в заданном диапазоне [begin; end)"
+        }
+      },
+      "buildFiles": ["Random.hpp"],
+      "importFiles": ["Random.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "img": "common/valueSigned.svg",
+          "type": "signed long",
+          "description": "Сгенерированное целое число со знаком"
+        },
+        "uValue": {
+          "img": "common/valueUnsigned.svg",
+          "type": "unsigned long",
+          "description": "Сгенерированное безнаковое целое число"
+        }
+      }
     }
   }
 }

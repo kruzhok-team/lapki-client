@@ -345,6 +345,45 @@
       "buildFiles": ["Counter.h", "Counter.cpp"],
       "importFiles": ["Counter.h"],
       "singletone": false
+    },
+
+    "Alarm": {
+      "description": "Компонент для взаимодействия с общей сигнальной линией (писатель)",
+      "img": "arduino/timer.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "methods": {
+        "call": {
+          "img": "arduino/reset.svg",
+          "description": "Поднять сигнальную линию"
+        },
+        "release": {
+          "img": "arduino/timer-stop.svg",
+          "description": "Отпустить сигнальную линию"
+        }
+      },
+      "buildFiles": ["Alarm.hpp"],
+      "importFiles": ["Alarm.hpp"],
+      "singletone": false,
+      "variables": {}
+    },
+
+    "AlarmListener": {
+      "description": "Компонент для взаимодействия с общей сигнальной линией (читатель)",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "onAlarm": {
+          "img": "arduino/timeout.svg",
+          "description": "Сигнал на линии",
+          "checkMethod": "onAlarm"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {},
+      "buildFiles": ["AlarmListener.hpp"],
+      "importFiles": ["AlarmListener.hpp"],
+      "singletone": false,
+      "variables": {}
     }
   }
 }

@@ -173,7 +173,7 @@ export const ManagerMSTab: React.FC = () => {
       </label>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
-          Узнать адрес...
+          Получить адрес...
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адресная книга

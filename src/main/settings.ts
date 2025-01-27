@@ -73,6 +73,10 @@ export const defaultSettings = {
      * Если true, то будет автоматическая прокрутка окна с логами
      */
     autoScroll: true,
+    /**
+     * Если true, то будет показываться инструкция по получению адреса
+     */
+    showGetAddressModal: true,
   },
 };
 

@@ -87,8 +87,12 @@ export const ManagerMSTab: React.FC = () => {
     );
   }, [meta]);
   const handleGetAddress = () => {
-    if (!device) return;
-    openMsGetAddressModal();
+    if (!device || !managerMSSetting) return;
+    if (managerMSSetting.showGetAddressModal) {
+      openMsGetAddressModal();
+    } else {
+      ManagerMS.getAddress(device.deviceID);
+    }
   };
   const handleOpenAddressBook = () => {
     openAddressBook();
@@ -281,6 +285,12 @@ export const ManagerMSTab: React.FC = () => {
         onSubmit={() => {
           if (!device) return;
           ManagerMS.getAddress(device.deviceID);
+        }}
+        onNoRemind={() => {
+          setManagerMSSetting({
+            ...managerMSSetting,
+            showGetAddressModal: false,
+          });
         }}
       ></MsGetAddressModal>
     </section>

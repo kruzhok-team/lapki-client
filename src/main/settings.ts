@@ -76,7 +76,7 @@ export const defaultSettings = {
     /**
      * Если true, то будет показываться инструкция по получению адреса
      */
-    showGetAddressModal: true,
+    hideGetAddressModal: false,
   },
 };
 

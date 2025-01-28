@@ -88,7 +88,7 @@ export const ManagerMSTab: React.FC = () => {
   }, [meta]);
   const handleGetAddress = () => {
     if (!device || !managerMSSetting) return;
-    if (managerMSSetting.showGetAddressModal) {
+    if (!managerMSSetting.hideGetAddressModal) {
       openMsGetAddressModal();
     } else {
       ManagerMS.getAddress(device.deviceID);
@@ -289,7 +289,7 @@ export const ManagerMSTab: React.FC = () => {
         onNoRemind={() => {
           setManagerMSSetting({
             ...managerMSSetting,
-            showGetAddressModal: false,
+            hideGetAddressModal: true,
           });
         }}
       ></MsGetAddressModal>

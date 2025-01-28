@@ -41,7 +41,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const addressOptions = new Map<string, SelectOption[]>();
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
-  const [checkedAll, setCheckedAll] = useState<boolean>(false);
+  const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const restoreChecks = () => {
     const resValue = new Map<string, boolean>();
     if (selectedFirmwares) {
@@ -72,8 +72,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       });
     }
     let canSubmit = true;
-    checks.forEach((checked: boolean, smId: string) => {
-      if (checked) {
+    stateMachinesId.forEach(([smId]) => {
+      if (checks.get(smId) ?? true) {
         const addressIndex = stateMachineAddresses.get(smId);
         if (addressIndex === undefined) {
           setErrors((oldValue) => {
@@ -143,7 +143,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     });
   };
   const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
-    const checked = checkedAll || (smId ? isChecked.get(smId) ?? false : false);
+    const checked = checkedAll || (smId ? isChecked.get(smId) ?? true : false);
     const textCellClassName =
       "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (

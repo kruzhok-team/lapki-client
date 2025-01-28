@@ -35,7 +35,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     return sm.platform.startsWith('tjc');
   });
   const addressOptions = new Map<string, SelectOption[]>();
-  const [errors, setErrors] = useState<Map<string, string>>(new Map());
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const handleClose = () => {
@@ -49,17 +48,10 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         checks.set(smId, true);
       });
     }
-    let canSubmit = true;
     stateMachinesId.forEach(([smId]) => {
       if (checks.get(smId) ?? true) {
         const addressIndex = stateMachineAddresses.get(smId);
         if (addressIndex === undefined) {
-          setErrors((oldValue) => {
-            canSubmit = false;
-            const newValue = new Map(oldValue);
-            newValue.set(smId, 'Выберите адрес или уберите галочку');
-            return newValue;
-          });
           return;
         }
         submitFirmwares.push({
@@ -68,11 +60,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         });
       }
     });
-    if (canSubmit) {
-      setErrors(new Map());
-      setSelectedFirmwares(submitFirmwares);
-      onClose();
-    }
+    setSelectedFirmwares(submitFirmwares);
+    onClose();
   };
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;
@@ -113,13 +102,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       }
     }
   }
-  const clearError = (smId: string) => {
-    setErrors((oldValue) => {
-      const newValue = new Map(oldValue);
-      newValue.set(smId, '');
-      return newValue;
-    });
-  };
   const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
     const checked = checkedAll || (smId ? isChecked.get(smId) ?? true : false);
     const textCellClassName =
@@ -136,18 +118,12 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                 setIsChecked(() => {
                   const newMap = new Map();
                   stateMachinesId.forEach(([curSmId]) => {
-                    if (isChecked.get(curSmId) && errors.get(smId)) {
-                      clearError(smId);
-                    }
                     newMap.set(curSmId, curSmId !== smId);
                   });
                   return newMap;
                 });
                 setCheckedAll(!checkedAll);
                 return;
-              }
-              if (checked && errors.get(smId)) {
-                clearError(smId);
               }
               setIsChecked((oldValue) => {
                 const newValue = new Map(oldValue);
@@ -171,16 +147,12 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
               value={assignedStateMachineOption(smId) as SelectOption}
               onChange={(opt) => {
                 assignStateMachineToAddress(smId, Number(opt?.value));
-                if (errors.get(smId)) {
-                  clearError(smId);
-                }
               }}
             ></Select>
           ) : (
             <label className={twMerge(textCellClassName, 'w-56')}>{'Адрес'}</label>
           )}
         </div>
-        <p className="pl-[120px] text-sm text-error">{smId ? errors.get(smId) : ''}</p>
       </div>
     );
   };
@@ -204,7 +176,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                   onCheckedChange={() => {
                     setIsChecked(new Map());
                     setCheckedAll(!checkedAll);
-                    setErrors(new Map());
                   }}
                 ></Checkbox>
                 <label className="mt-[9px]">{'Выбрать всё'}</label>

@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 
-import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { Checkbox, Modal, Select, SelectOption } from '@renderer/components/UI';
@@ -12,7 +11,6 @@ interface FlashSelectMS1Props {
   addressBookSetting: AddressData[] | null;
   stateMachineAddresses: Map<string, number>;
   assignStateMachineToAddress: (smId: string, idx: number) => void;
-  selectedFirmwares: SelectedMsFirmwaresType[];
   setSelectedFirmwares: Dispatch<SetStateAction<SelectedMsFirmwaresType[]>>;
   isOpen: boolean;
   onClose: () => void;
@@ -23,11 +21,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   stateMachineAddresses,
   assignStateMachineToAddress,
   setSelectedFirmwares,
-  selectedFirmwares,
   onClose,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm();
   const modelController = useModelContext();
   const stateMachinesId = [
     ...Object.entries(
@@ -42,26 +38,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
-  const restoreChecks = () => {
-    const resValue = new Map<string, boolean>();
-    if (selectedFirmwares) {
-      selectedFirmwares.forEach((item) => {
-        resValue.set(item.source, true);
-      });
-    }
-    setIsChecked(resValue);
-    if (checkedAll && selectedFirmwares.length !== stateMachinesId.length) {
-      setCheckedAll(false);
-    }
-  };
-  const closeWithChecks = () => {
-    setErrors(new Map());
-    onClose();
-    restoreChecks();
-  };
-  const handleSubmit = hookHandleSubmit(() => {
+  const handleClose = () => {
     if (addressBookSetting === null) {
-      closeWithChecks();
       return;
     }
     const submitFirmwares: SelectedMsFirmwaresType[] = [];
@@ -95,7 +73,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       setSelectedFirmwares(submitFirmwares);
       onClose();
     }
-  });
+  };
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;
     return {
@@ -210,10 +188,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     <div>
       <Modal
         {...props}
-        onRequestClose={() => closeWithChecks()}
+        onRequestClose={handleClose}
         title="Выбор прошивок для загрузки"
-        onSubmit={handleSubmit}
-        submitLabel="Выбрать"
+        cancelLabel="Вернуться"
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">

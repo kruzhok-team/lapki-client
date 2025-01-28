@@ -174,7 +174,17 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                   className={'ml-1 mr-1 mt-[9px]'}
                   checked={checkedAll}
                   onCheckedChange={() => {
-                    setIsChecked(new Map());
+                    if (!checkedAll) {
+                      setIsChecked(new Map());
+                    } else {
+                      setIsChecked(() => {
+                        const newMap = new Map();
+                        stateMachinesId.forEach(([smId]) => {
+                          newMap.set(smId, false);
+                        });
+                        return newMap;
+                      });
+                    }
                     setCheckedAll(!checkedAll);
                   }}
                 ></Checkbox>

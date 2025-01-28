@@ -24,6 +24,7 @@ export const useComponents = (controller: CanvasController) => {
   const [idx, setIdx] = useState('');
   const [data, setData] = useState<Component>({
     type: '',
+    techName: '',
     parameters: {},
     order: 0,
     position: { x: 0, y: 0 },
@@ -120,6 +121,7 @@ export const useComponents = (controller: CanvasController) => {
     modelController.createComponent({
       smId: requestedSmId,
       name: realName,
+      techName: '',
       type: idx,
       parameters: {},
       position: { x: 0, y: 0 },
@@ -135,6 +137,7 @@ export const useComponents = (controller: CanvasController) => {
       smId: requestedSmId,
       id: idx,
       type: data.type,
+      techName: data.techName,
       parameters: data.parameters,
       newName,
     });

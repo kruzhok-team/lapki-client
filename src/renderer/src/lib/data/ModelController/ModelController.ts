@@ -1168,11 +1168,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
-    const { id, parameters, newName, smId } = args;
+    const { id, parameters, newName, smId, techName } = args;
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );
-    this.model.editComponent(smId, id, parameters);
+    this.model.editComponent(smId, id, techName, parameters);
     if (newName) {
       this.renameComponent(smId, id, newName, { ...prevComponent });
     }

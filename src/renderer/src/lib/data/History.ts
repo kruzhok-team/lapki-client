@@ -422,6 +422,7 @@ export const actionFunctions: ActionFunctions = {
         smId: args.smId,
         type: args.type,
         id: args.newName ?? args.id,
+        techName: prevComponent.techName,
         parameters: prevComponent.parameters,
         newName: args.newName ? args.id : undefined,
       },

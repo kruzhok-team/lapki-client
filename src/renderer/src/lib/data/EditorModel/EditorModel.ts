@@ -730,7 +730,7 @@ export class EditorModel {
   }
 
   createComponent(args: CreateComponentParams) {
-    const { smId, name, type, placeInCenter = false, position, parameters } = args;
+    const { smId, name, type, placeInCenter = false, position, techName, parameters } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -757,6 +757,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].components[name] = {
       type,
+      techName: techName,
       position: placeInCenter ? centerPosition() : position,
       parameters,
       order: getOrder(),
@@ -766,12 +767,12 @@ export class EditorModel {
     return name;
   }
 
-  editComponent(smId: string, name: string, parameters: Component['parameters']) {
+  editComponent(smId: string, name: string, techName: string, parameters: Component['parameters']) {
     const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
 
     component.parameters = parameters;
-
+    component.techName = techName;
     this.triggerDataUpdate('elements.components');
 
     return true;

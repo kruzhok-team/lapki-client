@@ -42,6 +42,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
   const [name, setName] = useState('');
+  const [techName, setTechName] = useState('');
   // const platformId = model.useData(smId, 'elements.platform');
   // const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
@@ -51,12 +52,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
     setName(idx);
+    setTechName(data.techName);
     setParameters({ ...data.parameters });
     editor.focus();
   };
 
   const handleNameValidation = (): boolean => {
-    const validationResult = validateComponentName(name, proto, idx);
+    const validationResult = validateComponentName(techName, proto, idx);
     if (validationResult.status) return true;
 
     setErrors((prevErrors) => ({
@@ -76,8 +78,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     for (const key in errors) {
       if (errors[key]) return;
     }
-
-    const submitData = { type: data.type, parameters };
+    debugger;
+    const submitData = { type: data.type, techName: techName, parameters };
     const newName = name === idx ? undefined : name;
 
     onEdit(idx, submitData, newName);
@@ -124,6 +126,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
         protoInitializationParameters={proto.initializationParameters}
         name={name}
         setName={setName}
+        techName={techName}
+        setTechName={setTechName}
         parameters={parameters}
         setParameters={setParameters}
         errors={errors}

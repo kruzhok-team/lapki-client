@@ -15,8 +15,9 @@ interface ComponentFormFieldsProps {
   parameters: ComponentData['parameters'];
   setParameters: (data: ComponentData['parameters']) => void;
   name: string;
+  techName: string;
   setName: (data: string) => void;
-
+  setTechName: (data: string) => void;
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
@@ -29,6 +30,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   name,
   setParameters,
   setName,
+  setTechName,
+  techName,
   errors,
   setErrors,
 }) => {
@@ -54,6 +57,10 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  const handleTechNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // очищаем предыдущий статус ошибки
     setErrors((p) => ({ ...p, [nameError]: '' }));
     // динамическая замена пробелов
@@ -65,7 +72,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
       element.selectionEnd = caret;
     });
     name = name.replaceAll(' ', '_');
-    setName(name);
+    setTechName(name);
   };
   const protoParametersArray = Object.entries(allParameters);
 
@@ -92,6 +99,15 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             maxLength={20}
             value={name}
             onChange={(e) => handleNameChange(e)}
+            autoFocus
+          />
+
+          <ComponentFormFieldLabel
+            label="Техническое название:"
+            maxLength={20}
+            hint="Название, которое будет отображаться в коде."
+            value={techName}
+            onChange={(e) => handleTechNameChange(e)}
             error={errors[nameError]}
             autoFocus
           />

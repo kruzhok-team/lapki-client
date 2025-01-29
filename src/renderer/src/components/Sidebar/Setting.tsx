@@ -1,10 +1,12 @@
 import React from 'react';
 
-import { Select, Switch } from '@renderer/components/UI';
+import { Select, Switch, TextField, TextInput } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
+
+import { Autosave } from './AutosaveSetting';
 
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
@@ -86,10 +88,12 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
         >
           Загрузчик…
         </button>
-        <button className="btn-primary mb-4" onClick={openDocModal}>
+        <button className="btn-primary" onClick={openDocModal}>
           Документация…
         </button>
-
+        <div className=" mb-4">
+          <Autosave></Autosave>
+        </div>
         <div className="mb-auto flex items-center justify-between">
           Анимации на холсте
           <Switch

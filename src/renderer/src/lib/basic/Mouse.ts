@@ -27,6 +27,7 @@ export class Mouse extends BubbleEventEmitter<MouseEvents> {
 
     this.element = element;
 
+    this.element.addEventListener('mouseout', this.mouseOutHandler);
     this.element.addEventListener('dblclick', this.doubleClickHandler);
     this.element.addEventListener('mousedown', this.mousedownHandler);
     this.element.addEventListener('mouseup', this.mouseupHandler);
@@ -43,6 +44,21 @@ export class Mouse extends BubbleEventEmitter<MouseEvents> {
 
     this.reset();
   }
+
+  mouseOutHandler = (e: MouseEvent) => {
+    const { x, y } = this.getPosition(e);
+    const event = {
+      x,
+      y,
+      dx: x - this.px,
+      dy: y - this.py,
+      left: this.left,
+      right: this.right,
+      button: e.button,
+      nativeEvent: e,
+    };
+    this.emit('mouseout', event);
+  };
 
   setOffset() {
     const bounds = this.element.getBoundingClientRect();

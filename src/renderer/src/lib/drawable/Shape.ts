@@ -40,10 +40,10 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   children = new Children();
 
   private dragStartPosition: Point | null = null;
-  private isMouseDown = false;
+  isMouseDown = false;
   private mouseDownTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
   //флаг для перемещения перехода лишь при нажатии на прямоугольный блок, нежели на стрелку
-  private canDrag = false;
+  canDrag = false;
 
   constructor(protected app: CanvasEditor, public id: string, public parent?: Shape) {
     super();

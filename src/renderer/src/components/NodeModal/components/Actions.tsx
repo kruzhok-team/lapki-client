@@ -31,6 +31,8 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     controller,
     text,
     onChangeText,
+    getComponentName,
+    // substituteComponentName
   } = props;
   const visual = controller.useData('visual');
 
@@ -111,7 +113,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   onChange={() => onChangeAction(data)}
                   onDragStart={() => handleDrag(i)}
                   onDrop={() => handleDrop(i)}
-                  data={data}
+                  data={{ ...data, componentName: getComponentName(data.component) }}
                 />
               ))}
             </div>

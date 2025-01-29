@@ -17,7 +17,7 @@ interface ActionProps {
   onChange: () => void;
   onDragStart: () => void;
   onDrop: () => void;
-  data: ActionData;
+  data: ActionData & { componentName: string };
 }
 
 /**
@@ -69,7 +69,7 @@ export const Action: React.FC<ActionProps> = (props) => {
       </div>
 
       <div className="flex flex-row items-center">
-        <div>{data.component}.</div>
+        <div>{data.componentName}.</div>
         <div>{data.method}</div>
         <div>(</div>
         <div className="flex items-center gap-[2px]">

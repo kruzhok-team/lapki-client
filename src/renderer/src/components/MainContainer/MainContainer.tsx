@@ -33,7 +33,7 @@ export const MainContainer: React.FC = () => {
   const controller = modelController.controllers[headControllerId];
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
-  const [autoSaveSeconds] = useSettings('autoSaveInterval');
+  const [autoSaveSettings] = useSettings('autoSave');
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
@@ -81,21 +81,24 @@ export const MainContainer: React.FC = () => {
   // автосохранение
   useEffect(() => {
     if (
-      autoSaveSeconds === null ||
-      autoSaveSeconds <= 0 ||
+      autoSaveSettings === null ||
+      autoSaveSettings.disabled ||
       !isStale ||
       !isInitialized ||
       !basename
     ) {
       return;
     }
+    if (autoSaveSettings.interval <= 0) {
+      throw Error('Интервал автосохранения меньше или равен нулю!');
+    }
     const interval = setInterval(async () => {
       await operations.onRequestSaveFile();
-    }, autoSaveSeconds * 1000);
+    }, autoSaveSettings.interval * 1000);
 
     //Clearing the interval
     return () => clearInterval(interval);
-  }, [autoSaveSeconds, isStale, isInitialized, basename, operations]);
+  }, [autoSaveSettings, isStale, isInitialized, basename, operations]);
 
   return (
     <div className="h-screen select-none">

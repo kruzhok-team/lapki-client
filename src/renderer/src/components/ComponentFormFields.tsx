@@ -4,7 +4,7 @@ import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 
-import { nameError } from './ComponentEditModal';
+import { idError } from './ComponentEditModal';
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { ColorInput, Select } from './UI';
 
@@ -15,9 +15,9 @@ interface ComponentFormFieldsProps {
   parameters: ComponentData['parameters'];
   setParameters: (data: ComponentData['parameters']) => void;
   name: string;
-  techName: string;
+  id: string;
   setName: (data: string) => void;
-  setTechName: (data: string) => void;
+  setComponentId: (data: string) => void;
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
@@ -30,8 +30,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   name,
   setParameters,
   setName,
-  setTechName,
-  techName,
+  id,
+  setComponentId,
   errors,
   setErrors,
 }) => {
@@ -60,19 +60,19 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
     setName(event.target.value);
   };
 
-  const handleTechNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // очищаем предыдущий статус ошибки
-    setErrors((p) => ({ ...p, [nameError]: '' }));
+    setErrors((p) => ({ ...p, [idError]: '' }));
     // динамическая замена пробелов
-    let name = event.target.value;
+    let id = event.target.value;
     const caret = event.target.selectionStart;
     const element = event.target;
     window.requestAnimationFrame(() => {
       element.selectionStart = caret;
       element.selectionEnd = caret;
     });
-    name = name.replaceAll(' ', '_');
-    setTechName(name);
+    id = id.replaceAll(' ', '_');
+    setComponentId(id);
   };
   const protoParametersArray = Object.entries(allParameters);
 
@@ -106,9 +106,9 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             label="Техническое название:"
             maxLength={20}
             hint="Название, которое будет отображаться в коде."
-            value={techName}
-            onChange={(e) => handleTechNameChange(e)}
-            error={errors[nameError]}
+            value={id}
+            onChange={(e) => handleIdChange(e)}
+            error={errors[idError]}
             autoFocus
           />
 

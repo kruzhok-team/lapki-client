@@ -96,7 +96,7 @@ export type Machine = {
 };
 
 export type Component = {
-  techName: string;
+  name: string;
   type: string;
   position: Point;
   parameters: { [key: string]: string };

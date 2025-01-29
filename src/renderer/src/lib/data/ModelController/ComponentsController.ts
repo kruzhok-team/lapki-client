@@ -93,15 +93,15 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     const component = this.items.get(key);
     if (!component) return;
     // const componentData = component.data;
-    if (args.newName !== undefined) {
+    if (args.newId !== undefined) {
       this.controller.deleteComponent(args);
       // (L140-beep) скорее всего придется потом возиться с переходами
       // на схематехническом экране
       this.controller.createComponent({
         smId: args.smId,
         type: args.type,
-        name: args.newName,
-        techName: args.techName,
+        name: args.name,
+        id: args.newId,
         position: component.position,
         parameters: args.parameters,
         order: 0,
@@ -124,8 +124,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.controller.createComponent({
       smId: args.smId,
       type: args.type,
-      name: args.newName,
-      techName: args.techName,
+      name: args.name,
+      id: args.newId,
       position: component.position,
       parameters: args.parameters,
       order: 0,

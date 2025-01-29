@@ -1168,13 +1168,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   editComponent(args: EditComponentParams, canUndo = true) {
-    const { id, parameters, newName, smId, techName } = args;
+    const { id, parameters, newId, smId, name } = args;
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );
-    this.model.editComponent(smId, id, techName, parameters);
-    if (newName) {
-      this.renameComponent(smId, id, newName, { ...prevComponent });
+    this.model.editComponent(smId, id, name, parameters);
+    if (newId) {
+      this.renameComponent(smId, id, newId, { ...prevComponent });
     }
 
     if (canUndo) {
@@ -1237,9 +1237,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     // this.scheme.view.isDirty = true;
   }
 
-  private renameComponent(smId: string, name: string, newName: string, data: Component) {
-    this.model.changeComponentName(smId, name, newName);
-    this.emit('renameComponent', { ...data, smId: smId, id: name, newName: newName });
+  private renameComponent(smId: string, name: string, newId: string, data: Component) {
+    this.model.changeComponentName(smId, name, newId);
+    this.emit('renameComponent', { ...data, smId: smId, id: name, newId: newId });
   }
 
   private getEachByStateId(smId: string, stateId: string) {

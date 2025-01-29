@@ -410,8 +410,8 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
     if (rawComponent.order === undefined) {
       throw new Error('Ошибка парсинга схемы! Отсутствует порядок компонентов!');
     }
-    components[rawComponent.parameters['name'] ?? rawComponent.id] = {
-      techName: rawComponent.id,
+    components[rawComponent.id] = {
+      name: rawComponent.parameters['name'] ?? rawComponent.id,
       type: rawComponent.type,
       position: getComponentPosition(rawComponent),
       parameters: rawComponent.parameters,
@@ -577,7 +577,7 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
         x: 0,
         y: 0,
       },
-      techName: id,
+      name: id,
       // TODO (L140-beep): что-то нужно придумать с тем,
       // что у нас, если платформа статическая, то все компоненты создаются в нулевых координатах
       parameters: {},

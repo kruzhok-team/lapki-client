@@ -46,10 +46,11 @@ export const useTrigger = (
         };
       }
       const proto = controller.platform[smId]?.getComponent(id);
-
+      // debugger;
+      const name = componentsData[id] ? componentsData[id].name : id;
       return {
         value: id,
-        label: id,
+        label: name,
         hint: proto?.description,
         icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };

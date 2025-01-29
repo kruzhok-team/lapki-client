@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, Dispatch } from 'react';
 
+import { toast } from 'sonner';
+
 import { SaveModalData } from '@renderer/components';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -121,6 +123,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       if (cause) {
         openSaveError(cause);
       }
+    } else {
+      toast.success('Схема сохранена!');
     }
   };
 
@@ -132,7 +136,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      // TODO: информировать об успешном сохранении
+      toast.success('Схема сохранена!');
     }
   }, [model, openSaveError]);
 

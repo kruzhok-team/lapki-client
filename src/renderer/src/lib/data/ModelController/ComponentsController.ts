@@ -54,7 +54,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   createComponent = (args: CreateComponentParams) => {
-    const key = this.getComponentKey(args.smId, args.name);
+    const key = this.getComponentKey(args.smId, args.id);
     if (this.items.get(key)) return;
     const platform = this.controller.platform[args.smId];
     if (!platform) return;
@@ -67,7 +67,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     };
     const component = new DrawableComponent(
       this.app,
-      args.name,
+      args.id,
       args.smId,
       args.position,
       markedIcon

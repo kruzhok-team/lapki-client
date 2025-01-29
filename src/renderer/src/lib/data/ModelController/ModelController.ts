@@ -1206,7 +1206,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteComponent(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
-
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );
@@ -2014,14 +2013,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    // TODO: Доделать копирование компонентов
     if (type === 'component') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
 
       return this.createComponent({
         ...data,
         smId,
-        name: this.validator.getComponentName(data.id), // name должно сгенерится новое, так как это новая сушность
+        id: this.validator.getComponentName(data.id), // name должно сгенерится новое, так как это новая сушность
         position: {
           x: data.position.x + this.pastePositionOffset,
           y: data.position.y + this.pastePositionOffset,

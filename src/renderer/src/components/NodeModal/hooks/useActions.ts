@@ -72,18 +72,6 @@ export const useActions = (smId: string, controller: CanvasController) => {
     return component.name;
   };
 
-  const substituteComponentName = (action: Action) => {
-    if (!visual) return action;
-
-    const component = componentsData[action.component];
-    if (!component) return action;
-
-    return {
-      ...action,
-      component: component.name,
-    };
-  };
-
   const clear = () => {
     setActions([]);
     setText('');
@@ -133,7 +121,6 @@ export const useActions = (smId: string, controller: CanvasController) => {
       initialData: actionsModalData,
     },
     smId,
-    substituteComponentName,
     getComponentName,
     controller,
     parse,

@@ -408,7 +408,7 @@ export const actionFunctions: ActionFunctions = {
 
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
-    undo: sM.deleteComponent.bind(sM, { id: args.name, smId: args.smId, purge: false }, false),
+    undo: sM.deleteComponent.bind(sM, { id: args.id, smId: args.smId, purge: false }, false),
   }),
   deleteComponent: (sM, { args, prevComponent }) => ({
     redo: sM.deleteComponent.bind(sM, args, false),

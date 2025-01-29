@@ -32,7 +32,6 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     text,
     onChangeText,
     getComponentName,
-    // substituteComponentName
   } = props;
   const visual = controller.useData('visual');
 

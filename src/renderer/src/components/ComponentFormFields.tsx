@@ -103,7 +103,11 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           />
 
           <ComponentFormFieldLabel
-            label="Техническое название:"
+            label={
+              <>
+                Техническое <br /> название:
+              </>
+            }
             maxLength={20}
             hint="Название, которое будет отображаться в коде."
             value={id}

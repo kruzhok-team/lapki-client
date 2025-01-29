@@ -74,6 +74,10 @@ export const defaultSettings = {
      */
     autoScroll: true,
   },
+  /**
+   * Количество секунд между авто сохранениями.
+   */
+  autoSaveInterval: 10,
 };
 
 export type Settings = typeof defaultSettings;

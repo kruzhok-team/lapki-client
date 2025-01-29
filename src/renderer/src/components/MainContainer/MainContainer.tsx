@@ -14,7 +14,7 @@ import {
   DiagramContextMenu,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-import { useErrorModal, useFileOperations } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useAppTitle } from '@renderer/hooks/useAppTitle';
 import { useModal } from '@renderer/hooks/useModal';
 import {
@@ -33,6 +33,10 @@ export const MainContainer: React.FC = () => {
   const controller = modelController.controllers[headControllerId];
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
+  const [autoSaveSeconds] = useSettings('autoSaveInterval');
+  const isStale = modelController.model.useData('', 'isStale');
+  const isInitialized = modelController.model.useData('', 'isInitialized');
+  const basename = modelController.model.useData('', 'basename');
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
@@ -73,6 +77,25 @@ export const MainContainer: React.FC = () => {
       }
     });
   }, [openPlatformError]);
+
+  // автосохранение
+  useEffect(() => {
+    if (
+      autoSaveSeconds === null ||
+      autoSaveSeconds <= 0 ||
+      !isStale ||
+      !isInitialized ||
+      !basename
+    ) {
+      return;
+    }
+    const interval = setInterval(async () => {
+      await operations.onRequestSaveFile();
+    }, autoSaveSeconds * 1000);
+
+    //Clearing the interval
+    return () => clearInterval(interval);
+  }, [autoSaveSeconds, isStale, isInitialized, basename, operations]);
 
   return (
     <div className="h-screen select-none">

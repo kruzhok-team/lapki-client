@@ -88,7 +88,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
         >
           Загрузчик…
         </button>
-        <button className="btn-primary" onClick={openDocModal}>
+        <button className="btn-primary mb-4" onClick={openDocModal}>
           Документация…
         </button>
         <div className=" mb-4">

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Select, Switch, TextField, TextInput } from '@renderer/components/UI';
+import { Select, Switch } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -94,8 +94,8 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
         <div className=" mb-4">
           <Autosave></Autosave>
         </div>
-        <div className="mb-auto flex items-center justify-between">
-          Анимации на холсте
+        <div className="mb-auto flex items-center gap-1">
+          Анимации на холсте:
           <Switch
             checked={canvasSettings?.animations}
             onCheckedChange={handleChangeCanvasAnimations}

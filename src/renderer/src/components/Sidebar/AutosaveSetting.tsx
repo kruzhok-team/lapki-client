@@ -13,17 +13,33 @@ export const Autosave: React.FC = () => {
   const [interval, setInterval] = useState<number>(0);
   useEffect(() => {
     if (settings === null) return;
+    const setInterval = () => {
+      setSettings({ ...settings, interval: interval });
+    };
+    // TODO (Roundabout): не работает при закрытии приложении, но работает при перезагрузке
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      setInterval();
+    };
     if (timerId) {
       clearTimeout(timerId);
+      window.removeEventListener('beforeunload', onBeforeUnload, { capture: true });
+      // сразу же применяем настройки без таймера
+      if (settings.disabled && interval !== settings.interval && interval > 0) {
+        setInterval();
+        return;
+      }
     }
     if (interval !== settings.interval && interval > 0) {
+      window.addEventListener('beforeunload', onBeforeUnload, { capture: true });
       const newTimerId = setTimeout(() => {
-        setSettings({ ...settings, interval: interval });
+        setInterval();
         toast.info(`Интервал автосохранения изменён на ${interval} сек.`);
+        window.removeEventListener('beforeunload', onBeforeUnload, { capture: true });
       }, 1500);
       setTimerId(newTimerId);
     }
-  }, [interval, setSettings, settings, timerId]);
+  }, [interval, settings]);
   if (settings === null) {
     return;
   }

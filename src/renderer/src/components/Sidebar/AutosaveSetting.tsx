@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { useSettings } from '@renderer/hooks';
@@ -10,30 +11,34 @@ import { Switch, TextInput, WithHint } from '../UI';
 export const Autosave: React.FC = () => {
   const [settings, setSettings, resetSettings] = useSettings('autoSave');
   const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
-  const [interval, setInterval] = useState<number>(0);
+  const [interval, setInterval] = useState<number | null>(null);
   useEffect(() => {
     if (settings === null) return;
-    const setInterval = () => {
+    if (interval === null) {
+      setInterval(settings.interval);
+      return;
+    }
+    const settingInterval = () => {
       setSettings({ ...settings, interval: interval });
     };
     // TODO (Roundabout): не работает при закрытии приложении, но работает при перезагрузке
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      setInterval();
+      settingInterval();
     };
     if (timerId) {
       clearTimeout(timerId);
       window.removeEventListener('beforeunload', onBeforeUnload, { capture: true });
       // сразу же применяем настройки без таймера
       if (settings.disabled && interval !== settings.interval && interval > 0) {
-        setInterval();
+        settingInterval();
         return;
       }
     }
     if (interval !== settings.interval && interval > 0) {
       window.addEventListener('beforeunload', onBeforeUnload, { capture: true });
       const newTimerId = setTimeout(() => {
-        setInterval();
+        settingInterval();
         toast.info(`Интервал автосохранения изменён на ${interval} сек.`);
         window.removeEventListener('beforeunload', onBeforeUnload, { capture: true });
       }, 1500);
@@ -62,7 +67,7 @@ export const Autosave: React.FC = () => {
         <TextInput
           maxLength={4}
           className="max-w-[55px] disabled:opacity-50"
-          defaultValue={settings.interval}
+          value={interval ?? settings.interval}
           disabled={settings.disabled}
           onInput={(event) => {
             const { target } = event;
@@ -73,6 +78,23 @@ export const Autosave: React.FC = () => {
             }
           }}
         ></TextInput>
+        <WithHint hint={'Вернуть интервал на значение по-умолчанию'}>
+          {(props) => (
+            <button
+              className={twMerge('opacity-50', !settings.disabled && 'hover:opacity-100')}
+              {...props}
+              onClick={() => {
+                resetSettings().then(() => {
+                  setInterval(null);
+                  toast.info(`Интервал автосохранения возвращён на значение по-умолчанию`);
+                });
+              }}
+              disabled={settings.disabled}
+            >
+              ↺
+            </button>
+          )}
+        </WithHint>
       </div>
       <div className=" mb-auto flex items-center gap-1 pl-2">
         Отключить:

@@ -420,7 +420,7 @@ function getNoteFormatNode(note: Note): CGMLDataNode[] {
   }
 
   if (note.textColor) {
-    content += `textColor/ ${note.fontSize}\n\n`;
+    content += `textColor/ ${note.textColor}\n\n`;
   }
 
   if (!content) return [];

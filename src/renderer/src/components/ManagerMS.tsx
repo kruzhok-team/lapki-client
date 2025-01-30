@@ -270,7 +270,6 @@ export const ManagerMSTab: React.FC = () => {
         onClose={closeFlashSelect}
         stateMachineAddresses={stateMachineAddresses}
         assignStateMachineToAddress={assignStateMachineToAddress}
-        selectedFirmwares={selectedFirmwares}
         setSelectedFirmwares={setSelectedFirmwares}
       ></FlashSelect>
     </section>

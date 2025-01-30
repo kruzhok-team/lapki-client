@@ -68,6 +68,7 @@ function serializeArgs(
   }
   for (const argId in serializedArgs) {
     const arg = serializedArgs[argId];
+    if (arg === undefined) continue;
     if (isVariable(arg)) {
       const trimmedComponentName = arg.component.trim();
       const component = components[trimmedComponentName];
@@ -247,7 +248,7 @@ const invertOperatorAlias = {
 };
 
 function isVariable(operand: any): operand is Variable {
-  return operand.component !== undefined;
+  return operand['component'] !== undefined;
 }
 
 function isConditionArray(value: unknown): value is Condition[] {

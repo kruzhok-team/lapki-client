@@ -69,6 +69,7 @@ export const NoteEdit: React.FC<NoteEditProps> = ({ smId, controller }) => {
       const { padding, fontSize, borderRadius } = note.computedStyles;
 
       editor.controller.notes.setIsVisible(note.id, false);
+
       setNoteId(note.id);
       setInitialText(note.data.text);
       setStyle({

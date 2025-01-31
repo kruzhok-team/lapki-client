@@ -246,8 +246,13 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       onRequestClose={close}
       onAfterClose={handleAfterClose}
     >
-      <div className="flex gap-3">
-        <div className="ml-11 mr-11 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"></div>
+      <div className="flex flex-col gap-3">
+        <div className="h-66 flex w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          {/* <Trigger {...trigger} /> */}
+          {/* {showCondition && <Condition {...condition} />} */}
+          {/* <Actions {...actions} /> */}
+          {/* <ColorField label="Цвет обводки:" value={color} onChange={setColor} /> */}
+        </div>
       </div>
     </Modal>
   );

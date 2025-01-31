@@ -46,6 +46,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrls', this.app.controller.model.files.save);
     this.app.keyboard.on('ctrlshifta', this.app.controller.model.files.saveAs);
 
+    this.app.mouse.on('mouseout', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
     this.app.mouse.on('mousemove', this.handleMouseMove);

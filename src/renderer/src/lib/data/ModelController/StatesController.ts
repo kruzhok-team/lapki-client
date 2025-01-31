@@ -455,7 +455,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     // Пустое название машины состояний - заглушка
-    this.controller.selectState({ smId: '', id: state.id });
+    this.controller.selectState({ smId: state.smId, id: state.id });
     this.controller.emit('selectState', { smId: state.smId, id: state.id });
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;

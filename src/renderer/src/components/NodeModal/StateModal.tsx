@@ -6,8 +6,9 @@ import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { Platform } from '@renderer/types/platform';
 
-import { Actions, ColorField, Trigger, Condition } from './components';
+import { Actions, ColorField, Trigger, Condition, Event } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
 
 interface StateModalProps {
@@ -23,7 +24,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const visual = controller.useData('visual');
   const components = modelController.model.useData(smId, 'elements.components');
   const platforms = controller.useData('platform');
-  const platform = platforms[smId];
+  const platform = platforms[smId] as Platform;
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
@@ -242,12 +243,19 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     <Modal
       title={`Редактор состояния: ${state?.data.name}`}
       onSubmit={handleSubmit}
+      submitLabel="Редактировать"
       isOpen={isOpen}
       onRequestClose={close}
       onAfterClose={handleAfterClose}
     >
       <div className="flex gap-3">
-        <div className="ml-11 mr-11 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"></div>
+        <div className="ml-11 mr-11 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          <Event
+            isSelected={false}
+            platform={platform as any}
+            event={{ component: 'System', method: 'onEnter' }}
+          ></Event>
+        </div>
       </div>
     </Modal>
   );

@@ -4,10 +4,13 @@ import { toast } from 'sonner';
 
 import { SaveModalData } from '@renderer/components';
 import { Compiler } from '@renderer/components/Modules/Compiler';
+import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
+
+const tempSaveKey = 'tempSave';
 
 interface useFileOperationsArgs {
   openLoadError: (cause: any) => void;
@@ -192,6 +195,26 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       openTabs();
     }
   };
+  /**
+   * Временное сохранение схемы в localstorage
+   */
+  const tempSave = () => {
+    window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
+  };
+
+  const loadTempSave = () => {
+    const restoredData = window.localStorage.getItem(tempSaveKey);
+    if (restoredData === null) {
+      return false;
+    }
+    const parsedData = importGraphml(restoredData, openImportError);
+    if (parsedData === undefined) {
+      return false;
+    }
+    modelController.initData(null, 'Без названия', parsedData);
+    openTabs();
+    return true;
+  };
 
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
@@ -232,5 +255,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     initImportData,
     performNewFile,
     handleOpenFromTemplate,
+    tempSave,
+    loadTempSave,
   };
 };

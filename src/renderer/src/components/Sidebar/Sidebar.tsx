@@ -144,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
       {
         Icon: <ComponentsIcon />,
-        hint: 'Проводник',
+        hint: 'Диаграмма',
       },
       {
         Icon: <StateIcon />,

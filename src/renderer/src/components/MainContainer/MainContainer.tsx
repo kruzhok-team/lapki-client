@@ -27,6 +27,8 @@ import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Tabs } from './Tabs';
 
+import { RestoreDataModal } from '../RestoreDataModal';
+
 export const MainContainer: React.FC = () => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
@@ -36,6 +38,7 @@ export const MainContainer: React.FC = () => {
   const [autoSaveSettings] = useSettings('autoSave');
   const [restoreSession, setRestoreSession] = useSettings('restoreSession');
   const [isReservedDataPresent, setIsReservedPresent] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
+  const [isRestoreDataModalOpen, openRestoreDataModal, closeRestoreDataModal] = useModal(false);
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
@@ -87,15 +90,22 @@ export const MainContainer: React.FC = () => {
     });
   }, [openPlatformError]);
 
+  const restoreData = () => {
+    setIsReservedPresent(true);
+    loadTempSave();
+  };
+
+  const cancelRestoreData = () => {
+    setIsReservedPresent(true);
+  };
+
   // автосохранение
   useEffect(() => {
     if (autoSaveSettings === null || restoreSession === null) return;
 
     if (!basename && restoreSession && !isReservedDataPresent) {
-      console.log('loading save...');
-      setIsReservedPresent(true);
-      if (loadTempSave()) {
-        console.log('loaded!');
+      if (!isRestoreDataModalOpen) {
+        openRestoreDataModal();
       }
       return;
     }
@@ -167,6 +177,13 @@ export const MainContainer: React.FC = () => {
           },
         }}
       />
+
+      <RestoreDataModal
+        isOpen={isRestoreDataModalOpen}
+        onClose={closeRestoreDataModal}
+        onRestore={restoreData}
+        onCancelRestore={cancelRestoreData}
+      ></RestoreDataModal>
     </div>
   );
 };

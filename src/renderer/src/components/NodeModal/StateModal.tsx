@@ -4,6 +4,7 @@ import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Platform } from '@renderer/types/platform';
@@ -20,165 +21,165 @@ interface StateModalProps {
  * Модальное окно редактирования состояния
  */
 export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
-  const modelController = useModelContext();
-  const visual = controller.useData('visual');
-  const components = modelController.model.useData(smId, 'elements.components');
-  const platforms = controller.useData('platform');
-  const platform = platforms[smId] as Platform;
+  // const modelController = useModelContext();
+  // const visual = controller.useData('visual');
+  // const components = modelController.model.useData(smId, 'elements.components');
+  const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
+  const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
-  const trigger = useTrigger(smId, controller, true);
-  const condition = useCondition(smId, controller);
-  const actions = useActions(smId, controller);
+  // const trigger = useTrigger(smId, controller, true);
+  // const condition = useCondition(smId, controller);
+  // const actions = useActions(smId, controller);
   const [color, setColor] = useState<string | undefined>();
 
-  const { parse: parseTrigger } = trigger;
-  const { parse: parseCondition } = condition;
-  const { parse: parseEvents } = actions;
+  // const { parse: parseTrigger } = trigger;
+  // const { parse: parseCondition } = condition;
+  // const { parse: parseEvents } = actions;
 
-  // На дефолтные события нельзя ставить условия
-  const showCondition = useMemo(
-    () => trigger.selectedComponent !== 'System',
-    [trigger.selectedComponent]
-  );
+  // // На дефолтные события нельзя ставить условия
+  // const showCondition = useMemo(
+  //   () => trigger.selectedComponent !== 'System',
+  //   [trigger.selectedComponent]
+  // );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (!state) return;
+  //   if (!state) return;
 
-    const { selectedComponent, selectedMethod } = trigger;
-    const triggerText = trigger.text.trim();
+  //   const { selectedComponent, selectedMethod } = trigger;
+  //   const triggerText = trigger.text.trim();
 
-    // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
-    if (
-      (trigger.tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
-      (trigger.tabValue === 1 && !triggerText)
-    ) {
-      return;
-    }
+  //   // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
+  //   if (
+  //     (trigger.tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
+  //     (trigger.tabValue === 1 && !triggerText)
+  //   ) {
+  //     return;
+  //   }
 
-    if (
-      (actions.tabValue === 0 && actions.actions.length === 0) ||
-      (actions.tabValue === 1 && !actions.text.trim())
-    ) {
-      return;
-    }
+  //   if (
+  //     (actions.tabValue === 0 && actions.actions.length === 0) ||
+  //     (actions.tabValue === 1 && !actions.text.trim())
+  //   ) {
+  //     return;
+  //   }
 
-    const {
-      show,
-      isParamOneInput1,
-      selectedComponentParam1,
-      selectedMethodParam1,
-      isParamOneInput2,
-      selectedComponentParam2,
-      selectedMethodParam2,
-      argsParam1,
-      argsParam2,
-      conditionOperator,
-    } = condition;
+  //   const {
+  //     show,
+  //     isParamOneInput1,
+  //     selectedComponentParam1,
+  //     selectedMethodParam1,
+  //     isParamOneInput2,
+  //     selectedComponentParam2,
+  //     selectedMethodParam2,
+  //     argsParam1,
+  //     argsParam2,
+  //     conditionOperator,
+  //   } = condition;
 
-    //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (showCondition && show) {
-      const errors = condition.checkForErrors();
+  //   //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
+  //   if (showCondition && show) {
+  //     const errors = condition.checkForErrors();
 
-      for (const key in errors) {
-        if (errors[key]) return;
-      }
-    }
+  //     for (const key in errors) {
+  //       if (errors[key]) return;
+  //     }
+  //   }
 
-    const getCondition = () => {
-      if (!show || !showCondition) return undefined;
+  //   const getCondition = () => {
+  //     if (!show || !showCondition) return undefined;
 
-      if (condition.tabValue === 0) {
-        // Тут много as string потому что проверка на null в checkForErrors
-        return {
-          type: conditionOperator as string,
-          value: [
-            {
-              type: isParamOneInput1 ? 'component' : 'value',
-              value: isParamOneInput1
-                ? {
-                    component: selectedComponentParam1 as string,
-                    method: selectedMethodParam1 as string,
-                    args: {},
-                  }
-                : (argsParam1 as string),
-            },
-            {
-              type: isParamOneInput2 ? 'component' : 'value',
-              value: isParamOneInput2
-                ? {
-                    component: selectedComponentParam2 as string,
-                    method: selectedMethodParam2 as string,
-                    args: {},
-                  }
-                : (argsParam2 as string),
-            },
-          ],
-        };
-      }
+  //     if (condition.tabValue === 0) {
+  //       // Тут много as string потому что проверка на null в checkForErrors
+  //       return {
+  //         type: conditionOperator as string,
+  //         value: [
+  //           {
+  //             type: isParamOneInput1 ? 'component' : 'value',
+  //             value: isParamOneInput1
+  //               ? {
+  //                   component: selectedComponentParam1 as string,
+  //                   method: selectedMethodParam1 as string,
+  //                   args: {},
+  //                 }
+  //               : (argsParam1 as string),
+  //           },
+  //           {
+  //             type: isParamOneInput2 ? 'component' : 'value',
+  //             value: isParamOneInput2
+  //               ? {
+  //                   component: selectedComponentParam2 as string,
+  //                   method: selectedMethodParam2 as string,
+  //                   args: {},
+  //                 }
+  //               : (argsParam2 as string),
+  //           },
+  //         ],
+  //       };
+  //     }
 
-      return condition.text.trim() || undefined;
-    };
+  //     return condition.text.trim() || undefined;
+  //   };
 
-    const getTrigger = () => {
-      if (trigger.tabValue === 0)
-        return { component: selectedComponent as string, method: selectedMethod as string };
+  //   const getTrigger = () => {
+  //     if (trigger.tabValue === 0)
+  //       return { component: selectedComponent as string, method: selectedMethod as string };
 
-      return triggerText;
-    };
+  //     return triggerText;
+  //   };
 
-    const getActions = () => {
-      return actions.tabValue === 0 ? actions.actions : actions.text.trim();
-    };
+  //   const getActions = () => {
+  //     return actions.tabValue === 0 ? actions.actions : actions.text.trim();
+  //   };
 
-    const getEvents = () => {
-      const currentEvent = {
-        trigger: getTrigger(),
-        condition: getCondition(),
-        do: getActions(),
-      };
+  //   const getEvents = () => {
+  //     const currentEvent = {
+  //       trigger: getTrigger(),
+  //       condition: getCondition(),
+  //       do: getActions(),
+  //     };
 
-      if (currentEventIndex !== undefined) {
-        return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
-      }
+  //     if (currentEventIndex !== undefined) {
+  //       return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
+  //     }
 
-      return [...state.data.events, currentEvent];
-    };
+  //     return [...state.data.events, currentEvent];
+  //   };
 
-    modelController.changeState({
-      smId: smId,
-      id: state.id,
-      events: getEvents(),
-      color,
-    });
+  //   modelController.changeState({
+  //     smId: smId,
+  //     id: state.id,
+  //     events: getEvents(),
+  //     color,
+  //   });
 
-    close();
-  };
+  //   close();
+  // };
 
-  // Сброс формы после закрытия
-  const handleAfterClose = () => {
-    trigger.clear();
-    actions.clear();
-    setColor(undefined);
+  // // Сброс формы после закрытия
+  // const handleAfterClose = () => {
+  //   trigger.clear();
+  //   actions.clear();
+  //   setColor(undefined);
 
-    setState(null);
-  };
+  //   setState(null);
+  // };
 
   // Открытие окна и подстановка начальных данных формы на событие изменения состояния
   useEffect(() => {
     const handler = (state: State) => {
       const { data } = state;
 
-      const eventData = data.events[0];
+      // const eventData = data.events[0];
 
       // Остальная форма подставляется в эффекте синхронизации с trigger
-      parseTrigger(eventData?.trigger);
+      // parseTrigger(eventData?.trigger);
 
       setColor(data.color);
 
@@ -192,70 +193,88 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       controller.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
+  }, []); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
-  // Синхронизвация trigger и condition с event
-  useLayoutEffect(() => {
-    if (!state) return;
-    const eventIndex = state.data.events.findIndex((value) => {
-      if (trigger.tabValue === 1) {
-        if (typeof value.trigger !== 'string') {
-          return serializeEvent(components, platform, value.trigger) === trigger.text;
-        }
-        return value.trigger === trigger.text;
-      }
+  // // Синхронизвация trigger и condition с event
+  // useLayoutEffect(() => {
+  //   if (!state) return;
+  //   const eventIndex = state.data.events.findIndex((value) => {
+  //     if (trigger.tabValue === 1) {
+  //       if (typeof value.trigger !== 'string') {
+  //         return serializeEvent(components, platform.data, value.trigger) === trigger.text;
+  //       }
+  //       return value.trigger === trigger.text;
+  //     }
 
-      if (typeof value.trigger !== 'string') {
-        return (
-          trigger.selectedComponent === value.trigger.component &&
-          trigger.selectedMethod === value.trigger.method
-        );
-      }
+  //     if (typeof value.trigger !== 'string') {
+  //       return (
+  //         trigger.selectedComponent === value.trigger.component &&
+  //         trigger.selectedMethod === value.trigger.method
+  //       );
+  //     }
 
-      return false;
-    });
-    if (eventIndex === -1) {
-      setCurrentEventIndex(undefined);
-      parseCondition(undefined);
-      parseEvents(smId, undefined);
-    } else {
-      const event = state.data.events[eventIndex];
+  //     return false;
+  //   });
+  //   if (eventIndex === -1) {
+  //     setCurrentEventIndex(undefined);
+  //     parseCondition(undefined);
+  //     parseEvents(smId, undefined);
+  //   } else {
+  //     const event = state.data.events[eventIndex];
 
-      setCurrentEventIndex(eventIndex);
-      parseCondition(event.condition);
-      parseEvents(smId, event.do);
-    }
-  }, [
-    smId,
-    controller,
-    parseCondition,
-    parseEvents,
-    state,
-    trigger.selectedComponent,
-    trigger.selectedMethod,
-    trigger.tabValue,
-    trigger.text,
-    components,
-    platform,
-  ]);
+  //     setCurrentEventIndex(eventIndex);
+  //     parseCondition(event.condition);
+  //     parseEvents(smId, event.do);
+  //   }
+  // }, [
+  //   smId,
+  //   controller,
+  //   parseCondition,
+  //   parseEvents,
+  //   state,
+  //   trigger.selectedComponent,
+  //   trigger.selectedMethod,
+  //   trigger.tabValue,
+  //   trigger.text,
+  //   components,
+  //   platform,
+  // ]);
 
   return (
     <Modal
       title={`Редактор состояния: ${state?.data.name}`}
-      onSubmit={handleSubmit}
+      onSubmit={() => undefined}
       submitLabel="Редактировать"
       isOpen={isOpen}
       onRequestClose={close}
-      onAfterClose={handleAfterClose}
+      // onAfterClose={handleAfterClose}
     >
-      <div className="flex gap-3">
-        <div className="ml-11 mr-11 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      <div className="flex flex-col gap-3">
+        <div className="ml-11 mr-11 h-96 w-auto overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           <Event
             isSelected={false}
-            platform={platform as any}
+            platform={platform}
+            condition={{
+              type: 'equals',
+              value: [
+                {
+                  type: 'component',
+                  value: {
+                    args: {},
+                    component: 'LED1',
+                    method: 'value',
+                  },
+                },
+                {
+                  type: 'value',
+                  value: 'жопа',
+                },
+              ],
+            }}
             event={{ component: 'System', method: 'onEnter' }}
-          ></Event>
+          />
         </div>
+        <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>
     </Modal>
   );

@@ -95,8 +95,10 @@ export const MainContainer: React.FC = () => {
     loadTempSave();
   };
 
-  const cancelRestoreData = () => {
-    setIsReservedPresent(true);
+  const cancelRestoreData = async () => {
+    await setRestoreSession(false).then(() => {
+      setIsReservedPresent(true);
+    });
   };
 
   // автосохранение

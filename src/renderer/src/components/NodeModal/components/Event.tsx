@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 
+import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { operatorSet, PlatformManager } from '@renderer/lib/data/PlatformManager';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Condition, Event as EventData, Variable } from '@renderer/types/diagram';
 
 import { MonoPicto } from './MonoPicto';
@@ -10,12 +12,14 @@ interface EventProps {
   platform: PlatformManager;
   event: EventData;
   isSelected: boolean;
+  text?: string;
   condition?: Condition;
 }
 
-export const Event: React.FC<EventProps> = ({ platform, event, condition }) => {
+export const Event: React.FC<EventProps> = ({ platform, event, condition, text }) => {
   const [conditionsPicto, setConditionsPicto] = useState<React.ReactNode[]>([]);
   useMemo(() => {
+    setConditionsPicto([]);
     const getCondition = (condition: Condition) => {
       if (condition.type == 'component') {
         let leftIcon: string | React.ReactNode | undefined = undefined;
@@ -72,12 +76,17 @@ export const Event: React.FC<EventProps> = ({ platform, event, condition }) => {
   }, [platform, condition, setConditionsPicto]);
 
   return (
-    <div className="flex gap-2 p-4 hover:bg-bg-hover">
-      <Picto
-        leftIcon={platform.getFullComponentIcon(event.component)}
-        rightIcon={platform.getEventIconUrl(event.component, event.method, true)}
-      />
-      {...conditionsPicto}
+    <div className="font-Fira-sans p-4 pb-2 font-sans hover:bg-bg-hover">
+      <div className="flex gap-1 hover:bg-bg-hover">
+        <span className="mr-2">
+          <Picto
+            leftIcon={platform.getFullComponentIcon(event.component)}
+            rightIcon={platform.getEventIconUrl(event.component, event.method, true)}
+          />
+        </span>
+        {...conditionsPicto}
+      </div>
+      {text && <div className="ml-2 mt-[0.5px]">{text}</div>}
     </div>
   );
 };

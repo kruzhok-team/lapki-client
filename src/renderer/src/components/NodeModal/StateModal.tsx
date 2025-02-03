@@ -2,14 +2,15 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
-import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
+import { serializeCondition, serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { Component, Condition, Event as EventData } from '@renderer/types/diagram';
 import { Platform } from '@renderer/types/platform';
 
-import { Actions, ColorField, Trigger, Condition, Event } from './components';
+import { Actions, ColorField, Trigger, Event } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
 
 interface StateModalProps {
@@ -21,9 +22,11 @@ interface StateModalProps {
  * Модальное окно редактирования состояния
  */
 export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
-  // const modelController = useModelContext();
+  const modelController = useModelContext();
   // const visual = controller.useData('visual');
-  // const components = modelController.model.useData(smId, 'elements.components');
+  const components = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);
@@ -240,6 +243,13 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   //   platform,
   // ]);
 
+  const getCondition = (condition: string | Condition | undefined) => {
+    if (!condition) return '';
+    if (typeof condition === 'string') return `[${condition}]`;
+
+    return `[${serializeCondition(condition, platform.data, components)}]`;
+  };
+
   return (
     <Modal
       title={`Редактор состояния: ${state?.data.name}`}
@@ -251,28 +261,20 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     >
       <div className="flex flex-col gap-3">
         <div className="ml-11 mr-11 h-96 w-auto overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          <Event
-            isSelected={false}
-            platform={platform}
-            condition={{
-              type: 'equals',
-              value: [
-                {
-                  type: 'component',
-                  value: {
-                    args: {},
-                    component: 'LED1',
-                    method: 'value',
-                  },
-                },
-                {
-                  type: 'value',
-                  value: 'жопа',
-                },
-              ],
-            }}
-            event={{ component: 'System', method: 'onEnter' }}
-          />
+          {state &&
+            state.data.events.map((event) => (
+              <Event
+                event={event.trigger as EventData}
+                isSelected={false}
+                platform={platform}
+                condition={event.condition as Condition}
+                text={`↳ ${serializeEvent(
+                  components,
+                  platform.data,
+                  event.trigger as EventData
+                )}${getCondition(event.condition)}/`}
+              />
+            ))}
         </div>
         <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>

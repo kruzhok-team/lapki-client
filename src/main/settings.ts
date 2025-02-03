@@ -81,6 +81,7 @@ export const defaultSettings = {
     interval: 10,
     disabled: false,
   },
+  restoreSession: false,
 };
 
 export type Settings = typeof defaultSettings;

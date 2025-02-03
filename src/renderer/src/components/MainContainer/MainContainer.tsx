@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { useDropzone } from 'react-dropzone';
 import { Toaster } from 'sonner';
@@ -34,13 +34,22 @@ export const MainContainer: React.FC = () => {
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
   const [autoSaveSettings] = useSettings('autoSave');
+  const [restoreSession, setRestoreSession] = useSettings('restoreSession');
+  const [isReservedDataPresent, setIsReservedPresent] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate } = useFileOperations({
+  const {
+    saveModalProps,
+    operations,
+    performNewFile,
+    handleOpenFromTemplate,
+    tempSave,
+    loadTempSave,
+  } = useFileOperations({
     openLoadError,
     openCreateSchemeModal,
     openSaveError,
@@ -80,25 +89,41 @@ export const MainContainer: React.FC = () => {
 
   // автосохранение
   useEffect(() => {
-    if (
-      autoSaveSettings === null ||
-      autoSaveSettings.disabled ||
-      !isStale ||
-      !isInitialized ||
-      !basename
-    ) {
+    if (autoSaveSettings === null || restoreSession === null) return;
+
+    if (!basename && restoreSession && !isReservedDataPresent) {
+      console.log('loading save...');
+      setIsReservedPresent(true);
+      if (loadTempSave()) {
+        console.log('loaded!');
+      }
       return;
     }
-    if (autoSaveSettings.interval <= 0) {
-      throw Error('Интервал автосохранения меньше или равен нулю!');
-    }
-    const interval = setInterval(async () => {
-      await operations.onRequestSaveFile();
-    }, autoSaveSettings.interval * 1000);
 
-    //Clearing the interval
+    if (basename && restoreSession && isInitialized) {
+      setRestoreSession(false);
+    }
+
+    if (!isStale || !isInitialized) return;
+
+    const ms = autoSaveSettings.interval * 1000;
+    let interval: NodeJS.Timeout;
+    if (basename) {
+      interval = setInterval(async () => {
+        await operations.onRequestSaveFile();
+      }, ms);
+    } else {
+      interval = setInterval(async () => {
+        console.log('temp save...');
+        tempSave();
+        if (!isReservedDataPresent) setIsReservedPresent(true);
+        if (!restoreSession) await setRestoreSession(true);
+      }, ms);
+    }
+
+    //Clearing the intervals
     return () => clearInterval(interval);
-  }, [autoSaveSettings, isStale, isInitialized, basename, operations]);
+  }, [autoSaveSettings, isStale, isInitialized, basename, restoreSession, isReservedDataPresent]);
 
   return (
     <div className="h-screen select-none">

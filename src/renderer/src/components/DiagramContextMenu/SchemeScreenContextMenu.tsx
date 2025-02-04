@@ -209,7 +209,6 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
         platformList={platformList}
         isDuplicateName={sMFuncs.isDuplicateName}
         selectPlatformDisabled={false}
-        duplicateStateMachine={sMFuncs.onDuplicateStateMachine}
       />
       <StateMachineEditModal
         form={sMFuncs.editProps.editForm}

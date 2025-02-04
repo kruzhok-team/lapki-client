@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-right.svg';
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
@@ -34,6 +35,14 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
     controller.view.changeScale(1, true);
   };
 
+  const handleUndo = () => {
+    modelController.history.undo();
+  };
+
+  const handleRedo = () => {
+    modelController.history.redo();
+  };
+
   const handleCanvasGrid = () => {
     setCanvasSettings({
       ...canvasSettings!,
@@ -45,7 +54,21 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
 
   return (
     activeTab?.type === 'editor' && (
-      <div className="absolute -left-60 bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
+      <div className="absolute -left-[300px] bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
+        <button
+          className="rotate-180 px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+          onClick={handleUndo}
+        >
+          <Arrow width={20} height={20} />
+        </button>
+
+        <button
+          className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+          onClick={handleRedo}
+        >
+          <Arrow width={20} height={20} />
+        </button>
+
         <button
           className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
           onClick={handleCanvasGrid}

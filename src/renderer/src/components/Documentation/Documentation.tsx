@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Resizable } from 're-resizable';
 import { toast } from 'sonner';
@@ -162,32 +162,15 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
   }, [error]);
 
   return (
-    <div
-      className={twMerge(
-        'absolute right-0 top-0 flex h-full',
-        topOffset && 'top-[44.19px] h-[calc(100vh-44.19px)]'
-      )}
+    <Resizable
+      enable={{ left: true }}
+      size={{ width: width, height: '100%' }}
+      minWidth={minWidth}
+      maxWidth={maxWidth}
+      onResize={handleResize}
+      className="border-l border-border-primary bg-bg-secondary"
     >
-      <Resizable
-        enable={{ left: true }}
-        size={{ width: width, height: '100%' }}
-        minWidth={minWidth}
-        maxWidth={maxWidth}
-        onResize={handleResize}
-        className="border-l border-border-primary bg-bg-secondary"
-      >
-        {!topOffset ? (
-          <button
-            className="absolute -left-14 bottom-0 m-2 text-primary"
-            onClick={onDocumentationToggle}
-          >
-            <Question height={40} width={40} />
-          </button>
-        ) : (
-          <EditorSettings />
-        )}
-        <div className="h-full">{renderContent()}</div>
-      </Resizable>
-    </div>
+      <div className="h-full">{renderContent()}</div>
+    </Resizable>
   );
 };

@@ -9,7 +9,7 @@ const removeExtension = (filename: string) => {
 };
 
 /**
- * Функция возвращает только названия шаблонов
+ * Функция возвращает только названия примеров
  */
 export const getAllTemplates = async () => {
   try {
@@ -29,7 +29,7 @@ export const getAllTemplates = async () => {
 };
 
 /**
- * Возвращает схему шаблона по типу (название папки) и имени
+ * Возвращает схему примера по типу (название папки) и имени
  */
 export const getTemplate = async (type: string, name: string) => {
   const data = await readFile(path.join(templatesPath, type + '/' + name), 'utf-8');

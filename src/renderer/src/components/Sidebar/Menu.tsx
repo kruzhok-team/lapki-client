@@ -7,6 +7,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { noTextMode } from '@renderer/version';
 
 import { Badge, WithHint } from '../UI';
 
@@ -110,6 +111,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Перейти в текстовый режим (β)',
       onClick: () => openTextModeModal(),
       hidden:
+        noTextMode ||
         !visual ||
         !isInitialized ||
         controller.type === 'scheme' ||

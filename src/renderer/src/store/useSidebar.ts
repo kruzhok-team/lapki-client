@@ -2,8 +2,8 @@ import { create } from 'zustand';
 
 export enum SidebarIndex {
   Menu,
-  Explorer,
   StateMachineList,
+  Explorer,
   Compiler,
   Flasher,
   History,

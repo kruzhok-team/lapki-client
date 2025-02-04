@@ -32,7 +32,3 @@ export const transitionStyle = {
   endSize: 19,
   notSelectedAlpha: 0.7,
 };
-
-// width / startSize 2 / 5
-// width / endSize 2 / 11
-// startSize / endSize 5 / 11

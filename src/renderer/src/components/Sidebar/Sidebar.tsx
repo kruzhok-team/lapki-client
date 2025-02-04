@@ -98,8 +98,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         compilerStatus={compilerStatus}
         setOpenData={setOpenData}
       />,
-      <Explorer />,
       <StateMachinesList />,
+      <Explorer />,
       <CompilerTab
         openData={openData}
         openCompilerSettings={openCompilerSettings}
@@ -140,15 +140,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
-        hint: 'Документ',
-      },
-      {
-        Icon: <ComponentsIcon />,
-        hint: 'Проводник',
+        hint: isEditorDataStale ? 'Документ (не сохранён)' : 'Документ',
       },
       {
         Icon: <StateIcon />,
         hint: 'Машины состояний',
+      },
+      {
+        Icon: <ComponentsIcon />,
+        hint: 'Диаграмма',
       },
       {
         Icon: <CompilerIcon />,

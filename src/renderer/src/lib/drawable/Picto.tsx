@@ -133,9 +133,9 @@ export class Picto {
    * Рисует масштабированный значок на canvas.
    *
    * @param ctx Контекст canvas, в котором рисуем
-   * @param iconData Название значка или контейнер с данными для метки
+   * @param iconData Название значка или контейнер с данными для подписи (метки)
    * @param bounds Координаты и размер рамки
-   * @param fontSize Размер шрифта метки, по умолчанию равен 13
+   * @param fontSize Размер шрифта подписи (метки), по умолчанию равен 13
    * @param isScaled Указан ли bounds с учетом масштаба
    */
   drawImage(
@@ -166,8 +166,8 @@ export class Picto {
       // Координаты правого нижнего угла картинки
       const tX = x + computedWidth + 6 / this.scale;
       const tY = y + computedHeight + 3 / this.scale;
-      // TODO(L140-beep): Исправить изменение соотношения сторон метки при масштабе не равном 1
-      // Отступы внутри метки
+      // TODO(L140-beep): Исправить изменение соотношения сторон подписи (метки) при масштабе не равном 1
+      // Отступы внутри подписи (метки)
       const pX = 1 / this.scale;
       const pY = 0.5 / this.scale;
       const computedFontSize = isScaled ? fontSize : fontSize / this.scale;
@@ -177,7 +177,7 @@ export class Picto {
       const labelWidth = textWidth + pX * 2 + 3 / this.scale;
       const labelHeight = textHeight + pY * 2 + 3 / this.scale;
 
-      // Отрисовка заднего фона метки
+      // Отрисовка заднего фона подписи (метки)
       // Рисуется в правом нижнем углу картинки, ширина и высота зависит от текста
       ctx.beginPath();
       const prevFillStyle = ctx.fillStyle;
@@ -188,7 +188,7 @@ export class Picto {
       ctx.fillStyle = prevFillStyle;
       ctx.closePath();
 
-      // Отрисовка текста метки
+      // Отрисовка текста подписи (метки)
       ctx.beginPath();
       drawText(ctx, iconData.label, {
         x: tX - textWidth / 2 - pX,
@@ -207,7 +207,7 @@ export class Picto {
   }
 
   /**
-   * Генерирует иконку для значка с меткой.
+   * Генерирует иконку для значка с подписью (меткой).
    * По сути, дублирует {@link drawImage} вне canvas.
    *
    * @param data Контейнер с данными значка

@@ -122,7 +122,6 @@ export const StateMachinesList: React.FC = () => {
         platformList={platformList}
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={false}
-        duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>

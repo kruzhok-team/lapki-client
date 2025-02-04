@@ -4,7 +4,6 @@
 
 .loading-overlay {
   background-color: #1b1b1b;
-  opacity: var(--loading-opacity);
 
   width: 100%;
   height: 100%;
@@ -17,7 +16,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: loadingFadeBg 1s linear;
 }
 
 .loading-spinner {

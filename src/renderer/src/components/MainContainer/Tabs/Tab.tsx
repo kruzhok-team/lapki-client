@@ -39,10 +39,10 @@ export const Tab: React.FC<TabProps> = (props) => {
   } = props;
 
   const TabIcon = {
-    editor: <EditorIcon />,
-    code: <CodeIcon />,
-    transition: <TransitionIcon />,
-    state: <StateIcon />,
+    editor: <EditorIcon className="text-[#737373]" width={25} height={25} />,
+    code: <CodeIcon className="text-[#737373]" width={25} height={25} />,
+    transition: <TransitionIcon className="text-[#737373]" width={25} height={25} />,
+    state: <StateIcon className="text-[#737373]" width={20} height={20} />,
   };
   const [dragOver, setDragOver] = useState(false);
 

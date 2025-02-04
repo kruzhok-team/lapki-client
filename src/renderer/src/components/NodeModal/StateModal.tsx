@@ -1,14 +1,19 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
+import { useEditEventModal } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
+import { serializeCondition, serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { Component, Condition, Event, EventData } from '@renderer/types/diagram';
 
-import { Actions, ColorField, Trigger, Condition } from './components';
-import { useTrigger, useActions, useCondition } from './hooks';
+import { ColorField, Event as EventPicto } from './components';
+import { EditEventModal } from './EditEventModal';
 
 interface StateModalProps {
   smId: string;
@@ -20,153 +25,40 @@ interface StateModalProps {
  */
 export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
-  const visual = controller.useData('visual');
-  const components = modelController.model.useData(smId, 'elements.components');
-  const platforms = controller.useData('platform');
+  const components = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
+  modelController.model.useData(smId, 'elements.states');
+  const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);
-
+  const { openEditEventModal, props, closeEditEventModal } = useEditEventModal();
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
-  const trigger = useTrigger(smId, controller, true);
-  const condition = useCondition(smId, controller);
-  const actions = useActions(smId, controller);
+  const [currentEvent, setCurrentEvent] = useState<EventData | null>(null);
   const [color, setColor] = useState<string | undefined>();
-
-  const { parse: parseTrigger } = trigger;
-  const { parse: parseCondition } = condition;
-  const { parse: parseEvents } = actions;
-
-  // На дефолтные события нельзя ставить условия
-  const showCondition = useMemo(
-    () => trigger.selectedComponent !== 'System',
-    [trigger.selectedComponent]
-  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!state) return;
-
-    const { selectedComponent, selectedMethod } = trigger;
-    const triggerText = trigger.text.trim();
-
-    // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
-    if (
-      (trigger.tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
-      (trigger.tabValue === 1 && !triggerText)
-    ) {
-      return;
-    }
-
-    if (
-      (actions.tabValue === 0 && actions.actions.length === 0) ||
-      (actions.tabValue === 1 && !actions.text.trim())
-    ) {
-      return;
-    }
-
-    const {
-      show,
-      isParamOneInput1,
-      selectedComponentParam1,
-      selectedMethodParam1,
-      isParamOneInput2,
-      selectedComponentParam2,
-      selectedMethodParam2,
-      argsParam1,
-      argsParam2,
-      conditionOperator,
-    } = condition;
-
-    //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (showCondition && show) {
-      const errors = condition.checkForErrors();
-
-      for (const key in errors) {
-        if (errors[key]) return;
-      }
-    }
-
-    const getCondition = () => {
-      if (!show || !showCondition) return undefined;
-
-      if (condition.tabValue === 0) {
-        // Тут много as string потому что проверка на null в checkForErrors
-        return {
-          type: conditionOperator as string,
-          value: [
-            {
-              type: isParamOneInput1 ? 'component' : 'value',
-              value: isParamOneInput1
-                ? {
-                    component: selectedComponentParam1 as string,
-                    method: selectedMethodParam1 as string,
-                    args: {},
-                  }
-                : (argsParam1 as string),
-            },
-            {
-              type: isParamOneInput2 ? 'component' : 'value',
-              value: isParamOneInput2
-                ? {
-                    component: selectedComponentParam2 as string,
-                    method: selectedMethodParam2 as string,
-                    args: {},
-                  }
-                : (argsParam2 as string),
-            },
-          ],
-        };
-      }
-
-      return condition.text.trim() || undefined;
-    };
-
-    const getTrigger = () => {
-      if (trigger.tabValue === 0)
-        return { component: selectedComponent as string, method: selectedMethod as string };
-
-      return triggerText;
-    };
-
-    const getActions = () => {
-      return actions.tabValue === 0 ? actions.actions : actions.text.trim();
-    };
-
-    const getEvents = () => {
-      const currentEvent = {
-        trigger: getTrigger(),
-        condition: getCondition(),
-        do: getActions(),
-      };
-
-      if (currentEventIndex !== undefined) {
-        return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
-      }
-
-      return [...state.data.events, currentEvent];
-    };
-
-    modelController.changeState({
-      smId: smId,
-      id: state.id,
-      events: getEvents(),
-      color,
-    });
-
-    close();
+    openEditEventModal();
   };
 
-  // Сброс формы после закрытия
+  // // Сброс формы после закрытия
   const handleAfterClose = () => {
-    trigger.clear();
-    actions.clear();
+    if (state) {
+      modelController.changeState({
+        ...state.data,
+        color: color,
+        smId,
+        id: state.id,
+      });
+    }
     setColor(undefined);
 
     setState(null);
+    close();
   };
 
   // Открытие окна и подстановка начальных данных формы на событие изменения состояния
@@ -174,10 +66,10 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     const handler = (state: State) => {
       const { data } = state;
 
-      const eventData = data.events[0];
+      // const eventData = data.events[0];
 
       // Остальная форма подставляется в эффекте синхронизации с trigger
-      parseTrigger(eventData?.trigger);
+      // parseTrigger(eventData?.trigger);
 
       setColor(data.color);
 
@@ -191,67 +83,99 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       controller.states.off('changeState', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
+  }, []); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
-  // Синхронизвация trigger и condition с event
-  useLayoutEffect(() => {
+  const addEvent = () => {
     if (!state) return;
-    const eventIndex = state.data.events.findIndex((value) => {
-      if (trigger.tabValue === 1) {
-        if (typeof value.trigger !== 'string') {
-          return serializeEvent(components, platform, value.trigger) === trigger.text;
-        }
-        return value.trigger === trigger.text;
+
+    setCurrentEventIndex(state.data.events.length);
+    setCurrentEvent({ trigger: { component: 'System', method: 'onEnter' }, do: [] });
+    openEditEventModal();
+  };
+
+  const removeEvent = () => {
+    if (!state || currentEventIndex === undefined) return;
+
+    const getEvents = () => {
+      if (state.data.events.length === 1) {
+        return [];
       }
+      return [
+        ...state.data.events.slice(0, currentEventIndex),
+        ...state.data.events.slice(currentEventIndex + 1, state.data.events.length),
+      ];
+    };
 
-      if (typeof value.trigger !== 'string') {
-        return (
-          trigger.selectedComponent === value.trigger.component &&
-          trigger.selectedMethod === value.trigger.method
-        );
-      }
+    modelController.changeState({ smId: smId, id: state.id, events: getEvents() }, true);
+    setCurrentEventIndex(undefined);
+  };
 
-      return false;
-    });
-    if (eventIndex === -1) {
-      setCurrentEventIndex(undefined);
-      parseCondition(undefined);
-      parseEvents(smId, undefined);
-    } else {
-      const event = state.data.events[eventIndex];
+  const getCondition = (condition: string | Condition | undefined) => {
+    if (!condition) return '';
+    if (typeof condition === 'string') return `[${condition}]`;
 
-      setCurrentEventIndex(eventIndex);
-      parseCondition(event.condition);
-      parseEvents(smId, event.do);
-    }
-  }, [
-    smId,
-    controller,
-    parseCondition,
-    parseEvents,
-    state,
-    trigger.selectedComponent,
-    trigger.selectedMethod,
-    trigger.tabValue,
-    trigger.text,
-    components,
-    platform,
-  ]);
+    return `[${serializeCondition(condition, platform.data, components)}]`;
+  };
 
   return (
-    <Modal
-      title={`Редактор состояния: ${state?.data.name}`}
-      onSubmit={handleSubmit}
-      isOpen={isOpen}
-      onRequestClose={close}
-      onAfterClose={handleAfterClose}
-    >
-      <div className="flex flex-col gap-3">
-        <Trigger {...trigger} />
-        {showCondition && <Condition {...condition} />}
-        <Actions {...actions} />
-        <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
-      </div>
-    </Modal>
+    <div>
+      <Modal
+        title={`Редактор состояния: ${state?.data.name}`}
+        onSubmit={handleSubmit}
+        submitLabel="Редактировать"
+        isOpen={isOpen}
+        onRequestClose={close}
+        submitDisabled={currentEventIndex === undefined}
+        onAfterClose={handleAfterClose}
+      >
+        <div className="flex flex-col gap-3">
+          <div className="flex">
+            <div className="ml-11 mr-3 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+              {state &&
+                state.data.events.map((event, key) => (
+                  <EventPicto
+                    onDoubleClick={() => openEditEventModal()}
+                    key={key}
+                    event={event.trigger as Event}
+                    isSelected={key === currentEventIndex}
+                    platform={platform}
+                    condition={event.condition as Condition}
+                    text={`↳ ${serializeEvent(
+                      components,
+                      platform.data,
+                      event.trigger as Event
+                    )}${getCondition(event.condition)}/`}
+                    onClick={() => {
+                      setCurrentEventIndex(key);
+                      setCurrentEvent(state.data.events[key]);
+                    }}
+                  />
+                ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button type="button" className="btn-secondary border-red p-1" onClick={addEvent}>
+                <AddIcon />
+              </button>
+              <button type="button" className="btn-secondary p-1" onClick={removeEvent}>
+                <SubtractIcon />
+              </button>
+            </div>
+          </div>
+          <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
+        </div>
+      </Modal>
+      <EditEventModal
+        isOpen={props.isEditEventModalOpen}
+        close={() => {
+          closeEditEventModal();
+          setCurrentEventIndex(undefined);
+        }}
+        smId={smId}
+        state={state}
+        currentEventIndex={currentEventIndex}
+        event={currentEvent}
+        controller={controller}
+      />
+    </div>
   );
 };

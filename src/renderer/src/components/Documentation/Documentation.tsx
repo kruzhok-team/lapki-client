@@ -18,11 +18,7 @@ export interface CurrentItem {
   path: string;
 }
 
-interface DocumentationProps {
-  topOffset?: boolean;
-}
-
-export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false }) => {
+export const Documentation: React.FC = () => {
   const [doc] = useSettings('doc');
   const url = doc?.host ?? '';
 

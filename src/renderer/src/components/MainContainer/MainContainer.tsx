@@ -97,7 +97,7 @@ export const MainContainer: React.FC = () => {
               !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
             )}
           >
-            <Documentation topOffset={!!isMounted} />
+            <Documentation />
             <EditorSettings />
           </div>
         </div>

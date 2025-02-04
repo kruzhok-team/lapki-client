@@ -2,14 +2,16 @@ import React, { Dispatch, useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
+import { ReactComponent as MenuIcon } from '@renderer/assets/icons/document.svg';
+import { ReactComponent as DocumentationIcon } from '@renderer/assets/icons/documentation.svg';
 import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
-import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useDoc } from '@renderer/store/useDoc';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
@@ -67,6 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   >(undefined);
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
+  const [onDocumentationToggle] = useDoc((state) => [state.onDocumentationToggle]);
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
 
@@ -115,6 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         openAvrdudeGuideModal={openAvrdudeGuideModal}
       />,
       <History />,
+      undefined,
       <Setting
         openCompilerSettings={openCompilerSettings}
         openLoaderSettings={openLoaderSettings}
@@ -162,6 +166,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         Icon: <HistoryIcon />,
         hint: 'История изменений',
         bottom: true,
+      },
+      {
+        Icon: <DocumentationIcon />,
+        hint: 'Документация',
+        action: () => onDocumentationToggle(),
       },
       {
         Icon: <SettingsIcon />,

@@ -29,7 +29,7 @@ export const getAllTemplates = async () => {
 };
 
 /**
- * Возвращает схему а по типу (название папки) и имени
+ * Возвращает схему примера по типу (название папки) и имени
  */
 export const getTemplate = async (type: string, name: string) => {
   const data = await readFile(path.join(templatesPath, type + '/' + name), 'utf-8');

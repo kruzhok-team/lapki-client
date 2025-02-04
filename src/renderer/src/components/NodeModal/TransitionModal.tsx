@@ -5,7 +5,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ChangeTransitionParams } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Transition } from '@renderer/types/diagram';
+import { EventData, Transition } from '@renderer/types/diagram';
 
 import { Actions, Condition, ColorField, Trigger } from './components';
 import { useTrigger, useCondition, useActions } from './hooks';
@@ -30,9 +30,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
   const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
   // Данные формы
-  const trigger = useTrigger(smId, controller, false);
-  const condition = useCondition(smId, controller);
-  const actions = useActions(smId, controller);
+  const trigger = useTrigger(smId, controller, false, null);
+  const condition = useCondition(smId, controller, null);
+  const actions = useActions(smId, controller, null);
   const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
@@ -245,9 +245,11 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
         onAfterClose={handleAfterClose}
       >
         <div className="flex flex-col gap-4">
-          {!isInitialTransition && showTrigger && <Trigger {...trigger} />}
+          {!isInitialTransition && showTrigger && (
+            <Trigger event={(transition?.label as EventData) ?? null} {...trigger} />
+          )}
           {!isInitialTransition && <Condition {...condition} />}
-          {!isInitialTransition && <Actions {...actions} />}
+          {!isInitialTransition && <Actions event={null} {...actions} />}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

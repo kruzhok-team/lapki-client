@@ -28,7 +28,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const components = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  const _ = modelController.model.useData(smId, 'elements.states');
+  modelController.model.useData(smId, 'elements.states');
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);

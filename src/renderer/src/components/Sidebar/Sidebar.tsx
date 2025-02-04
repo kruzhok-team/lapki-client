@@ -140,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
-        hint: 'Документ',
+        hint: isEditorDataStale ? 'Документ (не сохранён)' : 'Документ',
       },
       {
         Icon: <ComponentsIcon />,

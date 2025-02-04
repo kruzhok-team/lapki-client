@@ -1,5 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { Note, Transition } from '@renderer/lib/drawable';
+import { Transition } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
 import { Drawable } from '@renderer/lib/types/drawable';
 import {

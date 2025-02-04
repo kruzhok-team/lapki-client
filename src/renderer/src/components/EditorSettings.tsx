@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
+import { ReactComponent as Redo } from '@renderer/assets/icons/redo.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -54,14 +54,14 @@ export const EditorSettings: React.FC = () => {
           className="horizontal-flip px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
           onClick={handleUndo}
         >
-          <Arrow width={20} height={20} />
+          <Redo width={20} height={20} />
         </button>
 
         <button
           className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
           onClick={handleRedo}
         >
-          <Arrow width={20} height={20} />
+          <Redo width={20} height={20} />
         </button>
 
         <button

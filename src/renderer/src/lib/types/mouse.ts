@@ -32,5 +32,6 @@ export interface MouseEvents {
   mousemove: MyMouseEvent;
   dblclick: MyMouseEvent;
   rightclick: MyMouseEvent;
+  mouseout: MyMouseEvent;
   wheel: MyMouseEvent & { nativeEvent: WheelEvent };
 }

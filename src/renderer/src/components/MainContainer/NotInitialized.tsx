@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ReactComponent as Icon } from '@renderer/assets/icons/icon.svg';
-import { appVersion, askAppVersion } from '@renderer/version';
+import { appName, appVersion, askAppVersion, seriousMode } from '@renderer/version';
 
 const combination = [
   {
@@ -42,17 +42,24 @@ const combination = [
 ];
 
 export const NotInitialized: React.FC = () => {
+  const [shownVersion, setShownVersion] = useState(appVersion);
+
   useEffect(() => {
-    if (!appVersion) {
-      askAppVersion();
-    }
+    askAppVersion().then(() => {
+      if (shownVersion !== appVersion) setShownVersion(appVersion);
+    });
   }, []);
+
+  // TODO: подобрать логотип
+  const icon = seriousMode ? <></> : <Icon />;
 
   return (
     <div className="flex flex-col items-center pt-24">
-      <Icon />
+      {icon}
       <br />
-      <p className="text-center text-2xl font-bold">Lapki IDE v{appVersion}</p>
+      <p className="text-center text-2xl font-bold">
+        {appName} {shownVersion ? `v${shownVersion}` : ''}
+      </p>
       <p className="py-6 text-center text-base">
         Перетащите файл в эту область или воспользуйтесь комбинацией клавиш:
       </p>

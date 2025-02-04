@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 
-import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { Checkbox, Modal, Select, SelectOption } from '@renderer/components/UI';
@@ -12,7 +11,6 @@ interface FlashSelectMS1Props {
   addressBookSetting: AddressData[] | null;
   stateMachineAddresses: Map<string, number>;
   assignStateMachineToAddress: (smId: string, idx: number) => void;
-  selectedFirmwares: SelectedMsFirmwaresType[];
   setSelectedFirmwares: Dispatch<SetStateAction<SelectedMsFirmwaresType[]>>;
   isOpen: boolean;
   onClose: () => void;
@@ -23,11 +21,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   stateMachineAddresses,
   assignStateMachineToAddress,
   setSelectedFirmwares,
-  selectedFirmwares,
   onClose,
   ...props
 }) => {
-  const { handleSubmit: hookHandleSubmit } = useForm();
   const modelController = useModelContext();
   const stateMachinesId = [
     ...Object.entries(
@@ -39,29 +35,10 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     return sm.platform.startsWith('tjc');
   });
   const addressOptions = new Map<string, SelectOption[]>();
-  const [errors, setErrors] = useState<Map<string, string>>(new Map());
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
-  const [checkedAll, setCheckedAll] = useState<boolean>(false);
-  const restoreChecks = () => {
-    const resValue = new Map<string, boolean>();
-    if (selectedFirmwares) {
-      selectedFirmwares.forEach((item) => {
-        resValue.set(item.source, true);
-      });
-    }
-    setIsChecked(resValue);
-    if (checkedAll && selectedFirmwares.length !== stateMachinesId.length) {
-      setCheckedAll(false);
-    }
-  };
-  const closeWithChecks = () => {
-    setErrors(new Map());
-    onClose();
-    restoreChecks();
-  };
-  const handleSubmit = hookHandleSubmit(() => {
+  const [checkedAll, setCheckedAll] = useState<boolean>(true);
+  const handleClose = () => {
     if (addressBookSetting === null) {
-      closeWithChecks();
       return;
     }
     const submitFirmwares: SelectedMsFirmwaresType[] = [];
@@ -71,17 +48,10 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         checks.set(smId, true);
       });
     }
-    let canSubmit = true;
-    checks.forEach((checked: boolean, smId: string) => {
-      if (checked) {
+    stateMachinesId.forEach(([smId]) => {
+      if (checks.get(smId) ?? true) {
         const addressIndex = stateMachineAddresses.get(smId);
         if (addressIndex === undefined) {
-          setErrors((oldValue) => {
-            canSubmit = false;
-            const newValue = new Map(oldValue);
-            newValue.set(smId, 'Выберите адрес или уберите галочку');
-            return newValue;
-          });
           return;
         }
         submitFirmwares.push({
@@ -90,12 +60,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
         });
       }
     });
-    if (canSubmit) {
-      setErrors(new Map());
-      setSelectedFirmwares(submitFirmwares);
-      onClose();
-    }
-  });
+    setSelectedFirmwares(submitFirmwares);
+    onClose();
+  };
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;
     return {
@@ -135,15 +102,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       }
     }
   }
-  const clearError = (smId: string) => {
-    setErrors((oldValue) => {
-      const newValue = new Map(oldValue);
-      newValue.set(smId, '');
-      return newValue;
-    });
-  };
   const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
-    const checked = checkedAll || (smId ? isChecked.get(smId) ?? false : false);
+    const checked = checkedAll || (smId ? isChecked.get(smId) ?? true : false);
     const textCellClassName =
       "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
@@ -158,18 +118,12 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                 setIsChecked(() => {
                   const newMap = new Map();
                   stateMachinesId.forEach(([curSmId]) => {
-                    if (isChecked.get(curSmId) && errors.get(smId)) {
-                      clearError(smId);
-                    }
                     newMap.set(curSmId, curSmId !== smId);
                   });
                   return newMap;
                 });
                 setCheckedAll(!checkedAll);
                 return;
-              }
-              if (checked && errors.get(smId)) {
-                clearError(smId);
               }
               setIsChecked((oldValue) => {
                 const newValue = new Map(oldValue);
@@ -193,16 +147,12 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
               value={assignedStateMachineOption(smId) as SelectOption}
               onChange={(opt) => {
                 assignStateMachineToAddress(smId, Number(opt?.value));
-                if (errors.get(smId)) {
-                  clearError(smId);
-                }
               }}
             ></Select>
           ) : (
             <label className={twMerge(textCellClassName, 'w-56')}>{'Адрес'}</label>
           )}
         </div>
-        <p className="pl-[120px] text-sm text-error">{smId ? errors.get(smId) : ''}</p>
       </div>
     );
   };
@@ -210,10 +160,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     <div>
       <Modal
         {...props}
-        onRequestClose={() => closeWithChecks()}
+        onRequestClose={handleClose}
         title="Выбор прошивок для загрузки"
-        onSubmit={handleSubmit}
-        submitLabel="Выбрать"
+        cancelLabel="Вернуться"
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
@@ -225,9 +174,18 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                   className={'ml-1 mr-1 mt-[9px]'}
                   checked={checkedAll}
                   onCheckedChange={() => {
-                    setIsChecked(new Map());
+                    if (!checkedAll) {
+                      setIsChecked(new Map());
+                    } else {
+                      setIsChecked(() => {
+                        const newMap = new Map();
+                        stateMachinesId.forEach(([smId]) => {
+                          newMap.set(smId, false);
+                        });
+                        return newMap;
+                      });
+                    }
                     setCheckedAll(!checkedAll);
-                    setErrors(new Map());
                   }}
                 ></Checkbox>
                 <label className="mt-[9px]">{'Выбрать всё'}</label>

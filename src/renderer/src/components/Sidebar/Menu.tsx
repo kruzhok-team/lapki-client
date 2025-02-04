@@ -7,6 +7,9 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { noTextMode } from '@renderer/version';
+
+import { Badge, WithHint } from '../UI';
 
 interface MenuItem {
   text: string;
@@ -14,6 +17,8 @@ interface MenuItem {
   disabled?: boolean;
   hidden?: boolean;
   className?: string;
+  badge?: boolean;
+  hint?: string;
 }
 
 export interface MenuProps {
@@ -56,6 +61,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
       disabled: !isStale || !isInitialized,
+      badge: isStale && isInitialized,
+      hint: 'Есть несохранённые изменения',
     },
     {
       text: 'Сохранить как...',
@@ -104,6 +111,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Перейти в текстовый режим (β)',
       onClick: () => openTextModeModal(),
       hidden:
+        noTextMode ||
         !visual ||
         !isInitialized ||
         controller.type === 'scheme' ||
@@ -143,19 +151,24 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, hidden = false, className }) => (
-        <button
-          key={text}
-          className={twMerge(
-            'px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
-            className
+      {items.map(({ text, onClick, disabled = false, hidden = false, className, badge, hint }) => (
+        <WithHint hint={hint ?? ''}>
+          {(props) => (
+            <button
+              key={text}
+              className={twMerge(
+                'px-2 py-2 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+                className
+              )}
+              {...props}
+              onClick={onClick}
+              disabled={disabled}
+              hidden={hidden}
+            >
+              <Badge show={badge ?? false}>{text}</Badge>
+            </button>
           )}
-          onClick={onClick}
-          disabled={disabled}
-          hidden={hidden}
-        >
-          {text}
-        </button>
+        </WithHint>
       ))}
 
       <PropertiesModal {...propertiesModalProps} />

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/editor.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
+import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';

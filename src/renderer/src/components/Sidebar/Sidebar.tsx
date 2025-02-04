@@ -2,12 +2,12 @@ import React, { Dispatch, useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
+import { ReactComponent as MenuIcon } from '@renderer/assets/icons/document.svg';
+import { ReactComponent as DocumentationIcon } from '@renderer/assets/icons/documentation.svg';
 import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
-import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
-import { ReactComponent as DocumentationIcon } from '@renderer/assets/icons/question.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';

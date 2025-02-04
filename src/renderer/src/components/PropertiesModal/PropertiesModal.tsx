@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
-import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
+import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/editor.svg';
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';

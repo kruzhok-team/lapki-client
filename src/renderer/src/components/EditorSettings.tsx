@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-right.svg';
+import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow_down_right.svg';
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
@@ -51,7 +51,7 @@ export const EditorSettings: React.FC = () => {
     activeTab?.type === 'editor' && (
       <div className="absolute -left-[280px] bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
         <button
-          className="rotate-180 px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+          className="horizontal-flip px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
           onClick={handleUndo}
         >
           <Arrow width={20} height={20} />

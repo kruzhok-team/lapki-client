@@ -27,4 +27,12 @@
   .btn-error {
     @apply btn border-error bg-error text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
   }
+
+  .horizontal-flip {
+    transform: scale(-1, 1);
+  }
+
+  .vertical-flip {
+    transform: scale(1, -1);
+  }
 }

@@ -8,3 +8,4 @@ export * from './useFetch';
 export * from './useModal';
 export * from './usePrevious';
 export * from './useStateMachines';
+export * from './useEditEventModal';

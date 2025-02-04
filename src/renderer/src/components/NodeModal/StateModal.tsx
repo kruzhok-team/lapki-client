@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { useEditEventModal } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { serializeCondition, serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -11,6 +12,7 @@ import { Component, Condition, Event as EventData } from '@renderer/types/diagra
 import { Platform } from '@renderer/types/platform';
 
 import { Actions, ColorField, Trigger, Event } from './components';
+import { EditEventModal } from './EditEventModal';
 import { useTrigger, useActions, useCondition } from './hooks';
 
 interface StateModalProps {
@@ -30,7 +32,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);
-
+  const { openEditEventModal, props, closeEditEventModal } = useEditEventModal();
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
@@ -50,129 +52,26 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   //   [trigger.selectedComponent]
   // );
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!state) return;
-
-  //   const { selectedComponent, selectedMethod } = trigger;
-  //   const triggerText = trigger.text.trim();
-
-  //   // TODO(bryzZz) Нужно не просто не отправлять форму а показывать ошибки
-  //   if (
-  //     (trigger.tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
-  //     (trigger.tabValue === 1 && !triggerText)
-  //   ) {
-  //     return;
-  //   }
-
-  //   if (
-  //     (actions.tabValue === 0 && actions.actions.length === 0) ||
-  //     (actions.tabValue === 1 && !actions.text.trim())
-  //   ) {
-  //     return;
-  //   }
-
-  //   const {
-  //     show,
-  //     isParamOneInput1,
-  //     selectedComponentParam1,
-  //     selectedMethodParam1,
-  //     isParamOneInput2,
-  //     selectedComponentParam2,
-  //     selectedMethodParam2,
-  //     argsParam1,
-  //     argsParam2,
-  //     conditionOperator,
-  //   } = condition;
-
-  //   //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-  //   if (showCondition && show) {
-  //     const errors = condition.checkForErrors();
-
-  //     for (const key in errors) {
-  //       if (errors[key]) return;
-  //     }
-  //   }
-
-  //   const getCondition = () => {
-  //     if (!show || !showCondition) return undefined;
-
-  //     if (condition.tabValue === 0) {
-  //       // Тут много as string потому что проверка на null в checkForErrors
-  //       return {
-  //         type: conditionOperator as string,
-  //         value: [
-  //           {
-  //             type: isParamOneInput1 ? 'component' : 'value',
-  //             value: isParamOneInput1
-  //               ? {
-  //                   component: selectedComponentParam1 as string,
-  //                   method: selectedMethodParam1 as string,
-  //                   args: {},
-  //                 }
-  //               : (argsParam1 as string),
-  //           },
-  //           {
-  //             type: isParamOneInput2 ? 'component' : 'value',
-  //             value: isParamOneInput2
-  //               ? {
-  //                   component: selectedComponentParam2 as string,
-  //                   method: selectedMethodParam2 as string,
-  //                   args: {},
-  //                 }
-  //               : (argsParam2 as string),
-  //           },
-  //         ],
-  //       };
-  //     }
-
-  //     return condition.text.trim() || undefined;
-  //   };
-
-  //   const getTrigger = () => {
-  //     if (trigger.tabValue === 0)
-  //       return { component: selectedComponent as string, method: selectedMethod as string };
-
-  //     return triggerText;
-  //   };
-
-  //   const getActions = () => {
-  //     return actions.tabValue === 0 ? actions.actions : actions.text.trim();
-  //   };
-
-  //   const getEvents = () => {
-  //     const currentEvent = {
-  //       trigger: getTrigger(),
-  //       condition: getCondition(),
-  //       do: getActions(),
-  //     };
-
-  //     if (currentEventIndex !== undefined) {
-  //       return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
-  //     }
-
-  //     return [...state.data.events, currentEvent];
-  //   };
-
-  //   modelController.changeState({
-  //     smId: smId,
-  //     id: state.id,
-  //     events: getEvents(),
-  //     color,
-  //   });
-
-  //   close();
-  // };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    openEditEventModal();
+    // if (!state) return;
+    // modelController.changeState({
+    // smId: smId,
+    // id: state.id,
+    // events: getEvents(),
+    // color,
+    // });
+    // close();
+  };
 
   // // Сброс формы после закрытия
-  // const handleAfterClose = () => {
-  //   trigger.clear();
-  //   actions.clear();
-  //   setColor(undefined);
+  const handleAfterClose = () => {
+    setColor(undefined);
 
-  //   setState(null);
-  // };
+    setState(null);
+    close();
+  };
 
   // Открытие окна и подстановка начальных данных формы на событие изменения состояния
   useEffect(() => {
@@ -198,51 +97,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
-  // // Синхронизвация trigger и condition с event
-  // useLayoutEffect(() => {
-  //   if (!state) return;
-  //   const eventIndex = state.data.events.findIndex((value) => {
-  //     if (trigger.tabValue === 1) {
-  //       if (typeof value.trigger !== 'string') {
-  //         return serializeEvent(components, platform.data, value.trigger) === trigger.text;
-  //       }
-  //       return value.trigger === trigger.text;
-  //     }
-
-  //     if (typeof value.trigger !== 'string') {
-  //       return (
-  //         trigger.selectedComponent === value.trigger.component &&
-  //         trigger.selectedMethod === value.trigger.method
-  //       );
-  //     }
-
-  //     return false;
-  //   });
-  //   if (eventIndex === -1) {
-  //     setCurrentEventIndex(undefined);
-  //     parseCondition(undefined);
-  //     parseEvents(smId, undefined);
-  //   } else {
-  //     const event = state.data.events[eventIndex];
-
-  //     setCurrentEventIndex(eventIndex);
-  //     parseCondition(event.condition);
-  //     parseEvents(smId, event.do);
-  //   }
-  // }, [
-  //   smId,
-  //   controller,
-  //   parseCondition,
-  //   parseEvents,
-  //   state,
-  //   trigger.selectedComponent,
-  //   trigger.selectedMethod,
-  //   trigger.tabValue,
-  //   trigger.text,
-  //   components,
-  //   platform,
-  // ]);
-
   const getCondition = (condition: string | Condition | undefined) => {
     if (!condition) return '';
     if (typeof condition === 'string') return `[${condition}]`;
@@ -251,33 +105,44 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   };
 
   return (
-    <Modal
-      title={`Редактор состояния: ${state?.data.name}`}
-      onSubmit={() => undefined}
-      submitLabel="Редактировать"
-      isOpen={isOpen}
-      onRequestClose={close}
-      // onAfterClose={handleAfterClose}
-    >
-      <div className="flex flex-col gap-3">
-        <div className="ml-11 mr-11 h-96 w-auto overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {state &&
-            state.data.events.map((event) => (
-              <Event
-                event={event.trigger as EventData}
-                isSelected={false}
-                platform={platform}
-                condition={event.condition as Condition}
-                text={`↳ ${serializeEvent(
-                  components,
-                  platform.data,
-                  event.trigger as EventData
-                )}${getCondition(event.condition)}/`}
-              />
-            ))}
+    <div>
+      <Modal
+        title={`Редактор состояния: ${state?.data.name}`}
+        onSubmit={handleSubmit}
+        submitLabel="Редактировать"
+        isOpen={isOpen}
+        onRequestClose={close}
+        submitDisabled={currentEventIndex === undefined}
+        onAfterClose={handleAfterClose}
+      >
+        <div className="flex flex-col gap-3">
+          <div className="ml-11 mr-11 h-96 w-auto overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            {state &&
+              state.data.events.map((event, key) => (
+                <Event
+                  key={key}
+                  event={event.trigger as EventData}
+                  isSelected={key === currentEventIndex}
+                  platform={platform}
+                  condition={event.condition as Condition}
+                  text={`↳ ${serializeEvent(
+                    components,
+                    platform.data,
+                    event.trigger as EventData
+                  )}${getCondition(event.condition)}/`}
+                  onClick={() => setCurrentEventIndex(key)}
+                />
+              ))}
+          </div>
+          <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
         </div>
-        <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
-      </div>
-    </Modal>
+      </Modal>
+      <EditEventModal
+        isOpen={props.isEditEventModalOpen}
+        close={closeEditEventModal}
+        smId={smId}
+        controller={controller}
+      />
+    </div>
   );
 };

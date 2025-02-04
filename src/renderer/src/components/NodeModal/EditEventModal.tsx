@@ -6,30 +6,39 @@ import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { EventData } from '@renderer/types/diagram';
 
 import { Actions, ColorField, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
 
-interface StateModalProps {
+interface EditEventModalProps {
   smId: string;
   controller: CanvasController;
+  isOpen: boolean;
+  close: () => void;
+  state: State;
+  event: EventData;
 }
 
 /**
  * Модальное окно редактирования состояния
  */
-export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
+export const EditEventModal: React.FC<EditEventModalProps> = ({
+  isOpen,
+  close,
+  event,
+  smId,
+  controller,
+}) => {
   const modelController = useModelContext();
   const visual = controller.useData('visual');
   const components = modelController.model.useData(smId, 'elements.components');
   const platforms = controller.useData('platform');
   const platform = platforms[smId];
-  const [isOpen, open, close] = useModal(false);
 
   const [state, setState] = useState<State | null>(null);
 
   // Данные формы
-  const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
   const trigger = useTrigger(smId, controller, true);
   const condition = useCondition(smId, controller);
   const actions = useActions(smId, controller);
@@ -143,10 +152,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
         do: getActions(),
       };
 
-      if (currentEventIndex !== undefined) {
-        return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
-      }
-
       return [...state.data.events, currentEvent];
     };
 
@@ -182,7 +187,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       setColor(data.color);
 
       setState(state);
-      open();
+      // open();
     };
 
     controller.states.on('changeState', handler);
@@ -214,13 +219,11 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       return false;
     });
     if (eventIndex === -1) {
-      setCurrentEventIndex(undefined);
       parseCondition(undefined);
       parseEvents(smId, undefined);
     } else {
       const event = state.data.events[eventIndex];
 
-      setCurrentEventIndex(eventIndex);
       parseCondition(event.condition);
       parseEvents(smId, event.do);
     }
@@ -240,19 +243,17 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   return (
     <Modal
-      title={`Редактор состояния: ${state?.data.name}`}
+      title={`Редактор события:`}
       onSubmit={handleSubmit}
       isOpen={isOpen}
       onRequestClose={close}
       onAfterClose={handleAfterClose}
     >
       <div className="flex flex-col gap-3">
-        <div className="h-66 flex w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {/* <Trigger {...trigger} /> */}
-          {/* {showCondition && <Condition {...condition} />} */}
-          {/* <Actions {...actions} /> */}
-          {/* <ColorField label="Цвет обводки:" value={color} onChange={setColor} /> */}
-        </div>
+        <Trigger {...trigger} />
+        {showCondition && <Condition {...condition} />}
+        <Actions {...actions} />
+        <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
       </div>
     </Modal>
   );

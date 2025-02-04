@@ -170,7 +170,7 @@ export type CreateEventParams = {
 };
 
 export type CreateComponentParams = ComponentData & {
-  name: string;
+  id: string;
   smId: string;
   parameters: { [id: string]: string };
   placeInCenter?: boolean;

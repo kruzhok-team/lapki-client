@@ -141,7 +141,7 @@ export class Initializer {
         const component = dataSm.components[componentId];
         const drawableComponent = this.controller.components.createComponent({
           smId,
-          name: componentId,
+          id: componentId,
           ...component,
         });
 

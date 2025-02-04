@@ -742,12 +742,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!this.platform[args.smId]) {
       return;
     }
-    const { id, newName, smId } = args;
+    const { id, newId, smId } = args;
     const visualCompo = this.platform[smId].nameToVisual.get(id);
 
     if (!visualCompo) return;
 
-    this.platform[smId].nameToVisual.set(newName, visualCompo);
+    this.platform[smId].nameToVisual.set(newId, visualCompo);
     this.platform[smId].nameToVisual.delete(id);
 
     this.components.renameComponent(args);

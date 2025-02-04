@@ -1,4 +1,4 @@
-import React, { ComponentProps } from 'react';
+import React, { ComponentProps, ReactNode } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -6,7 +6,7 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { WithHint } from '@renderer/components/UI';
 
 interface ComponentFormFieldLabelProps extends ComponentProps<'input'> {
-  label: string;
+  label: string | ReactNode;
   hint?: string;
   error?: string;
   as?: 'label' | 'div';

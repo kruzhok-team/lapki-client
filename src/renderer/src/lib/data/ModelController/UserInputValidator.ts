@@ -47,12 +47,12 @@ export class UserInputValidator {
     return `${id}${idx}`;
   }
 
-  validateComponentName(
+  validateComponentId(
     smId: string,
     controller: CanvasController,
     proto: ComponentProto,
-    componentName: string,
-    prevName: string,
+    componentId: string,
+    prevId: string,
     platform?: Platform
   ): ValidationResult {
     const components = this.getAllComponents();
@@ -62,14 +62,14 @@ export class UserInputValidator {
         error: '',
       };
     }
-    if (prevName !== componentName && componentName in components) {
+    if (prevId !== componentId && componentId in components) {
       return {
         status: false,
         error: 'Имя не должно повторяться',
       };
     }
 
-    if (componentName === '') {
+    if (componentId === '') {
       return {
         status: false,
         error: 'Имя не должно быть пустым',
@@ -79,7 +79,7 @@ export class UserInputValidator {
     // допустимыми символами на первой позиции являются латинские буквы и подчёркивания
     const firstSymbolRegex = '[A-Z]|[a-z]|_';
     const numberSymbolRegex = '[0-9]';
-    if (!componentName[0].match(firstSymbolRegex)) {
+    if (!componentId[0].match(firstSymbolRegex)) {
       return {
         status: false,
         error: `Название должно начинаться с латинской буквы или подчёркивания`,
@@ -88,7 +88,7 @@ export class UserInputValidator {
 
     // допустимыми символами на всех позициях кроме первой являются латинские буквы, подчёркивания и цифры
     const remainingSymbolsRegex = firstSymbolRegex + '|' + numberSymbolRegex;
-    for (const symbol of componentName) {
+    for (const symbol of componentId) {
       if (!symbol.match(remainingSymbolsRegex)) {
         return {
           status: false,
@@ -98,7 +98,7 @@ export class UserInputValidator {
     }
 
     for (const word of reservedWordsC) {
-      if (word === componentName) {
+      if (word === componentId) {
         return {
           status: false,
           error: 'Нельзя использовать ключевые слова языка C',
@@ -107,7 +107,7 @@ export class UserInputValidator {
     }
 
     for (const word of frameworkWords) {
-      if (word === componentName) {
+      if (word === componentId) {
         return {
           status: false,
           error: 'Название является недопустимым. Выберите другое',
@@ -116,7 +116,7 @@ export class UserInputValidator {
     }
     // проверка на то, что название не является типом данных
     for (const key in validators) {
-      if (key === componentName) {
+      if (key === componentId) {
         return {
           status: false,
           error: 'Нельзя использовать название типа данных',
@@ -127,7 +127,7 @@ export class UserInputValidator {
     // проверка на то, что название не совпадает с названием класса компонентов
     const vacantComponents = controller.getVacantComponents(smId, {}) as ComponentEntry[];
     for (const component of vacantComponents) {
-      if (component.name === componentName) {
+      if (component.name === componentId) {
         return {
           status: false,
           error: 'Нельзя дублировать название класса компонентов',

@@ -9,14 +9,14 @@ interface ComponentDeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
 
-  idx: string;
+  id: string;
   data: ComponentData;
   proto: ComponentProto;
   onSubmit: (idx: string) => void;
 }
 
 export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
-  idx,
+  id,
   data,
   proto,
   onClose,
@@ -34,13 +34,13 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    onSubmit(idx);
+    onSubmit(id);
     onClose();
   };
 
   const type = data.type;
 
-  const compoLabel = type && !proto.singletone ? `${type} ${idx}` : idx;
+  const compoLabel = type && !proto.singletone ? `${type} ${id}` : id;
 
   return (
     <Modal

@@ -184,7 +184,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ topOffset = false 
             <Question height={40} width={40} />
           </button>
         ) : (
-          <EditorSettings toggle={onDocumentationToggle} />
+          <EditorSettings />
         )}
         <div className="h-full">{renderContent()}</div>
       </Resizable>

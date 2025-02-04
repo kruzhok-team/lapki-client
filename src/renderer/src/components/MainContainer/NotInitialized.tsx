@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ReactComponent as Icon } from '@renderer/assets/icons/icon.svg';
 import { appName, appVersion, askAppVersion, seriousMode } from '@renderer/version';
@@ -42,10 +42,12 @@ const combination = [
 ];
 
 export const NotInitialized: React.FC = () => {
+  const [shownVersion, setShownVersion] = useState(appVersion);
+
   useEffect(() => {
-    if (!appVersion) {
-      askAppVersion();
-    }
+    askAppVersion().then(() => {
+      if (shownVersion !== appVersion) setShownVersion(appVersion);
+    });
   }, []);
 
   // TODO: подобрать логотип
@@ -56,7 +58,7 @@ export const NotInitialized: React.FC = () => {
       {icon}
       <br />
       <p className="text-center text-2xl font-bold">
-        {appName} v{appVersion}
+        {appName} {shownVersion ? `v${shownVersion}` : ''}
       </p>
       <p className="py-6 text-center text-base">
         Перетащите файл в эту область или воспользуйтесь комбинацией клавиш:

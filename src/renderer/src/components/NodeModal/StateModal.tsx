@@ -25,7 +25,6 @@ interface StateModalProps {
  */
 export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const modelController = useModelContext();
-  // const visual = controller.useData('visual');
   const components = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
@@ -37,32 +36,11 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   // Данные формы
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
-  // const trigger = useTrigger(smId, controller, true);
-  // const condition = useCondition(smId, controller);
-  // const actions = useActions(smId, controller);
   const [color, setColor] = useState<string | undefined>();
-
-  // const { parse: parseTrigger } = trigger;
-  // const { parse: parseCondition } = condition;
-  // const { parse: parseEvents } = actions;
-
-  // // На дефолтные события нельзя ставить условия
-  // const showCondition = useMemo(
-  //   () => trigger.selectedComponent !== 'System',
-  //   [trigger.selectedComponent]
-  // );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     openEditEventModal();
-    // if (!state) return;
-    // modelController.changeState({
-    // smId: smId,
-    // id: state.id,
-    // events: getEvents(),
-    // color,
-    // });
-    // close();
   };
 
   // // Сброс формы после закрытия
@@ -120,6 +98,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
             {state &&
               state.data.events.map((event, key) => (
                 <Event
+                  onDoubleClick={() => openEditEventModal()}
                   key={key}
                   event={event.trigger as EventData}
                   isSelected={key === currentEventIndex}
@@ -141,6 +120,9 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
         isOpen={props.isEditEventModalOpen}
         close={closeEditEventModal}
         smId={smId}
+        state={state}
+        currentEventIndex={currentEventIndex}
+        event={currentEventIndex !== undefined ? state?.data.events[currentEventIndex] : null}
         controller={controller}
       />
     </div>

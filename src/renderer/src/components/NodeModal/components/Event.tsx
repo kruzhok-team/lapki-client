@@ -14,6 +14,7 @@ interface EventProps {
   platform: PlatformManager;
   event: EventData;
   isSelected: boolean;
+  onDoubleClick?: () => void;
   onClick?: () => void;
   text?: string;
   condition?: Condition;
@@ -25,6 +26,7 @@ export const Event: React.FC<EventProps> = ({
   condition,
   text,
   onClick,
+  onDoubleClick,
   isSelected,
 }) => {
   const [conditionsPicto, setConditionsPicto] = useState<React.ReactNode[]>([]);
@@ -87,6 +89,7 @@ export const Event: React.FC<EventProps> = ({
 
   return (
     <div
+      onDoubleClick={onDoubleClick}
       onClick={onClick}
       id="event"
       className={twMerge(

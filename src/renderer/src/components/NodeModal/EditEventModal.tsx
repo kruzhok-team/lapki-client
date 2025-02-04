@@ -6,7 +6,7 @@ import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { EventData } from '@renderer/types/diagram';
+import { Action, Event, EventData } from '@renderer/types/diagram';
 
 import { Actions, ColorField, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
@@ -16,8 +16,9 @@ interface EditEventModalProps {
   controller: CanvasController;
   isOpen: boolean;
   close: () => void;
-  state: State;
-  event: EventData;
+  state: State | null;
+  event: EventData | null | undefined;
+  currentEventIndex: number | undefined;
 }
 
 /**
@@ -28,31 +29,16 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   close,
   event,
   smId,
+  state,
+  currentEventIndex,
   controller,
 }) => {
   const modelController = useModelContext();
-  const visual = controller.useData('visual');
-  const components = modelController.model.useData(smId, 'elements.components');
-  const platforms = controller.useData('platform');
-  const platform = platforms[smId];
-
-  const [state, setState] = useState<State | null>(null);
 
   // Данные формы
-  const trigger = useTrigger(smId, controller, true);
-  const condition = useCondition(smId, controller);
-  const actions = useActions(smId, controller);
-  const [color, setColor] = useState<string | undefined>();
-
-  const { parse: parseTrigger } = trigger;
-  const { parse: parseCondition } = condition;
-  const { parse: parseEvents } = actions;
-
-  // На дефолтные события нельзя ставить условия
-  const showCondition = useMemo(
-    () => trigger.selectedComponent !== 'System',
-    [trigger.selectedComponent]
-  );
+  const trigger = useTrigger(smId, controller, true, event);
+  const condition = useCondition(smId, controller, event?.condition);
+  const actions = useActions(smId, controller, (event?.do as Action[] | undefined) ?? null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,6 +138,10 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         do: getActions(),
       };
 
+      if (currentEventIndex !== undefined) {
+        return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
+      }
+
       return [...state.data.events, currentEvent];
     };
 
@@ -159,87 +149,21 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       smId: smId,
       id: state.id,
       events: getEvents(),
-      color,
     });
 
     close();
   };
 
-  // Сброс формы после закрытия
   const handleAfterClose = () => {
     trigger.clear();
     actions.clear();
-    setColor(undefined);
-
-    setState(null);
+    condition.clear();
   };
 
-  // Открытие окна и подстановка начальных данных формы на событие изменения состояния
-  useEffect(() => {
-    const handler = (state: State) => {
-      const { data } = state;
-
-      const eventData = data.events[0];
-
-      // Остальная форма подставляется в эффекте синхронизации с trigger
-      parseTrigger(eventData?.trigger);
-
-      setColor(data.color);
-
-      setState(state);
-      // open();
-    };
-
-    controller.states.on('changeState', handler);
-
-    return () => {
-      controller.states.off('changeState', handler);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visual]); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
-
-  // Синхронизвация trigger и condition с event
-  useLayoutEffect(() => {
-    if (!state) return;
-    const eventIndex = state.data.events.findIndex((value) => {
-      if (trigger.tabValue === 1) {
-        if (typeof value.trigger !== 'string') {
-          return serializeEvent(components, platform, value.trigger) === trigger.text;
-        }
-        return value.trigger === trigger.text;
-      }
-
-      if (typeof value.trigger !== 'string') {
-        return (
-          trigger.selectedComponent === value.trigger.component &&
-          trigger.selectedMethod === value.trigger.method
-        );
-      }
-
-      return false;
-    });
-    if (eventIndex === -1) {
-      parseCondition(undefined);
-      parseEvents(smId, undefined);
-    } else {
-      const event = state.data.events[eventIndex];
-
-      parseCondition(event.condition);
-      parseEvents(smId, event.do);
-    }
-  }, [
-    smId,
-    controller,
-    parseCondition,
-    parseEvents,
-    state,
-    trigger.selectedComponent,
-    trigger.selectedMethod,
-    trigger.tabValue,
-    trigger.text,
-    components,
-    platform,
-  ]);
+  const showCondition = useMemo(
+    () => trigger.selectedComponent !== 'System',
+    [trigger.selectedComponent]
+  );
 
   return (
     <Modal
@@ -250,10 +174,9 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       onAfterClose={handleAfterClose}
     >
       <div className="flex flex-col gap-3">
-        <Trigger {...trigger} />
+        <Trigger event={event} {...trigger} />
         {showCondition && <Condition {...condition} />}
-        <Actions {...actions} />
-        <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
+        <Actions event={event} {...actions} />
       </div>
     </Modal>
   );
